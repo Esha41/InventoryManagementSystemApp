@@ -52,7 +52,9 @@
     "requestDate": "Request Date",
     "viewAll": "View All",
     "noOrders": "No orders",
-    "noAccess": "You don't have permission to view any dashboard sections"
+    "noAccess": "You don't have permission to view any dashboard sections",
+    "noCards": "No dashboard cards available",
+    "noCardsDescription": "You don't have the necessary permissions or roles to view any dashboard cards."
   },
   "notifications": {
     "title": "Notifications",

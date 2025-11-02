@@ -1,7 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
+import { BackendAuthService } from '@services/backend-auth.service';
+
+export interface DashboardCard {
+  title: string;
+  status: 'new-issue' | 'on-progress' | 'completed';
+  orders: OrderItem[];
+  permissions: string[]; // Required permissions (user needs any of these)
+  roles?: string[]; // Optional: specific roles that can see this card
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -10,26 +20,113 @@ import { StatusCardComponent, OrderItem } from './components/status-card/status-
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
-  // Dashboard always displays all cards regardless of permissions
-  newIssueOrders: OrderItem[] = [
-    { orderId: '#0172', requestDate: '25 JULY 2024' },
-    { orderId: '#0166', requestDate: '18 APRIL 2024' }
+export class DashboardComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
+  // All dashboard cards with their permission/role requirements
+  private allCards: DashboardCard[] = [
+    {
+      title: 'dashboard.newIssue',
+      status: 'new-issue',
+      orders: [
+        { orderId: '#0172', requestDate: '25 JULY 2024' },
+        { orderId: '#0166', requestDate: '18 APRIL 2024' }
+      ],
+      permissions: ['request.create', 'request.view'] // Show if user can create or view requests
+    },
+    {
+      title: 'dashboard.onProgress',
+      status: 'on-progress',
+      orders: [
+        { orderId: '#0170', requestDate: '6 MAY 2024' },
+        { orderId: '#0169', requestDate: '1 MAY 2024' },
+        { orderId: '#0168', requestDate: '24 APRIL 2024' }
+      ],
+      permissions: ['request.view', 'request.manage'] // Show if user can view or manage requests
+    },
+    {
+      title: 'dashboard.completed',
+      status: 'completed',
+      orders: [
+        { orderId: '#0171', requestDate: '4 JUNE 2024' },
+        { orderId: '#0167', requestDate: '20 APRIL 2024' }
+      ],
+      permissions: ['request.view', 'request.manage'] // Show if user can view or manage requests
+    }
   ];
 
-  onProgressOrders: OrderItem[] = [
-    { orderId: '#0170', requestDate: '6 MAY 2024' },
-    { orderId: '#0169', requestDate: '1 MAY 2024' },
-    { orderId: '#0168', requestDate: '24 APRIL 2024' }
-  ];
+  // Filtered cards based on user permissions and roles
+  visibleCards: DashboardCard[] = [];
 
-  completedOrders: OrderItem[] = [
-    { orderId: '#0171', requestDate: '4 JUNE 2024' },
-    { orderId: '#0167', requestDate: '20 APRIL 2024' }
-  ];
+  constructor(private authService: BackendAuthService) {}
 
   ngOnInit(): void {
-    // Component initialization
+    // Subscribe to user changes and filter cards
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.filterCardsByPermissionsAndRoles();
+      });
+
+    // Initial filter
+    this.filterCardsByPermissionsAndRoles();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Filter dashboard cards based on user permissions and roles
+   */
+  private filterCardsByPermissionsAndRoles(): void {
+    const user = this.authService.getCurrentUser();
+    const isAuthenticated = this.authService.isAuthenticated();
+    const hasPermissionsLoaded = user && user.permissions && user.permissions.length > 0;
+    const userRoles = user?.roles || [];
+
+    // If not authenticated, show no cards
+    if (!isAuthenticated) {
+      this.visibleCards = [];
+      return;
+    }
+
+    // Filter cards based on permissions and roles
+    this.visibleCards = this.allCards.filter(card => {
+      // If card has role requirements, check roles first
+      if (card.roles && card.roles.length > 0) {
+        const hasRequiredRole = card.roles.some(requiredRole =>
+          userRoles.some(userRole => 
+            userRole.toLowerCase() === requiredRole.toLowerCase()
+          )
+        );
+        if (hasRequiredRole) {
+          return true; // User has one of the required roles
+        }
+      }
+
+      // If card has no permissions requirement, show it (unless roles were specified and didn't match)
+      if (!card.permissions || card.permissions.length === 0) {
+        // If roles were specified but user doesn't have them, don't show
+        return !card.roles || card.roles.length === 0;
+      }
+
+      // If permissions haven't loaded yet, don't show cards that require permissions
+      if (!hasPermissionsLoaded) {
+        return false;
+      }
+
+      // Check if user has any of the required permissions
+      return this.authService.hasAnyPermission(card.permissions);
+    });
+  }
+
+  /**
+   * Check if a card should be visible
+   */
+  shouldShowCard(card: DashboardCard): boolean {
+    return this.visibleCards.includes(card);
   }
 }
 
