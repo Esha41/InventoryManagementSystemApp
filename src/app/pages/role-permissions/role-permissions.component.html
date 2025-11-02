@@ -153,16 +153,35 @@
 
 
           <!-- Plain Permissions -->
-          <app-card *ngIf="plainPermissions.length > 0" title="General Permissions">
+          <!-- Plain Permissions -->
+          <app-card *ngFor="let permissionGroup of plainPermissions" [title]="permissionGroup.entityName">
+            <!-- Selected count & toggle button -->
+            <div class="mb-4 flex items-center justify-between">
+              <span class="text-sm text-[var(--color-text-muted)]">
+                {{ getSelectedPermissionsCount(permissionGroup.entityName) }}/{{ permissionGroup.permissionsList.length
+                }} selected
+              </span>
+              <button type="button"
+                (click)="onGroupToggle(permissionGroup.entityName, !isGroupFullySelected(permissionGroup.entityName))"
+                class="px-3 py-1 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors">
+                {{ isGroupFullySelected(permissionGroup.entityName) ? 'Deselect All' : 'Select All' }}
+              </button>
+            </div>
+
+            <!-- Permissions checkboxes -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <label *ngFor="let permission of plainPermissions"
+              <label *ngFor="let perm of permissionGroup.permissionsList"
                 class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all">
-                <input type="checkbox" [formControlName]="permission"
+
+                <input type="checkbox" [formControlName]="sanitizeControlName(perm.displayValue)"
                   class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
-                <span class="text-sm font-medium text-[var(--color-text)]">{{ permission }}</span>
+
+                <span class="text-sm font-medium text-[var(--color-text)]">{{ perm.displayValue }}</span>
               </label>
             </div>
           </app-card>
+
+
         </form>
 
       </div>

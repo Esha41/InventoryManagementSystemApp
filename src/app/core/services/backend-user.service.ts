@@ -456,10 +456,10 @@ export class BackendUserService {
   /**
    * Get plain permissions for a role
    */
-  getPlainPermissionsForRole(roleId: string): Observable<string[]> {
+  getPlainPermissionsForRole(roleId: string): Observable<CrudPermission[]> {
     this.configService.log('Fetching plain permissions for role', { roleId });
 
-    return this.apiService.getWithAuth<ApiResponse<string[]>>(
+    return this.apiService.getWithAuth<ApiResponse<CrudPermission[]>>(
       API_ENDPOINTS.ROLES.PERMISSIONS(roleId)
     ).pipe(
       map(response => {

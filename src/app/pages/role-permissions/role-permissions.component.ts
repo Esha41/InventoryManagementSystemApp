@@ -26,7 +26,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   roles: RoleDto[] = [];
   selectedRole: RoleDto | null = null;
   permissions: CrudPermission[] = [];
-  plainPermissions: string[] = [];
+  plainPermissions: CrudPermission[] = [];
 
   isLoading = false;
   isSaving = false;
@@ -85,9 +85,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (permissions) => {
           this.permissions = permissions;
-        
+
           this.createPermissionForm();
-          console.log("curd permission",this.permissions);
+          console.log("curd permission", this.permissions);
           this.isLoading = false;
         },
         error: (error) => {
@@ -101,40 +101,44 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (permissions) => {
           this.plainPermissions = permissions;
-          console.log("plainPermissions",this.plainPermissions);
+          this.createPermissionForm();
+          console.log("plainPermissions", this.plainPermissions);
         },
         error: (error) => {
           console.error('Failed to load plain permissions:', error);
         }
       });
   }
- sanitizeControlName(name: any) {
+  sanitizeControlName(name: any) {
     if (typeof name !== 'string') {
-        console.warn('sanitizeControlName received non-string:', name);
-        name = String(name); // convert to string
+      console.warn('sanitizeControlName received non-string:', name);
+      name = String(name); // convert to string
     }
     return name.replace(/\./g, '_'); // safer: replace all dots
-}
+  }
 
-createPermissionForm(): void {
+ createPermissionForm(): void {
   const formControls: { [key: string]: any } = {};
 
   // CRUD permissions
-  this.permissions.forEach(permission => {
-    permission.permissionsList.forEach(perm => {
+  this.permissions.forEach(group => {
+    group.permissionsList.forEach(perm => {
       const controlKey = this.sanitizeControlName(perm.displayValue);
       formControls[controlKey] = [perm.isSelected || false];
     });
   });
 
   // Plain permissions
-  this.plainPermissions.forEach(permission => {
-    const controlKey = this.sanitizeControlName(permission);
-    formControls[controlKey] = [true];
+  this.plainPermissions.forEach(group => {
+    group.permissionsList.forEach(perm => {
+      const controlKey = this.sanitizeControlName(perm.displayValue);
+      formControls[controlKey] = [perm.isSelected || false]; // or true if you want default checked
+    });
   });
 
   this.permissionForm = this.fb.group(formControls);
 }
+
 
 
   // strip the first dot-separated segment (e.g. remove leading "Dashboard." from "Dashboard.X.Y")
@@ -152,8 +156,12 @@ createPermissionForm(): void {
   }
 
 
-onGroupToggle(entityName: string, selectAll: boolean): void {
-  const group = this.permissions.find(p => p.entityName === entityName);
+ onGroupToggle(entityName: string, selectAll: boolean): void {
+  const group = [
+    ...this.permissions,
+    ...this.plainPermissions
+  ].find(p => p.entityName === entityName);
+
   if (!group) return;
 
   group.permissionsList.forEach(perm => {
@@ -164,44 +172,45 @@ onGroupToggle(entityName: string, selectAll: boolean): void {
 }
 
 isGroupFullySelected(entityName: string): boolean {
-  const group = this.permissions.find(p => p.entityName === entityName);
+  const group = [
+    ...this.permissions,
+    ...this.plainPermissions
+  ].find(p => p.entityName === entityName);
+
   if (!group) return false;
 
- 
-  group.permissionsList.forEach(p => {
-    const controlName = this.sanitizeControlName( p.displayValue); // match creation
-    const controlValue = this.permissionForm.get(controlName)?.value;
-    
-  });
-
   return group.permissionsList.every(p => {
-    const controlName = this.sanitizeControlName( p.displayValue);
+    const controlName = this.sanitizeControlName(p.displayValue);
     return this.permissionForm.get(controlName)?.value === true;
   });
 }
 
 
 isGroupPartiallySelected(entityName: string): boolean {
-  const group = this.permissions.find(p => p.entityName === entityName);
+  const group = [
+    ...this.permissions,
+    ...this.plainPermissions
+  ].find(p => p.entityName === entityName);
+
   if (!group) return false;
 
   const selectedCount = group.permissionsList.filter(p =>
-    this.permissionForm.get(p.displayValue)?.value === true
+    this.permissionForm.get(this.sanitizeControlName(p.displayValue))?.value === true
   ).length;
 
   return selectedCount > 0 && selectedCount < group.permissionsList.length;
 }
 
-  getSelectedPermissionsCount(entityName: string): number {
-  const entityPermissions = this.permissions.find(p => p.entityName === entityName);
-  if (!entityPermissions) return 0;
+getSelectedPermissionsCount(entityName: string): number {
+  const group = [
+    ...this.permissions,
+    ...this.plainPermissions
+  ].find(p => p.entityName === entityName);
 
-  // Strip leading segment (if needed)
-  const baseEntity = this.stripLeadingSegment(entityName);
+  if (!group) return 0;
 
-  return entityPermissions.permissionsList.filter(perm => {
-    // Use the same sanitized control name as in createPermissionForm
-    const controlName = this.sanitizeControlName(`${perm.displayValue}`);
+  return group.permissionsList.filter(perm => {
+    const controlName = this.sanitizeControlName(perm.displayValue);
     return this.permissionForm.get(controlName)?.value === true;
   }).length;
 }
@@ -209,7 +218,7 @@ isGroupPartiallySelected(entityName: string): boolean {
 
 
 
-onSavePermissions(): void {
+ onSavePermissions(): void {
   if (!this.selectedRole) return;
 
   this.isSaving = true;
@@ -218,32 +227,43 @@ onSavePermissions(): void {
 
   const selectedPermissions: string[] = [];
 
+  // ✅ Collect CRUD permissions
   this.permissions.forEach(permissionGroup => {
     permissionGroup.permissionsList.forEach(perm => {
-      // Use sanitized name for both form creation and reading
-      const controlName = this.sanitizeControlName(`${perm.displayValue}`);
-     
+      const controlName = this.sanitizeControlName(perm.displayValue);
       const controlValue = this.permissionForm.get(controlName)?.value;
 
       if (controlValue === true) {
-        const permissionStr = typeof perm.displayValue === 'string' ? perm.displayValue : String(perm.displayValue);
-        selectedPermissions.push(`${permissionGroup.entityName}.${permissionStr}`);
+        const permissionString = `${permissionGroup.entityName}.${perm.displayValue}`;
+        selectedPermissions.push(permissionString);
       }
     });
   });
 
+  // ✅ Collect Plain permissions
+  this.plainPermissions.forEach(permissionGroup => {
+    permissionGroup.permissionsList.forEach(perm => {
+      const controlName = this.sanitizeControlName(perm.displayValue);
+      const controlValue = this.permissionForm.get(controlName)?.value;
 
-  
-const finalPermissions = selectedPermissions.map(p => {
-  const segments = p.split('.');
-  if (segments.length > 1) {
-    segments.shift(); // remove first word
-    return segments.join('.');
-  }
-  return p; // if no dot, keep as is
-});
+      if (controlValue === true) {
+        const permissionString = `${permissionGroup.entityName}.${perm.displayValue}`;
+        selectedPermissions.push(permissionString);
+      }
+    });
+  });
 
+  // ✅ Strip first segment (e.g. "Dashboard.Users.View" → "Users.View")
+  const finalPermissions = selectedPermissions.map(p => {
+    const parts = p.split('.');
+    if (parts.length > 1) {
+      parts.shift(); // remove first word
+      return parts.join('.');
+    }
+    return p;
+  });
 
+  // ✅ Save to API
   this.backendUserService.assignPermissionsToRole(this.selectedRole.id, finalPermissions)
     .pipe(takeUntil(this.destroy$))
     .subscribe({
@@ -251,13 +271,13 @@ const finalPermissions = selectedPermissions.map(p => {
         this.isSaving = false;
         this.successMessage = 'Permissions saved successfully!';
       },
-      error: err => {
+      error: (err) => {
         this.isSaving = false;
         this.errorMessage = 'Error saving permissions.';
-       
       }
     });
 }
+
 
 
   onRefresh(): void {
