@@ -306,10 +306,22 @@ export class BackendAuthService {
       }
     }
 
+    // Check permissions - user.permissions should contain ALL permissions from ALL roles combined
+    const permissionLower = permission.toLowerCase().trim();
+    
     return user.permissions.some(p => {
-      if (!p || !p.id || !p.claimType) return false;
-      return p.id.toLowerCase() === permission.toLowerCase() ||
-             p.claimType.toLowerCase() === permission.toLowerCase();
+      if (!p) return false;
+      
+      // Check both id and claimType fields
+      const permissionId = (p.id || '').toLowerCase().trim();
+      const claimType = (p.claimType || '').toLowerCase().trim();
+      
+      // Match if permission string matches either id or claimType
+      // Also check if permission is contained in the id/claimType (for cases like "request.view" matching "Dashboard.Request.View")
+      return permissionId === permissionLower ||
+             claimType === permissionLower ||
+             permissionId.includes(permissionLower) ||
+             claimType.includes(permissionLower);
     });
   }
 

@@ -79,12 +79,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   /**
    * Filter dashboard cards based on user permissions and roles
+   * Permissions from ALL user roles are combined by the backend
    */
   private filterCardsByPermissionsAndRoles(): void {
     const user = this.authService.getCurrentUser();
     const isAuthenticated = this.authService.isAuthenticated();
     const hasPermissionsLoaded = user && user.permissions && user.permissions.length > 0;
     const userRoles = user?.roles || [];
+
+    // Debug logging to verify roles and permissions
+    console.log('Dashboard Filtering - User Info:', {
+      userName: user?.userName,
+      userRoles: userRoles,
+      totalRoles: userRoles.length,
+      totalPermissions: user?.permissions?.length || 0,
+      permissions: user?.permissions?.map(p => p.id || p.claimType) || []
+    });
 
     // If not authenticated, show no cards
     if (!isAuthenticated) {
@@ -102,6 +112,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           )
         );
         if (hasRequiredRole) {
+          console.log(`Card "${card.title}" visible: User has required role`);
           return true; // User has one of the required roles
         }
       }
@@ -114,11 +125,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       // If permissions haven't loaded yet, don't show cards that require permissions
       if (!hasPermissionsLoaded) {
+        console.log(`Card "${card.title}" hidden: Permissions not loaded yet`);
         return false;
       }
 
-      // Check if user has any of the required permissions
-      return this.authService.hasAnyPermission(card.permissions);
+      // Check if user has any of the required permissions from ANY role
+      // The backend should combine permissions from all roles in user.permissions
+      const hasPermission = this.authService.hasAnyPermission(card.permissions);
+      
+      if (hasPermission) {
+        console.log(`Card "${card.title}" visible: User has permission from one of their roles`);
+      } else {
+        console.log(`Card "${card.title}" hidden: User missing required permissions:`, card.permissions);
+        // Debug: Check which permissions user actually has
+        const userPermissionIds = user?.permissions?.map(p => p.id || p.claimType).filter(Boolean) || [];
+        console.log(`User's actual permissions:`, userPermissionIds);
+      }
+      
+      return hasPermission;
+    });
+
+    console.log('Dashboard Filtering Result:', {
+      totalCards: this.allCards.length,
+      visibleCards: this.visibleCards.length,
+      visibleCardTitles: this.visibleCards.map(c => c.title)
     });
   }
 
