@@ -9,3 +9,5 @@ export * from './auth.model';
 export * from './backend-user.model';
 export * from './warehouse.model';
 export * from './warehouse-inventory.model';
+export * from './depot.model';
+export * from './ammunition.model';

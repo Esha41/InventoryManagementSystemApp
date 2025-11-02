@@ -4,6 +4,21 @@
     <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'addAsset.title' | translate }}</h1>
   </div>
 
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="text-[var(--color-text)]">Loading form data...</div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+    {{ errorMessage }}
+  </div>
+
   <!-- Centered Form Container -->
   <div class="flex-1 flex items-center justify-center">
     <div class="bg-white rounded-xl shadow-custom-md p-6 w-full max-w-2xl">
@@ -72,25 +87,67 @@
         <!-- Nature -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.nature' | translate }}</label>
-          <input
-            type="text"
-            [(ngModel)]="assetForm.nature"
-            name="nature"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterNature' | translate"
-          />
+          <select
+            [(ngModel)]="assetForm.natureId"
+            name="natureId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">{{ 'addAsset.selectNature' | translate }}</option>
+            <option *ngFor="let nature of natureOptions" [value]="nature.id">{{ nature.nameEn }}</option>
+          </select>
         </div>
 
         <!-- Supplier -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.supplier' | translate }}</label>
-          <input
-            type="text"
-            [(ngModel)]="assetForm.supplier"
-            name="supplier"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterSupplierName' | translate"
-          />
+          <select
+            [(ngModel)]="assetForm.supplierId"
+            name="supplierId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">{{ 'addAsset.selectSupplier' | translate }}</option>
+            <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- HCC (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.hcc' | translate }} *</label>
+          <select
+            [(ngModel)]="assetForm.hccId"
+            name="hccId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+          >
+            <option value="">{{ 'addAsset.selectHcc' | translate }}</option>
+            <option *ngFor="let hcc of hccs" [value]="hcc.id">{{ hcc.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- Country -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.country' | translate }}</label>
+          <select
+            [(ngModel)]="assetForm.countryId"
+            name="countryId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">{{ 'addAsset.selectCountry' | translate }}</option>
+            <option *ngFor="let country of countries" [value]="country.id">{{ country.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- Manufacturer -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.manufacturer' | translate }}</label>
+          <select
+            [(ngModel)]="assetForm.manufacturerId"
+            name="manufacturerId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">{{ 'addAsset.selectManufacturer' | translate }}</option>
+            <option *ngFor="let manufacturer of manufacturers" [value]="manufacturer.id">{{ manufacturer.nameEn }}</option>
+          </select>
         </div>
 
         <!-- Quantity -->
@@ -131,14 +188,15 @@
 
         <!-- Warehouse -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.warehouse' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.warehouse' | translate }} *</label>
           <select
-            [(ngModel)]="assetForm.warehouse"
-            name="warehouse"
+            [(ngModel)]="assetForm.warehouseId"
+            name="warehouseId"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
           >
             <option value="">{{ 'addAsset.selectWarehouse' | translate }}</option>
-            <option *ngFor="let warehouse of warehouses" [value]="warehouse">{{ warehouse }}</option>
+            <option *ngFor="let warehouse of warehouses" [value]="warehouse.id">{{ warehouse.nameEn }} ({{ warehouse.location }})</option>
           </select>
         </div>
       </div>
@@ -154,9 +212,10 @@
         </button>
         <button
           type="submit"
-          class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors"
+          [disabled]="submitting || loading"
+          class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ 'addAsset.addAsset' | translate }}
+          {{ submitting ? ('addAsset.saving' | translate) : ('addAsset.addAsset' | translate) }}
         </button>
       </div>
     </form>

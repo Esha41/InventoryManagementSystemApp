@@ -11,11 +11,8 @@
   <button
     *ngFor="let page of pages"
     (click)="onPageClick(page)"
-    [class.bg-[#0F60FF]]="page === currentPage"
-    [class.text-white]="page === currentPage"
-    [class.bg-[#F1F2F6]]="page !== currentPage"
-    [class.text-[var(--color-text)]]="page !== currentPage"
-    class="px-4 py-2 rounded-lg font-medium text-sm transition-colors hover:opacity-80">
+    class="pagination-page"
+    [ngClass]="page === currentPage ? 'pagination-page-active' : 'pagination-page-inactive'">
     {{ page }}
   </button>
 

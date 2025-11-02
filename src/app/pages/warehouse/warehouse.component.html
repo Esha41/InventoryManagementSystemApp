@@ -9,7 +9,7 @@
 
     <!-- Loading State -->
     <div *ngIf="loading" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
     </div>
 
     <!-- Error State -->
@@ -30,7 +30,7 @@
           <div class="mt-4">
             <button 
               (click)="refreshWarehouses()"
-              class="bg-red-100 px-4 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 transition-colors">
+              class="bg-[var(--color-brand)] px-4 py-2 rounded-lg text-sm font-medium text-white hover:bg-[var(--color-brand-dark)] transition-colors">
               {{ 'common.retry' | translate }}
             </button>
           </div>
@@ -112,7 +112,7 @@
             <div class="flex justify-end">
               <button 
                 (click)="onViewWarehouse(warehouse.id)"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg">
+                class="bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
                 <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
                 <span>{{ 'common.view' | translate }}</span>
               </button>

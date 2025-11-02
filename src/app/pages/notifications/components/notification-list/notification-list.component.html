@@ -55,10 +55,8 @@
       <button
         *ngFor="let page of getPaginationNumbers()"
         (click)="goToPage(page)"
-        [class.bg-[#0F60FF]]="currentPage === page"
-        [class.text-white]="currentPage === page"
-        [class.text-[var(--color-text)]="currentPage !== page"
-        class="w-8 h-8 rounded flex items-center justify-center text-sm font-medium hover:bg-[var(--color-background-hover)] transition-colors">
+        class="pagination-page-small"
+        [ngClass]="currentPage === page ? 'pagination-page-small-active' : 'pagination-page-small-inactive'">
         {{ page }}
       </button>
 

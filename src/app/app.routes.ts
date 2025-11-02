@@ -19,8 +19,26 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'supply-request-management',
+        loadComponent: () => import('@pages/supply-request-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['request.view', 'request.manage'] }
+      },
+      {
+        path: 'supply-request-management/:id',
+        loadComponent: () => import('@pages/supply-request-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['request.view', 'request.manage'] }
+      },
+      {
         path: 'warehouse',
         loadComponent: () => import('@pages/warehouse/warehouse.component').then(m => m.WarehouseComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['warehouse.view'] }
+      },
+      {
+        path: 'warehouse/ammunition-display',
+        loadComponent: () => import('@pages/warehouse/ammunition-display/ammunition-display.component').then(m => m.AmmunitionDisplayComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['warehouse.view'] }
       },
@@ -83,6 +101,12 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/search-inventory/search-inventory.component').then(m => m.SearchInventoryComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventory.view'] }
+      },
+      {
+        path: 'depot-management',
+        loadComponent: () => import('@pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['depot.view'] }
       },
       {
         path: 'manage-admins',

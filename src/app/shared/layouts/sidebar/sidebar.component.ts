@@ -1,9 +1,9 @@
 import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse } from 'lucide-angular';
+import { Subject, takeUntil, filter } from 'rxjs';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 interface MenuItem {
@@ -29,6 +29,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isCollapsed = false;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
+  readonly ChevronDown = ChevronDown;
+  readonly ChevronUp = ChevronUp;
+  expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
 
@@ -41,10 +44,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
       // Dashboard menu item is always visible - no permission check needed (no permissions property)
     },
     {
+      label: 'nav.supplyManagement',
+      icon: ClipboardList,
+      route: '/supply-request-management',
+      permissions: ['request.view', 'request.manage']
+    },
+    {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['warehouse.view']
+      permissions: ['warehouse.view'],
+      children: [
+        {
+          label: 'nav.warehouseList',
+          route: '/warehouse',
+          permissions: ['warehouse.view']
+        },
+        {
+          label: 'nav.inventoryCategory',
+          route: '/warehouse/ammunition-display',
+          permissions: ['warehouse.view']
+        }
+      ]
     },
     {
       label: "nav.newIssueRequest",
@@ -93,6 +114,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['inventory.view']
     },
     {
+      label: 'nav.depotManagement',
+      icon: Warehouse,
+      route: '/depot-management',
+      permissions: ['depot.view']
+    },
+    {
       label: 'nav.admin',
       isHeader: true,
       permissions: ['user.view', 'role.view'] // Show header if user has any admin permissions
@@ -119,7 +146,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   menuItems: MenuItem[] = [];
 
-  constructor(private authService: BackendAuthService) {}
+  constructor(
+    private authService: BackendAuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     // Subscribe to user changes and filter menu items
@@ -129,8 +159,26 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.filterMenuItems();
       });
     
-    // Initial filter
+    // Subscribe to route changes to auto-expand submenus
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: any) => {
+        this.checkAndExpandMenus(event.url);
+      });
+    
+    // Initial filter and menu expansion check
     this.filterMenuItems();
+    this.checkAndExpandMenus(this.router.url);
+  }
+
+  private checkAndExpandMenus(url: string): void {
+    // Auto-expand warehouse menu if on warehouse routes
+    if (url.startsWith('/warehouse')) {
+      this.expandedMenus.add('nav.warehouse');
+    }
   }
 
   ngOnDestroy(): void {
@@ -199,5 +247,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     this.toggleSidebar.emit(this.isCollapsed);
+  }
+
+  toggleSubmenu(label: string): void {
+    if (this.expandedMenus.has(label)) {
+      this.expandedMenus.delete(label);
+    } else {
+      this.expandedMenus.add(label);
+    }
+  }
+
+  isSubmenuExpanded(label: string): boolean {
+    return this.expandedMenus.has(label);
+  }
+
+  hasChildren(item: MenuItem): boolean {
+    return !!(item.children && item.children.length > 0);
   }
 }

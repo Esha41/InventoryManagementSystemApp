@@ -4,7 +4,8 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Eye } from 'lucide-angular';
-import { WarehouseService } from '@services/warehouse.service';
+import { LookupService } from '@services/lookup.service';
+import { DepotDto } from '@models/depot.model';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 
 @Component({
@@ -24,47 +25,12 @@ export class WarehouseComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private warehouseService: WarehouseService,
+    private lookupService: LookupService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadWarehouses();
-  }
-
-  private addSampleData(): void {
-    // Sample data matching the image
-    this.warehouses = [
-      {
-        id: '1',
-        name: 'Warehouse DOH-01',
-        code: 'DOH-01',
-        neqPercentage: 90,
-        consumedPercentage: 95,
-        totalCapacity: 10000,
-        currentStock: 9500
-      },
-      {
-        id: '2',
-        name: 'Warehouse DOH-02',
-        code: 'DOH-02',
-        neqPercentage: 45,
-        consumedPercentage: 80,
-        totalCapacity: 8000,
-        currentStock: 6400
-      },
-      {
-        id: '3',
-        name: 'Warehouse DOH-03',
-        code: 'DOH-03',
-        neqPercentage: 30,
-        consumedPercentage: 50,
-        totalCapacity: 6000,
-        currentStock: 3000
-      }
-    ];
-    this.loading = false;
-    this.error = null;
   }
 
   ngOnDestroy(): void {
@@ -76,19 +42,45 @@ export class WarehouseComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    this.warehouseService.getWarehouseSummary()
+    this.lookupService.getDepots()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (warehouses) => {
-          this.warehouses = warehouses;
+        next: (depots) => {
+          // Map Depot entities to WarehouseSummaryDto structure
+          // Keep static values for NEQ, Consumed, Total Capacity, Current Stock as requested
+          this.warehouses = depots
+            .filter(depot => !depot.isDeleted)
+            .map(depot => this.mapDepotToWarehouse(depot));
           this.loading = false;
         },
         error: (error) => {
-          console.warn('API not available, using sample data:', error.message);
-          // Fallback to sample data when API is not available
-          this.addSampleData();
+          console.error('Error loading depots:', error);
+          this.error = 'Failed to load warehouses. Please try again.';
+          this.loading = false;
         }
       });
+  }
+
+  /**
+   * Map DepotDto to WarehouseSummaryDto
+   * Static values are kept for NEQ, Consumed, Total Capacity, Current Stock as requested
+   */
+  private mapDepotToWarehouse(depot: DepotDto): WarehouseSummaryDto {
+    // Extract code from nameEn (e.g., "Warehouse DOH-01" -> "DOH-01")
+    // If nameEn doesn't contain a code, use a default format
+    const codeMatch = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
+    const code = codeMatch ? codeMatch[1] : `DEP-${depot.id.toString().padStart(2, '0')}`;
+
+    return {
+      id: depot.id.toString(),
+      name: depot.nameEn,
+      code: code,
+      // Static values as requested - these will be replaced with real data later
+      neqPercentage: 90,
+      consumedPercentage: 95,
+      totalCapacity: 10000,
+      currentStock: 9500
+    };
   }
 
   onViewWarehouse(warehouseId: string): void {

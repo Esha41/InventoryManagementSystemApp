@@ -33,9 +33,52 @@
           </span>
         </div>
 
-        <!-- Regular Menu Item -->
+        <!-- Menu Item with Children (Submenu) -->
+        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1">
+          <button
+            (click)="toggleSubmenu(item.label)"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] group"
+            [attr.title]="isCollapsed ? item.label : null"
+          >
+            <lucide-angular
+              [img]="item.icon"
+              class="h-5 w-5 flex-shrink-0"
+            ></lucide-angular>
+            <span
+              class="font-medium flex-1 text-left transition-opacity duration-300"
+              [class.opacity-0]="isCollapsed"
+              [class.opacity-100]="!isCollapsed"
+              [class.hidden]="isCollapsed"
+            >
+              {{ item.label | translate }}
+            </span>
+            <lucide-angular
+              *ngIf="!isCollapsed"
+              [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
+              class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+            ></lucide-angular>
+          </button>
+          <!-- Submenu Items -->
+          <ul
+            *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children"
+            class="ml-8 mt-1 space-y-1"
+          >
+            <li *ngFor="let child of item.children">
+              <a
+                [routerLink]="child.route"
+                routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
+                [routerLinkActiveOptions]="{ exact: child.route === '/warehouse' }"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm"
+              >
+                <span class="font-medium">{{ child.label | translate }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Regular Menu Item (No Children) -->
         <a
-          *ngIf="!item.isHeader"
+          *ngIf="!item.isHeader && !hasChildren(item)"
           [routerLink]="item.route"
           routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
           [routerLinkActiveOptions]="{ exact: false }"
