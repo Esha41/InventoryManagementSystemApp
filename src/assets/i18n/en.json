@@ -51,7 +51,8 @@
     "orderId": "Order ID",
     "requestDate": "Request Date",
     "viewAll": "View All",
-    "noOrders": "No orders"
+    "noOrders": "No orders",
+    "noAccess": "You don't have permission to view any dashboard sections"
   },
   "notifications": {
     "title": "Notifications",

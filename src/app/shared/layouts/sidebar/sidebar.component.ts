@@ -37,8 +37,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.dashboard',
       icon: LayoutDashboard,
-      route: '/dashboard',
-      permissions: ['dashboard.view']
+      route: '/dashboard'
+      // Dashboard menu item is always visible - no permission check needed (no permissions property)
     },
     {
       label: 'nav.warehouse',
@@ -140,31 +140,44 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Filter menu items based on user permissions
+   * Sidebar is always visible, but menu items are filtered by permissions
    */
   private filterMenuItems(): void {
     const user = this.authService.getCurrentUser();
+    const isAuthenticated = this.authService.isAuthenticated();
     const hasPermissionsLoaded = user && user.permissions && user.permissions.length > 0;
     
+    // Filter menu items - sidebar always shows, but items are filtered by permissions
     this.menuItems = this.allMenuItems.filter(item => {
+      // Items without permissions (like Dashboard) are always visible
       if (!item.permissions || item.permissions.length === 0) {
         return true;
       }
 
-      if (!hasPermissionsLoaded) {
-        return true;
+      // If not authenticated, don't show items with permissions
+      if (!isAuthenticated) {
+        return false;
       }
 
+      // If permissions haven't loaded yet, don't show items that require permissions
+      // This prevents briefly showing all items before permissions are checked
+      if (!hasPermissionsLoaded) {
+        return false;
+      }
+
+      // Check if user has required permissions
       return item.requireAll
         ? this.authService.hasAllPermissions(item.permissions)
         : this.authService.hasAnyPermission(item.permissions);
     });
 
-    // Remove headers that have no children
+    // Remove headers that have no children after them
     this.menuItems = this.menuItems.filter((item, index) => {
       if (!item.isHeader) return true;
       
-      const nextItem = this.menuItems[index + 1];
-      return nextItem && !nextItem.isHeader;
+      // Check if there are any non-header items after this header
+      const hasChildren = this.menuItems.slice(index + 1).some(nextItem => !nextItem.isHeader);
+      return hasChildren;
     });
   }
 
