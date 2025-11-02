@@ -60,33 +60,34 @@
           class="absolute z-50 w-full mt-2 bg-white border-2 border-[var(--color-border)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           <div class="p-2">
-            <div
-              *ngFor="let role of roles"
-              (click)="toggleRoleSelection(role.id)"
-              class="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--color-background-muted)] rounded-lg cursor-pointer transition-colors"
-            >
-              <div class="relative flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  [checked]="isRoleSelected(role.id)"
-                  [id]="'role-' + role.id"
-                  class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
-                  (click)="$event.stopPropagation()"
-                  (change)="toggleRoleSelection(role.id)"
-                />
-              </div>
-              <label [for]="'role-' + role.id" class="flex-1 cursor-pointer select-none">
-                <div class="font-medium text-[var(--color-text)]">{{ role.name }}</div>
-                <div *ngIf="role.isSuperAdmin" class="text-xs text-[var(--color-accent)] mt-0.5">Super Admin Role</div>
-                <div *ngIf="role.isDefaultRole && !role.isSuperAdmin" class="text-xs text-[var(--color-text-muted)] mt-0.5">Default Role</div>
-              </label>
-            </div>
-            
-            <!-- Empty State -->
-            <div *ngIf="roles.length === 0" class="px-3 py-4 text-center text-sm text-[var(--color-text-muted)]">
-              No roles available
-            </div>
-          </div>
+  <div
+    *ngFor="let role of roles"
+    class="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--color-background-muted)] rounded-lg cursor-pointer transition-colors"
+  >
+    <div class="relative flex items-center justify-center">
+      <input
+        type="checkbox"
+        [checked]="isRoleSelected(role.id)"
+        [id]="'role-' + role.id"
+        class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
+        (click)="$event.stopPropagation()"
+        (change)="toggleRoleSelection(role.id)"
+        [disabled]="!role.id" 
+      />
+    </div>
+    <label [for]="'role-' + role.id" class="flex-1 cursor-pointer select-none">
+      <div class="font-medium text-[var(--color-text)]">{{ role.name || 'Unnamed Role' }}</div>
+      <div *ngIf="role.isSuperAdmin" class="text-xs text-[var(--color-accent)] mt-0.5">Super Admin Role</div>
+      <div *ngIf="role.isDefaultRole && !role.isSuperAdmin" class="text-xs text-[var(--color-text-muted)] mt-0.5">Default Role</div>
+    </label>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="roles.length === 0" class="px-3 py-4 text-center text-sm text-[var(--color-text-muted)]">
+    No roles available
+  </div>
+</div>
+
         </div>
       </div>
       <p class="mt-2 text-sm text-[var(--color-text-muted)]">
