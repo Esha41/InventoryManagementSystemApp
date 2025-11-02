@@ -129,7 +129,7 @@ export class BackendUserService {
    */
   updateUser(id: string, user: UpdateUserDto): Observable<BackendUserDto> {
     this.configService.log('Updating user', { id });
-
+console.log("userdetails:",user)
     return this.apiService.putWithAuth<ApiResponse<BackendUserDto>>(
       API_ENDPOINTS.USERS.BY_ID(id),
       { ...user, id }
@@ -217,6 +217,7 @@ export class BackendUserService {
    * Update user roles
    */
   updateUserRoles(userId: string, roleIds: string[]): Observable<boolean> {
+    console.log("updateUserRoles",roleIds)
     this.configService.log('Updating user roles', { userId, roleIds });
 
     const dto: UpdateUserRolesDto = { userId, roleIds };

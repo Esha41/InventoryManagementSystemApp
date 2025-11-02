@@ -14,6 +14,7 @@ export interface BackendUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
+  roleIds: string[];
 }
 
 /**
@@ -26,7 +27,7 @@ export interface CreateUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
-  roleIds?: string[]; // Optional: Array of role IDs to assign to the user
+   roleIds: string[];
 }
 
 /**
@@ -40,6 +41,7 @@ export interface UpdateUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
+  roleIds: string[];
 }
 
 /**

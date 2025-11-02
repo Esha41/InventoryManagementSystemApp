@@ -152,80 +152,79 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
-    if (this.userForm.invalid) {
-      this.markFormGroupTouched();
-      return;
-    }
-
-    if (this.selectedRoleIds.length === 0) {
-      this.errorMessage = 'Please select at least one role';
-      return;
-    }
-
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    if (this.mode === 'create') {
-      const dto: CreateUserDto = {
-        ...this.userForm.value,
-        organizationId: 1, // Default organization ID
-        roleIds: this.selectedRoleIds // Include role IDs in the create request
-      };
-
-      this.backendUserService.createUser(dto).subscribe({
-        next: (user: BackendUserDto) => {
-          // Roles are now assigned during user creation via roleIds in the POST request
-          this.isLoading = false;
-          this.saved.emit();
-          this.close();
-        },
-        error: (error: any) => {
-          this.isLoading = false;
-          this.errorMessage = error.message || 'Failed to create user';
-        }
-      });
-    } else if (this.user) {
-      const dto: UpdateUserDto = {
-        id: this.user.id,
-        ...this.userForm.value,
-        organizationId: this.user.organizationId
-      };
-
-      this.backendUserService.updateUser(this.user.id, dto).subscribe({
-        next: (user: BackendUserDto) => {
-          // After updating user, update roles
-          this.backendUserService.updateUserRoles(user.id, this.selectedRoleIds).subscribe({
-            next: () => {
-              this.isLoading = false;
-              this.saved.emit();
-              this.close();
-            },
-            error: (error: any) => {
-              this.isLoading = false;
-              this.errorMessage = error.message || 'User updated but failed to update roles';
-            }
-          });
-        },
-        error: (error: any) => {
-          this.isLoading = false;
-          this.errorMessage = error.message || 'Failed to update user';
-        }
-      });
-    }
+  if (this.userForm.invalid) {
+    this.markFormGroupTouched();
+    return;
   }
+
+  if (this.selectedRoleIds.length === 0) {
+    this.errorMessage = 'Please select at least one role';
+    return;
+  }
+
+  this.isLoading = true;
+  this.errorMessage = '';
+
+  if (this.mode === 'create') {
+    const dto: CreateUserDto = {
+      ...this.userForm.value,
+      organizationId: 1,
+      roleIds: this.selectedRoleIds // include roles here
+    };
+
+    this.backendUserService.createUser(dto).subscribe({
+      next: (user: BackendUserDto) => {
+        this.isLoading = false;
+        this.saved.emit();
+        this.close();
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        this.errorMessage = error.message || 'Failed to create user';
+      }
+    });
+  } else if (this.user) {
+    const dto: UpdateUserDto = {
+      id: this.user.id,
+      ...this.userForm.value,
+      organizationId: this.user.organizationId,
+      roleIds: this.selectedRoleIds // include roles here
+    };
+
+    this.backendUserService.updateUser(this.user.id, dto).subscribe({
+      next: (user: BackendUserDto) => {
+        this.isLoading = false;
+        this.saved.emit();
+        this.close();
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        this.errorMessage = error.message || 'Failed to update user';
+      }
+    });
+  }
+}
 
   toggleRolesDropdown(): void {
     this.showRolesDropdown = !this.showRolesDropdown;
   }
 
-  toggleRoleSelection(roleId: string): void {
-    const index = this.selectedRoleIds.indexOf(roleId);
-    if (index > -1) {
-      this.selectedRoleIds.splice(index, 1);
-    } else {
-      this.selectedRoleIds.push(roleId);
-    }
+toggleRoleSelection(roleId: string | undefined): void {
+  // Remove undefined values first
+  this.selectedRoleIds = this.selectedRoleIds.filter(id => !!id);
+
+  if (!roleId) return; // skip invalid ids
+
+  const index = this.selectedRoleIds.indexOf(roleId);
+  if (index > -1) {
+    this.selectedRoleIds.splice(index, 1);
+  } else {
+    this.selectedRoleIds.push(roleId);
   }
+
+  console.log("selectedRoleIds here", this.selectedRoleIds);
+}
+
 
   isRoleSelected(roleId: string): boolean {
     return this.selectedRoleIds.includes(roleId);
