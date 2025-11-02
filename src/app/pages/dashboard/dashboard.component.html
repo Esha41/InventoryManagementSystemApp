@@ -5,28 +5,24 @@
     <p class="text-[var(--color-text-muted)] mt-1">{{ 'dashboard.subtitle' | translate }}</p>
   </div>
 
-  <!-- Status Cards Grid - Dashboard always displays all cards -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- New Issue Card -->
+  <!-- Status Cards Grid - Show cards based on user permissions and roles -->
+  <div *ngIf="visibleCards.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <app-status-card
-      [title]="'dashboard.newIssue' | translate"
-      status="new-issue"
-      [orders]="newIssueOrders"
+      *ngFor="let card of visibleCards"
+      [title]="card.title | translate"
+      [status]="card.status"
+      [orders]="card.orders"
     ></app-status-card>
+  </div>
 
-    <!-- On Progress Card -->
-    <app-status-card
-      [title]="'dashboard.onProgress' | translate"
-      status="on-progress"
-      [orders]="onProgressOrders"
-    ></app-status-card>
-
-    <!-- Completed Card -->
-    <app-status-card
-      [title]="'dashboard.completed' | translate"
-      status="completed"
-      [orders]="completedOrders"
-    ></app-status-card>
+  <!-- No Cards Message -->
+  <div *ngIf="visibleCards.length === 0" class="text-center py-12">
+    <p class="text-[var(--color-text-muted)] text-lg">
+      {{ 'dashboard.noCards' | translate }}
+    </p>
+    <p class="text-[var(--color-text-muted)] text-sm mt-2">
+      {{ 'dashboard.noCardsDescription' | translate }}
+    </p>
   </div>
 </div>
 
