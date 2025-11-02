@@ -11,6 +11,7 @@ import { StatusCardComponent, OrderItem } from './components/status-card/status-
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
+  // Dashboard always displays all cards regardless of permissions
   newIssueOrders: OrderItem[] = [
     { orderId: '#0172', requestDate: '25 JULY 2024' },
     { orderId: '#0166', requestDate: '18 APRIL 2024' }

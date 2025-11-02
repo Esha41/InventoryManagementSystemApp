@@ -168,23 +168,16 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     if (this.mode === 'create') {
       const dto: CreateUserDto = {
         ...this.userForm.value,
-        organizationId: 1 // Default organization ID
+        organizationId: 1, // Default organization ID
+        roleIds: this.selectedRoleIds // Include role IDs in the create request
       };
 
       this.backendUserService.createUser(dto).subscribe({
         next: (user: BackendUserDto) => {
-          // After creating user, assign roles
-          this.backendUserService.updateUserRoles(user.id, this.selectedRoleIds).subscribe({
-            next: () => {
-              this.isLoading = false;
-              this.saved.emit();
-              this.close();
-            },
-            error: (error: any) => {
-              this.isLoading = false;
-              this.errorMessage = error.message || 'User created but failed to assign roles';
-            }
-          });
+          // Roles are now assigned during user creation via roleIds in the POST request
+          this.isLoading = false;
+          this.saved.emit();
+          this.close();
         },
         error: (error: any) => {
           this.isLoading = false;

@@ -51,7 +51,8 @@
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",
     "viewAll": "عرض الكل",
-    "noOrders": "لا توجد طلبات"
+    "noOrders": "لا توجد طلبات",
+    "noAccess": "ليس لديك إذن لعرض أي أقسام في لوحة التحكم"
   },
   "notifications": {
     "title": "الإشعارات",

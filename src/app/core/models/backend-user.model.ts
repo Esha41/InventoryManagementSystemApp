@@ -26,6 +26,7 @@ export interface CreateUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
+  roleIds?: string[]; // Optional: Array of role IDs to assign to the user
 }
 
 /**
