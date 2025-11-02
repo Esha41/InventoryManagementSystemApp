@@ -100,9 +100,16 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     });
   }
 
-  getUserRoles(userId: string): string[] {
-    return this.userRolesMap.get(userId) || [];
-  }
+ // Returns an array of role names for a given user ID
+getUserRoles(userId: string): string[] {
+  const user = this.filteredUsers.find(u => u.id === userId);
+  if (!user || !user.roleIds) return [];
+
+  // Map roleIds to role names
+  return user.roleIds
+    .map(roleId => this.roles.find(r => r.id === roleId)?.name)
+    .filter(Boolean) as string[]; // remove undefined
+}
 
   loadRoles(): void {
     this.backendUserService.getRoles().subscribe({
@@ -203,4 +210,5 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   getRoleTypeColor(): string {
     return 'bg-[var(--color-accent)]';
   }
+  
 }
