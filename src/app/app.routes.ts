@@ -34,31 +34,31 @@ export const routes: Routes = [
         path: 'warehouse',
         loadComponent: () => import('@pages/warehouse/warehouse.component').then(m => m.WarehouseComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['warehouse.view'] }
+        data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
         path: 'warehouse/ammunition-display',
         loadComponent: () => import('@pages/warehouse/ammunition-display/ammunition-display.component').then(m => m.AmmunitionDisplayComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['warehouse.view'] }
+        data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
         path: 'warehouse/:id/inventory',
         loadComponent: () => import('@pages/warehouse-inventory/warehouse-inventory.component').then(m => m.WarehouseInventoryComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['warehouse.view'] }
+        data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
         path: 'warehouse/:warehouseId/inventory/:itemId',
         loadComponent: () => import('@pages/warehouse-inventory/inventory-item-detail/inventory-item-detail.component').then(m => m.InventoryItemDetailComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['warehouse.view'] }
+        data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
         path: 'warehouse/:warehouseId/inventory/:itemId/map',
         loadComponent: () => import('@pages/warehouse-inventory/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['warehouse.view'] }
+        data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
         path: 'new-issue-request',

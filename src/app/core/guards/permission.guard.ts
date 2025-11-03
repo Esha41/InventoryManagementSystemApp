@@ -34,6 +34,22 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, st
     ? backendAuth.hasAllPermissions(permissions)
     : backendAuth.hasAnyPermission(permissions);
 
+  // Debug logging for permission checks
+  const user = backendAuth.getCurrentUser();
+  if (!hasPermission) {
+    console.warn('Permission Guard: Access Denied', {
+      route: state.url,
+      requiredPermissions: permissions,
+      requireAll: requireAll || false,
+      userPermissions: user?.permissions?.map(p => `${p.id || ''}|${p.claimType || ''}`).filter(Boolean) || [],
+      permissionChecks: permissions.map(perm => ({
+        permission: perm,
+        hasPermission: backendAuth.hasPermission(perm)
+      })),
+      userName: user?.userName
+    });
+  }
+
   if (hasPermission) {
     return true;
   }
