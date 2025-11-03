@@ -134,18 +134,34 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     console.log('Using fallback roles:', this.roles);
   }
 
-  private loadUserRoles(): void {
-    if (!this.user) return;
-    
-    this.backendUserService.getUserRoles(this.user.id).subscribe({
-      next: (roles: RoleDto[]) => {
-        this.selectedRoleIds = roles.map(r => r.id);
-      },
-      error: (error: any) => {
-        this.errorMessage = 'Failed to load user roles';
-      }
-    });
-  }
+private loadUserRoles(): void {
+  if (!this.user?.id) return;
+
+  this.backendUserService.getUserRoles(this.user.id).subscribe({
+    next: (roles: any[]) => {
+      // Map to RoleDto, including required fields
+      this.roles = roles.map(r => ({
+        id: r.roleId,
+        name: r.roleName,
+        isDefaultRole: r.isDefaultRole || false,  // set default if missing
+        isSuperAdmin: r.isSuperAdmin || false     // set default if missing
+      }));
+
+      // Pre-select roles that user already has
+      this.selectedRoleIds = roles
+        .filter(r => r.isSelected)
+        .map(r => r.roleId);
+
+      console.log('Selected roles for user:', this.selectedRoleIds);
+    },
+    error: (error: any) => {
+      this.errorMessage = 'Failed to load user roles';
+      console.error(error);
+    }
+  });
+}
+
+
 
   get title(): string {
     return this.mode === 'create' ? 'Add New User' : `Edit User: ${this.user?.userName}`;
