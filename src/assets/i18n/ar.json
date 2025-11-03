@@ -197,6 +197,23 @@
     "quantityHint": "أدخل عدد العناصر التي تريد إرجاعها",
     "uploadFile": "تحميل ملف"
   },
+  "discardRequest": {
+    "title": "طلب إتلاف",
+    "dateCreated": "تاريخ الإنشاء",
+    "discardOrderId": "معرف طلب الإتلاف",
+    "quantity": "الكمية",
+    "comments": "تعليقات",
+    "attachment": "المرفق",
+    "sendRequest": "إرسال الطلب",
+    "orderIdHint": "أدخل رقم الإصدار للحزمة التي تريد إتلافها",
+    "quantityHint": "أدخل عدد العناصر التي تريد إتلافها",
+    "orderIdPlaceholder": "أدخل رقم الطلب (مثال: 1072)",
+    "quantityPlaceholder": "أدخل الكمية (مثال: 20,000)",
+    "commentsPlaceholder": "أدخل سبب الإتلاف (اختياري)",
+    "uploadFile": "تحميل ملف",
+    "removeAttachment": "إزالة المرفق",
+    "noFileSelected": "لم يتم اختيار ملف"
+  },
   "footer": {
     "copyright": "حقوق النشر © بارزان القابضة 2024"
   },

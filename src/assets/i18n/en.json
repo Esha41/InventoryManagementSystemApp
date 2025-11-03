@@ -190,6 +190,23 @@
     "quantityHint": "Enter the quantity number of the items you want to return",
     "uploadFile": "Upload File"
   },
+  "discardRequest": {
+    "title": "Discard Request",
+    "dateCreated": "Date Created",
+    "discardOrderId": "Discard Order ID",
+    "quantity": "Quantity",
+    "comments": "Comments",
+    "attachment": "Attachment",
+    "sendRequest": "Send Request",
+    "orderIdHint": "Enter the issue number of the package you want to discard",
+    "quantityHint": "Enter the quantity number of the items you want to discard",
+    "orderIdPlaceholder": "Enter order ID (e.g., 1072)",
+    "quantityPlaceholder": "Enter quantity (e.g., 20,000)",
+    "commentsPlaceholder": "Enter reason for discard (optional)",
+    "uploadFile": "Upload File",
+    "removeAttachment": "Remove attachment",
+    "noFileSelected": "No file selected"
+  },
   "footer": {
     "copyright": "Copyright © Barzan Holdings 2024"
   },

@@ -80,6 +80,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['request.create']
     },
     {
+      label: 'nav.discardRequest',
+      icon: File,
+      route: '/discard-request',
+      permissions: ['request.create']
+    },
+    {
       label: 'nav.requestsManagement',
       icon: FileText,
       route: '/requests-management',

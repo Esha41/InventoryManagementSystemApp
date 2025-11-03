@@ -73,6 +73,12 @@ export const routes: Routes = [
         data: { permissions: ['request.create'] }
       },
       {
+        path: 'discard-request',
+        loadComponent: () => import('@pages/new-issue-request/components/discard-request/discard-request.component').then(m => m.DiscardRequestComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['request.create'] }
+      },
+      {
         path: 'requests-management',
         loadComponent: () => import('@pages/requests-management/requests-management.component').then(m => m.RequestsManagementComponent),
         canActivate: [permissionGuard],
