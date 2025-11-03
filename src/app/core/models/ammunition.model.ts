@@ -7,6 +7,8 @@ export interface LookupDto {
 }
 
 export interface AmmunitionReadDto {
+  name: string;
+  partNo: string;
   id: number;
   itemNo: string;
   lot: number;
@@ -54,6 +56,8 @@ export interface AmmunitionReadDto {
 }
 
 export interface AmmunitionCreateDto {
+  name: string;
+  partNo: string;
   itemNo: string;
   lot: number;
   batchNo: string;
@@ -81,6 +85,8 @@ export interface AmmunitionCreateDto {
 }
 
 export interface AmmunitionUpdateDto {
+  name: string;
+  partNo: string;
   id: number;
   itemNo: string;
   lot: number;

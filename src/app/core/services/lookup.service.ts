@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, shareReplay } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { DepotDto } from '@models/depot.model';
@@ -83,11 +83,26 @@ export class LookupService {
           console.warn(`Failed to load ${cacheKey}:`, response.message);
           return [];
         }),
+        catchError(err => {
+          // Gracefully handle 401/403 by returning empty list
+          if (err?.status === 401 || err?.status === 403) {
+            return of([] as T[]);
+          }
+          return of([] as T[]);
+        }),
         shareReplay(1) // Cache the result
       );
       this.cache.set(cacheKey, request$);
     }
     return this.cache.get(cacheKey)!;
+  }
+
+  /**
+   * Generic method compatible with callers expecting getAll('Type')
+   */
+  getAll<T = any>(lookupType: string): Observable<T[]> {
+    const key = lookupType.toLowerCase();
+    return this.getLookup<T>(`/Lookup/${lookupType}`, key);
   }
 
   /**

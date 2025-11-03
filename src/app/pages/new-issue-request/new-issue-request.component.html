@@ -38,12 +38,12 @@
       [quantity]="quantity"
       (cartridgeClick)="onCartridgeClick($event)"
       (filterChange)="filterCartridges()"
-      (confirmSelection)="onConfirmSelection()"
+      (clearFilters)="onClearFilters()"
       (next)="onNext()"
-      (bulletDiameterChange)="selectedBulletDiameter = $event"
-      (caseLengthChange)="selectedCaseLength = $event"
-      (linkedChange)="selectedLinked = $event"
-      (natureChange)="selectedNature = $event"
+      (bulletDiameterChange)="onBulletDiameterChange($event)"
+      (caseLengthChange)="onCaseLengthChange($event)"
+      (linkedChange)="onLinkedChange($event)"
+      (natureChange)="onNatureChange($event)"
       (priorityChange)="selectedPriority = $event"
       (quantityChange)="quantity = $event">
     </app-cartridge-list>

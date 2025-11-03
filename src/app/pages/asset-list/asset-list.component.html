@@ -1,116 +1,612 @@
-<div class="space-y-6">
+<div class="min-h-screen p-6 space-y-6">
+  <!-- Toast Notification -->
+  <div
+    *ngIf="toastMessage"
+    class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 ease-in-out"
+    [class.opacity-0]="!showToast"
+    [class.translate-y-2]="!showToast"
+    [class.opacity-100]="showToast"
+    [class.translate-y-0]="showToast"
+  >
+    <div class="flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg bg-white border min-w-[320px]"
+         [class.border-green-500]="toastType === 'success'"
+         [class.border-red-500]="toastType === 'error'">
+      <div class="h-6 w-6 rounded-full flex items-center justify-center text-white text-sm font-semibold"
+           [class.bg-green-500]="toastType === 'success'"
+           [class.bg-red-500]="toastType === 'error'">
+        {{ toastType === 'success' ? '✓' : '✕' }}
+      </div>
+      <div class="flex-1">
+        <div class="text-[var(--color-text)] font-semibold">{{ toastType === 'success' ? 'Success' : 'Error' }}</div>
+        <div class="text-[var(--color-text-muted)] text-sm mt-0.5">{{ toastMessage }}</div>
+      </div>
+      <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors" (click)="showToast=false">
+        <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-[var(--color-text)]">Asset List</h1>
-      <p class="text-[var(--color-text-muted)] mt-1">Manage and track all assets in the system</p>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">Ammunition Inventory</h1>
+      <p class="text-[var(--color-text-muted)] mt-2">Manage and track all ammunition items in the system</p>
     </div>
-    <app-button variant="primary">
+    <app-button variant="primary" (click)="navigateToAddAsset()">
       <lucide-angular [img]="Plus" class="h-4 w-4 mr-2"></lucide-angular>
-      Add Asset
+      Add Ammunition
     </app-button>
   </div>
 
-  <!-- Filters -->
+  <!-- Filters Card -->
   <app-card [shadow]="true">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- Search -->
-      <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <!-- Search -->
+        <div class="relative lg:col-span-2">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by name, item no, part no..."
+            class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
+          />
         </div>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          placeholder="Search assets..."
-          class="w-full pl-10 pr-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none"
-        />
+
+        <!-- HCC Filter -->
+        <select
+          [(ngModel)]="selectedHcc"
+          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
+        >
+          <option value="">All HCC</option>
+          <option *ngFor="let item of hccList" [value]="item.nameEn || item.nameAr">
+            {{ item.nameEn || item.nameAr }}
+          </option>
+        </select>
+
+        <!-- Case Type Filter -->
+        <select
+          [(ngModel)]="selectedCaseType"
+          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
+        >
+          <option value="">All Case Types</option>
+          <option *ngFor="let item of caseTypeList" [value]="item.nameEn || item.nameAr">
+            {{ item.nameEn || item.nameAr }}
+          </option>
+        </select>
+
+        <!-- Hazard Division Filter -->
+        <select
+          [(ngModel)]="selectedHazardDivision"
+          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
+        >
+          <option value="">All Hazard Divisions</option>
+          <option *ngFor="let item of hazardDivisionList" [value]="item.nameEn || item.nameAr">
+            {{ item.nameEn || item.nameAr }}
+          </option>
+        </select>
+
+        <!-- Compatibility Filter -->
+        <select
+          [(ngModel)]="selectedCompatibility"
+          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
+        >
+          <option value="">All Compatibility</option>
+          <option *ngFor="let item of compatibilityList" [value]="item.nameEn || item.nameAr">
+            {{ item.nameEn || item.nameAr }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Assets Table Card -->
+  <app-card [shadow]="true">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text)]">
+          Ammunition Items ({{ filteredAssets.length }})
+        </h2>
       </div>
 
-      <!-- Category Filter -->
-      <select
-        [(ngModel)]="selectedCategory"
-        class="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none"
-      >
-        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-      </select>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-12">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--color-brand)] border-r-transparent"></div>
+        <p class="mt-4 text-[var(--color-text-muted)]">Loading ammunition data...</p>
+      </div>
 
-      <!-- Status Filter -->
-      <select
-        [(ngModel)]="selectedStatus"
-        class="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent outline-none"
-      >
-        <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
-      </select>
-
-      <!-- Filter Button -->
-      <app-button variant="outline">
-        <lucide-angular [img]="Filter" class="h-4 w-4 mr-2"></lucide-angular>
-        Filter
-      </app-button>
+      <!-- Table -->
+      <div *ngIf="!loading" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+        <table class="w-full">
+          <thead class="bg-[var(--color-background)]">
+            <tr class="border-b border-[var(--color-border)]">
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Name</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Item No</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Part No</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Batch No</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">HCC</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">NSN</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Case Type</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Hazard Division</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Expiry Date</th>
+              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Status</th>
+              <th class="text-right py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white">
+            <tr *ngFor="let asset of filteredAssets" 
+                class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
+              <td class="py-4 px-6">
+                <div class="font-medium text-[var(--color-text)]">{{ asset.name }}</div>
+              </td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.batchNo }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hcc }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
+              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.expiryDate }}</td>
+              <td class="py-4 px-6">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
+                      [ngClass]="getReadyForIssueColor(asset.readyForIssue)">
+                  {{ getReadyForIssueText(asset.readyForIssue) }}
+                </span>
+              </td>
+              <td class="py-4 px-6">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    (click)="onView(asset.id)"
+                    class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
+                    title="View Details"
+                  >
+                    <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
+                  </button>
+                  <button
+                    (click)="onEdit(asset.id)"
+                    class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
+                    title="Edit"
+                  >
+                    <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
+                  </button>
+                  <button
+                    (click)="onDelete(asset.id)"
+                    class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
+                    title="Delete"
+                  >
+                    <lucide-angular [img]="Trash2" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredAssets.length === 0 && !loading">
+              <td colspan="11" class="text-center py-12">
+                <div class="flex flex-col items-center justify-center">
+                  <div class="text-[var(--color-text-muted)] text-lg mb-2">No ammunition items found</div>
+                  <p class="text-[var(--color-text-muted)] text-sm">Try adjusting your filters or add a new item</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </app-card>
 
-  <!-- Assets Table -->
-  <app-card title="Assets ({{ filteredAssets.length }})" [shadow]="true">
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-[var(--color-border)]">
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Asset</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Category</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Serial Number</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Location</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Status</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Assigned To</th>
-            <th class="text-left py-3 px-4 font-semibold text-[var(--color-text)]">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let asset of filteredAssets" class="border-b border-[var(--color-border-muted)] hover:bg-[var(--color-background-hover)]">
-            <td class="py-3 px-4">
+  <!-- View Modal -->
+  <div *ngIf="showViewModal" class="fixed inset-0 z-40 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="closeViewModal()"></div>
+
+      <!-- Modal panel -->
+      <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <!-- Header -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">Ammunition Details</h3>
+            <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-white transition-colors">
+              <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-6" *ngIf="selectedAsset">
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Name</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.name }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Item No</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.itemNo }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Part No</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Batch No</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.batchNo || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">HCC</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.hcc?.nameEn || selectedAsset.hcc?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">NSN</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn?.nameEn || selectedAsset.nsn?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Bullet Diameter</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter }} {{ selectedAsset.bulletDiameterUnit?.nameEn }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Case Length</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseLength }} {{ selectedAsset.caseLengthUnit?.nameEn }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Case Type</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseType?.nameEn || selectedAsset.caseType?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Propellant</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.propellant?.nameEn || selectedAsset.propellant?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Compatibility</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.compatibility?.nameEn || selectedAsset.compatibility?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Hazard Division</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.hazardDivision?.nameEn || selectedAsset.hazardDivision?.nameAr || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Primer</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.primer || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Total Weight</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight }} g</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Is Linked</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.isLinked ? 'Yes' : 'No' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Ready For Issue</label>
+              <p class="mt-1">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
+                      [ngClass]="getReadyForIssueColor(selectedAsset.readyForIssue)">
+                  {{ getReadyForIssueText(selectedAsset.readyForIssue) }}
+                </span>
+              </p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Expiry Date</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.expiryDate ? (selectedAsset.expiryDate | date: 'mediumDate') : '-' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
+          <app-button variant="outline" (click)="closeViewModal()">Close</app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div *ngIf="showEditModal" class="fixed inset-0 z-40 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="cancelEdit()"></div>
+
+      <!-- Modal panel -->
+      <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <!-- Header -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">Edit Ammunition</h3>
+            <button (click)="cancelEdit()" class="p-1 rounded-lg hover:bg-white transition-colors">
+              <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+          <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
+            <div class="grid grid-cols-2 gap-6">
+              <!-- Name -->
               <div>
-                <div class="font-semibold text-[var(--color-text)]">{{ asset.name }}</div>
-                <div class="text-sm text-[var(--color-text-muted)]">{{ asset.id }}</div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Name *</label>
+                <input
+                  type="text"
+                  formControlName="name"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="Enter name"
+                />
+                <span *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" 
+                      class="text-xs text-red-600 mt-1">Name is required</span>
               </div>
-            </td>
-            <td class="py-3 px-4 text-[var(--color-text)]">{{ asset.category }}</td>
-            <td class="py-3 px-4 text-[var(--color-text)]">{{ asset.serialNumber }}</td>
-            <td class="py-3 px-4 text-[var(--color-text)]">{{ asset.location }}</td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-1 rounded-full text-xs font-medium {{ getStatusColor(asset.status) }} text-white">
-                {{ asset.status }}
-              </span>
-            </td>
-            <td class="py-3 px-4 text-[var(--color-text)]">{{ asset.assignedTo || 'Unassigned' }}</td>
-            <td class="py-3 px-4">
-              <div class="flex gap-2">
-                <button
-                  (click)="onView(asset.id)"
-                  class="p-1 rounded hover:bg-[var(--color-background-hover)] transition-colors"
-                  title="View"
-                >
-                  <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                </button>
-                <button
-                  (click)="onEdit(asset.id)"
-                  class="p-1 rounded hover:bg-[var(--color-background-hover)] transition-colors"
-                  title="Edit"
-                >
-                  <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                </button>
-                <button
-                  (click)="onDelete(asset.id)"
-                  class="p-1 rounded hover:bg-[var(--color-background-hover)] transition-colors"
-                  title="Delete"
-                >
-                  <lucide-angular [img]="Trash2" class="h-4 w-4 text-[var(--color-error)]"></lucide-angular>
-                </button>
+
+              <!-- Item No -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Item No *</label>
+                <input
+                  type="text"
+                  formControlName="itemNo"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="Enter item number"
+                />
+                <span *ngIf="editForm.get('itemNo')?.invalid && editForm.get('itemNo')?.touched" 
+                      class="text-xs text-red-600 mt-1">Item No is required</span>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+              <!-- Part No -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Part No *</label>
+                <input
+                  type="text"
+                  formControlName="partNo"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="Enter part number"
+                />
+                <span *ngIf="editForm.get('partNo')?.invalid && editForm.get('partNo')?.touched" 
+                      class="text-xs text-red-600 mt-1">Part No is required</span>
+              </div>
+
+              <!-- Batch No -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Batch No</label>
+                <input
+                  type="text"
+                  formControlName="batchNo"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="Enter batch number"
+                />
+              </div>
+
+              <!-- HCC -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">HCC *</label>
+                <select
+                  formControlName="hccId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select HCC</option>
+                  <option *ngFor="let hcc of hccList" [ngValue]="hcc.id">{{ hcc.nameEn }}</option>
+                </select>
+                <span *ngIf="editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched" 
+                      class="text-xs text-red-600 mt-1">HCC is required</span>
+              </div>
+
+              <!-- NSN -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">NSN *</label>
+                <select
+                  formControlName="nsnId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select NSN</option>
+                  <option *ngFor="let nsn of nsns" [ngValue]="nsn.id">{{ nsn.nameEn }}</option>
+                </select>
+                <span *ngIf="editForm.get('nsnId')?.invalid && editForm.get('nsnId')?.touched" 
+                      class="text-xs text-red-600 mt-1">NSN is required</span>
+              </div>
+
+              <!-- Bullet Diameter -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter</label>
+                <input
+                  type="number"
+                  formControlName="bulletDiameter"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="e.g., 5.56"
+                  step="0.01"
+                />
+              </div>
+
+              <!-- Bullet Diameter Unit -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit *</label>
+                <select
+                  formControlName="bulletDiameterUnitId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select unit</option>
+                  <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Case Length -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length</label>
+                <input
+                  type="number"
+                  formControlName="caseLength"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="e.g., 45"
+                  step="0.01"
+                />
+              </div>
+
+              <!-- Case Length Unit -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length Unit *</label>
+                <select
+                  formControlName="caseLengthUnitId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select unit</option>
+                  <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Case Type -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type *</label>
+                <select
+                  formControlName="caseTypeId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select case type</option>
+                  <option *ngFor="let type of caseTypeList" [ngValue]="type.id">{{ type.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Propellant -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant *</label>
+                <select
+                  formControlName="propellantId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select propellant</option>
+                  <option *ngFor="let prop of propellantList" [ngValue]="prop.id">{{ prop.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Compatibility -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Compatibility *</label>
+                <select
+                  formControlName="compatibilityId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select compatibility</option>
+                  <option *ngFor="let comp of compatibilityList" [ngValue]="comp.id">{{ comp.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Hazard Division -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division *</label>
+                <select
+                  formControlName="hazardDivisionId"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="null">Select hazard division</option>
+                  <option *ngFor="let hazard of hazardDivisionList" [ngValue]="hazard.id">{{ hazard.nameEn }}</option>
+                </select>
+              </div>
+
+              <!-- Primer -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primer</label>
+                <input
+                  type="text"
+                  formControlName="primer"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="e.g., Boxer"
+                />
+              </div>
+
+              <!-- Total Weight -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g)</label>
+                <input
+                  type="number"
+                  formControlName="totalWeight"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  placeholder="Enter weight"
+                  step="0.01"
+                />
+              </div>
+
+              <!-- Is Linked -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Is Linked</label>
+                <select
+                  formControlName="isLinked"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="false">Not Linked</option>
+                  <option [ngValue]="true">Linked</option>
+                </select>
+              </div>
+
+              <!-- Ready For Issue -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Ready For Issue</label>
+                <select
+                  formControlName="readyForIssue"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
+                >
+                  <option [ngValue]="true">Yes</option>
+                  <option [ngValue]="false">No</option>
+                </select>
+              </div>
+
+              <!-- Expiry Date -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Expiry Date</label>
+                <input
+                  type="date"
+                  formControlName="expiryDate"
+                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+            <app-button variant="outline" type="button" (click)="cancelEdit()">Cancel</app-button>
+            <app-button variant="primary" type="submit" [disabled]="editForm.invalid || loading">
+              {{ loading ? 'Saving...' : 'Save Changes' }}
+            </app-button>
+          </div>
+        </form>
+      </div>
     </div>
-  </app-card>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 z-40 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="cancelDelete()"></div>
+
+      <!-- Modal panel -->
+      <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <!-- Header -->
+        <div class="bg-red-50 px-6 py-4 border-b border-red-200">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+              <lucide-angular [img]="Trash2" class="h-5 w-5 text-red-600"></lucide-angular>
+            </div>
+            <h3 class="text-lg font-semibold text-[var(--color-text)]">Delete Ammunition</h3>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-6">
+          <p class="text-[var(--color-text)]">
+            Are you sure you want to delete <strong>{{ selectedAsset?.name }}</strong>?
+          </p>
+          <p class="text-[var(--color-text-muted)] text-sm mt-2">
+            This action cannot be undone. This will permanently delete the ammunition item from the system.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+          <app-button variant="outline" (click)="cancelDelete()">Cancel</app-button>
+          <button
+            (click)="confirmDelete()"
+            [disabled]="loading"
+            class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            {{ loading ? 'Deleting...' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

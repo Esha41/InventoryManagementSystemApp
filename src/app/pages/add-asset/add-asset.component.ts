@@ -14,17 +14,30 @@ import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 
 interface AssetForm {
-  productName: string;
-  productId: string;
-  natureId: string;
-  supplierId: string;
-  quantity: string;
-  lot: string;
-  expiryDate: string;
-  warehouseId: string;
+  name: string;
+  itemNo: string;
+  partNo: string;
+  batchNo: string;
   hccId: string;
-  countryId: string;
-  manufacturerId: string;
+  bulletDiameter: string;
+  bulletDiameterUnitId: string;
+  caseLength: string;
+  caseLengthUnitId: string;
+  isLinked: string;
+  primer: string;
+  totalWeight: string;
+  nsnId: string;
+  caseTypeId: string;
+  propellantId: string;
+  compatibilityId: string;
+  hazardDivisionId: string;
+  expiryDate: string;
+  readyForIssue: boolean;
+  // Optional
+  natureOptionId: string;
+  primaryPurposId: string;
+  projectileColorId: string;
+  projectailMaterialId: string;
   image?: File;
 }
 
@@ -43,17 +56,23 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Lookup data
-  warehouses: DepotDto[] = [];
-  suppliers: SupplierDto[] = [];
-  natureOptions: NatureOptionDto[] = [];
   hccs: HccDto[] = [];
-  countries: CountryDto[] = [];
-  manufacturers: ManufacturerDto[] = [];
+  units: any[] = [];
+  nsns: any[] = [];
+  caseTypes: any[] = [];
+  propellants: any[] = [];
+  compatibilities: any[] = [];
+  hazardDivisions: any[] = [];
+  natureOptions: NatureOptionDto[] = [];
+  primaryPurposes: any[] = [];
+  projectileColors: any[] = [];
+  projectailMaterials: any[] = [];
 
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  showToast = false;
 
   constructor(
     private translationService: TranslationService,
@@ -62,17 +81,29 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   ) {}
 
   assetForm: AssetForm = {
-    productName: '',
-    productId: '',
-    natureId: '',
-    supplierId: '',
-    quantity: '',
-    lot: '',
-    expiryDate: '',
-    warehouseId: '',
+    name: '',
+    itemNo: '',
+    partNo: '',
+    batchNo: '',
     hccId: '',
-    countryId: '',
-    manufacturerId: '',
+    bulletDiameter: '',
+    bulletDiameterUnitId: '',
+    caseLength: '',
+    caseLengthUnitId: '',
+    isLinked: 'false',
+    primer: '',
+    totalWeight: '',
+    nsnId: '',
+    caseTypeId: '',
+    propellantId: '',
+    compatibilityId: '',
+    hazardDivisionId: '',
+    expiryDate: '',
+    readyForIssue: true,
+    natureOptionId: '',
+    primaryPurposId: '',
+    projectileColorId: '',
+    projectailMaterialId: '',
     image: undefined
   };
 
@@ -90,27 +121,37 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     forkJoin({
-      warehouses: this.lookupService.getDepots(),
-      suppliers: this.lookupService.getSuppliers(),
-      natureOptions: this.lookupService.getNatureOptions(),
       hccs: this.lookupService.getHccs(),
-      countries: this.lookupService.getCountries(),
-      manufacturers: this.lookupService.getManufacturers()
+      units: this.lookupService.getUnits(),
+      nsns: this.lookupService.getNsns(),
+      caseTypes: this.lookupService.getCaseTypes(),
+      propellants: this.lookupService.getPropellants(),
+      compatibilities: this.lookupService.getCompatibilities(),
+      hazardDivisions: this.lookupService.getHazardDivisions(),
+      natureOptions: this.lookupService.getNatureOptions(),
+      primaryPurposes: this.lookupService.getPrimaryPurposes(),
+      projectileColors: this.lookupService.getColors(),
+      projectailMaterials: this.lookupService.getProjectailMaterials()
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.warehouses = data.warehouses;
-          this.suppliers = data.suppliers;
-          this.natureOptions = data.natureOptions;
           this.hccs = data.hccs;
-          this.countries = data.countries;
-          this.manufacturers = data.manufacturers;
+          this.units = data.units;
+          this.nsns = data.nsns;
+          this.caseTypes = data.caseTypes;
+          this.propellants = data.propellants;
+          this.compatibilities = data.compatibilities;
+          this.hazardDivisions = data.hazardDivisions;
+          this.natureOptions = data.natureOptions;
+          this.primaryPurposes = data.primaryPurposes;
+          this.projectileColors = data.projectileColors;
+          this.projectailMaterials = data.projectailMaterials;
           this.loading = false;
         },
         error: (error) => {
           console.error('Error loading lookup data:', error);
-          this.errorMessage = 'Failed to load lookup data. Using sample data for testing.';
+          this.errorMessage = 'Failed to load lookup data. Please try again.';
           this.loading = false;
         }
       });
@@ -127,28 +168,29 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.successMessage = null;
 
     const ammunitionDto: AmmunitionCreateDto = {
-      itemNo: this.assetForm.productId,
-      lot: parseInt(this.assetForm.lot) || 0,
-      batchNo: this.assetForm.productName,
+      name: this.assetForm.name,
+      partNo: this.assetForm.partNo,
+      itemNo: this.assetForm.itemNo,
+      batchNo: this.assetForm.batchNo,
       hccId: parseInt(this.assetForm.hccId),
-      supplierId: this.assetForm.supplierId ? parseInt(this.assetForm.supplierId) : undefined,
-      countryId: this.assetForm.countryId ? parseInt(this.assetForm.countryId) : undefined,
-      manufacturerId: this.assetForm.manufacturerId ? parseInt(this.assetForm.manufacturerId) : undefined,
-      natureOptionId: this.assetForm.natureId ? parseInt(this.assetForm.natureId) : undefined,
-      // Default values for required fields not in simple form
-      bulletDiameter: 0,
-      bulletDiameterUnitId: 1,
-      caseLength: 0,
-      caseLengthUnitId: 1,
-      isLinked: false,
-      primer: 'Standard',
-      totalWeight: 0,
-      nsnId: 1,
-      caseTypeId: 1,
-      propellantId: 1,
-      compatibilityId: 1,
-      hazardDivisionId: 1,
-      readyForIssue: true
+      bulletDiameter: parseFloat(this.assetForm.bulletDiameter) || 0,
+      bulletDiameterUnitId: parseInt(this.assetForm.bulletDiameterUnitId),
+      caseLength: parseFloat(this.assetForm.caseLength) || 0,
+      caseLengthUnitId: parseInt(this.assetForm.caseLengthUnitId),
+      isLinked: this.assetForm.isLinked === 'true',
+      primer: this.assetForm.primer,
+      totalWeight: parseFloat(this.assetForm.totalWeight) || 0,
+      nsnId: parseInt(this.assetForm.nsnId),
+      caseTypeId: parseInt(this.assetForm.caseTypeId),
+      propellantId: parseInt(this.assetForm.propellantId),
+      compatibilityId: parseInt(this.assetForm.compatibilityId),
+      hazardDivisionId: parseInt(this.assetForm.hazardDivisionId),
+      readyForIssue: this.assetForm.readyForIssue,
+      lot: 0,
+      natureOptionId: this.assetForm.natureOptionId ? parseInt(this.assetForm.natureOptionId) : undefined,
+      primaryPurposId: this.assetForm.primaryPurposId ? parseInt(this.assetForm.primaryPurposId) : undefined,
+      projectileColorId: this.assetForm.projectileColorId ? parseInt(this.assetForm.projectileColorId) : undefined,
+      projectailMaterialId: this.assetForm.projectailMaterialId ? parseInt(this.assetForm.projectailMaterialId) : undefined
     };
 
     this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', ammunitionDto)
@@ -156,12 +198,11 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.succeeded) {
-            this.successMessage = 'Asset created successfully!';
+            this.showSuccessToast('Ammunition created successfully');
             console.log('Asset created:', response.data);
             setTimeout(() => {
               this.resetForm();
-              this.successMessage = null;
-            }, 3000);
+            }, 800);
           } else {
             this.errorMessage = response.message || 'Failed to create asset';
           }
@@ -175,14 +216,28 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       });
   }
 
+  private showSuccessToast(message: string): void {
+    this.successMessage = message;
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+      setTimeout(() => (this.successMessage = null), 300);
+    }, 2500);
+  }
+
   validateForm(): boolean {
     return !!(
-      this.assetForm.productId &&
-      this.assetForm.productName &&
-      this.assetForm.lot &&
+      this.assetForm.name &&
+      this.assetForm.itemNo &&
+      this.assetForm.partNo &&
       this.assetForm.hccId &&
-      this.assetForm.warehouseId &&
-      this.assetForm.quantity
+      this.assetForm.bulletDiameterUnitId &&
+      this.assetForm.caseLengthUnitId &&
+      this.assetForm.nsnId &&
+      this.assetForm.caseTypeId &&
+      this.assetForm.propellantId &&
+      this.assetForm.compatibilityId &&
+      this.assetForm.hazardDivisionId
     );
   }
 
@@ -232,17 +287,29 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
   private resetForm(): void {
     this.assetForm = {
-      productName: '',
-      productId: '',
-      natureId: '',
-      supplierId: '',
-      quantity: '',
-      lot: '',
-      expiryDate: '',
-      warehouseId: '',
+      name: '',
+      itemNo: '',
+      partNo: '',
+      batchNo: '',
       hccId: '',
-      countryId: '',
-      manufacturerId: '',
+      bulletDiameter: '',
+      bulletDiameterUnitId: '',
+      caseLength: '',
+      caseLengthUnitId: '',
+      isLinked: 'false',
+      primer: '',
+      totalWeight: '',
+      nsnId: '',
+      caseTypeId: '',
+      propellantId: '',
+      compatibilityId: '',
+      hazardDivisionId: '',
+      expiryDate: '',
+      readyForIssue: true,
+      natureOptionId: '',
+      primaryPurposId: '',
+      projectileColorId: '',
+      projectailMaterialId: '',
       image: undefined
     };
     this.previewUrl = null;

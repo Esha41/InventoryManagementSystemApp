@@ -7,6 +7,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { StepperComponent, Step } from '@components/stepper/stepper.component';
 import { CartridgeDetailsComponent, CartridgeDetails } from './components/cartridge-details/cartridge-details.component';
 import { CartridgeListComponent, Cartridge } from './components/cartridge-list/cartridge-list.component';
+import { AmmunitionService } from '@services/ammunition.service';
 import { UsageFormComponent } from './components/usage-form/usage-form.component';
 import { ReviewFormComponent } from './components/review-form/review-form.component';
 
@@ -38,62 +39,88 @@ export class NewIssueRequestComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private ammunitionService: AmmunitionService
   ) {}
 
-  // Step 1: Selection filters
-  bulletDiameters = ['5.56', '7.62', '9mm', '.45'];
-  caseLengths = ['5.56 x 45', '7.62 x 39', '7.62 x 51', '9 x 19'];
-  linkedOptions = ['Linked', 'Not Linked', 'Select option'];
-  natureOptions = [
-    'Ball (FMJ)',
-    'Tracer',
-    'Armor-piercing (AP)',
-    'Hollow-point',
-    'Incendiary',
-    'Select nature'
-  ];
+  // Step 1: Selection filters (populated from API)
+  bulletDiameters: string[] = [];
+  caseLengths: string[] = [];
+  linkedOptions: string[] = ['Linked', 'Not Linked'];
+  natureOptions: string[] = [];
   orderPriorities = ['High Priority', 'Medium Priority', 'Low Priority'];
 
-  selectedBulletDiameter = '5.56';
-  selectedCaseLength = '5.56 x 45';
-  selectedLinked = 'Not Linked';
-  selectedNature = 'Select nature';
+  selectedBulletDiameter = '';
+  selectedCaseLength = '';
+  selectedLinked = '';
+  selectedNature = '';
   selectedPriority = 'High Priority';
   quantity: number | null = null;
 
-  cartridges: Cartridge[] = [
-    { 
-      name: '5.56 mm x 45 Ball (FMJ), M193',
-      selected: false,
-      productId: '456567',
-      ncn: 'N-Ammunition',
-      primaryPurpose: 'Anti-Personnel',
-      projectileColor: 'No Color - Plain',
-      totalWeight: '11.7 - 0.8 gram',
-      projectileMaterial: 'Copper Alloy #220, Lead Antimony Alloy',
-      caseType: 'Rimless',
-      primer: 'Non-corrosive Type',
-      propellant: 'WC-844 (smokeless, Double Base or Equivalent)',
-      hazardDivision: '1.4 s',
-      capabilityGroup: 'G'
-    },
-    { name: '9 x 19mm - Piney Mountain (Tracer: Green)', selected: false },
-    { name: '9 x 19mm (Training(Plastic - Plastic projectile) - Not Linked', selected: false },
-    { name: '5.45 x 39mm - R((No. Supplier) (Hollow-point Not Linked)', selected: false },
-    { name: '5.45 x 39mm - (R) KINTEX (Tracer - Not Linked)', selected: false },
-    { name: '5.45 x 39mm - R (No. Supplier) (Incendiary - Not Linked)', selected: false },
-    { name: '5.45 x 39mm - R(No. Supplier)(HE / HEI - Not Linked', selected: false },
-    { name: '5.45 x 39mm (R) Denver Bullets (Armour-piercing (AP) - Not Linked', selected: false }
-  ];
+  cartridges: Cartridge[] = [];
+  private ammunitionRaw: any[] = [];
 
   filteredCartridges: Cartridge[] = [];
   selectedCartridgeForView: CartridgeDetails | null = null;
   showCartridgeDetails: boolean = false;
 
   ngOnInit(): void {
-    this.filterCartridges();
+    this.loadCartridges();
     this.initializeStepFromQueryParams();
+  }
+
+  private loadCartridges(): void {
+    this.ammunitionService.getAll<any>().subscribe({
+      next: (items) => {
+        this.ammunitionRaw = items || [];
+        this.cartridges = this.ammunitionRaw.map((x: any) => ({
+          name: x.name || x.itemNo || 'Ammunition',
+          selected: false,
+          productId: x.itemNo,
+          ncn: x.nsn?.nameEn || x.nsn?.nameAr,
+          primaryPurpose: x.primaryPurpos?.nameEn || x.primaryPurpos?.nameAr,
+          projectileColor: x.projectileColor?.nameEn || x.projectileColor?.nameAr,
+          totalWeight: x.totalWeight ? `${x.totalWeight} g` : undefined,
+          projectileMaterial: x.projectailMaterial?.nameEn || x.projectailMaterial?.nameAr,
+          caseType: x.caseType?.nameEn || x.caseType?.nameAr,
+          primer: x.primer,
+          propellant: x.propellant?.nameEn || x.propellant?.nameAr,
+          hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr,
+          capabilityGroup: x.compatibility?.nameEn || x.compatibility?.nameAr
+        }));
+        this.buildFilterOptions();
+        this.filterCartridges();
+      },
+      error: () => {
+        this.cartridges = [];
+        this.filterCartridges();
+      }
+    });
+  }
+
+  private buildFilterOptions(): void {
+    const diameters = new Set<string>();
+    const caseLens = new Set<string>();
+    const natures = new Set<string>();
+
+    for (const x of this.ammunitionRaw) {
+      const diameterLabel = x.bulletDiameter != null
+        ? `${x.bulletDiameter}${x.bulletDiameterUnit?.nameEn ? ' ' + x.bulletDiameterUnit.nameEn : ''}`
+        : undefined;
+      if (diameterLabel) diameters.add(diameterLabel);
+
+      const caseLabel = x.caseLength != null
+        ? `${x.bulletDiameter ?? ''}${x.bulletDiameter ? ' x ' : ''}${x.caseLength}`
+        : undefined;
+      if (caseLabel) caseLens.add(caseLabel);
+
+      const natureLabel = x.natureOption?.nameEn || x.natureOption?.nameAr;
+      if (natureLabel) natures.add(natureLabel);
+    }
+
+    this.bulletDiameters = Array.from(diameters);
+    this.caseLengths = Array.from(caseLens);
+    this.natureOptions = Array.from(natures);
   }
 
   private initializeStepFromQueryParams(): void {
@@ -117,8 +144,59 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   filterCartridges(): void {
-    // Simple filter logic - in real app would filter based on selections
-    this.filteredCartridges = [...this.cartridges];
+    this.filteredCartridges = this.ammunitionRaw
+      .filter((x: any) => {
+        const diameterLabel = x.bulletDiameter != null
+          ? `${x.bulletDiameter}${x.bulletDiameterUnit?.nameEn ? ' ' + x.bulletDiameterUnit.nameEn : ''}`
+          : '';
+        const caseLabel = x.caseLength != null
+          ? `${x.bulletDiameter ?? ''}${x.bulletDiameter ? ' x ' : ''}${x.caseLength}`
+          : '';
+        const natureLabel = x.natureOption?.nameEn || x.natureOption?.nameAr || '';
+        const linkedLabel = x.isLinked ? 'Linked' : 'Not Linked';
+
+        const byDiameter = !this.selectedBulletDiameter || this.selectedBulletDiameter === diameterLabel;
+        const byCase = !this.selectedCaseLength || this.selectedCaseLength === caseLabel;
+        const byLinked = !this.selectedLinked || this.selectedLinked === linkedLabel;
+        const byNature = !this.selectedNature || this.selectedNature === natureLabel;
+        return byDiameter && byCase && byLinked && byNature;
+      })
+      .map((x: any) => ({
+        name: x.name || x.itemNo || 'Ammunition',
+        selected: false,
+        productId: x.itemNo,
+        ncn: x.nsn?.nameEn || x.nsn?.nameAr,
+        primaryPurpose: x.primaryPurpos?.nameEn || x.primaryPurpos?.nameAr,
+        projectileColor: x.projectileColor?.nameEn || x.projectileColor?.nameAr,
+        totalWeight: x.totalWeight ? `${x.totalWeight} g` : undefined,
+        projectileMaterial: x.projectailMaterial?.nameEn || x.projectailMaterial?.nameAr,
+        caseType: x.caseType?.nameEn || x.caseType?.nameAr,
+        primer: x.primer,
+        propellant: x.propellant?.nameEn || x.propellant?.nameAr,
+        hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr,
+        capabilityGroup: x.compatibility?.nameEn || x.compatibility?.nameAr
+      }));
+  }
+
+  // Handlers invoked from child component outputs
+  onBulletDiameterChange(value: string): void {
+    this.selectedBulletDiameter = value;
+    this.filterCartridges();
+  }
+
+  onCaseLengthChange(value: string): void {
+    this.selectedCaseLength = value;
+    this.filterCartridges();
+  }
+
+  onLinkedChange(value: string): void {
+    this.selectedLinked = value;
+    this.filterCartridges();
+  }
+
+  onNatureChange(value: string): void {
+    this.selectedNature = value;
+    this.filterCartridges();
   }
 
   onCartridgeClick(cartridge: Cartridge): void {
@@ -141,6 +219,16 @@ export class NewIssueRequestComponent implements OnInit {
       this.showCartridgeDetails = false;
       this.selectedCartridgeForView = null;
     }
+  }
+
+  onClearFilters(): void {
+    this.selectedBulletDiameter = '';
+    this.selectedCaseLength = '';
+    this.selectedLinked = '';
+    this.selectedNature = '';
+    this.selectedPriority = this.orderPriorities[0] || '';
+    this.quantity = null;
+    this.filterCartridges();
   }
 
   onStepChange(step: number): void {

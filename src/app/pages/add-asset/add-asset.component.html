@@ -9,9 +9,23 @@
     <div class="text-[var(--color-text)]">Loading form data...</div>
   </div>
 
-  <!-- Success Message -->
-  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
-    {{ successMessage }}
+  <!-- Success Toast -->
+  <div
+    *ngIf="successMessage"
+    class="fixed bottom-6 right-6 z-50 transform transition-all duration-300"
+    [class.opacity-0]="!showToast"
+    [class.translate-y-2]="!showToast"
+  >
+    <div class="flex items-start gap-3 px-4 py-3 rounded-lg shadow-custom-md bg-white border border-[var(--color-border)] min-w-[280px]">
+      <div class="h-6 w-6 rounded-full bg-[var(--color-success)] flex items-center justify-center text-white text-sm">✓</div>
+      <div class="flex-1">
+        <div class="text-[var(--color-text)] font-medium">Success</div>
+        <div class="text-[var(--color-text-muted)] text-sm">{{ successMessage }}</div>
+      </div>
+      <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)]" (click)="showToast=false">
+        ✕
+      </button>
+    </div>
   </div>
 
   <!-- Error Message -->
@@ -24,7 +38,7 @@
     <div class="bg-white rounded-xl shadow-custom-md p-6 w-full max-w-2xl">
       <h2 class="text-xl font-bold text-[var(--color-text)] mb-6">{{ 'addAsset.formTitle' | translate }}</h2>
     
-    <form (ngSubmit)="onSubmit()" class="space-y-6">
+    <form #f="ngForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <!-- Image Upload Section -->
       <div class="flex items-center justify-center gap-4 mb-6">
         <div class="w-[81px] h-[81px] border border-dashed border-[var(--color-brand)]/50 rounded-md bg-white overflow-hidden cursor-pointer relative"
@@ -60,143 +74,332 @@
 
       <!-- Form Fields -->
       <div class="space-y-4">
-        <!-- Product Name -->
+        <!-- Name (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.productName' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Name *</label>
           <input
             type="text"
-            [(ngModel)]="assetForm.productName"
-            name="productName"
+            [(ngModel)]="assetForm.name"
+            name="name"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterProductName' | translate"
+            placeholder="Enter ammunition name"
+            required
+            #nameModel="ngModel"
           />
+          <span *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)" class="text-sm text-red-600">Name is required</span>
         </div>
 
-        <!-- Product ID -->
+        <!-- Item No (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.productId' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Item No *</label>
           <input
             type="text"
-            [(ngModel)]="assetForm.productId"
-            name="productId"
+            [(ngModel)]="assetForm.itemNo"
+            name="itemNo"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterProductId' | translate"
+            placeholder="Enter item number"
+            required
+            #itemNoModel="ngModel"
           />
+          <span *ngIf="itemNoModel.invalid && (itemNoModel.dirty || itemNoModel.touched)" class="text-sm text-red-600">Item No is required</span>
         </div>
 
-        <!-- Nature -->
+        <!-- Part No (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.nature' | translate }}</label>
-          <select
-            [(ngModel)]="assetForm.natureId"
-            name="natureId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">{{ 'addAsset.selectNature' | translate }}</option>
-            <option *ngFor="let nature of natureOptions" [value]="nature.id">{{ nature.nameEn }}</option>
-          </select>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Part No *</label>
+          <input
+            type="text"
+            [(ngModel)]="assetForm.partNo"
+            name="partNo"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter part number"
+            required
+            #partNoModel="ngModel"
+          />
+          <span *ngIf="partNoModel.invalid && (partNoModel.dirty || partNoModel.touched)" class="text-sm text-red-600">Part No is required</span>
         </div>
 
-        <!-- Supplier -->
+        <!-- Batch No -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.supplier' | translate }}</label>
-          <select
-            [(ngModel)]="assetForm.supplierId"
-            name="supplierId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">{{ 'addAsset.selectSupplier' | translate }}</option>
-            <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.nameEn }}</option>
-          </select>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Batch No</label>
+          <input
+            type="text"
+            [(ngModel)]="assetForm.batchNo"
+            name="batchNo"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter batch number"
+          />
         </div>
 
         <!-- HCC (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.hcc' | translate }} *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">HCC *</label>
           <select
             [(ngModel)]="assetForm.hccId"
             name="hccId"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
+            #hccModel="ngModel"
           >
-            <option value="">{{ 'addAsset.selectHcc' | translate }}</option>
+            <option value="">Select HCC</option>
             <option *ngFor="let hcc of hccs" [value]="hcc.id">{{ hcc.nameEn }}</option>
           </select>
+          <span *ngIf="hccModel.invalid && (hccModel.dirty || hccModel.touched)" class="text-sm text-red-600">HCC is required</span>
         </div>
 
-        <!-- Country -->
+        <!-- Bullet Diameter -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.country' | translate }}</label>
-          <select
-            [(ngModel)]="assetForm.countryId"
-            name="countryId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">{{ 'addAsset.selectCountry' | translate }}</option>
-            <option *ngFor="let country of countries" [value]="country.id">{{ country.nameEn }}</option>
-          </select>
-        </div>
-
-        <!-- Manufacturer -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.manufacturer' | translate }}</label>
-          <select
-            [(ngModel)]="assetForm.manufacturerId"
-            name="manufacturerId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">{{ 'addAsset.selectManufacturer' | translate }}</option>
-            <option *ngFor="let manufacturer of manufacturers" [value]="manufacturer.id">{{ manufacturer.nameEn }}</option>
-          </select>
-        </div>
-
-        <!-- Quantity -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.quantity' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Bullet Diameter</label>
           <input
-            type="text"
-            [(ngModel)]="assetForm.quantity"
-            name="quantity"
+            type="number"
+            [(ngModel)]="assetForm.bulletDiameter"
+            name="bulletDiameter"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterQuantity' | translate"
+            placeholder="Enter diameter (e.g., 5.56)"
+            step="0.01"
           />
         </div>
 
-        <!-- LOT -->
+        <!-- Bullet Diameter Unit (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.lot' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Diameter Unit *</label>
+          <select
+            [(ngModel)]="assetForm.bulletDiameterUnitId"
+            name="bulletDiameterUnitId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #diamUnitModel="ngModel"
+          >
+            <option value="">Select unit</option>
+            <option *ngFor="let unit of units" [value]="unit.id">{{ unit.nameEn }}</option>
+          </select>
+          <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">Diameter unit is required</span>
+        </div>
+
+        <!-- Case Length -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length</label>
+          <input
+            type="number"
+            [(ngModel)]="assetForm.caseLength"
+            name="caseLength"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter case length (e.g., 45)"
+            step="0.01"
+          />
+        </div>
+
+        <!-- Case Length Unit (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length Unit *</label>
+          <select
+            [(ngModel)]="assetForm.caseLengthUnitId"
+            name="caseLengthUnitId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #caseUnitModel="ngModel"
+          >
+            <option value="">Select unit</option>
+            <option *ngFor="let unit of units" [value]="unit.id">{{ unit.nameEn }}</option>
+          </select>
+          <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">Case length unit is required</span>
+        </div>
+
+        <!-- NSN (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN *</label>
+          <select
+            [(ngModel)]="assetForm.nsnId"
+            name="nsnId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #nsnModel="ngModel"
+          >
+            <option value="">Select NSN</option>
+            <option *ngFor="let nsn of nsns" [value]="nsn.id">{{ nsn.nameEn }}</option>
+          </select>
+          <span *ngIf="nsnModel.invalid && (nsnModel.dirty || nsnModel.touched)" class="text-sm text-red-600">NSN is required</span>
+        </div>
+
+        <!-- Case Type (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Type *</label>
+          <select
+            [(ngModel)]="assetForm.caseTypeId"
+            name="caseTypeId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #caseTypeModel="ngModel"
+          >
+            <option value="">Select case type</option>
+            <option *ngFor="let type of caseTypes" [value]="type.id">{{ type.nameEn }}</option>
+          </select>
+          <span *ngIf="caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched)" class="text-sm text-red-600">Case type is required</span>
+        </div>
+
+        <!-- Propellant (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Propellant *</label>
+          <select
+            [(ngModel)]="assetForm.propellantId"
+            name="propellantId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #propellantModel="ngModel"
+          >
+            <option value="">Select propellant</option>
+            <option *ngFor="let prop of propellants" [value]="prop.id">{{ prop.nameEn }}</option>
+          </select>
+          <span *ngIf="propellantModel.invalid && (propellantModel.dirty || propellantModel.touched)" class="text-sm text-red-600">Propellant is required</span>
+        </div>
+
+        <!-- Compatibility (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Compatibility *</label>
+          <select
+            [(ngModel)]="assetForm.compatibilityId"
+            name="compatibilityId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #compatModel="ngModel"
+          >
+            <option value="">Select compatibility</option>
+            <option *ngFor="let comp of compatibilities" [value]="comp.id">{{ comp.nameEn }}</option>
+          </select>
+          <span *ngIf="compatModel.invalid && (compatModel.dirty || compatModel.touched)" class="text-sm text-red-600">Compatibility is required</span>
+        </div>
+
+        <!-- Hazard Division (Required) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Hazard Division *</label>
+          <select
+            [(ngModel)]="assetForm.hazardDivisionId"
+            name="hazardDivisionId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            required
+            #hazardModel="ngModel"
+          >
+            <option value="">Select hazard division</option>
+            <option *ngFor="let hazard of hazardDivisions" [value]="hazard.id">{{ hazard.nameEn }}</option>
+          </select>
+          <span *ngIf="hazardModel.invalid && (hazardModel.dirty || hazardModel.touched)" class="text-sm text-red-600">Hazard division is required</span>
+        </div>
+
+        <!-- Primer -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primer</label>
           <input
             type="text"
-            [(ngModel)]="assetForm.lot"
-            name="lot"
+            [(ngModel)]="assetForm.primer"
+            name="primer"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.enterLotNumber' | translate"
+            placeholder="Enter primer type (e.g., Boxer)"
           />
+        </div>
+
+        <!-- Total Weight -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Total Weight (g)</label>
+          <input
+            type="number"
+            [(ngModel)]="assetForm.totalWeight"
+            name="totalWeight"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter weight in grams"
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <!-- Is Linked -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Linked</label>
+          <select
+            [(ngModel)]="assetForm.isLinked"
+            name="isLinked"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="false">Not Linked</option>
+            <option value="true">Linked</option>
+          </select>
+        </div>
+
+        <!-- Ready For Issue -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Ready for Issue</label>
+          <select
+            [(ngModel)]="assetForm.readyForIssue"
+            name="readyForIssue"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option [ngValue]="true">Yes</option>
+            <option [ngValue]="false">No</option>
+          </select>
         </div>
 
         <!-- Expiry Date -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.expiryDate' | translate }}</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Expiry Date</label>
           <input
             type="date"
             [(ngModel)]="assetForm.expiryDate"
             name="expiryDate"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            [placeholder]="'addAsset.selectExpiryDate' | translate"
           />
         </div>
 
-        <!-- Warehouse -->
+        <hr class="my-6 border-[var(--color-border)]" />
+        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">Optional Fields</h3>
+
+        <!-- Nature Option -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-28 shrink-0">{{ 'addAsset.warehouse' | translate }} *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Nature</label>
           <select
-            [(ngModel)]="assetForm.warehouseId"
-            name="warehouseId"
+            [(ngModel)]="assetForm.natureOptionId"
+            name="natureOptionId"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            required
           >
-            <option value="">{{ 'addAsset.selectWarehouse' | translate }}</option>
-            <option *ngFor="let warehouse of warehouses" [value]="warehouse.id">{{ warehouse.nameEn }} ({{ warehouse.location }})</option>
+            <option value="">Select nature option</option>
+            <option *ngFor="let nature of natureOptions" [value]="nature.id">{{ nature.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- Primary Purpose -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primary Purpose</label>
+          <select
+            [(ngModel)]="assetForm.primaryPurposId"
+            name="primaryPurposId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">Select primary purpose</option>
+            <option *ngFor="let purpose of primaryPurposes" [value]="purpose.id">{{ purpose.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- Projectile Color -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Color</label>
+          <select
+            [(ngModel)]="assetForm.projectileColorId"
+            name="projectileColorId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">Select color</option>
+            <option *ngFor="let color of projectileColors" [value]="color.id">{{ color.nameEn }}</option>
+          </select>
+        </div>
+
+        <!-- Projectile Material -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Material</label>
+          <select
+            [(ngModel)]="assetForm.projectailMaterialId"
+            name="projectailMaterialId"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          >
+            <option value="">Select material</option>
+            <option *ngFor="let material of projectailMaterials" [value]="material.id">{{ material.nameEn }}</option>
           </select>
         </div>
       </div>
@@ -212,7 +415,7 @@
         </button>
         <button
           type="submit"
-          [disabled]="submitting || loading"
+          [disabled]="submitting || loading || f.invalid"
           class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ submitting ? ('addAsset.saving' | translate) : ('addAsset.addAsset' | translate) }}

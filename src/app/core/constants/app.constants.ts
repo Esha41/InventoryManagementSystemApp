@@ -59,6 +59,12 @@ export const API_ENDPOINTS = {
     BASE: '/lookups',
     BY_TYPE: (type: string) => `/lookups/${type}`,
   },
+
+  // Ammunition Management
+  AMMUNITION: {
+    BASE: '/ammunition',
+    BY_ID: (id: number) => `/ammunition/${id}`,
+  },
   
   // Warehouse Management
   WAREHOUSES: {

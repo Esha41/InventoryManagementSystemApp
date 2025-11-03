@@ -45,6 +45,7 @@ export class CartridgeListComponent {
   @Output() filterChange = new EventEmitter<void>();
   @Output() confirmSelection = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
+  @Output() clearFilters = new EventEmitter<void>();
   @Output() bulletDiameterChange = new EventEmitter<string>();
   @Output() caseLengthChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
@@ -66,6 +67,10 @@ export class CartridgeListComponent {
 
   onNext(): void {
     this.next.emit();
+  }
+
+  onClear(): void {
+    this.clearFilters.emit();
   }
 
   onBulletDiameterChange(value: string): void {

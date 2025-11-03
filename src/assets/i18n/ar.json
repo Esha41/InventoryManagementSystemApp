@@ -150,7 +150,8 @@
     "comments": "تعليقات",
     "yes": "نعم",
     "no": "لا",
-    "previous": "السابق"
+    "previous": "السابق",
+    "clearFilters": "مسح المرشحات"
   },
   "forecast": {
     "title": "التوقعات",

@@ -143,7 +143,15 @@
     "capabilityGroup": "Capability Group",
     "projectileColor": "Projectile Color",
     "orderDocument": "Order Document",
-    "reserveDetails": "Reserve Details"
+    "reserveDetails": "Reserve Details",
+    "next": "Next",
+    "previous": "Previous",
+    "clearFilters": "Clear Filters",
+    "name": "Name",
+    "comments": "Comments",
+    "view": "View",
+    "yes": "Yes",
+    "no": "No"
   },
   "forecast": {
     "title": "Forecast",
