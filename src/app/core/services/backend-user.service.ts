@@ -202,6 +202,7 @@ console.log("userdetails:",user)
         if (!response.succeeded) {
           throw new Error(response.message || 'Failed to fetch user roles');
         }
+        console.log("response",response.data);
         return response.data || [];
       }),
       catchError(error => {
