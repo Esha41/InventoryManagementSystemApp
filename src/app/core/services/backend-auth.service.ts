@@ -289,6 +289,69 @@ export class BackendAuthService {
   }
 
   /**
+   * Normalize permission string for comparison
+   * Converts formats like "role.view" or "Permissions.Roles.View" to a common format
+   * Examples:
+   * - "Permissions.Roles.View" -> "roleview"
+   * - "Permissions.Roles.Page" -> "roleview" (Page is equivalent to View)
+   * - "role.view" -> "roleview"
+   * - "Roles.View" -> "roleview"
+   */
+  private normalizePermission(permission: string): string {
+    if (!permission) return '';
+    
+    let normalized = permission.toLowerCase().trim();
+    
+    // Remove "Permissions." prefix if present
+    normalized = normalized.replace(/^permissions\./, '');
+    
+    // Handle formats like "Roles.View" or "Roles.Edit"
+    // Extract the entity name (Roles, Warehouse, etc.) and action (View, Edit, Create, Delete)
+    const parts = normalized.split('.');
+    if (parts.length >= 2) {
+      // Get last part (action) and second-to-last or last entity name
+      let action = parts[parts.length - 1]; // View, Edit, Create, Delete, Page, etc.
+      const entity = parts.length > 2 ? parts[parts.length - 2] : parts[0]; // Roles, Warehouse, etc.
+      
+      // Convert "Roles" -> "role", "Warehouse" -> "warehouse"
+      const entityNormalized = entity.replace(/s$/, '').toLowerCase(); // Remove plural 's'
+      
+      // Normalize action: "page" is equivalent to "view" for access control
+      if (action === 'page') {
+        action = 'view';
+      }
+      
+      // Combine: "role" + "view" = "roleview"
+      normalized = entityNormalized + action;
+    } else {
+      // Handle simple formats like "role.view"
+      normalized = normalized.replace(/\./g, '').replace(/\s+/g, '');
+    }
+    
+    return normalized;
+  }
+
+  /**
+   * Check if a permission string matches (handles multiple formats)
+   * Examples:
+   * - "Permissions.Roles.View" matches "role.view", "Roles.View", "roles.view"
+   * - "role.view" matches "Permissions.Roles.View", "Roles.View"
+   */
+  private permissionMatches(userPermission: string, requiredPermission: string): boolean {
+    if (!userPermission || !requiredPermission) return false;
+
+    const userNorm = this.normalizePermission(userPermission);
+    const requiredNorm = this.normalizePermission(requiredPermission);
+
+    // Exact match after normalization
+    if (userNorm === requiredNorm) return true;
+
+    // Also check if normalized user permission contains required (or vice versa)
+    // This handles edge cases where formats differ slightly
+    return userNorm.includes(requiredNorm) || requiredNorm.includes(userNorm);
+  }
+
+  /**
    * Check if user has a specific permission
    */
   hasPermission(permission: string): boolean {
@@ -307,22 +370,34 @@ export class BackendAuthService {
     }
 
     // Check permissions - user.permissions should contain ALL permissions from ALL roles combined
-    const permissionLower = permission.toLowerCase().trim();
-    
-    return user.permissions.some(p => {
+    const hasPermission = user.permissions.some(p => {
       if (!p) return false;
       
       // Check both id and claimType fields
-      const permissionId = (p.id || '').toLowerCase().trim();
-      const claimType = (p.claimType || '').toLowerCase().trim();
+      const permissionId = p.id || '';
+      const claimType = p.claimType || '';
       
-      // Match if permission string matches either id or claimType
-      // Also check if permission is contained in the id/claimType (for cases like "request.view" matching "Dashboard.Request.View")
-      return permissionId === permissionLower ||
-             claimType === permissionLower ||
-             permissionId.includes(permissionLower) ||
-             claimType.includes(permissionLower);
+      // Use the new matching function that handles format differences
+      return this.permissionMatches(permissionId, permission) ||
+             this.permissionMatches(claimType, permission);
     });
+
+    // Debug logging for permission checks (only for role-related permissions to avoid spam)
+    if (permission.toLowerCase().includes('role')) {
+      console.log('Permission Check:', {
+        required: permission,
+        hasPermission: hasPermission,
+        userPermissions: user.permissions.map(p => ({
+          id: p.id,
+          claimType: p.claimType,
+          normalizedId: this.normalizePermission(p.id || ''),
+          normalizedClaimType: this.normalizePermission(p.claimType || ''),
+          requiredNormalized: this.normalizePermission(permission)
+        }))
+      });
+    }
+
+    return hasPermission;
   }
 
   /**
