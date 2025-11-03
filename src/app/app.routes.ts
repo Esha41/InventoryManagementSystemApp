@@ -122,13 +122,15 @@ export const routes: Routes = [
       },
       {
         path: 'admin-roles',
-        loadComponent: () => import('@pages/admin-roles/admin-roles.component').then(m => m.AdminRolesComponent)
+        loadComponent: () => import('@pages/admin-roles/admin-roles.component').then(m => m.AdminRolesComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['role.view'] } // Match sidebar menu requirement
       },
       {
         path: 'role-permissions',
         loadComponent: () => import('@pages/role-permissions/role-permissions.component').then(m => m.RolePermissionsComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['role.view'] }
+        data: { permissions: ['role.edit', 'role.view'] } // Accept both: sidebar requires role.edit, but role.view should also work
       },
       {
         path: 'notifications',
