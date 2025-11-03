@@ -335,6 +335,7 @@ console.log("userdetails:",user)
    */
   createRole(role: CreateRoleDto): Observable<RoleDto> {
     this.configService.log('Creating role', { name: role.name });
+    console.log('BackendUserService - Creating role with payload:', JSON.stringify(role, null, 2));
 
     return this.apiService.postWithAuth<ApiResponse<RoleDto>>(
       API_ENDPOINTS.ROLES.BASE,
@@ -532,6 +533,76 @@ console.log("userdetails:",user)
         return throwError(() => new Error(
           error.userMessage || 'Failed to assign permissions'
         ));
+      })
+    );
+  }
+
+  // ==================== APPLICATION ENTITIES ====================
+
+  /**
+   * Get all application entities
+   */
+  getApplicationEntities(): Observable<any[]> {
+    this.configService.log('Fetching application entities');
+    const endpoint = API_ENDPOINTS.APPLICATION_ENTITIES.BASE;
+    console.log('API Call: GET', endpoint);
+    console.log('Full URL will be:', `${this.configService.apiUrl}${endpoint}`);
+
+    return this.apiService.getWithAuth<ApiResponse<any[]>>(
+      endpoint
+    ).pipe(
+      map((response: any) => {
+        console.log('Raw API Response:', response);
+        console.log('Response type:', typeof response);
+        console.log('Response succeeded:', response?.succeeded);
+        console.log('Response data:', response?.data);
+        
+        // Handle different response formats
+        // Case 1: Standard ApiResponse with succeeded flag
+        if (response && typeof response === 'object') {
+          if ('succeeded' in response) {
+            if (!response.succeeded) {
+              throw new Error(response.message || 'Failed to fetch application entities');
+            }
+            // Data might be directly in response.data or response.data could be an array
+            const entities = response.data || response;
+            return Array.isArray(entities) ? entities : (Array.isArray(response.data) ? response.data : []);
+          }
+          // Case 2: Direct array response
+          if (Array.isArray(response)) {
+            return response;
+          }
+          // Case 3: Response has data property that's an array
+          if (response.data && Array.isArray(response.data)) {
+            return response.data;
+          }
+        }
+        
+        // Default: return empty array if format is unexpected
+        console.warn('Unexpected response format, returning empty array');
+        return [];
+      }),
+      tap(entities => {
+        console.log(`Successfully parsed ${entities.length} application entities:`, entities);
+        this.configService.log(`Fetched ${entities.length} application entities`);
+      }),
+      catchError(error => {
+        console.error('API Error fetching application entities:', error);
+        console.error('Error details:', {
+          status: error?.status,
+          statusText: error?.statusText,
+          message: error?.message,
+          error: error?.error,
+          url: error?.url
+        });
+        this.configService.logError('Failed to fetch application entities', error);
+        
+        // Provide more helpful error message
+        const errorMessage = error?.status === 404 
+          ? 'Application entities endpoint not found. Please check the API endpoint.'
+          : error?.message || error?.error?.message || 'Failed to fetch application entities';
+        
+        return throwError(() => new Error(errorMessage));
       })
     );
   }
