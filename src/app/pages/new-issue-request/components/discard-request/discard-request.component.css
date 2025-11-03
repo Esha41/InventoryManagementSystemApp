@@ -1,0 +1,24 @@
+.form-group input:focus {
+  transform: translateY(-1px);
+}
+
+::placeholder {
+  font-style: normal;
+  opacity: 0.6;
+}
+
+button:hover lucide-angular {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .max-w-5xl {
+    max-width: 100%;
+  }
+  
+  .px-8 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
