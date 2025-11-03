@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
 import { RoleDto, CreateRoleDto, UpdateRoleDto } from '@models/backend-user.model';
+import { TranslateModule } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 
 @Component({
@@ -13,7 +14,8 @@ import { BackendUserService } from '@services/backend-user.service';
     CommonModule,
     ReactiveFormsModule,
     ModalComponent,
-    ButtonComponent
+    ButtonComponent,
+    TranslateModule
   ],
   templateUrl: './role-form-modal.component.html',
   styleUrls: ['./role-form-modal.component.css']
