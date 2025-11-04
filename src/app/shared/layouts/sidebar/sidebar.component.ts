@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2 } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 interface MenuItem {
@@ -31,6 +31,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+  readonly Package = Package;
+  readonly Building2 = Building2;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -64,6 +66,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
           label: 'nav.inventoryCategory',
           route: '/warehouse/ammunition-display',
           permissions: ['warehouse.view', 'warehousepage.view'] // Match route requirement
+        }
+      ]
+    },
+    {
+      label: 'nav.department',
+      icon: Building2,
+      permissions: ['request.create', 'allowance.view'], // Show if user has allowance permissions
+      children: [
+        {
+          label: 'nav.allowance',
+          route: '/allowance',
+          permissions: ['request.create', 'allowance.view']
         }
       ]
     },
@@ -184,6 +198,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Auto-expand warehouse menu if on warehouse routes
     if (url.startsWith('/warehouse')) {
       this.expandedMenus.add('nav.warehouse');
+    }
+    // Auto-expand department menu if on department/allowance routes
+    if (url.startsWith('/allowance') || url.startsWith('/department')) {
+      this.expandedMenus.add('nav.department');
     }
   }
 

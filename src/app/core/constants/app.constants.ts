@@ -38,6 +38,12 @@ export const API_ENDPOINTS = {
     ASSIGN_PERMISSIONS: '/roles/permissions',
     USERS_IN_ROLE: (id: string) => `/roles/${id}/users`,
   },
+
+  // Application Entities
+  APPLICATION_ENTITIES: {
+    BASE: '/Roles/entities',
+    ALL: '/Roles/entities',
+  },
   
   // Workflow Management
   WORKFLOWS: {

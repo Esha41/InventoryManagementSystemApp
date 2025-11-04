@@ -28,6 +28,8 @@
     "warehouse": "المستودع",
     "warehouseList": "قائمة المستودعات",
     "inventoryCategory": "فئة المخزون",
+    "department": "القسم",
+    "allowance": "البدل",
     "newIssueRequest": "طلب إصدار جديد",
     "returnRequest": "طلب إرجاع",
     "discardRequest": "طلب إتلاف",

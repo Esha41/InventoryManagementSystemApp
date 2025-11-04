@@ -1,0 +1,179 @@
+<div class="flex justify-center">
+  <div class="w-full max-w-4xl">
+    <div class="space-y-6">
+      <div>
+        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
+      </div>
+
+      <div class="bg-[#F5F5F5] rounded-xl p-8">
+        <form #allowanceForm="ngForm" (ngSubmit)="onSend(allowanceForm)">
+          <div class="space-y-6 max-w-3xl">
+            <!-- Department Dropdown -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'allowance.department' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <div class="flex-1">
+                <select
+                  [(ngModel)]="selectedDepartment"
+                  name="department"
+                  [class.border-red-500]="hasError('department')"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  [disabled]="isLoadingDepartments"
+                >
+                  <option value="">{{ 'allowance.selectDepartment' | translate }}</option>
+                  <option *ngFor="let dept of departments" [value]="dept.id">
+                    {{ dept.nameEn || dept.nameAr }}
+                  </option>
+                </select>
+                <p *ngIf="hasError('department')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('department') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Date Picker -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'allowance.date' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <div class="flex-1">
+                <input
+                  type="date"
+                  [(ngModel)]="selectedDate"
+                  name="date"
+                  [class.border-red-500]="hasError('date')"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                />
+                <p *ngIf="hasError('date')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('date') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Items List -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-medium text-[#6B7280]">
+                  {{ 'allowance.items' | translate }} <span class="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  (click)="addItem()"
+                  class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+                >
+                  + {{ 'allowance.addItem' | translate }}
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div
+                  *ngFor="let item of items; let i = index"
+                  class="bg-white rounded-lg p-4 border border-[var(--color-border)]"
+                >
+                  <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-medium text-[#6B7280]">
+                      {{ 'allowance.item' | translate }} {{ i + 1 }}
+                    </span>
+                    <button
+                      *ngIf="items.length > 1"
+                      type="button"
+                      (click)="removeItem(i)"
+                      class="text-red-500 hover:text-red-700 text-sm font-medium"
+                    >
+                      {{ 'allowance.remove' | translate }}
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Item ID with Search/Filter -->
+                    <div class="relative">
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                        {{ 'allowance.itemId' | translate }} <span class="text-red-500">*</span>
+                      </label>
+                      <div class="relative">
+                        <input
+                          type="text"
+                          [(ngModel)]="searchTerms[i]"
+                          [name]="'itemSearch_' + i"
+                          [placeholder]="'allowance.itemIdPlaceholder' | translate"
+                          (input)="onItemSearch(i, searchTerms[i] || '')"
+                          (focus)="toggleDropdown(i)"
+                          (blur)="closeDropdown(i)"
+                          [class.border-red-500]="hasItemError(i, 'itemId')"
+                          class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                        />
+                        <!-- Dropdown Results -->
+                        <div
+                          *ngIf="showDropdowns[i] && filteredAmmunition[i] && filteredAmmunition[i].length > 0"
+                          class="absolute z-10 w-full mt-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        >
+                          <div
+                            *ngFor="let ammo of filteredAmmunition[i]"
+                            (mousedown)="selectAmmunition(i, ammo); $event.preventDefault()"
+                            class="px-3 py-2 hover:bg-[var(--color-background-hover)] cursor-pointer border-b border-[var(--color-border)] last:border-b-0"
+                          >
+                            <div class="text-sm font-medium text-[#23272E]">{{ ammo.name || 'N/A' }}</div>
+                            <div class="text-xs text-[#6B7280] mt-0.5">
+                              {{ 'allowance.itemNo' | translate }}: {{ ammo.itemNo || 'N/A' }} | 
+                              {{ 'allowance.batchNo' | translate }}: {{ ammo.batchNo || 'N/A' }}
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          *ngIf="showDropdowns[i] && filteredAmmunition[i] && filteredAmmunition[i].length === 0"
+                          class="absolute z-10 w-full mt-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg px-3 py-2 text-sm text-[#6B7280]"
+                        >
+                          {{ 'allowance.noItemsFound' | translate }}
+                        </div>
+                      </div>
+                      <p *ngIf="hasItemError(i, 'itemId')" class="mt-1 text-xs text-red-500">
+                        {{ getItemError(i, 'itemId') }}
+                      </p>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                        {{ 'allowance.quantity' | translate }} <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        [(ngModel)]="item.quantity"
+                        [name]="'quantity_' + i"
+                        [placeholder]="'allowance.quantityPlaceholder' | translate"
+                        [class.border-red-500]="hasItemError(i, 'quantity')"
+                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                      />
+                      <p *ngIf="hasItemError(i, 'quantity')" class="mt-1 text-xs text-red-500">
+                        {{ getItemError(i, 'quantity') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errors['submit']" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              {{ errors['submit'] }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-center pt-6">
+              <app-button
+                type="submit"
+                variant="primary"
+                size="md"
+                class="px-12"
+              >
+                {{ 'allowance.send' | translate }}
+              </app-button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

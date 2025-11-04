@@ -29,6 +29,8 @@
     "warehouse": "Warehouse",
     "warehouseList": "Warehouse List",
     "inventoryCategory": "Inventory Category",
+    "department": "Department",
+    "allowance": "Allowance",
     "newIssueRequest": "New Issue Request",
     "returnRequest": "Return Request",
     "discardRequest": "Discard Request",
