@@ -80,6 +80,12 @@ export const API_ENDPOINTS = {
     INVENTORY: (id: string) => `/warehouses/${id}/inventory`,
     INVENTORY_PAGINATED: (id: string) => `/warehouses/${id}/inventory/paginated`,
   },
+
+  // Allowance Management
+  ALLOWANCE: {
+    BASE: '/AllowanceItem',
+    BULK: '/AllowanceItem/bulk',
+  },
 } as const;
 
 export const STORAGE_KEYS = {

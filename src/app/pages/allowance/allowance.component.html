@@ -166,8 +166,9 @@
                 variant="primary"
                 size="md"
                 class="px-12"
+                [disabled]="isLoading"
               >
-                {{ 'allowance.send' | translate }}
+                {{ isLoading ? ('allowance.sending' | translate) : ('allowance.send' | translate) }}
               </app-button>
             </div>
           </div>
