@@ -2,13 +2,13 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-[var(--color-text)]">Role Permissions</h1>
-      <p class="text-sm text-[var(--color-text-muted)] mt-1">Manage permissions for each role</p>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'rolePermissions.title' | translate }}</h1>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'rolePermissions.subtitle' | translate }}</p>
     </div>
     <button (click)="onRefresh()" [disabled]="isLoading || !selectedRole"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
       <lucide-angular [img]="RefreshCw" class="h-4 w-4"></lucide-angular>
-      Refresh
+      {{ 'rolePermissions.refresh' | translate }}
     </button>
   </div>
 
@@ -17,7 +17,7 @@
     <app-card>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-[var(--color-text-muted)]">Total Roles</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.totalRoles' | translate }}</p>
           <p class="text-2xl font-bold text-[var(--color-text)]">{{ roles.length }}</p>
         </div>
         <lucide-angular [img]="Shield" class="h-8 w-8 text-[var(--color-accent)]"></lucide-angular>
@@ -27,7 +27,7 @@
     <app-card>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-[var(--color-text-muted)]">Selected Role</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.selectedRole' | translate }}</p>
           <p class="text-2xl font-bold text-[var(--color-text)]">{{ selectedRole ? '1' : '0' }}</p>
         </div>
         <lucide-angular [img]="Settings" class="h-8 w-8 text-[var(--color-success)]"></lucide-angular>
@@ -37,8 +37,8 @@
     <app-card>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-[var(--color-text-muted)]">System Status</p>
-          <p class="text-2xl font-bold text-[var(--color-success)]">Active</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.systemStatus' | translate }}</p>
+          <p class="text-2xl font-bold text-[var(--color-success)]">{{ 'rolePermissions.active' | translate }}</p>
         </div>
         <lucide-angular [img]="Check" class="h-8 w-8 text-[var(--color-info)]"></lucide-angular>
       </div>
@@ -48,7 +48,7 @@
   <!-- Main Content -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Role Selection Card -->
-    <app-card title="Select Role" class="lg:col-span-1">
+    <app-card [title]="'rolePermissions.selectRole' | translate" class="lg:col-span-1">
       <div class="space-y-3">
         <div *ngFor="let role of roles" (click)="onRoleSelect(role)"
           [class]="'p-4 rounded-lg border-2 cursor-pointer transition-all ' + 
@@ -63,11 +63,11 @@
               <h4 class="font-semibold text-[var(--color-text)]">{{ role.name }}</h4>
               <div class="flex items-center gap-2 mt-1">
                 <span *ngIf="role.isSuperAdmin" class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
-                  Super Admin
+                  {{ 'rolePermissions.superAdmin' | translate }}
                 </span>
                 <span *ngIf="role.isDefaultRole"
                   class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
-                  Default
+                  {{ 'rolePermissions.default' | translate }}
                 </span>
               </div>
             </div>
@@ -82,8 +82,8 @@
       <app-card *ngIf="!selectedRole">
         <div class="text-center py-12">
           <lucide-angular [img]="Shield" class="h-12 w-12 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
-          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">Select a Role</h3>
-          <p class="text-[var(--color-text-muted)]">Choose a role from the left panel to manage its permissions</p>
+          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'rolePermissions.selectARole' | translate }}</h3>
+          <p class="text-[var(--color-text-muted)]">{{ 'rolePermissions.selectRoleDescription' | translate }}</p>
         </div>
       </app-card>
 
@@ -98,13 +98,13 @@
               </div>
               <div>
                 <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ selectedRole.name }}</h3>
-                <p class="text-sm text-[var(--color-text-muted)]">Configure permissions for this role</p>
+                <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.configurePermissions' | translate }}</p>
               </div>
             </div>
             <button (click)="onSavePermissions()" [disabled]="isSaving || permissionForm.invalid"
               class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <lucide-angular [img]="Save" class="h-4 w-4"></lucide-angular>
-              {{ isSaving ? 'Saving...' : 'Save Permissions' }}
+              {{ isSaving ? ('rolePermissions.saving' | translate) : ('rolePermissions.savePermissions' | translate) }}
             </button>
           </div>
         </app-card>
@@ -122,7 +122,7 @@
           <div class="text-center py-12">
             <lucide-angular [img]="RefreshCw"
               class="h-8 w-8 mx-auto text-[var(--color-accent)] mb-4 animate-spin"></lucide-angular>
-            <p class="text-[var(--color-text-muted)]">Loading permissions...</p>
+            <p class="text-[var(--color-text-muted)]">{{ 'rolePermissions.loadingPermissions' | translate }}</p>
           </div>
         </app-card>
 
@@ -133,12 +133,12 @@
             <div class="mb-4 flex items-center justify-between">
               <span class="text-sm text-[var(--color-text-muted)]">
                 {{ getSelectedPermissionsCount(permission.entityName) }}/{{ permission.permissionsList.length }}
-                selected
+                {{ 'rolePermissions.selected' | translate }}
               </span>
               <button type="button"
                 (click)="onGroupToggle(permission.entityName, !isGroupFullySelected(permission.entityName))"
                 class="px-3 py-1 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors">
-                {{ isGroupFullySelected(permission.entityName) ? 'Deselect All' : 'Select All' }}
+                {{ isGroupFullySelected(permission.entityName) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
               </button>
             </div>
 
@@ -159,12 +159,12 @@
             <div class="mb-4 flex items-center justify-between">
               <span class="text-sm text-[var(--color-text-muted)]">
                 {{ getSelectedPermissionsCount(permissionGroup.entityName) }}/{{ permissionGroup.permissionsList.length
-                }} selected
+                }} {{ 'rolePermissions.selected' | translate }}
               </span>
               <button type="button"
                 (click)="onGroupToggle(permissionGroup.entityName, !isGroupFullySelected(permissionGroup.entityName))"
                 class="px-3 py-1 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors">
-                {{ isGroupFullySelected(permissionGroup.entityName) ? 'Deselect All' : 'Select All' }}
+                {{ isGroupFullySelected(permissionGroup.entityName) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
               </button>
             </div>
 

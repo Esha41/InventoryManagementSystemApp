@@ -8,6 +8,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-admin-roles',
@@ -18,7 +19,8 @@ import { BackendUserService } from '@services/backend-user.service';
     ButtonComponent, 
     LucideAngularModule,
     RoleFormModalComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TranslateModule
   ],
   templateUrl: './admin-roles.component.html',
   styleUrls: ['./admin-roles.component.css']
