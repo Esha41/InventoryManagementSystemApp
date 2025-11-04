@@ -7,11 +7,12 @@ import { LucideAngularModule, Shield, Settings, Check, X, Save, RefreshCw } from
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, CrudPermission, AssignPermissionsDto } from '@models/backend-user.model';
 import { CardComponent } from '@components/card/card.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-role-permissions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CardComponent],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CardComponent, TranslateModule],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.css']
 })

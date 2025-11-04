@@ -3,12 +3,12 @@
     <!-- Username -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Username <span class="text-[var(--color-error)]">*</span>
+        {{ 'userFormModal.username' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <input
         type="text"
         formControlName="userName"
-        placeholder="Enter username or email"
+        [placeholder]="'userFormModal.usernamePlaceholder' | translate"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="userForm.get('userName')?.invalid && userForm.get('userName')?.touched"
       />
@@ -20,12 +20,12 @@
     <!-- Password (Create Mode Only) -->
     <div *ngIf="mode === 'create'">
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Password <span class="text-[var(--color-error)]">*</span>
+        {{ 'userFormModal.password' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <input
         type="password"
         formControlName="password"
-        placeholder="Enter password"
+        [placeholder]="'userFormModal.passwordPlaceholder' | translate"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="userForm.get('password')?.invalid && userForm.get('password')?.touched"
       />
@@ -37,7 +37,7 @@
     <!-- Roles Selection -->
     <div class="relative">
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Roles <span class="text-[var(--color-error)]">*</span>
+        {{ 'userFormModal.roles' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <div class="relative">
         <button
@@ -76,34 +76,34 @@
       />
     </div>
     <label [for]="'role-' + role.id" class="flex-1 cursor-pointer select-none">
-      <div class="font-medium text-[var(--color-text)]">{{ role.name || 'Unnamed Role' }}</div>
-      <div *ngIf="role.isSuperAdmin" class="text-xs text-[var(--color-accent)] mt-0.5">Super Admin Role</div>
-      <div *ngIf="role.isDefaultRole && !role.isSuperAdmin" class="text-xs text-[var(--color-text-muted)] mt-0.5">Default Role</div>
+      <div class="font-medium text-[var(--color-text)]">{{ role.name || ('userFormModal.unnamedRole' | translate) }}</div>
+      <div *ngIf="role.isSuperAdmin" class="text-xs text-[var(--color-accent)] mt-0.5">{{ 'userFormModal.superAdminRole' | translate }}</div>
+      <div *ngIf="role.isDefaultRole && !role.isSuperAdmin" class="text-xs text-[var(--color-text-muted)] mt-0.5">{{ 'userFormModal.defaultRole' | translate }}</div>
     </label>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="roles.length === 0" class="px-3 py-4 text-center text-sm text-[var(--color-text-muted)]">
-    No roles available
+    {{ 'userFormModal.noRoles' | translate }}
   </div>
 </div>
 
         </div>
       </div>
       <p class="mt-2 text-sm text-[var(--color-text-muted)]">
-        Select one or more roles for this user
+        {{ 'userFormModal.rolesHelper' | translate }}
       </p>
     </div>
 
     <!-- Employee ID -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Employee ID
+        {{ 'userFormModal.employeeId' | translate }}
       </label>
       <input
         type="number"
         formControlName="employeeId"
-        placeholder="Enter employee ID (optional)"
+        [placeholder]="'userFormModal.employeeIdPlaceholder' | translate"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
       />
     </div>
@@ -111,12 +111,12 @@
     <!-- Extra Employees View (Hidden) -->
     <div class="hidden">
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Extra Employees View
+        {{ 'userFormModal.extraEmployeesView' | translate }}
       </label>
       <input
         type="text"
         formControlName="extraEmployeesView"
-        placeholder="Enter extra employees view (optional)"
+        [placeholder]="'userFormModal.extraEmployeesPlaceholder' | translate"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
       />
     </div>
@@ -130,7 +130,7 @@
         class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20"
       />
       <label for="isLdapUser" class="text-sm font-medium text-[var(--color-text)]">
-        LDAP User
+        {{ 'userFormModal.ldapUser' | translate }}
       </label>
     </div>
 
@@ -147,14 +147,14 @@
         (click)="close()"
         [disabled]="isLoading"
       >
-        Cancel
+        {{ 'common.cancel' | translate }}
       </app-button>
       <app-button
         type="submit"
         variant="primary"
         [disabled]="isLoading || userForm.invalid"
       >
-        {{ isLoading ? 'Saving...' : (mode === 'create' ? 'Create User' : 'Update User') }}
+        {{ isLoading ? ('common.saving' | translate) : (mode === 'create' ? ('userFormModal.create' | translate) : ('userFormModal.update' | translate)) }}
       </app-button>
     </div>
   </form>

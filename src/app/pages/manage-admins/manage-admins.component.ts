@@ -9,6 +9,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { LucideAngularModule, UserPlus, Search, Edit, Trash2, Shield, Mail, User as UserIcon, Power } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-manage-admins',
@@ -20,7 +21,8 @@ import { BackendUserService } from '@services/backend-user.service';
     ButtonComponent, 
     LucideAngularModule,
     UserFormModalComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TranslateModule
   ],
   templateUrl: './manage-admins.component.html',
   styleUrls: ['./manage-admins.component.css']
