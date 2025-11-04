@@ -28,6 +28,8 @@
     "warehouse": "المستودع",
     "warehouseList": "قائمة المستودعات",
     "inventoryCategory": "فئة المخزون",
+    "department": "القسم",
+    "allowance": "البدل",
     "newIssueRequest": "طلب إصدار جديد",
     "returnRequest": "طلب إرجاع",
     "discardRequest": "طلب إتلاف",
@@ -366,6 +368,24 @@
     "dischargeQuantity": "كمية الصرف",
     "totalSelected": "إجمالي المحدد",
     "confirmSelection": "تأكيد الاختيار"
+  },
+  "allowance": {
+    "title": "البدل",
+    "department": "القسم",
+    "selectDepartment": "اختر القسم",
+    "date": "التاريخ",
+    "items": "الأصناف",
+    "addItem": "إضافة صنف",
+    "item": "الصنف",
+    "remove": "إزالة",
+    "itemId": "رقم الصنف",
+    "quantity": "الكمية",
+    "itemIdPlaceholder": "ابحث بالاسم أو رقم الصنف أو رقم الدفعة",
+    "quantityPlaceholder": "أدخل الكمية",
+    "itemNo": "رقم الصنف",
+    "batchNo": "رقم الدفعة",
+    "noItemsFound": "لم يتم العثور على أصناف",
+    "send": "إرسال"
   }
 }
 

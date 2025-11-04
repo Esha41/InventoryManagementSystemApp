@@ -29,6 +29,8 @@
     "warehouse": "Warehouse",
     "warehouseList": "Warehouse List",
     "inventoryCategory": "Inventory Category",
+    "department": "Department",
+    "allowance": "Allowance",
     "newIssueRequest": "New Issue Request",
     "returnRequest": "Return Request",
     "discardRequest": "Discard Request",
@@ -366,6 +368,24 @@
     "dischargeQuantity": "Discharge Quantity",
     "totalSelected": "Total Selected",
     "confirmSelection": "Confirm Selection"
+  },
+  "allowance": {
+    "title": "Allowance",
+    "department": "Department",
+    "selectDepartment": "Select Department",
+    "date": "Date",
+    "items": "Items",
+    "addItem": "Add Item",
+    "item": "Item",
+    "remove": "Remove",
+    "itemId": "Item ID",
+    "quantity": "Quantity",
+    "itemIdPlaceholder": "Search by name, item number, or batch number",
+    "quantityPlaceholder": "Enter quantity",
+    "itemNo": "Item No",
+    "batchNo": "Batch No",
+    "noItemsFound": "No items found",
+    "send": "Send"
   }
 }
 

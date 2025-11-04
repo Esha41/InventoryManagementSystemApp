@@ -43,6 +43,12 @@ export const routes: Routes = [
         data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
+        path: 'allowance',
+        loadComponent: () => import('@pages/allowance/allowance.component').then(m => m.AllowanceComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['request.create', 'allowance.view'] }
+      },
+      {
         path: 'warehouse/:id/inventory',
         loadComponent: () => import('@pages/warehouse-inventory/warehouse-inventory.component').then(m => m.WarehouseInventoryComponent),
         canActivate: [permissionGuard],
