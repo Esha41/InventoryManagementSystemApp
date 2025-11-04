@@ -385,7 +385,8 @@
     "itemNo": "Item No",
     "batchNo": "Batch No",
     "noItemsFound": "No items found",
-    "send": "Send"
+    "send": "Send",
+    "sending": "Sending..."
   }
 }
 
