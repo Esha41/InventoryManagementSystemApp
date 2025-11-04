@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
@@ -26,7 +26,8 @@ export class WarehouseComponent implements OnInit, OnDestroy {
 
   constructor(
     private lookupService: LookupService,
-    private router: Router
+    private router: Router,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +48,6 @@ export class WarehouseComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (depots) => {
           // Map Depot entities to WarehouseSummaryDto structure
-          // Keep static values for NEQ, Consumed, Total Capacity, Current Stock as requested
           this.warehouses = depots
             .filter(depot => !depot.isDeleted)
             .map(depot => this.mapDepotToWarehouse(depot));
@@ -55,7 +55,9 @@ export class WarehouseComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading depots:', error);
-          this.error = 'Failed to load warehouses. Please try again.';
+          this.translateService.get('warehouse.failedToLoad').subscribe(msg => {
+            this.error = msg;
+          });
           this.loading = false;
         }
       });
@@ -63,7 +65,6 @@ export class WarehouseComponent implements OnInit, OnDestroy {
 
   /**
    * Map DepotDto to WarehouseSummaryDto
-   * Static values are kept for NEQ, Consumed, Total Capacity, Current Stock as requested
    */
   private mapDepotToWarehouse(depot: DepotDto): WarehouseSummaryDto {
     // Extract code from nameEn (e.g., "Warehouse DOH-01" -> "DOH-01")
@@ -75,11 +76,11 @@ export class WarehouseComponent implements OnInit, OnDestroy {
       id: depot.id.toString(),
       name: depot.nameEn,
       code: code,
-      // Static values as requested - these will be replaced with real data later
-      neqPercentage: 90,
-      consumedPercentage: 95,
-      totalCapacity: 10000,
-      currentStock: 9500
+      // TODO: Calculate these from actual inventory data
+      neqPercentage: 0,
+      consumedPercentage: 0,
+      totalCapacity: 0,
+      currentStock: 0
     };
   }
 

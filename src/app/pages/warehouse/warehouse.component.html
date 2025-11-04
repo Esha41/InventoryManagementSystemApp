@@ -60,63 +60,24 @@
           </div>
         </div>
 
-        <!-- Progress Bars and Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <!-- Progress Bars -->
-          <div class="space-y-6">
-            <!-- NEQ Progress -->
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-semibold text-gray-700">NEQ</span>
-                <span class="text-lg font-bold text-orange-600">{{ warehouse.neqPercentage }}%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  class="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-500"
-                  [style.width.%]="warehouse.neqPercentage">
-                </div>
-              </div>
-            </div>
-
-            <!-- Consumed Progress -->
-            <div>
-              <div class="flex justify-between items-center mb-3">
-                <span class="text-sm font-semibold text-gray-700">{{ 'warehouse.consumed' | translate }}</span>
-                <span class="text-lg font-bold text-green-600">{{ warehouse.consumedPercentage }}%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  class="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
-                  [style.width.%]="warehouse.consumedPercentage">
-                </div>
-              </div>
+        <!-- Warehouse Info and Actions -->
+        <div class="flex items-center justify-between">
+          <!-- Warehouse Info -->
+          <div class="space-y-2">
+            <div class="text-sm text-gray-600">
+              <span class="font-medium">{{ 'warehouse.location' | translate }}:</span>
+              <span class="ml-2">{{ warehouse.code }}</span>
             </div>
           </div>
-
-          <!-- Warehouse Info -->
-          <div class="space-y-4">
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-gray-500">{{ 'warehouse.totalCapacity' | translate }}:</span>
-                  <span class="font-medium text-gray-900 ml-1">{{ warehouse.totalCapacity | number }}</span>
-                </div>
-                <div>
-                  <span class="text-gray-500">{{ 'warehouse.currentStock' | translate }}:</span>
-                  <span class="font-medium text-gray-900 ml-1">{{ warehouse.currentStock | number }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- View Button -->
-            <div class="flex justify-end">
-              <button 
-                (click)="onViewWarehouse(warehouse.id)"
-                class="bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
-                <span>{{ 'common.view' | translate }}</span>
-              </button>
-            </div>
+          
+          <!-- View Button -->
+          <div>
+            <button 
+              (click)="onViewWarehouse(warehouse.id)"
+              class="bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+              <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
+              <span>{{ 'warehouse.viewInventory' | translate }}</span>
+            </button>
           </div>
         </div>
       </div>

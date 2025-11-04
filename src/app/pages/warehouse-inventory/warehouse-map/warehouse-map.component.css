@@ -5,13 +5,108 @@
   width: 100%;
 }
 
-/* Smooth transitions for markers */
-.transition-transform {
-  transition: transform 0.2s ease-in-out;
+/* Custom scrollbar for warehouse list */
+.max-h-\[calc\(100vh-300px\)\]::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Map container adjustments */
-.relative img {
-  pointer-events: none;
+.max-h-\[calc\(100vh-300px\)\]::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
+.max-h-\[calc\(100vh-300px\)\]::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.max-h-\[calc\(100vh-300px\)\]::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Smooth marker animations */
+.warehouse-marker {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.warehouse-marker:hover {
+  transform: scale(1.15);
+}
+
+/* Map container enhancements */
+.map-container {
+  position: relative;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Marker pulse animation */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ping {
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Warehouse list item hover effect */
+.warehouse-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.warehouse-item:hover {
+  transform: translateX(4px);
+}
+
+/* Map image overlay effect */
+.map-image {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Selected warehouse highlight */
+.warehouse-item.selected {
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .map-container {
+    height: 500px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .map-container {
+    height: 400px !important;
+  }
+  
+  .warehouse-list {
+    max-height: 300px;
+  }
+}
+
+/* Loading spinner enhancement */
+.loading-spinner {
+  border-top-color: var(--color-brand);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Map legend styling */
+.map-legend {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* Marker tooltip enhancement */
+.marker-tooltip {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
