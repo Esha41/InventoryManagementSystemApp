@@ -1,0 +1,31 @@
+<div class="p-6">
+  <button class="mb-4 px-4 py-2 border rounded" (click)="goBack()">{{ 'common.back' | translate }}</button>
+
+  <div *ngIf="loading" class="text-gray-600">{{ 'common.loading' | translate }}...</div>
+  <div *ngIf="errorMessage && !loading" class="text-red-600">{{ errorMessage }}</div>
+
+  <div *ngIf="workflow && !loading">
+    <h1 class="text-xl font-semibold mb-2">{{ workflow.workflowName }}</h1>
+    <div class="text-sm text-gray-600 mb-4">ID: {{ workflow.id }} • Status: {{ workflow.isActive ? 'Active' : 'Inactive' }}</div>
+
+    <h2 class="font-medium mb-2">Steps</h2>
+    <table class="min-w-full border">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role Id</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of (workflow.workflowSteps || []); let i = index" class="border-t">
+          <td class="px-4 py-2">{{ s.stepOrder || (i+1) }}</td>
+          <td class="px-4 py-2">{{ s.applicationRoleId }}</td>
+          <td class="px-4 py-2">{{ s.applicationEntityId }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2 } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 interface MenuItem {
@@ -33,6 +33,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   readonly ChevronUp = ChevronUp;
   readonly Package = Package;
   readonly Building2 = Building2;
+  readonly GitBranch = GitBranch;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -68,6 +69,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
           permissions: ['warehouse.view', 'warehousepage.view'] // Match route requirement
         }
       ]
+    },
+    {
+      label: 'nav.workflow',
+      icon: GitBranch,
+      route: '/workflow',
+      permissions: ['workflow.view', 'workflow.manage']
     },
     {
       label: 'nav.department',

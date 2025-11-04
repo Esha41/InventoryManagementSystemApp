@@ -67,6 +67,30 @@ export const routes: Routes = [
         data: { permissions: ['warehouse.view', 'warehousepage.view'] } // Support both permission formats
       },
       {
+        path: 'workflow',
+        loadComponent: () => import('@pages/workflow/workflow.component').then(m => m.WorkflowComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['workflow.view', 'workflow.manage'] }
+      },
+      {
+        path: 'workflow/add',
+        loadComponent: () => import('@pages/workflow/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['workflow.create', 'workflow.manage'] }
+      },
+      {
+        path: 'workflow/:id',
+        loadComponent: () => import('@pages/workflow/workflow-detail/workflow-detail.component').then(m => m.WorkflowDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['workflow.view', 'workflow.manage'] }
+      },
+      {
+        path: 'workflow/:id/edit',
+        loadComponent: () => import('@pages/workflow/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['workflow.edit', 'workflow.manage'] }
+      },
+      {
         path: 'new-issue-request',
         loadComponent: () => import('@pages/new-issue-request/new-issue-request.component').then(m => m.NewIssueRequestComponent),
         canActivate: [permissionGuard],

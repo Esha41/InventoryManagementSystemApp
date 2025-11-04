@@ -72,6 +72,11 @@ export interface RoleDto {
   applicationEntityIds?: number[]; // Optional: Array of application entity IDs associated with the role
 }
 
+export interface RoleApplicationEntityLinkDto {
+  roleId: string;
+  applicationEntityId: number;
+}
+
 /**
  * Create Role DTO matching backend CreateRoleDto
  */
