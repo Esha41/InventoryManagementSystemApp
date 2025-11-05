@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
@@ -43,7 +43,7 @@ export class WorkflowComponent implements OnInit {
   selectedWorkflow: any = null;
   editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
   editWorkflowType: number = 1;
-  editSteps: Array<{ order: number; roleId: string | null; applicationEntityId: number | null }> = [];
+  editSteps: Array<{ order: number; roleId: string | null; applicationEntityId: number | null; requireHigherApproval?: boolean; higherApprovalRoleId?: string | null; higherApplicationEntityId?: number | null }> = [];
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
@@ -52,7 +52,8 @@ export class WorkflowComponent implements OnInit {
     private router: Router,
     private workflowService: WorkflowService,
     private backendUserService: BackendUserService,
-    private lookupService: LookupService
+    private lookupService: LookupService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -180,7 +181,10 @@ export class WorkflowComponent implements OnInit {
         this.editSteps = steps.map((s, idx) => ({ 
           order: s.stepOrder || idx + 1, 
           roleId: s.applicationRoleId || null, 
-          applicationEntityId: s.applicationEntityId || null 
+          applicationEntityId: s.applicationEntityId || null,
+          requireHigherApproval: !!s.requireHigherApproval,
+          higherApprovalRoleId: s.higherApprovalRoleId || null,
+          higherApplicationEntityId: (s as any).higherApplicationEntityId || null
         }));
         this.showEditModal = true;
       },
@@ -198,7 +202,7 @@ export class WorkflowComponent implements OnInit {
     // Navigate to add workflow page
     this.router.navigate(['/workflow/add']);
   }
-  addEditStep(): void { this.editSteps.push({ order: this.editSteps.length + 1, roleId: null, applicationEntityId: null }); }
+  addEditStep(): void { this.editSteps.push({ order: this.editSteps.length + 1, roleId: null, applicationEntityId: null, requireHigherApproval: false, higherApprovalRoleId: null, higherApplicationEntityId: null }); }
   removeEditStep(index: number): void { this.editSteps.splice(index, 1); this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 })); }
 
   onDelete(id: number): void {
@@ -239,6 +243,52 @@ export class WorkflowComponent implements OnInit {
     return workflowTypes[type] || `Type ${type}`;
   }
 
+  // Helpers to display names in View modal
+  getRoleNameById(roleId?: string | null): string {
+    if (!roleId) return '';
+    const r = this._findRole(roleId);
+    return r ? r.name : String(roleId);
+  }
+
+  getEntityNameById(entityId?: number | null): string {
+    if (entityId === undefined || entityId === null) return '';
+    const e = this.allApplicationEntities.find(x => x.id === entityId);
+    return e ? (e.name || String(e.id)) : String(entityId);
+  }
+
+  // Resolve varying backend field names for higher approval entity/role
+  resolveHigherApplicationEntityId(step: any): number | null {
+    if (!step) return null;
+    return step.higherApplicationEntityId ?? step.higherApprovalApplicationEntityId ?? step.higherApprovalEntityId ?? null;
+  }
+
+  resolveHigherApprovalRoleId(step: any): string | null {
+    if (!step) return null;
+    return step.higherApprovalRoleId ?? step.higherRoleId ?? null;
+  }
+
+  private _findRole(id: string): RoleDto | undefined {
+    return this.roles.find(r => r.id === id);
+  }
+
+  // Human‑readable order label (1->First, 2->Second, 3->Third, 4->Fourth, ...)
+  orderLabel(n: number): string {
+    const keyMap: { [k: number]: string } = {
+      1: 'workflow.first',
+      2: 'workflow.second',
+      3: 'workflow.third',
+      4: 'workflow.fourth',
+      5: 'workflow.fifth',
+      6: 'workflow.sixth',
+      7: 'workflow.seventh',
+      8: 'workflow.eighth',
+      9: 'workflow.ninth',
+      10: 'workflow.tenth'
+    };
+    const key = keyMap[n];
+    return key ? this.translate.instant(key) : String(n);
+  }
+
   closeModals(): void {
     this.showViewModal = false;
     this.showEditModal = false;
@@ -266,8 +316,9 @@ export class WorkflowComponent implements OnInit {
         applicationRoleId: s.roleId as any,
         applicationEntityId: s.applicationEntityId as any,
         mustApprove: false,
-        requireHigherApproval: false,
-        higherApprovalRoleId: null,
+        requireHigherApproval: !!s.requireHigherApproval,
+        higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
+        higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
         reserveQty: false
       }))
     } as any;

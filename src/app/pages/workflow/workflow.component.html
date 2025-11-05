@@ -182,15 +182,20 @@
           <thead class="bg-gray-50">
             <tr>
               <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role Id</th>
+              <h3 class="hidden"></h3>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
               <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalRole' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalEntity' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let s of (selectedWorkflow?.workflowSteps || []); let i = index" class="border-t">
-              <td class="px-4 py-2">{{ s.stepOrder || (i+1) }}</td>
-              <td class="px-4 py-2">{{ s.applicationRoleId }}</td>
-              <td class="px-4 py-2">{{ s.applicationEntityId }}</td>
+              <td class="px-4 py-2">{{ orderLabel(s.stepOrder || (i + 1)) }}</td>
+              <td class="px-4 py-2">{{ getRoleNameById(s.applicationRoleId) }}</td>
+              <td class="px-4 py-2">{{ getEntityNameById(s.applicationEntityId) }}</td>
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getRoleNameById(resolveHigherApprovalRoleId(s)) : '' }}</td>
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getEntityNameById(resolveHigherApplicationEntityId(s)) : '' }}</td>
             </tr>
           </tbody>
         </table>
@@ -203,7 +208,7 @@
 
   <!-- Edit Modal -->
   <div *ngIf="showEditModal && editForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold">Edit Workflow</h3>
         <button class="px-2 py-1 border rounded" (click)="closeModals()">×</button>
@@ -232,31 +237,52 @@
             <button class="px-3 py-1.5 text-sm rounded bg-[var(--color-brand)] text-white" (click)="addEditStep()">Add Step</button>
           </div>
           <div class="max-h-64 overflow-auto">
-            <table class="min-w-full border">
+            <table class="min-w-full border text-sm">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
-                  <th class="px-3 py-2"></th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApproval' | translate }}</th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalRole' | translate }}</th>
+                  <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalEntity' | translate }}</th>
+                  <th class="px-2 py-2"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let s of editSteps; let i = index" class="border-t">
-                  <td class="px-3 py-2">{{ i + 1 }}</td>
-                  <td class="px-3 py-2">
+              <td class="px-2 py-2">{{ orderLabel(i + 1) }}</td>
+                  <td class="px-2 py-2">
                     <select [(ngModel)]="s.roleId" name="erole-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
                       <option [ngValue]="null" disabled selected>Select role</option>
                       <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
                     </select>
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-2 py-2">
                     <select [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
                       <option [ngValue]="null" disabled selected>Select entity</option>
                       <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
                     </select>
                   </td>
-                  <td class="px-3 py-2 text-right">
+                  <td class="px-2 py-2">
+                    <label class="inline-flex items-center gap-2 text-sm">
+                      <input type="checkbox" [(ngModel)]="s.requireHigherApproval" name="erequire-{{i}}" class="h-4 w-4" />
+                      <span>{{ 'workflow.required' | translate }}</span>
+                    </label>
+                  </td>
+                  <td class="px-2 py-2">
+                    <select [(ngModel)]="s.higherApprovalRoleId" name="ehigher-{{i}}" [disabled]="!s.requireHigherApproval" class="w-full px-2 py-1 border rounded text-sm disabled:opacity-50">
+                      <option [ngValue]="null" disabled selected>{{ 'workflow.selectHigherApprovalRole' | translate }}</option>
+                      <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
+                    </select>
+                  </td>
+                  <td class="px-2 py-2">
+                    <select [(ngModel)]="s.higherApplicationEntityId" name="ehigherEntity-{{i}}" [disabled]="!s.requireHigherApproval" class="w-full px-2 py-1 border rounded text-sm disabled:opacity-50">
+                      <option [ngValue]="null" disabled selected>{{ 'workflow.applicationEntityPlaceholder' | translate }}</option>
+                      <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
+                    </select>
+                  </td>
+                  <td class="px-2 py-2 text-right">
                     <button class="px-2 py-1 border rounded" (click)="removeEditStep(i)">Delete</button>
                   </td>
                 </tr>
