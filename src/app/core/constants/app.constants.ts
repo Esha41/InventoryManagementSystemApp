@@ -87,6 +87,8 @@ export const API_ENDPOINTS = {
   ALLOWANCE: {
     BASE: '/AllowanceItem',
     BULK: '/AllowanceItem/bulk',
+    BY_DEPARTMENT_AND_YEAR: (departmentId: number, year: number) => `/AllowanceItem/department/${departmentId}/year/${year}`,
+    BY_DEPARTMENT: (departmentId: number) => `/AllowanceItem/department/${departmentId}`,
   },
 } as const;
 

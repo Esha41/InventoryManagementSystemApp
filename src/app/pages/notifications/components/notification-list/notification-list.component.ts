@@ -2,7 +2,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronLeft, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-angular';
+import { TranslationService } from '@services/translation.service';
 import { Notification } from '../../models/notification.model';
 
 @Component({
@@ -22,8 +23,21 @@ export class NotificationListComponent {
   @Output() itemsPerPageChange = new EventEmitter<number>();
   @Output() pageChange = new EventEmitter<number>();
 
-  readonly ArrowLeft = ChevronLeft;
+  readonly ChevronLeft = ChevronLeft;
+  readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
+
+  constructor(private translationService: TranslationService) {}
+
+  // Return correct icon for previous button based on RTL/LTR
+  get previousIcon() {
+    return this.translationService.isRTL() ? ChevronRight : ChevronLeft;
+  }
+
+  // Return correct icon for next button based on RTL/LTR
+  get nextIcon() {
+    return this.translationService.isRTL() ? ChevronLeft : ChevronRight;
+  }
 
   onNotificationClick(notification: Notification): void {
     this.notificationClick.emit(notification);

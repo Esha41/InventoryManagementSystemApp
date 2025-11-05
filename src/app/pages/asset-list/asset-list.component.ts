@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { LookupService } from '@services/lookup.service';
+import { TranslationService } from '@services/translation.service';
 import { forkJoin } from 'rxjs';
 
 interface Asset {
@@ -28,7 +30,7 @@ interface Asset {
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CardComponent, ButtonComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CardComponent, ButtonComponent, LucideAngularModule, TranslateModule],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
 })
@@ -79,7 +81,9 @@ export class AssetListComponent implements OnInit {
     private ammunitionService: AmmunitionService,
     private lookupService: LookupService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private translateService: TranslateService,
+    private translationService: TranslationService
   ) {
     this.editForm = this.fb.group({
       id: [0 as number],
@@ -229,7 +233,7 @@ export class AssetListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load ammunition:', err);
-        this.showErrorToast('Failed to load ammunition details');
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoadDetails'));
         this.loading = false;
       }
     });
@@ -250,7 +254,7 @@ export class AssetListComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load ammunition:', err);
-        this.showErrorToast('Failed to load ammunition details');
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoadDetails'));
         this.loading = false;
       }
     });
@@ -264,12 +268,12 @@ export class AssetListComponent implements OnInit {
       next: () => {
         this.showDeleteModal = false;
         this.selectedAsset = null;
-        this.showSuccessToast('Ammunition deleted successfully');
+        this.showSuccessToast(this.translateService.instant('assetList.success.deleted'));
         this.loadAssets();
       },
       error: (err) => {
         console.error('Failed to delete:', err);
-        this.showErrorToast('Failed to delete ammunition');
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToDelete'));
         this.loading = false;
       }
     });
@@ -282,7 +286,7 @@ export class AssetListComponent implements OnInit {
 
   saveEdit(): void {
     if (this.editForm.invalid) {
-      this.showErrorToast('Please fill all required fields');
+      this.showErrorToast(this.translateService.instant('assetList.errors.fillRequiredFields'));
       return;
     }
 
@@ -334,16 +338,16 @@ export class AssetListComponent implements OnInit {
         if (response.succeeded) {
           this.showEditModal = false;
           this.selectedAsset = null;
-          this.showSuccessToast('Ammunition updated successfully');
+          this.showSuccessToast(this.translateService.instant('assetList.success.updated'));
           this.loadAssets();
         } else {
-          this.showErrorToast(response.message || 'Failed to update ammunition');
+          this.showErrorToast(response.message || this.translateService.instant('assetList.errors.failedToUpdate'));
           this.loading = false;
         }
       },
       error: (err) => {
         console.error('Failed to update:', err);
-        this.showErrorToast('Failed to update ammunition');
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToUpdate'));
         this.loading = false;
       }
     });
@@ -369,7 +373,11 @@ export class AssetListComponent implements OnInit {
   }
 
   getReadyForIssueText(ready: boolean): string {
-    return ready ? 'Ready' : 'Not Ready';
+    return ready ? this.translateService.instant('assetList.ready') : this.translateService.instant('assetList.notReady');
+  }
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
   }
 
   private showSuccessToast(message: string): void {

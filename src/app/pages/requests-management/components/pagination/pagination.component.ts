@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-pagination',
@@ -17,8 +18,20 @@ export class PaginationComponent {
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
 
+  constructor(private translationService: TranslationService) {}
+
   get pages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  // Return correct icon for previous button based on RTL/LTR
+  get previousIcon() {
+    return this.translationService.isRTL() ? ChevronRight : ChevronLeft;
+  }
+
+  // Return correct icon for next button based on RTL/LTR
+  get nextIcon() {
+    return this.translationService.isRTL() ? ChevronLeft : ChevronRight;
   }
 
   onPageClick(page: number): void {

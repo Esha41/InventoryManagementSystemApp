@@ -44,6 +44,12 @@ export const routes: Routes = [
       },
       {
         path: 'allowance',
+        loadComponent: () => import('@pages/allowance-list/allowance-list.component').then(m => m.AllowanceListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['request.create', 'allowance.view'] }
+      },
+      {
+        path: 'allowance/add',
         loadComponent: () => import('@pages/allowance/allowance.component').then(m => m.AllowanceComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['request.create', 'allowance.view'] }
