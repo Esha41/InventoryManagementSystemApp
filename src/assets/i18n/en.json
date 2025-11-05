@@ -381,6 +381,13 @@
     "first": "First",
     "second": "Second",
     "third": "Third",
+    "fourth": "Fourth",
+    "fifth": "Fifth",
+    "sixth": "Sixth",
+    "seventh": "Seventh",
+    "eighth": "Eighth",
+    "ninth": "Ninth",
+    "tenth": "Tenth",
     "roleName": "Role Name",
     "roleNamePlaceholder": "Enter role name",
     "applicationEntity": "Application Entity",
@@ -391,7 +398,12 @@
     "view": "View",
     "edit": "Edit",
     "noWorkflows": "No Workflows Found",
-    "noWorkflowsDescription": "There are no workflows matching your criteria."
+    "noWorkflowsDescription": "There are no workflows matching your criteria.",
+    "higherApproval": "Higher Approval",
+    "higherApprovalRole": "Higher Approval Role",
+    "required": "Required",
+    "selectHigherApprovalRole": "Select higher approval role",
+    "higherApprovalEntity": "Higher Approval Entity"
   },
   "supplyRequestDetail": {
     "title": "Supply Request",

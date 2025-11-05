@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, X, ArrowLeft } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
@@ -36,7 +36,14 @@ export class AddWorkflowComponent implements OnInit {
   successMessage: string | null = null;
 
   // Steps UI state (client-side only for now)
-  steps: Array<{ roleId: string | null; applicationEntityId: number | null; entities: number[] }>=[];
+  steps: Array<{ 
+    roleId: string | null; 
+    applicationEntityId: number | null; 
+    entities: number[];
+    requireHigherApproval?: boolean;
+    higherApprovalRoleId?: string | null;
+    higherApplicationEntityId?: number | null;
+  }>=[];
 
   roles: RoleDto[] = [];
   // Full application entities cache loaded once
@@ -48,7 +55,8 @@ export class AddWorkflowComponent implements OnInit {
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
     private lookupService: LookupService,
-    private router: Router
+    private router: Router,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -104,8 +112,9 @@ export class AddWorkflowComponent implements OnInit {
         applicationRoleId: s.roleId as string,
         applicationEntityId: (s.applicationEntityId as number) || 0,
         mustApprove: false,
-        requireHigherApproval: false,
-        higherApprovalRoleId: null,
+        requireHigherApproval: !!s.requireHigherApproval,
+        higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
+        higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
         reserveQty: false
       }))
     };
@@ -144,7 +153,14 @@ export class AddWorkflowComponent implements OnInit {
 
   // Steps handlers
   addStep(): void {
-    this.steps.push({ roleId: null, applicationEntityId: null, entities: [] });
+    this.steps.push({ 
+      roleId: null, 
+      applicationEntityId: null, 
+      entities: [],
+      requireHigherApproval: false,
+      higherApprovalRoleId: null,
+      higherApplicationEntityId: null
+    });
   }
 
   removeStep(index: number): void {
@@ -177,6 +193,24 @@ export class AddWorkflowComponent implements OnInit {
     return this.allApplicationEntities
       .filter(e => allowed.has(e.id))
       .map(e => ({ id: e.id, name: e.name }));
+  }
+
+  // Human‑readable order label (1->First, 2->Second, 3->Third, 4->Fourth, ... up to 10th)
+  orderLabel(n: number): string {
+    const keyMap: { [k: number]: string } = {
+      1: 'workflow.first',
+      2: 'workflow.second',
+      3: 'workflow.third',
+      4: 'workflow.fourth',
+      5: 'workflow.fifth',
+      6: 'workflow.sixth',
+      7: 'workflow.seventh',
+      8: 'workflow.eighth',
+      9: 'workflow.ninth',
+      10: 'workflow.tenth'
+    };
+    const key = keyMap[n];
+    return key ? this.translate.instant(key) : String(n);
   }
 }
 

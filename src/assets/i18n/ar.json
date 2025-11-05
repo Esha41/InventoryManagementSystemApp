@@ -381,6 +381,13 @@
     "first": "الأولى",
     "second": "الثانية",
     "third": "الثالثة",
+    "fourth": "الرابعة",
+    "fifth": "الخامسة",
+    "sixth": "السادسة",
+    "seventh": "السابعة",
+    "eighth": "الثامنة",
+    "ninth": "التاسعة",
+    "tenth": "العاشرة",
     "roleName": "اسم الدور",
     "roleNamePlaceholder": "أدخل اسم الدور",
     "applicationEntity": "كيان التطبيق",
@@ -391,7 +398,12 @@
     "view": "عرض",
     "edit": "تعديل",
     "noWorkflows": "لم يتم العثور على سير عمل",
-    "noWorkflowsDescription": "لا توجد سير عمل تطابق معايير البحث الخاصة بك."
+    "noWorkflowsDescription": "لا توجد سير عمل تطابق معايير البحث الخاصة بك.",
+    "higherApproval": "موافقة أعلى",
+    "higherApprovalRole": "دور الموافقة الأعلى",
+    "required": "مطلوب",
+    "selectHigherApprovalRole": "اختر دور الموافقة الأعلى",
+    "higherApprovalEntity": "كيان الموافقة الأعلى"
   },
   "supplyRequestDetail": {
     "title": "طلب الإمداد",
