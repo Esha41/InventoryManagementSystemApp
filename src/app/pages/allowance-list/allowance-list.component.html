@@ -1,0 +1,145 @@
+<div class="min-h-screen p-6 space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
+      <p class="text-[var(--color-text-muted)] mt-2">{{ 'allowance.subtitle' | translate }}</p>
+    </div>
+    <app-button variant="primary" (click)="onAddAllowance()">
+      <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+        <span>{{ 'allowance.addAllowance' | translate }}</span>
+      </span>
+    </app-button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-6 w-6 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-medium text-red-800">{{ 'common.error' | translate }}</h3>
+        <div class="mt-2 text-sm text-red-700">{{ error }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allowance Table -->
+  <div *ngIf="!loading && !error" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {{ 'allowance.table.department' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {{ 'allowance.table.date' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {{ 'allowance.table.item' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {{ 'allowance.table.quantity' | translate }}
+            </th>
+            <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {{ 'allowance.table.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let allowance of allowances" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-start">
+              {{ allowance.departmentName }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+              {{ formatDate(allowance.year) }}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900 text-start">
+              <div class="font-medium">
+                {{ allowance.itemName || allowance.itemNo || ('allowance.item' | translate) + ' ' + allowance.itemId }}
+              </div>
+              <div *ngIf="allowance.itemNo || allowance.batchNo" class="text-xs text-gray-400 mt-1">
+                <span *ngIf="allowance.itemNo">{{ 'allowance.itemNo' | translate }}: {{ allowance.itemNo }}</span>
+                <span *ngIf="allowance.itemNo && allowance.batchNo">, </span>
+                <span *ngIf="allowance.batchNo">{{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
+              {{ allowance.quantity | number }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+              <div class="flex items-center justify-end space-x-2">
+                <!-- Edit Button -->
+                <button 
+                  (click)="onEdit(allowance)"
+                  class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                  [title]="'allowance.edit' | translate">
+                  <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                </button>
+                
+                <!-- Delete Button -->
+                <button 
+                  (click)="onDelete(allowance)"
+                  class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                  [title]="'allowance.delete' | translate">
+                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="allAllowances.length === 0" class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">{{ 'allowance.noAllowances' | translate }}</h3>
+      <p class="mt-1 text-sm text-gray-500">{{ 'allowance.noAllowancesDescription' | translate }}</p>
+      <div class="mt-6">
+        <app-button variant="primary" (click)="onAddAllowance()">
+          {{ 'allowance.addAllowance' | translate }}
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Footer with Pagination -->
+    <div *ngIf="allAllowances.length > 0" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+      <app-rows-per-page
+        [rowsPerPage]="rowsPerPage"
+        [totalItems]="totalItems"
+        (rowsPerPageChange)="onRowsPerPageChange($event)">
+      </app-rows-per-page>
+
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Dialog -->
+  <app-confirm-dialog
+    [isOpen]="showDeleteDialog"
+    [title]="'allowance.deleteConfirmTitle' | translate"
+    [message]="'allowance.deleteConfirmMessage' | translate"
+    [confirmText]="'common.delete' | translate"
+    [cancelText]="'common.cancel' | translate"
+    (confirmed)="onDeleteConfirm()"
+    (cancelled)="onDeleteCancel()">
+  </app-confirm-dialog>
+</div>
+

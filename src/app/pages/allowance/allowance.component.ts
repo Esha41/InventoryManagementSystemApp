@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -10,6 +12,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
+import { ToastService } from '@services/toast.service';
 
 export interface AllowanceItem {
   itemId: string;
@@ -24,14 +27,17 @@ export interface AllowanceItem {
     CommonModule,
     FormsModule,
     TranslateModule,
+    LucideAngularModule,
     ButtonComponent
   ],
   templateUrl: './allowance.component.html',
   styleUrls: ['./allowance.component.css']
 })
 export class AllowanceComponent implements OnInit {
+  readonly ArrowLeft = ArrowLeft;
+
   selectedDepartment: string = '';
-  selectedDate: string = '';
+  selectedYear: string = ''; // Changed from selectedDate to selectedYear (string input for year only)
   items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
   
   departments: DepartmentDto[] = [];
@@ -52,16 +58,19 @@ export class AllowanceComponent implements OnInit {
   constructor(
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private translateService: TranslateService,
+    private router: Router,
+    private toastService: ToastService,
+    private route: ActivatedRoute
   ) {
-    // Set default date to today
-    const today = new Date();
-    this.selectedDate = this.formatDateForInput(today);
+    // Set default year to current year
+    const currentYear = new Date().getFullYear();
+    this.selectedYear = currentYear.toString();
   }
 
   ngOnInit(): void {
     this.loadDepartments();
-    this.loadAmmunitionItems();
     
     // Setup search debouncing
     this.searchSubject.pipe(
@@ -70,12 +79,34 @@ export class AllowanceComponent implements OnInit {
     ).subscribe(({ index, term }) => {
       this.filterAmmunition(index, term);
     });
+
+    // Load ammunition items first, then check for edit mode
+    this.loadAmmunitionItems();
+    
+    // Check for edit mode from query params after ammunition items are loaded
+    this.route.queryParams.subscribe(params => {
+      if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
+        this.selectedDepartment = params['departmentId'];
+        this.selectedYear = params['year'];
+        // Wait for ammunition items to be loaded before loading allowance data
+        if (this.ammunitionItems.length > 0) {
+          this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
+        } else {
+          // If ammunition items not loaded yet, wait for them
+          this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
+            next: (items: AmmunitionReadDto[]) => {
+              this.ammunitionItems = items || [];
+              this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
+            }
+          });
+        }
+      }
+    });
   }
 
   loadAmmunitionItems(): void {
     this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
       next: (items: AmmunitionReadDto[]) => {
-        console.log('Loaded ammunition items:', items);
         this.ammunitionItems = items || [];
         // Initialize filtered list for each existing item
         this.items.forEach((_, index) => {
@@ -85,7 +116,7 @@ export class AllowanceComponent implements OnInit {
         });
       },
       error: (error: any) => {
-        console.error('Failed to load ammunition items:', error);
+        // Silently handle error - user will see it when trying to use items
       }
     });
   }
@@ -135,12 +166,6 @@ export class AllowanceComponent implements OnInit {
     return `${item.name || ''} - ${item.itemNo || ''} - ${item.batchNo || ''}`.trim();
   }
 
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
 
   loadDepartments(): void {
     this.isLoadingDepartments = true;
@@ -150,7 +175,6 @@ export class AllowanceComponent implements OnInit {
         this.isLoadingDepartments = false;
       },
       error: (error: any) => {
-        console.error('Failed to load departments:', error);
         this.isLoadingDepartments = false;
       }
     });
@@ -228,14 +252,20 @@ export class AllowanceComponent implements OnInit {
 
     // Validate department
     if (!this.selectedDepartment || this.selectedDepartment.trim() === '') {
-      this.errors['department'] = 'Department is required';
+      this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
       isValid = false;
     }
 
-    // Validate date
-    if (!this.selectedDate || this.selectedDate.trim() === '') {
-      this.errors['date'] = 'Date is required';
+    // Validate year
+    if (!this.selectedYear || this.selectedYear.trim() === '') {
+      this.errors['year'] = this.translateService.instant('allowance.errors.yearRequired');
       isValid = false;
+    } else {
+      const year = parseInt(this.selectedYear.trim(), 10);
+      if (isNaN(year) || year < 1900 || year > 5000) {
+        this.errors['year'] = this.translateService.instant('allowance.errors.yearInvalid');
+        isValid = false;
+      }
     }
 
     // Validate items
@@ -243,18 +273,18 @@ export class AllowanceComponent implements OnInit {
       const itemError: { [key: string]: string } = {};
       
       if (!item.itemId || item.itemId.trim() === '') {
-        itemError['itemId'] = 'Item ID is required';
+        itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
         isValid = false;
       } else if (!item.selectedAmmunition) {
-        itemError['itemId'] = 'Please select a valid item from the list';
+        itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
         isValid = false;
       }
 
       if (!item.quantity || item.quantity.trim() === '') {
-        itemError['quantity'] = 'Quantity is required';
+        itemError['quantity'] = this.translateService.instant('allowance.errors.quantityRequired');
         isValid = false;
       } else if (!/^\d+$/.test(item.quantity.trim())) {
-        itemError['quantity'] = 'Quantity must be a valid number';
+        itemError['quantity'] = this.translateService.instant('allowance.errors.quantityInvalid');
         isValid = false;
       }
 
@@ -273,9 +303,8 @@ export class AllowanceComponent implements OnInit {
       return;
     }
 
-    // Extract year from selected date
-    const dateObj = new Date(this.selectedDate);
-    const year = dateObj.getFullYear();
+    // Get year from selectedYear string
+    const year = parseInt(this.selectedYear.trim(), 10);
 
     // Prepare request data according to API structure
     const requestData = {
@@ -288,8 +317,6 @@ export class AllowanceComponent implements OnInit {
       }))
     };
 
-    console.log('Sending allowance request to API:', requestData);
-
     this.isLoading = true;
     this.errors = {};
 
@@ -298,24 +325,21 @@ export class AllowanceComponent implements OnInit {
       requestData
     ).subscribe({
       next: (response) => {
-        console.log('Allowance request sent successfully:', response);
         this.isLoading = false;
-        alert('Allowance request sent successfully!');
-        this.resetForm();
+        this.translateService.get(['allowance.success.sentSuccessfully', 'toast.success']).subscribe(translations => {
+          this.toastService.success(
+            translations['allowance.success.sentSuccessfully'],
+            translations['toast.success']
+          );
+        });
+        // Navigate back to list after successful submission
+        this.router.navigate(['/allowance']);
       },
       error: (error) => {
-        console.error('Failed to send allowance request:', error);
-        console.error('Error details:', {
-          status: error?.status,
-          statusText: error?.statusText,
-          message: error?.message,
-          error: error?.error,
-          url: error?.url
-        });
         this.isLoading = false;
         
         // Extract error message from various possible locations
-        let errorMessage = 'Failed to send allowance request';
+        let errorMessage = this.translateService.instant('allowance.errors.failedToSend');
         if (error?.error?.message) {
           errorMessage = error.error.message;
         } else if (error?.error?.error?.message) {
@@ -326,6 +350,9 @@ export class AllowanceComponent implements OnInit {
           errorMessage = error.error;
         }
         
+        this.translateService.get(['toast.error']).subscribe(translations => {
+          this.toastService.error(errorMessage, translations['toast.error']);
+        });
         this.errors['submit'] = errorMessage;
       }
     });
@@ -333,14 +360,59 @@ export class AllowanceComponent implements OnInit {
 
   resetForm(): void {
     this.selectedDepartment = '';
-    const today = new Date();
-    this.selectedDate = this.formatDateForInput(today);
+    const currentYear = new Date().getFullYear();
+    this.selectedYear = currentYear.toString();
     this.items = [{ itemId: '', quantity: '' }];
     this.errors = {};
     this.itemErrors = {};
     this.searchTerms = {};
     this.showDropdowns = {};
     this.isSubmitted = false;
+  }
+
+  onBack(): void {
+    this.router.navigate(['/allowance']);
+  }
+
+  loadExistingAllowance(departmentId: number, year: number): void {
+    const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
+    this.apiService.getWithAuth<ApiResponse<any>>(endpoint).subscribe({
+      next: (response) => {
+        const items = response.data?.items || response.data?.Items || [];
+        
+        if (items && items.length > 0) {
+          this.items = items.map((item: any, index: number) => {
+            const ammo = this.ammunitionItems.find(a => a.id === item.itemId);
+            this.filteredAmmunition[index] = ammo 
+              ? [ammo, ...this.ammunitionItems.filter(a => a.id !== item.itemId)]
+              : [...this.ammunitionItems];
+            
+            // Set search term to display the selected item
+            if (ammo) {
+              this.searchTerms[index] = this.getAmmunitionDisplay(ammo);
+            }
+            
+            return {
+              itemId: item.itemId.toString(),
+              quantity: item.quantity.toString(),
+              selectedAmmunition: ammo
+            };
+          });
+        } else {
+          this.items = [{ itemId: '', quantity: '' }];
+        }
+      },
+      error: (error) => {
+        this.translateService.get(['toast.error', 'allowance.errors.failedToLoad']).subscribe(translations => {
+          this.toastService.error(
+            translations['allowance.errors.failedToLoad'] || 'Failed to load allowance data',
+            translations['toast.error']
+          );
+        });
+        // Start with empty form on error
+        this.items = [{ itemId: '', quantity: '' }];
+      }
+    });
   }
 
   hasError(field: string): boolean {

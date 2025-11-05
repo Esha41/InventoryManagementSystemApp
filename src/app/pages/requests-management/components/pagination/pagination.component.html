@@ -4,7 +4,7 @@
     (click)="onPrevious()"
     [disabled]="currentPage === 1"
     class="px-3 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-    <lucide-angular [img]="ChevronLeft" class="h-4 w-4"></lucide-angular>
+    <lucide-angular [img]="previousIcon" class="h-4 w-4"></lucide-angular>
   </button>
 
   <!-- Page Numbers -->
@@ -21,6 +21,6 @@
     (click)="onNext()"
     [disabled]="currentPage === totalPages"
     class="px-3 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-    <lucide-angular [img]="ChevronRight" class="h-4 w-4"></lucide-angular>
+    <lucide-angular [img]="nextIcon" class="h-4 w-4"></lucide-angular>
   </button>
 </div>

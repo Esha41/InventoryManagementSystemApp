@@ -13,21 +13,22 @@ import { LucideAngularModule, X } from 'lucide-angular';
     <div 
       *ngIf="isOpen"
       class="fixed inset-0 z-50 overflow-y-auto"
-      (click)="onBackdropClick($event)"
     >
       <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+      <div 
+        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        (click)="onBackdropClick($event)"
+      ></div>
 
       <!-- Modal Container -->
-      <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative flex min-h-full items-center justify-center p-4 pointer-events-none">
         <!-- Modal Content -->
         <div 
-          class="relative bg-white rounded-lg shadow-custom-xl w-full transition-all"
+          class="relative bg-white rounded-lg shadow-custom-xl w-full transition-all pointer-events-auto"
           [class.max-w-md]="size === 'sm'"
           [class.max-w-2xl]="size === 'md'"
           [class.max-w-4xl]="size === 'lg'"
           [class.max-w-6xl]="size === 'xl'"
-          (click)="$event.stopPropagation()"
         >
           <!-- Header -->
           <div class="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
@@ -75,7 +76,8 @@ export class ModalComponent {
   }
 
   onBackdropClick(event: MouseEvent): void {
-    if (this.closeOnBackdrop && event.target === event.currentTarget) {
+    // Close when clicking on the backdrop
+    if (this.closeOnBackdrop) {
       this.close();
     }
   }

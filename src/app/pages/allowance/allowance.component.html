@@ -1,8 +1,21 @@
 <div class="flex justify-center">
   <div class="w-full max-w-4xl">
     <div class="space-y-6">
+      <!-- Header with Back Button -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <button 
+            (click)="onBack()"
+            class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
+            <span class="font-medium">{{ 'allowance.backToList' | translate }}</span>
+          </button>
+        </div>
+      </div>
+      
       <div>
-        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
+        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.addAllowance' | translate }}</h1>
+        <p class="text-sm text-[var(--color-text-muted)] mt-2">{{ 'allowance.addSubtitle' | translate }}</p>
       </div>
 
       <div class="bg-[#F5F5F5] rounded-xl p-8">
@@ -32,21 +45,24 @@
               </div>
             </div>
 
-            <!-- Date Picker -->
+            <!-- Year Input -->
             <div class="flex items-start gap-8">
               <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'allowance.date' | translate }} <span class="text-red-500">*</span>
+                {{ 'allowance.year' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
                 <input
-                  type="date"
-                  [(ngModel)]="selectedDate"
-                  name="date"
-                  [class.border-red-500]="hasError('date')"
+                  type="text"
+                  [(ngModel)]="selectedYear"
+                  name="year"
+                  [placeholder]="'allowance.yearPlaceholder' | translate"
+                  [class.border-red-500]="hasError('year')"
                   class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  maxlength="4"
+                  pattern="[0-9]{4}"
                 />
-                <p *ngIf="hasError('date')" class="mt-1.5 text-xs text-red-500">
-                  {{ getError('date') }}
+                <p *ngIf="hasError('year')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('year') }}
                 </p>
               </div>
             </div>

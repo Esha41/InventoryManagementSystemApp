@@ -17,7 +17,7 @@
         {{ toastType === 'success' ? '✓' : '✕' }}
       </div>
       <div class="flex-1">
-        <div class="text-[var(--color-text)] font-semibold">{{ toastType === 'success' ? 'Success' : 'Error' }}</div>
+        <div class="text-[var(--color-text)] font-semibold">{{ (toastType === 'success' ? 'common.success' : 'common.error') | translate }}</div>
         <div class="text-[var(--color-text-muted)] text-sm mt-0.5">{{ toastMessage }}</div>
       </div>
       <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors" (click)="showToast=false">
@@ -29,12 +29,14 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-3xl font-bold text-[var(--color-text)]">Ammunition Inventory</h1>
-      <p class="text-[var(--color-text-muted)] mt-2">Manage and track all ammunition items in the system</p>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
+      <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
     </div>
     <app-button variant="primary" (click)="navigateToAddAsset()">
-      <lucide-angular [img]="Plus" class="h-4 w-4 mr-2"></lucide-angular>
-      Add Ammunition
+      <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+        <span>{{ 'assetList.addAmmunition' | translate }}</span>
+      </span>
     </app-button>
   </div>
 
@@ -50,7 +52,7 @@
           <input
             type="text"
             [(ngModel)]="searchTerm"
-            placeholder="Search by name, item no, part no..."
+            [placeholder]="'assetList.searchPlaceholder' | translate"
             class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
           />
         </div>
@@ -60,7 +62,7 @@
           [(ngModel)]="selectedHcc"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
-          <option value="">All HCC</option>
+          <option value="">{{ 'assetList.filters.allHcc' | translate }}</option>
           <option *ngFor="let item of hccList" [value]="item.nameEn || item.nameAr">
             {{ item.nameEn || item.nameAr }}
           </option>
@@ -71,7 +73,7 @@
           [(ngModel)]="selectedCaseType"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
-          <option value="">All Case Types</option>
+          <option value="">{{ 'assetList.filters.allCaseTypes' | translate }}</option>
           <option *ngFor="let item of caseTypeList" [value]="item.nameEn || item.nameAr">
             {{ item.nameEn || item.nameAr }}
           </option>
@@ -82,7 +84,7 @@
           [(ngModel)]="selectedHazardDivision"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
-          <option value="">All Hazard Divisions</option>
+          <option value="">{{ 'assetList.filters.allHazardDivisions' | translate }}</option>
           <option *ngFor="let item of hazardDivisionList" [value]="item.nameEn || item.nameAr">
             {{ item.nameEn || item.nameAr }}
           </option>
@@ -93,7 +95,7 @@
           [(ngModel)]="selectedCompatibility"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
-          <option value="">All Compatibility</option>
+          <option value="">{{ 'assetList.filters.allCompatibility' | translate }}</option>
           <option *ngFor="let item of compatibilityList" [value]="item.nameEn || item.nameAr">
             {{ item.nameEn || item.nameAr }}
           </option>
@@ -107,14 +109,14 @@
     <div class="p-6">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-semibold text-[var(--color-text)]">
-          Ammunition Items ({{ filteredAssets.length }})
+          {{ 'assetList.ammunitionItems' | translate }} ({{ filteredAssets.length }})
         </h2>
       </div>
 
       <!-- Loading State -->
       <div *ngIf="loading" class="text-center py-12">
         <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--color-brand)] border-r-transparent"></div>
-        <p class="mt-4 text-[var(--color-text-muted)]">Loading ammunition data...</p>
+        <p class="mt-4 text-[var(--color-text-muted)]">{{ 'assetList.loading' | translate }}</p>
       </div>
 
       <!-- Table -->
@@ -122,17 +124,17 @@
         <table class="w-full">
           <thead class="bg-[var(--color-background)]">
             <tr class="border-b border-[var(--color-border)]">
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Name</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Item No</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Part No</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Batch No</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">HCC</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">NSN</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Case Type</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Hazard Division</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Expiry Date</th>
-              <th class="text-left py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Status</th>
-              <th class="text-right py-4 px-6 font-semibold text-[var(--color-text)] text-sm">Actions</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.name' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.itemNo' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.partNo' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.batchNo' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hcc' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.nsn' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.caseType' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hazardDivision' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.expiryDate' | translate }}</th>
+              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.status' | translate }}</th>
+              <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.actions' | translate }}</th>
             </tr>
           </thead>
           <tbody class="bg-white">
@@ -160,21 +162,21 @@
                   <button
                     (click)="onView(asset.id)"
                     class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
-                    title="View Details"
+                    [title]="'assetList.actions.viewDetails' | translate"
                   >
                     <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
                   </button>
                   <button
                     (click)="onEdit(asset.id)"
                     class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
-                    title="Edit"
+                    [title]="'common.edit' | translate"
                   >
                     <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
                   </button>
                   <button
                     (click)="onDelete(asset.id)"
                     class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
-                    title="Delete"
+                    [title]="'common.delete' | translate"
                   >
                     <lucide-angular [img]="Trash2" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
                   </button>
@@ -184,8 +186,8 @@
             <tr *ngIf="filteredAssets.length === 0 && !loading">
               <td colspan="11" class="text-center py-12">
                 <div class="flex flex-col items-center justify-center">
-                  <div class="text-[var(--color-text-muted)] text-lg mb-2">No ammunition items found</div>
-                  <p class="text-[var(--color-text-muted)] text-sm">Try adjusting your filters or add a new item</p>
+                  <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
+                  <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>
                 </div>
               </td>
             </tr>
@@ -206,7 +208,7 @@
         <!-- Header -->
         <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
           <div class="flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-[var(--color-text)]">Ammunition Details</h3>
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'assetList.viewModal.title' | translate }}</h3>
             <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-white transition-colors">
               <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
             </button>
@@ -217,67 +219,67 @@
         <div class="px-6 py-6" *ngIf="selectedAsset">
           <div class="grid grid-cols-2 gap-6">
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Name</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.name' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.name }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Item No</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.itemNo' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.itemNo }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Part No</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.partNo' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Batch No</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.batchNo' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.batchNo || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">HCC</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.hcc' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.hcc?.nameEn || selectedAsset.hcc?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">NSN</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.nsn' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn?.nameEn || selectedAsset.nsn?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Bullet Diameter</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.bulletDiameter' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter }} {{ selectedAsset.bulletDiameterUnit?.nameEn }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Case Length</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.caseLength' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseLength }} {{ selectedAsset.caseLengthUnit?.nameEn }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Case Type</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.caseType' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseType?.nameEn || selectedAsset.caseType?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Propellant</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.propellant' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.propellant?.nameEn || selectedAsset.propellant?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Compatibility</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.compatibility' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.compatibility?.nameEn || selectedAsset.compatibility?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Hazard Division</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.hazardDivision' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.hazardDivision?.nameEn || selectedAsset.hazardDivision?.nameAr || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Primer</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.primer' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.primer || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Total Weight</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.totalWeight' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight }} g</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Is Linked</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.isLinked ? 'Yes' : 'No' }}</p>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.isLinked' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ (selectedAsset.isLinked ? 'common.yes' : 'common.no') | translate }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Ready For Issue</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.readyForIssue' | translate }}</label>
               <p class="mt-1">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
                       [ngClass]="getReadyForIssueColor(selectedAsset.readyForIssue)">
@@ -286,7 +288,7 @@
               </p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">Expiry Date</label>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.expiryDate' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.expiryDate ? (selectedAsset.expiryDate | date: 'mediumDate') : '-' }}</p>
             </div>
           </div>
@@ -294,7 +296,7 @@
 
         <!-- Footer -->
         <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
-          <app-button variant="outline" (click)="closeViewModal()">Close</app-button>
+          <app-button variant="outline" (click)="closeViewModal()">{{ 'common.close' | translate }}</app-button>
         </div>
       </div>
     </div>
@@ -311,7 +313,7 @@
         <!-- Header -->
         <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
           <div class="flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-[var(--color-text)]">Edit Ammunition</h3>
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'assetList.editModal.title' | translate }}</h3>
             <button (click)="cancelEdit()" class="p-1 rounded-lg hover:bg-white transition-colors">
               <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
             </button>
@@ -324,228 +326,228 @@
             <div class="grid grid-cols-2 gap-6">
               <!-- Name -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Name *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.name' | translate }} *</label>
                 <input
                   type="text"
                   formControlName="name"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="Enter name"
+                  [placeholder]="'assetList.editModal.namePlaceholder' | translate"
                 />
                 <span *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" 
-                      class="text-xs text-red-600 mt-1">Name is required</span>
+                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.nameRequired' | translate }}</span>
               </div>
 
               <!-- Item No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Item No *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.itemNo' | translate }} *</label>
                 <input
                   type="text"
                   formControlName="itemNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="Enter item number"
+                  [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate"
                 />
                 <span *ngIf="editForm.get('itemNo')?.invalid && editForm.get('itemNo')?.touched" 
-                      class="text-xs text-red-600 mt-1">Item No is required</span>
+                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.itemNoRequired' | translate }}</span>
               </div>
 
               <!-- Part No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Part No *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.partNo' | translate }} *</label>
                 <input
                   type="text"
                   formControlName="partNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="Enter part number"
+                  [placeholder]="'assetList.editModal.partNoPlaceholder' | translate"
                 />
                 <span *ngIf="editForm.get('partNo')?.invalid && editForm.get('partNo')?.touched" 
-                      class="text-xs text-red-600 mt-1">Part No is required</span>
+                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.partNoRequired' | translate }}</span>
               </div>
 
               <!-- Batch No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Batch No</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.batchNo' | translate }}</label>
                 <input
                   type="text"
                   formControlName="batchNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="Enter batch number"
+                  [placeholder]="'assetList.editModal.batchNoPlaceholder' | translate"
                 />
               </div>
 
               <!-- HCC -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">HCC *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hcc' | translate }} *</label>
                 <select
                   formControlName="hccId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select HCC</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectHcc' | translate }}</option>
                   <option *ngFor="let hcc of hccList" [ngValue]="hcc.id">{{ hcc.nameEn }}</option>
                 </select>
                 <span *ngIf="editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched" 
-                      class="text-xs text-red-600 mt-1">HCC is required</span>
+                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.hccRequired' | translate }}</span>
               </div>
 
               <!-- NSN -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">NSN *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.nsn' | translate }} *</label>
                 <select
                   formControlName="nsnId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select NSN</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectNsn' | translate }}</option>
                   <option *ngFor="let nsn of nsns" [ngValue]="nsn.id">{{ nsn.nameEn }}</option>
                 </select>
                 <span *ngIf="editForm.get('nsnId')?.invalid && editForm.get('nsnId')?.touched" 
-                      class="text-xs text-red-600 mt-1">NSN is required</span>
+                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.nsnRequired' | translate }}</span>
               </div>
 
               <!-- Bullet Diameter -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.bulletDiameter' | translate }}</label>
                 <input
                   type="number"
                   formControlName="bulletDiameter"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="e.g., 5.56"
+                  [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate"
                   step="0.01"
                 />
               </div>
 
               <!-- Bullet Diameter Unit -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.diameterUnit' | translate }} *</label>
                 <select
                   formControlName="bulletDiameterUnitId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select unit</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectUnit' | translate }}</option>
                   <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Case Length -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseLength' | translate }}</label>
                 <input
                   type="number"
                   formControlName="caseLength"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="e.g., 45"
+                  [placeholder]="'assetList.editModal.caseLengthPlaceholder' | translate"
                   step="0.01"
                 />
               </div>
 
               <!-- Case Length Unit -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length Unit *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseLengthUnit' | translate }} *</label>
                 <select
                   formControlName="caseLengthUnitId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select unit</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectUnit' | translate }}</option>
                   <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Case Type -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseType' | translate }} *</label>
                 <select
                   formControlName="caseTypeId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select case type</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectCaseType' | translate }}</option>
                   <option *ngFor="let type of caseTypeList" [ngValue]="type.id">{{ type.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Propellant -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.propellant' | translate }} *</label>
                 <select
                   formControlName="propellantId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select propellant</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectPropellant' | translate }}</option>
                   <option *ngFor="let prop of propellantList" [ngValue]="prop.id">{{ prop.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Compatibility -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Compatibility *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.compatibility' | translate }} *</label>
                 <select
                   formControlName="compatibilityId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select compatibility</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectCompatibility' | translate }}</option>
                   <option *ngFor="let comp of compatibilityList" [ngValue]="comp.id">{{ comp.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Hazard Division -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hazardDivision' | translate }} *</label>
                 <select
                   formControlName="hazardDivisionId"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="null">Select hazard division</option>
+                  <option [ngValue]="null">{{ 'assetList.editModal.selectHazardDivision' | translate }}</option>
                   <option *ngFor="let hazard of hazardDivisionList" [ngValue]="hazard.id">{{ hazard.nameEn }}</option>
                 </select>
               </div>
 
               <!-- Primer -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primer</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.primer' | translate }}</label>
                 <input
                   type="text"
                   formControlName="primer"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="e.g., Boxer"
+                  [placeholder]="'assetList.editModal.primerPlaceholder' | translate"
                 />
               </div>
 
               <!-- Total Weight -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g)</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.totalWeight' | translate }}</label>
                 <input
                   type="number"
                   formControlName="totalWeight"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  placeholder="Enter weight"
+                  [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate"
                   step="0.01"
                 />
               </div>
 
               <!-- Is Linked -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Is Linked</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.isLinked' | translate }}</label>
                 <select
                   formControlName="isLinked"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="false">Not Linked</option>
-                  <option [ngValue]="true">Linked</option>
+                  <option [ngValue]="false">{{ 'assetList.editModal.notLinked' | translate }}</option>
+                  <option [ngValue]="true">{{ 'assetList.editModal.linked' | translate }}</option>
                 </select>
               </div>
 
               <!-- Ready For Issue -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Ready For Issue</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.readyForIssue' | translate }}</label>
                 <select
                   formControlName="readyForIssue"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
                 >
-                  <option [ngValue]="true">Yes</option>
-                  <option [ngValue]="false">No</option>
+                  <option [ngValue]="true">{{ 'common.yes' | translate }}</option>
+                  <option [ngValue]="false">{{ 'common.no' | translate }}</option>
                 </select>
               </div>
 
               <!-- Expiry Date -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Expiry Date</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.expiryDate' | translate }}</label>
                 <input
                   type="date"
                   formControlName="expiryDate"
@@ -557,9 +559,9 @@
 
           <!-- Footer -->
           <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
-            <app-button variant="outline" type="button" (click)="cancelEdit()">Cancel</app-button>
+            <app-button variant="outline" type="button" (click)="cancelEdit()">{{ 'common.cancel' | translate }}</app-button>
             <app-button variant="primary" type="submit" [disabled]="editForm.invalid || loading">
-              {{ loading ? 'Saving...' : 'Save Changes' }}
+              {{ loading ? ('common.saving' | translate) : ('assetList.editModal.saveChanges' | translate) }}
             </app-button>
           </div>
         </form>
@@ -581,29 +583,29 @@
             <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
               <lucide-angular [img]="Trash2" class="h-5 w-5 text-red-600"></lucide-angular>
             </div>
-            <h3 class="text-lg font-semibold text-[var(--color-text)]">Delete Ammunition</h3>
+            <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.deleteModal.title' | translate }}</h3>
           </div>
         </div>
 
         <!-- Content -->
         <div class="px-6 py-6">
           <p class="text-[var(--color-text)]">
-            Are you sure you want to delete <strong>{{ selectedAsset?.name }}</strong>?
+            {{ 'assetList.deleteModal.confirmMessage' | translate }} <strong>{{ selectedAsset?.name }}</strong>?
           </p>
           <p class="text-[var(--color-text-muted)] text-sm mt-2">
-            This action cannot be undone. This will permanently delete the ammunition item from the system.
+            {{ 'assetList.deleteModal.warning' | translate }}
           </p>
         </div>
 
         <!-- Footer -->
         <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
-          <app-button variant="outline" (click)="cancelDelete()">Cancel</app-button>
+          <app-button variant="outline" (click)="cancelDelete()">{{ 'common.cancel' | translate }}</app-button>
           <button
             (click)="confirmDelete()"
             [disabled]="loading"
             class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
-            {{ loading ? 'Deleting...' : 'Delete' }}
+            {{ loading ? ('assetList.deleteModal.deleting' | translate) : ('common.delete' | translate) }}
           </button>
         </div>
       </div>
