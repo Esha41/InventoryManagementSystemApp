@@ -3,35 +3,43 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-angular';
-import { WarehouseService } from '@services/warehouse.service';
-import { 
-  WarehouseInventoryItem, 
-  WarehouseInventoryResponse, 
-  WarehouseInventoryRequest,
-  WarehouseInventorySummary 
-} from '@models/warehouse-inventory.model';
-import { WarehouseDto } from '@models/warehouse.model';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2 } from 'lucide-angular';
+import { InventoryService } from '@services/inventory.service';
+import { LookupService } from '@services/lookup.service';
+import { ToastService } from '@services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
+import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
+import { DepotDto } from '@models/depot.model';
+import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, LucideAngularModule, TranslateModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule, 
+    LucideAngularModule, 
+    TranslateModule,
+    ConfirmDialogComponent,
+    EditInventoryDetailModalComponent
+  ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css']
 })
 export class WarehouseInventoryComponent implements OnInit, OnDestroy {
-  warehouseId: string = '';
-  warehouseName: string = '';
-  inventoryItems: WarehouseInventoryItem[] = [];
-  inventorySummary: WarehouseInventorySummary | null = null;
+  depoId: number = 0;
+  depoName: string = '';
+  inventoryDetails: InventoryDetailDto[] = [];
+  paginatedItems: InventoryDetailDto[] = [];
   loading = true;
   error: string | null = null;
 
   // Pagination
   currentPage = 1;
-  pageSize = 5; // Smaller page size to show pagination
+  pageSize = 10;
   totalCount = 0;
   totalPages = 0;
 
@@ -39,41 +47,34 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
+  readonly Edit2 = Edit2;
+  readonly Trash2 = Trash2;
+
+  // Modal states
+  showEditModal = false;
+  showDeleteDialog = false;
+  selectedDetail?: InventoryDetailDto;
+  currentInventory?: any;
 
   private destroy$ = new Subject<void>();
 
   constructor(
-    private warehouseService: WarehouseService,
+    private inventoryService: InventoryService,
+    private lookupService: LookupService,
+    private toastService: ToastService,
+    private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      this.warehouseId = params['id'];
-      if (this.warehouseId) {
-        this.loadWarehouseDetails();
+      const id = params['id'];
+      if (id) {
+        this.depoId = parseInt(id, 10);
+        this.loadInventoryData();
       }
     });
-  }
-
-  private loadWarehouseDetails(): void {
-    this.loading = true;
-    this.error = null;
-
-    // First, get the warehouse details to get the name
-    this.warehouseService.getWarehouseById(this.warehouseId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (warehouse: WarehouseDto) => {
-          this.warehouseName = warehouse.name;
-          this.loadWarehouseInventory();
-        },
-        error: (error) => {
-          console.warn('API not available, using sample data:', error.message);
-          this.loadSampleWarehouseData();
-        }
-      });
   }
 
   ngOnDestroy(): void {
@@ -81,142 +82,49 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadWarehouseInventory(): void {
+  private loadInventoryData(): void {
+    this.loading = true;
     this.error = null;
 
-    const request: WarehouseInventoryRequest = {
-      warehouseId: this.warehouseId,
-      page: this.currentPage,
-      pageSize: this.pageSize
-    };
-
-    this.warehouseService.getWarehouseInventory(request)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.inventoryItems = response.items;
-          this.inventorySummary = response.summary;
-          this.totalCount = response.totalCount;
-          this.totalPages = response.totalPages;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.warn('API not available, using sample data:', error.message);
-          this.addSampleData();
-        }
-      });
+    // Load depot details and inventory details in parallel
+    forkJoin({
+      depot: this.lookupService.getDepots(),
+      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: ({ depot, inventoryDetails }) => {
+        // Find the specific depot
+        const currentDepot = depot.find(d => d.id === this.depoId);
+        this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
+        
+        // Set inventory details
+        this.inventoryDetails = inventoryDetails;
+        this.totalCount = inventoryDetails.length;
+        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+        
+        // Update paginated items
+        this.updatePaginatedItems();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading inventory data:', error);
+        this.error = 'Failed to load inventory data';
+        this.loading = false;
+      }
+    });
   }
 
-  private loadSampleWarehouseData(): void {
-    // Set warehouse name based on ID
-    this.setWarehouseNameFromId();
-    this.addSampleData();
-  }
-
-  private setWarehouseNameFromId(): void {
-    // Map warehouse IDs to names based on the sample data from warehouse component
-    const warehouseNames: { [key: string]: string } = {
-      '1': 'Warehouse DOH-01',
-      '2': 'Warehouse DOH-02', 
-      '3': 'Warehouse DOH-03'
-    };
-    
-    this.warehouseName = warehouseNames[this.warehouseId] || `Warehouse ${this.warehouseId}`;
-  }
-
-  private generateDynamicInventoryData(): WarehouseInventoryItem[] {
-    const calibers = [
-      '5.56x45 mm', '9x19 mm', '5.45x39 mm', '7.62x39mm', 
-      '7.62x51mm', '12.7x51mm', '7.62x54mm', '9x21mm',
-      '5.7x28mm', '7.62x25mm', '9x18mm', '5.45x39mm'
-    ];
-    
-    const natures = [
-      'Ball (FMJ)', 'Ball', 'Tracer', 'Training', 'Blank', 
-      'Blank-Linked', 'AP', 'HP', 'Subsonic', 'Match'
-    ];
-    
-    const suppliers = [
-      'Poongsan', 'Barood', 'KINTEX', 'TANEO GROUP', 'Nammo', 
-      'OMPC', 'POF', 'IMI', 'Federal', 'Winchester', 'Remington'
-    ];
-
-    // Generate different number of items based on warehouse ID
-    const itemCounts = { '1': 8, '2': 12, '3': 6 };
-    const itemCount = itemCounts[this.warehouseId as keyof typeof itemCounts] || 8;
-    
-    const items: WarehouseInventoryItem[] = [];
-    
-    for (let i = 0; i < itemCount; i++) {
-      const caliber = calibers[Math.floor(Math.random() * calibers.length)];
-      const nature = natures[Math.floor(Math.random() * natures.length)];
-      const supplier = suppliers[Math.floor(Math.random() * suppliers.length)];
-      
-      // Generate dynamic quantities based on warehouse ID
-      const baseQuantities = { '1': 50000, '2': 30000, '3': 25000 };
-      const baseQuantity = baseQuantities[this.warehouseId as keyof typeof baseQuantities] || 30000;
-      const quantity = baseQuantity + Math.floor(Math.random() * baseQuantity);
-      
-      // Generate dynamic expiry dates (1-10 years from now)
-      const yearsFromNow = 1 + Math.floor(Math.random() * 10);
-      const monthsFromNow = Math.floor(Math.random() * 12);
-      const daysFromNow = Math.floor(Math.random() * 28);
-      const expiryDate = new Date();
-      expiryDate.setFullYear(expiryDate.getFullYear() + yearsFromNow);
-      expiryDate.setMonth(expiryDate.getMonth() + monthsFromNow);
-      expiryDate.setDate(expiryDate.getDate() + daysFromNow);
-      
-      // Generate lot number
-      const lot = String(Math.floor(Math.random() * 100)).padStart(2, '0');
-      
-      // Calculate NEQ based on quantity and caliber
-      const neqMultiplier = caliber.includes('12.7') ? 0.8 : caliber.includes('7.62') ? 0.6 : 0.4;
-      const netExplosiveQuantity = Math.round((quantity * neqMultiplier) / 1000 * 100) / 100;
-      
-      items.push({
-        id: `${this.warehouseId}-${i + 1}`,
-        warehouseId: this.warehouseId,
-        caliber,
-        nature,
-        supplier,
-        lot,
-        quantity,
-        expiryDate,
-        netExplosiveQuantity,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-    }
-    
-    return items;
-  }
-
-  private addSampleData(): void {
-    // Generate dynamic inventory data based on warehouse ID
-    this.inventoryItems = this.generateDynamicInventoryData();
-
-    this.inventorySummary = {
-      warehouseId: this.warehouseId,
-      warehouseName: this.warehouseName,
-      totalItems: this.inventoryItems.length,
-      totalQuantity: this.inventoryItems.reduce((sum, item) => sum + item.quantity, 0),
-      netExplosiveQuantity: this.inventoryItems.reduce((sum, item) => sum + item.netExplosiveQuantity, 0),
-      neqStatus: this.getNEQStatus(this.warehouseId),
-      neqPercentage: this.getNEQPercentage(this.warehouseId),
-      warningMessage: this.getWarningMessage(this.warehouseId)
-    };
-
-    this.totalCount = this.inventoryItems.length;
-    this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-    this.loading = false;
-    this.error = null;
+  private updatePaginatedItems(): void {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedItems = this.inventoryDetails.slice(startIndex, endIndex);
   }
 
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.loadWarehouseInventory();
+      this.updatePaginatedItems();
     }
   }
 
@@ -224,67 +132,68 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/warehouse']);
   }
 
-  onViewItem(itemId: string): void {
-    this.router.navigate(['/warehouse', this.warehouseId, 'inventory', itemId]);
+  onViewItem(itemId: number): void {
+    this.router.navigate(['/warehouse', this.depoId, 'inventory', itemId]);
   }
 
   onPageSizeChange(newSize: number): void {
     this.pageSize = newSize;
     this.currentPage = 1; // Reset to first page
-    this.loadWarehouseInventory();
+    this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+    this.updatePaginatedItems();
   }
 
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('en-GB', {
+  /**
+   * Get item name from inventory detail
+   */
+  getItemName(detail: InventoryDetailDto): string {
+    return detail.item?.name || detail.item?.itemNo || 'Unknown Item';
+  }
+
+  /**
+   * Get caliber/item number
+   */
+  getItemNo(detail: InventoryDetailDto): string {
+    return detail.item?.itemNo || '-';
+  }
+
+  /**
+   * Get supplier name
+   */
+  getSupplierName(detail: InventoryDetailDto): string {
+    return detail.supplier?.nameEn || detail.supplier?.nameAr || '-';
+  }
+
+  /**
+   * Get HCC name
+   */
+  getHccName(detail: InventoryDetailDto): string {
+    return detail.item?.hcc?.nameEn || detail.item?.hcc?.nameAr || '-';
+  }
+
+  /**
+   * Format date for display
+   */
+  formatDate(date?: Date | string): string {
+    if (!date) return '-';
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
   }
 
+  /**
+   * Format number with thousands separator
+   */
   formatNumber(num: number): string {
     return num.toLocaleString();
   }
 
-  getNEQStatusColor(status: string): string {
-    switch (status) {
-      case 'Low': return 'text-green-600';
-      case 'Medium': return 'text-yellow-600';
-      case 'High': return 'text-orange-600';
-      case 'Critical': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  }
-
-  getNEQGaugeRotation(percentage: number): string {
-    // Convert percentage to rotation angle (0-180 degrees)
-    const rotation = (percentage / 100) * 180;
-    return `rotate(${rotation}deg)`;
-  }
-
-  private getNEQStatus(warehouseId: string): 'Low' | 'Medium' | 'High' | 'Critical' {
-    const statuses: { [key: string]: 'Low' | 'Medium' | 'High' | 'Critical' } = { 
-      '1': 'High', 
-      '2': 'Medium', 
-      '3': 'Low' 
-    };
-    return statuses[warehouseId] || 'Medium';
-  }
-
-  private getNEQPercentage(warehouseId: string): number {
-    const percentages = { '1': 85, '2': 65, '3': 45 };
-    return percentages[warehouseId as keyof typeof percentages] || 65;
-  }
-
-  private getWarningMessage(warehouseId: string): string | undefined {
-    const warnings = { 
-      '1': 'Inventory has reached maximum amount of explosives',
-      '2': 'Inventory levels are moderate',
-      '3': 'Inventory levels are low'
-    };
-    return warnings[warehouseId as keyof typeof warnings];
-  }
-
+  /**
+   * Get page numbers for pagination
+   */
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
@@ -296,5 +205,213 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     }
     
     return pages;
+  }
+
+  /**
+   * Refresh inventory data
+   */
+  refreshInventory(): void {
+    this.loadInventoryData();
+  }
+
+  /**
+   * Navigate to add inventory page
+   */
+  onAddInventory(): void {
+    this.router.navigate(['/warehouse', this.depoId, 'inventory', 'add']);
+  }
+
+  /**
+   * Open edit modal for inventory detail
+   */
+  onEditItem(detail: InventoryDetailDto): void {
+    this.selectedDetail = detail;
+    
+    // Load the full inventory record for this detail
+    this.inventoryService.getById(detail.inventoryId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (inventory) => {
+          this.currentInventory = inventory;
+          this.showEditModal = true;
+        },
+        error: (error) => {
+          console.error('Error loading inventory:', error);
+          this.translateService.get('toast.failedToLoadDetails').subscribe(msg => {
+            this.toastService.error(msg);
+          });
+        }
+      });
+  }
+
+  /**
+   * Open delete confirmation dialog
+   */
+  onDeleteItem(detail: InventoryDetailDto): void {
+    this.selectedDetail = detail;
+    this.showDeleteDialog = true;
+  }
+
+  /**
+   * Handle edit modal save
+   */
+  onEditSave(updateDetailDto: UpdateInventoryDetailDto): void {
+    if (!this.currentInventory || !this.selectedDetail) return;
+
+    // Update the inventory with modified detail
+    const updateInventoryDto: UpdateInventoryDto = {
+      depoId: this.currentInventory.depoId,
+      invoiceNumber: this.currentInventory.invoiceNumber,
+      invoiceDate: this.currentInventory.invoiceDate,
+      recievedDate: this.currentInventory.recievedDate,
+      notes: this.currentInventory.notes,
+      inventoryDetails: this.currentInventory.inventoryDetails.map((d: InventoryDetailDto) => 
+        d.id === this.selectedDetail!.id ? updateDetailDto : {
+          id: d.id,
+          itemId: d.itemId,
+          lot: d.lot,
+          supplierId: d.supplierId,
+          manufacturerId: d.manufacturerId,
+          countryId: d.countryId,
+          itemQuantity: d.itemQuantity,
+          currentQuantity: d.currentQuantity
+        }
+      )
+    };
+
+    this.inventoryService.update(this.currentInventory.id, updateInventoryDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
+          });
+          this.showEditModal = false;
+          this.selectedDetail = undefined;
+          this.currentInventory = undefined;
+          this.loadInventoryData(); // Refresh data
+        },
+        error: (error) => {
+          console.error('Error updating inventory:', error);
+          this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
+            const errorMsg = error.error?.message || translations['toast.failedToUpdate'];
+            this.toastService.error(errorMsg, translations['toast.error']);
+          });
+        }
+      });
+  }
+
+  /**
+   * Handle delete confirmation
+   */
+  onDeleteConfirm(): void {
+    if (!this.selectedDetail) return;
+
+    // For simplicity, we'll remove the item from the inventory
+    // In a real scenario, you might want to delete the entire inventory if it's the last item
+    // or just mark the detail as deleted
+    
+    this.inventoryService.getById(this.selectedDetail.inventoryId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (inventory) => {
+          if (!inventory) {
+            this.translateService.get(['toast.inventoryNotFound', 'toast.error']).subscribe(translations => {
+              this.toastService.error(translations['toast.inventoryNotFound'], translations['toast.error']);
+            });
+            this.showDeleteDialog = false;
+            return;
+          }
+
+          // Filter out the detail to delete
+          const remainingDetails = inventory.inventoryDetails?.filter(d => d.id !== this.selectedDetail!.id) || [];
+          
+          if (remainingDetails.length === 0) {
+            // If no details left, delete the entire inventory
+            this.inventoryService.delete(inventory.id)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: () => {
+                  this.translateService.get(['toast.inventoryDeleted', 'toast.success']).subscribe(translations => {
+                    this.toastService.success(translations['toast.inventoryDeleted'], translations['toast.success']);
+                  });
+                  this.showDeleteDialog = false;
+                  this.selectedDetail = undefined;
+                  this.loadInventoryData();
+                },
+                error: (error) => {
+                  console.error('Error deleting inventory:', error);
+                  this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
+                    this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
+                  });
+                  this.showDeleteDialog = false;
+                }
+              });
+          } else {
+            // Update inventory without this detail
+            const updateDto: UpdateInventoryDto = {
+              depoId: inventory.depoId,
+              invoiceNumber: inventory.invoiceNumber || '',
+              invoiceDate: inventory.invoiceDate,
+              recievedDate: inventory.recievedDate,
+              notes: inventory.notes,
+              inventoryDetails: remainingDetails.map(d => ({
+                id: d.id,
+                itemId: d.itemId,
+                lot: d.lot,
+                supplierId: d.supplierId,
+                manufacturerId: d.manufacturerId,
+                countryId: d.countryId,
+                itemQuantity: d.itemQuantity,
+                currentQuantity: d.currentQuantity
+              }))
+            };
+
+            this.inventoryService.update(inventory.id, updateDto)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: () => {
+                  this.translateService.get(['toast.inventoryItemDeleted', 'toast.success']).subscribe(translations => {
+                    this.toastService.success(translations['toast.inventoryItemDeleted'], translations['toast.success']);
+                  });
+                  this.showDeleteDialog = false;
+                  this.selectedDetail = undefined;
+                  this.loadInventoryData();
+                },
+                error: (error) => {
+                  console.error('Error deleting item:', error);
+                  this.translateService.get(['toast.failedToDeleteItem', 'toast.error']).subscribe(translations => {
+                    this.toastService.error(translations['toast.failedToDeleteItem'], translations['toast.error']);
+                  });
+                  this.showDeleteDialog = false;
+                }
+              });
+          }
+        },
+        error: (error) => {
+          console.error('Error loading inventory for delete:', error);
+          this.translateService.get(['toast.failedToLoad', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoad'], translations['toast.error']);
+          });
+          this.showDeleteDialog = false;
+        }
+      });
+  }
+
+  /**
+   * Close edit modal
+   */
+  onEditModalClose(): void {
+    this.showEditModal = false;
+    this.selectedDetail = undefined;
+    this.currentInventory = undefined;
+  }
+
+  /**
+   * Close delete dialog
+   */
+  onDeleteCancel(): void {
+    this.showDeleteDialog = false;
+    this.selectedDetail = undefined;
   }
 }

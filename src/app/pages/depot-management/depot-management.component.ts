@@ -1,18 +1,20 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { DepotDto } from '@models/depot.model';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { ToastService } from '@services/toast.service';
+import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-depot-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent],
   templateUrl: './depot-management.component.html',
   styleUrls: ['./depot-management.component.css']
 })
@@ -32,11 +34,17 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   isEditMode = false;
   currentDepot: DepotDto = this.getEmptyDepot();
 
+  // Delete confirmation dialog state
+  showDeleteDialog = false;
+  depotToDelete?: DepotDto;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private lookupService: LookupService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private toastService: ToastService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -107,60 +115,92 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (response) => {
         if (response.succeeded) {
-          this.successMessage = this.isEditMode
-            ? 'Depot updated successfully!'
-            : 'Depot created successfully!';
+          this.translateService.get([
+            this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
+            'toast.success'
+          ]).subscribe(translations => {
+            const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
+            this.toastService.success(translations[messageKey], translations['toast.success']);
+          });
           this.closeModal();
           this.lookupService.clearCacheFor('depots');
           this.loadDepots();
-          setTimeout(() => (this.successMessage = null), 3000);
         } else {
-          this.errorMessage = response.message || 'Failed to save depot';
+          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+            this.toastService.error(
+              response.message || translations['toast.failedToSaveDepot'],
+              translations['toast.error']
+            );
+          });
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error saving depot:', error);
-        this.errorMessage = error.message || 'Failed to save depot';
+        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+          this.toastService.error(
+            error.message || translations['toast.failedToSaveDepot'],
+            translations['toast.error']
+          );
+        });
         this.loading = false;
       }
     });
   }
 
   deleteDepot(depot: DepotDto): void {
-    if (!confirm(`Are you sure you want to delete ${depot.nameEn}?`)) {
-      return;
-    }
+    this.depotToDelete = depot;
+    this.showDeleteDialog = true;
+  }
+
+  onDeleteConfirm(): void {
+    if (!this.depotToDelete) return;
 
     this.loading = true;
     this.errorMessage = null;
-
-    // Soft delete by updating the depot with isDeleted = true
-    const deletedDepot = { ...depot, isDeleted: true };
+    this.showDeleteDialog = false;
 
     this.apiService
       .deleteWithAuth<APIOperationResponse<DepotDto>>(
-        `/Lookup/Depot/${depot.id}`
+        `/Lookup/Depot/${this.depotToDelete.id}`
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           if (response.succeeded) {
-            this.successMessage = 'Depot deleted successfully!';
+            this.translateService.get(['toast.depotDeleted', 'toast.success']).subscribe(translations => {
+              this.toastService.success(translations['toast.depotDeleted'], translations['toast.success']);
+            });
             this.lookupService.clearCacheFor('depots');
             this.loadDepots();
-            setTimeout(() => (this.successMessage = null), 3000);
           } else {
-            this.errorMessage = response.message || 'Failed to delete depot';
+            this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).subscribe(translations => {
+              this.toastService.error(
+                response.message || translations['toast.failedToDeleteDepot'],
+                translations['toast.error']
+              );
+            });
           }
           this.loading = false;
+          this.depotToDelete = undefined;
         },
         error: (error) => {
           console.error('Error deleting depot:', error);
-          this.errorMessage = error.message || 'Failed to delete depot';
+          this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).subscribe(translations => {
+            this.toastService.error(
+              error.message || translations['toast.failedToDeleteDepot'],
+              translations['toast.error']
+            );
+          });
           this.loading = false;
+          this.depotToDelete = undefined;
         }
       });
+  }
+
+  onDeleteCancel(): void {
+    this.showDeleteDialog = false;
+    this.depotToDelete = undefined;
   }
 
   validateDepot(): boolean {

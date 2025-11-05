@@ -159,6 +159,44 @@ html, body {
   direction: ltr;
 }
 
+/* RTL-aware text alignment utilities */
+[dir="rtl"] .text-start,
+[dir="ltr"] .text-start {
+  text-align: start;
+}
+
+[dir="rtl"] .text-end,
+[dir="ltr"] .text-end {
+  text-align: end;
+}
+
+/* RTL-aware table alignment */
+[dir="rtl"] table th,
+[dir="rtl"] table td {
+  text-align: start;
+}
+
+[dir="rtl"] table th.text-right,
+[dir="rtl"] table td.text-right {
+  text-align: end;
+}
+
+[dir="ltr"] table th.text-right,
+[dir="ltr"] table td.text-right {
+  text-align: right;
+}
+
+/* Ensure table cells align properly in RTL */
+[dir="rtl"] table th:not(.text-right),
+[dir="rtl"] table td:not(.text-right) {
+  text-align: start;
+}
+
+[dir="ltr"] table th:not(.text-right),
+[dir="ltr"] table td:not(.text-right) {
+  text-align: left;
+}
+
 /* Firefox specific focus ring removal */
 input::-moz-focus-inner,
 button::-moz-focus-inner {
