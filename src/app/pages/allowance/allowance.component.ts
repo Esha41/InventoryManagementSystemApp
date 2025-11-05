@@ -7,6 +7,9 @@ import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
+import { ApiResponse } from '@models/api-response.model';
 
 export interface AllowanceItem {
   itemId: string;
@@ -42,12 +45,14 @@ export class AllowanceComponent implements OnInit {
   private searchSubject = new Subject<{ index: number; term: string }>();
   
   isSubmitted = false;
+  isLoading = false;
   errors: { [key: string]: string } = {};
   itemErrors: { [key: number]: { [key: string]: string } } = {};
 
   constructor(
     private lookupService: LookupService,
-    private ammunitionService: AmmunitionService
+    private ammunitionService: AmmunitionService,
+    private apiService: ApiService
   ) {
     // Set default date to today
     const today = new Date();
@@ -240,6 +245,9 @@ export class AllowanceComponent implements OnInit {
       if (!item.itemId || item.itemId.trim() === '') {
         itemError['itemId'] = 'Item ID is required';
         isValid = false;
+      } else if (!item.selectedAmmunition) {
+        itemError['itemId'] = 'Please select a valid item from the list';
+        isValid = false;
       }
 
       if (!item.quantity || item.quantity.trim() === '') {
@@ -249,7 +257,6 @@ export class AllowanceComponent implements OnInit {
         itemError['quantity'] = 'Quantity must be a valid number';
         isValid = false;
       }
-
 
       if (Object.keys(itemError).length > 0) {
         this.itemErrors[index] = itemError;
@@ -266,34 +273,62 @@ export class AllowanceComponent implements OnInit {
       return;
     }
 
-    // Prepare request data
+    // Extract year from selected date
+    const dateObj = new Date(this.selectedDate);
+    const year = dateObj.getFullYear();
+
+    // Prepare request data according to API structure
     const requestData = {
-      departmentId: this.selectedDepartment,
-      date: this.selectedDate,
+      departmentId: parseInt(this.selectedDepartment, 10),
+      year: year,
       items: this.items.map(item => ({
-        itemId: item.itemId.trim(),
+        itemId: parseInt(item.itemId.trim(), 10),
+        itemType: 1, // Default item type as per API example
         quantity: parseInt(item.quantity.trim(), 10)
       }))
     };
 
-    console.log('Sending allowance request:', requestData);
+    console.log('Sending allowance request to API:', requestData);
 
-    // TODO: Call API service method when available
-    // this.allowanceService.createAllowance(requestData).subscribe({
-    //   next: (response) => {
-    //     console.log('Allowance request sent successfully:', response);
-    //     alert('Allowance request sent successfully!');
-    //     this.resetForm();
-    //   },
-    //   error: (error) => {
-    //     console.error('Failed to send allowance request:', error);
-    //     this.errors['submit'] = error.message || 'Failed to send allowance request';
-    //   }
-    // });
+    this.isLoading = true;
+    this.errors = {};
 
-    // Temporary: Show success message
-    alert('Allowance request sent successfully!');
-    this.resetForm();
+    this.apiService.postWithAuth<ApiResponse<any>>(
+      API_ENDPOINTS.ALLOWANCE.BULK,
+      requestData
+    ).subscribe({
+      next: (response) => {
+        console.log('Allowance request sent successfully:', response);
+        this.isLoading = false;
+        alert('Allowance request sent successfully!');
+        this.resetForm();
+      },
+      error: (error) => {
+        console.error('Failed to send allowance request:', error);
+        console.error('Error details:', {
+          status: error?.status,
+          statusText: error?.statusText,
+          message: error?.message,
+          error: error?.error,
+          url: error?.url
+        });
+        this.isLoading = false;
+        
+        // Extract error message from various possible locations
+        let errorMessage = 'Failed to send allowance request';
+        if (error?.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error?.error?.error?.message) {
+          errorMessage = error.error.error.message;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        } else if (typeof error?.error === 'string') {
+          errorMessage = error.error;
+        }
+        
+        this.errors['submit'] = errorMessage;
+      }
+    });
   }
 
   resetForm(): void {

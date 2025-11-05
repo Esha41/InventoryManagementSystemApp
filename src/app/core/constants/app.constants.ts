@@ -74,13 +74,21 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/ammunition/${id}`,
   },
   
-  // Warehouse Management
-  WAREHOUSES: {
-    BASE: '/warehouses',
-    BY_ID: (id: string) => `/warehouses/${id}`,
-    SUMMARY: '/warehouses/summary',
-    INVENTORY: (id: string) => `/warehouses/${id}/inventory`,
-    INVENTORY_PAGINATED: (id: string) => `/warehouses/${id}/inventory/paginated`,
+  // Inventory Management
+  INVENTORY: {
+    BASE: '/inventory',
+    BY_ID: (id: number) => `/inventory/${id}`,
+  },
+  
+  // Depot Management (Warehouses)
+  DEPOT: {
+    BASE: '/Lookup/Depot',
+  },
+
+  // Allowance Management
+  ALLOWANCE: {
+    BASE: '/AllowanceItem',
+    BULK: '/AllowanceItem/bulk',
   },
 } as const;
 

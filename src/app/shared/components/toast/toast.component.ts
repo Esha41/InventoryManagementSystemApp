@@ -1,0 +1,127 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-angular';
+import { ToastService, Toast } from '@services/toast.service';
+
+@Component({
+  selector: 'app-toast',
+  standalone: true,
+  imports: [CommonModule, LucideAngularModule],
+  template: `
+    <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+      <div
+        *ngFor="let toast of toasts"
+        [@slideIn]
+        [class]="getToastClass(toast.type)"
+        class="flex items-start gap-3 p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-all duration-300">
+        
+        <!-- Icon -->
+        <div class="flex-shrink-0 mt-0.5">
+          <lucide-angular 
+            *ngIf="toast.type === 'success'" 
+            [img]="CheckCircle" 
+            class="w-5 h-5 text-green-500"></lucide-angular>
+          <lucide-angular 
+            *ngIf="toast.type === 'error'" 
+            [img]="XCircle" 
+            class="w-5 h-5 text-red-500"></lucide-angular>
+          <lucide-angular 
+            *ngIf="toast.type === 'warning'" 
+            [img]="AlertCircle" 
+            class="w-5 h-5 text-orange-500"></lucide-angular>
+          <lucide-angular 
+            *ngIf="toast.type === 'info'" 
+            [img]="Info" 
+            class="w-5 h-5 text-blue-500"></lucide-angular>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <h4 *ngIf="toast.title" class="font-semibold text-sm text-gray-900 mb-1">
+            {{ toast.title }}
+          </h4>
+          <p class="text-sm text-gray-700">
+            {{ toast.message }}
+          </p>
+        </div>
+
+        <!-- Close Button -->
+        <button
+          (click)="removeToast(toast.id)"
+          class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+          <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+        </button>
+      </div>
+    </div>
+  `,
+  styles: [`
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    :host ::ng-deep div[class*="rounded-lg"] {
+      animation: slideIn 0.3s ease-out;
+    }
+  `]
+})
+export class ToastComponent implements OnInit, OnDestroy {
+  readonly CheckCircle = CheckCircle;
+  readonly XCircle = XCircle;
+  readonly AlertCircle = AlertCircle;
+  readonly Info = Info;
+  readonly X = X;
+
+  toasts: Toast[] = [];
+  private destroy$ = new Subject<void>();
+
+  constructor(private toastService: ToastService) {}
+
+  ngOnInit(): void {
+    this.toastService.toast$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(toast => {
+        this.toasts.push(toast);
+        
+        // Auto-remove after duration
+        if (toast.duration) {
+          setTimeout(() => {
+            this.removeToast(toast.id);
+          }, toast.duration);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  removeToast(id: string): void {
+    this.toasts = this.toasts.filter(t => t.id !== id);
+  }
+
+  getToastClass(type: Toast['type']): string {
+    const baseClasses = 'bg-white border-l-4';
+    switch (type) {
+      case 'success':
+        return `${baseClasses} border-green-500`;
+      case 'error':
+        return `${baseClasses} border-red-500`;
+      case 'warning':
+        return `${baseClasses} border-orange-500`;
+      case 'info':
+        return `${baseClasses} border-blue-500`;
+      default:
+        return `${baseClasses} border-gray-500`;
+    }
+  }
+}
+

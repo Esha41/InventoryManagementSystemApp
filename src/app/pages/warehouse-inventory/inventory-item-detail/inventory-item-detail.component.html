@@ -1,14 +1,21 @@
-<div class="bg-white min-h-full">
+<div class="bg-white min-h-full p-6">
   <!-- Header -->
-  <div class="flex items-center space-x-3 mb-6">
-    <button 
-      (click)="onBack()"
-      class="text-gray-700 hover:text-gray-900 transition-colors">
-      <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center space-x-3">
+      <button 
+        (click)="onBack()"
+        class="text-gray-700 hover:text-gray-900 transition-colors">
+        <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
+      </button>
+      <h1 class="text-2xl font-semibold text-gray-900">
+        {{ getItemName() }}
+      </h1>
+    </div>
+    <button
+      (click)="onMapView()"
+      class="px-4 py-2 bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white rounded-lg transition-colors">
+      View on Map
     </button>
-    <h1 class="text-xl font-medium text-gray-900">
-      {{ item?.caliber || '9x19 mm Ball' }}
-    </h1>
   </div>
 
   <!-- Loading State -->
@@ -16,10 +23,30 @@
     <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
   </div>
 
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-6 w-6 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-medium text-red-800">Error</h3>
+        <div class="mt-2 text-sm text-red-700">{{ error }}</div>
+        <button 
+          (click)="onBack()"
+          class="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg transition-colors">
+          Back to Inventory
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Content -->
-  <div *ngIf="!loading && item">
+  <div *ngIf="!loading && !error && inventoryDetail">
     <!-- Tabs -->
-    <div class="border-b border-gray-300 mb-10">
+    <div class="border-b border-gray-300 mb-8">
       <nav class="flex space-x-8">
         <button
           (click)="setActiveTab('overview')"
@@ -39,109 +66,118 @@
           class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-gray-700">
           Stock
         </button>
-        <button
-          (click)="setActiveTab('orders')"
-          [class.border-gray-800]="activeTab === 'orders'"
-          [class.text-gray-900]="activeTab === 'orders'"
-          [class.border-transparent]="activeTab !== 'orders'"
-          [class.text-gray-400]="activeTab !== 'orders'"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-gray-700">
-          Orders
-        </button>
-        <button
-          (click)="setActiveTab('supplier')"
-          [class.border-gray-800]="activeTab === 'supplier'"
-          [class.text-gray-900]="activeTab === 'supplier'"
-          [class.border-transparent]="activeTab !== 'supplier'"
-          [class.text-gray-400]="activeTab !== 'supplier'"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-gray-700">
-          Supplier
-        </button>
       </nav>
     </div>
 
     <!-- Overview Tab -->
     <div *ngIf="activeTab === 'overview'">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Left Column: Details -->
-        <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-6">Primary Details</h2>
-          <div class="space-y-4">
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Product name</p>
-              <p class="text-sm text-gray-800">{{ item.caliber }}</p>
-            </div>
+        <div class="space-y-8">
+          <!-- Primary Details -->
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 mb-6">Primary Details</h2>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Item Name</p>
+                <p class="text-sm font-medium text-gray-800">{{ getItemName() }}</p>
+              </div>
 
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Product ID</p>
-              <p class="text-sm text-gray-800">456567</p>
-            </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Item Number / Caliber</p>
+                <p class="text-sm font-medium text-gray-800">{{ getItemNo() }}</p>
+              </div>
 
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">NCN</p>
-              <p class="text-sm text-gray-800">{{ item.nature }}</p>
-            </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">HCC</p>
+                <p class="text-sm text-gray-800">{{ getHccName() }}</p>
+              </div>
 
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Primary Purpose</p>
-              <p class="text-sm text-gray-800">Anti-Personnel</p>
-            </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Batch Number</p>
+                <p class="text-sm text-gray-800">{{ inventoryDetail.item?.batchNo || '-' }}</p>
+              </div>
 
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Projectile Color</p>
-              <p class="text-sm text-gray-800">No Color - Plain</p>
-            </div>
-          </div>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Part Number</p>
+                <p class="text-sm text-gray-800">{{ inventoryDetail.item?.partNo || '-' }}</p>
+              </div>
 
-          <h2 class="text-sm font-semibold text-gray-700 mb-6 mt-10">Caliber Specifications</h2>
-          <div class="space-y-4">
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Total Weight</p>
-              <p class="text-sm text-gray-800">11.7 - 0.8 gram</p>
-            </div>
-
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Projectile Material</p>
-              <p class="text-sm text-gray-800">Copper Alloy #220, Lead Antimony Alloy</p>
-            </div>
-
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Case Type</p>
-              <p class="text-sm text-gray-800">Rimless</p>
-            </div>
-
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Primer</p>
-              <p class="text-sm text-gray-800">Non-corrosive Type</p>
-            </div>
-
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Propellant</p>
-              <p class="text-sm text-gray-800">WC-844 (smokeless, Double Base or Equivalent)</p>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Ready for Issue</p>
+                <p class="text-sm text-gray-800">
+                  <span [class]="inventoryDetail.item?.readyForIssue ? 'text-green-600' : 'text-red-600'">
+                    {{ inventoryDetail.item?.readyForIssue ? 'Yes' : 'No' }}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 
-          <h2 class="text-sm font-semibold text-gray-700 mb-6 mt-10">Classifications</h2>
-          <div class="space-y-4">
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Hazard Division</p>
-              <p class="text-sm text-gray-800">1.4 s</p>
-            </div>
+          <!-- Inventory Information -->
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 mb-6">Inventory Information</h2>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Supplier</p>
+                <p class="text-sm text-gray-800">{{ getSupplierName() }}</p>
+              </div>
 
-            <div>
-              <p class="text-xs text-gray-500 mb-1.5">Capability Group</p>
-              <p class="text-sm text-gray-800">G</p>
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Manufacturer</p>
+                <p class="text-sm text-gray-800">{{ getManufacturerName() }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Country</p>
+                <p class="text-sm text-gray-800">{{ getCountryName() }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Lot Number</p>
+                <p class="text-sm text-gray-800">{{ inventoryDetail.lot }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-gray-500 mb-1.5">Expiry Date</p>
+                <p class="text-sm text-gray-800">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Image -->
-        <div class="flex items-start justify-center pt-8">
-          <div class="w-full max-w-sm">
+        <!-- Right Column: Image and Stock Info -->
+        <div class="space-y-8">
+          <div class="flex items-center justify-center">
             <img 
               src="/assets/image 5.png" 
               alt="Ammunition" 
-              class="w-full h-auto object-contain">
+              class="h-48 object-contain">
+          </div>
+
+          <!-- Stock Summary Card -->
+          <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700 mb-4">Stock Summary</h3>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Total Quantity</span>
+                <span class="text-lg font-bold text-gray-900">{{ formatNumber(inventoryDetail.itemQuantity) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Current Available</span>
+                <span class="text-lg font-bold text-green-600">{{ formatNumber(inventoryDetail.currentQuantity) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Utilization</span>
+                <span class="text-lg font-bold text-blue-600">{{ getUtilizationPercentage() }}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Status</span>
+                <span [class]="getStockStatusClass()" class="px-3 py-1 rounded-full text-xs font-medium">
+                  {{ getStockStatus() }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -181,181 +217,47 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-100">
-            <tr *ngFor="let lot of stockLots" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ lot.lotNumber }}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                Lot {{ inventoryDetail.lot }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ formatNumber(lot.totalQuantity) }}
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ formatNumber(inventoryDetail.itemQuantity) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ lot.utilization }}%
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ getUtilizationPercentage() }}%
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ formatNumber(lot.availableInventory) }}
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ formatNumber(inventoryDetail.currentQuantity) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span [class]="getLotStatusClass(lot.status)" class="px-3 py-1 inline-flex text-xs font-medium rounded-full">
-                  {{ lot.status }}
+                <span [class]="getStockStatusClass()" class="px-3 py-1 rounded-full text-xs font-medium">
+                  {{ getStockStatus() }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ formatDate(lot.expiryDate) }}
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ formatDate(inventoryDetail.item?.expiryDate) }}
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="flex justify-center mt-10">
-        <button 
-          (click)="onMapView()"
-          class="px-10 py-2.5 bg-[#D4B896] text-gray-800 rounded-md hover:bg-[#C4A886] transition-colors font-medium text-sm">
-          Map View
-        </button>
-      </div>
-    </div>
-
-    <!-- Orders Tab -->
-    <div *ngIf="activeTab === 'orders'">
-      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-        <table class="min-w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Issue No.
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Request Type
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Quantity
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Priority
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Request Date
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Status
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wide">
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            <tr *ngFor="let order of paginatedOrders" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ order.issueNo }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ order.requestType }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ formatNumber(order.quantity) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span [class]="getPriorityClass(order.priority)" class="px-3 py-1 inline-flex text-xs font-medium rounded-full">
-                  {{ order.priority }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ formatDate(order.requestDate) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span [class]="getStatusClass(order.status)" class="px-3 py-1 inline-flex text-xs font-medium rounded-full">
-                  {{ order.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                <button class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-gray-400 hover:bg-gray-50 transition-colors ml-auto">
-                  <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="1.5"/>
-                    <circle cx="12" cy="6" r="1.5"/>
-                    <circle cx="12" cy="18" r="1.5"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="flex justify-center items-center space-x-1 mt-10">
-        <button 
-          (click)="onOrdersPageChange(currentOrdersPage - 1)"
-          [disabled]="currentOrdersPage === 1"
-          class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-          &lt;
-        </button>
-        
-        <button
-          *ngFor="let page of getOrdersPageNumbers()"
-          (click)="onOrdersPageChange(page)"
-          [class.bg-[#D4B896]]="currentOrdersPage === page"
-          [class.text-gray-900]="currentOrdersPage === page"
-          [class.text-gray-700]="currentOrdersPage !== page"
-          [class.hover:bg-gray-100]="currentOrdersPage !== page"
-          class="w-8 h-8 rounded flex items-center justify-center text-sm transition-colors font-medium">
-          {{ page }}
-        </button>
-
-        <button 
-          (click)="onOrdersPageChange(currentOrdersPage + 1)"
-          [disabled]="currentOrdersPage === totalOrdersPages"
-          class="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-          &gt;
-        </button>
-      </div>
-    </div>
-
-    <!-- Supplier Tab -->
-    <div *ngIf="activeTab === 'supplier'">
-      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-        <table class="min-w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Supplier Name
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                NCAGE
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Country
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Lead Time
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Contact
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            <tr *ngFor="let supplier of suppliers" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ supplier.name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ supplier.ncage }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ supplier.country }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                {{ supplier.leadTime }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-700">
-                {{ supplier.contact }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Stock Progress Bar -->
+      <div class="mt-8 bg-gray-50 rounded-lg p-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-4">Stock Utilization</h3>
+        <div class="relative w-full h-8 bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
+            [style.width.%]="getUtilizationPercentage()">
+          </div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-xs font-semibold text-gray-700">
+              {{ formatNumber(inventoryDetail.currentQuantity) }} / {{ formatNumber(inventoryDetail.itemQuantity) }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-

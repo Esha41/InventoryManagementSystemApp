@@ -11,3 +11,6 @@ export * from './backend-user.service';
 export * from './warehouse.service';
 export * from './lookup.service';
 export * from './workflow.service';
+export * from './inventory.service';
+export * from './toast.service';
+export * from './ammunition.service';
