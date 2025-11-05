@@ -45,8 +45,8 @@
 
     <!-- Application Entities Section -->
     <div class="pt-4 border-t border-[var(--color-border)]">
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">
-        Application Entities
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        Application Entity
       </label>
       
       <!-- Loading State -->
@@ -54,27 +54,17 @@
         Loading entities...
       </div>
 
-      <!-- Entities List -->
-      <div *ngIf="!isLoadingEntities && entities.length > 0" class="max-h-60 overflow-y-auto space-y-2 pr-2">
-        <div 
-          *ngFor="let entity of entities; let i = index" 
-          class="flex items-center gap-2 py-1.5 hover:bg-[var(--color-background-hover)] px-2 rounded transition-colors"
+      <!-- Entity Dropdown -->
+      <div *ngIf="!isLoadingEntities">
+        <select
+          formControlName="applicationEntityId"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         >
-          <input
-            type="checkbox"
-            [id]="'entity_' + i"
-            [checked]="isEntitySelected(i)"
-            (change)="toggleEntity(entity, i)"
-            class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
-          />
-          <label 
-            [for]="'entity_' + i" 
-            class="text-sm font-medium text-[var(--color-text)] cursor-pointer flex-1"
-          >
-            {{ entity.nameEn || entity.nameAr || entity.code || entity.id }}
-            <span *ngIf="entity.code" class="text-[var(--color-text-muted)] ml-2">({{ entity.code }})</span>
-          </label>
-        </div>
+          <option [ngValue]="null">{{ 'roleFormModal.selectEntity' | translate }}</option>
+          <option *ngFor="let entity of entities" [ngValue]="entity.id">
+            {{ getEntityName(entity) }}{{ entity.code ? ' (' + entity.code + ')' : '' }}
+          </option>
+        </select>
       </div>
 
       <!-- Empty State -->

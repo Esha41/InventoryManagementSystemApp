@@ -51,6 +51,9 @@
               {{ 'workflow.name' | translate }}
             </th>
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.workflowType' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {{ 'workflow.approvalStages' | translate }}
             </th>
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -68,6 +71,9 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ workflow.name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ workflow.workflowTypeName || getWorkflowTypeName(workflow.workflowType) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ workflow.approvalStages }}
@@ -206,6 +212,12 @@
         <div>
           <label class="block text-sm font-medium mb-1">Name</label>
           <input type="text" [(ngModel)]="editForm.name" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">{{ 'workflow.workflowType' | translate }}</label>
+          <select [(ngModel)]="editWorkflowType" class="w-full px-3 py-2 border rounded">
+            <option *ngFor="let t of workflowTypes" [value]="t.id">{{ t.name }}</option>
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Status</label>

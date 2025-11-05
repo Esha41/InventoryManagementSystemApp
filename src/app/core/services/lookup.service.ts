@@ -216,5 +216,12 @@ export class LookupService {
   getHazardDivisions(): Observable<HazardDivisionDto[]> {
     return this.getLookup<HazardDivisionDto>('/Lookup/HazardDivision', 'hazardDivisions');
   }
+
+  /**
+   * Get workflow types
+   */
+  getWorkflowTypes(): Observable<LookupItem[]> {
+    return this.getLookup<LookupItem>('/Lookup/WorkFlowType', 'workflowTypes');
+  }
 }
 

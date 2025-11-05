@@ -8,6 +8,7 @@ import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto } from '@models/backend-user.model';
 import { TranslationService } from '@services/translation.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { CreateWorkflowDto } from '@models/workflow.model';
 
 @Component({
@@ -26,9 +27,8 @@ export class AddWorkflowComponent implements OnInit {
     name: '',
     status: 'Active'
   };
-
-  isActive: boolean = true;
-  isInactive: boolean = false;
+  
+  selectedWorkflowType: number = 1; // Default workflow type
   
   loading = false;
   submitting = false;
@@ -41,17 +41,19 @@ export class AddWorkflowComponent implements OnInit {
   roles: RoleDto[] = [];
   // Full application entities cache loaded once
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  workflowTypes: Array<{ id: number; name: string }> = [];
 
   constructor(
     private workflowService: WorkflowService,
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
+    private lookupService: LookupService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     // Initialize with Active status
-    this.updateStatus('Active');
+    this.workflowForm.status = 'Active';
     // Load roles for steps dropdown
     this.backendUserService.getAllRolesSimple().subscribe({
       next: roles => this.roles = roles,
@@ -70,27 +72,20 @@ export class AddWorkflowComponent implements OnInit {
       },
       error: () => { this.allApplicationEntities = []; }
     });
+
+    // Load workflow types lookup
+    this.lookupService.getWorkflowTypes().subscribe({
+      next: (types: LookupItem[]) => {
+        const lang = this.translationService.getCurrentLanguage();
+        this.workflowTypes = (types || []).map(t => ({ id: t.id, name: (lang === 'ar' ? t.nameAr : t.nameEn) || String(t.id) }));
+        if (this.workflowTypes.length > 0) {
+          this.selectedWorkflowType = this.workflowTypes[0].id;
+        }
+      },
+      error: () => { this.workflowTypes = []; }
+    });
   }
 
-  onActiveChange(): void {
-    if (this.isActive) {
-      this.isInactive = false;
-      this.updateStatus('Active');
-    }
-  }
-
-  onInactiveChange(): void {
-    if (this.isInactive) {
-      this.isActive = false;
-      this.updateStatus('Inactive');
-    }
-  }
-
-  private updateStatus(status: 'Active' | 'Inactive'): void {
-    this.workflowForm.status = status;
-    this.isActive = status === 'Active';
-    this.isInactive = status === 'Inactive';
-  }
 
   onSubmit(): void {
     if (!this.workflowForm.name || this.workflowForm.name.trim() === '') {
@@ -101,9 +96,9 @@ export class AddWorkflowComponent implements OnInit {
     // Build backend payload
     const payload = {
       workflowName: this.workflowForm.name.trim(),
-      workflowType: 1, // default or map from UI later
-      requesterType: 1, // default or map from UI later
+      workflowType: this.selectedWorkflowType,
       isActive: this.workflowForm.status === 'Active',
+      isSpecialOrReserved: false, // default - can add UI control later
       workflowSteps: (this.steps || []).map((s, idx) => ({
         stepOrder: idx + 1,
         applicationRoleId: s.roleId as string,
@@ -114,6 +109,9 @@ export class AddWorkflowComponent implements OnInit {
         reserveQty: false
       }))
     };
+
+    // Log payload being sent to backend
+    console.log('Create Workflow payload:', JSON.stringify(payload, null, 2));
 
     this.submitting = true;
     this.errorMessage = null;

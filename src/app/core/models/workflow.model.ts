@@ -8,6 +8,8 @@ export interface WorkflowDto {
   name: string;
   approvalStages: number;
   status: 'Active' | 'Inactive';
+  workflowType?: number;
+  workflowTypeName?: string;
   visitorType?: string;
   locations?: string;
   gate?: string;
@@ -23,6 +25,7 @@ export interface BackendWorkflowDto {
   id: number;
   workflowName: string;
   workflowType?: number;
+  workflowTypeName?: string;
   isActive: boolean;
   isDeleted?: boolean;
   isSpecialOrReserved?: boolean;
@@ -56,8 +59,8 @@ export interface BackendWorkflowStepDto {
 export interface BackendCreateWorkflowDto {
   workflowName: string;
   workflowType: number;       // e.g., 1
-  requesterType: number;      // e.g., 1
   isActive: boolean;
+  isSpecialOrReserved: boolean;
   workflowSteps: BackendWorkflowStepDto[];
 }
 

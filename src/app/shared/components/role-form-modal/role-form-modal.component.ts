@@ -1,10 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
 import { RoleDto, CreateRoleDto, UpdateRoleDto } from '@models/backend-user.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 
 export interface ApplicationEntity {
@@ -45,11 +45,12 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   isLoadingEntities = false;
   errorMessage = '';
   entities: ApplicationEntity[] = [];
-  selectedEntityIds: Set<number> = new Set(); // Store as numbers to match API format
+  selectedEntityId: number | null = null; // Store single entity ID
 
   constructor(
     private fb: FormBuilder,
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private translateService: TranslateService
   ) {
     this.initializeForm();
   }
@@ -62,29 +63,25 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     if (changes['isOpen'] && changes['isOpen'].currentValue) {
       this.initializeForm();
       this.errorMessage = '';
-      // Load existing entity selections from role if editing
-      if (this.role?.applicationEntityIds) {
-        this.selectedEntityIds.clear();
-        this.role.applicationEntityIds.forEach(id => {
-          this.selectedEntityIds.add(id);
-        });
-        console.log('Loaded existing entity IDs from role:', Array.from(this.selectedEntityIds));
+      // Load existing entity selection from role if editing (take first one if multiple exist)
+      if (this.role?.applicationEntityIds && this.role.applicationEntityIds.length > 0) {
+        this.selectedEntityId = this.role.applicationEntityIds[0];
+        this.roleForm.patchValue({ applicationEntityId: this.selectedEntityId });
       } else {
-        this.selectedEntityIds.clear();
+        this.selectedEntityId = null;
+        this.roleForm.patchValue({ applicationEntityId: null });
       }
       this.loadEntities();
     }
     if (changes['role'] || changes['mode']) {
       this.initializeForm();
-      // Load existing entity selections from role if editing
-      if (this.role?.applicationEntityIds) {
-        this.selectedEntityIds.clear();
-        this.role.applicationEntityIds.forEach(id => {
-          this.selectedEntityIds.add(id);
-        });
-        console.log('Loaded existing entity IDs from role:', Array.from(this.selectedEntityIds));
+      // Load existing entity selection from role if editing (take first one if multiple exist)
+      if (this.role?.applicationEntityIds && this.role.applicationEntityIds.length > 0) {
+        this.selectedEntityId = this.role.applicationEntityIds[0];
+        this.roleForm.patchValue({ applicationEntityId: this.selectedEntityId });
       } else {
-        this.selectedEntityIds.clear();
+        this.selectedEntityId = null;
+        this.roleForm.patchValue({ applicationEntityId: null });
       }
       if (this.isOpen) {
         this.loadEntities();
@@ -97,7 +94,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       name: [this.role?.name || '', [Validators.required, Validators.minLength(3)]],
       isDefaultRole: [this.role?.isDefaultRole || false],
       isSuperAdmin: [this.role?.isSuperAdmin || false],
-      entityIds: this.fb.array([]) // Will be populated with checkboxes
+      applicationEntityId: [null] // Single entity selection
     });
   }
 
@@ -108,7 +105,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       next: (entities: ApplicationEntity[]) => {
         console.log('Entities loaded successfully:', entities);
         this.entities = entities;
-        this.initializeEntityCheckboxes();
         this.isLoadingEntities = false;
       },
       error: (error: any) => {
@@ -119,52 +115,10 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     });
   }
 
-  private initializeEntityCheckboxes(): void {
-    const entityFormArray = this.roleForm.get('entityIds') as FormArray;
-    entityFormArray.clear();
-    
-    // Initialize checkboxes based on selectedEntityIds (which may be populated from role.applicationEntityIds)
-    this.entities.forEach(entity => {
-      // Check if entity ID is in selectedEntityIds
-      const isSelected = this.selectedEntityIds.has(entity.id) || 
-                        (this.role?.applicationEntityIds?.includes(entity.id) || false);
-      entityFormArray.push(this.fb.control(isSelected));
-      
-      // Make sure the entity ID is in selectedEntityIds if it's selected
-      if (isSelected && !this.selectedEntityIds.has(entity.id)) {
-        this.selectedEntityIds.add(entity.id);
-      }
-    });
-    
-    console.log('Initialized checkboxes. Selected entity IDs:', Array.from(this.selectedEntityIds));
-  }
-
-  toggleEntity(entity: ApplicationEntity, index: number): void {
-    const entityFormArray = this.roleForm.get('entityIds') as FormArray;
-    const control = entityFormArray.at(index);
-    const currentValue = control.value;
-    control.setValue(!currentValue);
-
-    // Use the entity ID as number (matching API format)
-    const entityId = entity.id;
-    if (!currentValue) {
-      // Add to selected
-      this.selectedEntityIds.add(entityId);
-    } else {
-      // Remove from selected
-      this.selectedEntityIds.delete(entityId);
-    }
-    
-    console.log('Toggled entity:', entityId, 'Selected IDs:', Array.from(this.selectedEntityIds));
-  }
-
-  isEntitySelected(index: number): boolean {
-    const entityFormArray = this.roleForm.get('entityIds') as FormArray;
-    return entityFormArray.at(index)?.value || false;
-  }
-
-  get entityIdsFormArray(): FormArray {
-    return this.roleForm.get('entityIds') as FormArray;
+  getEntityName(entity: ApplicationEntity): string {
+    const currentLang = this.translateService.currentLang || 'en';
+    const name = currentLang === 'ar' ? entity.nameAr : entity.nameEn;
+    return name || entity.code || entity.id.toString();
   }
 
   get title(): string {
@@ -180,17 +134,18 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Get selected entity IDs (already numbers, just convert to array)
-    const applicationEntityIds = Array.from(this.selectedEntityIds);
+    // Get selected entity ID (single selection)
+    const selectedEntityId = this.roleForm.value.applicationEntityId;
+    const applicationEntityIds = selectedEntityId ? [selectedEntityId] : undefined;
 
-    console.log('Selected entity IDs:', applicationEntityIds);
+    console.log('Selected entity ID:', selectedEntityId);
 
     if (this.mode === 'create') {
       const dto: CreateRoleDto = {
         name: this.roleForm.value.name,
         isDefaultRole: this.roleForm.value.isDefaultRole || false,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
-        applicationEntityIds: applicationEntityIds.length > 0 ? applicationEntityIds : undefined
+        applicationEntityIds: applicationEntityIds
       };
 
       console.log('Creating role with DTO:', dto);
@@ -214,7 +169,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         name: this.roleForm.value.name,
         isDefaultRole: this.roleForm.value.isDefaultRole || false,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
-        applicationEntityIds: applicationEntityIds.length > 0 ? applicationEntityIds : undefined
+        applicationEntityIds: applicationEntityIds
       };
 
       console.log('Updating role with DTO:', dto);
@@ -236,7 +191,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   close(): void {
     this.roleForm.reset();
     this.errorMessage = '';
-    this.selectedEntityIds.clear();
+    this.selectedEntityId = null;
     this.entities = [];
     this.closed.emit();
   }

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto } from '@models/backend-user.model';
 import { WorkflowDto } from '@models/workflow.model';
@@ -40,15 +41,18 @@ export class WorkflowComponent implements OnInit {
   showViewModal = false;
   showEditModal = false;
   selectedWorkflow: any = null;
-  editForm: { id: number; name: string; status: 'Active' | 'Inactive' } | null = null;
+  editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
+  editWorkflowType: number = 1;
   editSteps: Array<{ order: number; roleId: string | null; applicationEntityId: number | null }> = [];
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  workflowTypes: Array<{ id: number; name: string }> = [];
 
   constructor(
     private router: Router,
     private workflowService: WorkflowService,
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private lookupService: LookupService
   ) {}
 
   ngOnInit(): void {
@@ -61,14 +65,25 @@ export class WorkflowComponent implements OnInit {
       },
       error: () => { this.allApplicationEntities = []; }
     });
+
+    // Load workflow types for edit modal
+    this.lookupService.getWorkflowTypes().subscribe({
+      next: (types: LookupItem[]) => {
+        this.workflowTypes = (types || []).map(t => ({ id: t.id, name: t.nameEn || t.nameAr || String(t.id) }));
+      },
+      error: () => { this.workflowTypes = []; }
+    });
   }
 
   loadWorkflows(): void {
     this.loading = true;
     this.errorMessage = null;
     
+    console.log('Loading workflows...');
     this.workflowService.getWorkflows().subscribe({
       next: (workflows) => {
+        console.log('Workflows loaded:', workflows);
+        console.log('Active workflows:', workflows.filter(w => w.status === 'Active').length);
         this.workflows = workflows;
         this.filterWorkflows();
         this.calculateTotalPages();
@@ -149,15 +164,30 @@ export class WorkflowComponent implements OnInit {
   onEdit(id: number): void {
     const target = this.workflows.find(w => w.id === id);
     if (!target) return;
-    this.editForm = { id: target.id, name: target.name, status: (target.status as any) };
-    // Load existing steps
+    // Load workflow detail to get accurate status and steps
     this.workflowService.getWorkflowDetailById(id).subscribe({
       next: wf => {
+        // Get status from the detail API (isActive boolean)
+        const status = wf?.isActive ? 'Active' : 'Inactive';
+        this.editForm = { 
+          id: wf?.id || target.id, 
+          name: wf?.workflowName || target.name, 
+          status: status as 'Active' | 'Inactive',
+          workflowType: wf?.workflowType || target.workflowType || 1
+        };
+        this.editWorkflowType = wf?.workflowType || target.workflowType || 1;
         const steps = (wf?.workflowSteps || []) as any[];
-        this.editSteps = steps.map((s, idx) => ({ order: s.stepOrder || idx + 1, roleId: s.applicationRoleId || null, applicationEntityId: s.applicationEntityId || null }));
+        this.editSteps = steps.map((s, idx) => ({ 
+          order: s.stepOrder || idx + 1, 
+          roleId: s.applicationRoleId || null, 
+          applicationEntityId: s.applicationEntityId || null 
+        }));
         this.showEditModal = true;
       },
       error: () => {
+        // Fallback to list data if detail fails
+        this.editForm = { id: target.id, name: target.name, status: (target.status as any), workflowType: target.workflowType };
+        this.editWorkflowType = target.workflowType || 1;
         this.editSteps = [];
         this.showEditModal = true;
       }
@@ -196,6 +226,19 @@ export class WorkflowComponent implements OnInit {
     }
   }
 
+  getWorkflowTypeName(type?: number): string {
+    if (type === undefined || type === null) return '-';
+    // Map workflow type numbers to names
+    const workflowTypes: { [key: number]: string } = {
+      1: 'Type 1',
+      2: 'Type 2',
+      3: 'Type 3',
+      4: 'Type 4',
+      5: 'Type 5'
+    };
+    return workflowTypes[type] || `Type ${type}`;
+  }
+
   closeModals(): void {
     this.showViewModal = false;
     this.showEditModal = false;
@@ -206,13 +249,18 @@ export class WorkflowComponent implements OnInit {
   saveEdit(): void {
     if (!this.editForm) return;
     const editId = this.editForm.id;
+    
+    // Log the status being saved
+    console.log('Saving workflow with status:', this.editForm.status);
+    console.log('isActive will be:', this.editForm.status === 'Active');
+    
     // Build backend update payload including steps
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,
-      workflowType: 1,
-      requesterType: 1,
+      workflowType: this.editWorkflowType,
       isActive: this.editForm.status === 'Active',
+      isSpecialOrReserved: false, // default - can add UI control later
       workflowSteps: (this.editSteps || []).map((s, idx) => ({
         stepOrder: idx + 1,
         applicationRoleId: s.roleId as any,
@@ -224,20 +272,21 @@ export class WorkflowComponent implements OnInit {
       }))
     } as any;
 
+    console.log('Payload being sent:', JSON.stringify(backendPayload, null, 2));
+
     this.workflowService.updateBackendWorkflow(backendPayload).subscribe({
-      next: () => {
-        // Reflect changes locally
-        const idx = this.workflows.findIndex(w => w.id === editId);
-        if (idx !== -1) {
-          const newName = this.editForm ? this.editForm.name : this.workflows[idx].name;
-          const newStatus = this.editForm ? this.editForm.status : (this.workflows[idx] as any).status;
-          this.workflows[idx].name = newName;
-          (this.workflows[idx] as any).status = newStatus as any;
-        }
-        this.filterWorkflows();
-        this.closeModals();
+      next: (response) => {
+        console.log('Workflow update successful, reloading list...');
+        // Small delay to ensure backend has processed the update
+        setTimeout(() => {
+          // Reload workflows from API to get fresh data
+          this.loadWorkflows();
+          this.closeModals();
+        }, 500);
       },
       error: err => {
+        console.error('Error updating workflow:', err);
+        console.error('Error details:', JSON.stringify(err, null, 2));
         this.errorMessage = err.message || 'Failed to update workflow';
       }
     });
