@@ -18,6 +18,7 @@ import {
   CrudPermission,
   UserInRoleDto
 } from '@models/backend-user.model';
+import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
 import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 
 /**
@@ -302,6 +303,41 @@ console.log("userdetails:",user)
         return throwError(() => new Error(
           error.userMessage || 'Failed to fetch roles'
         ));
+      })
+    );
+  }
+
+  /**
+   * Get all roles using simple GET /Roles (no pagination)
+   */
+  getAllRolesSimple(): Observable<RoleDto[]> {
+    this.configService.log('Fetching all roles (simple)');
+    return this.apiService.getWithAuth<ApiResponse<RoleDto[]>>(
+      API_ENDPOINTS.ROLES.BASE
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to fetch roles');
+        }
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Get application entities linked to a role
+   */
+  getApplicationEntitiesByRole(roleId: string): Observable<number[]> {
+    this.configService.log('Fetching application entities for role', { roleId });
+    // Backend expects roleId in path: /Roles/getApplicationentities/{roleId}
+    return this.apiService.getWithAuth<ApiResponse<RoleApplicationEntityLinkDto[]>>(
+      API_ENDPOINTS.ROLES.APPLICATION_ENTITIES_BY_ROLE(roleId)
+    ).pipe(
+      map(response => {
+        if (response?.succeeded && Array.isArray(response.data)) {
+          return response.data.map(x => x.applicationEntityId);
+        }
+        return [] as number[];
       })
     );
   }

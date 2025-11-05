@@ -1,0 +1,13 @@
+/* Add Workflow specific styles */
+
+/* Remove number input spinners for Approval Stages field */
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spinner {
+  -moz-appearance: textfield; /* Firefox */
+}
+

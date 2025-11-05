@@ -28,15 +28,17 @@ export const API_ENDPOINTS = {
     UPDATE_ROLES: (id: string) => `/users/${id}/roles`,
   },
   
-  // Role Management
+  // Role Management (match backend casing)
   ROLES: {
-    BASE: '/roles',
+    BASE: '/Roles',
     PAGINATED: '/roles/GetRolesWithPagination',
-    BY_ID: (id: string) => `/roles/${id}`,
-    PERMISSIONS: (id: string) => `/roles/${id}/permissions`,
-    CRUD_PERMISSIONS: (id: string) => `/roles/${id}/crud/permissions`,
-    ASSIGN_PERMISSIONS: '/roles/permissions',
-    USERS_IN_ROLE: (id: string) => `/roles/${id}/users`,
+    BY_ID: (id: string) => `/Roles/${id}`,
+    PERMISSIONS: (id: string) => `/Roles/${id}/permissions`,
+    CRUD_PERMISSIONS: (id: string) => `/Roles/${id}/crud/permissions`,
+    ASSIGN_PERMISSIONS: '/Roles/permissions',
+    USERS_IN_ROLE: (id: string) => `/Roles/${id}/users`,
+    APPLICATION_ENTITIES: '/Roles/getApplicationentities',
+    APPLICATION_ENTITIES_BY_ROLE: (id: string) => `/Roles/getApplicationentities/${id}`
   },
 
   // Application Entities
@@ -47,10 +49,10 @@ export const API_ENDPOINTS = {
   
   // Workflow Management
   WORKFLOWS: {
-    BASE: '/workflows',
-    BY_ID: (id: number) => `/workflows/${id}`,
-    ALL: '/workflows/all',
-    ALL_LIST: '/workflows/all-list',
+    BASE: '/Workflows',
+    BY_ID: (id: number) => `/Workflows/${id}`,
+    ALL: '/Workflows/all',
+    ALL_LIST: '/Workflows/all-list',
   },
   
   // Requests Management

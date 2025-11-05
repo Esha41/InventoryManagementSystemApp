@@ -1,0 +1,275 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'workflow.title' | translate }}</h1>
+  </div>
+
+  <!-- Search and Add Button Bar -->
+  <div class="flex items-center gap-4 mb-4">
+    <!-- Search Input -->
+    <div class="flex-1 relative">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        placeholder="{{ 'workflow.search' | translate }}"
+        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-white"
+      />
+      <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-angular>
+    </div>
+
+    <!-- Add Work Flow Button -->
+    <button
+      type="button"
+      (click)="onAddWorkflow()"
+      class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-brand-dark)] transition-colors whitespace-nowrap">
+      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+      <span>{{ 'workflow.addWorkFlow' | translate }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="bg-white rounded-lg shadow-md p-12 text-center">
+    <div class="text-gray-500">{{ 'common.loading' | translate }}...</div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+    <p class="text-red-800 text-sm">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white" *ngIf="!loading">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-white border-b border-gray-200">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.id' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.name' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.workflowType' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.approvalStages' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.status' | translate }}
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ 'workflow.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          <tr *ngFor="let workflow of paginatedWorkflows; let i = index" [class.bg-gray-50]="i % 2 === 1">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ workflow.id }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ workflow.name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ workflow.workflowTypeName || getWorkflowTypeName(workflow.workflowType) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              {{ workflow.approvalStages }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button
+                type="button"
+                class="inline-flex items-center px-3 py-1 border rounded-md text-xs font-medium transition-colors"
+                [ngClass]="getStatusButtonClass(workflow.status)">
+                {{ workflow.status }}
+              </button>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="flex items-center gap-2 justify-end">
+                <button
+                  (click)="onViewDetails(workflow.id)"
+                  class="w-8 h-8 rounded border-2 border-green-300 bg-green-100 flex items-center justify-center hover:border-green-400 hover:bg-green-200 transition-colors"
+                  title="{{ 'workflow.view' | translate }}">
+                  <lucide-angular [img]="Eye" class="h-4 w-4 text-green-700"></lucide-angular>
+                </button>
+                <button
+                  (click)="onEdit(workflow.id)"
+                  class="w-8 h-8 rounded border-2 border-blue-300 bg-blue-100 flex items-center justify-center hover:border-blue-400 hover:bg-blue-200 transition-colors"
+                  title="{{ 'workflow.edit' | translate }}">
+                  <lucide-angular [img]="FileEdit" class="h-4 w-4 text-blue-700"></lucide-angular>
+                </button>
+                <button
+                  (click)="onDelete(workflow.id)"
+                  class="w-8 h-8 rounded border-2 border-red-300 bg-red-100 flex items-center justify-center hover:border-red-400 hover:bg-red-200 transition-colors"
+                  title="{{ 'common.delete' | translate }}">
+                  <svg class="h-4 w-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between px-6 py-4 bg-white">
+      <!-- Items per page info -->
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <span>{{ 'workflow.showing' | translate }}</span>
+        <select class="border border-gray-300 rounded px-2 py-1 text-sm">
+          <option>1</option>
+          <option>2</option>
+          <option>5</option>
+          <option>10</option>
+          <option>20</option>
+        </select>
+        <span>{{ 'workflow.of' | translate }} {{ filteredWorkflows.length }}</span>
+      </div>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-2">
+        <button
+          (click)="onPageChange(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-angular [img]="ChevronLeft" class="h-4 w-4 text-gray-700"></lucide-angular>
+        </button>
+
+        <button
+          *ngFor="let page of getPageNumbers()"
+          (click)="onPageChange(page)"
+          class="pagination-page-small"
+          [ngClass]="currentPage === page ? 'pagination-page-small-active' : 'pagination-page-small-inactive'">
+          {{ page }}
+        </button>
+
+        <button
+          (click)="onPageChange(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+          class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-angular [img]="ChevronRight" class="h-4 w-4 text-gray-700"></lucide-angular>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="paginatedWorkflows.length === 0" class="text-center py-12">
+    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ 'workflow.noWorkflows' | translate }}</h3>
+    <p class="text-gray-500">{{ 'workflow.noWorkflowsDescription' | translate }}</p>
+  </div>
+
+  <!-- View Modal -->
+  <div *ngIf="showViewModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">{{ selectedWorkflow?.workflowName }}</h3>
+        <button class="px-2 py-1 border rounded" (click)="closeModals()">×</button>
+      </div>
+      <div class="text-sm text-gray-600 mb-4">ID: {{ selectedWorkflow?.id }} • Status: {{ selectedWorkflow?.isActive ? 'Active' : 'Inactive' }}</div>
+      <h4 class="font-medium mb-2">Steps</h4>
+      <div class="max-h-64 overflow-auto">
+        <table class="min-w-full border">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role Id</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of (selectedWorkflow?.workflowSteps || []); let i = index" class="border-t">
+              <td class="px-4 py-2">{{ s.stepOrder || (i+1) }}</td>
+              <td class="px-4 py-2">{{ s.applicationRoleId }}</td>
+              <td class="px-4 py-2">{{ s.applicationEntityId }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 text-right">
+        <button class="px-4 py-2 border rounded" (click)="closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div *ngIf="showEditModal && editForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Edit Workflow</h3>
+        <button class="px-2 py-1 border rounded" (click)="closeModals()">×</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Name</label>
+          <input type="text" [(ngModel)]="editForm.name" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">{{ 'workflow.workflowType' | translate }}</label>
+          <select [(ngModel)]="editWorkflowType" class="w-full px-3 py-2 border rounded">
+            <option *ngFor="let t of workflowTypes" [value]="t.id">{{ t.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Status</label>
+          <select [(ngModel)]="editForm.status" class="w-full px-3 py-2 border rounded">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium">Steps</label>
+            <button class="px-3 py-1.5 text-sm rounded bg-[var(--color-brand)] text-white" (click)="addEditStep()">Add Step</button>
+          </div>
+          <div class="max-h-64 overflow-auto">
+            <table class="min-w-full border">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+                  <th class="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of editSteps; let i = index" class="border-t">
+                  <td class="px-3 py-2">{{ i + 1 }}</td>
+                  <td class="px-3 py-2">
+                    <select [(ngModel)]="s.roleId" name="erole-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
+                      <option [ngValue]="null" disabled selected>Select role</option>
+                      <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
+                    </select>
+                  </td>
+                  <td class="px-3 py-2">
+                    <select [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
+                      <option [ngValue]="null" disabled selected>Select entity</option>
+                      <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
+                    </select>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <button class="px-2 py-1 border rounded" (click)="removeEditStep(i)">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end gap-2">
+        <button class="px-4 py-2 border rounded" (click)="closeModals()">Cancel</button>
+        <button class="px-4 py-2 bg-[var(--color-brand)] text-white rounded" (click)="saveEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+

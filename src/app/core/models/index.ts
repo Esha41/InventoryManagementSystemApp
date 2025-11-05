@@ -11,4 +11,5 @@ export * from './warehouse.model';
 export * from './warehouse-inventory.model';
 export * from './depot.model';
 export * from './ammunition.model';
+export * from './workflow.model';
 export * from './inventory.model';
