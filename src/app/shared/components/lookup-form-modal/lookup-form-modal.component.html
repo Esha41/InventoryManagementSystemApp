@@ -1,0 +1,80 @@
+<app-modal [isOpen]="isOpen" [title]="title" (closed)="close()">
+  <form [formGroup]="lookupForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- English Name -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'lookupFormModal.nameEn' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <input
+        type="text"
+        formControlName="nameEn"
+        [placeholder]="'lookupFormModal.nameEnPlaceholder' | translate"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        [class.border-[var(--color-error)]]="lookupForm.get('nameEn')?.invalid && lookupForm.get('nameEn')?.touched"
+      />
+      <p *ngIf="getFieldError('nameEn')" class="mt-2 text-sm text-[var(--color-error)]">
+        {{ getFieldError('nameEn') }}
+      </p>
+    </div>
+
+    <!-- Arabic Name -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'lookupFormModal.nameAr' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <input
+        type="text"
+        formControlName="nameAr"
+        [placeholder]="'lookupFormModal.nameArPlaceholder' | translate"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        dir="rtl"
+        [class.border-[var(--color-error)]]="lookupForm.get('nameAr')?.invalid && lookupForm.get('nameAr')?.touched"
+      />
+      <p *ngIf="getFieldError('nameAr')" class="mt-2 text-sm text-[var(--color-error)]">
+        {{ getFieldError('nameAr') }}
+      </p>
+    </div>
+
+    <!-- Code (if applicable) -->
+    <div *ngIf="tableConfig?.hasCode">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'lookupFormModal.code' | translate }}
+      </label>
+      <input
+        type="text"
+        formControlName="code"
+        [placeholder]="'lookupFormModal.codePlaceholder' | translate"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        [class.border-[var(--color-error)]]="lookupForm.get('code')?.invalid && lookupForm.get('code')?.touched"
+      />
+      <p *ngIf="getFieldError('code')" class="mt-2 text-sm text-[var(--color-error)]">
+        {{ getFieldError('code') }}
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="bg-[var(--color-error)]/10 border border-[var(--color-error)] text-[var(--color-error)] px-4 py-3 rounded-lg">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 pt-4">
+      <app-button
+        type="button"
+        variant="secondary"
+        (click)="close()"
+        [disabled]="isLoading || externalLoading"
+      >
+        {{ 'common.cancel' | translate }}
+      </app-button>
+      <app-button
+        type="submit"
+        variant="primary"
+        [disabled]="isLoading || externalLoading || lookupForm.invalid"
+      >
+        {{ (isLoading || externalLoading) ? ('common.saving' | translate) : (mode === 'create' ? ('common.add' | translate) : ('common.update' | translate)) }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>
+

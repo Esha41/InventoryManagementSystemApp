@@ -228,7 +228,7 @@ getSelectedPermissionsCount(entityName: string): number {
 
   const selectedPermissions: string[] = [];
 
-  // ✅ Collect CRUD permissions
+ 
   this.permissions.forEach(permissionGroup => {
     permissionGroup.permissionsList.forEach(perm => {
       const controlName = this.sanitizeControlName(perm.displayValue);
@@ -254,7 +254,7 @@ getSelectedPermissionsCount(entityName: string): number {
     });
   });
 
-  // ✅ Strip first segment (e.g. "Dashboard.Users.View" → "Users.View")
+  //  Strip first segment (e.g. "Dashboard.Users.View" → "Users.View")
   const finalPermissions = selectedPermissions.map(p => {
     const parts = p.split('.');
     if (parts.length > 1) {
@@ -264,7 +264,7 @@ getSelectedPermissionsCount(entityName: string): number {
     return p;
   });
 
-  // ✅ Save to API
+  //  Save to API
   this.backendUserService.assignPermissionsToRole(this.selectedRole.id, finalPermissions)
     .pipe(takeUntil(this.destroy$))
     .subscribe({

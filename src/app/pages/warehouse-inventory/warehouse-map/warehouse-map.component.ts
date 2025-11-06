@@ -5,7 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
-import { DepotDto } from '@models/depot.model';
+import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
 
 @Component({
@@ -106,7 +106,7 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
     this.lookupService.getDepots()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots: DepotDto[]) => {
+        next: (depots) => {
           // Map depots to warehouse locations
           this.warehouses = depots
             .filter(depot => !depot.isDeleted)
@@ -122,9 +122,13 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Map Depot to WarehouseLocationDto
+   * Map Depot (LookupItem) to WarehouseLocationDto
    */
-  private mapDepotToWarehouseLocation(depot: DepotDto): WarehouseLocationDto {
+  private mapDepotToWarehouseLocation(depot: LookupItem & { location?: string; latitude?: number; longitude?: number }): WarehouseLocationDto {
+    if (!depot.id) {
+      throw new Error('Depot ID is required');
+    }
+
     // Extract code from nameEn if available, or generate from ID
     const codeMatch = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
     const code = codeMatch ? codeMatch[1] : `DEP-${depot.id.toString().padStart(2, '0')}`;
