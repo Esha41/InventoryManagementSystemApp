@@ -134,7 +134,7 @@
           (click)="onPageChange(currentPage - 1)"
           [disabled]="currentPage === 1"
           class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-angular [img]="ChevronLeft" class="h-4 w-4 text-gray-700"></lucide-angular>
+          <lucide-angular [img]="previousIcon" class="h-4 w-4 text-gray-700"></lucide-angular>
         </button>
 
         <button
@@ -149,7 +149,7 @@
           (click)="onPageChange(currentPage + 1)"
           [disabled]="currentPage === totalPages"
           class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-angular [img]="ChevronRight" class="h-4 w-4 text-gray-700"></lucide-angular>
+          <lucide-angular [img]="nextIcon" class="h-4 w-4 text-gray-700"></lucide-angular>
         </button>
       </div>
     </div>

@@ -70,7 +70,9 @@ export class WorkflowComponent implements OnInit {
     // Load workflow types for edit modal
     this.lookupService.getWorkflowTypes().subscribe({
       next: (types: LookupItem[]) => {
-        this.workflowTypes = (types || []).map(t => ({ id: t.id, name: t.nameEn || t.nameAr || String(t.id) }));
+        this.workflowTypes = (types || [])
+          .filter(t => t.id !== undefined)
+          .map(t => ({ id: t.id!, name: t.nameEn || t.nameAr || String(t.id) }));
       },
       error: () => { this.workflowTypes = []; }
     });

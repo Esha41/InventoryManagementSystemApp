@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { TranslationService } from '@services/translation.service';
 
 export interface SupplyRequest {
   issueNo: string;
@@ -27,6 +28,11 @@ export class SupplyRequestManagementComponent implements OnInit {
   readonly ChevronDown = ChevronDown;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
+
+  constructor(
+    private router: Router,
+    private translationService: TranslationService
+  ) {}
 
   requests: SupplyRequest[] = [
     { issueNo: '#1056', requestType: 'Issue', quantity: 30000, priority: 'Low', requestDate: '10 Sept 2024', status: 'Processing' },
@@ -53,8 +59,6 @@ export class SupplyRequestManagementComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 20;
   totalPages: number = 1;
-
-  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.filterRequests();
@@ -165,6 +169,16 @@ export class SupplyRequestManagementComponent implements OnInit {
 
   formatNumber(num: number): string {
     return num.toLocaleString();
+  }
+
+  // Return correct icon for previous button based on RTL/LTR
+  get previousIcon() {
+    return this.translationService.isRTL() ? ChevronRight : ChevronLeft;
+  }
+
+  // Return correct icon for next button based on RTL/LTR
+  get nextIcon() {
+    return this.translationService.isRTL() ? ChevronLeft : ChevronRight;
   }
 }
 

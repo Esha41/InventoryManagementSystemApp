@@ -23,7 +23,8 @@
     "retry": "Retry",
     "view": "View",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "update": "Update"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -465,7 +466,8 @@
     "deleteUserConfirm": "Are you sure you want to delete",
     "thisUser": "this user",
     "editUser": "Edit user",
-    "deleteUserTitle": "Delete user"
+    "deleteUserTitle": "Delete user",
+    "usersTab": "Users"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -535,26 +537,32 @@
     "create": "Create Role",
     "update": "Update Role"
   },
-  "allowance": {
-    "title": "Allowance",
-    "department": "Department",
-    "selectDepartment": "Select Department",
-    "year": "Year",
-    "yearPlaceholder": "Enter year (e.g., 2025)",
-    "selectYear": "Select Year",
-    "date": "Date",
-    "items": "Items",
+  "lookupManagement": {
+    "title": "Lookup Tables",
+    "selectTable": "Select Lookup Table",
+    "selectTablePlaceholder": "Select a table to manage...",
+    "searchPlaceholder": "Search by name or code...",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
+    "code": "Code",
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
     "addItem": "Add Item",
-    "item": "Item",
-    "itemId": "Item ID",
-    "itemIdPlaceholder": "Enter item ID",
-    "itemNo": "Item No",
-    "batchNo": "Batch No",
-    "quantity": "Quantity",
-    "quantityPlaceholder": "Enter quantity",
-    "remove": "Remove",
     "noItemsFound": "No items found",
-    "send": "Send"
+    "loading": "Loading...",
+    "deleteItem": "Delete Item",
+    "deleteConfirm": "Are you sure you want to delete"
+  },
+  "lookupFormModal": {
+    "nameEn": "Name (English)",
+    "nameEnPlaceholder": "Enter English name",
+    "nameAr": "Name (Arabic)",
+    "nameArPlaceholder": "Enter Arabic name",
+    "code": "Code",
+    "codePlaceholder": "Enter code (optional)",
+    "create": "Create",
+    "update": "Update"
   },
   "toast": {
     "success": "Success",

@@ -154,7 +154,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     const departmentMap = new Map<number, string>();
     departments.forEach(dept => {
-      departmentMap.set(dept.id, dept.nameEn || dept.nameAr || `Department ${dept.id}`);
+      if (dept.id !== undefined) {
+        departmentMap.set(dept.id, dept.nameEn || dept.nameAr || `Department ${dept.id}`);
+      }
     });
 
   
