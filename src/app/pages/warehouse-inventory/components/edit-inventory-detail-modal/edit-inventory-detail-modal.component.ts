@@ -5,7 +5,7 @@ import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto } from '@models/inventory.model';
-import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@services/lookup.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -29,9 +29,9 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   @Output() saved = new EventEmitter<UpdateInventoryDetailDto>();
 
   detailForm!: FormGroup;
-  suppliers: SupplierDto[] = [];
-  manufacturers: ManufacturerDto[] = [];
-  countries: CountryDto[] = [];
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
+  countries: LookupItem[] = [];
   isLoading = false;
   errorMessage = '';
 
@@ -83,18 +83,18 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
   private loadLookupData(): void {
     this.lookupService.getSuppliers().subscribe({
-      next: (data) => this.suppliers = data,
-      error: (err) => console.error('Failed to load suppliers', err)
+      next: (data: LookupItem[]) => this.suppliers = data,
+      error: (err: any) => console.error('Failed to load suppliers', err)
     });
 
     this.lookupService.getManufacturers().subscribe({
-      next: (data) => this.manufacturers = data,
-      error: (err) => console.error('Failed to load manufacturers', err)
+      next: (data: LookupItem[]) => this.manufacturers = data,
+      error: (err: any) => console.error('Failed to load manufacturers', err)
     });
 
     this.lookupService.getCountries().subscribe({
-      next: (data) => this.countries = data,
-      error: (err) => console.error('Failed to load countries', err)
+      next: (data: LookupItem[]) => this.countries = data,
+      error: (err: any) => console.error('Failed to load countries', err)
     });
   }
 

@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, Search, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { TranslationService } from '@services/translation.service';
 
 interface MenuItem {
   label: string;
@@ -175,7 +176,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: BackendAuthService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -416,5 +418,40 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   hasChildren(item: MenuItem): boolean {
     return !!(item.children && item.children.length > 0);
+  }
+
+  showTooltip(event: MouseEvent): void {
+    if (!this.isCollapsed) return;
+    
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const tooltip = target.querySelector('.menu-tooltip') as HTMLElement;
+    const isRTL = this.translationService.isRTL();
+    
+    if (tooltip) {
+      // Position tooltip based on RTL/LTR
+      if (isRTL) {
+        // In RTL, position tooltip to the left of the sidebar
+        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.right = 'auto';
+        tooltip.style.transform = 'translateX(-100%) translateY(-50%)';
+        // Add RTL class for arrow direction
+        tooltip.classList.add('rtl-tooltip');
+        tooltip.classList.remove('ltr-tooltip');
+      } else {
+        // In LTR, position tooltip to the right of the sidebar
+        tooltip.style.left = `${rect.right + 8}px`;
+        tooltip.style.right = 'auto';
+        tooltip.style.transform = 'translateY(-50%)';
+        // Add LTR class for arrow direction
+        tooltip.classList.add('ltr-tooltip');
+        tooltip.classList.remove('rtl-tooltip');
+      }
+      tooltip.style.top = `${rect.top + rect.height / 2}px`;
+    }
+  }
+
+  hideTooltip(): void {
+    // Tooltip will hide automatically via CSS group-hover
   }
 }

@@ -93,3 +93,8 @@
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+/* Selected table option styling */
+.selected-table-option {
+  background-color: color-mix(in srgb, var(--color-brand) 10%, transparent) !important;
+}

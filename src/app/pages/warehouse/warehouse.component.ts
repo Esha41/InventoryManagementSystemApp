@@ -4,8 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Eye } from 'lucide-angular';
-import { LookupService } from '@services/lookup.service';
-import { DepotDto } from '@models/depot.model';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 
 @Component({
@@ -64,9 +63,13 @@ export class WarehouseComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Map DepotDto to WarehouseSummaryDto
+   * Map Depot (LookupItem) to WarehouseSummaryDto
    */
-  private mapDepotToWarehouse(depot: DepotDto): WarehouseSummaryDto {
+  private mapDepotToWarehouse(depot: LookupItem): WarehouseSummaryDto {
+    if (!depot.id) {
+      throw new Error('Depot ID is required');
+    }
+
     // Extract code from nameEn (e.g., "Warehouse DOH-01" -> "DOH-01")
     // If nameEn doesn't contain a code, use a default format
     const codeMatch = depot.nameEn.match(/([A-Z]{3}-\d{2})/);

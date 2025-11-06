@@ -1,227 +1,223 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, shareReplay } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
+import { LookupItem, CreateUpdateLookupDto, DepartmentDto, SupplierDto, ManufacturerDto, CountryDto, HccDto, NatureOptionDto, DepotDto } from '@models/lookup.model';
 import { APIOperationResponse } from '@models/api-response.model';
-import { DepotDto } from '@models/depot.model';
+import { ConfigService } from './config.service';
 
-// Lookup interfaces for all tables
-export interface LookupItem {
-  id: number;
-  nameAr: string;
-  nameEn: string;
-  isDeleted?: boolean;
-}
+// Export for backward compatibility
+export { DepartmentDto, LookupItem, SupplierDto, ManufacturerDto, CountryDto, HccDto, NatureOptionDto, DepotDto };
 
-export interface DepartmentDto extends LookupItem {
-  code: string;
-}
-
-export interface SupplierDto extends LookupItem {}
-
-export interface CountryDto extends LookupItem {}
-
-export interface ManufacturerDto extends LookupItem {}
-
-export interface HccDto extends LookupItem {}
-
-export interface NatureOptionDto extends LookupItem {}
-
-export interface NsnDto extends LookupItem {}
-
-export interface PrimaryPurposDto extends LookupItem {}
-
-export interface ProjectailMaterialDto extends LookupItem {}
-
-export interface PropellantDto extends LookupItem {}
-
-export interface UnitDto extends LookupItem {}
-
-export interface CaseTypeDto extends LookupItem {}
-
-export interface ColorDto extends LookupItem {}
-
-export interface CompatibilityDto extends LookupItem {}
-
-export interface HazardDivisionDto extends LookupItem {}
-
-/**
- * Centralized service for managing all lookup tables with caching
- */
 @Injectable({
   providedIn: 'root'
 })
 export class LookupService {
-  private cache = new Map<string, Observable<any[]>>();
+  private readonly baseUrl = '/Lookup';
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private http: HttpClient,
+    private configService: ConfigService
+  ) {}
 
   /**
-   * Clear all cached lookups
+   * Get all lookup items for a specific table
    */
-  clearCache(): void {
-    this.cache.clear();
+  getLookupItems(tableName: string, includeDeleted: boolean = false): Observable<LookupItem[]> {
+    const endpoint = `${this.baseUrl}/${tableName}`;
+    const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
+    
+    return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to load lookup items');
+      })
+    );
   }
 
   /**
-   * Clear specific lookup cache
+   * Get a single lookup item by ID
    */
-  clearCacheFor(lookupName: string): void {
-    this.cache.delete(lookupName);
+  getLookupItemById(tableName: string, id: number): Observable<LookupItem> {
+    const endpoint = `${this.baseUrl}/${tableName}/${id}`;
+    
+    return this.apiService.getWithAuth<APIOperationResponse<LookupItem>>(endpoint).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to load lookup item');
+      })
+    );
   }
 
   /**
-   * Generic method to get lookup items with caching
+   * Create a new lookup item
    */
-  private getLookup<T>(endpoint: string, cacheKey: string): Observable<T[]> {
-    if (!this.cache.has(cacheKey)) {
-      const request$ = this.apiService.getWithAuth<APIOperationResponse<T[]>>(endpoint).pipe(
-        map(response => {
-          if (response.succeeded && response.data) {
-            return response.data;
-          }
-          console.warn(`Failed to load ${cacheKey}:`, response.message);
-          return [];
-        }),
-        catchError(err => {
-          // Gracefully handle 401/403 by returning empty list
-          if (err?.status === 401 || err?.status === 403) {
-            return of([] as T[]);
-          }
-          return of([] as T[]);
-        }),
-        shareReplay(1) // Cache the result
-      );
-      this.cache.set(cacheKey, request$);
+  createLookupItem(tableName: string, dto: CreateUpdateLookupDto): Observable<LookupItem> {
+    const endpoint = `${this.baseUrl}/${tableName}`;
+    
+    return this.apiService.postWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to create lookup item');
+      })
+    );
+  }
+
+  /**
+   * Update an existing lookup item
+   */
+  updateLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<LookupItem> {
+    const endpoint = `${this.baseUrl}/${tableName}/${id}`;
+    
+    return this.apiService.putWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to update lookup item');
+      })
+    );
+  }
+
+  /**
+   * Soft delete a lookup item
+   * Note: Backend DELETE endpoint expects DTO in body, which HttpClient supports
+   */
+  deleteLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<boolean> {
+    const endpoint = `${this.baseUrl}/${tableName}/${id}`;
+    
+    // HttpClient supports DELETE with body, though it's not standard HTTP
+    // We need to use http directly to send DELETE with body
+    const headers = this.getAuthHeaders();
+    return this.http.delete<APIOperationResponse<LookupItem>>(`${this.configService.apiUrl}${endpoint}`, {
+      headers,
+      body: dto
+    }).pipe(
+      map(response => {
+        if (response.succeeded) {
+          return true;
+        }
+        throw new Error(response.message || 'Failed to delete lookup item');
+      })
+    );
+  }
+
+  /**
+   * Get auth headers for direct HTTP calls
+   */
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    return this.cache.get(cacheKey)!;
+    
+    headers = headers.set('Content-Type', 'application/json');
+    return headers;
   }
 
   /**
-   * Generic method compatible with callers expecting getAll('Type')
+   * Search lookup items
    */
-  getAll<T = any>(lookupType: string): Observable<T[]> {
-    const key = lookupType.toLowerCase();
-    return this.getLookup<T>(`/Lookup/${lookupType}`, key);
+  searchLookupItems(tableName: string, searchText: string, includeDeleted: boolean = false): Observable<LookupItem[]> {
+    const endpoint = `${this.baseUrl}/${tableName}/search`;
+    let params = new HttpParams().set('searchText', searchText);
+    if (includeDeleted) {
+      params = params.set('includeDeleted', 'true');
+    }
+    
+    return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to search lookup items');
+      })
+    );
   }
 
-  /**
-   * Get all depots
-   */
-  getDepots(): Observable<DepotDto[]> {
-    return this.getLookup<DepotDto>('/Lookup/Depot', 'depots');
+  // Backward compatibility methods - convenience methods for specific lookup tables
+  getDepartments(): Observable<LookupItem[]> {
+    return this.getLookupItems('Department');
   }
 
-  /**
-   * Get all departments
-   */
-  getDepartments(): Observable<DepartmentDto[]> {
-    return this.getLookup<DepartmentDto>('/Lookup/Department', 'departments');
+  getDepots(): Observable<LookupItem[]> {
+    return this.getLookupItems('Depot');
   }
 
-  /**
-   * Get all suppliers
-   */
-  getSuppliers(): Observable<SupplierDto[]> {
-    return this.getLookup<SupplierDto>('/Lookup/Supplier', 'suppliers');
+  getHccs(): Observable<LookupItem[]> {
+    return this.getLookupItems('Hcc');
   }
 
-  /**
-   * Get all countries
-   */
-  getCountries(): Observable<CountryDto[]> {
-    return this.getLookup<CountryDto>('/Lookup/Country', 'countries');
+  getCaseTypes(): Observable<LookupItem[]> {
+    return this.getLookupItems('CaseType');
   }
 
-  /**
-   * Get all manufacturers
-   */
-  getManufacturers(): Observable<ManufacturerDto[]> {
-    return this.getLookup<ManufacturerDto>('/Lookup/Manufacturer', 'manufacturers');
+  getHazardDivisions(): Observable<LookupItem[]> {
+    return this.getLookupItems('HazardDivision');
   }
 
-  /**
-   * Get all HCCs
-   */
-  getHccs(): Observable<HccDto[]> {
-    return this.getLookup<HccDto>('/Lookup/Hcc', 'hccs');
+  getCompatibilities(): Observable<LookupItem[]> {
+    return this.getLookupItems('Compatibility');
   }
 
-  /**
-   * Get all nature options
-   */
-  getNatureOptions(): Observable<NatureOptionDto[]> {
-    return this.getLookup<NatureOptionDto>('/Lookup/NatureOption', 'natureOptions');
+  getPropellants(): Observable<LookupItem[]> {
+    return this.getLookupItems('Propellant');
   }
 
-  /**
-   * Get all NSNs
-   */
-  getNsns(): Observable<NsnDto[]> {
-    return this.getLookup<NsnDto>('/Lookup/Nsn', 'nsns');
+  getUnits(): Observable<LookupItem[]> {
+    return this.getLookupItems('Unit');
   }
 
-  /**
-   * Get all primary purposes
-   */
-  getPrimaryPurposes(): Observable<PrimaryPurposDto[]> {
-    return this.getLookup<PrimaryPurposDto>('/Lookup/PrimaryPurpos', 'primaryPurposes');
+  getNsns(): Observable<LookupItem[]> {
+    return this.getLookupItems('Nsn');
   }
 
-  /**
-   * Get all projectile materials
-   */
-  getProjectailMaterials(): Observable<ProjectailMaterialDto[]> {
-    return this.getLookup<ProjectailMaterialDto>('/Lookup/ProjectailMaterial', 'projectailMaterials');
+  getNatureOptions(): Observable<LookupItem[]> {
+    return this.getLookupItems('NatureOption');
   }
 
-  /**
-   * Get all propellants
-   */
-  getPropellants(): Observable<PropellantDto[]> {
-    return this.getLookup<PropellantDto>('/Lookup/Propellant', 'propellants');
+  getPrimaryPurposes(): Observable<LookupItem[]> {
+    return this.getLookupItems('PrimaryPurpos');
   }
 
-  /**
-   * Get all units
-   */
-  getUnits(): Observable<UnitDto[]> {
-    return this.getLookup<UnitDto>('/Lookup/Unit', 'units');
+  getColors(): Observable<LookupItem[]> {
+    return this.getLookupItems('Color');
   }
 
-  /**
-   * Get all case types
-   */
-  getCaseTypes(): Observable<CaseTypeDto[]> {
-    return this.getLookup<CaseTypeDto>('/Lookup/CaseType', 'caseTypes');
+  getProjectailMaterials(): Observable<LookupItem[]> {
+    return this.getLookupItems('ProjectailMaterial');
   }
 
-  /**
-   * Get all colors
-   */
-  getColors(): Observable<ColorDto[]> {
-    return this.getLookup<ColorDto>('/Lookup/Color', 'colors');
-  }
-
-  /**
-   * Get all compatibilities
-   */
-  getCompatibilities(): Observable<CompatibilityDto[]> {
-    return this.getLookup<CompatibilityDto>('/Lookup/Compatibility', 'compatibilities');
-  }
-
-  /**
-   * Get all hazard divisions
-   */
-  getHazardDivisions(): Observable<HazardDivisionDto[]> {
-    return this.getLookup<HazardDivisionDto>('/Lookup/HazardDivision', 'hazardDivisions');
-  }
-
-  /**
-   * Get workflow types
-   */
   getWorkflowTypes(): Observable<LookupItem[]> {
-    return this.getLookup<LookupItem>('/Lookup/WorkFlowType', 'workflowTypes');
+    return this.getLookupItems('WorkFlowType');
+  }
+
+  getSuppliers(): Observable<LookupItem[]> {
+    return this.getLookupItems('Supplier');
+  }
+
+  getManufacturers(): Observable<LookupItem[]> {
+    return this.getLookupItems('Manufacturer');
+  }
+
+  getCountries(): Observable<LookupItem[]> {
+    return this.getLookupItems('Country');
+  }
+
+  /**
+   * Clear cache for a specific lookup table (no-op for now, kept for backward compatibility)
+   */
+  clearCacheFor(tableName: string): void {
+    // No caching implemented yet, but method kept for backward compatibility
+    // Future implementation can add caching here
   }
 }
-

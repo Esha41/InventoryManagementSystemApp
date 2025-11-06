@@ -34,11 +34,10 @@
         </div>
 
         <!-- Menu Item with Children (Submenu) -->
-        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1">
+        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
           <button
             (click)="toggleSubmenu(item.label)"
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] group"
-            [attr.title]="isCollapsed ? item.label : null"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
           >
             <lucide-angular
               [img]="item.icon"
@@ -58,6 +57,10 @@
               class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
             ></lucide-angular>
           </button>
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="isCollapsed" class="menu-tooltip">
+            {{ item.label | translate }}
+          </div>
           <!-- Submenu Items -->
           <ul
             *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children"
@@ -77,14 +80,13 @@
         </div>
 
         <!-- Regular Menu Item (No Children) -->
-        <a
-          *ngIf="!item.isHeader && !hasChildren(item)"
-          [routerLink]="item.route"
-          routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
-          [routerLinkActiveOptions]="{ exact: false }"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] group"
-          [attr.title]="isCollapsed ? item.label : null"
-        >
+        <div *ngIf="!item.isHeader && !hasChildren(item)" class="relative group" #menuItem (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
+            [routerLinkActiveOptions]="{ exact: false }"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
+          >
           <lucide-angular
             [img]="item.icon"
             class="h-5 w-5 flex-shrink-0"
@@ -97,7 +99,12 @@
           >
             {{ item.label | translate }}
           </span>
-        </a>
+          </a>
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="isCollapsed" class="menu-tooltip">
+            {{ item.label | translate }}
+          </div>
+        </div>
       </li>
     </ul>
   </nav>

@@ -24,7 +24,8 @@
     "showing": "عرض",
     "of": "من",
     "actions": "إجراءات",
-    "remove": "إزالة"
+    "remove": "إزالة",
+    "update": "تحديث"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -476,7 +477,8 @@
     "deleteUserConfirm": "هل أنت متأكد من أنك تريد حذف",
     "thisUser": "هذا المستخدم",
     "editUser": "تعديل المستخدم",
-    "deleteUserTitle": "حذف المستخدم"
+    "deleteUserTitle": "حذف المستخدم",
+    "usersTab": "المستخدمون"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
@@ -546,26 +548,32 @@
     "create": "إنشاء دور",
     "update": "تحديث الدور"
   },
-  "allowance": {
-    "title": "البدل",
-    "department": "القسم",
-    "selectDepartment": "اختر القسم",
-    "year": "السنة",
-    "yearPlaceholder": "أدخل السنة (مثال: 2025)",
-    "selectYear": "اختر السنة",
-    "date": "التاريخ",
-    "items": "العناصر",
+  "lookupManagement": {
+    "title": "جداول البحث",
+    "selectTable": "اختر جدول البحث",
+    "selectTablePlaceholder": "اختر جدولاً للإدارة...",
+    "searchPlaceholder": "البحث بالاسم أو الرمز...",
+    "nameEn": "الاسم (بالإنجليزية)",
+    "nameAr": "الاسم (بالعربية)",
+    "code": "الرمز",
+    "actions": "الإجراءات",
+    "edit": "تعديل",
+    "delete": "حذف",
     "addItem": "إضافة عنصر",
-    "item": "العنصر",
-    "itemId": "معرف العنصر",
-    "itemIdPlaceholder": "أدخل معرف العنصر",
-    "itemNo": "رقم العنصر",
-    "batchNo": "رقم الدفعة",
-    "quantity": "الكمية",
-    "quantityPlaceholder": "أدخل الكمية",
-    "remove": "إزالة",
     "noItemsFound": "لم يتم العثور على عناصر",
-    "send": "إرسال"
+    "loading": "جاري التحميل...",
+    "deleteItem": "حذف العنصر",
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف"
+  },
+  "lookupFormModal": {
+    "nameEn": "الاسم (بالإنجليزية)",
+    "nameEnPlaceholder": "أدخل الاسم بالإنجليزية",
+    "nameAr": "الاسم (بالعربية)",
+    "nameArPlaceholder": "أدخل الاسم بالعربية",
+    "code": "الرمز",
+    "codePlaceholder": "أدخل الرمز (اختياري)",
+    "create": "إنشاء",
+    "update": "تحديث"
   },
   "toast": {
     "success": "نجاح",

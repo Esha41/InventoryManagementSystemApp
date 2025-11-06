@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X } from 'lucide-angular';
-import { LookupService } from '@services/lookup.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { DepotDto } from '@models/depot.model';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -63,8 +63,19 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.lookupService.getDepots()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots) => {
-          this.depots = depots.filter(d => !d.isDeleted);
+        next: (depots: LookupItem[]) => {
+          // Map LookupItem to DepotDto format (DepotDto has extra properties like location, latitude, longitude)
+          this.depots = depots
+            .filter(d => !d.isDeleted && d.id !== undefined)
+            .map(d => ({
+              id: d.id!,
+              nameAr: d.nameAr,
+              nameEn: d.nameEn,
+              location: '', // Backend may not return this, will be empty
+              latitude: 0,
+              longitude: 0,
+              isDeleted: d.isDeleted || false
+            }));
           this.loading = false;
         },
         error: (error) => {

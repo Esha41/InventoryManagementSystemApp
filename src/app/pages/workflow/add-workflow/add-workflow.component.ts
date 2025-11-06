@@ -85,7 +85,9 @@ export class AddWorkflowComponent implements OnInit {
     this.lookupService.getWorkflowTypes().subscribe({
       next: (types: LookupItem[]) => {
         const lang = this.translationService.getCurrentLanguage();
-        this.workflowTypes = (types || []).map(t => ({ id: t.id, name: (lang === 'ar' ? t.nameAr : t.nameEn) || String(t.id) }));
+        this.workflowTypes = (types || [])
+          .filter(t => t.id !== undefined)
+          .map(t => ({ id: t.id!, name: (lang === 'ar' ? t.nameAr : t.nameEn) || String(t.id) }));
         if (this.workflowTypes.length > 0) {
           this.selectedWorkflowType = this.workflowTypes[0].id;
         }
