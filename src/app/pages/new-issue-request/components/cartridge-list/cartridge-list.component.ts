@@ -5,8 +5,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 
 export interface Cartridge {
+  id: number;
   name: string;
   selected: boolean;
+  itemNo?: string;
   productId?: string;
   ncn?: string;
   primaryPurpose?: string;
@@ -18,6 +20,12 @@ export interface Cartridge {
   propellant?: string;
   hazardDivision?: string;
   capabilityGroup?: string;
+  bulletDiameterLabel?: string;
+  caseLengthLabel?: string;
+  linkedLabel?: string;
+  natureLabel?: string;
+  quantity?: number | null;
+  added?: boolean;
 }
 
 @Component({
@@ -39,7 +47,7 @@ export class CartridgeListComponent {
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
   @Input() selectedPriority: string = '';
-  @Input() quantity: number | null = null;
+  @Input() canProceed: boolean = false;
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
   @Output() filterChange = new EventEmitter<void>();
@@ -51,10 +59,48 @@ export class CartridgeListComponent {
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
   @Output() priorityChange = new EventEmitter<string>();
-  @Output() quantityChange = new EventEmitter<number | null>();
+  @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
+
+  pendingCartridgeId: number | null = null;
+  pendingQuantity: number = 1;
 
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeClick.emit(cartridge);
+  }
+
+  beginSelection(cartridge: Cartridge, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.pendingCartridgeId = cartridge.id;
+    this.pendingQuantity = cartridge.quantity && cartridge.quantity > 0 ? cartridge.quantity : 1;
+  }
+
+  updatePendingQuantity(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const parsed = value ? parseInt(value, 10) : 1;
+    this.pendingQuantity = parsed > 0 ? parsed : 1;
+  }
+
+  confirmAdd(cartridge: Cartridge, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const quantity = this.pendingQuantity > 0 ? this.pendingQuantity : 1;
+    cartridge.quantity = quantity;
+    cartridge.added = true;
+    cartridge.selected = true;
+    this.addSelection.emit({ cartridge, quantity });
+    this.pendingCartridgeId = null;
+    this.pendingQuantity = 1;
+  }
+
+  cancelSelection(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.pendingCartridgeId = null;
+    this.pendingQuantity = 1;
   }
 
   onFilterChange(): void {
@@ -95,10 +141,6 @@ export class CartridgeListComponent {
 
   onPriorityChange(value: string): void {
     this.priorityChange.emit(value);
-  }
-
-  onQuantityChange(value: number | null): void {
-    this.quantityChange.emit(value);
   }
 }
 

@@ -1,4 +1,43 @@
 <div class="bg-white rounded-lg p-8 shadow-sm">
+  <!-- Selected Cartridges Summary -->
+  <div *ngIf="selectedCartridges.length > 0" class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.selectedCartridges' | translate }}</h2>
+    </div>
+
+    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+      <table class="min-w-full text-sm">
+        <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
+            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.name }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.natureLabel || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.linkedLabel || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
+            <td class="px-4 py-2 text-[var(--color-text)]">
+              <button
+                type="button"
+                (click)="onRemoveCartridge(cartridge.id)"
+                class="text-sm text-red-600 hover:text-red-700">
+                {{ 'common.remove' | translate }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- Usage Details Section -->
   <div class="mb-8">
     <h2 class="text-lg font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.usageDetails' | translate }}</h2>

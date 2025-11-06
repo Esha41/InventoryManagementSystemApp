@@ -1,17 +1,90 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <!-- Left Side - Cartridge List -->
   <div class="bg-white rounded-lg p-6 shadow-sm">
-    <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'newIssueRequest.cartidgeList' | translate }}</h2>
+    <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'newIssueRequest.cartridgeList' | translate }}</h2>
     <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
       <div
         *ngFor="let cartridge of cartridges"
         (click)="onCartridgeClick(cartridge)"
-        class="p-3 border rounded-lg cursor-pointer transition-colors text-sm"
+        class="p-4 border rounded-lg transition-colors text-sm"
         [ngClass]="{
-          'border-[var(--color-accent)] bg-[var(--color-accent)]/5': cartridge.selected,
-          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !cartridge.selected
+          'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
+          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer': !(cartridge.selected || pendingCartridgeId === cartridge.id)
         }">
-        <p class="text-[var(--color-text)]">{{ cartridge.name }}</p>
+        <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p class="text-[var(--color-text)] font-medium">{{ cartridge.name }}</p>
+            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.itemNo || cartridge.productId">
+              {{ 'newIssueRequest.productId' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
+            </p>
+            <div class="text-xs text-[var(--color-text-muted)] space-x-2" *ngIf="cartridge.bulletDiameterLabel || cartridge.caseLengthLabel">
+              <span *ngIf="cartridge.bulletDiameterLabel">{{ cartridge.bulletDiameterLabel }}</span>
+              <span *ngIf="cartridge.bulletDiameterLabel && cartridge.caseLengthLabel">•</span>
+              <span *ngIf="cartridge.caseLengthLabel">{{ cartridge.caseLengthLabel }}</span>
+            </div>
+            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.natureLabel">
+              {{ cartridge.natureLabel }}
+            </p>
+            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.linkedLabel">
+              {{ cartridge.linkedLabel }}
+            </p>
+            <div *ngIf="cartridge.added" class="mt-4 inline-flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-background-muted)] rounded-full">
+                <span class="w-2 h-2 rounded-full bg-[#D0B888]"></span>
+                {{ 'newIssueRequest.quantity' | translate }}: {{ cartridge.quantity || 0 }}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-2 flex-wrap justify-end" *ngIf="pendingCartridgeId !== cartridge.id">
+            <app-button
+              variant="outline"
+              (clicked)="beginSelection(cartridge, $event)"
+              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]"
+            >
+              {{ cartridge.added ? ('newIssueRequest.updateQuantity' | translate) : ('newIssueRequest.selectCartridge' | translate) }}
+            </app-button>
+            <app-button
+              variant="ghost"
+              (clicked)="onCartridgeClick(cartridge)"
+              class="text-[var(--color-text)]"
+            >
+              {{ 'newIssueRequest.viewDetails' | translate }}
+            </app-button>
+          </div>
+          <div
+            *ngIf="pendingCartridgeId === cartridge.id"
+            class="flex flex-wrap gap-3 justify-end"
+            (click)="$event.stopPropagation()">
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'newIssueRequest.quantity' | translate }}
+              </label>
+              <input
+                type="number"
+                min="1"
+                [value]="pendingQuantity"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+                (input)="updatePendingQuantity($event)"
+                class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent"
+              >
+            </div>
+            <app-button
+              variant="primary"
+              (clicked)="confirmAdd(cartridge, $event)"
+              class="bg-[#D0B888] text-white hover:bg-[#BEA06E]"
+            >
+              {{ 'newIssueRequest.addCartridge' | translate }}
+            </app-button>
+            <app-button
+              variant="ghost"
+              (clicked)="cancelSelection($event)"
+              class="text-[var(--color-text-muted)]"
+            >
+              {{ 'common.cancel' | translate }}
+            </app-button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -88,23 +161,13 @@
       <select
         [ngModel]="selectedPriority"
         (ngModelChange)="onPriorityChange($event)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent"
+        required>
+        <option value="" disabled selected>{{ 'newIssueRequest.selectPriorityPlaceholder' | translate }}</option>
         <option *ngFor="let priority of orderPriorities" [value]="priority">{{ priority }}</option>
       </select>
     </div>
 
-    <!-- Enter Quantity -->
-    <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'newIssueRequest.enterQuantity' | translate }}
-      </label>
-      <input
-        type="number"
-        [ngModel]="quantity"
-        (ngModelChange)="onQuantityChange($event)"
-        [placeholder]="'newIssueRequest.enterQuantityPlaceholder' | translate"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
-    </div>
   </div>
 </div>
 
@@ -114,7 +177,8 @@
     <app-button
       variant="primary"
       (clicked)="onNext()"
-      class="bg-[#D0B888] text-white hover:bg-[#BEA06E]">
+      [disabled]="!canProceed"
+      class="bg-[#D0B888] text-white hover:bg-[#BEA06E] disabled:opacity-50 disabled:cursor-not-allowed">
       {{ 'newIssueRequest.next' | translate }}
     </app-button>
   </div>
