@@ -27,6 +27,7 @@ export class ReviewFormComponent {
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() usageDateChange = new EventEmitter<string>();
   @Output() next = new EventEmitter<void>();
+  @Output() previous = new EventEmitter<void>();
 
   onRequesterNameChange(value: string): void {
     this.requesterNameChange.emit(value);
@@ -54,6 +55,10 @@ export class ReviewFormComponent {
 
   onNext(): void {
     this.next.emit();
+  }
+
+  onPrevious(): void {
+    this.previous.emit();
   }
 }
 

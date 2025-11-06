@@ -22,7 +22,9 @@
     "retry": "إعادة المحاولة",
     "view": "عرض",
     "showing": "عرض",
-    "of": "من"
+    "of": "من",
+    "actions": "إجراءات",
+    "remove": "إزالة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -127,6 +129,14 @@
     "natureOptions": "خيارات الطبيعة",
     "enterQuantity": "أدخل الكمية",
     "enterQuantityPlaceholder": "أدخل الكمية",
+    "selectCartridge": "اختيار",
+    "deselectCartridge": "إلغاء الاختيار",
+    "viewDetails": "عرض التفاصيل",
+    "selectPriorityPlaceholder": "اختر الأولوية",
+    "quantity": "الكمية",
+    "addCartridge": "إضافة",
+    "added": "تمت الإضافة",
+    "updateQuantity": "تحديث",
     "next": "التالي",
     "reviewYourSelection": "مراجعة اختيارك",
     "primaryDetails": "التفاصيل الأساسية",
@@ -148,6 +158,7 @@
     "orderType": "نوع الطلب",
     "priority": "الأولوية",
     "usageDetails": "تفاصيل الاستخدام",
+    "selectedCartridges": "الذخائر المحددة",
     "orderDocument": "وثيقة الطلب",
     "view": "عرض",
     "reserveDetails": "تفاصيل الاحتياطي",

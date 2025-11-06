@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
+import { Cartridge } from '../cartridge-list/cartridge-list.component';
 
 @Component({
   selector: 'app-usage-form',
@@ -24,6 +25,11 @@ export class UsageFormComponent {
   @Input() availableReserve: number = 0;
   @Input() orderedQuantity: number = 0;
   @Input() utilizedQuantity: number = 0;
+  @Input() selectedCartridges: Cartridge[] = [];
+  @Output() removeCartridge = new EventEmitter<number>();
+  onRemoveCartridge(id: number): void {
+    this.removeCartridge.emit(id);
+  }
 
   @Output() fromReserveChange = new EventEmitter<string>();
   @Output() usePurposeChange = new EventEmitter<string>();

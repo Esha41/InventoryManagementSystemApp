@@ -1,15 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '@components/button/button.component';
 import { StepperComponent, Step } from '@components/stepper/stepper.component';
-import { CartridgeDetailsComponent, CartridgeDetails } from './components/cartridge-details/cartridge-details.component';
+import { CartridgeDetailsComponent } from './components/cartridge-details/cartridge-details.component';
 import { CartridgeListComponent, Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { AmmunitionService } from '@services/ammunition.service';
 import { UsageFormComponent } from './components/usage-form/usage-form.component';
 import { ReviewFormComponent } from './components/review-form/review-form.component';
+import { OrderService, CreateOrderRequest } from '../../core/services/order.service';
+import { APIOperationResponse } from '@models/api-response.model';
 
 @Component({
   selector: 'app-new-issue-request',
@@ -40,7 +43,8 @@ export class NewIssueRequestComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private ammunitionService: AmmunitionService
+    private ammunitionService: AmmunitionService,
+    private orderService: OrderService
   ) {}
 
   // Step 1: Selection filters (populated from API)
@@ -54,15 +58,49 @@ export class NewIssueRequestComponent implements OnInit {
   selectedCaseLength = '';
   selectedLinked = '';
   selectedNature = '';
-  selectedPriority = 'High Priority';
-  quantity: number | null = null;
+  selectedPriority = '';
 
-  cartridges: Cartridge[] = [];
-  private ammunitionRaw: any[] = [];
-
+  private allCartridges: Cartridge[] = [];
   filteredCartridges: Cartridge[] = [];
-  selectedCartridgeForView: CartridgeDetails | null = null;
+  selectedCartridgeForView: Cartridge | null = null;
   showCartridgeDetails: boolean = false;
+
+  loadingCartridges = false;
+  cartridgeError: string | null = null;
+
+  submittingOrder = false;
+  orderSubmitError: string | null = null;
+  createdOrderId: number | null = null;
+  orderNumber: string | null = null;
+
+  private selectedEntries: Array<{ id: number; quantity: number }> = [];
+
+  private readonly DEFAULT_DEPARTMENT_ID = 1;
+  private readonly DEFAULT_REQUEST_PURPOSE_ID = 1;
+  private readonly DEFAULT_REQUEST_TYPE_ID = 1;
+
+  get selectedCartridges(): Cartridge[] {
+    return this.selectedEntries
+      .map(entry => {
+        const cartridge = this.allCartridges.find(c => c.id === entry.id);
+        if (cartridge) {
+          return { ...cartridge, quantity: entry.quantity };
+        }
+        return {
+          id: entry.id,
+          name: `#${entry.id}`,
+          selected: true,
+          quantity: entry.quantity
+        } as Cartridge;
+      });
+  }
+
+  get canProceedFromSelection(): boolean {
+    const hasSelection = this.selectedEntries.length > 0;
+    const hasPriority = !!this.selectedPriority;
+    const quantitiesValid = this.selectedEntries.every(entry => entry.quantity > 0);
+    return hasSelection && hasPriority && quantitiesValid;
+  }
 
   ngOnInit(): void {
     this.loadCartridges();
@@ -70,32 +108,47 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   private loadCartridges(): void {
+    this.loadingCartridges = true;
+    this.cartridgeError = null;
+
     this.ammunitionService.getAll<any>().subscribe({
       next: (items) => {
-        this.ammunitionRaw = items || [];
-        this.cartridges = this.ammunitionRaw.map((x: any) => ({
-          name: x.name || x.itemNo || 'Ammunition',
-          selected: false,
-          productId: x.itemNo,
-          ncn: x.nsn?.nameEn || x.nsn?.nameAr,
-          primaryPurpose: x.primaryPurpos?.nameEn || x.primaryPurpos?.nameAr,
-          projectileColor: x.projectileColor?.nameEn || x.projectileColor?.nameAr,
-          totalWeight: x.totalWeight ? `${x.totalWeight} g` : undefined,
-          projectileMaterial: x.projectailMaterial?.nameEn || x.projectailMaterial?.nameAr,
-          caseType: x.caseType?.nameEn || x.caseType?.nameAr,
-          primer: x.primer,
-          propellant: x.propellant?.nameEn || x.propellant?.nameAr,
-          hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr,
-          capabilityGroup: x.compatibility?.nameEn || x.compatibility?.nameAr
-        }));
+        const mapped = (items || []).map((x: any) => this.mapAmmunitionToCartridge(x));
+        this.allCartridges = mapped;
         this.buildFilterOptions();
         this.filterCartridges();
+        this.loadingCartridges = false;
       },
       error: () => {
-        this.cartridges = [];
-        this.filterCartridges();
+        this.allCartridges = [];
+        this.filteredCartridges = [];
+        this.loadingCartridges = false;
+        this.cartridgeError = 'Failed to load ammunition catalog. Please try again.';
       }
     });
+  }
+
+  retryLoadCartridges(): void {
+    if (!this.loadingCartridges) {
+      this.loadCartridges();
+    }
+  }
+
+  onCartridgeAdded(event: { cartridge: Cartridge; quantity: number }): void {
+    const { cartridge, quantity } = event;
+    const existingIndex = this.selectedEntries.findIndex(entry => entry.id === cartridge.id);
+    if (existingIndex >= 0) {
+      this.selectedEntries[existingIndex].quantity = quantity;
+    } else {
+      this.selectedEntries.push({ id: cartridge.id, quantity });
+    }
+
+    const target = this.allCartridges.find(c => c.id === cartridge.id);
+    if (target) {
+      target.added = true;
+      target.selected = true;
+      target.quantity = quantity;
+    }
   }
 
   private buildFilterOptions(): void {
@@ -103,19 +156,16 @@ export class NewIssueRequestComponent implements OnInit {
     const caseLens = new Set<string>();
     const natures = new Set<string>();
 
-    for (const x of this.ammunitionRaw) {
-      const diameterLabel = x.bulletDiameter != null
-        ? `${x.bulletDiameter}${x.bulletDiameterUnit?.nameEn ? ' ' + x.bulletDiameterUnit.nameEn : ''}`
-        : undefined;
-      if (diameterLabel) diameters.add(diameterLabel);
-
-      const caseLabel = x.caseLength != null
-        ? `${x.bulletDiameter ?? ''}${x.bulletDiameter ? ' x ' : ''}${x.caseLength}`
-        : undefined;
-      if (caseLabel) caseLens.add(caseLabel);
-
-      const natureLabel = x.natureOption?.nameEn || x.natureOption?.nameAr;
-      if (natureLabel) natures.add(natureLabel);
+    for (const cartridge of this.allCartridges) {
+      if (cartridge.bulletDiameterLabel) {
+        diameters.add(cartridge.bulletDiameterLabel);
+      }
+      if (cartridge.caseLengthLabel) {
+        caseLens.add(cartridge.caseLengthLabel);
+      }
+      if (cartridge.natureLabel) {
+        natures.add(cartridge.natureLabel);
+      }
     }
 
     this.bulletDiameters = Array.from(diameters);
@@ -144,38 +194,18 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   filterCartridges(): void {
-    this.filteredCartridges = this.ammunitionRaw
-      .filter((x: any) => {
-        const diameterLabel = x.bulletDiameter != null
-          ? `${x.bulletDiameter}${x.bulletDiameterUnit?.nameEn ? ' ' + x.bulletDiameterUnit.nameEn : ''}`
-          : '';
-        const caseLabel = x.caseLength != null
-          ? `${x.bulletDiameter ?? ''}${x.bulletDiameter ? ' x ' : ''}${x.caseLength}`
-          : '';
-        const natureLabel = x.natureOption?.nameEn || x.natureOption?.nameAr || '';
-        const linkedLabel = x.isLinked ? 'Linked' : 'Not Linked';
+    this.filteredCartridges = this.allCartridges.filter(cartridge => {
+      const diameterLabel = cartridge.bulletDiameterLabel ?? '';
+      const caseLabel = cartridge.caseLengthLabel ?? '';
+      const linkedLabel = cartridge.linkedLabel ?? '';
+      const natureLabel = cartridge.natureLabel ?? '';
 
-        const byDiameter = !this.selectedBulletDiameter || this.selectedBulletDiameter === diameterLabel;
-        const byCase = !this.selectedCaseLength || this.selectedCaseLength === caseLabel;
-        const byLinked = !this.selectedLinked || this.selectedLinked === linkedLabel;
-        const byNature = !this.selectedNature || this.selectedNature === natureLabel;
-        return byDiameter && byCase && byLinked && byNature;
-      })
-      .map((x: any) => ({
-        name: x.name || x.itemNo || 'Ammunition',
-        selected: false,
-        productId: x.itemNo,
-        ncn: x.nsn?.nameEn || x.nsn?.nameAr,
-        primaryPurpose: x.primaryPurpos?.nameEn || x.primaryPurpos?.nameAr,
-        projectileColor: x.projectileColor?.nameEn || x.projectileColor?.nameAr,
-        totalWeight: x.totalWeight ? `${x.totalWeight} g` : undefined,
-        projectileMaterial: x.projectailMaterial?.nameEn || x.projectailMaterial?.nameAr,
-        caseType: x.caseType?.nameEn || x.caseType?.nameAr,
-        primer: x.primer,
-        propellant: x.propellant?.nameEn || x.propellant?.nameAr,
-        hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr,
-        capabilityGroup: x.compatibility?.nameEn || x.compatibility?.nameAr
-      }));
+      const byDiameter = !this.selectedBulletDiameter || this.selectedBulletDiameter === diameterLabel;
+      const byCase = !this.selectedCaseLength || this.selectedCaseLength === caseLabel;
+      const byLinked = !this.selectedLinked || this.selectedLinked === linkedLabel;
+      const byNature = !this.selectedNature || this.selectedNature === natureLabel;
+      return byDiameter && byCase && byLinked && byNature;
+    });
   }
 
   // Handlers invoked from child component outputs
@@ -200,7 +230,6 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   onCartridgeClick(cartridge: Cartridge): void {
-    // Show detailed view instead of toggling selection
     this.selectedCartridgeForView = cartridge;
     this.showCartridgeDetails = true;
   }
@@ -211,13 +240,25 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   onSelectCartridge(): void {
-    if (this.selectedCartridgeForView) {
-      const cartridge = this.cartridges.find(c => c.name === this.selectedCartridgeForView?.name);
-      if (cartridge) {
-        cartridge.selected = true;
-      }
-      this.showCartridgeDetails = false;
-      this.selectedCartridgeForView = null;
+    if (!this.selectedCartridgeForView) {
+      return;
+    }
+
+    const cartridge = this.allCartridges.find(c => c.id === this.selectedCartridgeForView?.id) || this.selectedCartridgeForView;
+    const quantity = cartridge.quantity && cartridge.quantity > 0 ? cartridge.quantity : 1;
+    this.onCartridgeAdded({ cartridge, quantity });
+
+    this.showCartridgeDetails = false;
+    this.selectedCartridgeForView = null;
+  }
+
+  onRemoveSelectedCartridge(cartridgeId: number): void {
+    this.selectedEntries = this.selectedEntries.filter(entry => entry.id !== cartridgeId);
+    const target = this.allCartridges.find(c => c.id === cartridgeId);
+    if (target) {
+      target.selected = false;
+      target.added = false;
+      target.quantity = null;
     }
   }
 
@@ -226,8 +267,7 @@ export class NewIssueRequestComponent implements OnInit {
     this.selectedCaseLength = '';
     this.selectedLinked = '';
     this.selectedNature = '';
-    this.selectedPriority = this.orderPriorities[0] || '';
-    this.quantity = null;
+    this.selectedPriority = '';
     this.filterCartridges();
   }
 
@@ -237,8 +277,7 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   onConfirmSelection(): void {
-    const hasSelection = this.cartridges.some(c => c.selected);
-    if (hasSelection) {
+    if (this.canProceedFromSelection) {
       this.steps[0].completed = true;
       this.currentStep = 1;
       this.updateQueryParams(1);
@@ -246,15 +285,23 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   onNext(): void {
+    if (this.submittingOrder) {
+      return;
+    }
+
+    if (this.currentStep === 0 && !this.canProceedFromSelection) {
+      return;
+    }
+
+    if (this.currentStep === 2) {
+      this.onSubmitOrder();
+      return;
+    }
+
     if (this.currentStep < this.steps.length - 1) {
       this.steps[this.currentStep].completed = true;
       this.currentStep++;
       this.updateQueryParams(this.currentStep);
-      
-      // Auto-submit order when reaching the Send step
-      if (this.currentStep === 3) {
-        this.onSubmitOrder();
-      }
     }
   }
 
@@ -293,8 +340,81 @@ export class NewIssueRequestComponent implements OnInit {
   orderSubmitted: boolean = false;
 
   onSubmitOrder(): void {
+    if (this.submittingOrder) {
+      return;
+    }
 
-    this.orderSubmitted = true;
+    const validationError = this.validateBeforeSubmit();
+    if (validationError) {
+      this.orderSubmitError = validationError;
+      this.currentStep = 2;
+      this.updateQueryParams(2);
+      return;
+    }
+
+    const usageDateTime = this.combineDateAndTime(this.usageDate, this.usageTime);
+    const requestItems = this.selectedEntries.map(entry => ({
+      itemId: entry.id,
+      quantity: entry.quantity,
+      notes: ''
+    }));
+
+    const orderNumber = this.generateOrderNumber();
+
+    const payload: CreateOrderRequest = {
+      orderNo: orderNumber,
+      requestNo: orderNumber,
+      reason: this.usePurpose || this.orderType || 'New Order Issue',
+      priority: this.mapPriorityToEnum(this.selectedPriority),
+      notes: this.requesterComments || '',
+      departmentId: this.DEFAULT_DEPARTMENT_ID,
+      requestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
+      requesterId: null,
+      recieverId: null,
+      depotId: null,
+      requestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
+      isFromAllowance: this.fromReserve === 'Yes',
+      usageDate: usageDateTime.toISOString(),
+      usageTime: this.formatUsageTime(usageDateTime),
+      usagePurpose: this.usePurpose || 'General usage',
+      annualDiscard: this.parseOptionalInteger(this.annualDiscardSpecialOps),
+      usageLocation: this.usageLocation || 'N/A',
+      numberOfOfficer: this.numberOfOfficers ?? null,
+      numberOfOtherRank: this.numberOfOtherRanks ?? null,
+      requestItems
+    };
+
+    console.groupCollapsed('[NewIssueRequest] createOrder payload');
+    console.log('Payload', payload);
+    console.groupEnd();
+
+    this.submittingOrder = true;
+    this.orderSubmitError = null;
+
+    this.orderService.createOrder(payload).subscribe({
+      next: (response: APIOperationResponse<number>) => {
+        this.submittingOrder = false;
+
+        if (!response?.succeeded) {
+          const backendMessage = response?.message || this.extractFirstError(response) || 'Failed to submit order. Please try again.';
+          this.orderSubmitError = backendMessage;
+          return;
+        }
+
+        this.createdOrderId = (response.data ?? null) as number | null;
+        this.orderNumber = payload.orderNo;
+        this.orderSubmitted = true;
+        this.steps[2].completed = true;
+        this.steps[3].completed = true;
+        this.currentStep = 3;
+        this.updateQueryParams(3);
+      },
+      error: (error: unknown) => {
+        this.submittingOrder = false;
+        const message = this.resolveHttpErrorMessage(error);
+        this.orderSubmitError = message;
+      }
+    });
   }
 
   onTrackOrder(): void {
@@ -307,7 +427,18 @@ export class NewIssueRequestComponent implements OnInit {
     this.currentStep = 0;
     this.orderSubmitted = false;
     this.steps.forEach(step => step.completed = false);
-    this.cartridges.forEach(c => c.selected = false);
+    this.selectedEntries = [];
+    this.allCartridges.forEach(c => {
+      c.selected = false;
+      c.added = false;
+      c.quantity = null;
+    });
+    this.filteredCartridges = [...this.allCartridges];
+    this.selectedPriority = '';
+    this.selectedBulletDiameter = '';
+    this.selectedCaseLength = '';
+    this.selectedLinked = '';
+    this.selectedNature = '';
     this.fromReserve = 'Yes';
     this.usePurpose = '';
     this.annualDiscardSpecialOps = '';
@@ -318,6 +449,150 @@ export class NewIssueRequestComponent implements OnInit {
     this.usageTime = '';
     this.requesterName = 'Name';
     this.requesterComments = 'None';
+    this.orderSubmitError = null;
+    this.createdOrderId = null;
+    this.orderNumber = null;
+    this.submittingOrder = false;
     this.updateQueryParams(0);
+  }
+
+  private validateBeforeSubmit(): string | null {
+    if (this.selectedEntries.length === 0) {
+      return 'Please select at least one cartridge before submitting the order.';
+    }
+    const invalidItem = this.selectedEntries.find(entry => !entry.id || entry.id <= 0 || entry.quantity <= 0);
+    if (invalidItem) {
+      return 'Selected cartridge is missing required information.';
+    }
+    if (!this.selectedPriority) {
+      return 'Order priority is required.';
+    }
+    if (!this.usePurpose) {
+      return 'Usage purpose is required.';
+    }
+    if (!this.usageLocation) {
+      return 'Usage location is required.';
+    }
+    if (!this.usageDate) {
+      return 'Usage date is required.';
+    }
+    if (!this.usageTime) {
+      return 'Usage time is required.';
+    }
+    return null;
+  }
+
+  private mapPriorityToEnum(priorityLabel: string): number {
+    const normalized = (priorityLabel || '').toLowerCase();
+    if (normalized.includes('medium')) return 2;
+    if (normalized.includes('low')) return 3;
+    return 1; // default high
+  }
+
+  private generateOrderNumber(): string {
+    const timestamp = Date.now();
+    return `ORD-${timestamp}`;
+  }
+
+  private combineDateAndTime(dateStr: string, timeStr: string): Date {
+    const datePart = dateStr || new Date().toISOString().substring(0, 10);
+    const timePart = (timeStr && timeStr.length >= 5) ? timeStr : '00:00';
+    const isoString = `${datePart}T${timePart.length === 5 ? `${timePart}:00` : timePart}`;
+    return new Date(isoString);
+  }
+
+  private formatUsageTime(date: Date): string {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  private parseOptionalInteger(value: string | number | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const numeric = typeof value === 'number' ? value : parseInt(value, 10);
+    return Number.isNaN(numeric) ? null : numeric;
+  }
+
+  private mapAmmunitionToCartridge(dto: any): Cartridge {
+    const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit);
+    const caseLengthLabel = this.buildMeasurementLabel(dto.caseLength, dto.caseLengthUnit);
+    const linkedLabel = dto.isLinked ? 'Linked' : 'Not Linked';
+    const natureLabel = dto.natureOption?.nameEn || dto.natureOption?.nameAr;
+
+    return {
+      id: Number(dto.id) || 0,
+      name: dto.name || dto.itemNo || 'Ammunition',
+      selected: false,
+      added: false,
+      quantity: null,
+      itemNo: dto.itemNo,
+      productId: dto.itemNo,
+      ncn: dto.nsn?.nameEn || dto.nsn?.nameAr,
+      primaryPurpose: dto.primaryPurpos?.nameEn || dto.primaryPurpos?.nameAr,
+      projectileColor: dto.projectileColor?.nameEn || dto.projectileColor?.nameAr,
+      totalWeight: dto.totalWeight ? `${dto.totalWeight} g` : undefined,
+      projectileMaterial: dto.projectailMaterial?.nameEn || dto.projectailMaterial?.nameAr,
+      caseType: dto.caseType?.nameEn || dto.caseType?.nameAr,
+      primer: dto.primer,
+      propellant: dto.propellant?.nameEn || dto.propellant?.nameAr,
+      hazardDivision: dto.hazardDivision?.nameEn || dto.hazardDivision?.nameAr,
+      capabilityGroup: dto.compatibility?.nameEn || dto.compatibility?.nameAr,
+      bulletDiameterLabel,
+      caseLengthLabel,
+      linkedLabel,
+      natureLabel
+    };
+  }
+
+  private buildMeasurementLabel(value: any, unit: any): string | undefined {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+    const numeric = Number(value);
+    if (Number.isNaN(numeric)) {
+      return undefined;
+    }
+    const unitName = unit?.nameEn || unit?.nameAr;
+    return unitName ? `${numeric} ${unitName}` : `${numeric}`;
+  }
+
+  private resolveHttpErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const backendMessage = error.error?.message || error.error?.Message || error.error?.title || error.message;
+      if (backendMessage) {
+        return backendMessage;
+      }
+    }
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return 'Failed to submit order. Please try again.';
+  }
+
+  private extractFirstError(response: APIOperationResponse<number> | undefined): string | null {
+    if (!response) {
+      return null;
+    }
+    const errors = (response as any)?.errors;
+    if (!errors) {
+      return null;
+    }
+    if (Array.isArray(errors) && errors.length > 0) {
+      return errors[0].description || errors[0];
+    }
+    if (typeof errors === 'object') {
+      const firstKey = Object.keys(errors)[0];
+      const value = (errors as Record<string, any>)[firstKey];
+      if (Array.isArray(value) && value.length > 0) {
+        return value[0];
+      }
+      if (typeof value === 'string') {
+        return value;
+      }
+    }
+    return null;
   }
 }

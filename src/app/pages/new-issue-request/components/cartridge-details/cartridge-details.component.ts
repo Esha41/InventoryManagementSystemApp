@@ -1,22 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { Cartridge } from '../cartridge-list/cartridge-list.component';
 
-export interface CartridgeDetails {
-  name: string;
-  selected: boolean;
-  productId?: string;
-  ncn?: string;
-  primaryPurpose?: string;
-  projectileColor?: string;
-  totalWeight?: string;
-  projectileMaterial?: string;
-  caseType?: string;
-  primer?: string;
-  propellant?: string;
-  hazardDivision?: string;
-  capabilityGroup?: string;
-}
 
 @Component({
   selector: 'app-cartridge-details',
@@ -26,7 +12,7 @@ export interface CartridgeDetails {
   styleUrls: ['./cartridge-details.component.css']
 })
 export class CartridgeDetailsComponent {
-  @Input() cartridge: CartridgeDetails | null = null;
+  @Input() cartridge: Cartridge | null = null;
   @Output() select = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
