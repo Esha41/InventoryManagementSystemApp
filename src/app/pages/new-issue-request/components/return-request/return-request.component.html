@@ -52,18 +52,28 @@
                 {{ 'returnRequest.department' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
-                <select
-                  [(ngModel)]="departmentId"
-                  name="departmentId"
-                  [class.border-red-500]="hasError('departmentId')"
-                  [disabled]="isLoadingDepartments"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option [value]="null">{{ isLoadingDepartments ? 'Loading...' : ('returnRequest.selectDepartment' | translate) }}</option>
-                  <option *ngFor="let dept of departments" [value]="dept.id">
-                    {{ dept.nameEn || dept.nameAr }}
-                  </option>
-                </select>
+                <ng-container *ngIf="isDepartmentLocked; else departmentSelect">
+                  <input
+                    type="text"
+                    [value]="lockedDepartmentName || ('returnRequest.selectDepartment' | translate)"
+                    class="w-full px-4 py-2.5 bg-gray-100 rounded-lg border border-dashed text-sm text-[#23272E] cursor-not-allowed"
+                    readonly
+                  />
+                </ng-container>
+                <ng-template #departmentSelect>
+                  <select
+                    [(ngModel)]="departmentId"
+                    name="departmentId"
+                    [class.border-red-500]="hasError('departmentId')"
+                    [disabled]="isLoadingDepartments"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option [value]="null">{{ isLoadingDepartments ? 'Loading...' : ('returnRequest.selectDepartment' | translate) }}</option>
+                    <option *ngFor="let dept of departments" [value]="dept.id">
+                      {{ dept.nameEn || dept.nameAr }}
+                    </option>
+                  </select>
+                </ng-template>
                 <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-red-500">
                   {{ getError('departmentId') }}
                 </p>
@@ -76,17 +86,27 @@
                 {{ 'returnRequest.requester' | translate }}
               </label>
               <div class="flex-1">
-                <select
-                  [(ngModel)]="requesterId"
-                  name="requesterId"
-                  [disabled]="isLoadingRequesters"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option [value]="null">{{ isLoadingRequesters ? 'Loading...' : ('returnRequest.selectRequester' | translate) }}</option>
-                  <option *ngFor="let requester of requesters" [value]="requester.id">
-                    {{ requester.nameEn || requester.nameAr }}
-                  </option>
-                </select>
+                <ng-container *ngIf="isRequesterLocked; else requesterSelect">
+                  <input
+                    type="text"
+                    [value]="lockedRequesterName || currentUserDetails?.userName || ''"
+                    class="w-full px-4 py-2.5 bg-gray-100 rounded-lg border border-dashed text-sm text-[#23272E] cursor-not-allowed"
+                    readonly
+                  />
+                </ng-container>
+                <ng-template #requesterSelect>
+                  <select
+                    [(ngModel)]="requesterId"
+                    name="requesterId"
+                    [disabled]="isLoadingRequesters"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option [value]="null">{{ isLoadingRequesters ? 'Loading...' : ('returnRequest.selectRequester' | translate) }}</option>
+                    <option *ngFor="let requester of requesters" [value]="requester.id">
+                      {{ requester.nameEn || requester.nameAr }}
+                    </option>
+                  </select>
+                </ng-template>
               </div>
             </div>
 

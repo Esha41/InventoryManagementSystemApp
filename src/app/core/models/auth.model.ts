@@ -18,6 +18,13 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   expiresAt: string; // ISO date string from backend
+  departmentId?: number;
+  departmentName?: string;
+  employeeId?: number;
+  organizationId?: number;
+  userName?: string;
+  nameEn?: string;
+  nameAr?: string;
 }
 
 /**
@@ -32,6 +39,10 @@ export interface AuthenticatedUser {
   isLdapUser?: boolean;
   employeeId?: number;
   organizationId?: number;
+  departmentId?: number;
+  departmentName?: string;
+  nameEn?: string;
+  nameAr?: string;
 }
 
 /**

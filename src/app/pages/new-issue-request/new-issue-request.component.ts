@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,11 @@ import { UsageFormComponent } from './components/usage-form/usage-form.component
 import { ReviewFormComponent } from './components/review-form/review-form.component';
 import { OrderService, CreateOrderRequest } from '../../core/services/order.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { UserContextService } from '@services/user-context.service';
+import { BackendUserDto } from '@models/backend-user.model';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { AuthenticatedUser } from '@models/auth.model';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-new-issue-request',
@@ -31,7 +36,8 @@ import { APIOperationResponse } from '@models/api-response.model';
   templateUrl: './new-issue-request.component.html',
   styleUrls: ['./new-issue-request.component.css']
 })
-export class NewIssueRequestComponent implements OnInit {
+export class NewIssueRequestComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   currentStep = 0;
   steps: Step[] = [
     { label: 'newIssueRequest.selection', completed: false },
@@ -44,7 +50,9 @@ export class NewIssueRequestComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private ammunitionService: AmmunitionService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private userContextService: UserContextService,
+    private backendAuthService: BackendAuthService
   ) {}
 
   // Step 1: Selection filters (populated from API)
@@ -78,6 +86,12 @@ export class NewIssueRequestComponent implements OnInit {
   private readonly DEFAULT_DEPARTMENT_ID = 1;
   private readonly DEFAULT_REQUEST_PURPOSE_ID = 1;
   private readonly DEFAULT_REQUEST_TYPE_ID = 1;
+  private currentUserDetails: BackendUserDto | null = null;
+  private currentUserDepartmentId: number | null = null;
+  private currentUserRequesterId: number | null = null;
+  private fallbackRequesterName = '';
+  isAdminUser = false;
+  lockRequesterName = false;
 
   get selectedCartridges(): Cartridge[] {
     return this.selectedEntries
@@ -103,8 +117,31 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initializeUserContext();
     this.loadCartridges();
     this.initializeStepFromQueryParams();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initializeUserContext(): void {
+    this.isAdminUser = this.userContextService.isAdminUser();
+    this.lockRequesterName = !this.isAdminUser;
+
+    this.backendAuthService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.applyAuthenticatedUserContext(user));
+
+    this.userContextService
+      .getCurrentUserDetails()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(details => {
+        this.currentUserDetails = details;
+        this.applyBackendUserDetails(details);
+      });
   }
 
   private loadCartridges(): void {
@@ -367,9 +404,9 @@ export class NewIssueRequestComponent implements OnInit {
       reason: this.usePurpose || this.orderType || 'New Order Issue',
       priority: this.mapPriorityToEnum(this.selectedPriority),
       notes: this.requesterComments || '',
-      departmentId: this.DEFAULT_DEPARTMENT_ID,
+      departmentId: this.getDepartmentIdForRequest(),
       requestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
-      requesterId: null,
+      requesterId: this.getRequesterIdForRequest(),
       recieverId: null,
       depotId: null,
       requestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
@@ -421,6 +458,102 @@ export class NewIssueRequestComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
+  private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {
+    if (!user) {
+      return;
+    }
+
+    this.applyUserContext({
+      nameEn: user.nameEn,
+      nameAr: user.nameAr,
+      userName: user.userName,
+      departmentId: user.departmentId,
+      employeeId: user.employeeId
+    });
+  }
+
+  private applyBackendUserDetails(details: BackendUserDto | null): void {
+    if (!details) {
+      return;
+    }
+
+    this.applyUserContext({
+      nameEn: details.nameEn,
+      nameAr: details.nameAr,
+      userName: details.userName,
+      departmentId: details.departmentId,
+      employeeId: details.employeeId
+    });
+  }
+
+  private applyUserContext(context: {
+    nameEn?: string | null;
+    nameAr?: string | null;
+    userName?: string | null;
+    departmentId?: number | string | null;
+    employeeId?: number | string | null;
+  }): void {
+    const departmentId = this.toNumber(context.departmentId);
+    if (departmentId !== null) {
+      this.currentUserDepartmentId = departmentId;
+    }
+
+    const requesterId = this.toNumber(context.employeeId);
+    if (requesterId !== null) {
+      this.currentUserRequesterId = requesterId;
+    }
+
+    const preferredName = this.resolveRequesterDisplayName(context.nameEn, context.nameAr, context.userName);
+    if (preferredName) {
+      this.fallbackRequesterName = preferredName;
+      if (this.lockRequesterName) {
+        this.requesterName = preferredName;
+      }
+    }
+  }
+
+  private resolveRequesterDisplayName(
+    nameEn?: string | null,
+    nameAr?: string | null,
+    userName?: string | null
+  ): string | null {
+    if (nameEn && nameEn.trim().length > 0) {
+      return nameEn;
+    }
+    if (nameAr && nameAr.trim().length > 0) {
+      return nameAr;
+    }
+    if (userName && userName.trim().length > 0) {
+      return userName;
+    }
+    return null;
+  }
+
+  private getPreferredRequesterName(): string {
+    const name =
+      this.currentUserDetails?.nameEn ||
+      this.currentUserDetails?.nameAr ||
+      this.currentUserDetails?.userName ||
+      this.fallbackRequesterName;
+
+    if (name && name.trim().length > 0) {
+      return name;
+    }
+
+    return 'Name';
+  }
+
+  private getDepartmentIdForRequest(): number {
+    if (this.currentUserDepartmentId != null) {
+      return this.currentUserDepartmentId;
+    }
+    return this.DEFAULT_DEPARTMENT_ID;
+  }
+
+  private getRequesterIdForRequest(): number | null {
+    return this.currentUserRequesterId;
+  }
+
   resetForm(): void {
     this.currentStep = 0;
     this.orderSubmitted = false;
@@ -445,13 +578,23 @@ export class NewIssueRequestComponent implements OnInit {
     this.numberOfOtherRanks = null;
     this.usageDate = '';
     this.usageTime = '';
-    this.requesterName = 'Name';
+    this.requesterName = this.lockRequesterName
+      ? this.getPreferredRequesterName()
+      : 'Name';
     this.requesterComments = 'None';
     this.orderSubmitError = null;
     this.createdOrderId = null;
     this.orderNumber = null;
     this.submittingOrder = false;
     this.updateQueryParams(0);
+  }
+
+  private toNumber(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   private validateBeforeSubmit(): string | null {

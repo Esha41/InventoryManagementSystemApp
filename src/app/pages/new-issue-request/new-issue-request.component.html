@@ -100,6 +100,7 @@
   <app-review-form
     *ngIf="currentStep === 2"
     [requesterName]="requesterName"
+    [requesterNameReadonly]="lockRequesterName"
     [requesterComments]="requesterComments"
     [orderType]="orderType"
     [selectedPriority]="selectedPriority"
