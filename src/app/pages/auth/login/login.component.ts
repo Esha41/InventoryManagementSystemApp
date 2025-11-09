@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 interface LoginForm {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
   readonly Eye = Eye;
   readonly EyeOff = EyeOff;
   readonly Lock = Lock;
-  readonly Mail = Mail;
+  readonly User = User;
   readonly AlertCircle = AlertCircle;
 
   loginForm: FormGroup;
@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit {
     private backendAuth: BackendAuthService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
@@ -53,7 +53,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  get email() { return this.loginForm.get('email'); }
+  get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
 
   togglePasswordVisibility(): void {
@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit {
     const formValue = this.loginForm.value as LoginForm;
 
     this.backendAuth.login({
-      username: formValue.email,
+      username: formValue.username,
       password: formValue.password
     }).subscribe({
       next: (response) => {
@@ -101,14 +101,14 @@ export class LoginComponent implements OnInit {
     const field = this.loginForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
-        const displayName = fieldName === 'email' ? 'Email' : 'Password';
+        const displayName = fieldName === 'username' ? 'Username' : 'Password';
         return `${displayName} is required`;
-      }
-      if (field.errors['email']) {
-        return 'Please enter a valid email address';
       }
       if (field.errors['minlength']) {
         const required = field.errors['minlength'].requiredLength;
+        if (fieldName === 'username') {
+          return `Username must be at least ${required} characters`;
+        }
         return `Password must be at least ${required} characters`;
       }
     }

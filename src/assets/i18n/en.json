@@ -583,6 +583,10 @@
   "userFormModal": {
     "username": "Username",
     "usernamePlaceholder": "Enter username or email",
+    "email": "Email",
+    "emailPlaceholder": "Enter email address",
+    "militaryId": "Military ID",
+    "militaryIdPlaceholder": "Enter military ID",
     "password": "Password",
     "passwordPlaceholder": "Enter password",
     "roles": "Roles",
