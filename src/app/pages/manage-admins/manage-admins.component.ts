@@ -1,16 +1,20 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { UserFormModalComponent } from '@components/user-form-modal/user-form-modal.component';
+import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { LucideAngularModule, UserPlus, Search, Edit, Trash2, Shield, Mail, User as UserIcon, Power } from 'lucide-angular';
+import { LucideAngularModule, UserPlus, Search, Edit, Trash2, Shield, Mail, User as UserIcon, Power, Database, Plus, ChevronDown, X } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
-import { LookupService, LookupItem } from '@services/lookup.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { LookupService } from '@services/lookup.service';
+import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ToastService } from '@services/toast.service';
 
 @Component({
   selector: 'app-manage-admins',
@@ -22,6 +26,7 @@ import { TranslateModule } from '@ngx-translate/core';
     ButtonComponent, 
     LucideAngularModule,
     UserFormModalComponent,
+    LookupFormModalComponent,
     ConfirmDialogComponent,
     TranslateModule
   ],
@@ -37,7 +42,15 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   readonly Mail = Mail;
   readonly UserIcon = UserIcon;
   readonly Power = Power;
+  readonly Database = Database;
+  readonly Plus = Plus;
+  readonly ChevronDown = ChevronDown;
+  readonly X = X;
 
+  // Tab management
+  activeTab: 'users' | 'lookups' = 'users';
+
+  // User management
   users: BackendUserDto[] = [];
   roles: RoleDto[] = [];
   ranks: LookupItem[] = [];
@@ -53,14 +66,47 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   userModalMode: 'create' | 'edit' = 'create';
   selectedUser?: BackendUserDto;
 
+  // Lookup management
+  lookupTables = LOOKUP_TABLES;
+  selectedTable?: LookupTableConfig;
+  lookupItems: LookupItem[] = [];
+  lookupSearchTerm = '';
+  isLoadingLookups = false;
+  lookupErrorMessage = '';
+  
+  // Searchable dropdown state
+  tableSearchTerm = '';
+  showTableDropdown = false;
+  
+  // Lookup modal states
+  showLookupModal = false;
+  showLookupDeleteConfirm = false;
+  lookupModalMode: 'create' | 'edit' = 'create';
+  selectedLookupItem?: LookupItem;
+  lookupModalLoading = false; // Track modal loading state
+
   private destroy$ = new Subject<void>();
+
+  @ViewChild('tableDropdown', { static: false }) tableDropdownRef?: ElementRef;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.tableDropdownRef && !this.tableDropdownRef.nativeElement.contains(event.target)) {
+      this.closeTableDropdown();
+    }
+  }
 
   constructor(
     private backendUserService: BackendUserService,
-    private lookupService: LookupService
+    private lookupService: LookupService,
+    private toastService: ToastService,
+    private translateService: TranslateService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.initializeTabFromQueryParams();
     this.loadUsers();
     this.loadRoles();
     this.loadRanks();
@@ -128,11 +174,11 @@ getUserRoles(userId: string): string[] {
   }
 
   loadRanks(): void {
-    this.lookupService.getAll<LookupItem>('Rank').subscribe({
-      next: (ranks) => {
+    this.lookupService.getLookupItems('Rank').subscribe({
+      next: (ranks: LookupItem[]) => {
         this.ranks = ranks || [];
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Failed to load ranks:', error);
         this.ranks = [];
       }
@@ -245,6 +291,220 @@ getUserRoles(userId: string): string[] {
 
   getRoleTypeColor(): string {
     return 'bg-[var(--color-accent)]';
+  }
+
+  // Tab management
+  setActiveTab(tab: 'users' | 'lookups'): void {
+    this.activeTab = tab;
+    this.updateQueryParams(tab);
+    if (tab === 'lookups' && this.lookupTables.length > 0) {
+      if (!this.selectedTable) {
+        // Auto-select first table if none selected
+        this.selectedTable = this.lookupTables[0];
+      }
+      this.loadLookupItems();
+    }
+  }
+
+  private initializeTabFromQueryParams(): void {
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const tabParam = params['tab'];
+        if (tabParam === 'lookups' || tabParam === 'users') {
+          this.activeTab = tabParam;
+          if (tabParam === 'lookups' && this.lookupTables.length > 0) {
+            if (!this.selectedTable) {
+              // Auto-select first table if none selected
+              this.selectedTable = this.lookupTables[0];
+            }
+            this.loadLookupItems();
+          }
+        }
+      });
+  }
+
+  private updateQueryParams(tab: 'users' | 'lookups'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: tab },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  // Lookup management
+  onTableSelect(table: LookupTableConfig | undefined): void {
+    this.selectedTable = table;
+    this.showTableDropdown = false;
+    this.tableSearchTerm = '';
+    if (table) {
+      this.loadLookupItems();
+    }
+  }
+
+  get filteredLookupTables(): LookupTableConfig[] {
+    if (!this.tableSearchTerm.trim()) {
+      return this.lookupTables;
+    }
+    const search = this.tableSearchTerm.toLowerCase();
+    return this.lookupTables.filter(table =>
+      table.displayName.toLowerCase().includes(search) ||
+      table.name.toLowerCase().includes(search)
+    );
+  }
+
+  toggleTableDropdown(): void {
+    this.showTableDropdown = !this.showTableDropdown;
+    if (!this.showTableDropdown) {
+      this.tableSearchTerm = '';
+    }
+  }
+
+  closeTableDropdown(): void {
+    this.showTableDropdown = false;
+    this.tableSearchTerm = '';
+  }
+
+  loadLookupItems(): void {
+    if (!this.selectedTable) return;
+
+    this.isLoadingLookups = true;
+    this.lookupErrorMessage = '';
+    this.lookupService.getLookupItems(this.selectedTable.apiEndpoint).subscribe({
+      next: (items) => {
+        this.lookupItems = items.filter(item => !item.isDeleted);
+        this.isLoadingLookups = false;
+      },
+      error: (error) => {
+        this.isLoadingLookups = false;
+        this.lookupErrorMessage = 'Failed to load lookup items: ' + (error.message || 'Unknown error');
+      }
+    });
+  }
+
+  get filteredLookupItems(): LookupItem[] {
+    if (!this.lookupSearchTerm.trim()) {
+      return this.lookupItems;
+    }
+    const search = this.lookupSearchTerm.toLowerCase();
+    return this.lookupItems.filter(item => 
+      item.nameEn.toLowerCase().includes(search) ||
+      item.nameAr.toLowerCase().includes(search) ||
+      (item.code && item.code.toLowerCase().includes(search))
+    );
+  }
+
+  onAddLookup(): void {
+    if (!this.selectedTable) return;
+    this.lookupModalMode = 'create';
+    this.selectedLookupItem = undefined;
+    this.showLookupModal = true;
+  }
+
+  onEditLookup(item: LookupItem): void {
+    if (!this.selectedTable) return;
+    this.lookupModalMode = 'edit';
+    this.selectedLookupItem = item;
+    this.showLookupModal = true;
+  }
+
+  onDeleteLookup(item: LookupItem): void {
+    if (!this.selectedTable) return;
+    this.selectedLookupItem = item;
+    this.showLookupDeleteConfirm = true;
+  }
+
+  confirmLookupDelete(): void {
+    if (!this.selectedTable || !this.selectedLookupItem) return;
+
+    const dto: CreateUpdateLookupDto = {
+      nameEn: this.selectedLookupItem.nameEn,
+      nameAr: this.selectedLookupItem.nameAr,
+      code: this.selectedLookupItem.code
+    };
+
+    this.lookupService.deleteLookupItem(
+      this.selectedTable.apiEndpoint,
+      this.selectedLookupItem.id!,
+      dto
+    ).subscribe({
+      next: (success) => {
+        if (success) {
+          const itemName = this.selectedLookupItem?.nameEn || this.selectedLookupItem?.nameAr || '';
+          this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
+            this.toastService.success(
+              `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
+              translations['toast.success']
+            );
+          });
+          this.showLookupDeleteConfirm = false;
+          this.selectedLookupItem = undefined;
+          this.loadLookupItems();
+        }
+      },
+      error: (error) => {
+        this.lookupErrorMessage = error.message || 'Failed to delete lookup item';
+        this.translateService.get(['toast.error']).subscribe(translations => {
+          this.toastService.error(
+            error.message || 'Failed to delete lookup item',
+            translations['toast.error']
+          );
+        });
+      }
+    });
+  }
+
+  onLookupSaved(dto: CreateUpdateLookupDto): void {
+    if (!this.selectedTable) return;
+
+    this.lookupModalLoading = true;
+    this.isLoadingLookups = true;
+    this.lookupErrorMessage = '';
+
+    const operation = this.lookupModalMode === 'create'
+      ? this.lookupService.createLookupItem(this.selectedTable.apiEndpoint, dto)
+      : this.lookupService.updateLookupItem(
+          this.selectedTable.apiEndpoint,
+          this.selectedLookupItem!.id!,
+          dto
+        );
+
+    operation.subscribe({
+      next: (item) => {
+        const isCreate = this.lookupModalMode === 'create';
+        const itemName = dto.nameEn || dto.nameAr || '';
+        
+        this.translateService.get([
+          'toast.success',
+          'lookupManagement.addItem',
+          'lookupManagement.edit'
+        ]).subscribe(translations => {
+          const message = isCreate 
+            ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
+            : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
+          
+          this.toastService.success(message, translations['toast.success']);
+        });
+
+        this.lookupModalLoading = false;
+        this.isLoadingLookups = false;
+        this.showLookupModal = false;
+        this.selectedLookupItem = undefined;
+        this.loadLookupItems();
+      },
+      error: (error) => {
+        this.lookupModalLoading = false; // Reset modal loading state on error
+        this.isLoadingLookups = false;
+        this.lookupErrorMessage = error.message || `Failed to ${this.lookupModalMode} lookup item`;
+        
+        this.translateService.get(['toast.error']).subscribe(translations => {
+          this.toastService.error(
+            error.message || `Failed to ${this.lookupModalMode} lookup item`,
+            translations['toast.error']
+          );
+        });
+      }
+    });
   }
   
 }

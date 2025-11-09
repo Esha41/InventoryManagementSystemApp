@@ -137,7 +137,12 @@
   </div>
 
   <!-- Navigation Buttons -->
-  <div class="flex justify-end items-center">
+  <div class="flex justify-between items-center">
+    <app-button
+      variant="outline"
+      (clicked)="onPrevious()">
+      {{ 'newIssueRequest.previous' | translate }}
+    </app-button>
     <app-button 
       variant="primary" 
       (clicked)="onNext()"

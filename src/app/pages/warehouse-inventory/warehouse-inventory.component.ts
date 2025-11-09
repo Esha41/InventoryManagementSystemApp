@@ -7,6 +7,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2 } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
+import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
@@ -95,7 +96,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     .subscribe({
       next: ({ depot, inventoryDetails }) => {
         // Find the specific depot
-        const currentDepot = depot.find(d => d.id === this.depoId);
+        const currentDepot = depot.find((d: LookupItem) => d.id === this.depoId);
         this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
         
         // Set inventory details

@@ -9,7 +9,6 @@ import { BackendAuthService } from '@services/backend-auth.service';
 interface LoginForm {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 @Component({
@@ -43,8 +42,7 @@ export class LoginComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -53,20 +51,10 @@ export class LoginComponent implements OnInit {
     if (this.backendAuth.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
     }
-    
-    // Load saved email if remember me was checked
-    const savedEmail = localStorage.getItem('remembered_email');
-    if (savedEmail) {
-      this.loginForm.patchValue({
-        email: savedEmail,
-        rememberMe: true
-      });
-    }
   }
 
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }
-  get rememberMe() { return this.loginForm.get('rememberMe'); }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
@@ -88,13 +76,6 @@ export class LoginComponent implements OnInit {
       password: formValue.password
     }).subscribe({
       next: (response) => {
-        // Handle remember me
-        if (formValue.rememberMe) {
-          localStorage.setItem('remembered_email', formValue.email);
-        } else {
-          localStorage.removeItem('remembered_email');
-        }
-
         this.isLoading = false;
 
         // Navigate to dashboard

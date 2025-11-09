@@ -11,42 +11,60 @@
     (stepChange)="onStepChange($event)">
   </app-stepper>
 
+  <div *ngIf="orderSubmitError && currentStep === 2" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
+    {{ orderSubmitError }}
+  </div>
+
   <!-- Step 1: Selection -->
   <div *ngIf="currentStep === 0">
-    <!-- Cartridge Details View -->
-    <app-cartridge-details
-      *ngIf="showCartridgeDetails"
-      [cartridge]="selectedCartridgeForView"
-      (select)="onSelectCartridge()"
-      (cancel)="onCloseCartridgeDetails()">
-    </app-cartridge-details>
+    <ng-container *ngIf="!loadingCartridges && !cartridgeError; else cartridgeState">
+      <!-- Cartridge Details View -->
+      <app-cartridge-details
+        *ngIf="showCartridgeDetails"
+        [cartridge]="selectedCartridgeForView"
+        (select)="onSelectCartridge()"
+        (cancel)="onCloseCartridgeDetails()">
+      </app-cartridge-details>
 
-    <!-- Cartridge List View -->
-    <app-cartridge-list
-      *ngIf="!showCartridgeDetails"
-      [cartridges]="filteredCartridges"
-      [bulletDiameters]="bulletDiameters"
-      [caseLengths]="caseLengths"
-      [linkedOptions]="linkedOptions"
-      [natureOptions]="natureOptions"
-      [orderPriorities]="orderPriorities"
-      [selectedBulletDiameter]="selectedBulletDiameter"
-      [selectedCaseLength]="selectedCaseLength"
-      [selectedLinked]="selectedLinked"
-      [selectedNature]="selectedNature"
-      [selectedPriority]="selectedPriority"
-      [quantity]="quantity"
-      (cartridgeClick)="onCartridgeClick($event)"
-      (filterChange)="filterCartridges()"
-      (clearFilters)="onClearFilters()"
-      (next)="onNext()"
-      (bulletDiameterChange)="onBulletDiameterChange($event)"
-      (caseLengthChange)="onCaseLengthChange($event)"
-      (linkedChange)="onLinkedChange($event)"
-      (natureChange)="onNatureChange($event)"
-      (priorityChange)="selectedPriority = $event"
-      (quantityChange)="quantity = $event">
-    </app-cartridge-list>
+      <!-- Cartridge List View -->
+      <app-cartridge-list
+        *ngIf="!showCartridgeDetails"
+        [cartridges]="filteredCartridges"
+        [bulletDiameters]="bulletDiameters"
+        [caseLengths]="caseLengths"
+        [linkedOptions]="linkedOptions"
+        [natureOptions]="natureOptions"
+        [orderPriorities]="orderPriorities"
+        [selectedBulletDiameter]="selectedBulletDiameter"
+        [selectedCaseLength]="selectedCaseLength"
+        [selectedLinked]="selectedLinked"
+        [selectedNature]="selectedNature"
+        [selectedPriority]="selectedPriority"
+        [canProceed]="canProceedFromSelection"
+        (cartridgeClick)="onCartridgeClick($event)"
+        (addSelection)="onCartridgeAdded($event)"
+        (filterChange)="filterCartridges()"
+        (clearFilters)="onClearFilters()"
+        (next)="onNext()"
+        (bulletDiameterChange)="onBulletDiameterChange($event)"
+        (caseLengthChange)="onCaseLengthChange($event)"
+        (linkedChange)="onLinkedChange($event)"
+        (natureChange)="onNatureChange($event)"
+        (priorityChange)="selectedPriority = $event">
+      </app-cartridge-list>
+    </ng-container>
+
+    <ng-template #cartridgeState>
+      <div *ngIf="loadingCartridges" class="bg-white rounded-lg p-6 text-sm text-gray-500 border border-dashed border-gray-300">
+        {{ 'common.loading' | translate }}...
+      </div>
+      <div *ngIf="!loadingCartridges && cartridgeError" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 flex items-center justify-between">
+        <span>{{ cartridgeError }}</span>
+        <button type="button" class="px-3 py-1 border border-red-300 rounded hover:bg-red-100" (click)="retryLoadCartridges()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    </ng-template>
   </div>
 
   <!-- Step 2: Usage -->
@@ -64,6 +82,8 @@
     [availableReserve]="availableReserve"
     [orderedQuantity]="orderedQuantity"
     [utilizedQuantity]="utilizedQuantity"
+    [selectedCartridges]="selectedCartridges"
+    (removeCartridge)="onRemoveSelectedCartridge($event)"
     (fromReserveChange)="fromReserve = $event"
     (usePurposeChange)="usePurpose = $event"
     (annualDiscardSpecialOpsChange)="annualDiscardSpecialOps = $event"
@@ -92,16 +112,29 @@
     (fromReserveChange)="fromReserve = $event"
     (usePurposeChange)="usePurpose = $event"
     (usageDateChange)="usageDate = $event"
+    (previous)="onPrevious()"
     (next)="onNext()">
   </app-review-form>
 
   <!-- Step 4: Send -->
   <div *ngIf="currentStep === 3" class="bg-[#F5F5F5] rounded-lg py-24 px-12 text-center">
-    <h2 class="text-2xl font-bold text-[var(--color-text)] mb-8">{{ 'newIssueRequest.orderSentSuccessfully' | translate }}</h2>
-    
+    <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderSentSuccessfully' | translate }}</h2>
+
+    <div class="space-y-2 text-sm text-[var(--color-text)] mb-8">
+      <div *ngIf="orderNumber">
+        <span class="font-semibold">{{ 'newIssueRequest.orderNumber' | translate }}:</span>
+        <span>{{ orderNumber }}</span>
+      </div>
+      <div *ngIf="createdOrderId !== null">
+        <span class="font-semibold">ID:</span>
+        <span>{{ createdOrderId }}</span>
+      </div>
+    </div>
+
     <button 
-      class="px-8 py-3 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors"
-      (click)="onTrackOrder()">
+      class="px-8 py-3 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+      (click)="onTrackOrder()"
+      [disabled]="createdOrderId === null">
       {{ 'newIssueRequest.trackOrder' | translate }}
     </button>
   </div>

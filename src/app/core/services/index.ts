@@ -14,3 +14,4 @@ export * from './workflow.service';
 export * from './inventory.service';
 export * from './toast.service';
 export * from './ammunition.service';
+export * from './order.service';
