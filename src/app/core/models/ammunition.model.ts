@@ -25,7 +25,7 @@ export interface AmmunitionReadDto {
   isLinked: boolean;
   primer: string;
   totalWeight: number;
-  nsnId: number;
+  nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;
@@ -45,7 +45,6 @@ export interface AmmunitionReadDto {
   natureOption?: LookupDto;
   bulletDiameterUnit?: LookupDto;
   caseLengthUnit?: LookupDto;
-  nsn?: LookupDto;
   primaryPurpos?: LookupDto;
   projectileColor?: LookupDto;
   projectailMaterial?: LookupDto;
@@ -73,7 +72,7 @@ export interface AmmunitionCreateDto {
   isLinked: boolean;
   primer: string;
   totalWeight: number;
-  nsnId: number;
+  nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;
@@ -103,7 +102,7 @@ export interface AmmunitionUpdateDto {
   isLinked: boolean;
   primer: string;
   totalWeight: number;
-  nsnId: number;
+  nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;

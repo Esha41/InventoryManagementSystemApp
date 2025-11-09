@@ -26,7 +26,7 @@ interface AssetForm {
   isLinked: string;
   primer: string;
   totalWeight: string;
-  nsnId: string;
+  nsn: string;
   caseTypeId: string;
   propellantId: string;
   compatibilityId: string;
@@ -58,7 +58,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   // Lookup data
   hccs: HccDto[] = [];
   units: any[] = [];
-  nsns: any[] = [];
   caseTypes: any[] = [];
   propellants: any[] = [];
   compatibilities: any[] = [];
@@ -93,7 +92,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     isLinked: 'false',
     primer: '',
     totalWeight: '',
-    nsnId: '',
+    nsn: '',
     caseTypeId: '',
     propellantId: '',
     compatibilityId: '',
@@ -123,7 +122,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     forkJoin({
       hccs: this.lookupService.getHccs(),
       units: this.lookupService.getUnits(),
-      nsns: this.lookupService.getNsns(),
       caseTypes: this.lookupService.getCaseTypes(),
       propellants: this.lookupService.getPropellants(),
       compatibilities: this.lookupService.getCompatibilities(),
@@ -138,7 +136,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.hccs = data.hccs;
           this.units = data.units;
-          this.nsns = data.nsns;
           this.caseTypes = data.caseTypes;
           this.propellants = data.propellants;
           this.compatibilities = data.compatibilities;
@@ -180,7 +177,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       isLinked: this.assetForm.isLinked === 'true',
       primer: this.assetForm.primer,
       totalWeight: parseFloat(this.assetForm.totalWeight) || 0,
-      nsnId: parseInt(this.assetForm.nsnId),
+      nsn: this.assetForm.nsn ? this.assetForm.nsn.trim() : undefined,
       caseTypeId: parseInt(this.assetForm.caseTypeId),
       propellantId: parseInt(this.assetForm.propellantId),
       compatibilityId: parseInt(this.assetForm.compatibilityId),
@@ -233,7 +230,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       this.assetForm.hccId &&
       this.assetForm.bulletDiameterUnitId &&
       this.assetForm.caseLengthUnitId &&
-      this.assetForm.nsnId &&
+      this.assetForm.nsn.trim() &&
       this.assetForm.caseTypeId &&
       this.assetForm.propellantId &&
       this.assetForm.compatibilityId &&
@@ -299,7 +296,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       isLinked: 'false',
       primer: '',
       totalWeight: '',
-      nsnId: '',
+      nsn: '',
       caseTypeId: '',
       propellantId: '',
       compatibilityId: '',

@@ -43,13 +43,13 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'HazardDivision', displayName: 'Hazard Divisions', apiEndpoint: 'HazardDivision', hasCode: false },
   { name: 'Manufacturer', displayName: 'Manufacturers', apiEndpoint: 'Manufacturer', hasCode: false },
   { name: 'NatureOption', displayName: 'Nature Options', apiEndpoint: 'NatureOption', hasCode: false },
-  { name: 'Nsn', displayName: 'NSN', apiEndpoint: 'Nsn', hasCode: false },
   { name: 'PrimaryPurpos', displayName: 'Primary Purposes', apiEndpoint: 'PrimaryPurpos', hasCode: false },
   { name: 'ProjectailMaterial', displayName: 'Projectile Materials', apiEndpoint: 'ProjectailMaterial', hasCode: false },
   { name: 'Propellant', displayName: 'Propellants', apiEndpoint: 'Propellant', hasCode: false },
   { name: 'Supplier', displayName: 'Suppliers', apiEndpoint: 'Supplier', hasCode: false },
   { name: 'Unit', displayName: 'Units', apiEndpoint: 'Unit', hasCode: false },
   { name: 'Rank', displayName: 'Ranks', apiEndpoint: 'Rank', hasCode: false },
+  { name: 'Employee', displayName: 'Employees', apiEndpoint: 'Employee', hasCode: false },
   { name: 'WorkFlowType', displayName: 'Workflow Types', apiEndpoint: 'WorkFlowType', hasCode: false }
 ];
 

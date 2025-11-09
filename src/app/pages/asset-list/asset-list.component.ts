@@ -59,7 +59,6 @@ export class AssetListComponent implements OnInit {
   compatibilityList: any[] = [];
   propellantList: any[] = [];
   units: any[] = [];
-  nsns: any[] = [];
   natureOptions: any[] = [];
   primaryPurposes: any[] = [];
   projectileColors: any[] = [];
@@ -99,7 +98,7 @@ export class AssetListComponent implements OnInit {
       isLinked: [false as boolean],
       primer: [''],
       totalWeight: [null as number | null],
-      nsnId: [null as number | null, Validators.required],
+      nsn: ['', Validators.required],
       caseTypeId: [null as number | null, Validators.required],
       propellantId: [null as number | null, Validators.required],
       compatibilityId: [null as number | null, Validators.required],
@@ -129,7 +128,7 @@ export class AssetListComponent implements OnInit {
           partNo: x.partNo || '-',
           batchNo: x.batchNo || '-',
           hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
-          nsn: x.nsn?.nameEn || x.nsn?.nameAr || '-',
+          nsn: x.nsn || '-',
           caseType: x.caseType?.nameEn || x.caseType?.nameAr || '-',
           hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr || '-',
           compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
@@ -155,7 +154,6 @@ export class AssetListComponent implements OnInit {
       compatibilities: this.lookupService.getCompatibilities(),
       propellants: this.lookupService.getPropellants(),
       units: this.lookupService.getUnits(),
-      nsns: this.lookupService.getNsns(),
       natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       projectileColors: this.lookupService.getColors(),
@@ -168,7 +166,6 @@ export class AssetListComponent implements OnInit {
         this.compatibilityList = data.compatibilities || [];
         this.propellantList = data.propellants || [];
         this.units = data.units || [];
-        this.nsns = data.nsns || [];
         this.natureOptions = data.natureOptions || [];
         this.primaryPurposes = data.primaryPurposes || [];
         this.projectileColors = data.projectileColors || [];
@@ -216,7 +213,7 @@ export class AssetListComponent implements OnInit {
           isLinked: data.isLinked || false,
           primer: data.primer || '',
           totalWeight: data.totalWeight || 0,
-          nsnId: data.nsnId,
+          nsn: data.nsn || '',
           caseTypeId: data.caseTypeId,
           propellantId: data.propellantId,
           compatibilityId: data.compatibilityId,
@@ -296,7 +293,7 @@ export class AssetListComponent implements OnInit {
       name: string; itemNo: string; partNo: string; batchNo?: string;
       hccId: number; bulletDiameter: number | null; bulletDiameterUnitId: number;
       caseLength: number | null; caseLengthUnitId: number; isLinked: boolean;
-      primer?: string; totalWeight: number | null; nsnId: number; caseTypeId: number;
+      primer?: string; totalWeight: number | null; nsn: string; caseTypeId: number;
       propellantId: number; compatibilityId: number; hazardDivisionId: number;
       readyForIssue: boolean; expiryDate?: string;
       natureOptionId: number | null; primaryPurposId: number | null;
@@ -320,7 +317,7 @@ export class AssetListComponent implements OnInit {
       isLinked: m.isLinked,
       primer: m.primer || undefined,
       totalWeight: m.totalWeight ?? 0,
-      nsnId: m.nsnId,
+      nsn: m.nsn ? m.nsn.trim() : undefined,
       caseTypeId: m.caseTypeId,
       propellantId: m.propellantId,
       compatibilityId: m.compatibilityId,

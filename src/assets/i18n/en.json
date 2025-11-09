@@ -822,7 +822,7 @@
       "selectHcc": "Select HCC",
       "hccRequired": "HCC is required",
       "nsn": "NSN",
-      "selectNsn": "Select NSN",
+      "nsnPlaceholder": "Enter NSN",
       "nsnRequired": "NSN is required",
       "bulletDiameter": "Bullet Diameter",
       "bulletDiameterPlaceholder": "e.g., 5.56",

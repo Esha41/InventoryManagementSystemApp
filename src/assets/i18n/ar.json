@@ -822,7 +822,7 @@
       "selectHcc": "اختر HCC",
       "hccRequired": "HCC مطلوب",
       "nsn": "NSN",
-      "selectNsn": "اختر NSN",
+      "nsnPlaceholder": "أدخل رقم NSN",
       "nsnRequired": "NSN مطلوب",
       "bulletDiameter": "قطر الرصاصة",
       "bulletDiameterPlaceholder": "مثال: 5.56",

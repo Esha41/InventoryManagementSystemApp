@@ -11,7 +11,7 @@ import { APIOperationResponse } from '@models/api-response.model';
  */
 export interface CreateReturnDto {
   reason?: string;
-  priority: number; // 1 = High, 2 = Medium, 3 = Low
+  priority: number; 
   notes?: string;
   departmentId: number;
   requesterId?: number;
