@@ -22,10 +22,10 @@ export const API_ENDPOINTS = {
   
   // User Management
   USERS: {
-    BASE: '/users',
-    BY_ID: (id: string) => `/users/${id}`,
-    ROLES: (id: string) => `/users/${id}/roles`,
-    UPDATE_ROLES: (id: string) => `/users/${id}/roles`,
+    BASE: '/Users',
+    BY_ID: (id: string) => `/Users/${id}`,
+    ROLES: (id: string) => `/Users/${id}/roles`,
+    UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
   },
   
   // Role Management (match backend casing)

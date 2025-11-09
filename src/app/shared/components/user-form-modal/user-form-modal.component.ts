@@ -6,6 +6,7 @@ import { ButtonComponent } from '../button/button.component';
 import { BackendUserDto, RoleDto, CreateUserDto, UpdateUserDto } from '@models/backend-user.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
+import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.service';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -30,20 +31,27 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
   userForm!: FormGroup;
   roles: RoleDto[] = [];
-  selectedRoleIds: string[] = [];
-  showRolesDropdown = false;
   isLoading = false;
   errorMessage = '';
+  // Departments
+  departments: DepartmentDto[] = [];
+  isLoadingDepartments = false;
+  // Ranks
+  ranks: LookupItem[] = [];
+  isLoadingRanks = false;
 
   constructor(
     private fb: FormBuilder,
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private lookupService: LookupService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
     this.loadRoles();
+    this.loadDepartments();
+    this.loadRanks();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -52,8 +60,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       this.errorMessage = '';
       if (this.user && this.mode === 'edit') {
         this.loadUserRoles();
-      } else {
-        this.selectedRoleIds = [];
       }
     }
     if (changes['user'] || changes['mode']) {
@@ -62,11 +68,25 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   }
 
   private initializeForm(): void {
+    // Handle both nameEn/nameAr (from frontend) and fullNameEN/fullNameAR (from API)
+    const nameEn = this.user?.nameEn || (this.user as any)?.fullNameEN || '';
+    const nameAr = this.user?.nameAr || (this.user as any)?.fullNameAR || '';
+    
+    // Get the first role ID if user has roles (for single selection)
+    const roleId = this.user?.roleIds && this.user.roleIds.length > 0 ? this.user.roleIds[0] : null;
+    
     this.userForm = this.fb.group({
       userName: [this.user?.userName || '', [Validators.required, Validators.minLength(3)]],
       isLdapUser: [this.user?.isLdapUser || false],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
-      employeeId: [this.user?.employeeId || null]
+      employeeId: [this.user?.employeeId || null],
+      departmentId: [this.user?.departmentId ?? null],
+      roleId: [roleId, [Validators.required]], // Single role selection - required
+      // Common fields for both create and edit modes
+      nameEn: [nameEn],
+      nameAr: [nameAr],
+      rankId: [this.user?.rankId || null],
+      militaryId: [this.user?.militaryId || (this.user as any)?.militoryId || '']
     });
 
     if (this.mode === 'create') {
@@ -136,29 +156,76 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     console.log('Using fallback roles:', this.roles);
   }
 
+  private loadDepartments(): void {
+    this.isLoadingDepartments = true;
+    this.lookupService.getAll<DepartmentDto>('Department').subscribe({
+      next: (deps) => {
+        this.departments = deps || [];
+        this.isLoadingDepartments = false;
+      },
+      error: () => {
+        this.departments = [];
+        this.isLoadingDepartments = false;
+      }
+    });
+  }
+
+  private loadRanks(): void {
+    this.isLoadingRanks = true;
+    this.lookupService.getAll<LookupItem>('Rank').subscribe({
+      next: (items) => {
+        this.ranks = items || [];
+        this.isLoadingRanks = false;
+      },
+      error: () => {
+        this.ranks = [];
+        this.isLoadingRanks = false;
+      }
+    });
+  }
+
 private loadUserRoles(): void {
   if (!this.user?.id) return;
 
   this.backendUserService.getUserRoles(this.user.id).subscribe({
     next: (roles: any[]) => {
-      // Map to RoleDto, including required fields
-      this.roles = roles.map(r => ({
-        id: r.roleId,
-        name: r.roleName,
-        isDefaultRole: r.isDefaultRole || false,  // set default if missing
-        isSuperAdmin: r.isSuperAdmin || false     // set default if missing
-      }));
+      // If roles are returned from getUserRoles, use them (they should include all roles with selection info)
+      // Otherwise, keep the existing roles from loadRoles()
+      if (roles && roles.length > 0) {
+        // Map to RoleDto, including required fields
+        this.roles = roles.map(r => ({
+          id: r.roleId,
+          name: r.roleName,
+          isDefaultRole: r.isDefaultRole || false,  // set default if missing
+          isSuperAdmin: r.isSuperAdmin || false     // set default if missing
+        }));
+      }
 
-      // Pre-select roles that user already has
-      this.selectedRoleIds = roles
-        .filter(r => r.isSelected)
-        .map(r => r.roleId);
+      // Pre-select the first selected role (single selection)
+      const selectedRole = roles?.find(r => r.isSelected);
+      if (selectedRole) {
+        this.userForm.patchValue({ roleId: selectedRole.roleId });
+      } else if (this.user?.roleIds && this.user.roleIds.length > 0) {
+        // Fallback: use the first role ID from user data
+        this.userForm.patchValue({ roleId: this.user.roleIds[0] });
+      }
 
-      console.log('Selected roles for user:', this.selectedRoleIds);
+      // Bind department for edit form if provided in the response
+      const selectedWithDept = roles?.find(r => r.isSelected && (r.departmentId != null || r.deparmentId != null));
+      const deptId = selectedWithDept?.departmentId ?? selectedWithDept?.deparmentId;
+      if (deptId != null) {
+        this.userForm.patchValue({ departmentId: deptId });
+      }
+
+      console.log('Selected role for user:', selectedRole?.roleId || this.user?.roleIds?.[0]);
     },
     error: (error: any) => {
-      this.errorMessage = 'Failed to load user roles';
-      console.error(error);
+      // If getUserRoles fails, still try to set the role from user data
+      if (this.user?.roleIds && this.user.roleIds.length > 0) {
+        this.userForm.patchValue({ roleId: this.user.roleIds[0] });
+      }
+      console.error('Failed to load user roles:', error);
+      // Don't show error message as roles might already be loaded from loadRoles()
     }
   });
 }
@@ -175,20 +242,30 @@ private loadUserRoles(): void {
     return;
   }
 
-  if (this.selectedRoleIds.length === 0) {
-    this.errorMessage = 'Please select at least one role';
-    return;
-  }
-
   this.isLoading = true;
   this.errorMessage = '';
 
   if (this.mode === 'create') {
+    const formValue = this.userForm.value;
+    
     const dto: CreateUserDto = {
-      ...this.userForm.value,
+      userName: formValue.userName,
+      password: formValue.password,
+      isLdapUser: formValue.isLdapUser || false,
+      extraEmployeesView: formValue.extraEmployeesView || undefined,
+      employeeId: formValue.employeeId || undefined,
       organizationId: 1,
-      roleIds: this.selectedRoleIds // include roles here
+      departmentId: formValue.departmentId || undefined,
+      roleIds: [formValue.roleId], // Single role as array
+      // Map form field names to API field names
+      fullNameEN: formValue.nameEn || undefined,
+      fullNameAR: formValue.nameAr || undefined,
+      rankId: formValue.rankId || undefined,
+      militoryId: formValue.militaryId != null ? String(formValue.militaryId).trim() : undefined
     };
+
+    console.log('Creating user with DTO:', JSON.stringify(dto, null, 2));
+    console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId, 'In DTO (militoryId):', dto.militoryId);
 
     this.backendUserService.createUser(dto).subscribe({
       next: (user: BackendUserDto) => {
@@ -199,15 +276,37 @@ private loadUserRoles(): void {
       error: (error: any) => {
         this.isLoading = false;
         this.errorMessage = error.message || 'Failed to create user';
+        console.error('Error creating user:', error);
       }
     });
   } else if (this.user) {
+    const formValue = this.userForm.value;
+    
+    // Handle militaryId - always include in update, even if empty (to allow clearing the field)
+    const militaryIdValue = formValue.militaryId != null 
+      ? String(formValue.militaryId).trim() 
+      : undefined;
+    
     const dto: UpdateUserDto = {
       id: this.user.id,
-      ...this.userForm.value,
+      userName: formValue.userName,
+      password: formValue.password || undefined,
+      isLdapUser: formValue.isLdapUser || false,
+      extraEmployeesView: formValue.extraEmployeesView || undefined,
+      employeeId: formValue.employeeId || undefined,
       organizationId: this.user.organizationId,
-      roleIds: this.selectedRoleIds // include roles here
+      departmentId: formValue.departmentId || undefined,
+      roleIds: [formValue.roleId], // Single role as array
+      // Map form field names to API field names
+      fullNameEN: formValue.nameEn || undefined,
+      fullNameAR: formValue.nameAr || undefined,
+      rankId: formValue.rankId || undefined,
+      militoryId: militaryIdValue // Include even if empty string to allow clearing
     };
+
+    console.log('Updating user with DTO:', JSON.stringify(dto, null, 2));
+    console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId);
+    console.log('Military ID - Processed value (militoryId):', dto.militoryId);
 
     this.backendUserService.updateUser(this.user.id, dto).subscribe({
       next: (user: BackendUserDto) => {
@@ -218,49 +317,15 @@ private loadUserRoles(): void {
       error: (error: any) => {
         this.isLoading = false;
         this.errorMessage = error.message || 'Failed to update user';
+        console.error('Error updating user:', error);
       }
     });
   }
 }
 
-  toggleRolesDropdown(): void {
-    this.showRolesDropdown = !this.showRolesDropdown;
-  }
-
-toggleRoleSelection(roleId: string | undefined): void {
-  // Remove undefined values first
-  this.selectedRoleIds = this.selectedRoleIds.filter(id => !!id);
-
-  if (!roleId) return; // skip invalid ids
-
-  const index = this.selectedRoleIds.indexOf(roleId);
-  if (index > -1) {
-    this.selectedRoleIds.splice(index, 1);
-  } else {
-    this.selectedRoleIds.push(roleId);
-  }
-
-  console.log("selectedRoleIds here", this.selectedRoleIds);
-}
-
-
-  isRoleSelected(roleId: string): boolean {
-    return this.selectedRoleIds.includes(roleId);
-  }
-
-  getSelectedRolesText(): string {
-    if (this.selectedRoleIds.length === 0) {
-      return 'Select roles';
-    }
-    const selectedRoles = this.roles.filter(r => this.selectedRoleIds.includes(r.id));
-    return selectedRoles.map(r => r.name).join(', ');
-  }
-
   close(): void {
     this.userForm.reset();
     this.errorMessage = '';
-    this.selectedRoleIds = [];
-    this.showRolesDropdown = false;
     this.closed.emit();
   }
 
