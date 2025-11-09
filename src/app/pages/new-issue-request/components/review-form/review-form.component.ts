@@ -13,6 +13,7 @@ import { ButtonComponent } from '@components/button/button.component';
 })
 export class ReviewFormComponent {
   @Input() requesterName: string = '';
+  @Input() requesterNameReadonly: boolean = false;
   @Input() requesterComments: string = '';
   @Input() orderType: string = '';
   @Input() selectedPriority: string = '';

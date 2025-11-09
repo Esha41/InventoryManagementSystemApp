@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     LOGOUT: '/account/logout',
     REFRESH: '/account/refresh',
     USER_CLAIMS: '/account/user-claims',
+    PROFILE: '/account/profile',
     FORGOT_PASSWORD: '/account/forgot-password',
     RESET_PASSWORD: '/account/reset-password',
   },

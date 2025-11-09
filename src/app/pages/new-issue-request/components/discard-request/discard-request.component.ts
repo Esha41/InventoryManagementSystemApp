@@ -14,6 +14,10 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
+import { UserContextService } from '@services/user-context.service';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { AuthenticatedUser } from '@models/auth.model';
+import { BackendUserDto } from '@models/backend-user.model';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -85,6 +89,14 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   @ViewChildren('itemDropdown') itemDropdownRefs?: QueryList<ElementRef<HTMLElement>>;
 
   private destroy$ = new Subject<void>();
+  currentUserDetails: BackendUserDto | null = null;
+  isAdminUser = false;
+  private preferredDepartmentId: number | null = null;
+  private preferredRequesterId: number | null = null;
+  private fallbackDepartmentName = '';
+  private fallbackRequesterName = '';
+  lockedDepartmentName = '';
+  lockedRequesterName = '';
 
   constructor(
     private discardService: DiscardService,
@@ -93,10 +105,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private apiService: ApiService,
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
+    private userContextService: UserContextService,
+    private backendAuthService: BackendAuthService
   ) {}
 
   ngOnInit(): void {
+    this.initializeUserContext();
     this.loadDropdownData();
     this.addDiscardItem(); // Add one empty item row by default
   }
@@ -104,6 +119,22 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeUserContext(): void {
+    this.isAdminUser = this.userContextService.isAdminUser();
+
+    this.backendAuthService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.applyAuthenticatedUserContext(user));
+
+    this.userContextService
+      .getCurrentUserDetails()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(details => {
+        this.currentUserDetails = details;
+        this.applyBackendUserDetails(details);
+      });
   }
 
   @HostListener('document:click', ['$event'])
@@ -140,6 +171,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
         next: (departments) => {
           this.departments = departments;
           this.isLoadingDepartments = false;
+          this.updateLockedDepartmentName();
+          this.applyLockedDepartment();
         },
         error: (error) => {
           console.error('Failed to load departments:', error);
@@ -154,6 +187,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
    */
   private loadRequesters(): void {
     this.isLoadingRequesters = true;
+    if (!this.isAdminUser) {
+      this.requesters = [];
+      this.isLoadingRequesters = false;
+      return;
+    }
+
     this.lookupService.getLookupItems('Employee')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -163,9 +202,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load employees:', error);
-          // The requester field is optional, so we can continue without it
           this.toastService.error('Failed to load employees. The requester field will be disabled.');
-          this.requesters = []; // Set empty array so dropdown doesn't break
+          this.requesters = [];
           this.isLoadingRequesters = false;
         }
       });
@@ -355,7 +393,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       priority: Number(this.priority),
       notes: this.notes || undefined,
       departmentId: Number(this.departmentId!),
-      requesterId: this.requesterId ? Number(this.requesterId) : undefined,
+      requesterId: this.requesterId != null ? Number(this.requesterId) : undefined,
       requestPurposeId: Number(this.requestPurposeId!),
       discardItems: this.discardItems
         .filter(item => item.itemId && item.quantity)
@@ -422,6 +460,91 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       });
   }
 
+  private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {
+    if (!user) {
+      return;
+    }
+
+    this.applyUserContext({
+      nameEn: user.nameEn,
+      nameAr: user.nameAr,
+      userName: user.userName,
+      departmentId: user.departmentId,
+      departmentName: user.departmentName,
+      employeeId: user.employeeId
+    });
+  }
+
+  private applyBackendUserDetails(details: BackendUserDto | null): void {
+    if (!details) {
+      return;
+    }
+
+    this.applyUserContext({
+      nameEn: details.nameEn,
+      nameAr: details.nameAr,
+      userName: details.userName,
+      departmentId: details.departmentId,
+      departmentName: details.departmentName,
+      employeeId: details.employeeId
+    });
+  }
+
+  private applyUserContext(context: {
+    nameEn?: string | null;
+    nameAr?: string | null;
+    userName?: string | null;
+    departmentId?: number | string | null;
+    departmentName?: string | null;
+    employeeId?: number | string | null;
+  }): void {
+    if (this.isAdminUser) {
+      this.requesterId = null;
+      return;
+    }
+
+    const preferredName = this.resolveRequesterDisplayName(context.nameEn, context.nameAr, context.userName);
+    if (preferredName) {
+      this.lockedRequesterName = preferredName;
+      this.fallbackRequesterName = preferredName;
+    }
+
+    const departmentId = this.toNumber(context.departmentId);
+    if (departmentId !== null) {
+      this.preferredDepartmentId = departmentId;
+      this.applyLockedDepartment();
+      this.updateLockedDepartmentName();
+    }
+
+    if (context.departmentName && context.departmentName.trim().length > 0) {
+      this.fallbackDepartmentName = context.departmentName;
+      this.updateLockedDepartmentName();
+    }
+
+    const requesterId = this.toNumber(context.employeeId);
+    if (requesterId !== null) {
+      this.preferredRequesterId = requesterId;
+      this.applyLockedRequester();
+    }
+  }
+
+  private resolveRequesterDisplayName(
+    nameEn?: string | null,
+    nameAr?: string | null,
+    userName?: string | null
+  ): string | null {
+    if (nameEn && nameEn.trim().length > 0) {
+      return nameEn;
+    }
+    if (nameAr && nameAr.trim().length > 0) {
+      return nameAr;
+    }
+    if (userName && userName.trim().length > 0) {
+      return userName;
+    }
+    return null;
+  }
+
   /**
    * Reset form
    */
@@ -429,8 +552,14 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.reason = '';
     this.priority = 1;
     this.notes = '';
-    this.departmentId = null;
-    this.requesterId = null;
+    if (this.isDepartmentLocked) {
+      this.departmentId = this.preferredDepartmentId;
+      this.lockedDepartmentName = this.buildLockedDepartmentName();
+      this.applyLockedRequester();
+    } else {
+      this.departmentId = null;
+      this.requesterId = null;
+    }
     this.requestPurposeId = null;
     this.discardItems = [];
     this.itemDropdownOpen = [];
@@ -452,5 +581,47 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
    */
   getError(fieldName: string): string {
     return this.errors[fieldName] || '';
+  }
+
+  private toNumber(value: any): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private applyLockedDepartment(): void {
+    if (this.isDepartmentLocked && this.preferredDepartmentId != null) {
+      this.departmentId = this.preferredDepartmentId;
+    }
+  }
+
+  private applyLockedRequester(): void {
+    if (this.isRequesterLocked && this.preferredRequesterId != null) {
+      this.requesterId = this.preferredRequesterId;
+    }
+  }
+
+  private updateLockedDepartmentName(): void {
+    this.lockedDepartmentName = this.buildLockedDepartmentName();
+  }
+
+  private buildLockedDepartmentName(): string {
+    if (this.preferredDepartmentId != null) {
+      const match = this.departments.find(d => this.toNumber(d.id) === this.preferredDepartmentId);
+      if (match) {
+        return match.nameEn || match.nameAr || `Department ${match.id}`;
+      }
+    }
+    return this.currentUserDetails?.departmentName || this.fallbackDepartmentName || '';
+  }
+
+  get isDepartmentLocked(): boolean {
+    return !this.isAdminUser;
+  }
+
+  get isRequesterLocked(): boolean {
+    return !this.isAdminUser;
   }
 }
