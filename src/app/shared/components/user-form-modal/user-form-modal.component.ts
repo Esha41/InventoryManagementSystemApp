@@ -77,6 +77,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     
     this.userForm = this.fb.group({
       userName: [this.user?.userName || '', [Validators.required, Validators.minLength(3)]],
+      email: [this.user?.email || '', [Validators.required, Validators.email]],
       isLdapUser: [this.user?.isLdapUser || false],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
       employeeId: [this.user?.employeeId || null],
@@ -250,6 +251,7 @@ private loadUserRoles(): void {
     
     const dto: CreateUserDto = {
       userName: formValue.userName,
+      email: formValue.email,
       password: formValue.password,
       isLdapUser: formValue.isLdapUser || false,
       extraEmployeesView: formValue.extraEmployeesView || undefined,
@@ -290,6 +292,7 @@ private loadUserRoles(): void {
     const dto: UpdateUserDto = {
       id: this.user.id,
       userName: formValue.userName,
+      email: formValue.email,
       password: formValue.password || undefined,
       isLdapUser: formValue.isLdapUser || false,
       extraEmployeesView: formValue.extraEmployeesView || undefined,

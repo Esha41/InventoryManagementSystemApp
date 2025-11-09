@@ -9,26 +9,26 @@
 
   <!-- Login Form -->
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
-    <!-- Email Field -->
+    <!-- Username Field -->
     <div class="space-y-2">
       <label 
-        for="email" 
+        for="username" 
         class="block text-sm font-semibold text-[var(--color-text)]"
       >
-        Email Address
+        Username
       </label>
       <div class="relative group">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
           <lucide-angular 
-            [img]="Mail" 
+            [img]="User" 
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" 
           />
         </div>
         <input
-          id="email"
-          type="email"
-          formControlName="email"
-          autocomplete="email"
+          id="username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
           class="block w-full pl-12 pr-4 py-3.5 text-base
                  border-2 border-[var(--color-border)] rounded-xl
                  bg-white
@@ -36,16 +36,16 @@
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200
                  disabled:bg-[var(--color-background-muted)] disabled:cursor-not-allowed"
-          placeholder="your.email@example.com"
-          [class.border-red-500]="email?.invalid && email?.touched"
+          placeholder="Enter your username"
+          [class.border-red-500]="username?.invalid && username?.touched"
         />
       </div>
       <p 
-        *ngIf="getFieldError('email')" 
+        *ngIf="getFieldError('username')" 
         class="mt-2 text-sm font-medium text-[var(--color-error)] flex items-center gap-1"
       >
         <lucide-angular [img]="AlertCircle" class="h-4 w-4"></lucide-angular>
-        {{ getFieldError('email') }}
+        {{ getFieldError('username') }}
       </p>
     </div>
 
