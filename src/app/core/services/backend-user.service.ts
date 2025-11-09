@@ -55,7 +55,14 @@ export class BackendUserService {
         if (!response.succeeded) {
           throw new Error(response.message || 'Failed to fetch users');
         }
-        return response.data || [];
+        // Normalize militoryId to militaryId for all users
+        const users = response.data || [];
+        return users.map(user => {
+          if ((user as any).militoryId && !user.militaryId) {
+            user.militaryId = (user as any).militoryId;
+          }
+          return user;
+        });
       }),
       tap(users => {
         this.usersSubject.next(users);
@@ -83,7 +90,12 @@ export class BackendUserService {
         if (!response.succeeded || !response.data) {
           throw new Error(response.message || 'Failed to fetch user');
         }
-        return response.data;
+        // Normalize militoryId to militaryId for consistency
+        const userData = response.data;
+        if ((userData as any).militoryId && !userData.militaryId) {
+          userData.militaryId = (userData as any).militoryId;
+        }
+        return userData;
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch user', error);
@@ -130,7 +142,8 @@ export class BackendUserService {
    */
   updateUser(id: string, user: UpdateUserDto): Observable<BackendUserDto> {
     this.configService.log('Updating user', { id });
-console.log("userdetails:",user)
+    console.log("User update DTO:", JSON.stringify(user, null, 2));
+    
     return this.apiService.putWithAuth<ApiResponse<BackendUserDto>>(
       API_ENDPOINTS.USERS.BY_ID(id),
       { ...user, id }
@@ -139,7 +152,12 @@ console.log("userdetails:",user)
         if (!response.succeeded || !response.data) {
           throw new Error(response.message || 'Failed to update user');
         }
-        return response.data;
+        // Normalize militoryId to militaryId for consistency
+        const userData = response.data;
+        if ((userData as any).militoryId && !userData.militaryId) {
+          userData.militaryId = (userData as any).militoryId;
+        }
+        return userData;
       }),
       tap(updatedUser => {
         // Update local users list

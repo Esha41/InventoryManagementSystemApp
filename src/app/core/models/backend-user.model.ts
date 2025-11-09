@@ -14,6 +14,14 @@ export interface BackendUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
+  departmentId?: number;
+  departmentName?: string;
+  // Optional profile fields if backend provides them
+  nameEn?: string;
+  nameAr?: string;
+  rankId?: number;
+  militaryId?: string; // Frontend field name
+  militoryId?: string; // Backend API field name (typo in API)
   roleIds: string[];
 }
 
@@ -27,7 +35,14 @@ export interface CreateUserDto {
   extraEmployeesView?: string;
   employeeId?: number;
   organizationId?: number;
-   roleIds: string[];
+  roleIds: string[];
+  /** Optional selected department identifier */
+  departmentId?: number;
+  // Optional profile fields - matching API field names
+  fullNameEN?: string;
+  fullNameAR?: string;
+  rankId?: number;
+  militoryId?: string; // Note: API uses "militoryId" (typo) not "militaryId"
 }
 
 /**
@@ -42,6 +57,13 @@ export interface UpdateUserDto {
   employeeId?: number;
   organizationId?: number;
   roleIds: string[];
+  /** Optional selected department identifier */
+  departmentId?: number;
+  // Optional profile fields - matching API field names
+  fullNameEN?: string;
+  fullNameAR?: string;
+  rankId?: number;
+  militoryId?: string; // Note: API uses "militoryId" (typo) not "militaryId"
 }
 
 /**

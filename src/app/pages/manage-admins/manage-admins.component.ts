@@ -9,6 +9,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { LucideAngularModule, UserPlus, Search, Edit, Trash2, Shield, Mail, User as UserIcon, Power } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -39,12 +40,12 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   users: BackendUserDto[] = [];
   roles: RoleDto[] = [];
+  ranks: LookupItem[] = [];
   userRolesMap: Map<string, string[]> = new Map(); // Cache user roles
   isLoading = false;
   errorMessage = '';
   
   searchTerm = '';
-  selectedRoleId = '';
 
   // Modal states
   showUserModal = false;
@@ -55,12 +56,14 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private lookupService: LookupService
   ) {}
 
   ngOnInit(): void {
     this.loadUsers();
     this.loadRoles();
+    this.loadRanks();
     
     this.backendUserService.users$
       .pipe(takeUntil(this.destroy$))
@@ -120,6 +123,18 @@ getUserRoles(userId: string): string[] {
       },
       error: (error) => {
         this.errorMessage = 'Failed to load roles: ' + (error.message || 'Unknown error');
+      }
+    });
+  }
+
+  loadRanks(): void {
+    this.lookupService.getAll<LookupItem>('Rank').subscribe({
+      next: (ranks) => {
+        this.ranks = ranks || [];
+      },
+      error: (error) => {
+        console.error('Failed to load ranks:', error);
+        this.ranks = [];
       }
     });
   }
@@ -202,7 +217,26 @@ getUserRoles(userId: string): string[] {
   }
 
   getFullName(user: BackendUserDto): string {
+    // Get name from nameEn, nameAr, fullNameEN, or fullNameAR
+    const nameEn = user.nameEn || (user as any)?.fullNameEN;
+    const nameAr = user.nameAr || (user as any)?.fullNameAR;
+    
+    if (nameEn) return nameEn;
+    if (nameAr) return nameAr;
     return user.userName || user.email;
+  }
+
+  getMilitaryId(user: BackendUserDto): string {
+    // Handle both militaryId and militoryId (API typo)
+    return user.militaryId || (user as any)?.militoryId || '-';
+  }
+
+  getRankName(user: BackendUserDto): string {
+    if (!user.rankId) return '-';
+    const rank = this.ranks.find(r => r.id === user.rankId);
+    if (!rank) return '-';
+    // Return English name if available, otherwise Arabic name
+    return rank.nameEn || rank.nameAr || '-';
   }
 
   getStatusColor(): string {
