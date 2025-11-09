@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Plus, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, X, ChevronDown, Search } from 'lucide-angular';
 import { ReturnService, CreateReturnDto, CreateReturnItemDto } from '@services/return.service';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -43,8 +43,10 @@ interface RequestPurpose {
 export class ReturnRequestComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly X = X;
+  readonly ChevronDown = ChevronDown;
+  readonly Search = Search;
 
-  // Form fields matching backend CreateReturnDto
+  
   reason: string = '';
   priority: number = 1; // 1 = High, 2 = Medium, 3 = Low
   notes: string = '';
@@ -76,6 +78,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
+  // Searchable dropdown state for return items
+  itemDropdownSearchTerms: string[] = [];
+  itemDropdownOpen: boolean[] = [];
+
+  @ViewChildren('itemDropdown') itemDropdownRefs?: QueryList<ElementRef<HTMLElement>>;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -96,6 +104,19 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.itemDropdownRefs) {
+      return;
+    }
+    const target = event.target as Node;
+    const clickedInside = this.itemDropdownRefs.toArray().some(ref => ref.nativeElement.contains(target));
+
+    if (!clickedInside) {
+      this.closeAllItemDropdowns();
+    }
   }
 
   private loadDropdownData(): void {
@@ -180,10 +201,14 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       quantity: null,
       notes: ''
     });
+    this.itemDropdownSearchTerms.push('');
+    this.itemDropdownOpen.push(false);
   }
 
   removeReturnItem(index: number): void {
     this.returnItems.splice(index, 1);
+    this.itemDropdownSearchTerms.splice(index, 1);
+    this.itemDropdownOpen.splice(index, 1);
   }
 
   getItemName(itemId: number): string {
@@ -204,6 +229,74 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   getRequestPurposeName(purposeId: number): string {
     const purpose = this.requestPurposes.find(p => p.id === purposeId);
     return purpose ? (purpose.nameEn || purpose.nameAr || 'Unknown') : 'Unknown';
+  }
+
+  toggleItemDropdown(index: number): void {
+    if (this.isLoadingItems) {
+      return;
+    }
+    this.itemDropdownOpen = this.itemDropdownOpen.map((open, i) => (i === index ? !open : false));
+    if (!this.itemDropdownOpen[index]) {
+      this.itemDropdownSearchTerms[index] = '';
+    }
+  }
+
+  closeItemDropdown(index: number): void {
+    if (this.itemDropdownOpen[index]) {
+      this.itemDropdownOpen[index] = false;
+      this.itemDropdownSearchTerms[index] = '';
+    }
+  }
+
+  closeAllItemDropdowns(): void {
+    this.itemDropdownOpen = this.itemDropdownOpen.map(() => false);
+    this.itemDropdownSearchTerms = this.itemDropdownSearchTerms.map(() => '');
+  }
+
+  onItemSelect(index: number, itemOption: any): void {
+    const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
+    this.returnItems[index].itemId = optionValue;
+    this.closeItemDropdown(index);
+  }
+
+  getItemOptionLabel(itemOption: any): string {
+    return itemOption?.name || itemOption?.itemNo || 'Unknown';
+  }
+
+  getSelectedItemLabel(index: number): string {
+    const itemId = this.returnItems[index]?.itemId;
+    if (itemId === null || itemId === undefined) {
+      return '';
+    }
+    const selected = this.items.find(option => this.isSameItem(option, itemId));
+    return selected ? this.getItemOptionLabel(selected) : '';
+  }
+
+  getFilteredItems(index: number): any[] {
+    if (!this.items?.length) {
+      return [];
+    }
+    const term = (this.itemDropdownSearchTerms[index] || '').trim().toLowerCase();
+    if (!term) {
+      return this.items;
+    }
+    return this.items.filter(option => {
+      const label = this.getItemOptionLabel(option).toLowerCase();
+      const code = option?.itemNo ? String(option.itemNo).toLowerCase() : '';
+      return label.includes(term) || code.includes(term);
+    });
+  }
+
+  isOptionSelected(option: any, itemId: any): boolean {
+    return this.isSameItem(option, itemId);
+  }
+
+  private isSameItem(option: any, itemId: any): boolean {
+    const optionValue = option?.id ?? option?.itemNo;
+    if (optionValue === undefined || optionValue === null) {
+      return false;
+    }
+    return String(optionValue) === String(itemId);
   }
 
   onSendRequest(form: NgForm): void {
@@ -326,6 +419,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.requesterId = null;
     this.requestPurposeId = null;
     this.returnItems = [];
+    this.itemDropdownSearchTerms = [];
+    this.itemDropdownOpen = [];
     this.addReturnItem(); // Add one empty item row
     this.isSubmitted = false;
     this.errors = {};

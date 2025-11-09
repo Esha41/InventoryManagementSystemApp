@@ -61,24 +61,35 @@
 
         <!-- Items -->
         <div class="border-t border-[var(--color-border)] pt-4">
-          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-3">{{ 'dashboard.items' | translate }}</h3>
-          <div *ngIf="!returnRequest.requestItems || returnRequest.requestItems.length === 0" class="text-sm text-[var(--color-text-muted)]">
+          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'dashboard.items' | translate }}</h3>
+
+          <div *ngIf="!hasItems" class="text-sm text-[var(--color-text-muted)]">
             {{ 'dashboard.noItems' | translate }}
           </div>
-          <div *ngIf="returnRequest.requestItems && returnRequest.requestItems.length > 0" class="space-y-3">
-            <div *ngFor="let item of returnRequest.requestItems" class="bg-gray-50 rounded-lg p-4">
+
+          <div *ngIf="hasItems" class="space-y-4">
+            <div
+              *ngFor="let item of returnRequest!.requestItems"
+              class="bg-gray-50 rounded-lg p-4 border border-[var(--color-border-muted)]"
+            >
               <div class="grid grid-cols-3 gap-4">
                 <div>
                   <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemName' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">{{ item.itemName || item.itemNo || 'N/A' }}</p>
+                  <p class="text-sm font-medium text-[var(--color-text)]">
+                    {{ item.itemName || item.itemNo || 'N/A' }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemNo' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">{{ item.itemNo || 'N/A' }}</p>
+                  <p class="text-sm font-medium text-[var(--color-text)]">
+                    {{ item.itemNo || 'N/A' }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.quantity' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">{{ item.quantity }}</p>
+                  <p class="text-sm font-medium text-[var(--color-text)]">
+                    {{ item.quantity }}
+                  </p>
                 </div>
                 <div *ngIf="item.notes" class="col-span-3">
                   <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.notes' | translate }}</p>

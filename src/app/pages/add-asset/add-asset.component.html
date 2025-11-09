@@ -208,16 +208,15 @@
         <!-- NSN (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN *</label>
-          <select
-            [(ngModel)]="assetForm.nsnId"
-            name="nsnId"
+          <input
+            type="text"
+            [(ngModel)]="assetForm.nsn"
+            name="nsn"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter NSN"
             required
             #nsnModel="ngModel"
-          >
-            <option value="">Select NSN</option>
-            <option *ngFor="let nsn of nsns" [value]="nsn.id">{{ nsn.nameEn }}</option>
-          </select>
+          />
           <span *ngIf="nsnModel.invalid && (nsnModel.dirty || nsnModel.touched)" class="text-sm text-red-600">NSN is required</span>
         </div>
 

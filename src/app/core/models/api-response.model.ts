@@ -15,7 +15,7 @@ export interface ApiResponse<T = any> {
 }
 
 /**
- * Backend APIOperationResponse structure (matches C# backend exactly)
+ * Backend APIOperationResponse structure 
  */
 export interface APIOperationResponse<T> {
   succeeded: boolean;

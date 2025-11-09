@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Plus, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, X, ChevronDown, Search } from 'lucide-angular';
 import { DiscardService, CreateDiscardDto, CreateDiscardItemDto } from '@services/discard.service';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -43,6 +43,8 @@ interface RequestPurpose {
 export class DiscardRequestComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly X = X;
+  readonly ChevronDown = ChevronDown;
+  readonly Search = Search;
 
   // Form fields matching backend CreateDiscardDto
   reason: string = '';
@@ -76,6 +78,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
+  // Searchable dropdown state for discard items
+  itemDropdownSearchTerms: string[] = [];
+  itemDropdownOpen: boolean[] = [];
+
+  @ViewChildren('itemDropdown') itemDropdownRefs?: QueryList<ElementRef<HTMLElement>>;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -96,6 +104,19 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.itemDropdownRefs) {
+      return;
+    }
+    const target = event.target as Node;
+    const clickedInside = this.itemDropdownRefs.toArray().some(ref => ref.nativeElement.contains(target));
+
+    if (!clickedInside) {
+      this.closeAllItemDropdowns();
+    }
   }
 
   /**
@@ -203,6 +224,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       quantity: null,
       notes: ''
     });
+    this.itemDropdownSearchTerms.push('');
+    this.itemDropdownOpen.push(false);
   }
 
   /**
@@ -210,6 +233,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
    */
   removeDiscardItem(index: number): void {
     this.discardItems.splice(index, 1);
+    this.itemDropdownSearchTerms.splice(index, 1);
+    this.itemDropdownOpen.splice(index, 1);
   }
 
   /**
@@ -242,6 +267,74 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
         this.errors[`discardItems.${index}.itemId`] = 'Item is required';
       }
     });
+  }
+
+  toggleItemDropdown(index: number): void {
+    if (this.isLoadingItems) {
+      return;
+    }
+    this.itemDropdownOpen = this.itemDropdownOpen.map((open, i) => (i === index ? !open : false));
+    if (!this.itemDropdownOpen[index]) {
+      this.itemDropdownSearchTerms[index] = '';
+    }
+  }
+
+  closeItemDropdown(index: number): void {
+    if (this.itemDropdownOpen[index]) {
+      this.itemDropdownOpen[index] = false;
+      this.itemDropdownSearchTerms[index] = '';
+    }
+  }
+
+  closeAllItemDropdowns(): void {
+    this.itemDropdownOpen = this.itemDropdownOpen.map(() => false);
+    this.itemDropdownSearchTerms = this.itemDropdownSearchTerms.map(() => '');
+  }
+
+  onItemSelect(index: number, itemOption: any): void {
+    const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
+    this.discardItems[index].itemId = optionValue;
+    this.closeItemDropdown(index);
+  }
+
+  getItemOptionLabel(itemOption: any): string {
+    return itemOption?.name || itemOption?.itemNo || 'Unknown';
+  }
+
+  getSelectedItemLabel(index: number): string {
+    const itemId = this.discardItems[index]?.itemId;
+    if (itemId === null || itemId === undefined) {
+      return '';
+    }
+    const selected = this.items.find(option => this.isSameItem(option, itemId));
+    return selected ? this.getItemOptionLabel(selected) : '';
+  }
+
+  getFilteredItems(index: number): any[] {
+    if (!this.items?.length) {
+      return [];
+    }
+    const term = (this.itemDropdownSearchTerms[index] || '').trim().toLowerCase();
+    if (!term) {
+      return this.items;
+    }
+    return this.items.filter(option => {
+      const label = this.getItemOptionLabel(option).toLowerCase();
+      const code = option?.itemNo ? String(option.itemNo).toLowerCase() : '';
+      return label.includes(term) || code.includes(term);
+    });
+  }
+
+  isOptionSelected(option: any, itemId: any): boolean {
+    return this.isSameItem(option, itemId);
+  }
+
+  private isSameItem(option: any, itemId: any): boolean {
+    const optionValue = option?.id ?? option?.itemNo;
+    if (optionValue === undefined || optionValue === null) {
+      return false;
+    }
+    return String(optionValue) === String(itemId);
   }
 
   /**
@@ -340,6 +433,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.requesterId = null;
     this.requestPurposeId = null;
     this.discardItems = [];
+    this.itemDropdownOpen = [];
+    this.itemDropdownSearchTerms = [];
     this.addDiscardItem(); // Add one empty item row
     this.isSubmitted = false;
     this.errors = {};

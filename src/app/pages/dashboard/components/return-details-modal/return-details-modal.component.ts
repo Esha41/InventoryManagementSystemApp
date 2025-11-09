@@ -13,11 +13,12 @@ import { ReturnDto } from '@services/return.service';
 })
 export class ReturnDetailsModalComponent {
   @Input() isOpen = false;
+
   @Input() returnRequest: ReturnDto | null = null;
+
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
-
   onClose(): void {
     this.close.emit();
   }
@@ -62,5 +63,10 @@ export class ReturnDetailsModalComponent {
   getCurrentDate(): string {
     return this.formatDate(new Date());
   }
+
+  get hasItems(): boolean {
+    return !!this.returnRequest?.requestItems && this.returnRequest.requestItems.length > 0;
+  }
+
 }
 

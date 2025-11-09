@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X } from 'lucide-angular';
-import { LookupService, LookupItem } from '@services/lookup.service';
+import { LookupService } from '@services/lookup.service';
 import { DepotDto } from '@models/depot.model';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { API_ENDPOINTS } from '@constants/app.constants';
 
 @Component({
   selector: 'app-depot-management',
@@ -60,27 +61,25 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
 
-    this.lookupService.getDepots()
+    this.apiService.getWithAuth<APIOperationResponse<DepotDto[]>>(API_ENDPOINTS.DEPOT.BASE)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots: LookupItem[]) => {
-          // Map LookupItem to DepotDto format (DepotDto has extra properties like location, latitude, longitude)
-          this.depots = depots
-            .filter(d => !d.isDeleted && d.id !== undefined)
-            .map(d => ({
-              id: d.id!,
-              nameAr: d.nameAr,
-              nameEn: d.nameEn,
-              location: '', // Backend may not return this, will be empty
-              latitude: 0,
-              longitude: 0,
-              isDeleted: d.isDeleted || false
-            }));
+        next: (response) => {
+          if (response.succeeded && response.data) {
+            this.depots = response.data
+              .filter(depot => !depot.isDeleted)
+              .map(depot => ({
+                ...depot,
+                location: depot.location || ''
+              }));
+          } else {
+            this.errorMessage = response.message || 'Failed to load depots';
+          }
           this.loading = false;
         },
         error: (error) => {
           console.error('Error loading depots:', error);
-          this.errorMessage = 'Failed to load depots';
+          this.errorMessage = error.message || 'Failed to load depots';
           this.loading = false;
         }
       });
@@ -115,11 +114,11 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
     const request$ = this.isEditMode
       ? this.apiService.putWithAuth<APIOperationResponse<DepotDto>>(
-          `/Lookup/Depot/${this.currentDepot.id}`,
+          `${API_ENDPOINTS.DEPOT.BASE}/${this.currentDepot.id}`,
           this.currentDepot
         )
       : this.apiService.postWithAuth<APIOperationResponse<DepotDto>>(
-          '/Lookup/Depot',
+          API_ENDPOINTS.DEPOT.BASE,
           this.currentDepot
         );
 
@@ -173,7 +172,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
     this.apiService
       .deleteWithAuth<APIOperationResponse<DepotDto>>(
-        `/Lookup/Depot/${this.depotToDelete.id}`
+        `${API_ENDPOINTS.DEPOT.BASE}/${this.depotToDelete.id}`
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({

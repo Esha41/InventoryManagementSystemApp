@@ -19,7 +19,7 @@ export interface WorkflowDto {
 }
 
 /**
- * Raw workflow shape returned by backend (from Swagger screenshot)
+ * Raw workflow shape returned by backend 
  */
 export interface BackendWorkflowDto {
   id: number;
@@ -43,7 +43,7 @@ export interface UpdateWorkflowDto {
   status: 'Active' | 'Inactive';
 }
 
-// Backend create payloads (match Swagger)
+// Backend create payloads 
 export interface BackendWorkflowStepDto {
   id?: number;
   workflowId?: number;

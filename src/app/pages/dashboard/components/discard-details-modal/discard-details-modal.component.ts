@@ -13,11 +13,12 @@ import { DiscardDto } from '@services/discard.service';
 })
 export class DiscardDetailsModalComponent {
   @Input() isOpen = false;
+
   @Input() discardRequest: DiscardDto | null = null;
+
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
-
   onClose(): void {
     this.close.emit();
   }
@@ -62,5 +63,10 @@ export class DiscardDetailsModalComponent {
     const year = d.getFullYear();
     return `${day} ${month} ${year}`;
   }
+
+  get hasItems(): boolean {
+    return !!this.discardRequest?.requestItems && this.discardRequest.requestItems.length > 0;
+  }
+
 }
 

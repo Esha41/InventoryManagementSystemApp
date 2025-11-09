@@ -528,7 +528,7 @@ export class NewIssueRequestComponent implements OnInit {
       quantity: null,
       itemNo: dto.itemNo,
       productId: dto.itemNo,
-      ncn: dto.nsn?.nameEn || dto.nsn?.nameAr,
+      ncn: dto.nsn || undefined,
       primaryPurpose: dto.primaryPurpos?.nameEn || dto.primaryPurpos?.nameAr,
       projectileColor: dto.projectileColor?.nameEn || dto.projectileColor?.nameAr,
       totalWeight: dto.totalWeight ? `${dto.totalWeight} g` : undefined,
