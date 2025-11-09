@@ -158,9 +158,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
   private loadDepartments(): void {
     this.isLoadingDepartments = true;
-    this.lookupService.getAll<DepartmentDto>('Department').subscribe({
-      next: (deps) => {
-        this.departments = deps || [];
+    this.lookupService.getLookupItems('Department').subscribe({
+      next: (deps: DepartmentDto[]) => {
+        this.departments = deps ?? [];
         this.isLoadingDepartments = false;
       },
       error: () => {
@@ -172,9 +172,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
   private loadRanks(): void {
     this.isLoadingRanks = true;
-    this.lookupService.getAll<LookupItem>('Rank').subscribe({
-      next: (items) => {
-        this.ranks = items || [];
+    this.lookupService.getLookupItems('Rank').subscribe({
+      next: (items: LookupItem[]) => {
+        this.ranks = items ?? [];
         this.isLoadingRanks = false;
       },
       error: () => {
