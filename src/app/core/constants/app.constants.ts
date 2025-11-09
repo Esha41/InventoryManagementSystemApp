@@ -62,6 +62,35 @@ export const API_ENDPOINTS = {
     ALL: '/requests/all',
   },
   
+  // Return Requests
+  RETURNS: {
+    BASE: '/Return',
+    BY_ID: (id: number) => `/Return/${id}`,
+    CHANGE_PRIORITY: (id: number) => `/Return/${id}/priority`,
+  },
+  
+  // Discard Requests
+  DISCARDS: {
+    BASE: '/Discard',
+    BY_ID: (id: number) => `/Discard/${id}`,
+    CHANGE_PRIORITY: (id: number) => `/Discard/${id}/priority`,
+  },
+  
+  // Order Requests
+  ORDERS: {
+    BASE: '/Order',
+    BY_ID: (id: number) => `/Order/${id}`,
+  },
+  
+  // Request Purposes
+  REQUEST_PURPOSES: {
+    BASE: '/RequestPurpose',
+    FOR_RETURN: '/RequestPurpose/return',
+    FOR_DISCARD: '/RequestPurpose/discard',
+    FOR_ORDER: '/RequestPurpose/order',
+    BY_ID: (id: number) => `/RequestPurpose/${id}`,
+  },
+  
   // Lookup Services
   LOOKUPS: {
     BASE: '/lookups',

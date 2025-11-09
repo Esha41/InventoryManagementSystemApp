@@ -418,9 +418,7 @@ export class NewIssueRequestComponent implements OnInit {
   }
 
   onTrackOrder(): void {
- 
-    console.log('Track Order clicked');
- 
+    this.router.navigate(['/dashboard']);
   }
 
   resetForm(): void {

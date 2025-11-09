@@ -8,126 +8,231 @@
       <div class="bg-[#F5F5F5] rounded-xl p-8">
         <form #discardForm="ngForm" (ngSubmit)="onSendRequest(discardForm)">
           <div class="space-y-6 max-w-3xl">
-            <div class="flex items-center gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0">
-                {{ 'discardRequest.dateCreated' | translate }}
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="dateCreated"
-                name="dateCreated"
-                readonly
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border-0 text-sm text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-              />
-            </div>
-
+            <!-- Reason -->
             <div class="flex items-start gap-8">
               <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.discardOrderId' | translate }}
+                {{ 'discardRequest.reason' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
                 <input
                   type="text"
-                  [(ngModel)]="discardOrderId"
-                  name="discardOrderId"
-                  [placeholder]="'discardRequest.orderIdPlaceholder' | translate"
-                  [class.border-red-500]="hasError('discardOrderId')"
+                  [(ngModel)]="reason"
+                  name="reason"
+                  [placeholder]="'discardRequest.reasonPlaceholder' | translate"
                   class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                 />
-                <p class="mt-1.5 text-xs" [class.text-red-500]="hasError('discardOrderId')" [class.text-[#9CA3AF]]="!hasError('discardOrderId')">
-                  <span *ngIf="hasError('discardOrderId')">{{ getError('discardOrderId') }}</span>
-                  <span *ngIf="!hasError('discardOrderId')">{{ 'discardRequest.orderIdHint' | translate }}</span>
-                </p>
               </div>
             </div>
 
+            <!-- Priority -->
             <div class="flex items-start gap-8">
               <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.quantity' | translate }}
+                {{ 'discardRequest.priority' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
-                <input
-                  type="text"
-                  [(ngModel)]="quantity"
-                  name="quantity"
-                  [placeholder]="'discardRequest.quantityPlaceholder' | translate"
-                  [class.border-red-500]="hasError('quantity')"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                />
-                <p class="mt-1.5 text-xs" [class.text-red-500]="hasError('quantity')" [class.text-[#9CA3AF]]="!hasError('quantity')">
-                  <span *ngIf="hasError('quantity')">{{ getError('quantity') }}</span>
-                  <span *ngIf="!hasError('quantity')">{{ 'discardRequest.quantityHint' | translate }}</span>
+                <select
+                  [(ngModel)]="priority"
+                  name="priority"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                >
+                  <option *ngFor="let option of priorityOptions" [value]="option.value">
+                    {{ option.labelKey | translate }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.notes' | translate }}
+              </label>
+              <div class="flex-1">
+                <textarea
+                  [(ngModel)]="notes"
+                  name="notes"
+                  rows="3"
+                  [placeholder]="'discardRequest.notesPlaceholder' | translate"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Department -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.department' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <div class="flex-1">
+                <select
+                  [(ngModel)]="departmentId"
+                  name="departmentId"
+                  [disabled]="isLoadingDepartments"
+                  [class.border-red-500]="hasError('departmentId')"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option [value]="null">{{ isLoadingDepartments ? ('common.loading' | translate) : ('discardRequest.selectDepartment' | translate) }}</option>
+                  <option *ngFor="let dept of departments" [value]="dept.id">
+                    {{ dept.nameEn || dept.nameAr }}
+                  </option>
+                </select>
+                <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('departmentId') }}
                 </p>
               </div>
             </div>
 
-            <div class="flex items-center gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0">
-                {{ 'discardRequest.comments' | translate }}
+            <!-- Requester -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.requester' | translate }}
               </label>
-              <input
-                type="text"
-                [(ngModel)]="comments"
-                name="comments"
-                [placeholder]="'discardRequest.commentsPlaceholder' | translate"
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border-0 text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-              />
+              <div class="flex-1">
+                <select
+                  [(ngModel)]="requesterId"
+                  name="requesterId"
+                  [disabled]="isLoadingRequesters"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option [value]="null">{{ isLoadingRequesters ? ('common.loading' | translate) : ('discardRequest.selectRequester' | translate) }}</option>
+                  <option *ngFor="let requester of requesters" [value]="requester.id">
+                    {{ requester.nameEn || requester.nameAr }}
+                  </option>
+                </select>
+              </div>
             </div>
 
-            <div class="flex items-center gap-8">
-              <div class="flex items-center gap-2 w-40 shrink-0">
+            <!-- Request Purpose -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.requestPurpose' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <div class="flex-1">
+                <select
+                  [(ngModel)]="requestPurposeId"
+                  name="requestPurposeId"
+                  [disabled]="isLoadingRequestPurposes"
+                  [class.border-red-500]="hasError('requestPurposeId')"
+                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option [value]="null">{{ isLoadingRequestPurposes ? ('common.loading' | translate) : ('discardRequest.selectRequestPurpose' | translate) }}</option>
+                  <option *ngFor="let purpose of requestPurposes" [value]="purpose.id">
+                    {{ purpose.nameEn || purpose.nameAr }}
+                  </option>
+                </select>
+                <p *ngIf="hasError('requestPurposeId')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('requestPurposeId') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Discard Items -->
+            <div class="border-t border-[var(--color-border)] pt-6">
+              <div class="flex items-center justify-between mb-4">
                 <label class="text-sm font-medium text-[#6B7280]">
-                  {{ 'discardRequest.attachment' | translate }}
+                  {{ 'discardRequest.discardItems' | translate }} <span class="text-red-500">*</span>
                 </label>
                 <button
                   type="button"
-                  (click)="triggerFileInput()"
-                  class="p-1 hover:bg-[#E5E7EB] rounded transition-colors"
-                  [attr.aria-label]="'discardRequest.uploadFile' | translate"
+                  (click)="addDiscardItem()"
+                  class="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
                 >
-                  <lucide-angular
-                    [img]="Upload"
-                    class="h-4 w-4 text-[#6B7280]"
-                  ></lucide-angular>
+                  <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+                  {{ 'discardRequest.addItem' | translate }}
                 </button>
               </div>
-              <input
-                type="file"
-                id="fileUpload"
-                (change)="onFileSelect($event)"
-                class="hidden"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              />
-              <div class="flex-1 relative">
-                <input
-                  type="text"
-                  [value]="attachmentName || ('discardRequest.noFileSelected' | translate)"
-                  readonly
-                  [placeholder]="'discardRequest.noFileSelected' | translate"
-                  class="w-full px-4 py-2.5 pr-10 bg-white rounded-lg border-0 text-sm text-[#9CA3AF] cursor-default focus:outline-none"
-                />
-                <button
-                  *ngIf="attachment"
-                  type="button"
-                  (click)="removeAttachment()"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors duration-200 group"
-                  [attr.aria-label]="'discardRequest.removeAttachment' | translate: { default: 'Remove attachment' }"
+
+              <div *ngIf="hasError('discardItems')" class="mb-4 text-xs text-red-500">
+                {{ getError('discardItems') }}
+              </div>
+
+              <div class="space-y-4">
+                <div
+                  *ngFor="let item of discardItems; let i = index"
+                  class="bg-white rounded-lg p-4 border border-[var(--color-border)]"
                 >
-                  <svg class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-error)] transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
+                  <div class="flex items-start justify-between mb-4">
+                    <h4 class="text-sm font-medium text-[var(--color-text)]">{{ 'discardRequest.item' | translate }} {{ i + 1 }}</h4>
+                    <button
+                      *ngIf="discardItems.length > 1"
+                      type="button"
+                      (click)="removeDiscardItem(i)"
+                      class="p-1 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <lucide-angular [img]="X" class="h-4 w-4 text-red-500"></lucide-angular>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Item -->
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                        {{ 'discardRequest.item' | translate }} <span class="text-red-500">*</span>
+                      </label>
+                      <select
+                        [(ngModel)]="item.itemId"
+                        [name]="'itemId_' + i"
+                        [class.border-red-500]="hasError('discardItems.' + i + '.itemId')"
+                        [disabled]="isLoadingItems"
+                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100"
+                      >
+                        <option [value]="null">{{ isLoadingItems ? ('common.loading' | translate) : ('discardRequest.selectItem' | translate) }}</option>
+                        <option *ngFor="let itemOption of items" [value]="itemOption.id || itemOption.itemNo">
+                          {{ itemOption.name || itemOption.itemNo || 'Unknown' }}
+                        </option>
+                      </select>
+                      <p *ngIf="hasError('discardItems.' + i + '.itemId')" class="mt-1 text-xs text-red-500">
+                        {{ getError('discardItems.' + i + '.itemId') }}
+                      </p>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                        {{ 'discardRequest.quantity' | translate }} <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        [(ngModel)]="item.quantity"
+                        [name]="'quantity_' + i"
+                        min="1"
+                        [placeholder]="'discardRequest.quantityPlaceholder' | translate"
+                        [class.border-red-500]="hasError('discardItems.' + i + '.quantity')"
+                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                      />
+                      <p *ngIf="hasError('discardItems.' + i + '.quantity')" class="mt-1 text-xs text-red-500">
+                        {{ getError('discardItems.' + i + '.quantity') }}
+                      </p>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                        {{ 'discardRequest.itemNotes' | translate }}
+                      </label>
+                      <input
+                        type="text"
+                        [(ngModel)]="item.notes"
+                        [name]="'itemNotes_' + i"
+                        [placeholder]="'discardRequest.itemNotesPlaceholder' | translate"
+                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
+            <!-- Submit Button -->
             <div class="flex justify-center pt-6">
               <app-button
                 type="submit"
                 variant="primary"
                 size="md"
+                [disabled]="isLoading"
                 class="px-12"
               >
-                {{ 'discardRequest.sendRequest' | translate }}
+                {{ isLoading ? ('common.loading' | translate) : ('discardRequest.sendRequest' | translate) }}
               </app-button>
             </div>
           </div>
@@ -136,4 +241,3 @@
     </div>
   </div>
 </div>
-

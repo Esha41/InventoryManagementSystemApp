@@ -1,9 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Upload } from 'lucide-angular';
+import { LucideAngularModule, Plus, X } from 'lucide-angular';
+import { DiscardService, CreateDiscardDto, CreateDiscardItemDto } from '@services/discard.service';
+import { LookupService } from '@services/lookup.service';
+import { AmmunitionService } from '@services/ammunition.service';
+import { ToastService } from '@services/toast.service';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
+import { APIOperationResponse } from '@models/api-response.model';
+import { LookupItem } from '@models/lookup.model';
+import { Subject, takeUntil } from 'rxjs';
+
+interface DiscardItemForm {
+  itemId: number | null;
+  quantity: number | null;
+  notes: string;
+}
+
+interface RequestPurpose {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+}
 
 @Component({
   selector: 'app-discard-request',
@@ -18,108 +40,322 @@ import { LucideAngularModule, Upload } from 'lucide-angular';
   templateUrl: './discard-request.component.html',
   styleUrls: ['./discard-request.component.css']
 })
-export class DiscardRequestComponent {
-  readonly Upload = Upload;
+export class DiscardRequestComponent implements OnInit, OnDestroy {
+  readonly Plus = Plus;
+  readonly X = X;
 
-  dateCreated: string = '';
-  discardOrderId: string = '';
-  quantity: string = '';
-  comments: string = '';
-  attachment: File | null = null;
-  attachmentName: string = '';
+  // Form fields matching backend CreateDiscardDto
+  reason: string = '';
+  priority: number = 1; // 1 = High, 2 = Medium, 3 = Low
+  notes: string = '';
+  departmentId: number | null = null;
+  requesterId: number | null = null;
+  requestPurposeId: number | null = null;
+
+  // Discard items array
+  discardItems: DiscardItemForm[] = [];
+
+  // Dropdown options
+  departments: LookupItem[] = [];
+  requesters: LookupItem[] = []; // Employees from Lookup API
+  requestPurposes: RequestPurpose[] = [];
+  items: any[] = []; // Ammunition items
+  priorityOptions = [
+    { value: 1, labelKey: 'discardRequest.high' },
+    { value: 2, labelKey: 'discardRequest.medium' },
+    { value: 3, labelKey: 'discardRequest.low' }
+  ];
+
+  // Loading states
+  isLoading = false;
+  isLoadingDepartments = false;
+  isLoadingRequesters = false;
+  isLoadingRequestPurposes = false;
+  isLoadingItems = false;
 
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
-  constructor() {
-    const today = new Date();
-    this.dateCreated = this.formatDate(today);
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private discardService: DiscardService,
+    private lookupService: LookupService,
+    private ammunitionService: AmmunitionService,
+    private toastService: ToastService,
+    private apiService: ApiService,
+    private translate: TranslateService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadDropdownData();
+    this.addDiscardItem(); // Add one empty item row by default
   }
 
-  private formatDate(date: Date): string {
-    const day = date.getDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day}, ${month} - ${year}`;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.attachment = input.files[0];
-      this.attachmentName = input.files[0].name;
-    }
+  /**
+   * Load all dropdown data
+   */
+  private loadDropdownData(): void {
+    this.loadDepartments();
+    this.loadRequesters();
+    this.loadRequestPurposes();
+    this.loadItems();
   }
 
-  removeAttachment(): void {
-    this.attachment = null;
-    this.attachmentName = '';
-    const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
+  /**
+   * Load departments from LookupService
+   */
+  private loadDepartments(): void {
+    this.isLoadingDepartments = true;
+    this.lookupService.getDepartments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments) => {
+          this.departments = departments;
+          this.isLoadingDepartments = false;
+        },
+        error: (error) => {
+          console.error('Failed to load departments:', error);
+          this.toastService.error('Failed to load departments');
+          this.isLoadingDepartments = false;
+        }
+      });
   }
 
-  triggerFileInput(): void {
-    const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
-    fileInput?.click();
+  /**
+   * Load requesters (employees) from LookupService
+   */
+  private loadRequesters(): void {
+    this.isLoadingRequesters = true;
+    this.lookupService.getLookupItems('Employee')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (employees) => {
+          this.requesters = employees;
+          this.isLoadingRequesters = false;
+        },
+        error: (error) => {
+          console.error('Failed to load employees:', error);
+          // The requester field is optional, so we can continue without it
+          this.toastService.error('Failed to load employees. The requester field will be disabled.');
+          this.requesters = []; // Set empty array so dropdown doesn't break
+          this.isLoadingRequesters = false;
+        }
+      });
   }
 
-  onSendRequest(form: NgForm): void {
-    this.isSubmitted = true;
+  /**
+   * Load request purposes for discard type
+   */
+  private loadRequestPurposes(): void {
+    this.isLoadingRequestPurposes = true;
+    this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(
+      API_ENDPOINTS.REQUEST_PURPOSES.FOR_DISCARD
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.succeeded && response.data) {
+            this.requestPurposes = response.data;
+          }
+          this.isLoadingRequestPurposes = false;
+        },
+        error: (error) => {
+          console.error('Failed to load request purposes:', error);
+          this.toastService.error('Failed to load request purposes');
+          this.isLoadingRequestPurposes = false;
+        }
+      });
+  }
+
+  /**
+   * Load items from AmmunitionService
+   */
+  private loadItems(): void {
+    this.isLoadingItems = true;
+    this.ammunitionService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items) => {
+          this.items = items || [];
+          this.isLoadingItems = false;
+        },
+        error: (error) => {
+          console.error('Failed to load items:', error);
+          this.toastService.error('Failed to load items');
+          this.isLoadingItems = false;
+        }
+      });
+  }
+
+  /**
+   * Add a new discard item row
+   */
+  addDiscardItem(): void {
+    this.discardItems.push({
+      itemId: null,
+      quantity: null,
+      notes: ''
+    });
+  }
+
+  /**
+   * Remove a discard item row
+   */
+  removeDiscardItem(index: number): void {
+    this.discardItems.splice(index, 1);
+  }
+
+  /**
+   * Validate form
+   */
+  private validateForm(): void {
     this.errors = {};
 
-    if (!this.discardOrderId.trim()) {
-      this.errors['discardOrderId'] = 'Discard Order ID is required';
+    // Validate required fields
+    if (!this.departmentId) {
+      this.errors['departmentId'] = 'Department is required';
     }
 
-    if (!this.quantity.trim()) {
-      this.errors['quantity'] = 'Quantity is required';
-    } else if (!/^\d+(,\d{3})*$/.test(this.quantity.replace(/\s/g, ''))) {
-      this.errors['quantity'] = 'Please enter a valid quantity (e.g., 20,000)';
+    if (!this.requestPurposeId) {
+      this.errors['requestPurposeId'] = 'Request Purpose is required';
     }
+
+    // Validate discard items
+    const validItems = this.discardItems.filter(item => item.itemId && item.quantity);
+    if (validItems.length === 0) {
+      this.errors['discardItems'] = 'At least one discard item is required';
+    }
+
+    // Validate each item
+    this.discardItems.forEach((item, index) => {
+      if (item.itemId && !item.quantity) {
+        this.errors[`discardItems.${index}.quantity`] = 'Quantity is required';
+      }
+      if (!item.itemId && item.quantity) {
+        this.errors[`discardItems.${index}.itemId`] = 'Item is required';
+      }
+    });
+  }
+
+  /**
+   * Handle form submission
+   */
+  onSendRequest(form: NgForm): void {
+    this.isSubmitted = true;
+    this.validateForm();
 
     if (Object.keys(this.errors).length > 0) {
+      this.toastService.error('Please correct the form errors.');
       return;
     }
 
-    const requestData = {
-      dateCreated: this.dateCreated,
-      discardOrderId: this.discardOrderId,
-      quantity: this.quantity,
-      comments: this.comments || 'None',
-      attachment: this.attachment
+    // Build CreateDiscardDto with explicit number conversions
+    const createDiscardDto: CreateDiscardDto = {
+      reason: this.reason || undefined,
+      priority: Number(this.priority),
+      notes: this.notes || undefined,
+      departmentId: Number(this.departmentId!),
+      requesterId: this.requesterId ? Number(this.requesterId) : undefined,
+      requestPurposeId: Number(this.requestPurposeId!),
+      discardItems: this.discardItems
+        .filter(item => item.itemId && item.quantity)
+        .map(item => ({
+          itemId: Number(item.itemId!),
+          quantity: Number(item.quantity!),
+          notes: item.notes || undefined
+        }))
     };
 
-    console.log('Discard Request submitted:', requestData);
-    alert('Discard request submitted successfully!');
-    this.resetForm();
+    // Submit to backend
+    this.isLoading = true;
+    this.discardService.createDiscard(createDiscardDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (discardId) => {
+          this.toastService.success('Discard request created successfully');
+          this.resetForm();
+          this.isLoading = false;
+
+          // Redirect to dashboard after successful creation
+          setTimeout(() => {
+            this.router.navigate(['/dashboard']);
+          }, 1000); // Small delay to show success message
+        },
+        error: (error) => {
+          console.error('Failed to create discard request:', error);
+
+          // Extract error message from response
+          let errorMessage = 'Failed to create discard request';
+          if (error.error?.errors) {
+            // Handle validation errors
+            const errors = error.error.errors;
+            const errorMessages: string[] = [];
+
+            if (errors.dto) {
+              errorMessages.push(...errors.dto);
+            }
+            if (errors['$.priority']) {
+              errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
+            }
+            if (errors['$.departmentId']) {
+              errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
+            }
+            if (errors['$.requestPurposeId']) {
+              errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
+            }
+            if (errors['$.discardItems']) {
+              errorMessages.push(`Discard Items: ${errors['$.discardItems'].join(', ')}`);
+            }
+
+            if (errorMessages.length > 0) {
+              errorMessage = errorMessages.join('; ');
+            } else if (error.error?.title) {
+              errorMessage = error.error.title;
+            }
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          this.toastService.error(errorMessage);
+          this.isLoading = false;
+        }
+      });
   }
 
+  /**
+   * Reset form
+   */
+  private resetForm(): void {
+    this.reason = '';
+    this.priority = 1;
+    this.notes = '';
+    this.departmentId = null;
+    this.requesterId = null;
+    this.requestPurposeId = null;
+    this.discardItems = [];
+    this.addDiscardItem(); // Add one empty item row
+    this.isSubmitted = false;
+    this.errors = {};
+  }
+
+  /**
+   * Check if field has error
+   */
   hasError(fieldName: string): boolean {
     return this.isSubmitted && !!this.errors[fieldName];
   }
 
+  /**
+   * Get error message for field
+   */
   getError(fieldName: string): string {
     return this.errors[fieldName] || '';
   }
-
-  private resetForm(): void {
-    const today = new Date();
-    this.dateCreated = this.formatDate(today);
-    this.discardOrderId = '';
-    this.quantity = '';
-    this.comments = '';
-    this.attachment = null;
-    this.attachmentName = '';
-    this.isSubmitted = false;
-    this.errors = {};
-
-    const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-  }
 }
-

@@ -9,20 +9,172 @@
   <div *ngIf="visibleCards.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <app-status-card
       *ngFor="let card of visibleCards"
-      [title]="card.title | translate"
+      [title]="card.title"
       [status]="card.status"
       [orders]="card.orders"
+      [orderRequestId]="card.orderRequestId || null"
+      [returnRequestId]="card.returnRequestId || null"
+      [discardRequestId]="card.discardRequestId || null"
+      (viewOrderDetails)="onViewOrderDetails($event)"
+      (viewDetails)="onViewDetails($event)"
+      (viewDiscardDetails)="onViewDiscardDetails($event)"
     ></app-status-card>
   </div>
 
   <!-- No Cards Message -->
   <div *ngIf="visibleCards.length === 0" class="text-center py-12">
     <p class="text-[var(--color-text-muted)] text-lg">
-      {{ 'dashboard.noCards' | translate }}
-    </p>
-    <p class="text-[var(--color-text-muted)] text-sm mt-2">
-      {{ 'dashboard.noCardsDescription' | translate }}
+      {{ 'dashboard.noOrders' | translate }}
     </p>
   </div>
+
+  <!-- Return Details Modal -->
+  <app-return-details-modal
+    [isOpen]="isReturnModalOpen"
+    [returnRequest]="selectedReturnRequest"
+    (close)="closeReturnModal()">
+  </app-return-details-modal>
+
+  <!-- Discard Details Modal -->
+  <app-discard-details-modal
+    [isOpen]="isDiscardModalOpen"
+    [discardRequest]="selectedDiscardRequest"
+    (close)="closeDiscardModal()">
+  </app-discard-details-modal>
+
+  <!-- Order Details Modal -->
+  <div *ngIf="isOrderModalOpen" class="fixed inset-0 z-50 overflow-y-auto" (click)="closeOrderModal()">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-[var(--color-text)]">{{ 'dashboard.orderDetails' | translate }}</h2>
+          <button
+            (click)="closeOrderModal()"
+            class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
+            <lucide-angular [img]="XIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+          </button>
+        </div>
+
+        <div *ngIf="selectedOrderRequest as order" class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.orderId' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ order.requestNo || order.orderNo || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.usageDate' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ formatOrderDate(order) }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.department' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ resolveOrderDepartmentName(order) }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.requester' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ order.requesterName || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.priority' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ getOrderPriorityKey(order.priority) | translate }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.status' | translate }}</p>
+              <p class="text-base font-semibold text-[var(--color-text)]">{{ getOrderStatusKey(order.status) | translate }}</p>
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--color-border)] pt-4">
+            <h3 class="text-lg font-semibold text-[var(--color-text)] mb-3">{{ 'dashboard.usageInformation' | translate }}</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.isFromAllowance' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ getOrderAllowanceKey(order.isFromAllowance) | translate }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.usageTime' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ formatOrderUsageTime(order) }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.usagePurpose' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.usagePurpose || 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.usageLocation' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.usageLocation || 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.numberOfOfficers' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.numberOfOfficer ?? 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.numberOfOtherRanks' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.numberOfOtherRank ?? 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.requestPurpose' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ resolveRequestPurpose(order) }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.depot' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ resolveDepotName(order) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="order.reason || order.notes" class="border-t border-[var(--color-border)] pt-4">
+            <div class="space-y-3">
+              <div *ngIf="order.reason">
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.reason' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.reason }}</p>
+              </div>
+              <div *ngIf="order.notes">
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.notes' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ order.notes }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--color-border)] pt-4">
+            <h3 class="text-lg font-semibold text-[var(--color-text)] mb-3">{{ 'dashboard.items' | translate }}</h3>
+            <div *ngIf="!hasOrderItems(order.requestItems)" class="text-sm text-[var(--color-text-muted)]">
+              {{ 'dashboard.noItems' | translate }}
+            </div>
+            <div *ngIf="hasOrderItems(order.requestItems)" class="space-y-3">
+              <div *ngFor="let item of order.requestItems" class="bg-gray-50 rounded-lg p-4">
+                <div class="grid grid-cols-3 gap-4">
+                  <div>
+                    <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemName' | translate }}</p>
+                    <p class="text-sm font-medium text-[var(--color-text)]">{{ item?.itemName || item?.itemNo || 'N/A' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemNo' | translate }}</p>
+                    <p class="text-sm font-medium text-[var(--color-text)]">{{ item?.itemNo || 'N/A' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.quantity' | translate }}</p>
+                    <p class="text-sm font-medium text-[var(--color-text)]">{{ item?.quantity }}</p>
+                  </div>
+                  <div *ngIf="item?.notes" class="col-span-3">
+                    <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.notes' | translate }}</p>
+                    <p class="text-sm text-[var(--color-text)]">{{ item?.notes }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-[var(--color-border)]">
+          <button
+            (click)="closeOrderModal()"
+            class="px-4 py-2 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-colors">
+            {{ 'common.close' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+ 
 
