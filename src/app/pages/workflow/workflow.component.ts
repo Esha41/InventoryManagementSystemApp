@@ -9,6 +9,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto } from '@models/backend-user.model';
 import { WorkflowDto } from '@models/workflow.model';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-workflow',
@@ -28,7 +29,7 @@ export class WorkflowComponent implements OnInit {
   workflows: WorkflowDto[] = [];
   filteredWorkflows: WorkflowDto[] = [];
   searchTerm: string = '';
-  
+ 
   loading = false;
   errorMessage: string | null = null;
   
@@ -51,6 +52,8 @@ export class WorkflowComponent implements OnInit {
   constructor(
     private router: Router,
     private workflowService: WorkflowService,
+        private translationService: TranslationService,
+    
     private backendUserService: BackendUserService,
     private lookupService: LookupService,
     private translate: TranslateService
@@ -66,18 +69,19 @@ export class WorkflowComponent implements OnInit {
       },
       error: () => { this.allApplicationEntities = []; }
     });
+const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
 
-    // Load workflow types for edit modal
-    this.lookupService.getWorkflowTypes().subscribe({
-      next: (types: LookupItem[]) => {
-        this.workflowTypes = (types || [])
-          .filter(t => t.id !== undefined)
-          .map(t => ({ id: t.id!, name: t.nameEn || t.nameAr || String(t.id) }));
-      },
-      error: () => { this.workflowTypes = []; }
-    });
+ this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
+
+
   }
 
+getWorkflowType (id: number)
+{
+  console.log("dd");
+ return this.workflowService. getWorkflowTypeNameById(id, this.translationService.getCurrentLanguage());
+console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationService.getCurrentLanguage()));
+}
   loadWorkflows(): void {
     this.loading = true;
     this.errorMessage = null;
