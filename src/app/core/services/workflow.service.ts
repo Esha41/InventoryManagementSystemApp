@@ -10,7 +10,7 @@ import {
   UpdateWorkflowDto,
   BackendWorkflowDto,
   BackendCreateWorkflowDto,
-  BackendUpdateWorkflowDto
+  BackendUpdateWorkflowDto,WorkflowType,WORKFLOW_TYPE_NAMES,WorkflowTypeItem
 } from '@models/workflow.model';
 import { ApiResponse } from '@models/api-response.model';
 
@@ -30,6 +30,19 @@ export class WorkflowService {
     private configService: ConfigService
   ) {}
 
+   getWorkflowTypeItems(lang: 'en' | 'ar'): WorkflowTypeItem[] {
+  return Object.values(WorkflowType)
+    .filter(v => typeof v === 'number')
+    .map(id => ({
+      id: id as number,
+      name: WORKFLOW_TYPE_NAMES[id as WorkflowType][lang]
+    }));
+}
+ getWorkflowTypeNameById(id: number, lang: 'en' | 'ar'): string {
+  const workflow = WORKFLOW_TYPE_NAMES[id as WorkflowType];
+  return workflow ? workflow[lang] : 'Unknown';
+}
+  
   /**
    * Get all workflows
    */
@@ -239,6 +252,7 @@ export class WorkflowService {
     );
   }
 
+  
   /**
    * Delete workflow
    */

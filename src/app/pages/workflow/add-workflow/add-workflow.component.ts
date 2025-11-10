@@ -11,6 +11,7 @@ import { TranslationService } from '@services/translation.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { CreateWorkflowDto } from '@models/workflow.model';
 import { ToastService } from '@services/toast.service';
+import { WorkflowType } from '@models/workflow.model';
 
 @Component({
   selector: 'app-add-workflow',
@@ -83,20 +84,13 @@ export class AddWorkflowComponent implements OnInit {
       },
       error: () => { this.allApplicationEntities = []; }
     });
+const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
 
-    // Load workflow types lookup
-    this.lookupService.getWorkflowTypes().subscribe({
-      next: (types: LookupItem[]) => {
-        const lang = this.translationService.getCurrentLanguage();
-        this.workflowTypes = (types || [])
-          .filter(t => t.id !== undefined)
-          .map(t => ({ id: t.id!, name: (lang === 'ar' ? t.nameAr : t.nameEn) || String(t.id) }));
-        if (this.workflowTypes.length > 0) {
-          this.selectedWorkflowType = this.workflowTypes[0].id;
-        }
-      },
-      error: () => { this.workflowTypes = []; }
-    });
+this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
+
+if (this.workflowTypes.length > 0) {
+  this.selectedWorkflowType = this.workflowTypes[0].id;
+}
   }
 
 
