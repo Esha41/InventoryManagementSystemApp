@@ -7,6 +7,7 @@ import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { TranslateModule } from '@ngx-translate/core';
+import { NotificationService } from '@services/notification.service';
 
 @Component({
   selector: 'app-navbar',
@@ -24,14 +25,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   currentUser: AuthenticatedUser | null = null;
   showUserMenu = false;
-  notificationCount = 3; // Mock notification count
+  notificationCount = 0;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     public translationService: TranslationService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +42,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
+      });
+
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.notificationCount = count ?? 0;
       });
   }
 

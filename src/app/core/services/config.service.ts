@@ -31,6 +31,13 @@ export class ConfigService {
   }
 
   /**
+   * Get notification hub URL
+   */
+  get notificationHubUrl(): string {
+    return (environment as any).notificationHubUrl ?? '';
+  }
+
+  /**
    * Check if logging is enabled
    */
   get isLoggingEnabled(): boolean {

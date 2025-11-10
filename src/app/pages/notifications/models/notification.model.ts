@@ -1,10 +1,14 @@
 export interface Notification {
-  orderId: string;
-  updateDate: string;
-  time: string;
-  status: string;
-  pickupDate?: string;
-  pickupTime?: string;
-  warehouse?: string;
+  id: number;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
+  userId?: string | null;
+  title?: string | null;
+  type?: string | null;
+  senderId?: string | null;
+  entityType?: string | null;
+  entityId?: number | null;
+  metadata?: Record<string, any> | null;
 }
 

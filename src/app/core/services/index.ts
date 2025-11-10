@@ -17,3 +17,4 @@ export * from './ammunition.service';
 export * from './order.service';
 export * from './return.service';
 export * from './discard.service';
+export * from './notification.service';
