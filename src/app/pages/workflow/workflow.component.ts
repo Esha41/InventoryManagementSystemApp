@@ -277,9 +277,25 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     return this.roles.find(r => r.id === id);
   }
 
-  // Human‑readable order label (1->First, 2->Second, 3->Third, 4->Fourth, ...)
+  // Human‑readable order label supporting up to 100 steps
   orderLabel(n: number): string {
-    const keyMap: { [k: number]: string } = {
+    if (n <= 0) {
+      return String(n);
+    }
+ 
+    const key = this.getOrdinalKey(n);
+    if (key) {
+      if (key.includes('-')) {
+        return key.replace('-', ' ');
+      }
+      return this.translate.instant(key);
+    }
+ 
+    return this.translate.instant('workflow.stepNumber', { number: n });
+  }
+
+  private getOrdinalKey(n: number): string | null {
+    const predefined: { [k: number]: string } = {
       1: 'workflow.first',
       2: 'workflow.second',
       3: 'workflow.third',
@@ -289,10 +305,52 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
       7: 'workflow.seventh',
       8: 'workflow.eighth',
       9: 'workflow.ninth',
-      10: 'workflow.tenth'
+      10: 'workflow.tenth',
+      11: 'workflow.eleventh',
+      12: 'workflow.twelfth',
+      13: 'workflow.thirteenth',
+      14: 'workflow.fourteenth',
+      15: 'workflow.fifteenth',
+      16: 'workflow.sixteenth',
+      17: 'workflow.seventeenth',
+      18: 'workflow.eighteenth',
+      19: 'workflow.nineteenth',
+      20: 'workflow.twentieth'
     };
-    const key = keyMap[n];
-    return key ? this.translate.instant(key) : String(n);
+
+    if (predefined[n]) {
+      return predefined[n];
+    }
+
+    const tens: { [k: number]: string } = {
+      20: 'workflow.twentieth',
+      30: 'workflow.thirtieth',
+      40: 'workflow.fortieth',
+      50: 'workflow.fiftieth',
+      60: 'workflow.sixtieth',
+      70: 'workflow.seventieth',
+      80: 'workflow.eightieth',
+      90: 'workflow.ninetieth',
+      100: 'workflow.oneHundredth'
+    };
+
+    if (tens[n]) {
+      return tens[n];
+    }
+
+    if (n > 20 && n < 100) {
+      const ones = n % 10;
+      const base = n - ones;
+      const baseKey = tens[base];
+      const onesKey = predefined[ones];
+      if (baseKey && onesKey) {
+        const baseText = this.translate.instant(baseKey).replace(/th$/i, '').trim();
+        const onesText = this.translate.instant(onesKey).toLowerCase();
+        return `${baseText}-${onesText}`;
+      }
+    }
+
+    return null;
   }
 
   closeModals(): void {

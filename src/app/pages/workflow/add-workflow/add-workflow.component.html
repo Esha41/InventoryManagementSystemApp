@@ -111,34 +111,42 @@
               <tr *ngFor="let step of steps; let i = index" class="border-t">
                 <td class="px-3 py-2 w-20 text-sm text-gray-700">{{ orderLabel(i + 1) }}</td>
                 <td class="px-3 py-2">
-                  <select [(ngModel)]="step.roleId" (ngModelChange)="onRoleChange(i)" name="role-{{i}}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <select [(ngModel)]="step.roleId" (ngModelChange)="onRoleChange(i); onStepFieldBlur(i)" name="role-{{i}}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     <option [ngValue]="null" disabled selected>{{ 'workflow.roleNamePlaceholder' | translate }}</option>
                     <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
                   </select>
+                  <p *ngIf="hasRoleError(step)" class="mt-1 text-xs text-red-600">*</p>
                 </td>
                 <td class="px-3 py-2">
-                  <select [(ngModel)]="step.applicationEntityId" name="entity-{{i}}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <select [(ngModel)]="step.applicationEntityId" (ngModelChange)="onStepFieldBlur(i)" name="entity-{{i}}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     <option [ngValue]="null" disabled selected>{{ 'workflow.applicationEntityPlaceholder' | translate }}</option>
                     <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
                   </select>
+                  <p *ngIf="hasEntityError(step)" class="mt-1 text-xs text-red-600">*</p>
                 </td>
                 <td class="px-3 py-2">
                   <label class="inline-flex items-center gap-2 text-sm">
-                    <input type="checkbox" [(ngModel)]="step.requireHigherApproval" name="requireHigherApproval-{{i}}" class="h-4 w-4" />
+                    <input type="checkbox" [(ngModel)]="step.requireHigherApproval" (ngModelChange)="onStepFieldBlur(i)" name="requireHigherApproval-{{i}}" class="h-4 w-4" />
                     <span>{{ 'workflow.required' | translate }}</span>
                   </label>
                 </td>
                 <td class="px-3 py-2">
-                  <select [(ngModel)]="step.higherApprovalRoleId" name="higherRole-{{i}}" [disabled]="!step.requireHigherApproval" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50">
+                  <select [(ngModel)]="step.higherApprovalRoleId" (ngModelChange)="onStepFieldBlur(i)" name="higherRole-{{i}}" [disabled]="!step.requireHigherApproval" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50">
                     <option [ngValue]="null" disabled selected>{{ 'workflow.selectHigherApprovalRole' | translate }}</option>
                     <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
                   </select>
+                  <p *ngIf="step.requireHigherApproval && hasHigherRoleError(step)" class="mt-1 text-xs text-red-600">
+                    {{ 'workflow.stepHigherRoleRequired' | translate }}
+                  </p>
                 </td>
                 <td class="px-3 py-2">
-                  <select [(ngModel)]="step.higherApplicationEntityId" name="higherEntity-{{i}}" [disabled]="!step.requireHigherApproval" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50">
+                  <select [(ngModel)]="step.higherApplicationEntityId" (ngModelChange)="onStepFieldBlur(i)" name="higherEntity-{{i}}" [disabled]="!step.requireHigherApproval" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-50">
                     <option [ngValue]="null" disabled selected>{{ 'workflow.applicationEntityPlaceholder' | translate }}</option>
                     <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
                   </select>
+                  <p *ngIf="step.requireHigherApproval && hasHigherEntityError(step)" class="mt-1 text-xs text-red-600">
+                    {{ 'workflow.stepHigherEntityRequired' | translate }}
+                  </p>
                 </td>
                 <td class="px-4 py-2 text-right">
                   <button type="button" (click)="removeStep(i)" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">{{ 'common.delete' | translate }}</button>
