@@ -204,7 +204,14 @@
     "comments": "Comments",
     "view": "View",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "validation": {
+      "usePurposeRequired": "Usage purpose is required.",
+      "usageLocationRequired": "Usage location is required.",
+      "usageDateRequired": "Usage date is required.",
+      "usageTimeRequired": "Usage time is required.",
+      "correctErrors": "Please fix the highlighted fields before continuing."
+    }
   },
   "forecast": {
     "title": "Forecast",

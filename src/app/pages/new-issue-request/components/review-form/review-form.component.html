@@ -10,12 +10,9 @@
         <input
           type="text"
           [ngModel]="requesterName"
-          (ngModelChange)="onRequesterNameChange($event)"
           placeholder="Lt. Ahmed"
-          [readonly]="requesterNameReadonly"
-          [class.bg-[#EBEBEB]]="requesterNameReadonly"
-          [class.cursor-not-allowed]="requesterNameReadonly"
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+          readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Comments -->
@@ -24,9 +21,9 @@
         <input
           type="text"
           [ngModel]="requesterComments"
-          (ngModelChange)="onRequesterCommentsChange($event)"
           placeholder="None"
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+          readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
     </div>
   </div>
@@ -42,9 +39,9 @@
         <input
           type="text"
           [ngModel]="orderType"
-          (ngModelChange)="onOrderTypeChange($event)"
           placeholder="New Issue Request"
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+          readonly
+          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Order Priority -->
@@ -54,7 +51,8 @@
           type="text"
           [value]="selectedPriority"
           placeholder="High Priority"
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+          readonly
+          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Order Document -->
@@ -89,7 +87,7 @@
                 name="fromReserveReview" 
                 value="Yes" 
                 [ngModel]="fromReserve"
-                (ngModelChange)="onFromReserveChange($event)"
+                disabled
                 class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.yes' | translate }}</span>
             </label>
@@ -104,7 +102,7 @@
                 name="fromReserveReview" 
                 value="No" 
                 [ngModel]="fromReserve"
-                (ngModelChange)="onFromReserveChange($event)"
+                disabled
                 class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.no' | translate }}</span>
             </label>
@@ -117,9 +115,9 @@
           <input
             type="text"
             [ngModel]="usePurpose"
-            (ngModelChange)="onUsePurposeChange($event)"
             placeholder="Training"
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
       </div>
 
@@ -131,9 +129,9 @@
           <input
             type="text"
             [ngModel]="usageDate"
-            (ngModelChange)="onUsageDateChange($event)"
             placeholder="20/7/2025"
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
       </div>
     </div>
