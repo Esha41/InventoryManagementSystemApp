@@ -109,7 +109,17 @@ export const API_ENDPOINTS = {
     BASE: '/inventory',
     BY_ID: (id: number) => `/inventory/${id}`,
   },
-  
+
+  // Notifications
+  NOTIFICATIONS: {
+    BASE: '/Notification',
+    UNREAD_COUNT: '/Notification/unread-count',
+    MARK_AS_READ: (id: number) => `/Notification/${id}/read`,
+    MARK_ALL_AS_READ: '/Notification/read-all',
+    SEND_TO_USER: '/Notification/send',
+    SEND_TO_GROUP: '/Notification/send-to-group'
+  },
+ 
   // Depot Management (Warehouses)
   DEPOT: {
     BASE: '/Lookup/Depot',

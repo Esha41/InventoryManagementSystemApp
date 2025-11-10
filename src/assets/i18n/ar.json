@@ -107,6 +107,22 @@
   },
   "notifications": {
     "title": "الإشعارات",
+    "subtitle": "{{count}} إشعار غير مقروء",
+    "recent": "أحدث الإشعارات",
+    "total": "الإجمالي:",
+    "empty": "لا توجد إشعارات جديدة حالياً.",
+    "markAsRead": "تحديد كمقروء",
+    "markAllAsRead": "تحديد الكل كمقروء",
+    "unread": "غير مقروء",
+    "filters": {
+      "all": "الكل",
+      "unread": "غير مقروء",
+      "read": "مقروء"
+    },
+    "detailTitle": "تفاصيل الإشعار",
+    "additionalInfo": "معلومات إضافية",
+    "selectPrompt": "اختر إشعاراً لعرض تفاصيله",
+    "genericType": "إشعار",
     "orderId": "رقم الطلب",
     "updateDate": "تاريخ التحديث",
     "time": "الوقت",
@@ -122,7 +138,8 @@
     "warehouse": "المستودع",
     "proposeNewTime": "اقتراح وقت جديد",
     "pickupDate": "تاريخ الاستلام",
-    "pickupTime": "وقت الاستلام"
+    "pickupTime": "وقت الاستلام",
+    "view": "عرض"
   },
   "newIssueRequest": {
     "title": "طلب إصدار جديد",

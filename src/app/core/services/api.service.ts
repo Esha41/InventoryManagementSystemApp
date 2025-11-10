@@ -90,6 +90,15 @@ export class ApiService {
   }
 
   /**
+   * PATCH request with authentication headers
+   */
+  patchWithAuth<T>(endpoint: string, data: any): Observable<T> {
+    const headers = this.getAuthHeaders();
+    return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data, { headers })
+      .pipe(catchError(error => this.handleError(error)));
+  }
+
+  /**
    * DELETE request with authentication headers
    */
   deleteWithAuth<T>(endpoint: string): Observable<T> {

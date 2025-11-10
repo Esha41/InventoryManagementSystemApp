@@ -109,6 +109,22 @@
   },
   "notifications": {
     "title": "Notifications",
+    "subtitle": "{{count}} unread notifications",
+    "recent": "Recent Notifications",
+    "total": "Total:",
+    "empty": "You're all caught up! No notifications yet.",
+    "markAsRead": "Mark as read",
+    "markAllAsRead": "Mark all as read",
+    "unread": "Unread",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "detailTitle": "Notification Details",
+    "additionalInfo": "Additional information",
+    "selectPrompt": "Select a notification to view its details",
+    "genericType": "Notification",
     "orderId": "ORDER ID",
     "updateDate": "UPDATE DATE",
     "time": "TIME",
@@ -124,7 +140,8 @@
     "warehouse": "Warehouse",
     "proposeNewTime": "Propose New Time",
     "pickupDate": "Pick-Up Date",
-    "pickupTime": "Pick-Up Time"
+    "pickupTime": "Pick-Up Time",
+    "view": "View"
   },
   "newIssueRequest": {
     "title": "New Issue Request",

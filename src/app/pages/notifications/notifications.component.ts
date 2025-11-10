@@ -1,163 +1,360 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
-import { NotificationListComponent } from './components/notification-list/notification-list.component';
-import { NotificationDetailComponent } from './components/notification-detail/notification-detail.component';
+import { LucideAngularModule, ChevronLeft, ChevronDown } from 'lucide-angular';
+import { takeUntil } from 'rxjs/operators';
+import { Subject, combineLatest } from 'rxjs';
 import { Notification } from './models/notification.model';
+import { NotificationService } from '@services/notification.service';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     TranslateModule,
-    LucideAngularModule,
-    NotificationListComponent,
-    NotificationDetailComponent
+    LucideAngularModule
   ],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.css']
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ChevronLeft;
+  readonly ChevronDown = ChevronDown;
 
-  // Mock data - will be replaced with API calls
-  notifications: Notification[] = [
-    {
-      orderId: '#0172',
-      updateDate: '25 July 2025',
-      time: '1 hour ago',
-      status: 'Confirm Pick-up Time',
-      pickupDate: '23/6/2025',
-      pickupTime: '11:00 AM',
-      warehouse: 'DOH-01 Warehouse'
-    },
-    {
-      orderId: '#0171',
-      updateDate: '1 July 2025',
-      time: '12:35 PM',
-      status: 'Order has been approved by Auditor'
-    },
-    {
-      orderId: '#0170',
-      updateDate: '22 June 2025',
-      time: '7:00 AM',
-      status: 'Confirm Pick-up Time',
-      pickupDate: '25/6/2025',
-      pickupTime: '9:00 AM',
-      warehouse: 'DOH-02 Warehouse'
-    },
-    {
-      orderId: '#0169',
-      updateDate: '18 June 2025',
-      time: '9:35 AM',
-      status: 'Your Order has been Rejected'
-    }
-  ];
-
-  // Pagination
-  currentPage = 1;
-  itemsPerPage = 1;
-  totalItems = 20;
-
-  // Detail view
+  notifications: Notification[] = [];
+  filteredNotifications: Notification[] = [];
+  pagedNotifications: Notification[] = [];
   selectedNotification: Notification | null = null;
-  showDetailView = false;
-  proposedDate = '';
-  proposedTime = '';
+
+  unreadCount = 0;
+  readCount = 0;
+  totalCount = 0;
+  loading = false;
+
+  activeFilter: 'all' | 'unread' | 'read' = 'all';
+
+  itemsPerPageOptions = [5, 10, 20];
+  itemsPerPage = 5;
+  currentPage = 1;
+
+  private destroy$ = new Subject<void>();
+  private pendingSelectionId: number | null = null;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const orderId = params['orderId'];
-      if (orderId) {
-        this.loadNotificationDetail(orderId);
-      }
-    });
+    this.notificationService.initialize();
+
+    combineLatest([
+      this.notificationService.notifications$,
+      this.route.queryParams
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([notifications, params]) => {
+        this.notifications = notifications ?? [];
+        this.pendingSelectionId = params['notificationId'] ? Number(params['notificationId']) : null;
+        this.applyFilter(true);
+      });
+
+    this.notificationService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => this.loading = loading);
   }
 
-  private loadNotificationDetail(orderId: string): void {
-    const notification = this.notifications.find(n => n.orderId === orderId);
-    if (notification) {
-      this.showNotificationDetail(notification);
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  onNotificationClick(notification: Notification): void {
-    this.showNotificationDetail(notification);
+  get totalPages(): number {
+    const total = Math.ceil(this.filteredNotifications.length / this.itemsPerPage);
+    return total > 0 ? total : 1;
   }
 
-  showNotificationDetail(notification: Notification): void {
-    this.selectedNotification = notification;
-    this.showDetailView = true;
-    this.updateRoute(notification.orderId);
-  }
-
-  closeDetailView(): void {
-    this.showDetailView = false;
-    this.selectedNotification = null;
-    this.proposedDate = '';
-    this.proposedTime = '';
-    this.clearRoute();
+  get pages(): number[] {
+    const total = this.totalPages;
+    return Array.from({ length: total }, (_, index) => index + 1);
   }
 
   goBack(): void {
-    if (this.showDetailView) {
-      this.closeDetailView();
-    } else {
-      this.router.navigate(['/dashboard']);
+    this.router.navigate(['/dashboard']);
+  }
+
+  setFilter(filter: 'all' | 'unread' | 'read'): void {
+    if (this.activeFilter === filter) {
+      return;
     }
+
+    this.activeFilter = filter;
+    this.applyFilter(true);
+  }
+
+  onNotificationSelect(notification: Notification): void {
+    const wasRead = notification.isRead;
+    this.markNotificationAsReadOptimistic(notification);
+    const updated = this.notifications.find(n => n.id === notification.id) ?? notification;
+    this.selectNotification(updated);
+    if (!wasRead) {
+      this.notificationService.markAsRead(notification.id).subscribe({
+        error: () => this.notificationService.refresh()
+      });
+    }
+    this.updateRoute(notification.id);
+  }
+
+  onMarkAsRead(notification: Notification, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (notification.isRead) {
+      return;
+    }
+
+    this.markNotificationAsReadOptimistic(notification);
+    this.notificationService.markAsRead(notification.id).subscribe({
+      error: () => this.notificationService.refresh()
+    });
+  }
+
+  markAllAsRead(): void {
+    if (this.unreadCount === 0) {
+      return;
+    }
+
+    this.markAllAsReadOptimistic();
+    this.notificationService.markAllAsRead().subscribe({
+      error: () => this.notificationService.refresh()
+    });
   }
 
   onItemsPerPageChange(value: number): void {
-    this.itemsPerPage = value;
-    this.currentPage = 1;
-  }
-
-  onPageChange(page: number): void {
-    if (page >= 1 && page <= Math.ceil(this.totalItems / this.itemsPerPage)) {
-      this.currentPage = page;
+    const numericValue = Number(value);
+    if (!isNaN(numericValue) && numericValue > 0) {
+      this.itemsPerPage = numericValue;
+      this.currentPage = 1;
+      this.updatePagination();
     }
   }
 
-  onProposeNewTime(): void {
-    if (this.selectedNotification) {
-      console.log('Proposed new time:', {
-        orderId: this.selectedNotification.orderId,
-        date: this.proposedDate,
-        time: this.proposedTime
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+    this.updatePagination();
+  }
+
+  isSelected(notification: Notification): boolean {
+    return this.selectedNotification?.id === notification.id;
+  }
+
+  isUnread(notification: Notification): boolean {
+    return !notification.isRead;
+  }
+
+  extractOrderId(notification: Notification): string {
+    const metadataOrderIdValue = notification.metadata?.['orderId'];
+    const metadataOrderId = typeof metadataOrderIdValue === 'string'
+      ? metadataOrderIdValue
+      : null;
+
+    if (metadataOrderId && metadataOrderId.trim().length > 0) {
+      return `#${metadataOrderId.trim()}`;
+    }
+
+    const message = notification.message || '';
+    const regex = /([A-Z]{2,}-\d{4}-\d{6}-[A-Z]+)/;
+    const match = message.match(regex);
+    if (match) {
+      return `#${match[1]}`;
+    }
+
+    return '#—';
+  }
+
+  getStatusLabel(notification: Notification): string {
+    const title = notification.title?.trim();
+    if (title) {
+      return title;
+    }
+
+    const type = notification.type?.trim();
+    if (type) {
+      return type;
+    }
+
+    const message = (notification.message || '').trim();
+    if (!message) {
+      return '—';
+    }
+
+    const firstSentence = message.split('.').map(part => part.trim()).find(Boolean);
+    return firstSentence || message;
+  }
+
+  getFormattedDate(notification: Notification): string {
+    const date = new Date(notification.createdAt);
+    return date.toLocaleDateString(undefined, {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  getRelativeTime(notification: Notification): string {
+    const created = new Date(notification.createdAt).getTime();
+    const now = Date.now();
+    const diffMs = now - created;
+    const diffMinutes = Math.round(diffMs / 60000);
+
+    if (diffMinutes <= 1) {
+      return 'Just now';
+    }
+    if (diffMinutes < 60) {
+      return `${diffMinutes} min${diffMinutes === 1 ? '' : 's'} ago`;
+    }
+
+    const diffHours = Math.round(diffMinutes / 60);
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    }
+
+    const diffDays = Math.round(diffHours / 24);
+    if (diffDays < 7) {
+      return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    }
+
+    return new Date(notification.createdAt).toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  trackByNotification(_: number, notification: Notification): number {
+    return notification.id;
+  }
+
+  private applyFilter(resetPage: boolean = false): void {
+    this.totalCount = this.notifications.length;
+    const read = this.notifications.filter(notification => notification.isRead).length;
+    this.readCount = read;
+    this.unreadCount = this.totalCount - read;
+
+    switch (this.activeFilter) {
+      case 'unread':
+        this.filteredNotifications = this.notifications.filter(notification => !notification.isRead);
+        break;
+      case 'read':
+        this.filteredNotifications = this.notifications.filter(notification => notification.isRead);
+        break;
+      default:
+        this.filteredNotifications = [...this.notifications];
+    }
+
+    if (resetPage) {
+      this.currentPage = 1;
+    }
+
+    if (this.filteredNotifications.length === 0) {
+      this.selectNotification(null);
+      this.updatePagination();
+      return;
+    }
+
+    if (this.pendingSelectionId) {
+      const matching = this.filteredNotifications.find(notification => notification.id === this.pendingSelectionId);
+      if (matching) {
+        this.selectNotification(matching);
+        this.pendingSelectionId = null;
+      }
+    }
+
+    if (!this.selectedNotification || !this.filteredNotifications.some(notification => notification.id === this.selectedNotification?.id)) {
+      this.selectNotification(this.filteredNotifications[0]);
+    }
+
+    this.updatePagination();
+  }
+
+  private updatePagination(): void {
+    const totalPages = this.totalPages;
+    if (this.currentPage > totalPages) {
+      this.currentPage = totalPages;
+    }
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    this.pagedNotifications = this.filteredNotifications.slice(start, start + this.itemsPerPage);
+  }
+
+  private selectNotification(notification: Notification | null): void {
+    this.selectedNotification = notification;
+
+    if (!notification) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { notificationId: null },
+        queryParamsHandling: 'merge'
       });
-      // TODO: Call API to propose new time
-      this.closeDetailView();
     }
   }
 
-  onConfirmPickup(): void {
-    if (this.selectedNotification) {
-      console.log('Confirmed pickup for:', this.selectedNotification.orderId);
-      // TODO: Call API to confirm pickup
-      this.closeDetailView();
-    }
-  }
-
-  private updateRoute(orderId: string): void {
+  private updateRoute(notificationId: number): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { orderId },
+      queryParams: { notificationId },
       queryParamsHandling: 'merge'
     });
   }
 
-  private clearRoute(): void {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {}
+  private markNotificationAsReadOptimistic(notification: Notification): void {
+    if (!notification || notification.isRead) {
+      return;
+    }
+
+    const id = notification.id;
+
+    this.notifications = this.notifications.map(item => {
+      if (item.id === id && !item.isRead) {
+        return { ...item, isRead: true };
+      }
+      return item;
     });
+
+    this.filteredNotifications = this.filteredNotifications.map(item => {
+      if (item.id === id && !item.isRead) {
+        return { ...item, isRead: true };
+      }
+      return item;
+    });
+
+    if (this.selectedNotification?.id === id && !this.selectedNotification.isRead) {
+      this.selectedNotification = { ...this.selectedNotification, isRead: true };
+    }
+
+    this.pendingSelectionId = id;
+    this.applyFilter();
+  }
+
+  private markAllAsReadOptimistic(): void {
+    if (this.unreadCount === 0) {
+      return;
+    }
+
+    this.notifications = this.notifications.map(item => ({ ...item, isRead: true }));
+    this.filteredNotifications = this.filteredNotifications.map(item => ({ ...item, isRead: true }));
+    if (this.selectedNotification && !this.selectedNotification.isRead) {
+      this.selectedNotification = { ...this.selectedNotification, isRead: true };
+    }
+
+    this.pendingSelectionId = this.selectedNotification?.id ?? null;
+    this.applyFilter();
   }
 }
