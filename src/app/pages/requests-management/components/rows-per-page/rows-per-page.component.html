@@ -1,5 +1,5 @@
 <div class="flex items-center gap-2">
-  <span class="text-sm text-[var(--color-text)]">Showing</span>
+  <span class="text-sm text-[var(--color-text)]">Showing {{ displayCount }}</span>
   <select
     [(ngModel)]="rowsPerPage"
     (ngModelChange)="onRowsPerPageChange($event)"

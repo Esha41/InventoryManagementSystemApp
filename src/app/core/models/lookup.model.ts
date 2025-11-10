@@ -50,6 +50,5 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Unit', displayName: 'Units', apiEndpoint: 'Unit', hasCode: false },
   { name: 'Rank', displayName: 'Ranks', apiEndpoint: 'Rank', hasCode: false },
   { name: 'Employee', displayName: 'Employees', apiEndpoint: 'Employee', hasCode: false },
-  { name: 'WorkFlowType', displayName: 'Workflow Types', apiEndpoint: 'WorkFlowType', hasCode: false }
 ];
 

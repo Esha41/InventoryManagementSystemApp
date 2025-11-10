@@ -72,6 +72,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
   showToast = false;
+  formSubmitted = false; // Track if form has been submitted to show validation
 
   constructor(
     private translationService: TranslationService,
@@ -155,8 +156,17 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    // Mark form as submitted to trigger validation highlighting
+    this.formSubmitted = true;
+
     if (!this.validateForm()) {
-      this.errorMessage = 'Please fill in all required fields';
+      // Scroll to error message
+      setTimeout(() => {
+        const errorElement = document.querySelector('.bg-red-100');
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
 
@@ -164,31 +174,51 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.successMessage = null;
 
-    const ammunitionDto: AmmunitionCreateDto = {
-      name: this.assetForm.name,
-      partNo: this.assetForm.partNo,
-      itemNo: this.assetForm.itemNo,
-      batchNo: this.assetForm.batchNo,
+    // Build DTO matching backend expectations
+    const ammunitionDto: any = {
+      name: this.assetForm.name.trim(),
+      partNo: this.assetForm.partNo.trim(),
+      itemNo: this.assetForm.itemNo.trim(),
+      batchNo: this.assetForm.batchNo.trim(),
       hccId: parseInt(this.assetForm.hccId),
-      bulletDiameter: parseFloat(this.assetForm.bulletDiameter) || 0,
+      bulletDiameter: parseFloat(this.assetForm.bulletDiameter),
       bulletDiameterUnitId: parseInt(this.assetForm.bulletDiameterUnitId),
-      caseLength: parseFloat(this.assetForm.caseLength) || 0,
+      caseLength: parseFloat(this.assetForm.caseLength),
       caseLengthUnitId: parseInt(this.assetForm.caseLengthUnitId),
       isLinked: this.assetForm.isLinked === 'true',
-      primer: this.assetForm.primer,
-      totalWeight: parseFloat(this.assetForm.totalWeight) || 0,
-      nsn: this.assetForm.nsn ? this.assetForm.nsn.trim() : undefined,
+      primer: this.assetForm.primer.trim(),
+      totalWeight: parseFloat(this.assetForm.totalWeight),
       caseTypeId: parseInt(this.assetForm.caseTypeId),
       propellantId: parseInt(this.assetForm.propellantId),
       compatibilityId: parseInt(this.assetForm.compatibilityId),
       hazardDivisionId: parseInt(this.assetForm.hazardDivisionId),
-      readyForIssue: this.assetForm.readyForIssue,
-      lot: 0,
-      natureOptionId: this.assetForm.natureOptionId ? parseInt(this.assetForm.natureOptionId) : undefined,
-      primaryPurposId: this.assetForm.primaryPurposId ? parseInt(this.assetForm.primaryPurposId) : undefined,
-      projectileColorId: this.assetForm.projectileColorId ? parseInt(this.assetForm.projectileColorId) : undefined,
-      projectailMaterialId: this.assetForm.projectailMaterialId ? parseInt(this.assetForm.projectailMaterialId) : undefined
+      readyForIssue: this.assetForm.readyForIssue
     };
+
+    // Add optional fields only if they have values
+    if (this.assetForm.nsn && this.assetForm.nsn.trim()) {
+      ammunitionDto.nsn = this.assetForm.nsn.trim();
+    }
+
+    if (this.assetForm.expiryDate) {
+      ammunitionDto.expiryDate = this.assetForm.expiryDate;
+    }
+
+    if (this.assetForm.natureOptionId && parseInt(this.assetForm.natureOptionId) > 0) {
+      ammunitionDto.natureOptionId = parseInt(this.assetForm.natureOptionId);
+    }
+
+    if (this.assetForm.primaryPurposId && parseInt(this.assetForm.primaryPurposId) > 0) {
+      ammunitionDto.primaryPurposId = parseInt(this.assetForm.primaryPurposId);
+    }
+
+    if (this.assetForm.projectileColorId && parseInt(this.assetForm.projectileColorId) > 0) {
+      ammunitionDto.projectileColorId = parseInt(this.assetForm.projectileColorId);
+    }
+
+    if (this.assetForm.projectailMaterialId && parseInt(this.assetForm.projectailMaterialId) > 0) {
+      ammunitionDto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
+    }
 
     this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', ammunitionDto)
       .pipe(takeUntil(this.destroy$))
@@ -223,19 +253,138 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   validateForm(): boolean {
-    return !!(
-      this.assetForm.name &&
-      this.assetForm.itemNo &&
-      this.assetForm.partNo &&
-      this.assetForm.hccId &&
-      this.assetForm.bulletDiameterUnitId &&
-      this.assetForm.caseLengthUnitId &&
-      this.assetForm.nsn.trim() &&
-      this.assetForm.caseTypeId &&
-      this.assetForm.propellantId &&
-      this.assetForm.compatibilityId &&
-      this.assetForm.hazardDivisionId
-    );
+    // Clear previous error
+    this.errorMessage = null;
+
+    // Required field validations matching backend
+    if (!this.assetForm.name || this.assetForm.name.trim().length === 0) {
+      this.errorMessage = 'Name is required';
+      return false;
+    }
+    if (this.assetForm.name.length > 200) {
+      this.errorMessage = 'Name cannot exceed 200 characters';
+      return false;
+    }
+
+    if (!this.assetForm.itemNo || this.assetForm.itemNo.trim().length === 0) {
+      this.errorMessage = 'Item number is required';
+      return false;
+    }
+    if (this.assetForm.itemNo.length > 100) {
+      this.errorMessage = 'Item number cannot exceed 100 characters';
+      return false;
+    }
+
+    if (!this.assetForm.batchNo || this.assetForm.batchNo.trim().length === 0) {
+      this.errorMessage = 'Batch number is required';
+      return false;
+    }
+    if (this.assetForm.batchNo.length > 100) {
+      this.errorMessage = 'Batch number cannot exceed 100 characters';
+      return false;
+    }
+
+    if (!this.assetForm.hccId || parseInt(this.assetForm.hccId) <= 0) {
+      this.errorMessage = 'HCC is required';
+      return false;
+    }
+
+    if (this.assetForm.partNo && this.assetForm.partNo.length > 100) {
+      this.errorMessage = 'Part number cannot exceed 100 characters';
+      return false;
+    }
+
+    // Numeric validations
+    const bulletDiameter = parseFloat(this.assetForm.bulletDiameter);
+    if (!this.assetForm.bulletDiameter || isNaN(bulletDiameter) || bulletDiameter <= 0) {
+      this.errorMessage = 'Bullet diameter must be greater than 0';
+      return false;
+    }
+
+    if (!this.assetForm.bulletDiameterUnitId || parseInt(this.assetForm.bulletDiameterUnitId) <= 0) {
+      this.errorMessage = 'Bullet diameter unit is required';
+      return false;
+    }
+
+    const caseLength = parseFloat(this.assetForm.caseLength);
+    if (!this.assetForm.caseLength || isNaN(caseLength) || caseLength <= 0) {
+      this.errorMessage = 'Case length must be greater than 0';
+      return false;
+    }
+
+    if (!this.assetForm.caseLengthUnitId || parseInt(this.assetForm.caseLengthUnitId) <= 0) {
+      this.errorMessage = 'Case length unit is required';
+      return false;
+    }
+
+    if (!this.assetForm.primer || this.assetForm.primer.trim().length === 0) {
+      this.errorMessage = 'Primer is required';
+      return false;
+    }
+
+    if (this.assetForm.primer && this.assetForm.primer.length > 100) {
+      this.errorMessage = 'Primer cannot exceed 100 characters';
+      return false;
+    }
+
+    const totalWeight = parseFloat(this.assetForm.totalWeight);
+    if (!this.assetForm.totalWeight || isNaN(totalWeight) || totalWeight <= 0) {
+      this.errorMessage = 'Total weight must be greater than 0';
+      return false;
+    }
+
+    if (!this.assetForm.caseTypeId || parseInt(this.assetForm.caseTypeId) <= 0) {
+      this.errorMessage = 'Case type is required';
+      return false;
+    }
+
+    if (!this.assetForm.propellantId || parseInt(this.assetForm.propellantId) <= 0) {
+      this.errorMessage = 'Propellant is required';
+      return false;
+    }
+
+    if (!this.assetForm.compatibilityId || parseInt(this.assetForm.compatibilityId) <= 0) {
+      this.errorMessage = 'Compatibility is required';
+      return false;
+    }
+
+    if (!this.assetForm.hazardDivisionId || parseInt(this.assetForm.hazardDivisionId) <= 0) {
+      this.errorMessage = 'Hazard division is required';
+      return false;
+    }
+
+    // Expiry date validation (must be in the future if provided)
+    if (this.assetForm.expiryDate) {
+      const expiryDate = new Date(this.assetForm.expiryDate);
+      const now = new Date();
+      if (expiryDate <= now) {
+        this.errorMessage = 'Expiry date must be in the future';
+        return false;
+      }
+    }
+
+    // Optional field validations (only validate if provided)
+    if (this.assetForm.natureOptionId && parseInt(this.assetForm.natureOptionId) <= 0) {
+      this.errorMessage = 'Nature option ID must be greater than 0 when provided';
+      return false;
+    }
+
+    if (this.assetForm.primaryPurposId && parseInt(this.assetForm.primaryPurposId) <= 0) {
+      this.errorMessage = 'Primary purpose ID must be greater than 0 when provided';
+      return false;
+    }
+
+    if (this.assetForm.projectileColorId && parseInt(this.assetForm.projectileColorId) <= 0) {
+      this.errorMessage = 'Projectile color ID must be greater than 0 when provided';
+      return false;
+    }
+
+    if (this.assetForm.projectailMaterialId && parseInt(this.assetForm.projectailMaterialId) <= 0) {
+      this.errorMessage = 'Projectile material ID must be greater than 0 when provided';
+      return false;
+    }
+
+    return true;
   }
 
   onCancel(): void {
@@ -282,6 +431,28 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     reader.readAsDataURL(file);
   }
 
+  /**
+   * Get CSS classes for input field based on validation state
+   */
+  getInputClass(isInvalid: boolean | null | undefined, isDirty: boolean | null | undefined, isTouched: boolean | null | undefined): string {
+    const baseClasses = 'flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2';
+    
+    const showError = !!isInvalid && (!!isDirty || !!isTouched || this.formSubmitted);
+
+    if (showError) {
+      return `${baseClasses} border-red-500 focus:ring-red-500`;
+    }
+    
+    return `${baseClasses} focus:ring-[var(--color-brand)]`;
+  }
+
+  /**
+   * Check if validation error should be shown
+   */
+  shouldShowError(isInvalid: boolean | null | undefined, isDirty: boolean | null | undefined, isTouched: boolean | null | undefined): boolean {
+    return !!isInvalid && (!!isDirty || !!isTouched || this.formSubmitted);
+  }
+
   private resetForm(): void {
     this.assetForm = {
       name: '',
@@ -311,5 +482,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     };
     this.previewUrl = null;
     this.errorMessage = null;
+    this.formSubmitted = false; // Reset validation state
   }
 }

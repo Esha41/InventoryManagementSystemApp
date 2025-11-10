@@ -145,12 +145,6 @@ export const routes: Routes = [
         data: { permissions: ['asset.view'] }
       },
       {
-        path: 'search-inventory',
-        loadComponent: () => import('@pages/search-inventory/search-inventory.component').then(m => m.SearchInventoryComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['inventory.view'] }
-      },
-      {
         path: 'depot-management',
         loadComponent: () => import('@pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
         canActivate: [permissionGuard],
