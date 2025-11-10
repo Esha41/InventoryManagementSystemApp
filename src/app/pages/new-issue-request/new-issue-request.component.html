@@ -34,12 +34,10 @@
         [caseLengths]="caseLengths"
         [linkedOptions]="linkedOptions"
         [natureOptions]="natureOptions"
-        [orderPriorities]="orderPriorities"
         [selectedBulletDiameter]="selectedBulletDiameter"
         [selectedCaseLength]="selectedCaseLength"
         [selectedLinked]="selectedLinked"
         [selectedNature]="selectedNature"
-        [selectedPriority]="selectedPriority"
         [canProceed]="canProceedFromSelection"
         (cartridgeClick)="onCartridgeClick($event)"
         (addSelection)="onCartridgeAdded($event)"
@@ -50,7 +48,7 @@
         (caseLengthChange)="onCaseLengthChange($event)"
         (linkedChange)="onLinkedChange($event)"
         (natureChange)="onNatureChange($event)"
-        (priorityChange)="selectedPriority = $event">
+        (removeSelection)="onRemoveSelectedCartridge($event)">
       </app-cartridge-list>
     </ng-container>
 
@@ -78,6 +76,8 @@
     [numberOfOtherRanks]="numberOfOtherRanks"
     [usageDate]="usageDate"
     [usageTime]="usageTime"
+    [orderPriority]="orderPriority"
+    [orderPriorities]="orderPriorities"
     [totalReserve]="totalReserve"
     [availableReserve]="availableReserve"
     [orderedQuantity]="orderedQuantity"
@@ -92,6 +92,7 @@
     (numberOfOtherRanksChange)="numberOfOtherRanks = $event"
     (usageDateChange)="usageDate = $event"
     (usageTimeChange)="usageTime = $event"
+    (orderPriorityChange)="orderPriority = $event"
     (previous)="onPrevious()"
     (next)="onNext()">
   </app-usage-form>
@@ -102,7 +103,7 @@
     [requesterName]="requesterName"
     [requesterComments]="requesterComments"
     [orderType]="orderType"
-    [selectedPriority]="selectedPriority"
+    [orderPriority]="orderPriority"
     [fromReserve]="fromReserve"
     [usePurpose]="usePurpose"
     [usageDate]="usageDate"

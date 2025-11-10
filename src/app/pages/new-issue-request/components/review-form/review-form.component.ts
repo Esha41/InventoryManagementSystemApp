@@ -15,7 +15,7 @@ export class ReviewFormComponent {
   @Input() requesterName: string = '';
   @Input() requesterComments: string = '';
   @Input() orderType: string = '';
-  @Input() selectedPriority: string = '';
+  @Input() orderPriority: string = '';
   @Input() fromReserve: string = '';
   @Input() usePurpose: string = '';
   @Input() usageDate: string = '';
