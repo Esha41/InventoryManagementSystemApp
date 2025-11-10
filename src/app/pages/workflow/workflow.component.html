@@ -41,12 +41,9 @@
   <!-- Table -->
   <div class="bg-white" *ngIf="!loading">
     <div class="overflow-x-auto">
-      <table class="min-w-full">
+        <table class="min-w-full">
         <thead class="bg-white border-b border-gray-200">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              {{ 'workflow.id' | translate }}
-            </th>
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {{ 'workflow.name' | translate }}
             </th>
@@ -59,16 +56,15 @@
             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {{ 'workflow.status' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              {{ 'workflow.actions' | translate }}
+            <th class="px-6 py-3">
+              <div class="actions-header">
+                {{ 'workflow.actions' | translate }}
+              </div>
             </th>
           </tr>
         </thead>
         <tbody class="bg-white">
           <tr *ngFor="let workflow of paginatedWorkflows; let i = index" [class.bg-gray-50]="i % 2 === 1">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-              {{ workflow.id }}
-            </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ workflow.name }}
             </td>
@@ -86,25 +82,28 @@
                 {{ workflow.status }}
               </button>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right">
-              <div class="flex items-center gap-2 justify-end">
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <div class="flex items-center gap-2 justify-center">
                 <button
+                  type="button"
                   (click)="onViewDetails(workflow.id)"
-                  class="w-8 h-8 rounded border-2 border-green-300 bg-green-100 flex items-center justify-center hover:border-green-400 hover:bg-green-200 transition-colors"
+                  class="action-icon-button"
                   title="{{ 'workflow.view' | translate }}">
-                  <lucide-angular [img]="Eye" class="h-4 w-4 text-green-700"></lucide-angular>
+                  <lucide-angular [img]="Eye" class="h-4 w-4 action-icon"></lucide-angular>
                 </button>
                 <button
+                  type="button"
                   (click)="onEdit(workflow.id)"
-                  class="w-8 h-8 rounded border-2 border-blue-300 bg-blue-100 flex items-center justify-center hover:border-blue-400 hover:bg-blue-200 transition-colors"
+                  class="action-icon-button"
                   title="{{ 'workflow.edit' | translate }}">
-                  <lucide-angular [img]="FileEdit" class="h-4 w-4 text-blue-700"></lucide-angular>
+                  <lucide-angular [img]="FileEdit" class="h-4 w-4 action-icon"></lucide-angular>
                 </button>
                 <button
+                  type="button"
                   (click)="onDelete(workflow.id)"
-                  class="w-8 h-8 rounded border-2 border-red-300 bg-red-100 flex items-center justify-center hover:border-red-400 hover:bg-red-200 transition-colors"
+                  class="action-icon-button action-icon-button-danger"
                   title="{{ 'common.delete' | translate }}">
-                  <svg class="h-4 w-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-4 w-4 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2" />
                   </svg>
                 </button>
