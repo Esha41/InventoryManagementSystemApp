@@ -9,13 +9,12 @@ import { APIOperationResponse } from '@models/api-response.model';
 
 const ADMIN_ROLE_KEYWORDS = ['admin', 'administrator', 'superadmin', 'super admin'];
 const ADMIN_PERMISSION_HINTS = [
-  'user.view',
-  'user.manage',
-  'role.view',
-  'role.manage',
-  'role.edit',
-  'permissions.manage',
-  'permissions.role'
+  'Permissions.Roles.Page',
+  'Permissions.Roles.View',
+  'Permissions.Roles.Edit',
+  'Permissions.Roles.Create',
+  'Permissions.Roles.Delete',
+  'Permissions.Roles.Manage'
 ];
 
 @Injectable({
@@ -29,10 +28,6 @@ export class UserContextService {
     private readonly apiService: ApiService
   ) {}
 
-  /**
-   * Returns detailed information about the currently authenticated user.
-   * The result is cached for the lifetime of the service unless forceRefresh is true.
-   */
   getCurrentUserDetails(forceRefresh: boolean = false): Observable<BackendUserDto | null> {
     const authUser = this.authService.getCurrentUser();
     if (!authUser?.id) {
@@ -45,8 +40,7 @@ export class UserContextService {
 
     if (!this.cachedUserDetails$) {
       this.cachedUserDetails$ = defer(() => this.fetchCurrentUserProfile()).pipe(
-        catchError(error => {
-          console.error('Failed to load current user details. Falling back to token payload.', error);
+        catchError(() => {
           const fallback = this.buildDetailsFromTokenPayload();
           return of(fallback);
         }),
@@ -58,17 +52,10 @@ export class UserContextService {
     return this.cachedUserDetails$;
   }
 
-  /**
-   * Clears the cached user details so they will be reloaded on next request.
-   */
   clearCache(): void {
     this.cachedUserDetails$ = undefined;
   }
 
-  /**
-   * Determines whether the current user should be treated as an administrator.
-   * Uses both role names and known permission hints.
-   */
   isAdminUser(): boolean {
     const authUser = this.authService.getCurrentUser();
     if (!authUser) {
@@ -78,6 +65,7 @@ export class UserContextService {
     const hasAdminRole = (authUser.roles || []).some(role =>
       ADMIN_ROLE_KEYWORDS.some(keyword => role?.toLowerCase().includes(keyword))
     );
+    
     if (hasAdminRole) {
       return true;
     }
@@ -85,10 +73,6 @@ export class UserContextService {
     return this.authService.hasAnyPermission(ADMIN_PERMISSION_HINTS);
   }
 
-  /**
-   * Attempts to build a minimal BackendUserDto using the decoded JWT payload.
-   * Useful when the caller lacks permission to fetch full user details.
-   */
   private buildDetailsFromTokenPayload(): BackendUserDto | null {
     const payload = this.decodeTokenPayload();
     if (!payload) {
@@ -143,9 +127,6 @@ export class UserContextService {
     };
   }
 
-  /**
-   * Decodes the JWT payload stored in localStorage.
-   */
   private decodeTokenPayload(): any | null {
     const token = localStorage.getItem('auth_token');
     if (!token) {
@@ -159,8 +140,7 @@ export class UserContextService {
       }
       const decoded = atob(payloadBase64);
       return JSON.parse(decoded);
-    } catch (error) {
-      console.error('Failed to decode JWT payload for current user.', error);
+    } catch {
       return null;
     }
   }

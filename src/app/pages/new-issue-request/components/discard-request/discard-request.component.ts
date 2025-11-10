@@ -16,6 +16,7 @@ import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 
@@ -61,18 +62,16 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   // Discard items array
   discardItems: DiscardItemForm[] = [];
 
-  // Dropdown options
   departments: LookupItem[] = [];
-  requesters: LookupItem[] = []; // Employees from Lookup API
+  requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
-  items: any[] = []; // Ammunition items
+  items: any[] = [];
   priorityOptions = [
     { value: 1, labelKey: 'discardRequest.high' },
     { value: 2, labelKey: 'discardRequest.medium' },
     { value: 3, labelKey: 'discardRequest.low' }
   ];
 
-  // Loading states
   isLoading = false;
   isLoadingDepartments = false;
   isLoadingRequesters = false;
@@ -82,7 +81,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
-  // Searchable dropdown state for discard items
   itemDropdownSearchTerms: string[] = [];
   itemDropdownOpen: boolean[] = [];
 
@@ -107,13 +105,14 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private router: Router,
     private userContextService: UserContextService,
-    private backendAuthService: BackendAuthService
+    private backendAuthService: BackendAuthService,
+    private backendUserService: BackendUserService
   ) {}
 
   ngOnInit(): void {
     this.initializeUserContext();
     this.loadDropdownData();
-    this.addDiscardItem(); // Add one empty item row by default
+    this.addDiscardItem();
   }
 
   ngOnDestroy(): void {
@@ -150,9 +149,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Load all dropdown data
-   */
   private loadDropdownData(): void {
     this.loadDepartments();
     this.loadRequesters();
@@ -160,9 +156,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
-  /**
-   * Load departments from LookupService
-   */
   private loadDepartments(): void {
     this.isLoadingDepartments = true;
     this.lookupService.getDepartments()
@@ -174,17 +167,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.updateLockedDepartmentName();
           this.applyLockedDepartment();
         },
-        error: (error) => {
-          console.error('Failed to load departments:', error);
+        error: () => {
           this.toastService.error('Failed to load departments');
           this.isLoadingDepartments = false;
         }
       });
   }
 
-  /**
-   * Load requesters (employees) from LookupService
-   */
   private loadRequesters(): void {
     this.isLoadingRequesters = true;
     if (!this.isAdminUser) {
@@ -193,25 +182,26 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.lookupService.getLookupItems('Employee')
+    this.backendUserService.getUsers()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (employees) => {
-          this.requesters = employees;
+        next: (users) => {
+          this.requesters = users.map(user => ({
+            id: user.employeeId || Number(user.id) || 0,
+            nameEn: user.nameEn || user.userName || '',
+            nameAr: user.nameAr || user.userName || '',
+            code: user.userName || ''
+          } as LookupItem));
           this.isLoadingRequesters = false;
         },
-        error: (error) => {
-          console.error('Failed to load employees:', error);
-          this.toastService.error('Failed to load employees. The requester field will be disabled.');
+        error: () => {
+          this.toastService.error('Failed to load users.');
           this.requesters = [];
           this.isLoadingRequesters = false;
         }
       });
   }
 
-  /**
-   * Load request purposes for discard type
-   */
   private loadRequestPurposes(): void {
     this.isLoadingRequestPurposes = true;
     this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(
@@ -225,17 +215,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           }
           this.isLoadingRequestPurposes = false;
         },
-        error: (error) => {
-          console.error('Failed to load request purposes:', error);
+        error: () => {
           this.toastService.error('Failed to load request purposes');
           this.isLoadingRequestPurposes = false;
         }
       });
   }
 
-  /**
-   * Load items from AmmunitionService
-   */
   private loadItems(): void {
     this.isLoadingItems = true;
     this.ammunitionService.getAll()
@@ -245,17 +231,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.items = items || [];
           this.isLoadingItems = false;
         },
-        error: (error) => {
-          console.error('Failed to load items:', error);
+        error: () => {
           this.toastService.error('Failed to load items');
           this.isLoadingItems = false;
         }
       });
   }
 
-  /**
-   * Add a new discard item row
-   */
   addDiscardItem(): void {
     this.discardItems.push({
       itemId: null,
@@ -266,22 +248,15 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.itemDropdownOpen.push(false);
   }
 
-  /**
-   * Remove a discard item row
-   */
   removeDiscardItem(index: number): void {
     this.discardItems.splice(index, 1);
     this.itemDropdownSearchTerms.splice(index, 1);
     this.itemDropdownOpen.splice(index, 1);
   }
 
-  /**
-   * Validate form
-   */
   private validateForm(): void {
     this.errors = {};
 
-    // Validate required fields
     if (!this.departmentId) {
       this.errors['departmentId'] = 'Department is required';
     }
@@ -290,13 +265,11 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       this.errors['requestPurposeId'] = 'Request Purpose is required';
     }
 
-    // Validate discard items
     const validItems = this.discardItems.filter(item => item.itemId && item.quantity);
     if (validItems.length === 0) {
       this.errors['discardItems'] = 'At least one discard item is required';
     }
 
-    // Validate each item
     this.discardItems.forEach((item, index) => {
       if (item.itemId && !item.quantity) {
         this.errors[`discardItems.${index}.quantity`] = 'Quantity is required';
@@ -375,9 +348,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     return String(optionValue) === String(itemId);
   }
 
-  /**
-   * Handle form submission
-   */
   onSendRequest(form: NgForm): void {
     this.isSubmitted = true;
     this.validateForm();
@@ -387,7 +357,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Build CreateDiscardDto with explicit number conversions
     const createDiscardDto: CreateDiscardDto = {
       reason: this.reason || undefined,
       priority: Number(this.priority),
@@ -404,7 +373,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
         }))
     };
 
-    // Submit to backend
     this.isLoading = true;
     this.discardService.createDiscard(createDiscardDto)
       .pipe(takeUntil(this.destroy$))
@@ -414,18 +382,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.resetForm();
           this.isLoading = false;
 
-          // Redirect to dashboard after successful creation
           setTimeout(() => {
             this.router.navigate(['/dashboard']);
-          }, 1000); // Small delay to show success message
+          }, 1000);
         },
         error: (error) => {
-          console.error('Failed to create discard request:', error);
-
-          // Extract error message from response
           let errorMessage = 'Failed to create discard request';
           if (error.error?.errors) {
-            // Handle validation errors
             const errors = error.error.errors;
             const errorMessages: string[] = [];
 
@@ -521,10 +484,21 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       this.updateLockedDepartmentName();
     }
 
+    // Use employeeId if available, otherwise try to get userId from currentUser
     const requesterId = this.toNumber(context.employeeId);
     if (requesterId !== null) {
       this.preferredRequesterId = requesterId;
       this.applyLockedRequester();
+    } else {
+      // Fallback: use current user's ID if employeeId is not set
+      const currentUser = this.backendAuthService.getCurrentUser();
+      if (currentUser?.id) {
+        const userIdAsNumber = this.toNumber(currentUser.id);
+        if (userIdAsNumber !== null) {
+          this.preferredRequesterId = userIdAsNumber;
+          this.applyLockedRequester();
+        }
+      }
     }
   }
 
@@ -545,9 +519,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  /**
-   * Reset form
-   */
   private resetForm(): void {
     this.reason = '';
     this.priority = 1;
@@ -564,21 +535,15 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.discardItems = [];
     this.itemDropdownOpen = [];
     this.itemDropdownSearchTerms = [];
-    this.addDiscardItem(); // Add one empty item row
+    this.addDiscardItem();
     this.isSubmitted = false;
     this.errors = {};
   }
 
-  /**
-   * Check if field has error
-   */
   hasError(fieldName: string): boolean {
     return this.isSubmitted && !!this.errors[fieldName];
   }
 
-  /**
-   * Get error message for field
-   */
   getError(fieldName: string): string {
     return this.errors[fieldName] || '';
   }
