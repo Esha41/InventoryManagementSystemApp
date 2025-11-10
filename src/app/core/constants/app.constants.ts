@@ -137,7 +137,6 @@ export const ROUTES = {
   FORECAST: '/forecast',
   ADD_ASSET: '/add-asset',
   ASSET_LIST: '/asset-list',
-  SEARCH_INVENTORY: '/search-inventory',
   MANAGE_ADMINS: '/manage-admins',
   ADMIN_ROLES: '/admin-roles',
 

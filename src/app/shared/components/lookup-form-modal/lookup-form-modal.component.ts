@@ -40,12 +40,16 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // When modal opens, reset loading state and form if in create mode
+    // When modal opens, reset loading state and populate/reset form
     if (changes['isOpen'] && this.isOpen) {
       this.isLoading = false; // Reset loading state when modal opens
       this.errorMessage = '';
+      
       if (this.mode === 'create') {
         this.lookupForm?.reset();
+      } else if (this.mode === 'edit' && this.lookupItem && this.lookupForm) {
+        // Repopulate form when modal opens in edit mode
+        this.populateForm();
       }
     }
     

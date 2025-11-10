@@ -52,6 +52,7 @@
           <input
             type="text"
             [(ngModel)]="searchTerm"
+            (ngModelChange)="onFilterChange()"
             [placeholder]="'assetList.searchPlaceholder' | translate"
             class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
           />
@@ -60,6 +61,7 @@
         <!-- HCC Filter -->
         <select
           [(ngModel)]="selectedHcc"
+          (ngModelChange)="onFilterChange()"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
           <option value="">{{ 'assetList.filters.allHcc' | translate }}</option>
@@ -71,6 +73,7 @@
         <!-- Case Type Filter -->
         <select
           [(ngModel)]="selectedCaseType"
+          (ngModelChange)="onFilterChange()"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
           <option value="">{{ 'assetList.filters.allCaseTypes' | translate }}</option>
@@ -82,6 +85,7 @@
         <!-- Hazard Division Filter -->
         <select
           [(ngModel)]="selectedHazardDivision"
+          (ngModelChange)="onFilterChange()"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
           <option value="">{{ 'assetList.filters.allHazardDivisions' | translate }}</option>
@@ -93,6 +97,7 @@
         <!-- Compatibility Filter -->
         <select
           [(ngModel)]="selectedCompatibility"
+          (ngModelChange)="onFilterChange()"
           class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
         >
           <option value="">{{ 'assetList.filters.allCompatibility' | translate }}</option>
@@ -120,79 +125,95 @@
       </div>
 
       <!-- Table -->
-      <div *ngIf="!loading" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-        <table class="w-full">
-          <thead class="bg-[var(--color-background)]">
-            <tr class="border-b border-[var(--color-border)]">
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.name' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.itemNo' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.partNo' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.batchNo' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hcc' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.nsn' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.caseType' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hazardDivision' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.expiryDate' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.status' | translate }}</th>
-              <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white">
-            <tr *ngFor="let asset of filteredAssets" 
-                class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
-              <td class="py-4 px-6">
-                <div class="font-medium text-[var(--color-text)]">{{ asset.name }}</div>
-              </td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.batchNo }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hcc }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
-              <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.expiryDate }}</td>
-              <td class="py-4 px-6">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
-                      [ngClass]="getReadyForIssueColor(asset.readyForIssue)">
-                  {{ getReadyForIssueText(asset.readyForIssue) }}
-                </span>
-              </td>
-              <td class="py-4 px-6">
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    (click)="onView(asset.id)"
-                    class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
-                    [title]="'assetList.actions.viewDetails' | translate"
-                  >
-                    <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
-                  </button>
-                  <button
-                    (click)="onEdit(asset.id)"
-                    class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
-                    [title]="'common.edit' | translate"
-                  >
-                    <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
-                  </button>
-                  <button
-                    (click)="onDelete(asset.id)"
-                    class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
-                    [title]="'common.delete' | translate"
-                  >
-                    <lucide-angular [img]="Trash2" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="filteredAssets.length === 0 && !loading">
-              <td colspan="11" class="text-center py-12">
-                <div class="flex flex-col items-center justify-center">
-                  <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
-                  <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div *ngIf="!loading" class="border border-[var(--color-border)] rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-[var(--color-background)]">
+              <tr class="border-b border-[var(--color-border)]">
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.name' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.itemNo' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.partNo' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.batchNo' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hcc' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.nsn' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.caseType' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hazardDivision' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.expiryDate' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.status' | translate }}</th>
+                <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white">
+              <tr *ngFor="let asset of paginatedAssets" 
+                  class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
+                <td class="py-4 px-6">
+                  <div class="font-medium text-[var(--color-text)]">{{ asset.name }}</div>
+                </td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.batchNo }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hcc }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
+                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.expiryDate }}</td>
+                <td class="py-4 px-6">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
+                        [ngClass]="getReadyForIssueColor(asset.readyForIssue)">
+                    {{ getReadyForIssueText(asset.readyForIssue) }}
+                  </span>
+                </td>
+                <td class="py-4 px-6">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      (click)="onView(asset.id)"
+                      class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
+                      [title]="'assetList.actions.viewDetails' | translate"
+                    >
+                      <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
+                    </button>
+                    <button
+                      (click)="onEdit(asset.id)"
+                      class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
+                      [title]="'common.edit' | translate"
+                    >
+                      <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
+                    </button>
+                    <button
+                      (click)="onDelete(asset.id)"
+                      class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
+                      [title]="'common.delete' | translate"
+                    >
+                      <lucide-angular [img]="Trash2" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredAssets.length === 0 && !loading">
+                <td colspan="11" class="text-center py-12">
+                  <div class="flex flex-col items-center justify-center">
+                    <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
+                    <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="filteredAssets.length > 0" class="px-6 py-4 border-t border-[var(--color-border)] bg-white flex items-center justify-between">
+          <app-rows-per-page
+            [rowsPerPage]="rowsPerPage"
+            [totalItems]="filteredAssets.length"
+            [visibleItems]="paginatedAssets.length"
+            (rowsPerPageChange)="onRowsPerPageChange($event)">
+          </app-rows-per-page>
+
+          <app-pagination
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+        </div>
       </div>
     </div>
   </app-card>

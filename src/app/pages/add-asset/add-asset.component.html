@@ -81,12 +81,12 @@
             type="text"
             [(ngModel)]="assetForm.name"
             name="name"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
             placeholder="Enter ammunition name"
             required
+            maxlength="200"
             #nameModel="ngModel"
           />
-          <span *ngIf="nameModel.invalid && (nameModel.dirty || nameModel.touched)" class="text-sm text-red-600">Name is required</span>
         </div>
 
         <!-- Item No (Required) -->
@@ -96,12 +96,12 @@
             type="text"
             [(ngModel)]="assetForm.itemNo"
             name="itemNo"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
             placeholder="Enter item number"
             required
+            maxlength="100"
             #itemNoModel="ngModel"
           />
-          <span *ngIf="itemNoModel.invalid && (itemNoModel.dirty || itemNoModel.touched)" class="text-sm text-red-600">Item No is required</span>
         </div>
 
         <!-- Part No (Required) -->
@@ -111,23 +111,26 @@
             type="text"
             [(ngModel)]="assetForm.partNo"
             name="partNo"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [class]="getInputClass(partNoModel.invalid, partNoModel.dirty, partNoModel.touched)"
             placeholder="Enter part number"
             required
+            maxlength="100"
             #partNoModel="ngModel"
           />
-          <span *ngIf="partNoModel.invalid && (partNoModel.dirty || partNoModel.touched)" class="text-sm text-red-600">Part No is required</span>
         </div>
 
-        <!-- Batch No -->
+        <!-- Batch No (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Batch No</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Batch No *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.batchNo"
             name="batchNo"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [class]="getInputClass(batchNoModel.invalid, batchNoModel.dirty, batchNoModel.touched)"
             placeholder="Enter batch number"
+            required
+            maxlength="100"
+            #batchNoModel="ngModel"
           />
         </div>
 
@@ -147,9 +150,9 @@
           <span *ngIf="hccModel.invalid && (hccModel.dirty || hccModel.touched)" class="text-sm text-red-600">HCC is required</span>
         </div>
 
-        <!-- Bullet Diameter -->
+        <!-- Bullet Diameter (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Bullet Diameter</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Bullet Diameter *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.bulletDiameter"
@@ -157,7 +160,11 @@
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             placeholder="Enter diameter (e.g., 5.56)"
             step="0.01"
+            min="0.01"
+            required
+            #bulletDiameterModel="ngModel"
           />
+          <span *ngIf="bulletDiameterModel.invalid && (bulletDiameterModel.dirty || bulletDiameterModel.touched)" class="text-sm text-red-600">Bullet diameter is required</span>
         </div>
 
         <!-- Bullet Diameter Unit (Required) -->
@@ -176,9 +183,9 @@
           <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">Diameter unit is required</span>
         </div>
 
-        <!-- Case Length -->
+        <!-- Case Length (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.caseLength"
@@ -186,7 +193,11 @@
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             placeholder="Enter case length (e.g., 45)"
             step="0.01"
+            min="0.01"
+            required
+            #caseLengthModel="ngModel"
           />
+          <span *ngIf="caseLengthModel.invalid && (caseLengthModel.dirty || caseLengthModel.touched)" class="text-sm text-red-600">Case length is required</span>
         </div>
 
         <!-- Case Length Unit (Required) -->
@@ -205,19 +216,16 @@
           <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">Case length unit is required</span>
         </div>
 
-        <!-- NSN (Required) -->
+        <!-- NSN (Optional) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN</label>
           <input
             type="text"
             [(ngModel)]="assetForm.nsn"
             name="nsn"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter NSN"
-            required
-            #nsnModel="ngModel"
+            placeholder="Enter NSN (optional)"
           />
-          <span *ngIf="nsnModel.invalid && (nsnModel.dirty || nsnModel.touched)" class="text-sm text-red-600">NSN is required</span>
         </div>
 
         <!-- Case Type (Required) -->
@@ -284,21 +292,24 @@
           <span *ngIf="hazardModel.invalid && (hazardModel.dirty || hazardModel.touched)" class="text-sm text-red-600">Hazard division is required</span>
         </div>
 
-        <!-- Primer -->
+        <!-- Primer (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primer</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primer *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.primer"
             name="primer"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [class]="getInputClass(primerModel.invalid, primerModel.dirty, primerModel.touched)"
             placeholder="Enter primer type (e.g., Boxer)"
+            required
+            maxlength="100"
+            #primerModel="ngModel"
           />
         </div>
 
-        <!-- Total Weight -->
+        <!-- Total Weight (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Total Weight (g)</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Total Weight (g) *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.totalWeight"
@@ -306,8 +317,11 @@
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             placeholder="Enter weight in grams"
             step="0.01"
-            min="0"
+            min="0.01"
+            required
+            #totalWeightModel="ngModel"
           />
+          <span *ngIf="totalWeightModel.invalid && (totalWeightModel.dirty || totalWeightModel.touched)" class="text-sm text-red-600">Total weight is required</span>
         </div>
 
         <!-- Is Linked -->

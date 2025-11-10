@@ -10,6 +10,8 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { forkJoin } from 'rxjs';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
 
 interface Asset {
   id: string;
@@ -30,7 +32,17 @@ interface Asset {
 @Component({
   selector: 'app-asset-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, CardComponent, ButtonComponent, LucideAngularModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CardComponent,
+    ButtonComponent,
+    LucideAngularModule,
+    TranslateModule,
+    PaginationComponent,
+    RowsPerPageComponent
+  ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
 })
@@ -75,6 +87,10 @@ export class AssetListComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  // Pagination
+  currentPage = 1;
+  rowsPerPage = 10;
 
   constructor(
     private ammunitionService: AmmunitionService,
@@ -136,6 +152,7 @@ export class AssetListComponent implements OnInit {
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
           readyForIssue: x.readyForIssue ?? true
         }));
+        this.currentPage = 1;
         this.loading = false;
       },
       error: (err) => {
@@ -175,6 +192,20 @@ export class AssetListComponent implements OnInit {
     });
   }
 
+  get totalPages(): number {
+    const totalItems = this.filteredAssets.length;
+    if (totalItems === 0) {
+      return 1;
+    }
+    return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  get paginatedAssets(): Asset[] {
+    const filtered = this.filteredAssets;
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return filtered.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
   get filteredAssets(): Asset[] {
     return this.assets.filter(asset => {
       const matchesSearch = !this.searchTerm || 
@@ -192,6 +223,22 @@ export class AssetListComponent implements OnInit {
       return matchesSearch && matchesHcc && matchesCaseType && matchesHazardDivision && 
              matchesCompatibility && matchesPropellant;
     });
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1;
   }
 
   onEdit(assetId: string): void {

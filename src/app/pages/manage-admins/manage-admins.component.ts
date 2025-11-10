@@ -15,6 +15,8 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
 
 @Component({
   selector: 'app-manage-admins',
@@ -28,7 +30,9 @@ import { ToastService } from '@services/toast.service';
     UserFormModalComponent,
     LookupFormModalComponent,
     ConfirmDialogComponent,
-    TranslateModule
+    TranslateModule,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './manage-admins.component.html',
   styleUrls: ['./manage-admins.component.css']
@@ -59,6 +63,10 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   
   searchTerm = '';
+
+  // Pagination
+  currentPage = 1;
+  rowsPerPage = 10;
 
   // Modal states
   showUserModal = false;
@@ -128,6 +136,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.backendUserService.getUsers().subscribe({
       next: (users) => {
         this.users = users;
+        this.currentPage = 1;
         this.isLoading = false;
         // Load roles for each user
         users.forEach(user => this.loadUserRolesData(user.id));
@@ -186,11 +195,29 @@ getUserRoles(userId: string): string[] {
   }
 
   get filteredUsers(): BackendUserDto[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.users;
+    }
+
     return this.users.filter(user => {
-      const matchesSearch = user.userName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
-      return matchesSearch;
+      const name = (user.userName || '').toLowerCase();
+      const email = (user.email || '').toLowerCase();
+      return name.includes(term) || email.includes(term);
     });
+  }
+
+  get paginatedUsers(): BackendUserDto[] {
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredUsers.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  get totalPages(): number {
+    const totalItems = this.filteredUsers.length;
+    if (totalItems === 0) {
+      return 1;
+    }
+    return Math.ceil(totalItems / this.rowsPerPage);
   }
 
   getUserName(user: BackendUserDto): string {
@@ -200,6 +227,22 @@ getUserRoles(userId: string): string[] {
   getUserInitials(user: BackendUserDto): string {
     const name = user.userName || user.email;
     return name.substring(0, 2).toUpperCase();
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+    this.currentPage = page;
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1;
   }
 
   onAddUser(): void {
