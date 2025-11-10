@@ -16,6 +16,7 @@ import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 
@@ -52,27 +53,24 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   
   reason: string = '';
-  priority: number = 1; // 1 = High, 2 = Medium, 3 = Low
+  priority: number = 1;
   notes: string = '';
   departmentId: number | null = null;
   requesterId: number | null = null;
   requestPurposeId: number | null = null;
 
-  // Return items array
   returnItems: ReturnItemForm[] = [];
 
-  // Dropdown options
   departments: LookupItem[] = [];
-  requesters: LookupItem[] = []; // Placeholder - retained for admin fallback
+  requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
-  items: any[] = []; // Ammunition items
+  items: any[] = [];
   priorityOptions = [
     { value: 1, labelKey: 'returnRequest.high' },
     { value: 2, labelKey: 'returnRequest.medium' },
     { value: 3, labelKey: 'returnRequest.low' }
   ];
 
-  // Loading states
   isLoading = false;
   isLoadingDepartments = false;
   isLoadingRequesters = false;
@@ -82,7 +80,6 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
-  // Searchable dropdown state for return items
   itemDropdownSearchTerms: string[] = [];
   itemDropdownOpen: boolean[] = [];
 
@@ -107,13 +104,14 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private router: Router,
     private userContextService: UserContextService,
-    private backendAuthService: BackendAuthService
+    private backendAuthService: BackendAuthService,
+    private backendUserService: BackendUserService
   ) {}
 
   ngOnInit(): void {
     this.initializeUserContext();
     this.loadDropdownData();
-    this.addReturnItem(); // Add one empty item row by default
+    this.addReturnItem();
   }
 
   ngOnDestroy(): void {
@@ -151,7 +149,6 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   private loadDropdownData(): void {
-    // Load departments
     this.isLoadingDepartments = true;
     this.lookupService.getDepartments()
       .pipe(takeUntil(this.destroy$))
@@ -162,8 +159,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.updateLockedDepartmentName();
           this.applyLockedDepartment();
         },
-        error: (error) => {
-          console.error('Failed to load departments:', error);
+        error: () => {
           this.toastService.error('Failed to load departments');
           this.isLoadingDepartments = false;
         }
@@ -177,28 +173,30 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.lookupService.getLookupItems('Employee')
+    this.backendUserService.getUsers()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (employees) => {
-          this.requesters = employees;
+        next: (users) => {
+          this.requesters = users.map(user => ({
+            id: user.employeeId || Number(user.id) || 0,
+            nameEn: user.nameEn || user.userName || '',
+            nameAr: user.nameAr || user.userName || '',
+            code: user.userName || ''
+          } as LookupItem));
           this.isLoadingRequesters = false;
         },
-        error: (error) => {
-          console.error('Failed to load employees:', error);
-          this.toastService.error('Failed to load employees. The requester field will be disabled.');
+        error: () => {
+          this.toastService.error('Failed to load users.');
           this.requesters = [];
           this.isLoadingRequesters = false;
         }
       });
 
-    // Load request purposes for return
     this.isLoadingRequestPurposes = true;
     this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Handle both APIOperationResponse and direct array
           if (response.succeeded && response.data) {
             this.requestPurposes = response.data;
           } else if (Array.isArray(response)) {
@@ -208,14 +206,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           }
           this.isLoadingRequestPurposes = false;
         },
-        error: (error) => {
-          console.error('Failed to load request purposes:', error);
+        error: () => {
           this.toastService.error('Failed to load request purposes');
           this.isLoadingRequestPurposes = false;
         }
       });
 
-    // Load items (ammunition)
     this.isLoadingItems = true;
     this.ammunitionService.getAll()
       .pipe(takeUntil(this.destroy$))
@@ -224,8 +220,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.items = items || [];
           this.isLoadingItems = false;
         },
-        error: (error) => {
-          console.error('Failed to load items:', error);
+        error: () => {
           this.toastService.error('Failed to load items');
           this.isLoadingItems = false;
         }
@@ -340,7 +335,6 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.isSubmitted = true;
     this.errors = {};
 
-    // Validate form
     if (!this.departmentId) {
       this.errors['departmentId'] = 'Department is required';
     }
@@ -353,7 +347,6 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       this.errors['returnItems'] = 'At least one return item is required';
     }
 
-    // Validate return items
     this.returnItems.forEach((item, index) => {
       if (!item.itemId) {
         this.errors[`returnItem_${index}_itemId`] = 'Item is required';
@@ -367,24 +360,22 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Build CreateReturnDto - ensure all numeric values are numbers, not strings
     const createReturnDto: CreateReturnDto = {
       reason: this.reason || undefined,
-      priority: Number(this.priority), // Convert to number
+      priority: Number(this.priority),
       notes: this.notes || undefined,
-      departmentId: Number(this.departmentId!), // Convert to number
-      requesterId: this.requesterId != null ? Number(this.requesterId) : undefined, // Convert to number if exists
-      requestPurposeId: Number(this.requestPurposeId!), // Convert to number
+      departmentId: Number(this.departmentId!),
+      requesterId: this.requesterId != null ? Number(this.requesterId) : undefined,
+      requestPurposeId: Number(this.requestPurposeId!),
       returnItems: this.returnItems
         .filter(item => item.itemId && item.quantity)
         .map(item => ({
-          itemId: Number(item.itemId!), // Convert to number
-          quantity: Number(item.quantity!), // Convert to number
+          itemId: Number(item.itemId!),
+          quantity: Number(item.quantity!),
           notes: item.notes || undefined
         }))
     };
 
-    // Submit to backend
     this.isLoading = true;
     this.returnService.createReturn(createReturnDto)
       .pipe(takeUntil(this.destroy$))
@@ -394,21 +385,16 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.resetForm();
           this.isLoading = false;
           
-          // Redirect to dashboard after successful creation
           setTimeout(() => {
             this.router.navigate(['/dashboard']);
-          }, 1000); // Small delay to show success message
+          }, 1000);
         },
         error: (error) => {
-          console.error('Failed to create return request:', error);
-          
-          // Extract error message from response
           let errorMessage = 'Failed to create return request';
           if (error.error?.errors) {
-            // Handle validation errors
             const errors = error.error.errors;
             const errorMessages: string[] = [];
-            
+
             if (errors.dto) {
               errorMessages.push(...errors.dto);
             }
@@ -509,10 +495,21 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       this.updateLockedDepartmentName();
     }
 
+    // Use employeeId if available, otherwise try to get userId from currentUser
     const requesterId = this.toNumber(context.employeeId);
     if (requesterId !== null) {
       this.preferredRequesterId = requesterId;
       this.applyLockedRequester();
+    } else {
+      // Fallback: use current user's ID if employeeId is not set
+      const currentUser = this.backendAuthService.getCurrentUser();
+      if (currentUser?.id) {
+        const userIdAsNumber = this.toNumber(currentUser.id);
+        if (userIdAsNumber !== null) {
+          this.preferredRequesterId = userIdAsNumber;
+          this.applyLockedRequester();
+        }
+      }
     }
   }
 
@@ -549,7 +546,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.returnItems = [];
     this.itemDropdownSearchTerms = [];
     this.itemDropdownOpen = [];
-    this.addReturnItem(); // Add one empty item row
+    this.addReturnItem();
     this.isSubmitted = false;
     this.errors = {};
   }

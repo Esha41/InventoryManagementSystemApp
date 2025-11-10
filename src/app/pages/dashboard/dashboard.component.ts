@@ -81,24 +81,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Filter dashboard cards based on user permissions and roles
-   * Permissions from ALL user roles are combined by the backend
-   */
   private filterCardsByPermissionsAndRoles(): void {
     const user = this.authService.getCurrentUser();
     const isAuthenticated = this.authService.isAuthenticated();
     const hasPermissionsLoaded = user && user.permissions && user.permissions.length > 0;
     const userRoles = user?.roles || [];
-
-    // Debug logging to verify roles and permissions
-    console.log('Dashboard Filtering - User Info:', {
-      userName: user?.userName,
-      userRoles: userRoles,
-      totalRoles: userRoles.length,
-      totalPermissions: user?.permissions?.length || 0,
-      permissions: user?.permissions?.map(p => p.id || p.claimType) || []
-    });
 
     // If not authenticated, show no cards
     if (!isAuthenticated) {
@@ -108,7 +95,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Filter cards based on permissions and roles
     this.visibleCards = this.allCards.filter(card => {
-      // If card has role requirements, check roles first
       if (card.roles && card.roles.length > 0) {
         const hasRequiredRole = card.roles.some(requiredRole =>
           userRoles.some(userRole => 
@@ -116,56 +102,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
           )
         );
         if (hasRequiredRole) {
-          console.log(`Card "${card.title}" visible: User has required role`);
-          return true; // User has one of the required roles
+          return true;
         }
       }
 
-      // If card has no permissions requirement, show it (unless roles were specified and didn't match)
       if (!card.permissions || card.permissions.length === 0) {
-        // If roles were specified but user doesn't have them, don't show
         return !card.roles || card.roles.length === 0;
       }
 
-      // If permissions haven't loaded yet, don't show cards that require permissions
       if (!hasPermissionsLoaded) {
-        console.log(`Card "${card.title}" hidden: Permissions not loaded yet`);
         return false;
       }
 
-      // Check if user has any of the required permissions from ANY role
-      // The backend should combine permissions from all roles in user.permissions
-      const hasPermission = this.authService.hasAnyPermission(card.permissions);
-      
-      if (hasPermission) {
-        console.log(`Card "${card.title}" visible: User has permission from one of their roles`);
-      } else {
-        console.log(`Card "${card.title}" hidden: User missing required permissions:`, card.permissions);
-        // Debug: Check which permissions user actually has
-        const userPermissionIds = user?.permissions?.map(p => p.id || p.claimType).filter(Boolean) || [];
-        console.log(`User's actual permissions:`, userPermissionIds);
-      }
-      
-      return hasPermission;
-    });
-
-    console.log('Dashboard Filtering Result:', {
-      totalCards: this.allCards.length,
-      visibleCards: this.visibleCards.length,
-      visibleCardTitles: this.visibleCards.map(c => c.title)
+      return this.authService.hasAnyPermission(card.permissions);
     });
   }
 
-  /**
-   * Check if a card should be visible
-   */
   shouldShowCard(card: DashboardCard): boolean {
     return this.visibleCards.includes(card);
   }
 
-  /**
-   * Load return requests from backend and create individual cards for each return
-   */
   private loadOrderRequests(): void {
     if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) {
       return;
@@ -175,7 +131,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders: OrderDto[]) => {
-          const newOrders = orders.filter(order => order.status === 1);
+          let newOrders = orders.filter(order => order.status === 1);
+          const currentUser = this.authService.getCurrentUser();
+          if (currentUser?.departmentId) {
+            newOrders = newOrders.filter(order => order.departmentId === currentUser.departmentId);
+          }
 
           this.orderRequestsMap = new Map(newOrders.map(order => [order.id, order]));
 
@@ -198,17 +158,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
           this.filterCardsByPermissionsAndRoles();
         },
-        error: (error) => {
-          console.error('Failed to load order requests:', error);
+        error: () => {
+          // Silently fail - don't show error to user
         }
       });
   }
 
-  /**
-   * Load return requests from backend and create individual cards for each return
-   */
   private loadReturnRequests(): void {
-    // Check if user has permission to view returns
     if (!this.authService.hasAnyPermission(['Permissions.Return.View', 'Permissions.Return.Page'])) {
       return;
     }
@@ -217,15 +173,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returns: ReturnDto[]) => {
-          // Filter only new returns (status = 1 = New)
-          const newReturns = returns.filter(r => r.status === 1);
-          
-          // Store return requests for modal access
+          let newReturns = returns.filter(r => r.status === 1);
+          const currentUser = this.authService.getCurrentUser();
+          if (currentUser?.departmentId) {
+            newReturns = newReturns.filter(r => r.departmentId === currentUser.departmentId);
+          }
+
           this.returnRequestsMap = new Map(newReturns.map(r => [r.id, r]));
 
-          // Create individual card for each return request
           const returnCards = newReturns.map(r => {
-            // Map return items to ReturnItem format
             const items: ReturnItem[] = (r.requestItems || []).map(item => ({
               itemName: item.itemName || 'Unknown',
               itemNo: item.itemNo || '',
@@ -248,25 +204,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Merge with existing cards (remove old return cards first)
           this.allCards = this.allCards.filter(c => !c.returnRequestId);
           this.allCards.push(...returnCards);
-
-          // Re-filter cards to include the new returns cards
           this.filterCardsByPermissionsAndRoles();
         },
-        error: (error) => {
-          console.error('Failed to load return requests:', error);
-          // Don't show error to user, just log it
-        }
+        error: () => {}
       });
   }
 
-  /**
-   * Load discard requests from backend and create individual cards for each discard
-   */
   private loadDiscardRequests(): void {
-    // Check if user has permission to view discards
     if (!this.authService.hasAnyPermission(['Permissions.Discard.View', 'Permissions.Discard.Page'])) {
       return;
     }
@@ -275,15 +221,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discards: DiscardDto[]) => {
-          // Filter only new discards (status = 1 = New)
-          const newDiscards = discards.filter(d => d.status === 1);
-          
-          // Store discard requests for modal access
+          let newDiscards = discards.filter(d => d.status === 1);
+          const currentUser = this.authService.getCurrentUser();
+          if (currentUser?.departmentId) {
+            newDiscards = newDiscards.filter(d => d.departmentId === currentUser.departmentId);
+          }
+
           this.discardRequestsMap = new Map(newDiscards.map(d => [d.id, d]));
 
-          // Create individual card for each discard request
           const discardCards = newDiscards.map(d => {
-            // Map discard items to ReturnItem format
             const items: ReturnItem[] = (d.requestItems || []).map(item => ({
               itemName: item.itemName || 'Unknown',
               itemNo: item.itemNo || '',
@@ -306,24 +252,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Merge with existing cards (remove old discard cards first)
           this.allCards = this.allCards.filter(c => !c.discardRequestId);
           this.allCards.push(...discardCards);
-
-          // Re-filter cards to include the new discards cards
           this.filterCardsByPermissionsAndRoles();
         },
-        error: (error) => {
-          console.error('Failed to load discard requests:', error);
-          // Don't show error to user, just log it
-        }
+        error: () => {}
       });
   }
 
-
-  /**
-   * Handle view details button click for return requests
-   */
   onViewOrderDetails(orderRequestId: number): void {
     const orderRequest = this.orderRequestsMap.get(orderRequestId);
     if (orderRequest) {
@@ -334,8 +270,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.selectedOrderRequest = order;
             this.isOrderModalOpen = true;
           },
-          error: (error) => {
-            console.error('Failed to fetch order details:', error);
+          error: () => {
             this.selectedOrderRequest = this.orderRequestsMap.get(orderRequestId) || null;
             this.isOrderModalOpen = true;
           }
@@ -346,7 +281,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onViewDetails(returnRequestId: number): void {
     const returnRequest = this.returnRequestsMap.get(returnRequestId);
     if (returnRequest) {
-      // Fetch full details from backend
       this.returnService.getReturnById(returnRequestId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
@@ -354,9 +288,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.selectedReturnRequest = returnRequest;
             this.isReturnModalOpen = true;
           },
-          error: (error) => {
-            console.error('Failed to fetch return request details:', error);
-            // Fallback to cached data if available
+          error: () => {
             this.selectedReturnRequest = this.returnRequestsMap.get(returnRequestId) || null;
             this.isReturnModalOpen = true;
           }
@@ -364,13 +296,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Handle view details button click for discard requests
-   */
   onViewDiscardDetails(discardRequestId: number): void {
     const discardRequest = this.discardRequestsMap.get(discardRequestId);
     if (discardRequest) {
-      // Fetch full details from backend
       this.discardService.getDiscardById(discardRequestId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
@@ -378,9 +306,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.selectedDiscardRequest = discardRequest;
             this.isDiscardModalOpen = true;
           },
-          error: (error) => {
-            console.error('Failed to fetch discard request details:', error);
-            // Fallback to cached data if available
+          error: () => {
             this.selectedDiscardRequest = this.discardRequestsMap.get(discardRequestId) || null;
             this.isDiscardModalOpen = true;
           }
@@ -388,9 +314,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Close return modal
-   */
   closeOrderModal(): void {
     this.isOrderModalOpen = false;
     this.selectedOrderRequest = null;
@@ -401,18 +324,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedReturnRequest = null;
   }
 
-  /**
-   * Close discard modal
-   */
   closeDiscardModal(): void {
     this.isDiscardModalOpen = false;
     this.selectedDiscardRequest = null;
   }
 
-  /**
-   * Format request date similar to backend date format
-   * Format: "DD MMM YYYY" (e.g., "25 JULY 2024")
-   */
   private formatRequestDate(request: ReturnDto | DiscardDto): string {
     return this.formatDashboardDate();
   }
