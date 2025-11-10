@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Shield, Settings, Check, X, Save, RefreshCw } from 'lucide-angular';
 
 import { BackendUserService } from '@services/backend-user.service';
+import { ToastService } from '@services/toast.service';
 import { RoleDto, CrudPermission, AssignPermissionsDto } from '@models/backend-user.model';
 import { CardComponent } from '@components/card/card.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -39,7 +40,8 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   constructor(
     private backendUserService: BackendUserService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastService
   ) {
     this.permissionForm = this.fb.group({});
   }
@@ -268,13 +270,17 @@ getSelectedPermissionsCount(entityName: string): number {
   this.backendUserService.assignPermissionsToRole(this.selectedRole.id, finalPermissions)
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: () => {
+      next: ({ message }) => {
         this.isSaving = false;
-        this.successMessage = 'Permissions saved successfully!';
+        this.successMessage = '';
+        this.errorMessage = '';
+        this.toastService.success(message ?? 'Permissions saved successfully!');
       },
       error: (err) => {
         this.isSaving = false;
-        this.errorMessage = 'Error saving permissions.';
+        this.successMessage = '';
+        this.errorMessage = '';
+        this.toastService.error('Error saving permissions.');
       }
     });
 }

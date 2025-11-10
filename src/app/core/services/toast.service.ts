@@ -19,14 +19,14 @@ export class ToastService {
   /**
    * Show a success toast
    */
-  success(message: string, title?: string, duration: number = 3000): void {
+  success(message: string, title: string = 'Success', duration: number = 3000): void {
     this.show('success', message, title, duration);
   }
 
   /**
    * Show an error toast
    */
-  error(message: string, title?: string, duration: number = 5000): void {
+  error(message: string, title: string = 'Error', duration: number = 5000): void {
     this.show('error', message, title, duration);
   }
 
