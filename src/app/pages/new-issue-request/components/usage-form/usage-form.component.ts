@@ -26,6 +26,8 @@ export class UsageFormComponent {
   @Input() orderedQuantity: number = 0;
   @Input() utilizedQuantity: number = 0;
   @Input() selectedCartridges: Cartridge[] = [];
+  @Input() orderPriority: string = '';
+  @Input() orderPriorities: string[] = ['High Priority', 'Medium Priority', 'Low Priority'];
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
     this.removeCartridge.emit(id);
@@ -39,6 +41,7 @@ export class UsageFormComponent {
   @Output() numberOfOtherRanksChange = new EventEmitter<number | null>();
   @Output() usageDateChange = new EventEmitter<string>();
   @Output() usageTimeChange = new EventEmitter<string>();
+  @Output() orderPriorityChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
@@ -46,7 +49,8 @@ export class UsageFormComponent {
     usePurpose: null,
     usageLocation: null,
     usageDate: null,
-    usageTime: null
+    usageTime: null,
+    orderPriority: null
   };
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
@@ -82,6 +86,10 @@ export class UsageFormComponent {
 
   onUsageTimeChange(value: string): void {
     this.usageTimeChange.emit(value);
+  }
+
+  onOrderPriorityChange(value: string): void {
+    this.orderPriorityChange.emit(value);
   }
 
   onPrevious(): void {
@@ -127,6 +135,11 @@ export class UsageFormComponent {
       isValid = false;
     }
 
+    if (!this.orderPriority || this.orderPriority.trim().length === 0) {
+      this.formErrors.orderPriority = 'newIssueRequest.validation.orderPriorityRequired';
+      isValid = false;
+    }
+
     return isValid;
   }
 }
@@ -136,4 +149,5 @@ type UsageFormErrors = {
   usageLocation: string | null;
   usageDate: string | null;
   usageTime: string | null;
+  orderPriority: string | null;
 };

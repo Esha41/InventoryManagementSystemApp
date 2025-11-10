@@ -43,13 +43,13 @@
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
-
+ 
       <!-- Order Priority -->
       <div class="flex items-center gap-4">
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderPriority' | translate }}</label>
         <input
           type="text"
-          [value]="selectedPriority"
+          [ngModel]="orderPriority"
           placeholder="High Priority"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">

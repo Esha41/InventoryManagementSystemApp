@@ -60,13 +60,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   caseLengths: string[] = [];
   linkedOptions: string[] = ['Linked', 'Not Linked'];
   natureOptions: string[] = [];
-  orderPriorities = ['High Priority', 'Medium Priority', 'Low Priority'];
+  orderPriorities: string[] = ['High Priority', 'Medium Priority', 'Low Priority'];
 
   selectedBulletDiameter = '';
   selectedCaseLength = '';
   selectedLinked = '';
   selectedNature = '';
-  selectedPriority = '';
 
   private allCartridges: Cartridge[] = [];
   filteredCartridges: Cartridge[] = [];
@@ -111,9 +110,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   get canProceedFromSelection(): boolean {
     const hasSelection = this.selectedEntries.length > 0;
-    const hasPriority = !!this.selectedPriority;
     const quantitiesValid = this.selectedEntries.every(entry => entry.quantity > 0);
-    return hasSelection && hasPriority && quantitiesValid;
+    return hasSelection && quantitiesValid;
   }
 
   ngOnInit(): void {
@@ -304,7 +302,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.selectedCaseLength = '';
     this.selectedLinked = '';
     this.selectedNature = '';
-    this.selectedPriority = '';
     this.filterCartridges();
   }
 
@@ -358,6 +355,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   numberOfOtherRanks: number | null = null;
   usageDate: string = '';
   usageTime: string = '';
+  orderPriority: string = '';
 
   // Reserve details (read-only)
   totalReserve = 150000;
@@ -402,7 +400,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderNo: orderNumber,
       requestNo: orderNumber,
       reason: this.usePurpose || this.orderType || 'New Order Issue',
-      priority: this.mapPriorityToEnum(this.selectedPriority),
       notes: this.requesterComments || '',
       departmentId: this.getDepartmentIdForRequest(),
       requestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
@@ -418,6 +415,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       usageLocation: this.usageLocation || 'N/A',
       numberOfOfficer: this.numberOfOfficers ?? null,
       numberOfOtherRank: this.numberOfOtherRanks ?? null,
+      priority: this.mapPriorityToEnum(this.orderPriority),
       requestItems
     };
 
@@ -565,7 +563,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       c.quantity = null;
     });
     this.filteredCartridges = [...this.allCartridges];
-    this.selectedPriority = '';
     this.selectedBulletDiameter = '';
     this.selectedCaseLength = '';
     this.selectedLinked = '';
@@ -578,6 +575,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.numberOfOtherRanks = null;
     this.usageDate = '';
     this.usageTime = '';
+    this.orderPriority = '';
     this.requesterName = this.lockRequesterName
       ? this.getPreferredRequesterName()
       : 'Name';
@@ -605,9 +603,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     if (invalidItem) {
       return 'Selected cartridge is missing required information.';
     }
-    if (!this.selectedPriority) {
-      return 'Order priority is required.';
-    }
     if (!this.usePurpose) {
       return 'Usage purpose is required.';
     }
@@ -620,14 +615,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     if (!this.usageTime) {
       return 'Usage time is required.';
     }
+    if (!this.orderPriority) {
+      return 'Order priority is required.';
+    }
     return null;
-  }
-
-  private mapPriorityToEnum(priorityLabel: string): number {
-    const normalized = (priorityLabel || '').toLowerCase();
-    if (normalized.includes('medium')) return 2;
-    if (normalized.includes('low')) return 3;
-    return 1; // default high
   }
 
   private generateOrderNumber(): string {
@@ -735,5 +726,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       }
     }
     return null;
+  }
+
+  private mapPriorityToEnum(priorityLabel: string): number {
+    const normalized = (priorityLabel || '').toLowerCase();
+    if (normalized.includes('medium')) return 2;
+    if (normalized.includes('low')) return 3;
+    return 1; // default high
   }
 }

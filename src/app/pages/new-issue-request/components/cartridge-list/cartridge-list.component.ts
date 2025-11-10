@@ -41,12 +41,10 @@ export class CartridgeListComponent {
   @Input() caseLengths: string[] = [];
   @Input() linkedOptions: string[] = [];
   @Input() natureOptions: string[] = [];
-  @Input() orderPriorities: string[] = [];
   @Input() selectedBulletDiameter: string = '';
   @Input() selectedCaseLength: string = '';
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
-  @Input() selectedPriority: string = '';
   @Input() canProceed: boolean = false;
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
@@ -58,8 +56,8 @@ export class CartridgeListComponent {
   @Output() caseLengthChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
-  @Output() priorityChange = new EventEmitter<string>();
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
+  @Output() removeSelection = new EventEmitter<number>();
 
   pendingCartridgeId: number | null = null;
   pendingQuantity: number = 1;
@@ -91,6 +89,18 @@ export class CartridgeListComponent {
     cartridge.added = true;
     cartridge.selected = true;
     this.addSelection.emit({ cartridge, quantity });
+    this.pendingCartridgeId = null;
+    this.pendingQuantity = 1;
+  }
+
+  removePending(cartridge: Cartridge, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    cartridge.quantity = null;
+    cartridge.added = false;
+    cartridge.selected = false;
+    this.removeSelection.emit(cartridge.id);
     this.pendingCartridgeId = null;
     this.pendingQuantity = 1;
   }
@@ -137,10 +147,6 @@ export class CartridgeListComponent {
   onNatureChange(value: string): void {
     this.natureChange.emit(value);
     this.onFilterChange();
-  }
-
-  onPriorityChange(value: string): void {
-    this.priorityChange.emit(value);
   }
 }
 

@@ -210,6 +210,7 @@
       "usageLocationRequired": "Usage location is required.",
       "usageDateRequired": "Usage date is required.",
       "usageTimeRequired": "Usage time is required.",
+      "orderPriorityRequired": "Order priority is required.",
       "correctErrors": "Please fix the highlighted fields before continuing."
     }
   },

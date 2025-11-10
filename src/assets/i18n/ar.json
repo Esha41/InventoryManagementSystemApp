@@ -210,6 +210,7 @@
       "usageLocationRequired": "موقع الاستخدام مطلوب.",
       "usageDateRequired": "تاريخ الاستخدام مطلوب.",
       "usageTimeRequired": "وقت الاستخدام مطلوب.",
+      "orderPriorityRequired": "أولوية الطلب مطلوبة.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
     }
   },
