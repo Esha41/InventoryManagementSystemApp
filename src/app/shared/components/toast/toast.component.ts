@@ -11,8 +11,7 @@ import { ToastService, Toast } from '@services/toast.service';
   template: `
     <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
       <div
-        *ngFor="let toast of toasts"
-        [@slideIn]
+        *ngFor="let toast of toasts; trackBy: trackById"
         [class]="getToastClass(toast.type)"
         class="flex items-start gap-3 p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-all duration-300">
         
@@ -55,22 +54,7 @@ import { ToastService, Toast } from '@services/toast.service';
       </div>
     </div>
   `,
-  styles: [`
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    :host ::ng-deep div[class*="rounded-lg"] {
-      animation: slideIn 0.3s ease-out;
-    }
-  `]
+  styles: []
 })
 export class ToastComponent implements OnInit, OnDestroy {
   readonly CheckCircle = CheckCircle;
@@ -106,6 +90,10 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   removeToast(id: string): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
+  }
+
+  trackById(_: number, toast: Toast): string {
+    return toast.id;
   }
 
   getToastClass(type: Toast['type']): string {

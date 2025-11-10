@@ -4,9 +4,10 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
 import { BackendUserDto, RoleDto, CreateUserDto, UpdateUserDto } from '@models/backend-user.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.service';
+import { ToastService } from '@services/toast.service';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -43,7 +44,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private backendUserService: BackendUserService,
-    private lookupService: LookupService
+    private lookupService: LookupService,
+    private toastService: ToastService,
+    private translate: TranslateService
   ) {
     this.initializeForm();
   }
@@ -272,6 +275,7 @@ private loadUserRoles(): void {
     this.backendUserService.createUser(dto).subscribe({
       next: (user: BackendUserDto) => {
         this.isLoading = false;
+        this.toastService.success(this.translate.instant('userFormModal.createSuccess'));
         this.saved.emit();
         this.close();
       },
@@ -314,6 +318,7 @@ private loadUserRoles(): void {
     this.backendUserService.updateUser(this.user.id, dto).subscribe({
       next: (user: BackendUserDto) => {
         this.isLoading = false;
+        this.toastService.success(this.translate.instant('userFormModal.updateSuccess'));
         this.saved.emit();
         this.close();
       },

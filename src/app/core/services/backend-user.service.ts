@@ -561,7 +561,7 @@ export class BackendUserService {
   /**
    * Assign permissions to a role
    */
-  assignPermissionsToRole(roleId: string, permissions: string[]): Observable<boolean> {
+  assignPermissionsToRole(roleId: string, permissions: string[]): Observable<{ data: boolean; message: string }> {
     this.configService.log('Assigning permissions to role', { roleId, permissions });
 
     const assignPermissionsDto: AssignPermissionsDto = {
@@ -577,7 +577,10 @@ export class BackendUserService {
         if (!response.succeeded) {
           throw new Error(response.message || 'Failed to assign permissions');
         }
-        return response.data;
+        return {
+          data: response.data ?? false,
+          message: response.message || 'Permissions assigned successfully.'
+        };
       }),
       tap(() => {
         this.configService.log('Permissions assigned successfully');

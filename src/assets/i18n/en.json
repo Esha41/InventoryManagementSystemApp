@@ -603,13 +603,19 @@
     "defaultRole": "Default Role",
     "noRoles": "No roles available",
     "rolesHelper": "Select one or more roles for this user",
+    "email": "Email",
+    "emailPlaceholder": "Enter email address",
+    "militaryId": "Military ID",
+    "militaryIdPlaceholder": "Enter military ID",
     "employeeId": "Employee ID",
     "employeeIdPlaceholder": "Enter employee ID (optional)",
     "extraEmployeesView": "Extra Employees View",
     "extraEmployeesPlaceholder": "Enter extra employees view (optional)",
     "ldapUser": "LDAP User",
     "create": "Create User",
-    "update": "Update User"
+    "update": "Update User",
+    "createSuccess": "User created successfully",
+    "updateSuccess": "User updated successfully"
   },
   "roleFormModal": {
     "roleName": "Role Name",
