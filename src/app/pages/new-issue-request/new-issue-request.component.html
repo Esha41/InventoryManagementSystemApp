@@ -100,19 +100,12 @@
   <app-review-form
     *ngIf="currentStep === 2"
     [requesterName]="requesterName"
-    [requesterNameReadonly]="lockRequesterName"
     [requesterComments]="requesterComments"
     [orderType]="orderType"
     [selectedPriority]="selectedPriority"
     [fromReserve]="fromReserve"
     [usePurpose]="usePurpose"
     [usageDate]="usageDate"
-    (requesterNameChange)="requesterName = $event"
-    (requesterCommentsChange)="requesterComments = $event"
-    (orderTypeChange)="orderType = $event"
-    (fromReserveChange)="fromReserve = $event"
-    (usePurposeChange)="usePurpose = $event"
-    (usageDateChange)="usageDate = $event"
     (previous)="onPrevious()"
     (next)="onNext()">
   </app-review-form>

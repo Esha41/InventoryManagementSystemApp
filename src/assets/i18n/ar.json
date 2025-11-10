@@ -204,7 +204,14 @@
     "yes": "نعم",
     "no": "لا",
     "previous": "السابق",
-    "clearFilters": "مسح المرشحات"
+    "clearFilters": "مسح المرشحات",
+    "validation": {
+      "usePurposeRequired": "غرض الاستخدام مطلوب.",
+      "usageLocationRequired": "موقع الاستخدام مطلوب.",
+      "usageDateRequired": "تاريخ الاستخدام مطلوب.",
+      "usageTimeRequired": "وقت الاستخدام مطلوب.",
+      "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
+    }
   },
   "forecast": {
     "title": "التوقعات",

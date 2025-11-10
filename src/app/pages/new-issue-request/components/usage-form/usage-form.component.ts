@@ -42,6 +42,16 @@ export class UsageFormComponent {
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
+  private readonly defaultErrors: UsageFormErrors = {
+    usePurpose: null,
+    usageLocation: null,
+    usageDate: null,
+    usageTime: null
+  };
+
+  formErrors: UsageFormErrors = { ...this.defaultErrors };
+  hasAttemptedSubmit = false;
+
   onFromReserveChange(value: string): void {
     this.fromReserveChange.emit(value);
   }
@@ -79,7 +89,51 @@ export class UsageFormComponent {
   }
 
   onNext(): void {
-    this.next.emit();
+    this.hasAttemptedSubmit = true;
+    if (this.validateForm()) {
+      this.next.emit();
+    }
+  }
+
+  hasError(field: keyof UsageFormErrors): boolean {
+    return this.hasAttemptedSubmit && !!this.formErrors[field];
+  }
+
+  hasAnyError(): boolean {
+    return Object.values(this.formErrors).some(error => !!error);
+  }
+
+  private validateForm(): boolean {
+    this.formErrors = { ...this.defaultErrors };
+    let isValid = true;
+
+    if (!this.usePurpose || this.usePurpose.trim().length === 0) {
+      this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
+      isValid = false;
+    }
+
+    if (!this.usageLocation || this.usageLocation.trim().length === 0) {
+      this.formErrors.usageLocation = 'newIssueRequest.validation.usageLocationRequired';
+      isValid = false;
+    }
+
+    if (!this.usageDate || this.usageDate.trim().length === 0) {
+      this.formErrors.usageDate = 'newIssueRequest.validation.usageDateRequired';
+      isValid = false;
+    }
+
+    if (!this.usageTime || this.usageTime.trim().length === 0) {
+      this.formErrors.usageTime = 'newIssueRequest.validation.usageTimeRequired';
+      isValid = false;
+    }
+
+    return isValid;
   }
 }
 
+type UsageFormErrors = {
+  usePurpose: string | null;
+  usageLocation: string | null;
+  usageDate: string | null;
+  usageTime: string | null;
+};
