@@ -27,18 +27,17 @@
                 {{ 'allowance.department' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="selectedDepartment"
                   name="department"
-                  [class.border-red-500]="hasError('department')"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                   [disabled]="isLoadingDepartments"
-                >
-                  <option value="">{{ 'allowance.selectDepartment' | translate }}</option>
-                  <option *ngFor="let dept of departments" [value]="dept.id">
-                    {{ dept.nameEn || dept.nameAr }}
-                  </option>
-                </select>
+                  [error]="hasError('department')"
+                  [options]="departments"
+                  optionValue="id"
+                  [optionLabelFn]="departmentOptionLabel"
+                  placeholder="{{ 'allowance.selectDepartment' | translate }}">
+                </app-dropdown>
                 <p *ngIf="hasError('department')" class="mt-1.5 text-xs text-red-500">
                   {{ getError('department') }}
                 </p>

@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -28,7 +29,8 @@ export interface AllowanceItem {
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    ButtonComponent
+    ButtonComponent,
+    DropdownComponent
   ],
   templateUrl: './allowance.component.html',
   styleUrls: ['./allowance.component.css']
@@ -42,6 +44,8 @@ export class AllowanceComponent implements OnInit {
   
   departments: DepartmentDto[] = [];
   isLoadingDepartments = false;
+  readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
   
   // Ammunition search
   ammunitionItems: AmmunitionReadDto[] = [];
@@ -178,6 +182,40 @@ export class AllowanceComponent implements OnInit {
         this.isLoadingDepartments = false;
       }
     });
+  }
+
+  private getLocalizedName(entity: any): string {
+    if (!entity) {
+      return '';
+    }
+
+    if (typeof entity === 'string') {
+      return entity;
+    }
+
+    if (typeof entity === 'number') {
+      return String(entity);
+    }
+
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
+    }
+
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEn || '';
+    }
+    return entity.nameEn || entity.nameAr || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   addItem(): void {

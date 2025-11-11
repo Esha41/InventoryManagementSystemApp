@@ -153,17 +153,19 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.item' | translate }} <span class="text-red-500">*</span>
                 </label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="item.itemId"
                   [name]="'itemId' + i"
                   (ngModelChange)="onItemChange(i)"
                   required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                  <option [ngValue]="0">{{ 'addInventory.selectItem' | translate }}</option>
-                  <option *ngFor="let availableItem of availableItems" [ngValue]="availableItem.id">
-                    {{ availableItem.name }} ({{ availableItem.itemNo }})
-                  </option>
-                </select>
+                  [options]="availableItems"
+                  optionValue="id"
+                  [optionLabelFn]="itemOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="0"
+                  placeholder="{{ 'addInventory.selectItem' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Lot Number -->
@@ -201,15 +203,17 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.supplier' | translate }}
                 </label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="item.supplierId"
                   [name]="'supplierId' + i"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                  <option [ngValue]="undefined">{{ 'addInventory.selectSupplier' | translate }}</option>
-                  <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">
-                    {{ supplier.nameEn }}
-                  </option>
-                </select>
+                  [options]="suppliers"
+                  optionValue="id"
+                  [optionLabelFn]="supplierOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'addInventory.selectSupplier' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Manufacturer -->
@@ -217,15 +221,17 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.manufacturer' | translate }}
                 </label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="item.manufacturerId"
                   [name]="'manufacturerId' + i"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                  <option [ngValue]="undefined">{{ 'addInventory.selectManufacturer' | translate }}</option>
-                  <option *ngFor="let manufacturer of manufacturers" [ngValue]="manufacturer.id">
-                    {{ manufacturer.nameEn }}
-                  </option>
-                </select>
+                  [options]="manufacturers"
+                  optionValue="id"
+                  [optionLabelFn]="manufacturerOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'addInventory.selectManufacturer' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Country -->
@@ -233,15 +239,17 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.country' | translate }}
                 </label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="item.countryId"
                   [name]="'countryId' + i"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                  <option [ngValue]="undefined">{{ 'addInventory.selectCountry' | translate }}</option>
-                  <option *ngFor="let country of countries" [ngValue]="country.id">
-                    {{ country.nameEn }}
-                  </option>
-                </select>
+                  [options]="countries"
+                  optionValue="id"
+                  [optionLabelFn]="countryOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'addInventory.selectCountry' | translate }}">
+                </app-dropdown>
               </div>
             </div>
           </div>

@@ -118,13 +118,13 @@
       <!-- Items per page info -->
       <div class="flex items-center gap-2 text-sm text-gray-600">
         <span>{{ 'supplyRequestManagement.showing' | translate }}</span>
-        <select class="border border-gray-300 rounded px-2 py-1 text-sm">
-          <option>1</option>
-          <option>2</option>
-          <option>5</option>
-          <option>10</option>
-          <option>20</option>
-        </select>
+        <app-dropdown
+          class="w-24"
+          [(ngModel)]="itemsPerPage"
+          [options]="itemsPerPageOptions"
+          (selectionChange)="onItemsPerPageChange($event)"
+          [placeholderSelectable]="false">
+        </app-dropdown>
         <span>{{ 'supplyRequestManagement.of' | translate }} 20</span>
       </div>
 

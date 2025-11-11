@@ -56,15 +56,17 @@
 
       <!-- Entity Dropdown -->
       <div *ngIf="!isLoadingEntities">
-        <select
+        <app-dropdown
+          class="w-full"
           formControlName="applicationEntityId"
-          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-        >
-          <option [ngValue]="null">{{ 'roleFormModal.selectEntity' | translate }}</option>
-          <option *ngFor="let entity of entities" [ngValue]="entity.id">
-            {{ getEntityName(entity) }}{{ entity.code ? ' (' + entity.code + ')' : '' }}
-          </option>
-        </select>
+          [options]="entities"
+          optionValue="id"
+          [optionLabelFn]="entityOptionLabel"
+          [disabled]="isLoadingEntities"
+          [placeholderSelectable]="true"
+          [placeholderValue]="null"
+          placeholder="{{ 'roleFormModal.selectEntity' | translate }}">
+        </app-dropdown>
       </div>
 
       <!-- Empty State -->

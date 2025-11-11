@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 export interface Cartridge {
   id: number;
@@ -31,7 +32,7 @@ export interface Cartridge {
 @Component({
   selector: 'app-cartridge-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
   templateUrl: './cartridge-list.component.html',
   styleUrls: ['./cartridge-list.component.css']
 })

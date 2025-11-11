@@ -59,52 +59,56 @@
         </div>
 
         <!-- HCC Filter -->
-        <select
+        <app-dropdown
+          class="w-full"
           [(ngModel)]="selectedHcc"
-          (ngModelChange)="onFilterChange()"
-          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
-        >
-          <option value="">{{ 'assetList.filters.allHcc' | translate }}</option>
-          <option *ngFor="let item of hccList" [value]="item.nameEn || item.nameAr">
-            {{ item.nameEn || item.nameAr }}
-          </option>
-        </select>
+          (selectionChange)="onFilterChange()"
+          [options]="hccFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholderSelectable]="true"
+          [placeholderValue]="''"
+          placeholder="{{ 'assetList.filters.allHcc' | translate }}">
+        </app-dropdown>
 
         <!-- Case Type Filter -->
-        <select
+        <app-dropdown
+          class="w-full"
           [(ngModel)]="selectedCaseType"
-          (ngModelChange)="onFilterChange()"
-          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
-        >
-          <option value="">{{ 'assetList.filters.allCaseTypes' | translate }}</option>
-          <option *ngFor="let item of caseTypeList" [value]="item.nameEn || item.nameAr">
-            {{ item.nameEn || item.nameAr }}
-          </option>
-        </select>
+          (selectionChange)="onFilterChange()"
+          [options]="caseTypeFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholderSelectable]="true"
+          [placeholderValue]="''"
+          placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
+        </app-dropdown>
 
         <!-- Hazard Division Filter -->
-        <select
+        <app-dropdown
+          class="w-full"
           [(ngModel)]="selectedHazardDivision"
-          (ngModelChange)="onFilterChange()"
-          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
-        >
-          <option value="">{{ 'assetList.filters.allHazardDivisions' | translate }}</option>
-          <option *ngFor="let item of hazardDivisionList" [value]="item.nameEn || item.nameAr">
-            {{ item.nameEn || item.nameAr }}
-          </option>
-        </select>
+          (selectionChange)="onFilterChange()"
+          [options]="hazardDivisionFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholderSelectable]="true"
+          [placeholderValue]="''"
+          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+        </app-dropdown>
 
         <!-- Compatibility Filter -->
-        <select
+        <app-dropdown
+          class="w-full"
           [(ngModel)]="selectedCompatibility"
-          (ngModelChange)="onFilterChange()"
-          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all bg-white"
-        >
-          <option value="">{{ 'assetList.filters.allCompatibility' | translate }}</option>
-          <option *ngFor="let item of compatibilityList" [value]="item.nameEn || item.nameAr">
-            {{ item.nameEn || item.nameAr }}
-          </option>
-        </select>
+          (selectionChange)="onFilterChange()"
+          [options]="compatibilityFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholderSelectable]="true"
+          [placeholderValue]="''"
+          placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+        </app-dropdown>
       </div>
     </div>
   </app-card>
@@ -398,13 +402,17 @@
               <!-- HCC -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hcc' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="hccId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectHcc' | translate }}</option>
-                  <option *ngFor="let hcc of hccList" [ngValue]="hcc.id">{{ hcc.nameEn }}</option>
-                </select>
+                  [options]="hccList"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                    [error]="!!(editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched)"
+                  placeholder="{{ 'assetList.editModal.selectHcc' | translate }}">
+                </app-dropdown>
                 <span *ngIf="editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched" 
                       class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.hccRequired' | translate }}</span>
               </div>
@@ -437,13 +445,16 @@
               <!-- Bullet Diameter Unit -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.diameterUnit' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="bulletDiameterUnitId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectUnit' | translate }}</option>
-                  <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
-                </select>
+                  [options]="units"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectUnit' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Case Length -->
@@ -461,61 +472,76 @@
               <!-- Case Length Unit -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseLengthUnit' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="caseLengthUnitId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectUnit' | translate }}</option>
-                  <option *ngFor="let unit of units" [ngValue]="unit.id">{{ unit.nameEn }}</option>
-                </select>
+                  [options]="units"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectUnit' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Case Type -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseType' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="caseTypeId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectCaseType' | translate }}</option>
-                  <option *ngFor="let type of caseTypeList" [ngValue]="type.id">{{ type.nameEn }}</option>
-                </select>
+                  [options]="caseTypeList"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectCaseType' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Propellant -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.propellant' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="propellantId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectPropellant' | translate }}</option>
-                  <option *ngFor="let prop of propellantList" [ngValue]="prop.id">{{ prop.nameEn }}</option>
-                </select>
+                  [options]="propellantList"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectPropellant' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Compatibility -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.compatibility' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="compatibilityId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectCompatibility' | translate }}</option>
-                  <option *ngFor="let comp of compatibilityList" [ngValue]="comp.id">{{ comp.nameEn }}</option>
-                </select>
+                  [options]="compatibilityList"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectCompatibility' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Hazard Division -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hazardDivision' | translate }} *</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="hazardDivisionId"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="null">{{ 'assetList.editModal.selectHazardDivision' | translate }}</option>
-                  <option *ngFor="let hazard of hazardDivisionList" [ngValue]="hazard.id">{{ hazard.nameEn }}</option>
-                </select>
+                  [options]="hazardDivisionList"
+                  optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  placeholder="{{ 'assetList.editModal.selectHazardDivision' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Primer -->
@@ -544,25 +570,29 @@
               <!-- Is Linked -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.isLinked' | translate }}</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="isLinked"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="false">{{ 'assetList.editModal.notLinked' | translate }}</option>
-                  <option [ngValue]="true">{{ 'assetList.editModal.linked' | translate }}</option>
-                </select>
+                  [options]="linkedOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [translateLabels]="true"
+                  placeholder="{{ 'assetList.editModal.notLinked' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Ready For Issue -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.readyForIssue' | translate }}</label>
-                <select
+                <app-dropdown
+                  class="w-full"
                   formControlName="readyForIssue"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none bg-white"
-                >
-                  <option [ngValue]="true">{{ 'common.yes' | translate }}</option>
-                  <option [ngValue]="false">{{ 'common.no' | translate }}</option>
-                </select>
+                  [options]="readyForIssueOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [translateLabels]="true"
+                  placeholder="{{ 'common.select' | translate }}">
+                </app-dropdown>
               </div>
 
               <!-- Expiry Date -->

@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-rows-per-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   templateUrl: './rows-per-page.component.html',
   styleUrls: ['./rows-per-page.component.css']
 })
@@ -17,7 +18,10 @@ export class RowsPerPageComponent {
 
   options: number[] = [5, 10, 20, 50];
 
-  onRowsPerPageChange(value: number): void {
+  onRowsPerPageChange(value: number | null): void {
+    if (!value) {
+      return;
+    }
     this.rowsPerPageChange.emit(value);
   }
 

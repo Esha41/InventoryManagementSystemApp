@@ -171,6 +171,14 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () => import('@pages/notifications/notifications.component').then(m => m.NotificationsComponent)
+      },
+      {
+        path: 'notifications/:id',
+        loadComponent: () => import('@pages/notifications/notification-detail-page/notification-detail-page.component').then(m => m.NotificationDetailPageComponent)
+      },
+      {
+        path: 'notifications/:id/schedule',
+        loadComponent: () => import('@pages/notifications/notification-schedule-page/notification-schedule-page.component').then(m => m.NotificationSchedulePageComponent)
       }
     ]
   },

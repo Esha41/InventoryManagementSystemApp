@@ -6,6 +6,7 @@ import { ButtonComponent } from '../button/button.component';
 import { RoleDto, CreateRoleDto, UpdateRoleDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 export interface ApplicationEntity {
   id: number;
@@ -27,7 +28,8 @@ export interface ApplicationEntity {
     ReactiveFormsModule,
     ModalComponent,
     ButtonComponent,
-    TranslateModule
+    TranslateModule,
+    DropdownComponent
   ],
   templateUrl: './role-form-modal.component.html',
   styleUrls: ['./role-form-modal.component.css']
@@ -46,6 +48,10 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   errorMessage = '';
   entities: ApplicationEntity[] = [];
   selectedEntityId: number | null = null; // Store single entity ID
+  readonly entityOptionLabel = (option: DropdownOption<ApplicationEntity> | ApplicationEntity | null) => {
+    const entity = this.unwrapEntityOption(option);
+    return entity ? this.getEntityName(entity) : '';
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -194,6 +200,16 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     this.selectedEntityId = null;
     this.entities = [];
     this.closed.emit();
+  }
+
+  private unwrapEntityOption(option: DropdownOption<ApplicationEntity> | ApplicationEntity | null): ApplicationEntity | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && 'value' in option) {
+      return option.value as ApplicationEntity;
+    }
+    return option as ApplicationEntity;
   }
 
   private markFormGroupTouched(): void {

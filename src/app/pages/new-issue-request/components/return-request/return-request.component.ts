@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Plus, X, ChevronDown, Search } from 'lucide-angular';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ReturnService, CreateReturnDto, CreateReturnItemDto } from '@services/return.service';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -40,7 +41,8 @@ interface RequestPurpose {
     FormsModule,
     TranslateModule,
     ButtonComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    DropdownComponent
   ],
   templateUrl: './return-request.component.html',
   styleUrls: ['./return-request.component.css']
@@ -94,6 +96,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   private fallbackRequesterName = '';
   lockedDepartmentName = '';
   lockedRequesterName = '';
+  readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly requesterOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly requestPurposeOptionLabel = (option: DropdownOption<RequestPurpose> | RequestPurpose | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
 
   constructor(
     private returnService: ReturnService,
@@ -261,6 +269,40 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   getRequestPurposeName(purposeId: number): string {
     const purpose = this.requestPurposes.find(p => p.id === purposeId);
     return purpose ? (purpose.nameEn || purpose.nameAr || 'Unknown') : 'Unknown';
+  }
+
+  private getLocalizedName(entity: any): string {
+    if (!entity) {
+      return '';
+    }
+
+    if (typeof entity === 'string') {
+      return entity;
+    }
+
+    if (typeof entity === 'number') {
+      return String(entity);
+    }
+
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
+    }
+
+    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEn || '';
+    }
+    return entity.nameEn || entity.nameAr || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   toggleItemDropdown(index: number): void {

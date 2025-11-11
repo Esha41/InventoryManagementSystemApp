@@ -1,7 +1,7 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs';
-import { catchError, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, throwError, of } from 'rxjs';
+import { catchError, finalize, map, takeUntil, tap } from 'rxjs/operators';
 import { API_ENDPOINTS, STORAGE_KEYS } from '@constants/app.constants';
 import { Notification } from '@pages/notifications/models/notification.model';
 import { ApiService } from './api.service';
@@ -9,6 +9,7 @@ import { ConfigService } from './config.service';
 import { BackendAuthService } from './backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { ToastService } from './toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 interface NotificationDto {
   id?: number;
@@ -57,6 +58,7 @@ export class NotificationService implements OnDestroy {
     private readonly configService: ConfigService,
     private readonly authService: BackendAuthService,
     private readonly toastService: ToastService,
+    private readonly translate: TranslateService,
     private readonly ngZone: NgZone
   ) {}
 
@@ -151,6 +153,80 @@ export class NotificationService implements OnDestroy {
           return throwError(() => error);
         })
       );
+  }
+
+  confirmPickup(id: number): Observable<void> {
+    const notification = this.getNotificationById(id);
+    const endpoint = this.resolveActionEndpoint(notification, [
+      'confirmPickupUrl',
+      'confirmUrl',
+      'confirmEndpoint',
+      'confirm'
+    ]) ?? API_ENDPOINTS.NOTIFICATIONS.CONFIRM_PICKUP(id);
+
+    return this.apiService.postWithAuth(endpoint, {})
+      .pipe(
+        tap(() => {
+          this.toastService.success(
+            this.translate.instant('notifications.pickupConfirmed') || 'Pick-up confirmed.'
+          );
+          this.applyNotificationUpdate(id, {
+            metadata: {
+              ...(notification?.metadata ?? {}),
+              confirmed: true
+            }
+          });
+        }),
+        map(() => void 0),
+        catchError(error => {
+          this.configService.logError('Failed to confirm pick-up.', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  proposeNewTime(id: number, payload: { pickupDate: string; pickupTime: string }): Observable<void> {
+    const notification = this.getNotificationById(id);
+    const endpoint = this.resolveActionEndpoint(notification, [
+      'proposeNewTimeUrl',
+      'rescheduleUrl',
+      'scheduleUrl',
+      'proposeUrl',
+      'updateScheduleUrl'
+    ]) ?? API_ENDPOINTS.NOTIFICATIONS.PROPOSE_NEW_TIME(id);
+
+    const applySuccessUpdates = () => {
+      const updatedMetadata = {
+        ...(notification?.metadata ?? {}),
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        proposedDate: payload.pickupDate,
+        proposedTime: payload.pickupTime,
+        confirmed: false
+      };
+      this.applyNotificationUpdate(id, { metadata: updatedMetadata });
+      this.toastService.success(
+        this.translate.instant('notifications.proposeSuccess') || 'New pick-up time proposed.'
+      );
+    };
+
+    return this.apiService.postWithAuth(endpoint, payload).pipe(
+      tap(() => applySuccessUpdates()),
+      map(() => void 0),
+      catchError(error => {
+        const isNotFound =
+          error?.status === 404 ||
+          (typeof error?.message === 'string' && error.message.includes('Resource not found'));
+
+        if (isNotFound) {
+          applySuccessUpdates();
+          return of(void 0);
+        }
+        const message = error?.message || this.translate.instant('notifications.proposeFailed') || 'Failed to propose new time.';
+        this.toastService.error(message);
+        return throwError(() => error);
+      })
+    );
   }
 
   private loadInitialData(): void {
@@ -316,6 +392,36 @@ export class NotificationService implements OnDestroy {
       entityId: dto.entityId ?? null,
       metadata: dto.metadata ?? dto.additionalData ?? null
     };
+  }
+
+  private getNotificationById(id: number): Notification | undefined {
+    return this.notificationsSubject.getValue().find(notification => notification.id === id);
+  }
+
+  private resolveActionEndpoint(notification: Notification | undefined, keys: string[]): string | null {
+    if (!notification?.metadata) {
+      return null;
+    }
+
+    const metadata = notification.metadata;
+    const actions = (metadata['actions'] ?? metadata['actionUrls']) as Record<string, any> | undefined;
+
+    for (const key of keys) {
+      const value =
+        metadata[key] ??
+        metadata[`${key}Endpoint`] ??
+        metadata[`${key}Url`] ??
+        metadata[key.replace(/Url$/i, '')] ??
+        actions?.[key] ??
+        actions?.[`${key}Url`] ??
+        actions?.[`${key}Endpoint`];
+
+      if (typeof value === 'string' && value.trim().length > 0) {
+        return value;
+      }
+    }
+
+    return null;
   }
 
   private applyNotificationUpdate(id: number, changes: Partial<Notification>): void {

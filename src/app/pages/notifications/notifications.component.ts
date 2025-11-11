@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { Subject, combineLatest } from 'rxjs';
 import { Notification } from './models/notification.model';
 import { NotificationService } from '@services/notification.service';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-notifications',
@@ -16,7 +17,8 @@ import { NotificationService } from '@services/notification.service';
     CommonModule,
     FormsModule,
     TranslateModule,
-    LucideAngularModule
+    LucideAngularModule,
+    DropdownComponent
   ],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.css']
@@ -136,13 +138,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onItemsPerPageChange(value: number): void {
-    const numericValue = Number(value);
-    if (!isNaN(numericValue) && numericValue > 0) {
-      this.itemsPerPage = numericValue;
-      this.currentPage = 1;
-      this.updatePagination();
+  onItemsPerPageChange(value: number | null): void {
+    if (!value || value <= 0) {
+      return;
     }
+    this.itemsPerPage = value;
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   goToPage(page: number): void {
@@ -151,6 +153,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
     this.currentPage = page;
     this.updatePagination();
+  }
+
+  openDetail(notification: Notification, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.router.navigate(['/notifications', notification.id]);
   }
 
   isSelected(notification: Notification): boolean {

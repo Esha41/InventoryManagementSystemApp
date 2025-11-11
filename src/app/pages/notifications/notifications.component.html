@@ -78,7 +78,10 @@
             <div class="text-sm text-[var(--color-text-muted)]">{{ getRelativeTime(notification) }}</div>
             <div class="text-sm text-[var(--color-text)]">{{ getStatusLabel(notification) }}</div>
             <div class="flex justify-end">
-              <button type="button" class="notification-row-action" (click)="onNotificationSelect(notification)">
+              <button
+                type="button"
+                class="notification-row-action"
+                (click)="openDetail(notification, $event)">
                 <lucide-angular [img]="ChevronDown" class="h-4 w-4"></lucide-angular>
               </button>
             </div>
@@ -89,9 +92,13 @@
       <div class="notification-pagination" *ngIf="!loading && pagedNotifications.length > 0">
         <div class="flex items-center gap-2">
           <span>{{ 'notifications.showing' | translate }}</span>
-          <select [ngModel]="itemsPerPage" (ngModelChange)="onItemsPerPageChange($event)" class="notification-select">
-            <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
-          </select>
+          <app-dropdown
+            class="notification-select"
+            [(ngModel)]="itemsPerPage"
+            [options]="itemsPerPageOptions"
+            (selectionChange)="onItemsPerPageChange($event)"
+            [placeholderSelectable]="false">
+          </app-dropdown>
           <span>{{ 'notifications.of' | translate }} {{ filteredNotifications.length }}</span>
         </div>
 

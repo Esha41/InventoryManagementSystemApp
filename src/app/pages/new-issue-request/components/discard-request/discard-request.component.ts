@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Plus, X, ChevronDown, Search } from 'lucide-angular';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { DiscardService, CreateDiscardDto, CreateDiscardItemDto } from '@services/discard.service';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -40,7 +41,8 @@ interface RequestPurpose {
     FormsModule,
     TranslateModule,
     ButtonComponent,
-    LucideAngularModule
+    LucideAngularModule,
+    DropdownComponent
   ],
   templateUrl: './discard-request.component.html',
   styleUrls: ['./discard-request.component.css']
@@ -95,6 +97,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   private fallbackRequesterName = '';
   lockedDepartmentName = '';
   lockedRequesterName = '';
+  readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly requesterOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly requestPurposeOptionLabel = (option: DropdownOption<RequestPurpose> | RequestPurpose | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
 
   constructor(
     private discardService: DiscardService,
@@ -346,6 +354,40 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       return false;
     }
     return String(optionValue) === String(itemId);
+  }
+
+  private getLocalizedName(entity: any): string {
+    if (!entity) {
+      return '';
+    }
+
+    if (typeof entity === 'string') {
+      return entity;
+    }
+
+    if (typeof entity === 'number') {
+      return String(entity);
+    }
+
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
+    }
+
+    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEn || '';
+    }
+    return entity.nameEn || entity.nameAr || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   onSendRequest(form: NgForm): void {

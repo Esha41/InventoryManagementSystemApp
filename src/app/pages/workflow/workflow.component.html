@@ -119,13 +119,13 @@
       <!-- Items per page info -->
       <div class="flex items-center gap-2 text-sm text-gray-600">
         <span>{{ 'workflow.showing' | translate }}</span>
-        <select class="border border-gray-300 rounded px-2 py-1 text-sm">
-          <option>1</option>
-          <option>2</option>
-          <option>5</option>
-          <option>10</option>
-          <option>20</option>
-        </select>
+        <app-dropdown
+          class="w-24"
+          [options]="itemsPerPageOptions"
+          [(ngModel)]="itemsPerPage"
+          (selectionChange)="onItemsPerPageSelect($event)"
+          [placeholderSelectable]="false">
+        </app-dropdown>
         <span>{{ 'workflow.of' | translate }} {{ filteredWorkflows.length }}</span>
       </div>
 
@@ -219,16 +219,25 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">{{ 'workflow.workflowType' | translate }}</label>
-          <select [(ngModel)]="editWorkflowType" class="w-full px-3 py-2 border rounded">
-            <option *ngFor="let t of workflowTypes" [value]="t.id">{{ t.name }}</option>
-          </select>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="editWorkflowType"
+            [options]="workflowTypes"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="{{ 'workflow.workflowType' | translate }}">
+          </app-dropdown>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Status</label>
-          <select [(ngModel)]="editForm.status" class="w-full px-3 py-2 border rounded">
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="editForm.status"
+            [options]="workflowStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="{{ 'workflow.status' | translate }}">
+          </app-dropdown>
         </div>
         <div>
           <div class="flex items-center justify-between mb-2">
@@ -252,16 +261,26 @@
                 <tr *ngFor="let s of editSteps; let i = index" class="border-t">
               <td class="px-2 py-2">{{ orderLabel(i + 1) }}</td>
                   <td class="px-2 py-2">
-                    <select [(ngModel)]="s.roleId" name="erole-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
-                      <option [ngValue]="null" disabled selected>Select role</option>
-                      <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
-                    </select>
+                    <app-dropdown
+                      class="w-full"
+                      [(ngModel)]="s.roleId"
+                      name="erole-{{i}}"
+                      [options]="roles"
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="Select role">
+                    </app-dropdown>
                   </td>
                   <td class="px-2 py-2">
-                    <select [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}" class="w-full px-2 py-1 border rounded text-sm">
-                      <option [ngValue]="null" disabled selected>Select entity</option>
-                      <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
-                    </select>
+                    <app-dropdown
+                      class="w-full"
+                      [(ngModel)]="s.applicationEntityId"
+                      name="eentity-{{i}}"
+                      [options]="allApplicationEntities"
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="Select entity">
+                    </app-dropdown>
                   </td>
                   <td class="px-2 py-2">
                     <label class="inline-flex items-center gap-2 text-sm">
@@ -270,16 +289,28 @@
                     </label>
                   </td>
                   <td class="px-2 py-2">
-                    <select [(ngModel)]="s.higherApprovalRoleId" name="ehigher-{{i}}" [disabled]="!s.requireHigherApproval" class="w-full px-2 py-1 border rounded text-sm disabled:opacity-50">
-                      <option [ngValue]="null" disabled selected>{{ 'workflow.selectHigherApprovalRole' | translate }}</option>
-                      <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.name }}</option>
-                    </select>
+                    <app-dropdown
+                      class="w-full"
+                      [(ngModel)]="s.higherApprovalRoleId"
+                      name="ehigher-{{i}}"
+                      [disabled]="!s.requireHigherApproval"
+                      [options]="roles"
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="{{ 'workflow.selectHigherApprovalRole' | translate }}">
+                    </app-dropdown>
                   </td>
                   <td class="px-2 py-2">
-                    <select [(ngModel)]="s.higherApplicationEntityId" name="ehigherEntity-{{i}}" [disabled]="!s.requireHigherApproval" class="w-full px-2 py-1 border rounded text-sm disabled:opacity-50">
-                      <option [ngValue]="null" disabled selected>{{ 'workflow.applicationEntityPlaceholder' | translate }}</option>
-                      <option *ngFor="let e of allApplicationEntities" [ngValue]="e.id">{{ e.name || e.id }}</option>
-                    </select>
+                    <app-dropdown
+                      class="w-full"
+                      [(ngModel)]="s.higherApplicationEntityId"
+                      name="ehigherEntity-{{i}}"
+                      [disabled]="!s.requireHigherApproval"
+                      [options]="allApplicationEntities"
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
+                    </app-dropdown>
                   </td>
                   <td class="px-2 py-2 text-right">
                     <button class="px-2 py-1 border rounded" (click)="removeEditStep(i)">Delete</button>

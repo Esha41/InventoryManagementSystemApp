@@ -8,6 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -17,7 +18,8 @@ import { ToastService } from '@services/toast.service';
     ReactiveFormsModule,
     ModalComponent,
     ButtonComponent,
-    TranslateModule
+    TranslateModule,
+    DropdownComponent
   ],
   templateUrl: './user-form-modal.component.html',
   styleUrls: ['./user-form-modal.component.css']
@@ -40,6 +42,12 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   // Ranks
   ranks: LookupItem[] = [];
   isLoadingRanks = false;
+  readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly rankOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly roleOptionLabel = (option: DropdownOption<RoleDto> | RoleDto | null) =>
+    this.unwrapOption(option)?.name ?? '';
 
   constructor(
     private fb: FormBuilder,
@@ -186,6 +194,27 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         this.isLoadingRanks = false;
       }
     });
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
+  }
+
+  private getLocalizedName(entity: { nameEn?: string; nameAr?: string } | null | undefined): string {
+    if (!entity) {
+      return '';
+    }
+    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEn || '';
+    }
+    return entity.nameEn || entity.nameAr || '';
   }
 
 private loadUserRoles(): void {

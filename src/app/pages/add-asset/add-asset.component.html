@@ -137,16 +137,20 @@
         <!-- HCC (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">HCC *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.hccId"
             name="hccId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #hccModel="ngModel"
-          >
-            <option value="">Select HCC</option>
-            <option *ngFor="let hcc of hccs" [value]="hcc.id">{{ hcc.nameEn }}</option>
-          </select>
+            [options]="hccs"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(hccModel.invalid && (hccModel.dirty || hccModel.touched))"
+            placeholder="Select HCC">
+          </app-dropdown>
           <span *ngIf="hccModel.invalid && (hccModel.dirty || hccModel.touched)" class="text-sm text-red-600">HCC is required</span>
         </div>
 
@@ -170,16 +174,20 @@
         <!-- Bullet Diameter Unit (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Diameter Unit *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.bulletDiameterUnitId"
             name="bulletDiameterUnitId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #diamUnitModel="ngModel"
-          >
-            <option value="">Select unit</option>
-            <option *ngFor="let unit of units" [value]="unit.id">{{ unit.nameEn }}</option>
-          </select>
+            [options]="units"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched))"
+            placeholder="Select unit">
+          </app-dropdown>
           <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">Diameter unit is required</span>
         </div>
 
@@ -203,16 +211,20 @@
         <!-- Case Length Unit (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length Unit *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.caseLengthUnitId"
             name="caseLengthUnitId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #caseUnitModel="ngModel"
-          >
-            <option value="">Select unit</option>
-            <option *ngFor="let unit of units" [value]="unit.id">{{ unit.nameEn }}</option>
-          </select>
+            [options]="units"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched))"
+            placeholder="Select unit">
+          </app-dropdown>
           <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">Case length unit is required</span>
         </div>
 
@@ -231,64 +243,80 @@
         <!-- Case Type (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Type *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.caseTypeId"
             name="caseTypeId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #caseTypeModel="ngModel"
-          >
-            <option value="">Select case type</option>
-            <option *ngFor="let type of caseTypes" [value]="type.id">{{ type.nameEn }}</option>
-          </select>
+            [options]="caseTypes"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched))"
+            placeholder="Select case type">
+          </app-dropdown>
           <span *ngIf="caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched)" class="text-sm text-red-600">Case type is required</span>
         </div>
 
         <!-- Propellant (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Propellant *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.propellantId"
             name="propellantId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #propellantModel="ngModel"
-          >
-            <option value="">Select propellant</option>
-            <option *ngFor="let prop of propellants" [value]="prop.id">{{ prop.nameEn }}</option>
-          </select>
+            [options]="propellants"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(propellantModel.invalid && (propellantModel.dirty || propellantModel.touched))"
+            placeholder="Select propellant">
+          </app-dropdown>
           <span *ngIf="propellantModel.invalid && (propellantModel.dirty || propellantModel.touched)" class="text-sm text-red-600">Propellant is required</span>
         </div>
 
         <!-- Compatibility (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Compatibility *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.compatibilityId"
             name="compatibilityId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #compatModel="ngModel"
-          >
-            <option value="">Select compatibility</option>
-            <option *ngFor="let comp of compatibilities" [value]="comp.id">{{ comp.nameEn }}</option>
-          </select>
+            [options]="compatibilities"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(compatModel.invalid && (compatModel.dirty || compatModel.touched))"
+            placeholder="Select compatibility">
+          </app-dropdown>
           <span *ngIf="compatModel.invalid && (compatModel.dirty || compatModel.touched)" class="text-sm text-red-600">Compatibility is required</span>
         </div>
 
         <!-- Hazard Division (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Hazard Division *</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.hazardDivisionId"
             name="hazardDivisionId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             required
             #hazardModel="ngModel"
-          >
-            <option value="">Select hazard division</option>
-            <option *ngFor="let hazard of hazardDivisions" [value]="hazard.id">{{ hazard.nameEn }}</option>
-          </select>
+            [options]="hazardDivisions"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="!!(hazardModel.invalid && (hazardModel.dirty || hazardModel.touched))"
+            placeholder="Select hazard division">
+          </app-dropdown>
           <span *ngIf="hazardModel.invalid && (hazardModel.dirty || hazardModel.touched)" class="text-sm text-red-600">Hazard division is required</span>
         </div>
 
@@ -327,27 +355,29 @@
         <!-- Is Linked -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Linked</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.isLinked"
             name="isLinked"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="false">Not Linked</option>
-            <option value="true">Linked</option>
-          </select>
+            [options]="linkedOptions"
+            optionLabel="label"
+            optionValue="value"
+            [translateLabels]="true">
+          </app-dropdown>
         </div>
 
         <!-- Ready For Issue -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Ready for Issue</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.readyForIssue"
             name="readyForIssue"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option [ngValue]="true">Yes</option>
-            <option [ngValue]="false">No</option>
-          </select>
+            [options]="readyForIssueOptions"
+            optionLabel="label"
+            optionValue="value"
+            [translateLabels]="true">
+          </app-dropdown>
         </div>
 
         <!-- Expiry Date -->
@@ -367,53 +397,65 @@
         <!-- Nature Option -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Nature</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.natureOptionId"
             name="natureOptionId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">Select nature option</option>
-            <option *ngFor="let nature of natureOptions" [value]="nature.id">{{ nature.nameEn }}</option>
-          </select>
+            [options]="natureOptions"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            placeholder="Select nature option">
+          </app-dropdown>
         </div>
 
         <!-- Primary Purpose -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primary Purpose</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.primaryPurposId"
             name="primaryPurposId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">Select primary purpose</option>
-            <option *ngFor="let purpose of primaryPurposes" [value]="purpose.id">{{ purpose.nameEn }}</option>
-          </select>
+            [options]="primaryPurposes"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            placeholder="Select primary purpose">
+          </app-dropdown>
         </div>
 
         <!-- Projectile Color -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Color</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.projectileColorId"
             name="projectileColorId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">Select color</option>
-            <option *ngFor="let color of projectileColors" [value]="color.id">{{ color.nameEn }}</option>
-          </select>
+            [options]="projectileColors"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            placeholder="Select color">
+          </app-dropdown>
         </div>
 
         <!-- Projectile Material -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Material</label>
-          <select
+          <app-dropdown
+            class="flex-1"
             [(ngModel)]="assetForm.projectailMaterialId"
             name="projectailMaterialId"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          >
-            <option value="">Select material</option>
-            <option *ngFor="let material of projectailMaterials" [value]="material.id">{{ material.nameEn }}</option>
-          </select>
+            [options]="projectailMaterials"
+            optionValue="id"
+            [optionLabelFn]="lookupOptionLabel"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            placeholder="Select material">
+          </app-dropdown>
         </div>
       </div>
 

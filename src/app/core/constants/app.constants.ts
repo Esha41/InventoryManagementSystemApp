@@ -116,6 +116,8 @@ export const API_ENDPOINTS = {
     UNREAD_COUNT: '/Notification/unread-count',
     MARK_AS_READ: (id: number) => `/Notification/${id}/read`,
     MARK_ALL_AS_READ: '/Notification/read-all',
+    CONFIRM_PICKUP: (id: number) => `/Notification/${id}/confirm`,
+    PROPOSE_NEW_TIME: (id: number) => `/Notification/${id}/propose`,
     SEND_TO_USER: '/Notification/send',
     SEND_TO_GROUP: '/Notification/send-to-group'
   },
