@@ -229,7 +229,7 @@ export class NotificationService implements OnDestroy {
       .then(() => {
         this.configService.log('Notification hub connected');
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         this.configService.logError('Failed to start notification hub connection', error);
         this.scheduleReconnect();
       });
