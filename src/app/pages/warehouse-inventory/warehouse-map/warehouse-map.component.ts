@@ -1,12 +1,14 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Download, Trash2 } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
+import { OfflineMapService } from '@services/offline-map.service';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-warehouse-map',
@@ -15,81 +17,45 @@ import { WarehouseLocationDto } from '@models/warehouse.model';
   templateUrl: './warehouse-map.component.html',
   styleUrls: ['./warehouse-map.component.css']
 })
-export class WarehouseMapComponent implements OnInit, OnDestroy {
+export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   warehouseId: string = '';
   itemId: string = '';
   loading = true;
   
   readonly ArrowLeft = ArrowLeft;
+  readonly Download = Download;
+  readonly Trash2 = Trash2;
 
   @ViewChild('mapContainer', { static: false }) mapContainerRef!: ElementRef<HTMLElement>;
+  
+  // Leaflet map instance
+  private map: L.Map | null = null;
+  private markers: Map<string, L.Marker> = new Map();
+  
+  // Cache status
+  cacheStatus = {
+    isCached: false,
+    isDownloading: false,
+    tileCount: 0
+  };
 
   warehouses: WarehouseLocationDto[] = [];
   selectedWarehouse: string | null = null;
 
-  // Drag state
-  isDragging = false;
-  draggedWarehouseId: string | null = null;
-  dragStartX = 0;
-  dragStartY = 0;
-  draggedPosition: { top: number; left: number } | null = null;
-  dragDistance = 0; // Track how far the pin was dragged
-  private dragThreshold = 5; // Minimum pixels to consider it a drag (not a click)
-  
-  // Calculated coordinates display
-  calculatedCoordinates: { latitude: number; longitude: number } | null = null;
-  showCoordinates = false;
-
   private destroy$ = new Subject<void>();
 
-  /**
-   * MAP CALIBRATION CONFIGURATION
-   * 
-   * To calibrate your static map image:
-   * 
-   * 1. Find the geographic bounds of your map image:
-   *    - Identify the northernmost point (top of image) → maxLat
-   *    - Identify the southernmost point (bottom of image) → minLat
-   *    - Identify the westernmost point (left of image) → minLon
-   *    - Identify the easternmost point (right of image) → maxLon
-   * 
-   * 2. Use Google Maps or a mapping tool to get exact coordinates:
-   *    - Click on the top-left corner of your map → get lat/lon
-   *    - Click on the bottom-right corner of your map → get lat/lon
-   * 
-   * 3. Adjust these values to match YOUR specific map image:
-   */
-  private readonly MAP_BOUNDS = {
-    // North (top of map image)
-    maxLat: 26.1544,
-    // South (bottom of map image)
-    minLat: 24.4704,
-    // West (left of map image)
-    minLon: 50.7439,
-    // East (right of map image)
-    maxLon: 51.6067
-  };
-
-  /**
-   * MAP IMAGE OFFSET ADJUSTMENT
-   * 
-   * If your map image has borders or padding that aren't part of the actual map,
-   * adjust these offsets to account for them (in percentage):
-   * 
-   * Example: If your map image has 10px padding on all sides and the container is 1000px,
-   * then topOffset = 1%, leftOffset = 1%, etc.
-   */
-  private readonly MAP_OFFSETS = {
-    top: 5,    // Percentage offset from top (for map borders/padding)
-    bottom: 5, // Percentage offset from bottom
-    left: 5,   // Percentage offset from left
-    right: 5   // Percentage offset from right
-  };
+  // Qatar map configuration
+  private readonly QATAR_CENTER: L.LatLngExpression = [25.3548, 51.1839]; // Doha coordinates
+  private readonly QATAR_BOUNDS: L.LatLngBoundsExpression = [
+    [24.4704, 50.7439], // Southwest
+    [26.1544, 51.6067]  // Northeast
+  ];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private lookupService: LookupService
+    private lookupService: LookupService,
+    private offlineMapService: OfflineMapService
   ) {}
 
   ngOnInit(): void {
@@ -98,8 +64,200 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
       this.itemId = params['itemId'];
       this.loadWarehouseLocations();
     });
+    
+    // Check cache status
+    this.checkCacheStatus();
   }
 
+  ngAfterViewInit(): void {
+    // Initialize map after view is ready
+    setTimeout(() => {
+      this.initializeMap();
+    }, 100);
+  }
+
+
+  /**
+   * Initialize Leaflet map
+   */
+  private initializeMap(): void {
+    if (!this.mapContainerRef) {
+      console.error('Map container not found');
+      return;
+    }
+
+    // Fix Leaflet default icon path issue in Angular
+    const iconRetinaUrl = 'assets/marker-icon-2x.png';
+    const iconUrl = 'assets/marker-icon.png';
+    const shadowUrl = 'assets/marker-shadow.png';
+    const iconDefault = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+
+    // Create map
+    this.map = L.map(this.mapContainerRef.nativeElement, {
+      center: this.QATAR_CENTER,
+      zoom: 10, // Increased default zoom (was 9)
+      minZoom: 7, // Allow zooming out more (was 8)
+      maxZoom: 16, // Allow zooming in more (was 13)
+      maxBounds: this.QATAR_BOUNDS,
+      maxBoundsViscosity: 0.5 // Reduced from 1.0 - allows more panning outside bounds before snapping back
+    });
+
+    // Add tile layer with offline support
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 16, // Match map maxZoom
+      minZoom: 7 // Match map minZoom
+    }).addTo(this.map);
+
+    // Add markers for warehouses
+    this.addWarehouseMarkers();
+  }
+
+  /**
+   * Add warehouse markers to the map
+   */
+  private addWarehouseMarkers(): void {
+    if (!this.map) return;
+
+    // Clear existing markers
+    this.markers.forEach(marker => marker.remove());
+    this.markers.clear();
+
+    // Add new markers
+    this.warehouses.forEach(warehouse => {
+      if (warehouse.latitude && warehouse.longitude) {
+        const marker = this.createWarehouseMarker(warehouse);
+        this.markers.set(warehouse.id, marker);
+      }
+    });
+  }
+
+  /**
+   * Create a marker for a warehouse
+   */
+  private createWarehouseMarker(warehouse: WarehouseLocationDto): L.Marker {
+    if (!this.map) throw new Error('Map not initialized');
+
+    // Determine marker color based on warehouse status
+    const markerColor = warehouse.color === 'green' ? '#10B981' : 
+                       warehouse.color === 'orange' ? '#F59E0B' : '#EF4444';
+    
+    const markerColorDark = warehouse.color === 'green' ? '#059669' : 
+                           warehouse.color === 'orange' ? '#D97706' : '#DC2626';
+
+    // Create custom icon with modern SVG design
+    const customIcon = L.divIcon({
+      className: 'custom-warehouse-marker',
+      html: `
+        <div class="marker-container">
+          <svg class="marker-svg" width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shadow/Glow Effect -->
+            <defs>
+              <filter id="glow-${warehouse.id}" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <linearGradient id="gradient-${warehouse.id}" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:${markerColor};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${markerColorDark};stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Main Pin Shape -->
+            <path d="M24 2 C13 2 4 11 4 22 C4 28 7 33 11 37 L24 58 L37 37 C41 33 44 28 44 22 C44 11 35 2 24 2 Z" 
+                  fill="url(#gradient-${warehouse.id})" 
+                  stroke="white" 
+                  stroke-width="2.5"
+                  filter="url(#glow-${warehouse.id})"
+                  class="pin-shape"/>
+            
+            <!-- Inner Circle -->
+            <circle cx="24" cy="22" r="10" fill="white" opacity="0.95"/>
+            
+            <!-- Warehouse Icon -->
+            <g transform="translate(24, 22)">
+              <path d="M-6,-4 L0,-7 L6,-4 L6,4 L-6,4 Z" fill="${markerColorDark}" opacity="0.9"/>
+              <rect x="-4" y="-1" width="2" height="3" fill="white" opacity="0.7"/>
+              <rect x="2" y="-1" width="2" height="3" fill="white" opacity="0.7"/>
+              <rect x="-1" y="1" width="2" height="3" fill="white" opacity="0.7"/>
+            </g>
+          </svg>
+          
+          <!-- Warehouse Code Label -->
+          <div class="marker-label" style="background: linear-gradient(135deg, ${markerColor} 0%, ${markerColorDark} 100%);">
+            <span class="marker-code">${warehouse.code}</span>
+          </div>
+          
+          <!-- Pulse Animation Ring -->
+          <div class="marker-pulse" style="border-color: ${markerColor};"></div>
+        </div>
+      `,
+      iconSize: [48, 64],
+      iconAnchor: [24, 64],
+      popupAnchor: [0, -64]
+    });
+
+    // Create marker (non-draggable as per requirements)
+    const marker = L.marker([warehouse.latitude, warehouse.longitude], {
+      icon: customIcon,
+      draggable: false, // Fixed pins - cannot be moved
+      title: warehouse.name
+    }).addTo(this.map);
+
+    // Add popup with warehouse information
+    const popupContent = `
+      <div class="warehouse-popup">
+        <div class="popup-header" style="background: linear-gradient(135deg, ${markerColor} 0%, ${markerColorDark} 100%);">
+          <h3 class="popup-title">${warehouse.code}</h3>
+        </div>
+        <div class="popup-body">
+          <div class="popup-row">
+            <span class="popup-label">📍 Location:</span>
+            <span class="popup-value">${warehouse.location}</span>
+          </div>
+          <div class="popup-row">
+            <span class="popup-label">🏢 Name:</span>
+            <span class="popup-value">${warehouse.name}</span>
+          </div>
+          <div class="popup-row">
+            <span class="popup-label">⚡ Status:</span>
+            <span class="status-badge status-${warehouse.isActive ? 'active' : 'inactive'}">
+              ${warehouse.isActive ? '✓ Active' : '✕ Inactive'}
+            </span>
+          </div>
+          <div class="popup-row">
+            <span class="popup-label">🌍 Coordinates:</span>
+            <span class="popup-value coordinates">${warehouse.latitude.toFixed(4)}°N, ${warehouse.longitude.toFixed(4)}°E</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    marker.bindPopup(popupContent, {
+      maxWidth: 300,
+      className: 'custom-popup'
+    });
+
+    // Handle marker click
+    marker.on('click', () => {
+      this.selectWarehouse(warehouse.id);
+    });
+
+    return marker;
+  }
 
   private loadWarehouseLocations(): void {
     this.loading = true;
@@ -113,6 +271,11 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
             .map(depot => this.mapDepotToWarehouseLocation(depot));
           
           this.loading = false;
+          
+          // Add markers to map if it's already initialized
+          if (this.map) {
+            this.addWarehouseMarkers();
+          }
         },
         error: (error: any) => {
           console.error('Failed to load warehouse locations:', error);
@@ -136,128 +299,58 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
     // Determine color based on NEQ or other criteria (default to green)
     let color: 'green' | 'orange' | 'red' = 'green';
     
-    // Calculate map position from latitude/longitude if available
-    const mapPosition = this.getMapPositionForDepot(
-      depot.id, 
-      depot.latitude ? Number(depot.latitude) : undefined, 
-      depot.longitude ? Number(depot.longitude) : undefined
-    );
+    // Use actual coordinates or default to Doha center if not available
+    const latitude = depot.latitude ? Number(depot.latitude) : 25.2854;
+    const longitude = depot.longitude ? Number(depot.longitude) : 51.5310;
 
     return {
       id: depot.id.toString(),
       name: depot.nameEn,
       code: code,
       location: depot.location || depot.nameEn,
-      latitude: depot.latitude || 0,
-      longitude: depot.longitude || 0,
-      mapPosition: mapPosition,
+      latitude: latitude,
+      longitude: longitude,
       color: color,
       isActive: !depot.isDeleted
     };
   }
 
   /**
-   * Get map position for a depot
-   * Converts latitude/longitude to CSS position percentages on the static map
-   * Uses latitude/longitude if available, otherwise falls back to default positions
+   * Check cache status
    */
-  private getMapPositionForDepot(depotId: number, latitude?: number, longitude?: number): { top: string; left: string } {
-    // If valid coordinates are provided, convert them to map positions
-    if (latitude && longitude && latitude !== 0 && longitude !== 0) {
-      return this.convertCoordinatesToMapPosition(latitude, longitude);
-    }
-    
-    // Fallback to default positions for depots without coordinates
-    const defaultPositions: { [key: number]: { top: string; left: string } } = {
-      1: { top: '15%', left: '65%' },
-      2: { top: '28%', left: '58%' },
-      3: { top: '85%', left: '55%' }
-    };
-    
-    return defaultPositions[depotId] || { top: '50%', left: '50%' };
+  private async checkCacheStatus(): Promise<void> {
+    const cacheInfo = await this.offlineMapService.getCacheInfo();
+    this.cacheStatus.isCached = cacheInfo.count > 0;
+    this.cacheStatus.tileCount = cacheInfo.count;
   }
 
   /**
-   * Convert latitude/longitude coordinates to CSS position percentages
-   * 
-   * MATH EXPLANATION:
-   * =================
-   * 
-   * Step 1: Normalize coordinates to 0-1 range
-   *   latRatio = (lat - minLat) / (maxLat - minLat)
-   *   lonRatio = (lon - minLon) / (maxLon - minLon)
-   * 
-   * Step 2: Convert to percentage (0-100%)
-   *   latPercent = latRatio * 100
-   *   lonPercent = lonRatio * 100
-   * 
-   * Step 3: Invert latitude (CSS top increases downward)
-   *   topPercent = 100 - latPercent
-   * 
-   * Step 4: Apply offsets for map borders/padding
-   *   adjustedTop = topPercent + topOffset
-   *   adjustedLeft = lonPercent + leftOffset
-   * 
-   * Example:
-   *   If a location is at 25.5°N, 51.0°E:
-   *   - latRatio = (25.5 - 24.4704) / (26.1544 - 24.4704) = 0.611
-   *   - lonRatio = (51.0 - 50.7439) / (51.6067 - 50.7439) = 0.296
-   *   - topPercent = 100 - (0.611 * 100) = 38.9%
-   *   - leftPercent = 0.296 * 100 = 29.6%
+   * Download map tiles for offline use
    */
-  private convertCoordinatesToMapPosition(latitude: number, longitude: number): { top: string; left: string } {
-    const { minLat, maxLat, minLon, maxLon } = this.MAP_BOUNDS;
-    const { top: topOffset, left: leftOffset, bottom: bottomOffset, right: rightOffset } = this.MAP_OFFSETS;
-
-    // Clamp coordinates to map bounds
-    const clampedLat = Math.max(minLat, Math.min(maxLat, latitude));
-    const clampedLon = Math.max(minLon, Math.min(maxLon, longitude));
-
-    // Step 1: Normalize to 0-1 range
-    const latRange = maxLat - minLat;
-    const lonRange = maxLon - minLon;
-    const latRatio = (clampedLat - minLat) / latRange;
-    const lonRatio = (clampedLon - minLon) / lonRange;
-
-    // Step 2: Convert to percentage
-    const latPercent = latRatio * 100;
-    const lonPercent = lonRatio * 100;
-
-    // Step 3: Invert latitude (CSS top increases downward, but latitude increases northward)
-    // Higher latitude = North = top of map = lower CSS top value
-    const topPercent = 100 - latPercent;
-
-    // Step 4: Apply offsets and clamp to valid range
-    // Account for map image borders/padding
-    const effectiveTop = topPercent + topOffset;
-    const effectiveLeft = lonPercent + leftOffset;
-
-    // Clamp to ensure pins stay within visible map area
-    const adjustedTop = Math.max(
-      topOffset, 
-      Math.min(100 - bottomOffset, effectiveTop)
-    );
-    const adjustedLeft = Math.max(
-      leftOffset, 
-      Math.min(100 - rightOffset, effectiveLeft)
-    );
-
-    // Debug logging (remove in production or make it conditional)
-    if (console && console.log) {
-      console.log(`Pin calculation for ${latitude}, ${longitude}:`, {
-        latRatio: latRatio.toFixed(3),
-        lonRatio: lonRatio.toFixed(3),
-        topPercent: topPercent.toFixed(2),
-        leftPercent: lonPercent.toFixed(2),
-        adjustedTop: adjustedTop.toFixed(2) + '%',
-        adjustedLeft: adjustedLeft.toFixed(2) + '%'
-      });
+  async downloadOfflineTiles(): Promise<void> {
+    this.cacheStatus.isDownloading = true;
+    try {
+      // Cache tiles for zoom levels 7-14 (wider range for better offline experience)
+      await this.offlineMapService.preCacheTiles([7, 8, 9, 10, 11, 12, 13, 14]);
+      await this.checkCacheStatus();
+      alert('Map tiles downloaded successfully! The map will now work offline.');
+    } catch (error) {
+      console.error('Failed to download tiles:', error);
+      alert('Failed to download map tiles. Please try again.');
+    } finally {
+      this.cacheStatus.isDownloading = false;
     }
+  }
 
-    return {
-      top: `${adjustedTop.toFixed(2)}%`,
-      left: `${adjustedLeft.toFixed(2)}%`
-    };
+  /**
+   * Clear offline cache
+   */
+  async clearOfflineCache(): Promise<void> {
+    if (confirm('Are you sure you want to clear the offline map cache?')) {
+      await this.offlineMapService.clearCache();
+      await this.checkCacheStatus();
+      alert('Offline map cache cleared.');
+    }
   }
 
   onBack(): void {
@@ -266,6 +359,27 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
 
   selectWarehouse(warehouseId: string): void {
     this.selectedWarehouse = warehouseId;
+    
+    const marker = this.markers.get(warehouseId);
+    if (marker && this.map) {
+      const markerLatLng = marker.getLatLng();
+      
+      const currentBounds = this.map.options.maxBounds;
+      this.map.setMaxBounds(undefined);
+      
+      this.map.flyTo(markerLatLng, 12, {
+        animate: true,
+        duration: 1.0,
+        easeLinearity: 0.25
+      });
+      
+      setTimeout(() => {
+        if (this.map && currentBounds) {
+          this.map.setMaxBounds(currentBounds);
+        }
+        marker.openPopup();
+      }, 1100);
+    }
   }
 
   /**
@@ -276,228 +390,13 @@ export class WarehouseMapComponent implements OnInit, OnDestroy {
     return this.warehouses.find(w => w.id === this.selectedWarehouse);
   }
 
-  /**
-   * Convert CSS position percentages back to latitude/longitude coordinates
-   * This is the reverse of convertCoordinatesToMapPosition
-   */
-  private convertMapPositionToCoordinates(topPercent: number, leftPercent: number): { latitude: number; longitude: number } {
-    const { minLat, maxLat, minLon, maxLon } = this.MAP_BOUNDS;
-    const { top: topOffset, left: leftOffset } = this.MAP_OFFSETS;
-
-    // Remove offsets from percentages
-    const adjustedTop = topPercent - topOffset;
-    const adjustedLeft = leftPercent - leftOffset;
-
-    // Clamp to valid range (0-100%)
-    const clampedTop = Math.max(0, Math.min(100, adjustedTop));
-    const clampedLeft = Math.max(0, Math.min(100, adjustedLeft));
-
-    // Reverse the latitude inversion: topPercent = 100 - latPercent
-    // So: latPercent = 100 - topPercent
-    const latPercent = 100 - clampedTop;
-    const lonPercent = clampedLeft;
-
-    // Convert from percentage to ratio (0-1)
-    const latRatio = latPercent / 100;
-    const lonRatio = lonPercent / 100;
-
-    // Convert from ratio to actual coordinates
-    const latRange = maxLat - minLat;
-    const lonRange = maxLon - minLon;
-
-    const latitude = minLat + (latRatio * latRange);
-    const longitude = minLon + (lonRatio * lonRange);
-
-    return {
-      latitude: parseFloat(latitude.toFixed(6)),
-      longitude: parseFloat(longitude.toFixed(6))
-    };
-  }
-
-  /**
-   * Start dragging a pin
-   */
-  onPinMouseDown(event: MouseEvent, warehouseId: string): void {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    this.isDragging = true;
-    this.draggedWarehouseId = warehouseId;
-    this.dragStartX = event.clientX;
-    this.dragStartY = event.clientY;
-
-    // Get current pin position
-    const warehouse = this.warehouses.find(w => w.id === warehouseId);
-    if (warehouse && warehouse.mapPosition) {
-      const currentTop = parseFloat(warehouse.mapPosition.top.replace('%', ''));
-      const currentLeft = parseFloat(warehouse.mapPosition.left.replace('%', ''));
-      this.draggedPosition = { top: currentTop, left: currentLeft };
-    }
-
-    // Add global mouse move and up listeners
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
-  }
-
-  /**
-   * Handle mouse move during drag
-   */
-  onMouseMove = (event: MouseEvent): void => {
-    if (!this.isDragging || !this.draggedWarehouseId || !this.draggedPosition) return;
-
-    // Calculate drag distance
-    const deltaX = Math.abs(event.clientX - this.dragStartX);
-    const deltaY = Math.abs(event.clientY - this.dragStartY);
-    this.dragDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    // Get map container element
-    const mapContainer = this.mapContainerRef?.nativeElement;
-    if (!mapContainer) return;
-
-    const rect = mapContainer.getBoundingClientRect();
-    const containerWidth = rect.width;
-    const containerHeight = rect.height;
-
-    // Calculate mouse position relative to map container
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-
-    // Convert to percentages
-    const leftPercent = (mouseX / containerWidth) * 100;
-    const topPercent = (mouseY / containerHeight) * 100;
-
-    // Clamp to valid range (accounting for offsets)
-    const { top: topOffset, left: leftOffset, bottom: bottomOffset, right: rightOffset } = this.MAP_OFFSETS;
-    const clampedTop = Math.max(topOffset, Math.min(100 - bottomOffset, topPercent));
-    const clampedLeft = Math.max(leftOffset, Math.min(100 - rightOffset, leftPercent));
-
-    // Update dragged position
-    this.draggedPosition = { top: clampedTop, left: clampedLeft };
-
-    // Update warehouse position temporarily
-    const warehouse = this.warehouses.find(w => w.id === this.draggedWarehouseId);
-    if (warehouse && warehouse.mapPosition) {
-      warehouse.mapPosition.top = `${clampedTop.toFixed(2)}%`;
-      warehouse.mapPosition.left = `${clampedLeft.toFixed(2)}%`;
-    }
-
-    // Calculate coordinates in real-time
-    this.calculatedCoordinates = this.convertMapPositionToCoordinates(clampedTop, clampedLeft);
-    this.showCoordinates = true;
-  };
-
-  /**
-   * Handle mouse up - end drag
-   */
-  onMouseUp = (event: MouseEvent): void => {
-    if (!this.isDragging || !this.draggedWarehouseId || !this.draggedPosition) {
-      this.cleanupDrag();
-      return;
-    }
-
-    // Calculate final coordinates
-    const coordinates = this.convertMapPositionToCoordinates(
-      this.draggedPosition.top,
-      this.draggedPosition.left
-    );
-
-    // Update warehouse with new position and coordinates
-    const warehouse = this.warehouses.find(w => w.id === this.draggedWarehouseId);
-    if (warehouse) {
-      if (warehouse.mapPosition) {
-        warehouse.mapPosition.top = `${this.draggedPosition.top.toFixed(2)}%`;
-        warehouse.mapPosition.left = `${this.draggedPosition.left.toFixed(2)}%`;
-      }
-      
-      // Update coordinates
-      warehouse.latitude = coordinates.latitude;
-      warehouse.longitude = coordinates.longitude;
-
-      // Show calculated coordinates
-      this.calculatedCoordinates = coordinates;
-      this.showCoordinates = true;
-
-      // Log the coordinates
-      console.log(`Pin dropped for ${warehouse.code}:`, {
-        position: { top: `${this.draggedPosition.top}%`, left: `${this.draggedPosition.left}%` },
-        coordinates: coordinates
-      });
-    }
-
-    // Clean up
-    this.cleanupDrag();
-  };
-
-  /**
-   * Clean up drag state
-   */
-  private cleanupDrag(): void {
-    // Reset after a short delay to allow click handler to check dragDistance
-    setTimeout(() => {
-      this.isDragging = false;
-      this.draggedWarehouseId = null;
-      this.dragStartX = 0;
-      this.dragStartY = 0;
-      this.dragDistance = 0;
-    }, 150);
-    
-    // Remove event listeners immediately
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-  }
-
-  /**
-   * Handle pin click (only if not dragging)
-   */
-  onPinClick(event: MouseEvent, warehouseId: string): void {
-    // Prevent click if we just finished dragging (user moved pin more than threshold)
-    if (this.dragDistance > this.dragThreshold) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    
-    // Small delay to distinguish click from drag end
-    setTimeout(() => {
-      if (!this.isDragging && this.dragDistance <= this.dragThreshold) {
-        this.selectWarehouse(warehouseId);
-      }
-    }, 100);
-  }
-
-  /**
-   * Close coordinates display
-   */
-  closeCoordinatesDisplay(): void {
-    this.showCoordinates = false;
-    this.calculatedCoordinates = null;
-  }
-
-  /**
-   * HELPER METHOD FOR MANUAL CALIBRATION
-   * 
-   * Use this in the browser console to test coordinate calculations:
-   * 
-   * Example:
-   *   const component = ng.probe(document.querySelector('app-warehouse-map')).componentInstance;
-   *   component.testCoordinateCalculation(25.5, 51.0);
-   * 
-   * This will show you exactly where a pin would be placed for given coordinates.
-   */
-  testCoordinateCalculation(latitude: number, longitude: number): void {
-    const result = this.convertCoordinatesToMapPosition(latitude, longitude);
-    console.log('=== COORDINATE CALCULATION TEST ===');
-    console.log(`Input: ${latitude}°N, ${longitude}°E`);
-    console.log(`Output: top: ${result.top}, left: ${result.left}`);
-    console.log(`Map Bounds:`, this.MAP_BOUNDS);
-    console.log(`Map Offsets:`, this.MAP_OFFSETS);
-    console.log('===================================');
-    return;
-  }
-
   ngOnDestroy(): void {
-    // Clean up event listeners
-    this.cleanupDrag();
+    // Clean up map
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+    
     this.destroy$.next();
     this.destroy$.complete();
   }
