@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Shield, Settings, Check, X, Save, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, Shield, Settings, Check, X, Save, RefreshCw, Search } from 'lucide-angular';
 
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
@@ -13,7 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-role-permissions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, CardComponent, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule, CardComponent, TranslateModule],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.css']
 })
@@ -24,11 +24,13 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   readonly X = X;
   readonly Save = Save;
   readonly RefreshCw = RefreshCw;
+  readonly Search = Search;
 
   roles: RoleDto[] = [];
   selectedRole: RoleDto | null = null;
   permissions: CrudPermission[] = [];
   plainPermissions: CrudPermission[] = [];
+  roleSearchTerm = '';
 
   isLoading = false;
   isSaving = false;
@@ -53,6 +55,15 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  get filteredRoles(): RoleDto[] {
+    const search = this.roleSearchTerm.trim().toLowerCase();
+    if (!search) {
+      return this.roles;
+    }
+
+    return this.roles.filter(role => role.name?.toLowerCase().includes(search));
   }
 
   loadRoles(): void {
@@ -142,6 +153,21 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   this.permissionForm = this.fb.group(formControls);
 }
 
+
+
+  getPermissionLabel(displayValue: string | null | undefined): string {
+    if (!displayValue) {
+      return '';
+    }
+
+    const parts = displayValue.split('.');
+    if (parts.length <= 2) {
+      return parts.length === 0 ? '' : parts[parts.length - 1];
+    }
+
+    const remaining = parts.slice(2).join('.');
+    return remaining || parts[parts.length - 1];
+  }
 
 
   // strip the first dot-separated segment (e.g. remove leading "Dashboard." from "Dashboard.X.Y")

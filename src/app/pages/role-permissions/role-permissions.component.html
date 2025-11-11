@@ -49,8 +49,19 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Role Selection Card -->
     <app-card [title]="'rolePermissions.selectRole' | translate" class="lg:col-span-1">
-      <div class="space-y-3">
-        <div *ngFor="let role of roles" (click)="onRoleSelect(role)"
+      <div class="space-y-4">
+        <div class="relative">
+          <lucide-angular [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+          <input
+            type="text"
+            [(ngModel)]="roleSearchTerm"
+            placeholder="Search Ro
+            class="w-full pl-10 pr-3 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] outline-none transition-all hover:border-[var(--color-accent)]/50"
+          />
+        </div>
+
+        <ng-container *ngIf="filteredRoles.length; else noRolesFound">
+          <div *ngFor="let role of filteredRoles" (click)="onRoleSelect(role)"
           [class]="'p-4 rounded-lg border-2 cursor-pointer transition-all ' + 
             (selectedRole?.id === role.id 
               ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10' 
@@ -73,6 +84,12 @@
             </div>
           </div>
         </div>
+        </ng-container>
+        <ng-template #noRolesFound>
+          <div class="text-center py-6 text-sm text-[var(--color-text-muted)]">
+            {{ 'rolePermissions.noRolesFound' | translate }}
+          </div>
+        </ng-template>
       </div>
     </app-card>
 
@@ -143,7 +160,7 @@
               <label *ngFor="let perm of permission.permissionsList"
                 class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all">
                 <input type="checkbox" [formControlName]="sanitizeControlName(perm.displayValue)" />
-                <span class="text-sm font-medium text-[var(--color-text)]">{{ perm.displayValue }}</span>
+                <span class="text-sm font-medium text-[var(--color-text)]">{{ getPermissionLabel(perm.displayValue) }}</span>
               </label>
             </div>
           </app-card>
@@ -173,7 +190,7 @@
                 <input type="checkbox" [formControlName]="sanitizeControlName(perm.displayValue)"
                   class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
 
-                <span class="text-sm font-medium text-[var(--color-text)]">{{ perm.displayValue }}</span>
+                <span class="text-sm font-medium text-[var(--color-text)]">{{ getPermissionLabel(perm.displayValue) }}</span>
               </label>
             </div>
           </app-card>

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, X } from 'lucide-angular';
+import { LucideAngularModule, X, ShieldAlert } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from './components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from './components/return-details-modal/return-details-modal.component';
 import { DiscardDetailsModalComponent } from './components/discard-details-modal/discard-details-modal.component';
@@ -50,6 +50,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private discardRequestsMap = new Map<number, DiscardDto>();
 
   readonly XIcon = X;
+  readonly ShieldAlert = ShieldAlert;
+  showContactAdminNotice = false;
 
   constructor(
     private authService: BackendAuthService,
@@ -116,6 +118,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       return this.authService.hasAnyPermission(card.permissions);
     });
+
+    const permissionsArray = Array.isArray(user?.permissions) ? user?.permissions : [];
+    this.showContactAdminNotice = isAuthenticated && permissionsArray.length === 0 && this.visibleCards.length === 0;
   }
 
   shouldShowCard(card: DashboardCard): boolean {
