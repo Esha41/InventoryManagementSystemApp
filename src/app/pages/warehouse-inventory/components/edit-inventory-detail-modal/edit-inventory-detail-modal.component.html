@@ -79,14 +79,16 @@
       <label class="block text-sm font-semibold text-gray-700 mb-2">
         {{ 'editInventoryDetail.supplier' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         formControlName="supplierId"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all">
-        <option [ngValue]="null">{{ 'editInventoryDetail.selectSupplier' | translate }}</option>
-        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">
-          {{ supplier.nameEn }}
-        </option>
-      </select>
+        [options]="suppliers"
+        optionValue="id"
+        [optionLabelFn]="lookupOptionLabel"
+        [placeholderSelectable]="true"
+        [placeholderValue]="null"
+        placeholder="{{ 'editInventoryDetail.selectSupplier' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Manufacturer -->
@@ -94,14 +96,16 @@
       <label class="block text-sm font-semibold text-gray-700 mb-2">
         {{ 'editInventoryDetail.manufacturer' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         formControlName="manufacturerId"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all">
-        <option [ngValue]="null">{{ 'editInventoryDetail.selectManufacturer' | translate }}</option>
-        <option *ngFor="let manufacturer of manufacturers" [ngValue]="manufacturer.id">
-          {{ manufacturer.nameEn }}
-        </option>
-      </select>
+        [options]="manufacturers"
+        optionValue="id"
+        [optionLabelFn]="lookupOptionLabel"
+        [placeholderSelectable]="true"
+        [placeholderValue]="null"
+        placeholder="{{ 'editInventoryDetail.selectManufacturer' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Country -->
@@ -109,14 +113,16 @@
       <label class="block text-sm font-semibold text-gray-700 mb-2">
         {{ 'editInventoryDetail.country' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         formControlName="countryId"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all">
-        <option [ngValue]="null">{{ 'editInventoryDetail.selectCountry' | translate }}</option>
-        <option *ngFor="let country of countries" [ngValue]="country.id">
-          {{ country.nameEn }}
-        </option>
-      </select>
+        [options]="countries"
+        optionValue="id"
+        [optionLabelFn]="lookupOptionLabel"
+        [placeholderSelectable]="true"
+        [placeholderValue]="null"
+        placeholder="{{ 'editInventoryDetail.selectCountry' | translate }}">
+      </app-dropdown>
     </div>
   </form>
 

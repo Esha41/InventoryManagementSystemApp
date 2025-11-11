@@ -6,6 +6,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto } from '@models/inventory.model';
 import { LookupService, LookupItem } from '@services/lookup.service';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -15,7 +16,8 @@ import { LookupService, LookupItem } from '@services/lookup.service';
     ReactiveFormsModule,
     ModalComponent,
     ButtonComponent,
-    TranslateModule
+    TranslateModule,
+    DropdownComponent
   ],
   templateUrl: './edit-inventory-detail-modal.component.html',
   styleUrls: ['./edit-inventory-detail-modal.component.css']
@@ -34,6 +36,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   countries: LookupItem[] = [];
   isLoading = false;
   errorMessage = '';
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => this.getLookupName(this.unwrapLookupOption(option));
 
   constructor(
     private fb: FormBuilder,
@@ -138,6 +141,27 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     this.detailForm.reset();
     this.errorMessage = '';
     this.closed.emit();
+  }
+
+  private unwrapLookupOption(option: DropdownOption<LookupItem> | LookupItem | null): LookupItem | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && 'value' in option) {
+      return option.value as LookupItem;
+    }
+    return option as LookupItem;
+  }
+
+  private getLookupName(item: LookupItem | null): string {
+    if (!item) {
+      return '';
+    }
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return item.nameAr || item.nameEn || '';
+    }
+    return item.nameEn || item.nameAr || '';
   }
 
   getFieldError(fieldName: string): string {

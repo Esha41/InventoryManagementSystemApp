@@ -30,16 +30,17 @@
                 {{ 'returnRequest.priority' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="priority"
                   name="priority"
-                  [class.border-red-500]="hasError('priority')"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                >
-                  <option *ngFor="let option of priorityOptions" [value]="option.value">
-                    {{ option.labelKey | translate }}
-                  </option>
-                </select>
+                  [options]="priorityOptions"
+                  optionLabel="labelKey"
+                  optionValue="value"
+                  [translateLabels]="true"
+                  [error]="hasError('priority')"
+                  placeholder="{{ 'returnRequest.priority' | translate }}">
+                </app-dropdown>
                 <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-red-500">
                   {{ getError('priority') }}
                 </p>
@@ -61,18 +62,17 @@
                   />
                 </ng-container>
                 <ng-template #departmentSelect>
-                  <select
+                  <app-dropdown
+                    class="w-full"
                     [(ngModel)]="departmentId"
                     name="departmentId"
-                    [class.border-red-500]="hasError('departmentId')"
                     [disabled]="isLoadingDepartments"
-                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option [value]="null">{{ isLoadingDepartments ? 'Loading...' : ('returnRequest.selectDepartment' | translate) }}</option>
-                    <option *ngFor="let dept of departments" [value]="dept.id">
-                      {{ dept.nameEn || dept.nameAr }}
-                    </option>
-                  </select>
+                    [error]="hasError('departmentId')"
+                    [options]="departments"
+                    optionValue="id"
+                    [optionLabelFn]="departmentOptionLabel"
+                    [placeholder]="isLoadingDepartments ? ('common.loading' | translate) : ('returnRequest.selectDepartment' | translate)">
+                  </app-dropdown>
                 </ng-template>
                 <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-red-500">
                   {{ getError('departmentId') }}
@@ -95,17 +95,16 @@
                   />
                 </ng-container>
                 <ng-template #requesterSelect>
-                  <select
+                  <app-dropdown
+                    class="w-full"
                     [(ngModel)]="requesterId"
                     name="requesterId"
                     [disabled]="isLoadingRequesters"
-                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option [value]="null">{{ isLoadingRequesters ? 'Loading...' : ('returnRequest.selectRequester' | translate) }}</option>
-                    <option *ngFor="let requester of requesters" [value]="requester.id">
-                      {{ requester.nameEn || requester.nameAr }}
-                    </option>
-                  </select>
+                    [options]="requesters"
+                    optionValue="id"
+                    [optionLabelFn]="requesterOptionLabel"
+                    [placeholder]="isLoadingRequesters ? ('common.loading' | translate) : ('returnRequest.selectRequester' | translate)">
+                  </app-dropdown>
                 </ng-template>
               </div>
             </div>
@@ -116,18 +115,17 @@
                 {{ 'returnRequest.requestPurpose' | translate }} <span class="text-red-500">*</span>
               </label>
               <div class="flex-1">
-                <select
+                <app-dropdown
+                  class="w-full"
                   [(ngModel)]="requestPurposeId"
                   name="requestPurposeId"
-                  [class.border-red-500]="hasError('requestPurposeId')"
                   [disabled]="isLoadingRequestPurposes"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option [value]="null">{{ isLoadingRequestPurposes ? 'Loading...' : ('returnRequest.selectRequestPurpose' | translate) }}</option>
-                  <option *ngFor="let purpose of requestPurposes" [value]="purpose.id">
-                    {{ purpose.nameEn || purpose.nameAr }}
-                  </option>
-                </select>
+                  [error]="hasError('requestPurposeId')"
+                  [options]="requestPurposes"
+                  optionValue="id"
+                  [optionLabelFn]="requestPurposeOptionLabel"
+                  [placeholder]="isLoadingRequestPurposes ? ('common.loading' | translate) : ('returnRequest.selectRequestPurpose' | translate)">
+                </app-dropdown>
                 <p *ngIf="hasError('requestPurposeId')" class="mt-1.5 text-xs text-red-500">
                   {{ getError('requestPurposeId') }}
                 </p>

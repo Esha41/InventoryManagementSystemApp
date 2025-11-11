@@ -10,3 +10,4 @@ export * from './confirm-dialog/confirm-dialog.component';
 export * from './toast/toast.component';
 export * from './role-form-modal/role-form-modal.component';
 export * from './user-form-modal/user-form-modal.component';
+export * from './dropdown/dropdown.component';

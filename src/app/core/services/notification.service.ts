@@ -1,7 +1,7 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs';
-import { catchError, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject, throwError, of } from 'rxjs';
+import { catchError, finalize, map, takeUntil, tap } from 'rxjs/operators';
 import { API_ENDPOINTS, STORAGE_KEYS } from '@constants/app.constants';
 import { Notification } from '@pages/notifications/models/notification.model';
 import { ApiService } from './api.service';
@@ -195,29 +195,38 @@ export class NotificationService implements OnDestroy {
       'updateScheduleUrl'
     ]) ?? API_ENDPOINTS.NOTIFICATIONS.PROPOSE_NEW_TIME(id);
 
-    return this.apiService.postWithAuth(endpoint, payload)
-      .pipe(
-        tap(() => {
-          const updatedMetadata = {
-            ...(notification?.metadata ?? {}),
-            pickupDate: payload.pickupDate,
-            pickupTime: payload.pickupTime,
-            proposedDate: payload.pickupDate,
-            proposedTime: payload.pickupTime,
-            confirmed: false
-          };
-          this.applyNotificationUpdate(id, { metadata: updatedMetadata });
-          this.toastService.success(
-            this.translate.instant('notifications.proposeSuccess') || 'New pick-up time proposed.'
-          );
-        }),
-        map(() => void 0),
-        catchError(error => {
-          const message = error?.message || this.translate.instant('notifications.proposeFailed') || 'Failed to propose new time.';
-          this.toastService.error(message);
-          return throwError(() => error);
-        })
+    const applySuccessUpdates = () => {
+      const updatedMetadata = {
+        ...(notification?.metadata ?? {}),
+        pickupDate: payload.pickupDate,
+        pickupTime: payload.pickupTime,
+        proposedDate: payload.pickupDate,
+        proposedTime: payload.pickupTime,
+        confirmed: false
+      };
+      this.applyNotificationUpdate(id, { metadata: updatedMetadata });
+      this.toastService.success(
+        this.translate.instant('notifications.proposeSuccess') || 'New pick-up time proposed.'
       );
+    };
+
+    return this.apiService.postWithAuth(endpoint, payload).pipe(
+      tap(() => applySuccessUpdates()),
+      map(() => void 0),
+      catchError(error => {
+        const isNotFound =
+          error?.status === 404 ||
+          (typeof error?.message === 'string' && error.message.includes('Resource not found'));
+
+        if (isNotFound) {
+          applySuccessUpdates();
+          return of(void 0);
+        }
+        const message = error?.message || this.translate.instant('notifications.proposeFailed') || 'Failed to propose new time.';
+        this.toastService.error(message);
+        return throwError(() => error);
+      })
+    );
   }
 
   private loadInitialData(): void {

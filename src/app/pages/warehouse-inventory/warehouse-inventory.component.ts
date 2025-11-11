@@ -14,6 +14,7 @@ import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from
 import { DepotDto } from '@models/depot.model';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -25,7 +26,8 @@ import { EditInventoryDetailModalComponent } from './components/edit-inventory-d
     LucideAngularModule, 
     TranslateModule,
     ConfirmDialogComponent,
-    EditInventoryDetailModalComponent
+    EditInventoryDetailModalComponent,
+    DropdownComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css']
@@ -137,7 +139,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/warehouse', this.depoId, 'inventory', itemId]);
   }
 
-  onPageSizeChange(newSize: number): void {
+  onPageSizeChange(newSize: number | null): void {
+    if (!newSize) {
+      return;
+    }
     this.pageSize = newSize;
     this.currentPage = 1; // Reset to first page
     this.totalPages = Math.ceil(this.totalCount / this.pageSize);

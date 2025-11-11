@@ -1,0 +1,37 @@
+<div class="app-dropdown" [class.app-dropdown-disabled]="disabled" [class.app-dropdown-error]="error">
+  <button
+    type="button"
+    class="app-dropdown-trigger"
+    [class.app-dropdown-open]="isOpen"
+    [disabled]="disabled"
+    (click)="toggleDropdown()"
+    (blur)="onTriggerBlur()"
+  >
+    <span class="app-dropdown-label" [class.app-dropdown-placeholder]="!hasSelection">
+      {{ displayLabel }}
+    </span>
+    <lucide-angular
+      [img]="ChevronDown"
+      class="app-dropdown-icon"
+      [class.app-dropdown-icon-rotated]="isOpen"
+    ></lucide-angular>
+  </button>
+
+  <div class="app-dropdown-panel" *ngIf="isOpen">
+    <ul class="app-dropdown-list" [ngClass]="panelClass">
+      <li
+        class="app-dropdown-option"
+        *ngFor="let option of computedOptions; let idx = index; trackBy: trackOption"
+        [class.app-dropdown-option-selected]="isSelected(option)"
+        [class.app-dropdown-option-disabled]="isOptionDisabled(option)"
+        (click)="selectOption(option)"
+      >
+        {{ getOptionLabel(option) }}
+      </li>
+      <li class="app-dropdown-empty" *ngIf="!options || options.length === 0">
+        {{ noDataText }}
+      </li>
+    </ul>
+  </div>
+</div>
+

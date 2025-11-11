@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 export interface SupplyRequest {
   issueNo: string;
@@ -18,7 +19,7 @@ export interface SupplyRequest {
 @Component({
   selector: 'app-supply-request-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
   templateUrl: './supply-request-management.component.html',
   styleUrls: ['./supply-request-management.component.css']
 })
@@ -59,6 +60,7 @@ export class SupplyRequestManagementComponent implements OnInit {
   currentPage: number = 1;
   itemsPerPage: number = 20;
   totalPages: number = 1;
+  readonly itemsPerPageOptions = [1, 2, 5, 10, 20];
 
   ngOnInit(): void {
     this.filterRequests();
@@ -108,6 +110,15 @@ export class SupplyRequestManagementComponent implements OnInit {
 
   calculateTotalPages(): void {
     this.totalPages = Math.ceil(this.filteredRequests.length / this.itemsPerPage);
+  }
+
+  onItemsPerPageChange(value: number | null): void {
+    if (!value) {
+      return;
+    }
+    this.itemsPerPage = value;
+    this.currentPage = 1;
+    this.calculateTotalPages();
   }
 
   get paginatedRequests(): SupplyRequest[] {

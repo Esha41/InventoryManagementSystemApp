@@ -12,11 +12,12 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { CreateWorkflowDto } from '@models/workflow.model';
 import { ToastService } from '@services/toast.service';
 import { WorkflowType } from '@models/workflow.model';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-add-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
   templateUrl: './add-workflow.component.html',
   styleUrls: ['./add-workflow.component.css']
 })
@@ -52,6 +53,10 @@ export class AddWorkflowComponent implements OnInit {
   // Full application entities cache loaded once
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
+  readonly workflowStatusOptions = [
+    { label: 'workflow.active', value: 'Active' as const },
+    { label: 'workflow.inactive', value: 'Inactive' as const }
+  ];
 
   constructor(
     private workflowService: WorkflowService,

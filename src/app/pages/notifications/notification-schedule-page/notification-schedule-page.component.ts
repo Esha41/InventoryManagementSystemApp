@@ -98,8 +98,14 @@ export class NotificationSchedulePageComponent implements OnInit, OnDestroy {
       pickupTime: this.pickupTime
     }).subscribe({
       next: () => {
-        this.saving = false;
-        this.router.navigate(['/notifications']);
+        if (this.notification && !this.notification.isRead) {
+          this.notificationService.markAsRead(this.notification.id).subscribe({
+            next: () => this.navigateBackToList(),
+            error: () => this.navigateBackToList()
+          });
+        } else {
+          this.navigateBackToList();
+        }
       },
       error: () => {
         this.saving = false;
@@ -170,6 +176,11 @@ export class NotificationSchedulePageComponent implements OnInit, OnDestroy {
     }
 
     return '';
+  }
+
+  private navigateBackToList(): void {
+    this.saving = false;
+    this.router.navigate(['/notifications']);
   }
 }
 

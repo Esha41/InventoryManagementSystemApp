@@ -10,11 +10,12 @@ import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto } from '@models/backend-user.model';
 import { WorkflowDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
   templateUrl: './workflow.component.html',
   styleUrls: ['./workflow.component.css']
 })
@@ -36,6 +37,7 @@ export class WorkflowComponent implements OnInit {
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 20;
+  readonly itemsPerPageOptions = [1, 2, 5, 10, 20];
   totalPages: number = 1;
 
   // Modal state
@@ -48,6 +50,10 @@ export class WorkflowComponent implements OnInit {
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
+  readonly workflowStatusOptions = [
+    { label: 'Active', value: 'Active' as const },
+    { label: 'Inactive', value: 'Inactive' as const }
+  ];
 
   constructor(
     private router: Router,
@@ -74,6 +80,15 @@ const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
  this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
 
 
+  }
+
+  onItemsPerPageSelect(value: number | null): void {
+    if (!value) {
+      return;
+    }
+    this.itemsPerPage = value;
+    this.currentPage = 1;
+    this.calculateTotalPages();
   }
 
 getWorkflowType (id: number)

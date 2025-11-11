@@ -92,9 +92,13 @@
       <div class="notification-pagination" *ngIf="!loading && pagedNotifications.length > 0">
         <div class="flex items-center gap-2">
           <span>{{ 'notifications.showing' | translate }}</span>
-          <select [ngModel]="itemsPerPage" (ngModelChange)="onItemsPerPageChange($event)" class="notification-select">
-            <option *ngFor="let option of itemsPerPageOptions" [value]="option">{{ option }}</option>
-          </select>
+          <app-dropdown
+            class="notification-select"
+            [(ngModel)]="itemsPerPage"
+            [options]="itemsPerPageOptions"
+            (selectionChange)="onItemsPerPageChange($event)"
+            [placeholderSelectable]="false">
+          </app-dropdown>
           <span>{{ 'notifications.of' | translate }} {{ filteredNotifications.length }}</span>
         </div>
 

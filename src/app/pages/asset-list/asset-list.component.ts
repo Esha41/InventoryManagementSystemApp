@@ -12,6 +12,7 @@ import { TranslationService } from '@services/translation.service';
 import { forkJoin } from 'rxjs';
 import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 interface Asset {
   id: string;
@@ -41,7 +42,8 @@ interface Asset {
     LucideAngularModule,
     TranslateModule,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    DropdownComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
@@ -75,6 +77,15 @@ export class AssetListComponent implements OnInit {
   primaryPurposes: any[] = [];
   projectileColors: any[] = [];
   projectailMaterials: any[] = [];
+  readonly lookupOptionLabel = (option: DropdownOption<any> | any) => this.getLocalizedName(this.unwrapOption(option));
+  readonly linkedOptions = [
+    { label: 'assetList.editModal.notLinked', value: false },
+    { label: 'assetList.editModal.linked', value: true }
+  ];
+  readonly readyForIssueOptions = [
+    { label: 'common.yes', value: true },
+    { label: 'common.no', value: false }
+  ];
 
   // Modals
   showEditModal = false;
@@ -198,6 +209,22 @@ export class AssetListComponent implements OnInit {
       return 1;
     }
     return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  get hccFilterOptions(): Array<{ label: string; value: string }> {
+    return this.mapToFilterOptions(this.hccList);
+  }
+
+  get caseTypeFilterOptions(): Array<{ label: string; value: string }> {
+    return this.mapToFilterOptions(this.caseTypeList);
+  }
+
+  get hazardDivisionFilterOptions(): Array<{ label: string; value: string }> {
+    return this.mapToFilterOptions(this.hazardDivisionList);
+  }
+
+  get compatibilityFilterOptions(): Array<{ label: string; value: string }> {
+    return this.mapToFilterOptions(this.compatibilityList);
   }
 
   get paginatedAssets(): Asset[] {
@@ -410,6 +437,47 @@ export class AssetListComponent implements OnInit {
 
   navigateToAddAsset(): void {
     this.router.navigate(['/add-asset']);
+  }
+
+  private mapToFilterOptions(list: any[]): Array<{ label: string; value: string }> {
+    return (list || []).map(item => {
+      const label = this.getLocalizedName(item);
+      return {
+        label,
+        value: label
+      };
+    });
+  }
+
+  private getLocalizedName(entity: any): string {
+    if (!entity) {
+      return '';
+    }
+
+    if (typeof entity === 'string') {
+      return entity;
+    }
+
+    if (typeof entity === 'number') {
+      return String(entity);
+    }
+
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
+    }
+
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEN || entity.nameEn || '';
+    }
+    return entity.nameEn || entity.nameEN || entity.nameAr || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T): T {
+    if (option && typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   getReadyForIssueColor(ready: boolean): string {

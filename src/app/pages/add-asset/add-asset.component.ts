@@ -12,6 +12,8 @@ import { DepotDto } from '@models/depot.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 interface AssetForm {
   name: string;
@@ -44,7 +46,7 @@ interface AssetForm {
 @Component({
   selector: 'app-add-asset',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule, DropdownComponent],
   templateUrl: './add-asset.component.html',
   styleUrls: ['./add-asset.component.css']
 })
@@ -66,6 +68,15 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   primaryPurposes: any[] = [];
   projectileColors: any[] = [];
   projectailMaterials: any[] = [];
+  readonly lookupOptionLabel = (option: DropdownOption<any> | any) => this.getLocalizedName(this.unwrapOption(option));
+  readonly linkedOptions = [
+    { label: 'common.no', value: 'false' },
+    { label: 'common.yes', value: 'true' }
+  ];
+  readonly readyForIssueOptions = [
+    { label: 'common.yes', value: true },
+    { label: 'common.no', value: false }
+  ];
 
   loading = false;
   submitting = false;
@@ -153,6 +164,33 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
+  }
+
+  private getLocalizedName(entity: any): string {
+    if (!entity) {
+      return '';
+    }
+
+    if (typeof entity === 'string') {
+      return entity;
+    }
+
+    if (typeof entity === 'number') {
+      return String(entity);
+    }
+
+    const currentLang = this.translationService.getCurrentLanguage ? this.translationService.getCurrentLanguage() : 'en';
+    if (currentLang === 'ar') {
+      return entity.nameAr || entity.nameEN || entity.nameEn || entity.label || '';
+    }
+    return entity.nameEn || entity.nameEN || entity.nameAr || entity.label || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T): T {
+    if (option && typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   onSubmit(): void {

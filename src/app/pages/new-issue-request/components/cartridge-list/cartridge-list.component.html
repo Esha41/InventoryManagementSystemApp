@@ -111,12 +111,15 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'newIssueRequest.selectBulletDiameter' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         [ngModel]="selectedBulletDiameter"
         (ngModelChange)="onBulletDiameterChange($event)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
-        <option *ngFor="let diameter of bulletDiameters" [value]="diameter">{{ diameter }}</option>
-      </select>
+        [options]="bulletDiameters"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Select Case Length -->
@@ -124,12 +127,15 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'newIssueRequest.selectCaseLength' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         [ngModel]="selectedCaseLength"
         (ngModelChange)="onCaseLengthChange($event)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
-        <option *ngFor="let length of caseLengths" [value]="length">{{ length }}</option>
-      </select>
+        [options]="caseLengths"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Linked/Not Linked -->
@@ -137,12 +143,15 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'newIssueRequest.linkedNotLinked' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         [ngModel]="selectedLinked"
         (ngModelChange)="onLinkedChange($event)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
-        <option *ngFor="let option of linkedOptions" [value]="option">{{ option }}</option>
-      </select>
+        [options]="linkedOptions"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Nature Options -->
@@ -150,12 +159,15 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'newIssueRequest.natureOptions' | translate }}
       </label>
-      <select
+      <app-dropdown
+        class="w-full"
         [ngModel]="selectedNature"
         (ngModelChange)="onNatureChange($event)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent">
-        <option *ngFor="let nature of natureOptions" [value]="nature">{{ nature }}</option>
-      </select>
+        [options]="natureOptions"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
     </div>
 
   </div>

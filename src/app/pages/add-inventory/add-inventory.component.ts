@@ -9,6 +9,7 @@ import { InventoryService } from '@services/inventory.service';
 import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { CreateInventoryDto, CreateInventoryDetailDto } from '@models/inventory.model';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 interface InventoryItemForm {
   itemId: number;
@@ -28,7 +29,8 @@ interface InventoryItemForm {
     FormsModule,
     RouterModule,
     TranslateModule,
-    LucideAngularModule
+    LucideAngularModule,
+    DropdownComponent
   ],
   templateUrl: './add-inventory.component.html',
   styleUrls: ['./add-inventory.component.css']
@@ -55,6 +57,21 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   suppliers: SupplierDto[] = [];
   manufacturers: ManufacturerDto[] = [];
   countries: CountryDto[] = [];
+  readonly supplierOptionLabel = (option: DropdownOption<SupplierDto> | SupplierDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly manufacturerOptionLabel = (option: DropdownOption<ManufacturerDto> | ManufacturerDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly countryOptionLabel = (option: DropdownOption<CountryDto> | CountryDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly itemOptionLabel = (option: DropdownOption<any> | any | null) => {
+    const item = this.unwrapOption(option);
+    if (!item) {
+      return '';
+    }
+    const name = item.name || '';
+    const itemNo = item.itemNo ? ` (${item.itemNo})` : '';
+    return `${name}${itemNo}`.trim();
+  };
 
   loading = false;
   submitting = false;
@@ -136,6 +153,23 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (this.items.length > 1) {
       this.items.splice(index, 1);
     }
+  }
+
+  private getLocalizedName(entity: { nameEn?: string; nameAr?: string } | null | undefined): string {
+    if (!entity) {
+      return '';
+    }
+    return entity.nameEn || entity.nameAr || '';
+  }
+
+  private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return option.value as T;
+    }
+    return option as T;
   }
 
   onItemChange(index: number): void {
