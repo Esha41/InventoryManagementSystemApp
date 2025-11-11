@@ -71,15 +71,18 @@
             </div>
             <app-button
               variant="primary"
-              (clicked)="cartridge.added ? removePending(cartridge, $event) : confirmAdd(cartridge, $event)"
-              [class.bg-[#D0B888]]="!cartridge.added"
-              [class.text-white]="!cartridge.added"
-              [class.hover:bg-[#BEA06E]]="!cartridge.added"
-              [class.bg-red-500]="cartridge.added"
-              [class.hover:bg-red-600]="cartridge.added"
-              [class.text-white]="cartridge.added"
+              (clicked)="confirmAdd(cartridge, $event)"
+              class="bg-[#D0B888] text-white hover:bg-[#BEA06E]"
             >
-              {{ cartridge.added ? ('common.remove' | translate) : ('newIssueRequest.addCartridge' | translate) }}
+              {{ 'common.confirm' | translate }}
+            </app-button>
+            <app-button
+              *ngIf="cartridge.added"
+              variant="outline"
+              (clicked)="removePending(cartridge, $event)"
+              class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+            >
+              {{ 'common.remove' | translate }}
             </app-button>
             <app-button
               variant="ghost"

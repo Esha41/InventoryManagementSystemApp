@@ -49,12 +49,8 @@ export interface WarehouseLocationDto {
   name: string;
   code: string;
   location: string;
-  latitude?: number;
-  longitude?: number;
-  mapPosition?: {
-    top: string;
-    left: string;
-  };
+  latitude: number;
+  longitude: number;
   color: 'green' | 'orange' | 'red';
   isActive: boolean;
 }
