@@ -23,9 +23,24 @@
 
   <!-- No Cards Message -->
   <div *ngIf="visibleCards.length === 0" class="text-center py-12">
-    <p class="text-[var(--color-text-muted)] text-lg">
-      {{ 'dashboard.noOrders' | translate }}
-    </p>
+    <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-lg mx-auto bg-white border border-[var(--color-border)] rounded-xl shadow-sm p-8">
+      <div class="flex flex-col items-center gap-4">
+        <div class="flex items-center justify-center w-14 h-14 rounded-full bg-[var(--color-error)]/10 text-[var(--color-error)]">
+          <lucide-angular [img]="ShieldAlert" class="w-6 h-6"></lucide-angular>
+        </div>
+        <div class="space-y-2">
+          <h2 class="text-xl font-semibold text-[var(--color-text)]">Access needed</h2>
+          <p class="text-[var(--color-text-muted)] text-sm leading-6">
+            Your account is connected through LDAP but no permissions are currently assigned. Please contact your system administrator to request access.
+          </p>
+        </div>
+      </div>
+    </div>
+    <ng-template #noOrdersMessage>
+      <p class="text-[var(--color-text-muted)] text-lg">
+        {{ 'dashboard.noOrders' | translate }}
+      </p>
+    </ng-template>
   </div>
 
   <!-- Return Details Modal -->
