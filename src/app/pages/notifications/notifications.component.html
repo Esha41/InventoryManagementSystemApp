@@ -78,7 +78,10 @@
             <div class="text-sm text-[var(--color-text-muted)]">{{ getRelativeTime(notification) }}</div>
             <div class="text-sm text-[var(--color-text)]">{{ getStatusLabel(notification) }}</div>
             <div class="flex justify-end">
-              <button type="button" class="notification-row-action" (click)="onNotificationSelect(notification)">
+              <button
+                type="button"
+                class="notification-row-action"
+                (click)="openDetail(notification, $event)">
                 <lucide-angular [img]="ChevronDown" class="h-4 w-4"></lucide-angular>
               </button>
             </div>

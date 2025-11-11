@@ -25,7 +25,9 @@
     "of": "من",
     "actions": "إجراءات",
     "remove": "إزالة",
-    "update": "تحديث"
+    "update": "تحديث",
+    "pleaseWait": "يرجى الانتظار...",
+    "pleaseWait": "يرجى الانتظار..."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -114,6 +116,12 @@
     "markAsRead": "تحديد كمقروء",
     "markAllAsRead": "تحديد الكل كمقروء",
     "unread": "غير مقروء",
+    "pickupConfirmed": "تم تأكيد موعد الاستلام بنجاح.",
+    "pickupConfirmFailed": "تعذر تأكيد موعد الاستلام.",
+    "proposeSuccess": "تم إرسال موعد الاستلام الجديد.",
+    "proposeFailed": "تعذر إرسال موعد الاستلام الجديد.",
+    "confirmedStatus": "تم تأكيد موعد الاستلام",
+    "provideSchedule": "يرجى اختيار تاريخ ووقت الاستلام قبل التأكيد.",
     "filters": {
       "all": "الكل",
       "unread": "غير مقروء",

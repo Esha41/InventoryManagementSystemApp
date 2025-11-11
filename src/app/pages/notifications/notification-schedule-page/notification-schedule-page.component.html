@@ -1,0 +1,61 @@
+<div class="schedule-page">
+  <div class="flex items-center gap-4 mb-8">
+    <button
+      class="p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
+      (click)="goBack()">
+      <lucide-angular [img]="ArrowLeft" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
+    </button>
+    <div>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'notifications.title' | translate }}</h1>
+      <p class="text-sm text-[var(--color-text-muted)]" *ngIf="notification">
+        {{ 'notifications.orderId' | translate }} {{ notification.id }}
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="schedule-card flex items-center justify-center text-sm text-[var(--color-text-muted)]">
+    {{ 'common.loading' | translate }}
+  </div>
+
+  <div *ngIf="notFound && !loading" class="schedule-card flex items-center justify-center text-[var(--color-text-muted)]">
+    {{ 'notifications.selectPrompt' | translate }}
+  </div>
+
+  <form
+    *ngIf="notification && !loading"
+    #scheduleForm="ngForm"
+    (ngSubmit)="onSubmit(scheduleForm)"
+    class="schedule-card space-y-8"
+    novalidate>
+    <div class="space-y-6">
+      <div class="schedule-field">
+        <label class="schedule-label">{{ 'notifications.pickupDate' | translate }}</label>
+        <input
+          type="date"
+          class="schedule-input"
+          [(ngModel)]="pickupDate"
+          name="pickupDate"
+          required>
+      </div>
+      <div class="schedule-field">
+        <label class="schedule-label">{{ 'notifications.pickupTime' | translate }}</label>
+        <input
+          type="time"
+          class="schedule-input"
+          [(ngModel)]="pickupTime"
+          name="pickupTime"
+          required>
+      </div>
+    </div>
+
+    <div class="flex justify-center">
+      <button
+        type="submit"
+        class="schedule-confirm-btn"
+        [disabled]="saving || !scheduleForm.valid">
+        {{ 'common.confirm' | translate }}
+      </button>
+    </div>
+  </form>
+</div>
+

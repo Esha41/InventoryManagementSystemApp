@@ -26,7 +26,8 @@
     "of": "of",
     "actions": "Actions",
     "remove": "Remove",
-    "update": "Update"
+    "update": "Update",
+    "pleaseWait": "Please wait..."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -116,6 +117,12 @@
     "markAsRead": "Mark as read",
     "markAllAsRead": "Mark all as read",
     "unread": "Unread",
+    "pickupConfirmed": "Pick-up confirmed successfully.",
+    "pickupConfirmFailed": "Failed to confirm the pick-up.",
+    "proposeSuccess": "New pick-up time submitted.",
+    "proposeFailed": "Unable to submit the new pick-up time.",
+    "confirmedStatus": "Pick-up confirmed",
+    "provideSchedule": "Please choose a pick-up date and time before confirming.",
     "filters": {
       "all": "All",
       "unread": "Unread",

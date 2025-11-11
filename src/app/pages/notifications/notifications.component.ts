@@ -153,6 +153,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.updatePagination();
   }
 
+  openDetail(notification: Notification, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.router.navigate(['/notifications', notification.id]);
+  }
+
   isSelected(notification: Notification): boolean {
     return this.selectedNotification?.id === notification.id;
   }
