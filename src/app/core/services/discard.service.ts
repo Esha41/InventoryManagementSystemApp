@@ -14,7 +14,7 @@ export interface CreateDiscardDto {
   priority: number; // 1 = High, 2 = Medium, 3 = Low
   notes?: string;
   departmentId: number;
-  requesterId?: number;
+  requesterId?: string;
   requestPurposeId: number;
   discardItems: CreateDiscardItemDto[];
 }

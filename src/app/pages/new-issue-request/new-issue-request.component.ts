@@ -18,6 +18,8 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { Subject, takeUntil } from 'rxjs';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
 
 @Component({
   selector: 'app-new-issue-request',
@@ -40,6 +42,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   currentStep = 0;
   steps: Step[] = [
+    { label: 'newIssueRequest.allowanceSelection', completed: false },
     { label: 'newIssueRequest.selection', completed: false },
     { label: 'newIssueRequest.usage', completed: false },
     { label: 'newIssueRequest.review', completed: false },
@@ -52,7 +55,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private ammunitionService: AmmunitionService,
     private orderService: OrderService,
     private userContextService: UserContextService,
-    private backendAuthService: BackendAuthService
+    private backendAuthService: BackendAuthService,
+    private apiService: ApiService
   ) {}
 
   // Step 1: Selection filters (populated from API)
@@ -66,6 +70,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   selectedCaseLength = '';
   selectedLinked = '';
   selectedNature = '';
+  searchTerm = '';
 
   private allCartridges: Cartridge[] = [];
   filteredCartridges: Cartridge[] = [];
@@ -87,7 +92,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private readonly DEFAULT_REQUEST_TYPE_ID = 1;
   private currentUserDetails: BackendUserDto | null = null;
   private currentUserDepartmentId: number | null = null;
-  private currentUserRequesterId: number | null = null;
+  private currentUserRequesterId: string | null = null;
   private fallbackRequesterName = '';
   isAdminUser = false;
   lockRequesterName = false;
@@ -116,8 +121,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeUserContext();
-    this.loadCartridges();
     this.initializeStepFromQueryParams();
+    // Don't load cartridges yet - wait for allowance selection
   }
 
   ngOnDestroy(): void {
@@ -146,6 +151,14 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.loadingCartridges = true;
     this.cartridgeError = null;
 
+    if (this.fromReserve === 'Yes') {
+      this.loadAllowanceItems();
+    } else {
+      this.loadAllAmmunition();
+    }
+  }
+
+  private loadAllAmmunition(): void {
     this.ammunitionService.getAll<any>().subscribe({
       next: (items) => {
         const mapped = (items || []).map((x: any) => this.mapAmmunitionToCartridge(x));
@@ -159,6 +172,90 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.filteredCartridges = [];
         this.loadingCartridges = false;
         this.cartridgeError = 'Failed to load ammunition catalog. Please try again.';
+      }
+    });
+  }
+
+  private loadAllowanceItems(): void {
+    // Validate department
+    if (!this.currentUserDepartmentId) {
+      this.cartridgeError = 'Department not found for current user. Please contact support.';
+      this.loadingCartridges = false;
+      return;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(this.currentUserDepartmentId, currentYear);
+    
+    this.apiService.getWithAuth<any>(endpoint).subscribe({
+      next: (response) => {
+        const allowanceItems = response.data?.items || response.data?.Items || [];
+        
+        if (allowanceItems.length === 0) {
+          this.cartridgeError = 'No allowance items found for your department this year. Please contact your administrator.';
+          this.allCartridges = [];
+          this.filteredCartridges = [];
+          this.loadingCartridges = false;
+          return;
+        }
+
+        // Fetch full ammunition details for each allowance item
+        const itemIds = allowanceItems.map((item: any) => item.itemId);
+        this.ammunitionService.getAll<any>().subscribe({
+          next: (allAmmunition) => {
+            const allowanceAmmunition = allAmmunition.filter((ammo: any) => 
+              itemIds.includes(ammo.id)
+            );
+            const mapped = allowanceAmmunition.map((x: any) => this.mapAmmunitionToCartridge(x));
+            this.allCartridges = mapped;
+            this.buildFilterOptions();
+            this.filterCartridges();
+            this.loadingCartridges = false;
+            
+            // Load reserve details after loading allowance items
+            this.loadReserveDetails();
+          },
+          error: () => {
+            this.allCartridges = [];
+            this.filteredCartridges = [];
+            this.loadingCartridges = false;
+            this.cartridgeError = 'Failed to load ammunition details. Please try again.';
+          }
+        });
+      },
+      error: () => {
+        this.allCartridges = [];
+        this.filteredCartridges = [];
+        this.loadingCartridges = false;
+        this.cartridgeError = 'Failed to load allowance items. Please try again.';
+      }
+    });
+  }
+
+  private loadReserveDetails(): void {
+    if (!this.currentUserDepartmentId) {
+      return;
+    }
+
+    this.loadingReserveDetails = true;
+    const currentYear = new Date().getFullYear();
+    const endpoint = API_ENDPOINTS.ALLOWANCE.RESERVE_DETAILS(this.currentUserDepartmentId, currentYear);
+    
+    this.apiService.getWithAuth<any>(endpoint).subscribe({
+      next: (response) => {
+        if (response.succeeded && response.data) {
+          this.totalReserve = response.data.totalReserve || 0;
+          this.availableReserve = response.data.totalAvailableReserve || 0;
+          this.orderedQuantity = response.data.totalOrderedQuantity || 0;
+          this.utilizedQuantity = response.data.totalUtilizedQuantity || 0;
+          this.reserveDetailsByItem = response.data.items || [];
+        }
+        this.loadingReserveDetails = false;
+      },
+      error: () => {
+        this.loadingReserveDetails = false;
+        // Keep default values of 0
+        this.reserveDetailsByItem = [];
       }
     });
   }
@@ -239,7 +336,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       const byCase = !this.selectedCaseLength || this.selectedCaseLength === caseLabel;
       const byLinked = !this.selectedLinked || this.selectedLinked === linkedLabel;
       const byNature = !this.selectedNature || this.selectedNature === natureLabel;
-      return byDiameter && byCase && byLinked && byNature;
+      
+      // Search filter
+      const searchLower = this.searchTerm.toLowerCase();
+      const bySearch = !this.searchTerm || 
+        (cartridge.name?.toLowerCase().includes(searchLower)) ||
+        (cartridge.itemNo?.toLowerCase().includes(searchLower)) ||
+        (cartridge.productId?.toLowerCase().includes(searchLower)) ||
+        (cartridge.ncn?.toLowerCase().includes(searchLower));
+      
+      return byDiameter && byCase && byLinked && byNature && bySearch;
     });
   }
 
@@ -261,6 +367,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   onNatureChange(value: string): void {
     this.selectedNature = value;
+    this.filterCartridges();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchTerm = value;
     this.filterCartridges();
   }
 
@@ -310,11 +421,19 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.updateQueryParams(step);
   }
 
+  onConfirmAllowanceSelection(): void {
+    this.steps[0].completed = true;
+    this.currentStep = 1;
+    this.updateQueryParams(1);
+    // Load cartridges based on selection
+    this.loadCartridges();
+  }
+
   onConfirmSelection(): void {
     if (this.canProceedFromSelection) {
-      this.steps[0].completed = true;
-      this.currentStep = 1;
-      this.updateQueryParams(1);
+      this.steps[1].completed = true;
+      this.currentStep = 2;
+      this.updateQueryParams(2);
     }
   }
 
@@ -323,11 +442,19 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.currentStep === 0 && !this.canProceedFromSelection) {
+    // Step 0: Allowance selection
+    if (this.currentStep === 0) {
+      this.onConfirmAllowanceSelection();
       return;
     }
 
-    if (this.currentStep === 2) {
+    // Step 1: Cartridge selection
+    if (this.currentStep === 1 && !this.canProceedFromSelection) {
+      return;
+    }
+
+    // Step 3: Review -> Submit
+    if (this.currentStep === 3) {
       this.onSubmitOrder();
       return;
     }
@@ -339,6 +466,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     }
   }
 
+  onFromReserveChange(value: string): void {
+    this.fromReserve = value;
+  }
+
   onPrevious(): void {
     if (this.currentStep > 0) {
       this.currentStep--;
@@ -346,8 +477,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Step 2: Usage form data
+  // Step 1: Allowance Selection
   fromReserve: string = 'Yes';
+
+  // Step 3: Usage form data
   usePurpose: string = '';
   annualDiscardSpecialOps: string = '';
   usageLocation: string = '';
@@ -357,15 +490,43 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   usageTime: string = '';
   orderPriority: string = '';
 
-  // Reserve details (read-only)
-  totalReserve = 150000;
-  availableReserve = 100000;
-  orderedQuantity = 50000;
-  utilizedQuantity = 50000;
+  // Reserve details (calculated dynamically)
+  totalReserve = 0;
+  availableReserve = 0;
+  orderedQuantity = 0;
+  utilizedQuantity = 0;
+  loadingReserveDetails = false;
+  reserveDetailsByItem: any[] = [];
+  
+  // Computed reserve details based on selected items
+  get selectedItemsReserveDetails(): any[] {
+    if (this.selectedEntries.length === 0) {
+      return this.reserveDetailsByItem;
+    }
+    
+    const selectedItemIds = this.selectedEntries.map(entry => entry.id);
+    return this.reserveDetailsByItem.filter(item => selectedItemIds.includes(item.itemId));
+  }
+  
+  get selectedTotalReserve(): number {
+    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.totalReserve || 0), 0);
+  }
+  
+  get selectedAvailableReserve(): number {
+    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.availableReserve || 0), 0);
+  }
+  
+  get selectedOrderedQuantity(): number {
+    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0);
+  }
+  
+  get selectedUtilizedQuantity(): number {
+    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.utilizedQuantity || 0), 0);
+  }
 
   // Step 3: Review - Requester Details
   requesterName: string = 'Name';
-  requesterComments: string = 'None';
+  requesterComments: string = '';
 
   // Step 3: Review - Order Details
   orderType: string = 'New Issue Request';
@@ -382,8 +543,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     const validationError = this.validateBeforeSubmit();
     if (validationError) {
       this.orderSubmitError = validationError;
-      this.currentStep = 2;
-      this.updateQueryParams(2);
+      this.currentStep = 3; // Step 3 is Review (was 2 before we added Allowance Selection step)
+      this.updateQueryParams(3);
       return;
     }
 
@@ -403,8 +564,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       notes: this.requesterComments || '',
       departmentId: this.getDepartmentIdForRequest(),
       requestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
-      requesterId: this.getRequesterIdForRequest(),
-      recieverId: null,
+      requesterId: null, 
+      recieverId: null, 
       depotId: null,
       requestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
       isFromAllowance: this.fromReserve === 'Yes',
@@ -439,10 +600,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.createdOrderId = (response.data ?? null) as number | null;
         this.orderNumber = payload.orderNo;
         this.orderSubmitted = true;
-        this.steps[2].completed = true;
-        this.steps[3].completed = true;
-        this.currentStep = 3;
-        this.updateQueryParams(3);
+        this.steps[3].completed = true; // Step 3: Review
+        this.steps[4].completed = true; // Step 4: Send
+        this.currentStep = 4; // Move to final step (Send)
+        this.updateQueryParams(4);
       },
       error: (error: unknown) => {
         this.submittingOrder = false;
@@ -453,6 +614,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   onTrackOrder(): void {
+    // Reset form and navigate to dashboard
+    this.resetForm();
     this.router.navigate(['/dashboard']);
   }
 
@@ -465,8 +628,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       nameEn: user.nameEn,
       nameAr: user.nameAr,
       userName: user.userName,
-      departmentId: user.departmentId,
-      employeeId: user.employeeId
+      departmentId: user.departmentId
     });
   }
 
@@ -479,8 +641,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       nameEn: details.nameEn,
       nameAr: details.nameAr,
       userName: details.userName,
-      departmentId: details.departmentId,
-      employeeId: details.employeeId
+      departmentId: details.departmentId
     });
   }
 
@@ -489,16 +650,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     nameAr?: string | null;
     userName?: string | null;
     departmentId?: number | string | null;
-    employeeId?: number | string | null;
   }): void {
     const departmentId = this.toNumber(context.departmentId);
     if (departmentId !== null) {
       this.currentUserDepartmentId = departmentId;
     }
 
-    const requesterId = this.toNumber(context.employeeId);
-    if (requesterId !== null) {
-      this.currentUserRequesterId = requesterId;
+    // Set RequesterId to the current user's ID (string)
+    const currentUser = this.backendAuthService.getCurrentUser();
+    if (currentUser?.id) {
+      this.currentUserRequesterId = currentUser.id;
+    } else {
+      this.currentUserRequesterId = null;
     }
 
     const preferredName = this.resolveRequesterDisplayName(context.nameEn, context.nameAr, context.userName);
@@ -548,7 +711,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     return this.DEFAULT_DEPARTMENT_ID;
   }
 
-  private getRequesterIdForRequest(): number | null {
+  private getRequesterIdForRequest(): string | null {
     return this.currentUserRequesterId;
   }
 
@@ -579,11 +742,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.requesterName = this.lockRequesterName
       ? this.getPreferredRequesterName()
       : 'Name';
-    this.requesterComments = 'None';
+    this.requesterComments = '';
     this.orderSubmitError = null;
     this.createdOrderId = null;
     this.orderNumber = null;
     this.submittingOrder = false;
+    this.totalReserve = 0;
+    this.availableReserve = 0;
+    this.orderedQuantity = 0;
+    this.utilizedQuantity = 0;
+    this.reserveDetailsByItem = [];
     this.updateQueryParams(0);
   }
 

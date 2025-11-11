@@ -91,7 +91,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       email: [this.user?.email || '', [Validators.required, Validators.email]],
       isLdapUser: [this.user?.isLdapUser || false],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
-      employeeId: [this.user?.employeeId || null],
       departmentId: [this.user?.departmentId ?? null],
       roleId: [roleId, [Validators.required]], // Single role selection - required
       // Common fields for both create and edit modes
@@ -287,7 +286,6 @@ private loadUserRoles(): void {
       password: formValue.password,
       isLdapUser: formValue.isLdapUser || false,
       extraEmployeesView: formValue.extraEmployeesView || undefined,
-      employeeId: formValue.employeeId || undefined,
       organizationId: 1,
       departmentId: formValue.departmentId || undefined,
       roleIds: [formValue.roleId], // Single role as array
@@ -329,7 +327,6 @@ private loadUserRoles(): void {
       password: formValue.password || undefined,
       isLdapUser: formValue.isLdapUser || false,
       extraEmployeesView: formValue.extraEmployeesView || undefined,
-      employeeId: formValue.employeeId || undefined,
       organizationId: this.user.organizationId,
       departmentId: formValue.departmentId || undefined,
       roleIds: [formValue.roleId], // Single role as array

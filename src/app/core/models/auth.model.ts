@@ -20,7 +20,6 @@ export interface LoginResponse {
   expiresAt: string; // ISO date string from backend
   departmentId?: number;
   departmentName?: string;
-  employeeId?: number;
   organizationId?: number;
   userName?: string;
   nameEn?: string;
@@ -37,7 +36,6 @@ export interface AuthenticatedUser {
   roles: string[];
   permissions: ClaimDto[];
   isLdapUser?: boolean;
-  employeeId?: number;
   organizationId?: number;
   departmentId?: number;
   departmentName?: string;
