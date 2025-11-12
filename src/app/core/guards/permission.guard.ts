@@ -55,8 +55,9 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, st
   }
 
   // User doesn't have required permissions
-  router.navigate(['/dashboard'], {
-    queryParams: { accessDenied: true }
+  router.navigate(['/access-denied'], {
+    queryParams: { returnUrl: state.url },
+    replaceUrl: true
   });
   
   return false;

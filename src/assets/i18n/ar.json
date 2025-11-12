@@ -26,7 +26,6 @@
     "actions": "إجراءات",
     "remove": "إزالة",
     "update": "تحديث",
-    "pleaseWait": "يرجى الانتظار...",
     "pleaseWait": "يرجى الانتظار..."
   },
   "nav": {
@@ -641,26 +640,30 @@
   },
   "rolePermissions": {
     "title": "صلاحيات الأدوار",
-    "subtitle": "إدارة صلاحيات كل دور",
-    "refresh": "تحديث",
-    "totalRoles": "إجمالي الأدوار",
-    "selectedRole": "الدور المحدد",
-    "systemStatus": "حالة النظام",
-    "active": "نشط",
-    "selectRole": "اختر الدور",
-    "superAdmin": "مدير فائق",
+    "subtitle": "إدارة صلاحيات الأدوار في النظام",
+    "selectRole": "اختر دوراً",
+    "selectARole": "اختر دوراً للبدء",
+    "selectRoleDescription": "اختر دوراً من القائمة على اليسار لعرض الصلاحيات وإدارتها.",
+    "superAdmin": "مشرف عام",
     "default": "افتراضي",
-    "selectARole": "اختر دوراً",
-    "selectRoleDescription": "اختر دوراً من اللوحة اليسرى لإدارة صلاحياته",
-    "configurePermissions": "تكوين الصلاحيات لهذا الدور",
+    "configurePermissions": "تهيئة صلاحيات الدور",
     "savePermissions": "حفظ الصلاحيات",
     "saving": "جاري الحفظ...",
-    "selected": "محدد",
-    "selectAll": "تحديد الكل",
-    "deselectAll": "إلغاء تحديد الكل",
-    "loadingPermissions": "جاري تحميل الصلاحيات..."
-  }
-  ,
+    "permissionsSaved": "تم تحديث الصلاحيات بنجاح",
+    "errorSaving": "فشل في حفظ الصلاحيات. يرجى المحاولة مرة أخرى.",
+    "loadingPermissions": "جاري تحميل الصلاحيات...",
+    "noRolesFound": "لم يتم العثور على أدوار",
+    "noPermissionsFound": "لا توجد صلاحيات مطابقة لبحثك",
+    "tryAdjusting": "حاول تعديل معايير البحث أو التصفية.",
+    "clearSearch": "مسح البحث",
+    "selected": "مختارة"
+  },
+  "accessDenied": {
+    "title": "تم رفض الوصول",
+    "message": "ليس لديك صلاحية لعرض هذه الصفحة. يرجى التواصل مع المسؤول أو اختيار قسم آخر.",
+    "goHome": "الانتقال إلى الرئيسية",
+    "logout": "تسجيل الخروج"
+  },
   "userFormModal": {
     "username": "اسم المستخدم",
     "usernamePlaceholder": "أدخل اسم المستخدم أو البريد الإلكتروني",

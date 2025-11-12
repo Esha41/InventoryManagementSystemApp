@@ -1,204 +1,248 @@
-<div class="space-y-6">
-  <!-- Header -->
+<div class="min-h-screen p-6 space-y-6">
+  <!-- ============================================================================ -->
+  <!-- HEADER -->
+  <!-- ============================================================================ -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'rolePermissions.title' | translate }}</h1>
-      <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'rolePermissions.subtitle' | translate }}</p>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'rolePermissions.title' | translate }}</h1>
+      <p class="text-[var(--color-text-muted)] mt-2">{{ 'rolePermissions.subtitle' | translate }}</p>
     </div>
-    <button (click)="onRefresh()" [disabled]="isLoading || !selectedRole"
-      class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-      <lucide-angular [img]="RefreshCw" class="h-4 w-4"></lucide-angular>
-      {{ 'rolePermissions.refresh' | translate }}
-    </button>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <app-card>
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.totalRoles' | translate }}</p>
-          <p class="text-2xl font-bold text-[var(--color-text)]">{{ roles.length }}</p>
-        </div>
-        <lucide-angular [img]="Shield" class="h-8 w-8 text-[var(--color-accent)]"></lucide-angular>
-      </div>
-    </app-card>
+  <!-- ============================================================================ -->
+  <!-- MAIN CONTENT GRID -->
+  <!-- ============================================================================ -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    
+    <!-- ======================================================================== -->
+    <!-- LEFT: ROLES SIDEBAR -->
+    <!-- ======================================================================== -->
+    <div class="lg:col-span-1">
+      <app-card [shadow]="true">
+        <div class="p-6 space-y-4">
+          <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'rolePermissions.selectRole' | translate }}</h3>
+          
+          <!-- Role Search -->
+          <div class="relative">
+            <lucide-angular [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+            <input
+              type="text"
+              [(ngModel)]="roleSearchTerm"
+              [placeholder]="'common.search' | translate"
+              class="w-full pl-10 pr-3 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
+            />
+          </div>
 
-    <app-card>
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.selectedRole' | translate }}</p>
-          <p class="text-2xl font-bold text-[var(--color-text)]">{{ selectedRole ? '1' : '0' }}</p>
-        </div>
-        <lucide-angular [img]="Settings" class="h-8 w-8 text-[var(--color-success)]"></lucide-angular>
-      </div>
-    </app-card>
-
-    <app-card>
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.systemStatus' | translate }}</p>
-          <p class="text-2xl font-bold text-[var(--color-success)]">{{ 'rolePermissions.active' | translate }}</p>
-        </div>
-        <lucide-angular [img]="Check" class="h-8 w-8 text-[var(--color-info)]"></lucide-angular>
-      </div>
-    </app-card>
-  </div>
-
-  <!-- Main Content -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Role Selection Card -->
-    <app-card [title]="'rolePermissions.selectRole' | translate" class="lg:col-span-1">
-      <div class="space-y-4">
-        <div class="relative">
-          <lucide-angular [img]="Search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-          <input
-            type="text"
-            [(ngModel)]="roleSearchTerm"
-            placeholder="Search Role"
-            class="w-full pl-10 pr-3 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] outline-none transition-all hover:border-[var(--color-accent)]/50"
-          />
-        </div>
-
-        <ng-container *ngIf="filteredRoles.length; else noRolesFound">
-          <div *ngFor="let role of filteredRoles" (click)="onRoleSelect(role)"
-          [class]="'p-4 rounded-lg border-2 cursor-pointer transition-all ' + 
-            (selectedRole?.id === role.id 
-              ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10' 
-              : 'border-[var(--color-border)] hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-background-hover)]')">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Shield" class="h-5 w-5 text-[var(--color-accent)]"></lucide-angular>
-            </div>
-            <div class="flex-1">
-              <h4 class="font-semibold text-[var(--color-text)]">{{ role.name }}</h4>
-              <div class="flex items-center gap-2 mt-1">
-                <span *ngIf="role.isSuperAdmin" class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
-                  {{ 'rolePermissions.superAdmin' | translate }}
-                </span>
-                <span *ngIf="role.isDefaultRole"
-                  class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
-                  {{ 'rolePermissions.default' | translate }}
-                </span>
+          <!-- Roles List -->
+          <div class="space-y-2 max-h-[600px] overflow-y-auto">
+            <div
+              *ngFor="let role of filteredRoles"
+              (click)="onRoleSelect(role)"
+              [class]="'p-4 rounded-lg border-2 cursor-pointer transition-all ' + 
+                (selectedRole?.id === role.id 
+                  ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5' 
+                  : 'border-[var(--color-border)] hover:border-[var(--color-brand)]/50 hover:bg-[var(--color-background-hover)]')">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
+                  <lucide-angular [img]="Shield" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-[var(--color-text)] truncate">{{ role.name }}</h4>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <span *ngIf="role.isSuperAdmin" class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
+                      {{ 'rolePermissions.superAdmin' | translate }}
+                    </span>
+                    <span *ngIf="role.isDefaultRole" class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                      {{ 'rolePermissions.default' | translate }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div *ngIf="filteredRoles.length === 0" class="text-center py-6 text-sm text-[var(--color-text-muted)]">
+              {{ 'rolePermissions.noRolesFound' | translate }}
+            </div>
           </div>
         </div>
-        </ng-container>
-        <ng-template #noRolesFound>
-          <div class="text-center py-6 text-sm text-[var(--color-text-muted)]">
-            {{ 'rolePermissions.noRolesFound' | translate }}
-          </div>
-        </ng-template>
-      </div>
-    </app-card>
+      </app-card>
+    </div>
 
-    <!-- Permissions Panel -->
-    <div class="lg:col-span-2">
+    <!-- ======================================================================== -->
+    <!-- RIGHT: PERMISSIONS PANEL -->
+    <!-- ======================================================================== -->
+    <div class="lg:col-span-3">
+      
       <!-- No Role Selected State -->
-      <app-card *ngIf="!selectedRole">
-        <div class="text-center py-12">
-          <lucide-angular [img]="Shield" class="h-12 w-12 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
-          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'rolePermissions.selectARole' | translate }}</h3>
+      <app-card *ngIf="!selectedRole" [shadow]="true">
+        <div class="p-12 text-center">
+          <lucide-angular [img]="Shield" class="h-16 w-16 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
+          <h3 class="text-xl font-semibold text-[var(--color-text)] mb-2">{{ 'rolePermissions.selectARole' | translate }}</h3>
           <p class="text-[var(--color-text-muted)]">{{ 'rolePermissions.selectRoleDescription' | translate }}</p>
         </div>
       </app-card>
 
-      <!-- Role Selected State -->
+      <!-- Role Selected -->
       <div *ngIf="selectedRole" class="space-y-6">
-        <!-- Role Header Card -->
-        <app-card>
-          <div class="flex items-center justify-between">
+        
+        <!-- Role Header -->
+        <app-card [shadow]="true">
+          <div class="p-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
-                <lucide-angular [img]="Shield" class="h-6 w-6 text-[var(--color-accent)]"></lucide-angular>
+              <div class="w-14 h-14 rounded-xl bg-[var(--color-brand)]/10 flex items-center justify-center">
+                <lucide-angular [img]="Shield" class="h-7 w-7 text-[var(--color-brand)]"></lucide-angular>
               </div>
               <div>
-                <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ selectedRole.name }}</h3>
-                <p class="text-sm text-[var(--color-text-muted)]">{{ 'rolePermissions.configurePermissions' | translate }}</p>
+                <h2 class="text-2xl font-bold text-[var(--color-text)]">{{ selectedRole.name }}</h2>
+                <p class="text-[var(--color-text-muted)] mt-1">{{ 'rolePermissions.configurePermissions' | translate }}</p>
               </div>
             </div>
-            <button (click)="onSavePermissions()" [disabled]="isSaving || permissionForm.invalid"
-              class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              <lucide-angular [img]="Save" class="h-4 w-4"></lucide-angular>
-              {{ isSaving ? ('rolePermissions.saving' | translate) : ('rolePermissions.savePermissions' | translate) }}
-            </button>
+            <app-button
+              [variant]="'primary'"
+              (click)="onSavePermissions()"
+              [disabled]="isSaving || isLoading">
+              <span class="flex items-center gap-2">
+                <lucide-angular [img]="Save" class="h-4 w-4"></lucide-angular>
+                <span>{{ isSaving ? ('rolePermissions.saving' | translate) : ('rolePermissions.savePermissions' | translate) }}</span>
+              </span>
+            </app-button>
           </div>
         </app-card>
 
-        <!-- Messages -->
-        <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {{ errorMessage }}
-        </div>
+        <!-- Search Bar -->
+        <app-card *ngIf="!isLoading && selectedRole" [shadow]="true">
+          <div class="p-4">
+            <div class="relative">
+              <lucide-angular 
+                [img]="Search" 
+                class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-text-muted)]">
+              </lucide-angular>
+              <input
+                type="text"
+                [(ngModel)]="permissionSearchTerm"
+                (ngModelChange)="onPermissionSearchChange()"
+                [ngModelOptions]="{standalone: true}"
+                placeholder="Search permissions by name, entity, description, or page..."
+                class="w-full pl-10 pr-10 py-2.5 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] text-sm" />
+              <button
+                *ngIf="permissionSearchTerm"
+                (click)="permissionSearchTerm = ''; onPermissionSearchChange()"
+                type="button"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+              </button>
+            </div>
+            <p class="text-xs text-[var(--color-text-muted)] mt-2">
+              <span *ngIf="permissionSearchTerm">{{ filteredCategories.length }} of {{ categories.length }} categories shown</span>
+              <span *ngIf="!permissionSearchTerm">Search across all permissions, entities, and pages</span>
+            </p>
+          </div>
+        </app-card>
 
         <!-- Loading State -->
-        <app-card *ngIf="isLoading">
-          <div class="text-center py-12">
-            <lucide-angular [img]="RefreshCw"
-              class="h-8 w-8 mx-auto text-[var(--color-accent)] mb-4 animate-spin"></lucide-angular>
+        <app-card *ngIf="isLoading" [shadow]="true">
+          <div class="p-12 text-center">
+            <lucide-angular [img]="RefreshCw" class="h-8 w-8 mx-auto text-[var(--color-brand)] mb-4 animate-spin"></lucide-angular>
             <p class="text-[var(--color-text-muted)]">{{ 'rolePermissions.loadingPermissions' | translate }}</p>
           </div>
         </app-card>
 
-        <!-- Permissions Form -->
-        <form [formGroup]="permissionForm" *ngIf="!isLoading && selectedRole">
-          <!-- CRUD Permissions -->
-          <app-card *ngFor="let permission of permissions" [title]="permission.entityName">
-            <div class="mb-4 flex items-center justify-between">
-              <span class="text-sm text-[var(--color-text-muted)]">
-                {{ getSelectedPermissionsCount(permission.entityName) }}/{{ permission.permissionsList.length }}
-                {{ 'rolePermissions.selected' | translate }}
-              </span>
-              <button type="button"
-                (click)="onGroupToggle(permission.entityName, !isGroupFullySelected(permission.entityName))"
-                class="px-3 py-1 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors">
-                {{ isGroupFullySelected(permission.entityName) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
-              </button>
-            </div>
+        <!-- No Results State -->
+        <app-card *ngIf="!isLoading && selectedRole && permissionSearchTerm && filteredCategories.length === 0" [shadow]="true">
+          <div class="p-12 text-center">
+            <lucide-angular [img]="Search" class="h-16 w-16 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
+            <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'rolePermissions.noPermissionsFound' | translate }}</h3>
+            <p class="text-sm text-[var(--color-text-muted)] mb-4">{{ 'rolePermissions.tryAdjusting' | translate }}</p>
+            <button
+              type="button"
+              (click)="permissionSearchTerm = ''; onPermissionSearchChange()"
+              class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background)] rounded-lg transition-colors">
+              {{ 'rolePermissions.clearSearch' | translate }}
+            </button>
+          </div>
+        </app-card>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <label *ngFor="let perm of permission.permissionsList"
-                class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all">
-                <input 
-                  type="checkbox" 
-                  [formControlName]="sanitizeControlName(perm.displayValue)"
-                  class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
-                <span class="text-sm font-medium text-[var(--color-text)]">{{ getPermissionLabel(perm.displayValue) }}</span>
-              </label>
-            </div>
-          </app-card>
+        <!-- Permissions by Category -->
+        <form [formGroup]="permissionForm" *ngIf="!isLoading && selectedRole && filteredCategories.length > 0">
+          <div class="space-y-4">
+            <app-card *ngFor="let category of filteredCategories" [shadow]="true">
+              <div class="overflow-hidden">
+                
+                <!-- Category Header -->
+                <div
+                  (click)="toggleCategory(category)"
+                  class="p-6 cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors border-b border-[var(--color-border)]">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                      <div class="text-3xl">{{ category.icon }}</div>
+                      <div class="flex-1">
+                        <h3 class="text-lg font-bold text-[var(--color-text)]">{{ category.displayName }}</h3>
+                        <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ category.description }}</p>
+                        <div class="flex items-center gap-4 mt-2">
+                          <span class="text-xs text-[var(--color-brand)] font-medium">
+                            {{ getCategorySelectedCount(category).selected }} / {{ getCategorySelectedCount(category).total }} {{ 'rolePermissions.selected' | translate }}
+                          </span>
+                          <button
+                            type="button"
+                            (click)="onCategoryToggleAll(category, !isCategoryFullySelected(category)); $event.stopPropagation()"
+                            class="text-xs text-[var(--color-brand)] hover:underline font-medium">
+                            {{ isCategoryFullySelected(category) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <lucide-angular 
+                      [img]="category.expanded ? ChevronUp : ChevronDown" 
+                      class="h-6 w-6 text-[var(--color-text-muted)] transition-transform">
+                    </lucide-angular>
+                  </div>
+                </div>
 
+                <!-- Category Permissions Table -->
+                <div *ngIf="category.expanded" class="p-6 overflow-x-auto">
+                  <div class="border border-[var(--color-border)] rounded-lg overflow-hidden">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="bg-[var(--color-background)]">
+                          <th class="text-left py-3 px-4 font-semibold text-sm text-[var(--color-text)] border-b border-r border-[var(--color-border)] sticky left-0 bg-[var(--color-background)] min-w-[200px]">
+                            Entity / Permission
+                          </th>
+                          <th *ngFor="let permType of getUniquePermissionTypes(category)" 
+                              class="text-center py-3 px-4 font-semibold text-sm text-[var(--color-text)] border-b border-r last:border-r-0 border-[var(--color-border)] min-w-[100px]">
+                            {{ permType }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white">
+                        <tr *ngFor="let group of category.permissions; let last = last" 
+                            [class.border-b]="!last"
+                            class="border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+                          <td class="py-3 px-4 font-medium text-sm text-[var(--color-text)] border-r border-[var(--color-border)] sticky left-0 bg-white hover:bg-[var(--color-background-hover)]">
+                            {{ group.entityName }}
+                          </td>
+                          <td *ngFor="let permType of getUniquePermissionTypes(category); let lastCol = last" 
+                              class="py-3 px-4 text-center border-r border-[var(--color-border)]"
+                              [class.border-r-0]="lastCol">
+                            <ng-container *ngFor="let perm of group.permissionsList; let isFirst = first">
+                              <label *ngIf="getPermissionInfo(perm.displayValue).label === permType && isFirstPermissionOfType(group, permType, perm)" 
+                                     class="inline-flex items-center justify-center cursor-pointer"
+                                     [title]="getPermissionInfo(perm.displayValue).description + (getPermissionInfo(perm.displayValue).page ? ' - ' + getPermissionInfo(perm.displayValue).page : '')">
+                                <input
+                                  type="checkbox"
+                                  [formControlName]="sanitizeControlName(perm.displayValue)"
+                                  class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer" />
+                              </label>
+                            </ng-container>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-          <!-- Plain Permissions -->
-          <!-- Plain Permissions -->
-          <app-card *ngFor="let permissionGroup of plainPermissions" [title]="permissionGroup.entityName">
-            <!-- Selected count & toggle button -->
-            <div class="mb-4 flex items-center justify-between">
-              <span class="text-sm text-[var(--color-text-muted)]">
-                {{ getSelectedPermissionsCount(permissionGroup.entityName) }}/{{ permissionGroup.permissionsList.length
-                }} {{ 'rolePermissions.selected' | translate }}
-              </span>
-              <button type="button"
-                (click)="onGroupToggle(permissionGroup.entityName, !isGroupFullySelected(permissionGroup.entityName))"
-                class="px-3 py-1 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors">
-                {{ isGroupFullySelected(permissionGroup.entityName) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
-              </button>
-            </div>
-
-            <!-- Permissions checkboxes -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <label *ngFor="let perm of permissionGroup.permissionsList"
-                class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all">
-
-                <input type="checkbox" [formControlName]="sanitizeControlName(perm.displayValue)"
-                  class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
-
-                <span class="text-sm font-medium text-[var(--color-text)]">{{ getPermissionLabel(perm.displayValue) }}</span>
-              </label>
-            </div>
-          </app-card>
-
-
+              </div>
+            </app-card>
+          </div>
         </form>
 
       </div>

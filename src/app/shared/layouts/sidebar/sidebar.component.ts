@@ -44,30 +44,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.dashboard',
       icon: LayoutDashboard,
-      route: '/dashboard'
-      // Dashboard menu item is always visible - no permission check needed (no permissions property)
+      route: '/dashboard',
+      permissions: ['dashboard_view']
     },
     {
       label: 'nav.supplyManagement',
       icon: ClipboardList,
       route: '/supply-request-management',
-      permissions: ['request.view', 'request.manage']
+      permissions: ['request.page', 'request.view', 'order.view']
     },
     {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['warehouse.view', 'warehousepage.view'], // Support both permission formats
+      permissions: ['warehousepage.page', 'warehousepage.view'],
       children: [
         {
           label: 'nav.warehouseList',
           route: '/warehouse',
-          permissions: ['warehouse.view', 'warehousepage.view'] // Match route requirement
+          permissions: ['warehousepage.page', 'warehousepage.view']
         },
         {
           label: 'nav.inventoryCategory',
           route: '/warehouse/ammunition-display',
-          permissions: ['warehouse.view', 'warehousepage.view'] // Match route requirement
+          permissions: ['warehousepage.view', 'ammunition.view']
         }
       ]
     },
@@ -75,17 +75,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.workflow',
       icon: GitBranch,
       route: '/workflow',
-      permissions: ['workflow.view', 'workflow.manage']
+      permissions: ['workflowtype.page', 'workflowtype.view']
     },
     {
       label: 'nav.department',
       icon: Building2,
-      permissions: ['request.create', 'allowance.view'], // Show if user has allowance permissions
+      permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create'],
       children: [
         {
           label: 'nav.allowance',
           route: '/allowance',
-          permissions: ['request.create', 'allowance.view']
+          permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create']
         }
       ]
     },
@@ -93,31 +93,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: "nav.newIssueRequest",
       icon: File,
       route: '/new-issue-request',
-      permissions: ['request.create']
+      permissions: ['newrequest.page', 'newrequest.create', 'order.create']
     },
     {
       label: 'nav.returnRequest',
       icon: RotateCcw,
       route: '/return-request',
-      permissions: ['request.create']
+      permissions: ['returnrequest.page', 'returnrequest.create', 'order.create']
     },
     {
       label: 'nav.discardRequest',
       icon: File,
       route: '/discard-request',
-      permissions: ['request.create']
+      permissions: ['discard.page', 'discard.create', 'order.create']
     },
     {
       label: 'nav.requestsManagement',
       icon: FileText,
       route: '/requests-management',
-      permissions: ['request.view', 'request.manage']
+      permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
     },
     {
       label: 'nav.forecast',
       icon: TrendingUp,
       route: '/forecast',
-      permissions: ['dashboard.view']
+      permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view']
     },
     {
       label: 'nav.inventory',
@@ -127,42 +127,42 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.addAsset',
       icon: Plus,
       route: '/add-asset',
-      permissions: ['asset.create']
+      permissions: ['addnewassetpage.page', 'ammunition.create']
     },
     {
       label: 'nav.assetList',
       icon: List,
       route: '/asset-list',
-      permissions: ['asset.view']
+      permissions: ['ammunition.page']
     },
     {
       label: 'nav.depotManagement',
       icon: Warehouse,
       route: '/depot-management',
-      permissions: ['depot.view']
+      permissions: ['depots.page', 'depots.view']
     },
     {
       label: 'nav.admin',
       isHeader: true,
-      permissions: ['user.view', 'role.view'] // Show header if user has any admin permissions
+      permissions: ['systemusers.page', 'systemusers.view', 'roles.page', 'roles.view']
     },
     {
       label: 'nav.manageAdmins',
       icon: Users,
       route: '/manage-admins',
-      permissions: ['user.view']
+      permissions: ['systemusers.page', 'systemusers.view']
     },
     {
       label: 'nav.adminRoles',
       icon: Shield,
       route: '/admin-roles',
-      permissions: ['role.view']
+      permissions: ['roles.page', 'roles.view']
     },
     {
       label: 'nav.rolePermissions',
       icon: Settings,
       route: '/role-permissions',
-      permissions: ['role.edit']
+      permissions: ['roles.edit', 'roles.view']
     }
   ];
 

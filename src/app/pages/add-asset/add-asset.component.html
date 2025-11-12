@@ -128,7 +128,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(hccModel.invalid && (hccModel.dirty || hccModel.touched))"
             placeholder="Select HCC">
           </app-dropdown>
@@ -165,7 +165,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched))"
             placeholder="Select unit">
           </app-dropdown>
@@ -202,7 +202,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched))"
             placeholder="Select unit">
           </app-dropdown>
@@ -234,7 +234,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched))"
             placeholder="Select case type">
           </app-dropdown>
@@ -254,7 +254,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(propellantModel.invalid && (propellantModel.dirty || propellantModel.touched))"
             placeholder="Select propellant">
           </app-dropdown>
@@ -274,7 +274,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(compatModel.invalid && (compatModel.dirty || compatModel.touched))"
             placeholder="Select compatibility">
           </app-dropdown>
@@ -294,7 +294,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             [error]="!!(hazardModel.invalid && (hazardModel.dirty || hazardModel.touched))"
             placeholder="Select hazard division">
           </app-dropdown>
@@ -343,7 +343,10 @@
             [options]="linkedOptions"
             optionLabel="label"
             optionValue="value"
-            [translateLabels]="true">
+            [translateLabels]="true"
+            [placeholderSelectable]="true"
+            [placeholderValue]="null"
+            placeholder="Select option">
           </app-dropdown>
         </div>
 
@@ -357,7 +360,10 @@
             [options]="readyForIssueOptions"
             optionLabel="label"
             optionValue="value"
-            [translateLabels]="true">
+            [translateLabels]="true"
+            [placeholderSelectable]="true"
+            [placeholderValue]="null"
+            placeholder="Select option">
           </app-dropdown>
         </div>
 
@@ -386,7 +392,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             placeholder="Select nature option">
           </app-dropdown>
         </div>
@@ -402,7 +408,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             placeholder="Select primary purpose">
           </app-dropdown>
         </div>
@@ -418,7 +424,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             placeholder="Select color">
           </app-dropdown>
         </div>
@@ -434,7 +440,7 @@
             optionValue="id"
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
-            [placeholderValue]="''"
+            [placeholderValue]="null"
             placeholder="Select material">
           </app-dropdown>
         </div>
