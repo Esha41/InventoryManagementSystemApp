@@ -11,3 +11,12 @@ input[type="number"].no-spinner {
   -moz-appearance: textfield; /* Firefox */
 }
 
+.steps-table-container {
+  position: relative;
+}
+
+.steps-table-scroll {
+  overflow: visible;
+  padding-bottom: 1rem;
+}
+

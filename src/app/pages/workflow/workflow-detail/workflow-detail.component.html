@@ -5,23 +5,36 @@
   <div *ngIf="errorMessage && !loading" class="text-red-600">{{ errorMessage }}</div>
 
   <div *ngIf="workflow && !loading">
-    <h1 class="text-xl font-semibold mb-2">{{ workflow.workflowName }}</h1>
-    <div class="text-sm text-gray-600 mb-4">ID: {{ workflow.id }} • Status: {{ workflow.isActive ? 'Active' : 'Inactive' }}</div>
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-semibold text-gray-900">{{ workflow.workflowName }}</h1>
+        <span
+          class="inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold text-white"
+          [ngClass]="workflow.isActive ? 'bg-green-500' : 'bg-gray-400'"
+        >
+          {{ workflow.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
 
     <h2 class="font-medium mb-2">Steps</h2>
     <table class="min-w-full border">
       <thead class="bg-gray-50">
         <tr>
           <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role Id</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
           <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Higher Approval Role</th>
+          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Higher Approval Entity</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let s of (workflow.workflowSteps || []); let i = index" class="border-t">
           <td class="px-4 py-2">{{ s.stepOrder || (i+1) }}</td>
-          <td class="px-4 py-2">{{ s.applicationRoleId }}</td>
-          <td class="px-4 py-2">{{ s.applicationEntityId }}</td>
+          <td class="px-4 py-2">{{ s.applicationRoleName || s.applicationRoleId }}</td>
+          <td class="px-4 py-2">{{ s.applicationEntityName || s.applicationEntityId }}</td>
+          <td class="px-4 py-2">{{ s.higherApprovalRoleName || s.higherApprovalRoleId || '-' }}</td>
+          <td class="px-4 py-2">{{ s.higherApplicationEntityName || s.higherApplicationEntityId || '-' }}</td>
         </tr>
       </tbody>
     </table>

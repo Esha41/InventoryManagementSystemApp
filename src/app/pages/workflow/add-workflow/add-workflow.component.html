@@ -98,8 +98,9 @@
           </button>
         </div>
 
-        <div *ngIf="steps.length > 0" class="overflow-x-auto">
-          <table class="min-w-full border text-sm">
+        <div *ngIf="steps.length > 0" class="steps-table-container">
+          <div class="steps-table-scroll">
+            <table class="min-w-full border text-sm">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600">#</th>
@@ -183,7 +184,8 @@
                 </td>
               </tr>
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
 
