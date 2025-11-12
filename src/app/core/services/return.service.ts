@@ -14,7 +14,7 @@ export interface CreateReturnDto {
   priority: number; 
   notes?: string;
   departmentId: number;
-  requesterId?: number;
+  requesterId?: string;
   requestPurposeId: number;
   returnItems: CreateReturnItemDto[];
 }

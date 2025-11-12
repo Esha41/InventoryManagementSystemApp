@@ -52,6 +52,7 @@ export class CartridgeListComponent {
   @Output() filterChange = new EventEmitter<void>();
   @Output() confirmSelection = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
+  @Output() previous = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
   @Output() bulletDiameterChange = new EventEmitter<string>();
   @Output() caseLengthChange = new EventEmitter<string>();
@@ -59,9 +60,11 @@ export class CartridgeListComponent {
   @Output() natureChange = new EventEmitter<string>();
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
   @Output() removeSelection = new EventEmitter<number>();
+  @Output() searchChange = new EventEmitter<string>();
 
   pendingCartridgeId: number | null = null;
   pendingQuantity: number = 1;
+  searchTerm: string = '';
 
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeClick.emit(cartridge);
@@ -126,6 +129,10 @@ export class CartridgeListComponent {
     this.next.emit();
   }
 
+  onPrevious(): void {
+    this.previous.emit();
+  }
+
   onClear(): void {
     this.clearFilters.emit();
   }
@@ -148,6 +155,11 @@ export class CartridgeListComponent {
   onNatureChange(value: string): void {
     this.natureChange.emit(value);
     this.onFilterChange();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchTerm = value;
+    this.searchChange.emit(value);
   }
 }
 

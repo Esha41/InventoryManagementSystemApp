@@ -58,7 +58,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   priority: number = 1;
   notes: string = '';
   departmentId: number | null = null;
-  requesterId: number | null = null;
+  requesterId: string | null = null;
   requestPurposeId: number | null = null;
 
   returnItems: ReturnItemForm[] = [];
@@ -91,7 +91,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   currentUserDetails: BackendUserDto | null = null;
   isAdminUser = false;
   private preferredDepartmentId: number | null = null;
-  private preferredRequesterId: number | null = null;
+  private preferredRequesterId: string | null = null;
   private fallbackDepartmentName = '';
   private fallbackRequesterName = '';
   lockedDepartmentName = '';
@@ -186,7 +186,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (users) => {
           this.requesters = users.map(user => ({
-            id: user.employeeId || Number(user.id) || 0,
+            id: Number(user.id) || 0,
             nameEn: user.nameEn || user.userName || '',
             nameAr: user.nameAr || user.userName || '',
             code: user.userName || ''
@@ -256,8 +256,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     return item ? (item.name || item.itemNo || 'Unknown') : 'Unknown';
   }
 
-  getRequesterName(requesterId: number): string {
-    const requester = this.requesters.find(r => r.id === requesterId);
+  getRequesterName(requesterId: string): string {
+    // requesterId is now a string (user ID), find in requesters list by converting id to string
+    const requester = this.requesters.find(r => String(r.id) === requesterId);
     return requester ? (requester.nameEn || requester.nameAr || 'Unknown') : 'Unknown';
   }
 
@@ -407,7 +408,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       priority: Number(this.priority),
       notes: this.notes || undefined,
       departmentId: Number(this.departmentId!),
-      requesterId: this.requesterId != null ? Number(this.requesterId) : undefined,
+      requesterId: undefined, 
       requestPurposeId: Number(this.requestPurposeId!),
       returnItems: this.returnItems
         .filter(item => item.itemId && item.quantity)
@@ -486,8 +487,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       nameAr: user.nameAr,
       userName: user.userName,
       departmentId: user.departmentId,
-      departmentName: user.departmentName,
-      employeeId: user.employeeId
+      departmentName: user.departmentName
     });
   }
 
@@ -501,8 +501,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       nameAr: details.nameAr,
       userName: details.userName,
       departmentId: details.departmentId,
-      departmentName: details.departmentName,
-      employeeId: details.employeeId
+      departmentName: details.departmentName
     });
   }
 
@@ -512,7 +511,6 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     userName?: string | null;
     departmentId?: number | string | null;
     departmentName?: string | null;
-    employeeId?: number | string | null;
   }): void {
     if (this.isAdminUser) {
       this.requesterId = null;
@@ -537,22 +535,14 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       this.updateLockedDepartmentName();
     }
 
-    // Use employeeId if available, otherwise try to get userId from currentUser
-    const requesterId = this.toNumber(context.employeeId);
-    if (requesterId !== null) {
-      this.preferredRequesterId = requesterId;
-      this.applyLockedRequester();
+    // Set RequesterId to the current user's ID (string)
+    const currentUser = this.backendAuthService.getCurrentUser();
+    if (currentUser?.id) {
+      this.preferredRequesterId = currentUser.id;
     } else {
-      // Fallback: use current user's ID if employeeId is not set
-      const currentUser = this.backendAuthService.getCurrentUser();
-      if (currentUser?.id) {
-        const userIdAsNumber = this.toNumber(currentUser.id);
-        if (userIdAsNumber !== null) {
-          this.preferredRequesterId = userIdAsNumber;
-          this.applyLockedRequester();
-        }
-      }
+      this.preferredRequesterId = null;
     }
+    this.applyLockedRequester();
   }
 
   private resolveRequesterDisplayName(

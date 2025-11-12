@@ -128,10 +128,6 @@ export class BackendAuthService {
       this.tryParseNumber(response.departmentId) ??
       this.tryParseNumber(tokenPayload?.DepartmentId ?? tokenPayload?.departmentId ?? tokenPayload?.DeptId);
 
-    const employeeId =
-      this.tryParseNumber(response.employeeId) ??
-      this.tryParseNumber(tokenPayload?.EmployeeId ?? tokenPayload?.employeeId ?? tokenPayload?.EmpId);
-
     const organizationId =
       this.tryParseNumber(response.organizationId) ??
       this.tryParseNumber(tokenPayload?.OrganizationId ?? tokenPayload?.organizationId ?? tokenPayload?.OrgId);
@@ -176,7 +172,6 @@ export class BackendAuthService {
       permissions: [],
       departmentId: departmentId ?? undefined,
       departmentName: departmentName ?? undefined,
-      employeeId: employeeId ?? undefined,
       organizationId: organizationId ?? undefined,
       nameEn: nameEn ?? undefined,
       nameAr: nameAr ?? undefined
@@ -229,7 +224,6 @@ export class BackendAuthService {
 
         const departmentIdClaim = this.getClaimValue(claims, ['departmentid', 'deptid', 'department']);
         const departmentNameClaim = this.getClaimValue(claims, ['departmentname', 'deptname']);
-        const employeeIdClaim = this.getClaimValue(claims, ['employeeid', 'empid', 'employee']);
         const fullNameEnClaim = this.getClaimValue(claims, ['fullnameen', 'nameen', 'full_name_en']);
         const fullNameArClaim = this.getClaimValue(claims, ['fullnamear', 'namear', 'full_name_ar']);
         const organizationIdClaim = this.getClaimValue(claims, ['organizationid', 'orgid', 'organization']);
@@ -245,9 +239,6 @@ export class BackendAuthService {
           tokenPayload?.DepartmentName ??
           tokenPayload?.departmentName ??
           tokenPayload?.DeptName;
-        const parsedEmployeeId =
-          this.tryParseNumber(employeeIdClaim) ??
-          this.tryParseNumber(tokenPayload?.EmployeeId ?? tokenPayload?.employeeId ?? tokenPayload?.EmpId);
         const resolvedNameEn =
           fullNameEnClaim ??
           tokenPayload?.FullNameEN ??
@@ -270,9 +261,6 @@ export class BackendAuthService {
         }
         if (resolvedDepartmentName) {
           user.departmentName = resolvedDepartmentName;
-        }
-        if (parsedEmployeeId !== undefined) {
-          user.employeeId = parsedEmployeeId;
         }
         if (parsedOrganizationId !== undefined) {
           user.organizationId = parsedOrganizationId;

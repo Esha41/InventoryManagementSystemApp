@@ -26,9 +26,11 @@ export class UsageFormComponent {
   @Input() availableReserve: number = 0;
   @Input() orderedQuantity: number = 0;
   @Input() utilizedQuantity: number = 0;
+  @Input() reserveDetailsByItem: any[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
   @Input() orderPriorities: string[] = ['High Priority', 'Medium Priority', 'Low Priority'];
+  @Input() requesterComments: string = '';
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
     this.removeCartridge.emit(id);
@@ -43,6 +45,7 @@ export class UsageFormComponent {
   @Output() usageDateChange = new EventEmitter<string>();
   @Output() usageTimeChange = new EventEmitter<string>();
   @Output() orderPriorityChange = new EventEmitter<string>();
+  @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
@@ -93,6 +96,10 @@ export class UsageFormComponent {
     this.orderPriorityChange.emit(value);
   }
 
+  onRequesterCommentsChange(value: string): void {
+    this.requesterCommentsChange.emit(value);
+  }
+
   onPrevious(): void {
     this.previous.emit();
   }
@@ -102,6 +109,10 @@ export class UsageFormComponent {
     if (this.validateForm()) {
       this.next.emit();
     }
+  }
+
+  isItemSelected(itemId: number): boolean {
+    return this.selectedCartridges.some(cartridge => cartridge.id === itemId);
   }
 
   hasError(field: keyof UsageFormErrors): boolean {

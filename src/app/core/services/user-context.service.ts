@@ -86,11 +86,6 @@ export class UserContextService {
       payload.deptId
     );
 
-    const employeeId = this.toNumber(
-      payload.EmployeeId ??
-      payload.employeeId
-    );
-
     const nameEn =
       payload.FullNameEN ??
       payload.fullNameEN ??
@@ -115,7 +110,6 @@ export class UserContextService {
       roleIds: [],
       departmentId: departmentId ?? undefined,
       departmentName: payload.DepartmentName || payload.departmentName,
-      employeeId: employeeId ?? undefined,
       nameEn: nameEn || undefined,
       nameAr: nameAr || undefined,
       organizationId: this.toNumber(

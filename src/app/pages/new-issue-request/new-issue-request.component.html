@@ -11,12 +11,59 @@
     (stepChange)="onStepChange($event)">
   </app-stepper>
 
-  <div *ngIf="orderSubmitError && currentStep === 2" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
+  <div *ngIf="orderSubmitError && currentStep === 3" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
     {{ orderSubmitError }}
   </div>
 
+  <!-- Step 0: Allowance Selection -->
+  <div *ngIf="currentStep === 0" class="bg-white rounded-lg p-8 shadow-sm">
+    <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectOrderSource' | translate }}</h2>
+    
+    <div class="mb-8">
+      <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' | translate }}</p>
+      
+      <div class="flex flex-col space-y-4">
+        <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+               [ngClass]="fromReserve === 'Yes' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
+          <input 
+            type="radio" 
+            name="fromReserve" 
+            value="Yes" 
+            [(ngModel)]="fromReserve"
+            class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
+          <div class="ml-4">
+            <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' | translate }}</span>
+            <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{ 'newIssueRequest.fromAllowanceDescription' | translate }}</span>
+          </div>
+        </label>
+        
+        <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+               [ngClass]="fromReserve === 'No' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
+          <input 
+            type="radio" 
+            name="fromReserve" 
+            value="No" 
+            [(ngModel)]="fromReserve"
+            class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
+          <div class="ml-4">
+            <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllAmmunition' | translate }}</span>
+            <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{ 'newIssueRequest.fromAllAmmunitionDescription' | translate }}</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <app-button 
+        variant="primary" 
+        (clicked)="onNext()">
+        {{ 'newIssueRequest.next' | translate }}
+      </app-button>
+    </div>
+  </div>
+
   <!-- Step 1: Selection -->
-  <div *ngIf="currentStep === 0">
+  <div *ngIf="currentStep === 1">
     <ng-container *ngIf="!loadingCartridges && !cartridgeError; else cartridgeState">
       <!-- Cartridge Details View -->
       <app-cartridge-details
@@ -44,6 +91,8 @@
         (filterChange)="filterCartridges()"
         (clearFilters)="onClearFilters()"
         (next)="onNext()"
+        (previous)="onPrevious()"
+        (searchChange)="onSearchChange($event)"
         (bulletDiameterChange)="onBulletDiameterChange($event)"
         (caseLengthChange)="onCaseLengthChange($event)"
         (linkedChange)="onLinkedChange($event)"
@@ -67,7 +116,7 @@
 
   <!-- Step 2: Usage -->
   <app-usage-form
-    *ngIf="currentStep === 1"
+    *ngIf="currentStep === 2"
     [fromReserve]="fromReserve"
     [usePurpose]="usePurpose"
     [annualDiscardSpecialOps]="annualDiscardSpecialOps"
@@ -78,10 +127,12 @@
     [usageTime]="usageTime"
     [orderPriority]="orderPriority"
     [orderPriorities]="orderPriorities"
-    [totalReserve]="totalReserve"
-    [availableReserve]="availableReserve"
-    [orderedQuantity]="orderedQuantity"
-    [utilizedQuantity]="utilizedQuantity"
+    [requesterComments]="requesterComments"
+    [totalReserve]="selectedTotalReserve"
+    [availableReserve]="selectedAvailableReserve"
+    [orderedQuantity]="selectedOrderedQuantity"
+    [utilizedQuantity]="selectedUtilizedQuantity"
+    [reserveDetailsByItem]="selectedItemsReserveDetails"
     [selectedCartridges]="selectedCartridges"
     (removeCartridge)="onRemoveSelectedCartridge($event)"
     (fromReserveChange)="fromReserve = $event"
@@ -93,13 +144,14 @@
     (usageDateChange)="usageDate = $event"
     (usageTimeChange)="usageTime = $event"
     (orderPriorityChange)="orderPriority = $event"
+    (requesterCommentsChange)="requesterComments = $event"
     (previous)="onPrevious()"
     (next)="onNext()">
   </app-usage-form>
 
   <!-- Step 3: Review -->
   <app-review-form
-    *ngIf="currentStep === 2"
+    *ngIf="currentStep === 3"
     [requesterName]="requesterName"
     [requesterComments]="requesterComments"
     [orderType]="orderType"
@@ -112,7 +164,7 @@
   </app-review-form>
 
   <!-- Step 4: Send -->
-  <div *ngIf="currentStep === 3" class="bg-[#F5F5F5] rounded-lg py-24 px-12 text-center">
+  <div *ngIf="currentStep === 4" class="bg-[#F5F5F5] rounded-lg py-24 px-12 text-center">
     <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderSentSuccessfully' | translate }}</h2>
 
     <div class="space-y-2 text-sm text-[var(--color-text)] mb-8">

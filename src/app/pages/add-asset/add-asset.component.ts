@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
@@ -88,7 +89,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   constructor(
     private translationService: TranslationService,
     private lookupService: LookupService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private router: Router
   ) {}
 
   assetForm: AssetForm = {
@@ -266,7 +268,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
             this.showSuccessToast('Ammunition created successfully');
             console.log('Asset created:', response.data);
             setTimeout(() => {
-              this.resetForm();
+              this.router.navigate(['/asset-list']);
             }, 800);
           } else {
             this.errorMessage = response.message || 'Failed to create asset';

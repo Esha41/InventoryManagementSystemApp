@@ -45,7 +45,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Left Column -->
       <div class="space-y-6">
-        <!-- From Reserve -->
+        <!-- Order Priority -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">{{ 'newIssueRequest.fromReserve' | translate }}</label>
           <div class="flex space-x-4">
@@ -192,15 +192,38 @@
             {{ formErrors.usageTime | translate }}
           </p>
         </div>
+
+        <!-- Comments -->
+        <div>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.comments' | translate }}</label>
+          <textarea
+            name="requesterComments"
+            [ngModel]="requesterComments"
+            (ngModelChange)="onRequesterCommentsChange($event)"
+            rows="4"
+            placeholder="{{ 'newIssueRequest.commentsPlaceholder' | translate }}"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent transition-all resize-none"></textarea>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Reserve Details Section -->
-  <div class="mb-8">
-    <h2 class="text-lg font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.reserveDetails' | translate }}</h2>
+  <!-- Reserve Details Section - Only show if from allowance -->
+  <div *ngIf="fromReserve === 'Yes'" class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reserveDetails' | translate }}</h2>
+      <span class="text-sm text-[var(--color-text-muted)]">
+        <span *ngIf="selectedCartridges.length > 0">
+          {{ 'newIssueRequest.showingForSelectedItems' | translate }}: {{ selectedCartridges.length }}
+        </span>
+        <span *ngIf="selectedCartridges.length === 0">
+          {{ 'newIssueRequest.showingAllAvailableItems' | translate }}
+        </span>
+      </span>
+    </div>
     
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <div class="bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg p-4">
         <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.totalReserve' | translate }}</label>
         <div class="text-lg font-bold text-[var(--color-text)]">{{ totalReserve | number }}</div>
@@ -220,6 +243,39 @@
         <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.utilizedQuantity' | translate }}</label>
         <div class="text-lg font-bold text-[var(--color-text)]">{{ utilizedQuantity | number }}</div>
       </div>
+    </div>
+
+    <!-- Per-Item Details Table -->
+    <div *ngIf="reserveDetailsByItem.length > 0" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+      <table class="min-w-full text-sm">
+        <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.itemName' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
+            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.totalReserve' | translate }}</th>
+            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.availableReserve' | translate }}</th>
+            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.orderedQuantity' | translate }}</th>
+            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.utilizedQuantity' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of reserveDetailsByItem" 
+              class="border-t border-[var(--color-border)] transition-colors"
+              [ngClass]="{'bg-[#D0B888]/10 border-l-4 border-l-[#D0B888]': isItemSelected(item.itemId)}">
+            <td class="px-4 py-2 text-[var(--color-text)]">
+              <div class="flex items-center gap-2">
+                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 rounded-full bg-[#D0B888]"></span>
+                {{ item.itemName }}
+              </div>
+            </td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ item.itemNo }}</td>
+            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.totalReserve | number }}</td>
+            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.availableReserve | number }}</td>
+            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.orderedQuantity | number }}</td>
+            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.utilizedQuantity | number }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

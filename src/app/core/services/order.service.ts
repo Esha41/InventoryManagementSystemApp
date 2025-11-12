@@ -13,8 +13,8 @@ export interface CreateOrderRequest {
   notes?: string;
   departmentId: number;
   requestTypeId?: number | null;
-  requesterId?: number | null;
-  recieverId?: number | null;
+  requesterId?: string | null;
+  recieverId?: string | null;
   depotId?: number | null;
   requestPurposeId: number;
   isFromAllowance: boolean;
@@ -52,8 +52,8 @@ export interface OrderDto {
   status: number;
   notes?: string;
   departmentId: number;
-  requesterId?: number | null;
-  recieverId?: number | null;
+  requesterId?: string | null;
+  recieverId?: string | null;
   depotId?: number | null;
   requestPurposeId: number;
   isFromAllowance: boolean;
