@@ -15,6 +15,7 @@ import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { ToastService } from '@services/toast.service';
 
 interface AssetForm {
   name: string;
@@ -82,14 +83,13 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
-  successMessage: string | null = null;
-  showToast = false;
   formSubmitted = false; // Track if form has been submitted to show validation
 
   constructor(
     private translationService: TranslationService,
     private lookupService: LookupService,
     private apiService: ApiService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -212,7 +212,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     this.errorMessage = null;
-    this.successMessage = null;
 
     // Build DTO matching backend expectations
     const ammunitionDto: any = {
@@ -265,31 +264,33 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.succeeded) {
-            this.showSuccessToast('Ammunition created successfully');
+            const successMessage = this.translationService.getTranslation('addAsset.successMessage');
+            const successTitle = this.translationService.getTranslation('toast.success');
+            const successText = successMessage && successMessage !== 'addAsset.successMessage'
+              ? successMessage
+              : 'Asset created successfully';
+            this.toastService.success(successText, successTitle);
             console.log('Asset created:', response.data);
             setTimeout(() => {
               this.router.navigate(['/asset-list']);
             }, 800);
           } else {
-            this.errorMessage = response.message || 'Failed to create asset';
+            const fallback = 'Failed to create asset';
+            this.errorMessage = response.message || fallback;
+            const errorTitle = this.translationService.getTranslation('toast.error');
+            this.toastService.error(this.errorMessage ?? fallback, errorTitle);
           }
           this.submitting = false;
         },
         error: (error) => {
           console.error('Error creating asset:', error);
-          this.errorMessage = error.message || 'Failed to create asset. Please try again.';
+          const fallback = 'Failed to create asset. Please try again.';
+          this.errorMessage = error?.message || fallback;
+          const errorTitle = this.translationService.getTranslation('toast.error');
+          this.toastService.error(this.errorMessage ?? fallback, errorTitle);
           this.submitting = false;
         }
       });
-  }
-
-  private showSuccessToast(message: string): void {
-    this.successMessage = message;
-    this.showToast = true;
-    setTimeout(() => {
-      this.showToast = false;
-      setTimeout(() => (this.successMessage = null), 300);
-    }, 2500);
   }
 
   validateForm(): boolean {

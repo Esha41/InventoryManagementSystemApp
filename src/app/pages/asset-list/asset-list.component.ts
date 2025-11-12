@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
+import { ToastService } from '@services/toast.service';
 import { forkJoin } from 'rxjs';
 import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
@@ -27,6 +28,7 @@ interface Asset {
   compatibility?: string;
   propellant?: string;
   expiryDate?: string;
+  expiryDateRaw?: string;
   readyForIssue: boolean;
 }
 
@@ -56,16 +58,22 @@ export class AssetListComponent implements OnInit {
   readonly Eye = Eye;
   readonly Plus = Plus;
   readonly X = X;
+  readonly ArrowUpDown = ArrowUpDown;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly FilterX = FilterX;
 
   assets: Asset[] = [];
   loading = false;
 
   searchTerm = '';
-  selectedHcc = '';
-  selectedCaseType = '';
-  selectedHazardDivision = '';
-  selectedCompatibility = '';
-  selectedPropellant = '';
+  selectedHcc: string | null = null;
+  selectedCaseType: string | null = null;
+  selectedHazardDivision: string | null = null;
+  selectedCompatibility: string | null = null;
+  selectedPropellant: string | null = null;
+  sortColumn: string = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   hccList: any[] = [];
   caseTypeList: any[] = [];
@@ -94,10 +102,6 @@ export class AssetListComponent implements OnInit {
   selectedAsset: any = null;
   editForm: FormGroup;
 
-  // Toast
-  showToast = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
 
   // Pagination
   currentPage = 1;
@@ -109,7 +113,8 @@ export class AssetListComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private translateService: TranslateService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {
     this.editForm = this.fb.group({
       id: [0 as number],
@@ -125,7 +130,7 @@ export class AssetListComponent implements OnInit {
       isLinked: [false as boolean],
       primer: [''],
       totalWeight: [null as number | null],
-      nsn: ['', Validators.required],
+      nsn: [''],
       caseTypeId: [null as number | null, Validators.required],
       propellantId: [null as number | null, Validators.required],
       compatibilityId: [null as number | null, Validators.required],
@@ -161,6 +166,7 @@ export class AssetListComponent implements OnInit {
           compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
           propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
+          expiryDateRaw: x.expiryDate,
           readyForIssue: x.readyForIssue ?? true
         }));
         this.currentPage = 1;
@@ -234,22 +240,25 @@ export class AssetListComponent implements OnInit {
   }
 
   get filteredAssets(): Asset[] {
-    return this.assets.filter(asset => {
+    let filtered = this.assets.filter(asset => {
       const matchesSearch = !this.searchTerm || 
         asset.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.itemNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.partNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.batchNo.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-      const matchesHcc = !this.selectedHcc || asset.hcc === this.selectedHcc;
-      const matchesCaseType = !this.selectedCaseType || asset.caseType === this.selectedCaseType;
-      const matchesHazardDivision = !this.selectedHazardDivision || asset.hazardDivision === this.selectedHazardDivision;
-      const matchesCompatibility = !this.selectedCompatibility || asset.compatibility === this.selectedCompatibility;
-      const matchesPropellant = !this.selectedPropellant || asset.propellant === this.selectedPropellant;
+      const matchesHcc = !this.selectedHcc || this.selectedHcc === null || asset.hcc === this.selectedHcc;
+      const matchesCaseType = !this.selectedCaseType || this.selectedCaseType === null || asset.caseType === this.selectedCaseType;
+      const matchesHazardDivision = !this.selectedHazardDivision || this.selectedHazardDivision === null || asset.hazardDivision === this.selectedHazardDivision;
+      const matchesCompatibility = !this.selectedCompatibility || this.selectedCompatibility === null || asset.compatibility === this.selectedCompatibility;
+      const matchesPropellant = !this.selectedPropellant || this.selectedPropellant === null || asset.propellant === this.selectedPropellant;
 
       return matchesSearch && matchesHcc && matchesCaseType && matchesHazardDivision && 
              matchesCompatibility && matchesPropellant;
     });
+
+    // Apply sorting
+    return this.sortAssets(filtered);
   }
 
   onPageChange(page: number): void {
@@ -266,6 +275,76 @@ export class AssetListComponent implements OnInit {
 
   onFilterChange(): void {
     this.currentPage = 1;
+  }
+
+  sortByColumn(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, default to ascending
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.currentPage = 1;
+  }
+
+  private sortAssets(assets: Asset[]): Asset[] {
+    if (!this.sortColumn) {
+      return assets;
+    }
+
+    return [...assets].sort((a, b) => {
+      let compareResult = 0;
+
+      switch (this.sortColumn) {
+        case 'name':
+          compareResult = a.name.localeCompare(b.name);
+          break;
+        case 'itemNo':
+          compareResult = a.itemNo.localeCompare(b.itemNo);
+          break;
+        case 'partNo':
+          compareResult = a.partNo.localeCompare(b.partNo);
+          break;
+        case 'batchNo':
+          compareResult = a.batchNo.localeCompare(b.batchNo);
+          break;
+        case 'hcc':
+          compareResult = (a.hcc || '').localeCompare(b.hcc || '');
+          break;
+        case 'nsn':
+          compareResult = (a.nsn || '').localeCompare(b.nsn || '');
+          break;
+        case 'caseType':
+          compareResult = (a.caseType || '').localeCompare(b.caseType || '');
+          break;
+        case 'hazardDivision':
+          compareResult = (a.hazardDivision || '').localeCompare(b.hazardDivision || '');
+          break;
+        case 'expiryDate':
+          compareResult = this.compareExpiryDates(a, b);
+          break;
+        case 'readyForIssue':
+          compareResult = (a.readyForIssue === b.readyForIssue) ? 0 : (a.readyForIssue ? -1 : 1);
+          break;
+        default:
+          return 0;
+      }
+
+      return this.sortDirection === 'asc' ? compareResult : -compareResult;
+    });
+  }
+
+  private compareExpiryDates(a: Asset, b: Asset): number {
+    // Handle missing dates - put them at the end
+    if (!a.expiryDateRaw && !b.expiryDateRaw) return 0;
+    if (!a.expiryDateRaw) return 1;
+    if (!b.expiryDateRaw) return -1;
+
+    const dateA = new Date(a.expiryDateRaw).getTime();
+    const dateB = new Date(b.expiryDateRaw).getTime();
+    return dateA - dateB;
   }
 
   onEdit(assetId: string): void {
@@ -493,22 +572,22 @@ export class AssetListComponent implements OnInit {
   }
 
   private showSuccessToast(message: string): void {
-    this.toastMessage = message;
-    this.toastType = 'success';
-    this.showToast = true;
-    setTimeout(() => {
-      this.showToast = false;
-      setTimeout(() => (this.toastMessage = ''), 300);
-    }, 3000);
+    const title = this.translateService.instant('toast.success');
+    this.toastService.success(message, title);
   }
 
   private showErrorToast(message: string): void {
-    this.toastMessage = message;
-    this.toastType = 'error';
-    this.showToast = true;
-    setTimeout(() => {
-      this.showToast = false;
-      setTimeout(() => (this.toastMessage = ''), 300);
-    }, 3000);
+    const title = this.translateService.instant('toast.error');
+    this.toastService.error(message, title);
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedHcc = null;
+    this.selectedCaseType = null;
+    this.selectedHazardDivision = null;
+    this.selectedCompatibility = null;
+    this.selectedPropellant = null;
+    this.currentPage = 1;
   }
 }

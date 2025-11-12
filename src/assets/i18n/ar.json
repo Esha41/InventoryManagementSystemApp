@@ -839,10 +839,27 @@
     "addAmmunition": "إضافة ذخيرة",
     "searchPlaceholder": "البحث بالاسم، رقم العنصر، رقم القطعة...",
     "filters": {
+      "title": "الفلاتر",
+      "clear": "مسح الفلاتر",
+      "search": "بحث",
+      "hcc": "HCC",
+      "caseType": "نوع الغلاف",
+      "hazardDivision": "قسم المخاطر",
+      "compatibility": "التوافق",
+      "sortBy": "ترتيب حسب",
       "allHcc": "جميع HCC",
       "allCaseTypes": "جميع أنواع الغلاف",
       "allHazardDivisions": "جميع أقسام المخاطر",
-      "allCompatibility": "جميع التوافقيات"
+      "allCompatibility": "جميع التوافقيات",
+      "defaultSort": "افتراضي"
+    },
+    "sort": {
+      "nameAsc": "الاسم (أ-ي)",
+      "nameDesc": "الاسم (ي-أ)",
+      "itemNoAsc": "رقم العنصر (تصاعدي)",
+      "itemNoDesc": "رقم العنصر (تنازلي)",
+      "expiryNewest": "الانتهاء (الأحدث أولاً)",
+      "expiryClosest": "الانتهاء (الأقرب أولاً)"
     },
     "ammunitionItems": "عناصر الذخيرة",
     "loading": "جاري تحميل بيانات الذخيرة...",

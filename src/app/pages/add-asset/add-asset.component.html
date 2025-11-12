@@ -9,25 +9,6 @@
     <div class="text-[var(--color-text)]">Loading form data...</div>
   </div>
 
-  <!-- Success Toast -->
-  <div
-    *ngIf="successMessage"
-    class="fixed bottom-6 right-6 z-50 transform transition-all duration-300"
-    [class.opacity-0]="!showToast"
-    [class.translate-y-2]="!showToast"
-  >
-    <div class="flex items-start gap-3 px-4 py-3 rounded-lg shadow-custom-md bg-white border border-[var(--color-border)] min-w-[280px]">
-      <div class="h-6 w-6 rounded-full bg-[var(--color-success)] flex items-center justify-center text-white text-sm">✓</div>
-      <div class="flex-1">
-        <div class="text-[var(--color-text)] font-medium">Success</div>
-        <div class="text-[var(--color-text-muted)] text-sm">{{ successMessage }}</div>
-      </div>
-      <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)]" (click)="showToast=false">
-        ✕
-      </button>
-    </div>
-  </div>
-
   <!-- Error Message -->
   <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
     {{ errorMessage }}

@@ -38,7 +38,7 @@ export interface AllowanceItem {
 export class AllowanceComponent implements OnInit {
   readonly ArrowLeft = ArrowLeft;
 
-  selectedDepartment: string = '';
+  selectedDepartment: number | string | null = null;
   selectedYear: string = ''; // Changed from selectedDate to selectedYear (string input for year only)
   items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
   
@@ -90,7 +90,7 @@ export class AllowanceComponent implements OnInit {
     // Check for edit mode from query params after ammunition items are loaded
     this.route.queryParams.subscribe(params => {
       if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
-        this.selectedDepartment = params['departmentId'];
+        this.selectedDepartment = parseInt(params['departmentId'], 10);
         this.selectedYear = params['year'];
         // Wait for ammunition items to be loaded before loading allowance data
         if (this.ammunitionItems.length > 0) {
@@ -289,7 +289,7 @@ export class AllowanceComponent implements OnInit {
     let isValid = true;
 
     // Validate department
-    if (!this.selectedDepartment || this.selectedDepartment.trim() === '') {
+    if (!this.selectedDepartment || this.selectedDepartment === '' || this.selectedDepartment === null) {
       this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
       isValid = false;
     }
@@ -346,7 +346,9 @@ export class AllowanceComponent implements OnInit {
 
     // Prepare request data according to API structure
     const requestData = {
-      departmentId: parseInt(this.selectedDepartment, 10),
+      departmentId: typeof this.selectedDepartment === 'number' 
+        ? this.selectedDepartment 
+        : parseInt(this.selectedDepartment as string, 10),
       year: year,
       items: this.items.map(item => ({
         itemId: parseInt(item.itemId.trim(), 10),
@@ -397,7 +399,7 @@ export class AllowanceComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.selectedDepartment = '';
+    this.selectedDepartment = null;
     const currentYear = new Date().getFullYear();
     this.selectedYear = currentYear.toString();
     this.items = [{ itemId: '', quantity: '' }];

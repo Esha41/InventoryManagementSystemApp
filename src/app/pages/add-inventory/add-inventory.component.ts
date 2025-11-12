@@ -139,7 +139,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   addItem(): void {
     this.items.push({
-      itemId: 0,
+      itemId: null as any,
       itemName: '',
       lot: 1,
       supplierId: undefined,
@@ -214,7 +214,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
     // Validate items
     for (const item of this.items) {
-      if (!item.itemId || item.itemId === 0) {
+      if (!item.itemId || item.itemId === 0 || item.itemId === null) {
         this.errorMessage = 'Please select an item for all entries';
         return;
       }

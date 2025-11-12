@@ -848,10 +848,27 @@
     "addAmmunition": "Add Ammunition",
     "searchPlaceholder": "Search by name, item no, part no...",
     "filters": {
+      "title": "Filters",
+      "clear": "Clear Filters",
+      "search": "Search",
+      "hcc": "HCC",
+      "caseType": "Case Type",
+      "hazardDivision": "Hazard Division",
+      "compatibility": "Compatibility",
+      "sortBy": "Sort By",
       "allHcc": "All HCC",
       "allCaseTypes": "All Case Types",
       "allHazardDivisions": "All Hazard Divisions",
-      "allCompatibility": "All Compatibility"
+      "allCompatibility": "All Compatibility",
+      "defaultSort": "Default"
+    },
+    "sort": {
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "itemNoAsc": "Item No (Ascending)",
+      "itemNoDesc": "Item No (Descending)",
+      "expiryNewest": "Expiry (Newest First)",
+      "expiryClosest": "Expiry (Closest First)"
     },
     "ammunitionItems": "Ammunition Items",
     "loading": "Loading ammunition data...",

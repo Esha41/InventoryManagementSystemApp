@@ -1,31 +1,4 @@
 <div class="min-h-screen p-6 space-y-6">
-  <!-- Toast Notification -->
-  <div
-    *ngIf="toastMessage"
-    class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 ease-in-out"
-    [class.opacity-0]="!showToast"
-    [class.translate-y-2]="!showToast"
-    [class.opacity-100]="showToast"
-    [class.translate-y-0]="showToast"
-  >
-    <div class="flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg bg-white border min-w-[320px]"
-         [class.border-green-500]="toastType === 'success'"
-         [class.border-red-500]="toastType === 'error'">
-      <div class="h-6 w-6 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-           [class.bg-green-500]="toastType === 'success'"
-           [class.bg-red-500]="toastType === 'error'">
-        {{ toastType === 'success' ? '✓' : '✕' }}
-      </div>
-      <div class="flex-1">
-        <div class="text-[var(--color-text)] font-semibold">{{ (toastType === 'success' ? 'common.success' : 'common.error') | translate }}</div>
-        <div class="text-[var(--color-text-muted)] text-sm mt-0.5">{{ toastMessage }}</div>
-      </div>
-      <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors" (click)="showToast=false">
-        <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
-      </button>
-    </div>
-  </div>
-
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
@@ -43,72 +16,103 @@
   <!-- Filters Card -->
   <app-card [shadow]="true">
     <div class="p-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.filters.title' | translate }}</h3>
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-white border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors">
+          <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
+          <span>{{ 'assetList.filters.clear' | translate }}</span>
+        </button>
+      </div>
+      <div class="flex flex-wrap items-end gap-4">
         <!-- Search -->
-        <div class="relative lg:col-span-2">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+        <div class="relative flex-1 min-w-[250px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'assetList.filters.search' | translate }}
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </div>
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onFilterChange()"
+              [placeholder]="'assetList.searchPlaceholder' | translate"
+              class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
+            />
           </div>
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="onFilterChange()"
-            [placeholder]="'assetList.searchPlaceholder' | translate"
-            class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
-          />
         </div>
 
         <!-- HCC Filter -->
-        <app-dropdown
-          class="w-full"
-          [(ngModel)]="selectedHcc"
-          (selectionChange)="onFilterChange()"
-          [options]="hccFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          [placeholderSelectable]="true"
-          [placeholderValue]="''"
-          placeholder="{{ 'assetList.filters.allHcc' | translate }}">
-        </app-dropdown>
+        <div class="w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'assetList.filters.hcc' | translate }}
+          </label>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="selectedHcc"
+            (selectionChange)="onFilterChange()"
+            [options]="hccFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholderSelectable]="true"
+            placeholder="{{ 'assetList.filters.allHcc' | translate }}">
+          </app-dropdown>
+        </div>
 
         <!-- Case Type Filter -->
-        <app-dropdown
-          class="w-full"
-          [(ngModel)]="selectedCaseType"
-          (selectionChange)="onFilterChange()"
-          [options]="caseTypeFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          [placeholderSelectable]="true"
-          [placeholderValue]="''"
-          placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
-        </app-dropdown>
+        <div class="w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'assetList.filters.caseType' | translate }}
+          </label>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="selectedCaseType"
+            (selectionChange)="onFilterChange()"
+            [options]="caseTypeFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholderSelectable]="true"
+            placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
+          </app-dropdown>
+        </div>
 
         <!-- Hazard Division Filter -->
-        <app-dropdown
-          class="w-full"
-          [(ngModel)]="selectedHazardDivision"
-          (selectionChange)="onFilterChange()"
-          [options]="hazardDivisionFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          [placeholderSelectable]="true"
-          [placeholderValue]="''"
-          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
-        </app-dropdown>
+        <div class="w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'assetList.filters.hazardDivision' | translate }}
+          </label>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="selectedHazardDivision"
+            (selectionChange)="onFilterChange()"
+            [options]="hazardDivisionFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholderSelectable]="true"
+            placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+          </app-dropdown>
+        </div>
 
         <!-- Compatibility Filter -->
-        <app-dropdown
-          class="w-full"
-          [(ngModel)]="selectedCompatibility"
-          (selectionChange)="onFilterChange()"
-          [options]="compatibilityFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          [placeholderSelectable]="true"
-          [placeholderValue]="''"
-          placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
-        </app-dropdown>
+        <div class="w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'assetList.filters.compatibility' | translate }}
+          </label>
+          <app-dropdown
+            class="w-full"
+            [(ngModel)]="selectedCompatibility"
+            (selectionChange)="onFilterChange()"
+            [options]="compatibilityFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            [placeholderSelectable]="true"
+            placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+          </app-dropdown>
+        </div>
       </div>
     </div>
   </app-card>
@@ -134,16 +138,96 @@
           <table class="w-full">
             <thead class="bg-[var(--color-background)]">
               <tr class="border-b border-[var(--color-border)]">
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.name' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.itemNo' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.partNo' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.batchNo' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hcc' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.nsn' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.caseType' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.hazardDivision' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.expiryDate' | translate }}</th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.status' | translate }}</th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('name')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.name' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'name'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'name' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'name' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('itemNo')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.itemNo' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'itemNo'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'itemNo' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'itemNo' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('partNo')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.partNo' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'partNo'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'partNo' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'partNo' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('batchNo')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.batchNo' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'batchNo'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'batchNo' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'batchNo' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('hcc')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.hcc' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'hcc'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'hcc' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'hcc' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('nsn')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.nsn' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'nsn'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'nsn' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'nsn' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('caseType')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.caseType' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'caseType'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'caseType' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'caseType' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('hazardDivision')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.hazardDivision' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'hazardDivision'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'hazardDivision' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'hazardDivision' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('expiryDate')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.expiryDate' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'expiryDate'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'expiryDate' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'expiryDate' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                    (click)="sortByColumn('readyForIssue')">
+                  <div class="flex items-center gap-2">
+                    {{ 'assetList.table.status' | translate }}
+                    <lucide-angular *ngIf="sortColumn !== 'readyForIssue'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'readyForIssue' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                    <lucide-angular *ngIf="sortColumn === 'readyForIssue' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  </div>
+                </th>
                 <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.actions' | translate }}</th>
               </tr>
             </thead>
