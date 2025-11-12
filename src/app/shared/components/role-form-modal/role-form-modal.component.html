@@ -1,4 +1,4 @@
-<app-modal [isOpen]="isOpen" [title]="title" (closed)="close()">
+<app-modal [isOpen]="isOpen" [title]="title" (closed)="close()" [scrollable]="false">
   <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="space-y-6">
     <!-- Role Name -->
     <div>
@@ -27,19 +27,6 @@
       />
       <label for="isSuperAdmin" class="text-sm font-medium text-[var(--color-text)]">
         {{ 'roleFormModal.superAdmin' | translate }}
-      </label>
-    </div>
-
-    <!-- Default Role -->
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        id="isDefaultRole"
-        formControlName="isDefaultRole"
-        class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20"
-      />
-      <label for="isDefaultRole" class="text-sm font-medium text-[var(--color-text)]">
-        {{ 'roleFormModal.defaultRole' | translate }}
       </label>
     </div>
 

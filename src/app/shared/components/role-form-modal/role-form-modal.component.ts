@@ -98,7 +98,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   private initializeForm(): void {
     this.roleForm = this.fb.group({
       name: [this.role?.name || '', [Validators.required, Validators.minLength(3)]],
-      isDefaultRole: [this.role?.isDefaultRole || false],
       isSuperAdmin: [this.role?.isSuperAdmin || false],
       applicationEntityId: [null] // Single entity selection
     });
@@ -149,7 +148,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     if (this.mode === 'create') {
       const dto: CreateRoleDto = {
         name: this.roleForm.value.name,
-        isDefaultRole: this.roleForm.value.isDefaultRole || false,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
@@ -173,7 +171,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       const dto: UpdateRoleDto = {
         id: this.role.id,
         name: this.roleForm.value.name,
-        isDefaultRole: this.roleForm.value.isDefaultRole || false,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
