@@ -72,8 +72,11 @@ export class WarehouseComponent implements OnInit, OnDestroy {
 
     // Extract code from nameEn (e.g., "Warehouse DOH-01" -> "DOH-01")
     // If nameEn doesn't contain a code, use a default format
-    const codeMatch = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
-    const code = codeMatch ? codeMatch[1] : `DEP-${depot.id.toString().padStart(2, '0')}`;
+    const codeFromName = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
+    const code =
+      depot.code ||
+      depot.depotCode ||
+      (codeFromName ? codeFromName[1] : `DEP-${depot.id.toString().padStart(2, '0')}`);
 
     return {
       id: depot.id.toString(),

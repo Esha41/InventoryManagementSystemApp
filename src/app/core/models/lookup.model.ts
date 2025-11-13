@@ -7,6 +7,7 @@ export interface LookupItem {
   nameAr: string;
   nameEn: string;
   code?: string;
+  depotCode?: string;
   isDeleted?: boolean;
 }
 

@@ -293,8 +293,11 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // Extract code from nameEn if available, or generate from ID
-    const codeMatch = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
-    const code = codeMatch ? codeMatch[1] : `DEP-${depot.id.toString().padStart(2, '0')}`;
+    const codeFromName = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
+    const code =
+      depot.code ||
+      depot.depotCode ||
+      (codeFromName ? codeFromName[1] : `DEP-${depot.id.toString().padStart(2, '0')}`);
 
     // Determine color based on NEQ or other criteria (default to green)
     let color: 'green' | 'orange' | 'red' = 'green';

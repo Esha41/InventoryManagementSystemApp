@@ -33,6 +33,7 @@
         <tr>
           <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.nameEn' | translate }}</th>
           <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.nameAr' | translate }}</th>
+          <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.depotCode' | translate }}</th>
           <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.location' | translate }}</th>
           <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.coordinates' | translate }}</th>
           <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'depot.actions' | translate }}</th>
@@ -42,6 +43,7 @@
         <tr *ngFor="let depot of depots" class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
           <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.nameEn }}</td>
           <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.nameAr }}</td>
+          <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.depotCode || depot.code }}</td>
           <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.location }}</td>
           <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.latitude }}, {{ depot.longitude }}</td>
           <td class="px-6 py-4 text-start">
@@ -64,7 +66,7 @@
           </td>
         </tr>
         <tr *ngIf="depots.length === 0">
-          <td colspan="5" class="px-6 py-12 text-center text-[var(--color-text-secondary)]">
+          <td colspan="6" class="px-6 py-12 text-center text-[var(--color-text-secondary)]">
             {{ 'depot.noDepots' | translate }}
           </td>
         </tr>
@@ -113,6 +115,19 @@
             required
             class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
             [placeholder]="'depot.enterNameAr' | translate"
+          />
+        </div>
+
+        <!-- Depot Code -->
+        <div>
+          <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.depotCode' | translate }} *</label>
+          <input
+            type="text"
+            [(ngModel)]="currentDepot.depotCode"
+            name="depotCode"
+            required
+            class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            [placeholder]="'depot.enterDepotCode' | translate"
           />
         </div>
 
