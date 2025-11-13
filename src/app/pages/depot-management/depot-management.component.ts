@@ -70,6 +70,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
               .filter(depot => !depot.isDeleted)
               .map(depot => ({
                 ...depot,
+                code: depot.code || depot.Code || '',
+                Code: depot.Code || depot.code || '',
                 location: depot.location || ''
               }));
           } else {
@@ -93,7 +95,11 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
   openEditModal(depot: DepotDto): void {
     this.isEditMode = true;
-    this.currentDepot = { ...depot };
+    this.currentDepot = {
+      ...depot,
+      code: depot.code || depot.Code || '',
+      Code: depot.Code || depot.code || ''
+    };
     this.showModal = true;
   }
 
@@ -107,6 +113,11 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     if (!this.validateDepot()) {
       this.errorMessage = 'Please fill in all required fields';
       return;
+    }
+
+    if (this.currentDepot.Code) {
+      this.currentDepot.Code = this.currentDepot.Code.trim();
+      this.currentDepot.code = this.currentDepot.Code;
     }
 
     this.loading = true;
@@ -217,6 +228,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     return !!(
       this.currentDepot.nameEn &&
       this.currentDepot.nameAr &&
+      (this.currentDepot.Code || this.currentDepot.code) &&
       this.currentDepot.location
     );
   }
@@ -226,6 +238,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       id: 0,
       nameAr: '',
       nameEn: '',
+      code: '',
+      Code: '',
       location: '',
       latitude: 0,
       longitude: 0,
