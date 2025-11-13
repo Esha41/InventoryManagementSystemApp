@@ -9,6 +9,30 @@
 
   <!-- Login Form -->
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
+    <!-- LDAP Toggle -->
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <input
+          id="useLdap"
+          type="checkbox"
+          formControlName="useLdap"
+          class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-[var(--color-brand)]"
+        />
+        <label
+          for="useLdap"
+          class="text-sm font-semibold text-[var(--color-text)] select-none"
+        >
+          LDAP
+        </label>
+      </div>
+      <span
+        *ngIf="useLdap?.value"
+        class="text-xs font-medium text-[var(--color-text-muted)]"
+      >
+        Password not required for LDAP sign-in
+      </span>
+    </div>
+
     <!-- Username Field -->
     <div class="space-y-2">
       <label 
@@ -50,7 +74,7 @@
     </div>
 
     <!-- Password Field -->
-    <div class="space-y-2">
+    <div class="space-y-2" *ngIf="!useLdap?.value">
       <label 
         for="password" 
         class="block text-sm font-semibold text-[var(--color-text)]"

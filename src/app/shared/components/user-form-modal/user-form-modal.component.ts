@@ -9,6 +9,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -36,6 +37,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   roles: RoleDto[] = [];
   isLoading = false;
   errorMessage = '';
+  private isLdapToggleSubscription?: Subscription;
   // Departments
   departments: DepartmentDto[] = [];
   isLoadingDepartments = false;
@@ -90,6 +92,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       userName: [this.user?.userName || '', [Validators.required, Validators.minLength(3)]],
       email: [this.user?.email || '', [Validators.required, Validators.email]],
       isLdapUser: [this.user?.isLdapUser || false],
+      ldapUserName: [this.user?.ldapUserName || ''],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
       departmentId: [this.user?.departmentId ?? null],
       roleId: [roleId, [Validators.required]], // Single role selection - required
@@ -103,6 +106,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     if (this.mode === 'create') {
       this.userForm.addControl('password', this.fb.control('', [Validators.required, Validators.minLength(6)]));
     }
+
+    this.setupLdapUserControls();
   }
 
   private loadRoles(): void {
@@ -285,6 +290,7 @@ private loadUserRoles(): void {
       email: formValue.email,
       password: formValue.password,
       isLdapUser: formValue.isLdapUser || false,
+      ldapUserName: formValue.ldapUserName || undefined,
       extraEmployeesView: formValue.extraEmployeesView || undefined,
       organizationId: 1,
       departmentId: formValue.departmentId || undefined,
@@ -326,6 +332,7 @@ private loadUserRoles(): void {
       email: formValue.email,
       password: formValue.password || undefined,
       isLdapUser: formValue.isLdapUser || false,
+      ldapUserName: formValue.ldapUserName || undefined,
       extraEmployeesView: formValue.extraEmployeesView || undefined,
       organizationId: this.user.organizationId,
       departmentId: formValue.departmentId || undefined,
@@ -358,6 +365,8 @@ private loadUserRoles(): void {
 }
 
   close(): void {
+    this.isLdapToggleSubscription?.unsubscribe();
+    this.isLdapToggleSubscription = undefined;
     this.userForm.reset();
     this.errorMessage = '';
     this.closed.emit();
@@ -384,6 +393,36 @@ private loadUserRoles(): void {
       }
     }
     return '';
+  }
+
+  private setupLdapUserControls(): void {
+    this.isLdapToggleSubscription?.unsubscribe();
+    this.isLdapToggleSubscription = undefined;
+
+    const isLdapControl = this.userForm.get('isLdapUser');
+    const ldapUserNameControl = this.userForm.get('ldapUserName');
+
+    if (!isLdapControl || !ldapUserNameControl) {
+      return;
+    }
+
+    const applyState = (isLdap: boolean) => {
+      if (isLdap) {
+        ldapUserNameControl.enable({ emitEvent: false });
+        ldapUserNameControl.setValidators([Validators.required]);
+      } else {
+        ldapUserNameControl.setValidators([]);
+        ldapUserNameControl.setValue('', { emitEvent: false });
+        ldapUserNameControl.disable({ emitEvent: false });
+      }
+      ldapUserNameControl.updateValueAndValidity({ emitEvent: false });
+    };
+
+    applyState(isLdapControl.value === true);
+
+    this.isLdapToggleSubscription = isLdapControl.valueChanges.subscribe(value => {
+      applyState(value === true);
+    });
   }
 }
 

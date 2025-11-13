@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { Subscription } from 'rxjs';
 
 interface LoginForm {
   username: string;
   password: string;
+  useLdap: boolean;
 }
 
 @Component({
@@ -23,7 +25,7 @@ interface LoginForm {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly EyeOff = EyeOff;
   readonly Lock = Lock;
@@ -34,6 +36,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   loginError = '';
+  private ldapToggleSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -42,19 +45,27 @@ export class LoginComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      useLdap: [false]
     });
   }
 
   ngOnInit(): void {
+    this.handleLdapToggling();
+
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
     }
   }
 
+  ngOnDestroy(): void {
+    this.ldapToggleSubscription?.unsubscribe();
+  }
+
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
+  get useLdap() { return this.loginForm.get('useLdap'); }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
@@ -73,7 +84,8 @@ export class LoginComponent implements OnInit {
 
     this.backendAuth.login({
       username: formValue.username,
-      password: formValue.password
+      password: formValue.password,
+      isLdap: formValue.useLdap
     }).subscribe({
       next: (response) => {
         this.isLoading = false;
@@ -99,6 +111,10 @@ export class LoginComponent implements OnInit {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
+    if (fieldName === 'password' && this.useLdap?.value) {
+      return '';
+    }
+
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
         const displayName = fieldName === 'username' ? 'Username' : 'Password';
@@ -122,5 +138,34 @@ export class LoginComponent implements OnInit {
     if (event.key === 'Enter' && this.loginForm.valid && !this.isLoading) {
       this.onSubmit();
     }
+  }
+
+  private handleLdapToggling(): void {
+    const useLdapControl = this.useLdap;
+    if (!useLdapControl) {
+      return;
+    }
+
+    this.applyPasswordValidators(useLdapControl.value === true);
+
+    this.ldapToggleSubscription = useLdapControl.valueChanges.subscribe((isLdap) => {
+      this.applyPasswordValidators(isLdap === true);
+    });
+  }
+
+  private applyPasswordValidators(isLdap: boolean): void {
+    const passwordControl = this.password;
+    if (!passwordControl) {
+      return;
+    }
+
+    if (isLdap) {
+      passwordControl.setValidators([]);
+      passwordControl.setValue('');
+    } else {
+      passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
+    }
+
+    passwordControl.updateValueAndValidity({ emitEvent: false });
   }
 }
