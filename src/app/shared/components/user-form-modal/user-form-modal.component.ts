@@ -283,7 +283,7 @@ private loadUserRoles(): void {
   this.errorMessage = '';
 
   if (this.mode === 'create') {
-    const formValue = this.userForm.value;
+    const formValue = this.userForm.getRawValue();
     
     const dto: CreateUserDto = {
       userName: formValue.userName,
@@ -319,7 +319,7 @@ private loadUserRoles(): void {
       }
     });
   } else if (this.user) {
-    const formValue = this.userForm.value;
+    const formValue = this.userForm.getRawValue();
     
     // Handle militaryId - always include in update, even if empty (to allow clearing the field)
     const militaryIdValue = formValue.militaryId != null 

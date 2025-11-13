@@ -1,17 +1,10 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { Subscription } from 'rxjs';
-
-interface LoginForm {
-  username: string;
-  password: string;
-  useLdap: boolean;
-}
 
 @Component({
   selector: 'app-login',
@@ -25,7 +18,7 @@ interface LoginForm {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   readonly Eye = Eye;
   readonly EyeOff = EyeOff;
   readonly Lock = Lock;
@@ -36,7 +29,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
   isLoading = false;
   loginError = '';
-  private ldapToggleSubscription?: Subscription;
+  isLdapMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -45,13 +38,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      useLdap: [false]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   ngOnInit(): void {
-    this.handleLdapToggling();
+    this.applyPasswordValidators();
 
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
@@ -59,13 +51,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.ldapToggleSubscription?.unsubscribe();
-  }
-
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
-  get useLdap() { return this.loginForm.get('useLdap'); }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
@@ -80,12 +67,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.loginError = '';
 
-    const formValue = this.loginForm.value as LoginForm;
+    const formValue = this.loginForm.value as { username: string; password: string; };
 
     this.backendAuth.login({
       username: formValue.username,
       password: formValue.password,
-      isLdap: formValue.useLdap
+      isLdap: this.isLdapMode
     }).subscribe({
       next: (response) => {
         this.isLoading = false;
@@ -111,7 +98,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
-    if (fieldName === 'password' && this.useLdap?.value) {
+    if (fieldName === 'password' && this.isLdapMode) {
       return '';
     }
 
@@ -140,26 +127,25 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleLdapToggling(): void {
-    const useLdapControl = this.useLdap;
-    if (!useLdapControl) {
+  setLoginMode(mode: 'password' | 'ldap'): void {
+    const shouldUseLdap = mode === 'ldap';
+    if (this.isLdapMode === shouldUseLdap) {
       return;
     }
-
-    this.applyPasswordValidators(useLdapControl.value === true);
-
-    this.ldapToggleSubscription = useLdapControl.valueChanges.subscribe((isLdap) => {
-      this.applyPasswordValidators(isLdap === true);
-    });
+    this.isLdapMode = shouldUseLdap;
+    if (shouldUseLdap) {
+      this.showPassword = false;
+    }
+    this.applyPasswordValidators();
   }
 
-  private applyPasswordValidators(isLdap: boolean): void {
+  private applyPasswordValidators(): void {
     const passwordControl = this.password;
     if (!passwordControl) {
       return;
     }
 
-    if (isLdap) {
+    if (this.isLdapMode) {
       passwordControl.setValidators([]);
       passwordControl.setValue('');
     } else {

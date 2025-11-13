@@ -9,28 +9,35 @@
 
   <!-- Login Form -->
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
-    <!-- LDAP Toggle -->
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <input
-          id="useLdap"
-          type="checkbox"
-          formControlName="useLdap"
-          class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-[var(--color-brand)]"
-        />
-        <label
-          for="useLdap"
-          class="text-sm font-semibold text-[var(--color-text)] select-none"
-        >
-          LDAP
-        </label>
-      </div>
-      <span
-        *ngIf="useLdap?.value"
-        class="text-xs font-medium text-[var(--color-text-muted)]"
+    <!-- Mode Tabs -->
+    <div class="flex items-center justify-center rounded-2xl bg-[var(--color-background-muted)] p-1">
+      <button
+        type="button"
+        (click)="setLoginMode('password')"
+        [class]="
+          'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+          (isLdapMode
+            ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+            : 'bg-white text-[var(--color-brand)] shadow-sm')
+        "
       >
-        Password not required for LDAP sign-in
-      </span>
+        Password Login
+      </button>
+      <button
+        type="button"
+        (click)="setLoginMode('ldap')"
+        [class]="
+          'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+          (!isLdapMode
+            ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+            : 'bg-white text-[var(--color-brand)] shadow-sm')
+        "
+      >
+        LDAP Login
+      </button>
+    </div>
+    <div *ngIf="isLdapMode" class="text-center text-xs font-medium text-[var(--color-text-muted)]">
+      Password not required for LDAP sign-in
     </div>
 
     <!-- Username Field -->
@@ -74,7 +81,7 @@
     </div>
 
     <!-- Password Field -->
-    <div class="space-y-2" *ngIf="!useLdap?.value">
+    <div class="space-y-2" *ngIf="!isLdapMode">
       <label 
         for="password" 
         class="block text-sm font-semibold text-[var(--color-text)]"
