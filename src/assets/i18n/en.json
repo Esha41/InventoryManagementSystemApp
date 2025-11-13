@@ -684,6 +684,8 @@
     "extraEmployeesView": "Extra Employees View",
     "extraEmployeesPlaceholder": "Enter extra employees view (optional)",
     "ldapUser": "LDAP User",
+    "ldapUserName": "LDAP Username",
+    "ldapUserNamePlaceholder": "Enter LDAP username",
     "create": "Create User",
     "update": "Update User",
     "createSuccess": "User created successfully",

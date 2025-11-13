@@ -6,11 +6,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
-interface LoginForm {
-  username: string;
-  password: string;
-}
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -34,6 +29,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   loginError = '';
+  isLdapMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -47,6 +43,8 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.applyPasswordValidators();
+
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
@@ -69,11 +67,12 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.loginError = '';
 
-    const formValue = this.loginForm.value as LoginForm;
+    const formValue = this.loginForm.value as { username: string; password: string; };
 
     this.backendAuth.login({
       username: formValue.username,
-      password: formValue.password
+      password: formValue.password,
+      isLdap: this.isLdapMode
     }).subscribe({
       next: (response) => {
         this.isLoading = false;
@@ -99,6 +98,10 @@ export class LoginComponent implements OnInit {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
+    if (fieldName === 'password' && this.isLdapMode) {
+      return '';
+    }
+
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
         const displayName = fieldName === 'username' ? 'Username' : 'Password';
@@ -122,5 +125,33 @@ export class LoginComponent implements OnInit {
     if (event.key === 'Enter' && this.loginForm.valid && !this.isLoading) {
       this.onSubmit();
     }
+  }
+
+  setLoginMode(mode: 'password' | 'ldap'): void {
+    const shouldUseLdap = mode === 'ldap';
+    if (this.isLdapMode === shouldUseLdap) {
+      return;
+    }
+    this.isLdapMode = shouldUseLdap;
+    if (shouldUseLdap) {
+      this.showPassword = false;
+    }
+    this.applyPasswordValidators();
+  }
+
+  private applyPasswordValidators(): void {
+    const passwordControl = this.password;
+    if (!passwordControl) {
+      return;
+    }
+
+    if (this.isLdapMode) {
+      passwordControl.setValidators([]);
+      passwordControl.setValue('');
+    } else {
+      passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
+    }
+
+    passwordControl.updateValueAndValidity({ emitEvent: false });
   }
 }

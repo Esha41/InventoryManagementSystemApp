@@ -680,6 +680,8 @@
     "extraEmployeesView": "عرض الموظفين الإضافي",
     "extraEmployeesPlaceholder": "أدخل عرض الموظفين الإضافي (اختياري)",
     "ldapUser": "مستخدم LDAP",
+    "ldapUserName": "اسم مستخدم LDAP",
+    "ldapUserNamePlaceholder": "أدخل اسم مستخدم LDAP",
     "create": "إنشاء مستخدم",
     "update": "تحديث المستخدم"
   },

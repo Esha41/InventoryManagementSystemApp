@@ -9,6 +9,7 @@
 export interface LoginRequest {
   username: string;
   password: string;
+  isLdap?: boolean;
 }
 
 /**
