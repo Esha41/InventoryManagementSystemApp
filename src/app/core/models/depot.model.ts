@@ -3,7 +3,7 @@ export interface DepotDto {
   nameAr: string;
   nameEn: string;
   code: string;
-  depotCode: string;
+  Code: string;
   location: string;
   latitude: number;
   longitude: number;

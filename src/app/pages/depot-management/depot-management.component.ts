@@ -70,8 +70,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
               .filter(depot => !depot.isDeleted)
               .map(depot => ({
                 ...depot,
-                code: depot.code || depot.depotCode || '',
-                depotCode: depot.depotCode || depot.code || '',
+                code: depot.code || depot.Code || '',
+                Code: depot.Code || depot.code || '',
                 location: depot.location || ''
               }));
           } else {
@@ -97,8 +97,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.isEditMode = true;
     this.currentDepot = {
       ...depot,
-      code: depot.code || depot.depotCode || '',
-      depotCode: depot.depotCode || depot.code || ''
+      code: depot.code || depot.Code || '',
+      Code: depot.Code || depot.code || ''
     };
     this.showModal = true;
   }
@@ -115,9 +115,9 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.currentDepot.depotCode) {
-      this.currentDepot.depotCode = this.currentDepot.depotCode.trim();
-      this.currentDepot.code = this.currentDepot.depotCode;
+    if (this.currentDepot.Code) {
+      this.currentDepot.Code = this.currentDepot.Code.trim();
+      this.currentDepot.code = this.currentDepot.Code;
     }
 
     this.loading = true;
@@ -228,7 +228,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     return !!(
       this.currentDepot.nameEn &&
       this.currentDepot.nameAr &&
-      (this.currentDepot.depotCode || this.currentDepot.code) &&
+      (this.currentDepot.Code || this.currentDepot.code) &&
       this.currentDepot.location
     );
   }
@@ -239,7 +239,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       nameAr: '',
       nameEn: '',
       code: '',
-      depotCode: '',
+      Code: '',
       location: '',
       latitude: 0,
       longitude: 0,
