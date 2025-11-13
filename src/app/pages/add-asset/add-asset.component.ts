@@ -216,8 +216,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     // Build DTO matching backend expectations
     const ammunitionDto: any = {
       name: this.assetForm.name.trim(),
-      partNo: this.assetForm.partNo.trim(),
       itemNo: this.assetForm.itemNo.trim(),
+      partNo: this.assetForm.partNo.trim(),
       batchNo: this.assetForm.batchNo.trim(),
       hccId: parseInt(this.assetForm.hccId),
       bulletDiameter: parseFloat(this.assetForm.bulletDiameter),
@@ -284,10 +284,23 @@ export class AddAssetComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error creating asset:', error);
-          const fallback = 'Failed to create asset. Please try again.';
-          this.errorMessage = error?.message || fallback;
+          let fallback = 'Failed to create asset. Please try again.';
+          
+          // Check for specific error messages
+          if (error?.error?.message) {
+            fallback = error.error.message;
+          } else if (error?.message) {
+            fallback = error.message;
+          }
+          
+          // Check for duplicate ItemNo
+          if (fallback.includes('duplicate') || fallback.includes('ItemNo') || fallback.includes('unique')) {
+            fallback = 'Item No already exists. Please use a unique Item No.';
+          }
+          
+          this.errorMessage = fallback;
           const errorTitle = this.translationService.getTranslation('toast.error');
-          this.toastService.error(this.errorMessage ?? fallback, errorTitle);
+          this.toastService.error(fallback, errorTitle);
           this.submitting = false;
         }
       });
@@ -330,8 +343,23 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.assetForm.partNo && this.assetForm.partNo.length > 100) {
+    if (!this.assetForm.partNo || this.assetForm.partNo.trim().length === 0) {
+      this.errorMessage = 'Part number is required';
+      return false;
+    }
+
+    if (this.assetForm.partNo.length > 100) {
       this.errorMessage = 'Part number cannot exceed 100 characters';
+      return false;
+    }
+
+    if (!this.assetForm.primer || this.assetForm.primer.trim().length === 0) {
+      this.errorMessage = 'Primer is required';
+      return false;
+    }
+
+    if (this.assetForm.primer.length > 100) {
+      this.errorMessage = 'Primer cannot exceed 100 characters';
       return false;
     }
 
@@ -355,16 +383,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     if (!this.assetForm.caseLengthUnitId || parseInt(this.assetForm.caseLengthUnitId) <= 0) {
       this.errorMessage = 'Case length unit is required';
-      return false;
-    }
-
-    if (!this.assetForm.primer || this.assetForm.primer.trim().length === 0) {
-      this.errorMessage = 'Primer is required';
-      return false;
-    }
-
-    if (this.assetForm.primer && this.assetForm.primer.length > 100) {
-      this.errorMessage = 'Primer cannot exceed 100 characters';
       return false;
     }
 

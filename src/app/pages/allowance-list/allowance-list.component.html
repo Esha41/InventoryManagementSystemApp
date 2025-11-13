@@ -34,71 +34,73 @@
   </div>
 
   <!-- Allowance Table -->
-  <div *ngIf="!loading && !error" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ 'allowance.table.department' | translate }}
-            </th>
-            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ 'allowance.table.date' | translate }}
-            </th>
-            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ 'allowance.table.item' | translate }}
-            </th>
-            <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ 'allowance.table.quantity' | translate }}
-            </th>
-            <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {{ 'allowance.table.actions' | translate }}
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let allowance of allowances" class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-start">
-              {{ allowance.departmentName }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
-              {{ formatDate(allowance.year) }}
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-900 text-start">
-              <div class="font-medium">
-                {{ allowance.itemName || allowance.itemNo || ('allowance.item' | translate) + ' ' + allowance.itemId }}
-              </div>
-              <div *ngIf="allowance.itemNo || allowance.batchNo" class="text-xs text-gray-400 mt-1">
-                <span *ngIf="allowance.itemNo">{{ 'allowance.itemNo' | translate }}: {{ allowance.itemNo }}</span>
-                <span *ngIf="allowance.itemNo && allowance.batchNo">, </span>
-                <span *ngIf="allowance.batchNo">{{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
-              {{ allowance.quantity | number }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-              <div class="flex items-center justify-end space-x-2">
-                <!-- Edit Button -->
-                <button 
-                  (click)="onEdit(allowance)"
-                  class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                  [title]="'allowance.edit' | translate">
-                  <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
-                </button>
-                
-                <!-- Delete Button -->
-                <button 
-                  (click)="onDelete(allowance)"
-                  class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                  [title]="'allowance.delete' | translate">
-                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div *ngIf="!loading && !error" class="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div class="overflow-hidden rounded-t-lg">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.department' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.date' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.item' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.quantity' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.actions' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let allowance of allowances" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-start">
+                {{ allowance.departmentName }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                {{ formatDate(allowance.year) }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900 text-start">
+                <div class="font-medium">
+                  {{ allowance.itemName || allowance.itemNo || ('allowance.item' | translate) + ' ' + allowance.itemId }}
+                </div>
+                <div *ngIf="allowance.itemNo || allowance.batchNo" class="text-xs text-gray-400 mt-1">
+                  <span *ngIf="allowance.itemNo">{{ 'allowance.itemNo' | translate }}: {{ allowance.itemNo }}</span>
+                  <span *ngIf="allowance.itemNo && allowance.batchNo">, </span>
+                  <span *ngIf="allowance.batchNo">{{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
+                {{ allowance.quantity | number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <!-- Edit Button -->
+                  <button 
+                    (click)="onEdit(allowance)"
+                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    [title]="'allowance.edit' | translate">
+                    <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                  </button>
+                  
+                  <!-- Delete Button -->
+                  <button 
+                    (click)="onDelete(allowance)"
+                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    [title]="'allowance.delete' | translate">
+                    <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Empty State -->

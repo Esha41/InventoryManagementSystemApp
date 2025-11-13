@@ -18,6 +18,24 @@
   </button>
 
   <div class="app-dropdown-panel" *ngIf="isOpen">
+    <!-- Search Input -->
+    <div class="app-dropdown-search" *ngIf="options && options.length > 5" (click)="onSearchClick($event)">
+      <div class="relative">
+        <lucide-angular 
+          [img]="Search" 
+          class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"
+        ></lucide-angular>
+        <input
+          type="text"
+          class="app-dropdown-search-input"
+          [value]="searchTerm"
+          (input)="onSearchChange($event)"
+          (click)="onSearchClick($event)"
+          placeholder="Search..."
+        />
+      </div>
+    </div>
+
     <ul class="app-dropdown-list" [ngClass]="panelClass">
       <li
         class="app-dropdown-option"
@@ -28,8 +46,8 @@
       >
         {{ getOptionLabel(option) }}
       </li>
-      <li class="app-dropdown-empty" *ngIf="!options || options.length === 0">
-        {{ noDataText }}
+      <li class="app-dropdown-empty" *ngIf="computedOptions.length === 0">
+        {{ searchTerm ? 'No results found' : noDataText }}
       </li>
     </ul>
   </div>

@@ -432,261 +432,356 @@
         <!-- Form -->
         <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
           <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
-            <div class="grid grid-cols-2 gap-6">
-              <!-- Name -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.name' | translate }} *</label>
-                <input
-                  type="text"
-                  formControlName="name"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.namePlaceholder' | translate"
-                />
-                <span *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" 
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.nameRequired' | translate }}</span>
-              </div>
+            <div class="space-y-6">
+              <!-- Required Fields Section -->
+              <div class="grid grid-cols-2 gap-6">
+                <!-- Name -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Name *</label>
+                  <input
+                    type="text"
+                    formControlName="name"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter ammunition name"
+                  />
+                  <span *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" 
+                        class="text-xs text-red-600 mt-1">Name is required</span>
+                </div>
 
-              <!-- Item No -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.itemNo' | translate }} *</label>
-                <input
-                  type="text"
-                  formControlName="itemNo"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate"
-                />
-                <span *ngIf="editForm.get('itemNo')?.invalid && editForm.get('itemNo')?.touched" 
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.itemNoRequired' | translate }}</span>
-              </div>
+                <!-- Item No -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Item No *</label>
+                  <input
+                    type="text"
+                    formControlName="itemNo"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter item number"
+                  />
+                  <span *ngIf="editForm.get('itemNo')?.invalid && editForm.get('itemNo')?.touched" 
+                        class="text-xs text-red-600 mt-1">Item No is required</span>
+                </div>
 
-              <!-- Part No -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.partNo' | translate }} *</label>
-                <input
-                  type="text"
-                  formControlName="partNo"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.partNoPlaceholder' | translate"
-                />
-                <span *ngIf="editForm.get('partNo')?.invalid && editForm.get('partNo')?.touched" 
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.partNoRequired' | translate }}</span>
-              </div>
+                <!-- Part No -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Part No *</label>
+                  <input
+                    type="text"
+                    formControlName="partNo"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter part number"
+                  />
+                  <span *ngIf="editForm.get('partNo')?.invalid && editForm.get('partNo')?.touched" 
+                        class="text-xs text-red-600 mt-1">Part No is required</span>
+                </div>
 
-              <!-- Batch No -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.batchNo' | translate }}</label>
-                <input
-                  type="text"
-                  formControlName="batchNo"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.batchNoPlaceholder' | translate"
-                />
-              </div>
+                <!-- Batch No -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Batch No *</label>
+                  <input
+                    type="text"
+                    formControlName="batchNo"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter batch number"
+                  />
+                  <span *ngIf="editForm.get('batchNo')?.invalid && editForm.get('batchNo')?.touched" 
+                        class="text-xs text-red-600 mt-1">Batch No is required</span>
+                </div>
 
-              <!-- HCC -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hcc' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="hccId"
-                  [options]="hccList"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
+                <!-- HCC -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">HCC *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="hccId"
+                    [options]="hccList"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
                     [error]="!!(editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched)"
-                  placeholder="{{ 'assetList.editModal.selectHcc' | translate }}">
-                </app-dropdown>
-                <span *ngIf="editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched" 
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.hccRequired' | translate }}</span>
+                    placeholder="Select HCC">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched" 
+                        class="text-xs text-red-600 mt-1">HCC is required</span>
+                </div>
+
+                <!-- Bullet Diameter -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter *</label>
+                  <input
+                    type="number"
+                    formControlName="bulletDiameter"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter diameter (e.g., 5.56)"
+                    step="0.01"
+                  />
+                  <span *ngIf="editForm.get('bulletDiameter')?.invalid && editForm.get('bulletDiameter')?.touched" 
+                        class="text-xs text-red-600 mt-1">Bullet diameter is required</span>
+                </div>
+
+                <!-- Bullet Diameter Unit -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="bulletDiameterUnitId"
+                    [options]="units"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('bulletDiameterUnitId')?.invalid && editForm.get('bulletDiameterUnitId')?.touched)"
+                    placeholder="Select bullet diameter unit">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('bulletDiameterUnitId')?.invalid && editForm.get('bulletDiameterUnitId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Diameter unit is required</span>
+                </div>
+
+                <!-- Case Length -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length *</label>
+                  <input
+                    type="number"
+                    formControlName="caseLength"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter case length (e.g., 45)"
+                    step="0.01"
+                  />
+                  <span *ngIf="editForm.get('caseLength')?.invalid && editForm.get('caseLength')?.touched" 
+                        class="text-xs text-red-600 mt-1">Case length is required</span>
+                </div>
+
+                <!-- Case Length Unit -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Length Unit *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="caseLengthUnitId"
+                    [options]="units"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('caseLengthUnitId')?.invalid && editForm.get('caseLengthUnitId')?.touched)"
+                    placeholder="Select case length unit">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('caseLengthUnitId')?.invalid && editForm.get('caseLengthUnitId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Case length unit is required</span>
+                </div>
+
+                <!-- Case Type -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="caseTypeId"
+                    [options]="caseTypeList"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('caseTypeId')?.invalid && editForm.get('caseTypeId')?.touched)"
+                    placeholder="Select case type">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('caseTypeId')?.invalid && editForm.get('caseTypeId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Case type is required</span>
+                </div>
+
+                <!-- Propellant -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="propellantId"
+                    [options]="propellantList"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('propellantId')?.invalid && editForm.get('propellantId')?.touched)"
+                    placeholder="Select propellant">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('propellantId')?.invalid && editForm.get('propellantId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Propellant is required</span>
+                </div>
+
+                <!-- Compatibility -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Compatibility *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="compatibilityId"
+                    [options]="compatibilityList"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('compatibilityId')?.invalid && editForm.get('compatibilityId')?.touched)"
+                    placeholder="Select compatibility">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('compatibilityId')?.invalid && editForm.get('compatibilityId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Compatibility is required</span>
+                </div>
+
+                <!-- Hazard Division -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division *</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="hazardDivisionId"
+                    [options]="hazardDivisionList"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    [error]="!!(editForm.get('hazardDivisionId')?.invalid && editForm.get('hazardDivisionId')?.touched)"
+                    placeholder="Select hazard division">
+                  </app-dropdown>
+                  <span *ngIf="editForm.get('hazardDivisionId')?.invalid && editForm.get('hazardDivisionId')?.touched" 
+                        class="text-xs text-red-600 mt-1">Hazard division is required</span>
+                </div>
+
+                <!-- Primer -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primer *</label>
+                  <input
+                    type="text"
+                    formControlName="primer"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter primer type (e.g., Boxer)"
+                  />
+                  <span *ngIf="editForm.get('primer')?.invalid && editForm.get('primer')?.touched" 
+                        class="text-xs text-red-600 mt-1">Primer is required</span>
+                </div>
+
+                <!-- Total Weight -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g) *</label>
+                  <input
+                    type="number"
+                    formControlName="totalWeight"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter weight in grams"
+                    step="0.01"
+                  />
+                  <span *ngIf="editForm.get('totalWeight')?.invalid && editForm.get('totalWeight')?.touched" 
+                        class="text-xs text-red-600 mt-1">Total weight is required</span>
+                </div>
               </div>
 
-              <!-- NSN -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.nsn' | translate }} *</label>
-                <input
-                  type="text"
-                  formControlName="nsn"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.nsnPlaceholder' | translate"
-                />
-                <span *ngIf="editForm.get('nsn')?.invalid && editForm.get('nsn')?.touched" 
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.nsnRequired' | translate }}</span>
-              </div>
+              <!-- Optional Fields Section -->
+              <hr class="border-[var(--color-border)]" />
+              <h3 class="text-lg font-semibold text-[var(--color-text)]">Optional Fields</h3>
+              
+              <div class="grid grid-cols-2 gap-6">
+                <!-- NSN -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">NSN</label>
+                  <input
+                    type="text"
+                    formControlName="nsn"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    placeholder="Enter NSN (optional)"
+                  />
+                </div>
 
-              <!-- Bullet Diameter -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.bulletDiameter' | translate }}</label>
-                <input
-                  type="number"
-                  formControlName="bulletDiameter"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate"
-                  step="0.01"
-                />
-              </div>
+                <!-- Is Linked -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Linked</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="isLinked"
+                    [options]="linkedOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    [translateLabels]="true"
+                    placeholder="Select linked option">
+                  </app-dropdown>
+                </div>
 
-              <!-- Bullet Diameter Unit -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.diameterUnit' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="bulletDiameterUnitId"
-                  [options]="units"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectUnit' | translate }}">
-                </app-dropdown>
-              </div>
+                <!-- Ready For Issue -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Ready for Issue</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="readyForIssue"
+                    [options]="readyForIssueOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    [translateLabels]="true"
+                    placeholder="Select ready status">
+                  </app-dropdown>
+                </div>
 
-              <!-- Case Length -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseLength' | translate }}</label>
-                <input
-                  type="number"
-                  formControlName="caseLength"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.caseLengthPlaceholder' | translate"
-                  step="0.01"
-                />
-              </div>
+                <!-- Expiry Date -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Expiry Date</label>
+                  <input
+                    type="date"
+                    formControlName="expiryDate"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                  />
+                </div>
 
-              <!-- Case Length Unit -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseLengthUnit' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="caseLengthUnitId"
-                  [options]="units"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectUnit' | translate }}">
-                </app-dropdown>
-              </div>
+                <!-- Nature Option -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Nature</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="natureOptionId"
+                    [options]="natureOptions"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    placeholder="Select nature option">
+                  </app-dropdown>
+                </div>
 
-              <!-- Case Type -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.caseType' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="caseTypeId"
-                  [options]="caseTypeList"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectCaseType' | translate }}">
-                </app-dropdown>
-              </div>
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primary Purpose</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="primaryPurposId"
+                    [options]="primaryPurposes"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    placeholder="Select primary purpose">
+                  </app-dropdown>
+                </div>
 
-              <!-- Propellant -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.propellant' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="propellantId"
-                  [options]="propellantList"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectPropellant' | translate }}">
-                </app-dropdown>
-              </div>
+                <!-- Projectile Color -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Projectile Color</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="projectileColorId"
+                    [options]="projectileColors"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    placeholder="Select projectile color">
+                  </app-dropdown>
+                </div>
 
-              <!-- Compatibility -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.compatibility' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="compatibilityId"
-                  [options]="compatibilityList"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectCompatibility' | translate }}">
-                </app-dropdown>
-              </div>
-
-              <!-- Hazard Division -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.hazardDivision' | translate }} *</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="hazardDivisionId"
-                  [options]="hazardDivisionList"
-                  optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  placeholder="{{ 'assetList.editModal.selectHazardDivision' | translate }}">
-                </app-dropdown>
-              </div>
-
-              <!-- Primer -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.primer' | translate }}</label>
-                <input
-                  type="text"
-                  formControlName="primer"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.primerPlaceholder' | translate"
-                />
-              </div>
-
-              <!-- Total Weight -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.totalWeight' | translate }}</label>
-                <input
-                  type="number"
-                  formControlName="totalWeight"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                  [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate"
-                  step="0.01"
-                />
-              </div>
-
-              <!-- Is Linked -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.isLinked' | translate }}</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="isLinked"
-                  [options]="linkedOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  [translateLabels]="true"
-                  placeholder="{{ 'assetList.editModal.notLinked' | translate }}">
-                </app-dropdown>
-              </div>
-
-              <!-- Ready For Issue -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.readyForIssue' | translate }}</label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="readyForIssue"
-                  [options]="readyForIssueOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  [translateLabels]="true"
-                  placeholder="{{ 'common.select' | translate }}">
-                </app-dropdown>
-              </div>
-
-              <!-- Expiry Date -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.editModal.expiryDate' | translate }}</label>
-                <input
-                  type="date"
-                  formControlName="expiryDate"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                />
+                <!-- Projectile Material -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Projectile Material</label>
+                  <app-dropdown
+                    class="w-full"
+                    formControlName="projectailMaterialId"
+                    [options]="projectailMaterials"
+                    optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true"
+                    [placeholderValue]="null"
+                    placeholder="Select projectile material">
+                  </app-dropdown>
+                </div>
               </div>
             </div>
           </div>

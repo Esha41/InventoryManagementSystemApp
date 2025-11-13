@@ -121,15 +121,15 @@ export class AssetListComponent implements OnInit {
       name: ['', Validators.required],
       itemNo: ['', Validators.required],
       partNo: ['', Validators.required],
-      batchNo: [''],
+      batchNo: ['', Validators.required],
       hccId: [null as number | null, Validators.required],
-      bulletDiameter: [null as number | null],
+      bulletDiameter: [null as number | null, [Validators.required, Validators.min(0.01)]],
       bulletDiameterUnitId: [null as number | null, Validators.required],
-      caseLength: [null as number | null],
+      caseLength: [null as number | null, [Validators.required, Validators.min(0.01)]],
       caseLengthUnitId: [null as number | null, Validators.required],
       isLinked: [false as boolean],
-      primer: [''],
-      totalWeight: [null as number | null],
+      primer: ['', Validators.required],
+      totalWeight: [null as number | null, [Validators.required, Validators.min(0.01)]],
       nsn: [''],
       caseTypeId: [null as number | null, Validators.required],
       propellantId: [null as number | null, Validators.required],
@@ -443,10 +443,10 @@ export class AssetListComponent implements OnInit {
     this.loading = true;
     type EditFormModel = {
       id: number;
-      name: string; itemNo: string; partNo: string; batchNo?: string;
+      name: string; itemNo: string; partNo?: string; batchNo?: string;
       hccId: number; bulletDiameter: number | null; bulletDiameterUnitId: number;
       caseLength: number | null; caseLengthUnitId: number; isLinked: boolean;
-      primer?: string; totalWeight: number | null; nsn: string; caseTypeId: number;
+      primer?: string; totalWeight: number | null; nsn?: string; caseTypeId: number;
       propellantId: number; compatibilityId: number; hazardDivisionId: number;
       readyForIssue: boolean; expiryDate?: string;
       natureOptionId: number | null; primaryPurposId: number | null;
@@ -460,17 +460,17 @@ export class AssetListComponent implements OnInit {
     const buildDto = (m: EditFormModel) => ({
       name: m.name,
       itemNo: m.itemNo,
-      partNo: m.partNo,
-      batchNo: m.batchNo || undefined,
+      partNo: m.partNo?.trim() || 'N/A',
+      batchNo: m.batchNo || '',
       hccId: m.hccId,
       bulletDiameter: m.bulletDiameter ?? 0,
       bulletDiameterUnitId: m.bulletDiameterUnitId,
       caseLength: m.caseLength ?? 0,
       caseLengthUnitId: m.caseLengthUnitId,
       isLinked: m.isLinked,
-      primer: m.primer || undefined,
+      primer: m.primer?.trim() || '',
       totalWeight: m.totalWeight ?? 0,
-      nsn: m.nsn ? m.nsn.trim() : undefined,
+      nsn: m.nsn?.trim() || undefined,
       caseTypeId: m.caseTypeId,
       propellantId: m.propellantId,
       compatibilityId: m.compatibilityId,

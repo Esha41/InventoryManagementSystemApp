@@ -20,8 +20,50 @@ export class PaginationComponent {
 
   constructor(private translationService: TranslationService) {}
 
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  /**
+   * Smart page display - shows first, last, current, and nearby pages with ellipsis
+   * Example: 1 ... 4 5 [6] 7 8 ... 20
+   */
+  get displayPages(): (number | 'ellipsis')[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    
+    // If 7 or fewer pages, show all
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const pages: (number | 'ellipsis')[] = [];
+    
+    // Always show first page
+    pages.push(1);
+
+    // Determine range around current page
+    const showLeft = current > 3;
+    const showRight = current < total - 2;
+
+    if (showLeft) {
+      pages.push('ellipsis');
+    }
+
+    // Show pages around current
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (showRight) {
+      pages.push('ellipsis');
+    }
+
+    // Always show last page if not already shown
+    if (!pages.includes(total)) {
+      pages.push(total);
+    }
+
+    return pages;
   }
 
   // Return correct icon for previous button based on RTL/LTR

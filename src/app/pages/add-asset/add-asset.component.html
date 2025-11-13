@@ -78,12 +78,13 @@
             [(ngModel)]="assetForm.itemNo"
             name="itemNo"
             [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
-            placeholder="Enter item number"
+            placeholder="Enter unique item number (e.g., AMM-001)"
             required
             maxlength="100"
             #itemNoModel="ngModel"
           />
         </div>
+        <p class="text-xs text-[#6B7280] -mt-2 ml-40">Item No must be unique across all ammunition records</p>
 
         <!-- Part No (Required) -->
         <div class="flex items-center gap-6">
@@ -167,7 +168,7 @@
             [placeholderSelectable]="true"
             [placeholderValue]="null"
             [error]="!!(diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched))"
-            placeholder="Select unit">
+            placeholder="Select bullet diameter unit">
           </app-dropdown>
           <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">Diameter unit is required</span>
         </div>
@@ -204,21 +205,9 @@
             [placeholderSelectable]="true"
             [placeholderValue]="null"
             [error]="!!(caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched))"
-            placeholder="Select unit">
+            placeholder="Select case length unit">
           </app-dropdown>
           <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">Case length unit is required</span>
-        </div>
-
-        <!-- NSN (Optional) -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN</label>
-          <input
-            type="text"
-            [(ngModel)]="assetForm.nsn"
-            name="nsn"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter NSN (optional)"
-          />
         </div>
 
         <!-- Case Type (Required) -->
@@ -333,6 +322,21 @@
           <span *ngIf="totalWeightModel.invalid && (totalWeightModel.dirty || totalWeightModel.touched)" class="text-sm text-red-600">Total weight is required</span>
         </div>
 
+        <hr class="my-6 border-[var(--color-border)]" />
+        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">Optional Fields</h3>
+
+        <!-- NSN (Optional) -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN</label>
+          <input
+            type="text"
+            [(ngModel)]="assetForm.nsn"
+            name="nsn"
+            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+            placeholder="Enter NSN (optional)"
+          />
+        </div>
+
         <!-- Is Linked -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Linked</label>
@@ -346,7 +350,7 @@
             [translateLabels]="true"
             [placeholderSelectable]="true"
             [placeholderValue]="null"
-            placeholder="Select option">
+            placeholder="Select linked option">
           </app-dropdown>
         </div>
 
@@ -363,7 +367,7 @@
             [translateLabels]="true"
             [placeholderSelectable]="true"
             [placeholderValue]="null"
-            placeholder="Select option">
+            placeholder="Select ready status">
           </app-dropdown>
         </div>
 
@@ -377,9 +381,6 @@
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
           />
         </div>
-
-        <hr class="my-6 border-[var(--color-border)]" />
-        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">Optional Fields</h3>
 
         <!-- Nature Option -->
         <div class="flex items-center gap-6">
@@ -425,7 +426,7 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
             [placeholderValue]="null"
-            placeholder="Select color">
+            placeholder="Select projectile color">
           </app-dropdown>
         </div>
 
@@ -441,7 +442,7 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="true"
             [placeholderValue]="null"
-            placeholder="Select material">
+            placeholder="Select projectile material">
           </app-dropdown>
         </div>
       </div>

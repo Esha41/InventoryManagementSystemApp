@@ -18,7 +18,7 @@ import {
   ValidationErrors,
   Validator
 } from '@angular/forms';
-import { LucideAngularModule, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, Search } from 'lucide-angular';
 import { TranslateService } from '@ngx-translate/core';
 
 type Primitive = string | number | boolean | null | undefined;
@@ -49,9 +49,10 @@ export interface DropdownOption<T = Primitive> {
     }
   ]
 })
-export class DropdownComponent<T = Primitive>
+export class  DropdownComponent<T = Primitive>
   implements ControlValueAccessor, Validator {
   readonly ChevronDown = ChevronDown;
+  readonly Search = Search;
 
   /**
    * Collection of options to display. Accepts an array of primitives or objects.
@@ -154,6 +155,7 @@ export class DropdownComponent<T = Primitive>
 
   isOpen = false;
   hoveredIndex: number | null = null;
+  searchTerm = '';
 
   private innerValue: T | null = null;
   private _required = false;
@@ -175,7 +177,17 @@ export class DropdownComponent<T = Primitive>
    * Computed list of options optionally prepending the placeholder option.
    */
   get computedOptions(): Array<DropdownOption<T> | T> {
-    const baseOptions = this.options ?? [];
+    let baseOptions = this.options ?? [];
+    
+    // Apply search filter
+    if (this.searchTerm && this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      baseOptions = baseOptions.filter(option => {
+        const label = this.getOptionLabel(option).toLowerCase();
+        return label.includes(searchLower);
+      });
+    }
+    
     if (this.placeholderSelectable) {
       const placeholderOption: DropdownOption<T> = {
         label: this.placeholder,
@@ -191,7 +203,7 @@ export class DropdownComponent<T = Primitive>
    * Indicates whether a non-null/undefined value is currently selected.
    */
   get hasSelection(): boolean {
-    return this.innerValue !== null && this.innerValue !== undefined;
+    return this.innerValue !== null && this.innerValue !== undefined && this.innerValue !== '';
   }
 
   /**
@@ -253,6 +265,7 @@ export class DropdownComponent<T = Primitive>
       return;
     }
     this.isOpen = true;
+    this.searchTerm = '';
     this.openedChange.emit(true);
   }
 
@@ -262,7 +275,18 @@ export class DropdownComponent<T = Primitive>
     }
     this.isOpen = false;
     this.hoveredIndex = null;
+    this.searchTerm = '';
     this.openedChange.emit(false);
+  }
+
+  onSearchChange(event: Event): void {
+    event.stopPropagation();
+    const input = event.target as HTMLInputElement;
+    this.searchTerm = input.value;
+  }
+
+  onSearchClick(event: Event): void {
+    event.stopPropagation();
   }
 
   selectOption(option: DropdownOption<T> | T): void {

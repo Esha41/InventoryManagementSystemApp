@@ -157,6 +157,13 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   private loadDropdownData(): void {
+    this.loadDepartments();
+    this.loadRequesters();
+    this.loadRequestPurposes();
+    this.loadItems();
+  }
+
+  private loadDepartments(): void {
     this.isLoadingDepartments = true;
     this.lookupService.getDepartments()
       .pipe(takeUntil(this.destroy$))
@@ -172,8 +179,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingDepartments = false;
         }
       });
+  }
 
-
+  private loadRequesters(): void {
     this.isLoadingRequesters = true;
     if (!this.isAdminUser) {
       this.requesters = [];
@@ -199,7 +207,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingRequesters = false;
         }
       });
+  }
 
+  private loadRequestPurposes(): void {
     this.isLoadingRequestPurposes = true;
     this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
       .pipe(takeUntil(this.destroy$))
@@ -219,7 +229,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingRequestPurposes = false;
         }
       });
+  }
 
+  private loadItems(): void {
     this.isLoadingItems = true;
     this.ammunitionService.getAll()
       .pipe(takeUntil(this.destroy$))

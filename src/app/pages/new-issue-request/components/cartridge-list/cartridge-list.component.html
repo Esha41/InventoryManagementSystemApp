@@ -16,11 +16,10 @@
     <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
       <div
         *ngFor="let cartridge of cartridges"
-        (click)="onCartridgeClick(cartridge)"
         class="p-4 border rounded-lg transition-colors text-sm"
         [ngClass]="{
           'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
-          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)] cursor-pointer': !(cartridge.selected || pendingCartridgeId === cartridge.id)
+          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !(cartridge.selected || pendingCartridgeId === cartridge.id)
         }">
         <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
           <div>
@@ -55,9 +54,9 @@
               {{ cartridge.added ? ('newIssueRequest.updateQuantity' | translate) : ('newIssueRequest.selectCartridge' | translate) }}
             </app-button>
             <app-button
-              variant="ghost"
+              variant="outline"
               (clicked)="onCartridgeClick(cartridge)"
-              class="text-[var(--color-text)]"
+              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]"
             >
               {{ 'newIssueRequest.viewDetails' | translate }}
             </app-button>
