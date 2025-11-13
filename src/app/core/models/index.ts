@@ -13,3 +13,4 @@ export * from './depot.model';
 export * from './ammunition.model';
 export * from './workflow.model';
 export * from './inventory.model';
+export * from './notification.model';

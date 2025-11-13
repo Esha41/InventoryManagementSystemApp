@@ -15,8 +15,8 @@ import { ButtonComponent } from '@components/button/button.component';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
 
 export interface AllowanceItemDto {
   id: number;
@@ -72,8 +72,8 @@ export interface AllowanceTableRow {
     LucideAngularModule,
     ButtonComponent,
     ConfirmDialogComponent,
-    PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    PaginationComponent
   ],
   templateUrl: './allowance-list.component.html',
   styleUrls: ['./allowance-list.component.css']

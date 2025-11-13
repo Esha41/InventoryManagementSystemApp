@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '@components/button/button.component';
 import { StepperComponent, Step } from '@components/stepper/stepper.component';
@@ -20,6 +20,13 @@ import { AuthenticatedUser } from '@models/auth.model';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
+
+interface RequestPurposeDto {
+  id: number;
+  nameEn?: string | null;
+  nameAr?: string | null;
+}
 
 @Component({
   selector: 'app-new-issue-request',
@@ -56,7 +63,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private translate: TranslateService
   ) {}
 
   // Step 1: Selection filters (populated from API)
@@ -65,6 +73,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   linkedOptions: string[] = ['Linked', 'Not Linked'];
   natureOptions: string[] = [];
   orderPriorities: string[] = ['High Priority', 'Medium Priority', 'Low Priority'];
+  requestPurposeOptions: DropdownOption<number>[] = [];
+  selectedRequestPurposeId: number | null = null;
+  loadingRequestPurposes = false;
 
   selectedBulletDiameter = '';
   selectedCaseLength = '';
@@ -96,6 +107,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private fallbackRequesterName = '';
   isAdminUser = false;
   lockRequesterName = false;
+  private requestPurposesSource: RequestPurposeDto[] = [];
 
   get selectedCartridges(): Cartridge[] {
     return this.selectedEntries
@@ -122,6 +134,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeUserContext();
     this.initializeStepFromQueryParams();
+    this.loadRequestPurposes();
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.rebuildRequestPurposeOptions();
+        this.updateUsePurposeFromSelection(this.selectedRequestPurposeId);
+      });
     // Don't load cartridges yet - wait for allowance selection
   }
 
@@ -258,6 +277,31 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.reserveDetailsByItem = [];
       }
     });
+  }
+
+  private loadRequestPurposes(): void {
+    this.loadingRequestPurposes = true;
+
+    this.apiService
+      .getWithAuth<APIOperationResponse<RequestPurposeDto[]>>(
+        API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const purposes = this.normalizeRequestPurposesResponse(response);
+          this.requestPurposesSource = purposes;
+          this.rebuildRequestPurposeOptions();
+          this.loadingRequestPurposes = false;
+          this.updateUsePurposeFromSelection(this.selectedRequestPurposeId);
+        },
+        error: () => {
+          this.requestPurposesSource = [];
+          this.requestPurposeOptions = [];
+          this.loadingRequestPurposes = false;
+          this.updateUsePurposeFromSelection(null);
+        }
+      });
   }
 
   retryLoadCartridges(): void {
@@ -470,6 +514,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.fromReserve = value;
   }
 
+  onUsePurposeIdChange(value: number | null): void {
+    this.selectedRequestPurposeId = value;
+    this.updateUsePurposeFromSelection(value);
+  }
+
   onPrevious(): void {
     if (this.currentStep > 0) {
       this.currentStep--;
@@ -567,7 +616,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       requesterId: null, 
       recieverId: null, 
       depotId: null,
-      requestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
+      requestPurposeId: this.selectedRequestPurposeId ?? this.DEFAULT_REQUEST_PURPOSE_ID,
       isFromAllowance: this.fromReserve === 'Yes',
       usageDate: usageDateTime.toISOString(),
       usageTime: this.formatUsageTime(usageDateTime),
@@ -732,6 +781,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.selectedNature = '';
     this.fromReserve = 'Yes';
     this.usePurpose = '';
+    this.selectedRequestPurposeId = null;
     this.annualDiscardSpecialOps = '';
     this.usageLocation = '';
     this.numberOfOfficers = null;
@@ -771,7 +821,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     if (invalidItem) {
       return 'Selected cartridge is missing required information.';
     }
-    if (!this.usePurpose) {
+    if (this.selectedRequestPurposeId === null) {
       return 'Usage purpose is required.';
     }
     if (!this.usageLocation) {
@@ -901,5 +951,62 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     if (normalized.includes('medium')) return 2;
     if (normalized.includes('low')) return 3;
     return 1; // default high
+  }
+
+  private rebuildRequestPurposeOptions(): void {
+    this.requestPurposeOptions = this.requestPurposesSource.map(purpose => ({
+      label: this.getLocalizedRequestPurposeName(purpose),
+      value: purpose.id
+    }));
+  }
+
+  private normalizeRequestPurposesResponse(
+    response: APIOperationResponse<RequestPurposeDto[]> | RequestPurposeDto[] | null | undefined
+  ): RequestPurposeDto[] {
+    if (!response) {
+      return [];
+    }
+
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    const payload = response as APIOperationResponse<RequestPurposeDto[]>;
+    if (Array.isArray(payload?.data)) {
+      return payload.data;
+    }
+
+    const nested = (payload as any)?.data?.items;
+    if (Array.isArray(nested)) {
+      return nested as RequestPurposeDto[];
+    }
+
+    return [];
+  }
+
+  private getLocalizedRequestPurposeName(purpose: RequestPurposeDto): string {
+    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    if (currentLang === 'ar') {
+      return purpose.nameAr?.trim() || purpose.nameEn?.trim() || '';
+    }
+    return purpose.nameEn?.trim() || purpose.nameAr?.trim() || '';
+  }
+
+  private updateUsePurposeFromSelection(value: number | null): void {
+    if (value === null || value === undefined) {
+      this.usePurpose = '';
+      this.selectedRequestPurposeId = null;
+      return;
+    }
+
+    const match = this.requestPurposesSource.find(purpose => purpose.id === value);
+    if (match) {
+      this.selectedRequestPurposeId = match.id;
+      this.usePurpose = this.getLocalizedRequestPurposeName(match);
+      return;
+    }
+
+    this.selectedRequestPurposeId = null;
+    this.usePurpose = '';
   }
 }

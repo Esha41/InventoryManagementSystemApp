@@ -133,7 +133,8 @@ export class ApiService {
       errorMessage = `Client Error: ${error.error.message}`;
     } else if (error.status === 0) {
       // Connection refused or CORS error
-      errorMessage = 'Cannot connect to server. Please ensure the backend is running on https://localhost:7060';
+      const backendUrl = this.getBackendOrigin();
+      errorMessage = `Cannot connect to server. Please ensure the backend is running on ${backendUrl}`;
     } else {
       // Server-side error
       if (error.status === 401) {
@@ -155,6 +156,24 @@ export class ApiService {
     
     this.configService.logError('API Error:', error);
     return throwError(() => new Error(errorMessage));
+  }
+
+  /**
+   * Extract backend origin for error messaging
+   */
+  private getBackendOrigin(): string {
+    const baseUrl = this.baseUrl;
+
+    try {
+      const url = new URL(baseUrl);
+      return url.origin;
+    } catch {
+      // If baseUrl is relative, fallback to window origin + baseUrl
+      if (typeof window !== 'undefined' && window.location) {
+        return `${window.location.origin}${baseUrl.startsWith('/') ? baseUrl : `/${baseUrl}`}`;
+      }
+      return baseUrl;
+    }
   }
 }
 

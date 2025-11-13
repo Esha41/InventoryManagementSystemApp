@@ -5,14 +5,12 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { forkJoin } from 'rxjs';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 interface Asset {
@@ -43,8 +41,6 @@ interface Asset {
     ButtonComponent,
     LucideAngularModule,
     TranslateModule,
-    PaginationComponent,
-    RowsPerPageComponent,
     DropdownComponent
   ],
   templateUrl: './asset-list.component.html',
@@ -62,6 +58,8 @@ export class AssetListComponent implements OnInit {
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly FilterX = FilterX;
+  readonly ChevronLeft = ChevronLeft;
+  readonly ChevronRight = ChevronRight;
 
   assets: Asset[] = [];
   loading = false;
@@ -105,7 +103,7 @@ export class AssetListComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = 5;
 
   constructor(
     private ammunitionService: AmmunitionService,
@@ -217,6 +215,11 @@ export class AssetListComponent implements OnInit {
     return Math.ceil(totalItems / this.rowsPerPage);
   }
 
+  get pageNumbers(): number[] {
+    const total = this.totalPages;
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
   get hccFilterOptions(): Array<{ label: string; value: string }> {
     return this.mapToFilterOptions(this.hccList);
   }
@@ -266,11 +269,6 @@ export class AssetListComponent implements OnInit {
       return;
     }
     this.currentPage = page;
-  }
-
-  onRowsPerPageChange(rows: number): void {
-    this.rowsPerPage = rows;
-    this.currentPage = 1;
   }
 
   onFilterChange(): void {
