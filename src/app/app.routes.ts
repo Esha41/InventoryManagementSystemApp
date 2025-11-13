@@ -177,18 +177,6 @@ export const routes: Routes = [
         data: { permissions: ['notificationspage.page', 'notificationspage.view', 'dashboard_view'] }
       },
       {
-        path: 'notifications/:id',
-        loadComponent: () => import('@pages/notifications/notification-detail-page/notification-detail-page.component').then(m => m.NotificationDetailPageComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['notificationspage.view', 'dashboard_view'] }
-      },
-      {
-        path: 'notifications/:id/schedule',
-        loadComponent: () => import('@pages/notifications/notification-schedule-page/notification-schedule-page.component').then(m => m.NotificationSchedulePageComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['notificationspage.edit', 'dashboard_view'] }
-      },
-      {
         path: 'access-denied',
         loadComponent: () => import('@pages/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
       }

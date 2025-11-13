@@ -37,6 +37,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.notificationService.initialize();
+
     // Subscribe to current user changes
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))

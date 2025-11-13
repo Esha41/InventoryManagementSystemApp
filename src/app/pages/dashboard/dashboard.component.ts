@@ -10,6 +10,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
 import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { NotificationService } from '@services/notification.service';
 
 export interface DashboardCard {
   title: string;
@@ -57,7 +58,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private orderService: OrderService,
     private returnService: ReturnService,
-    private discardService: DiscardService
+    private discardService: DiscardService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +71,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loadOrderRequests();
         this.loadReturnRequests();
         this.loadDiscardRequests();
+        this.notificationService.refresh();
       });
 
     // Initial filter
@@ -76,6 +79,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadOrderRequests();
     this.loadReturnRequests();
     this.loadDiscardRequests();
+    this.notificationService.refresh();
   }
 
   ngOnDestroy(): void {

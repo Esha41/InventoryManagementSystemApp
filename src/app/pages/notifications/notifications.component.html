@@ -1,166 +1,511 @@
-<div class="notifications-container space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <button
-        (click)="goBack()"
-        class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors"
-        aria-label="Go back">
-        <lucide-angular [img]="ArrowLeft" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
-      </button>
-      <div>
-        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'notifications.title' | translate }}</h1>
-        <p class="text-sm text-[var(--color-text-muted)]">
-          {{ 'notifications.subtitle' | translate:{ count: unreadCount } }}
-        </p>
+<div class="notifications-page min-h-screen p-6 space-y-6">
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div class="space-y-2">
+      <div class="flex items-center gap-3">
+        <lucide-angular [img]="Bell" class="h-8 w-8 text-[var(--color-brand)]"></lucide-angular>
+        <h1 class="text-3xl font-bold text-[var(--color-text)]">
+          {{ 'notifications.title' | translate }}
+        </h1>
+      </div>
+
+      <p class="text-[var(--color-text-muted)] text-sm md:text-base" *ngIf="unreadCount$ | async as unreadCount">
+        {{ 'notifications.subtitle' | translate:{ count: unreadCount } }}
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <app-button
+        variant="primary"
+        size="sm"
+        class="action-button"
+        (click)="markAllAsRead()"
+        [disabled]="markingAll || (unreadCount$ | async) === 0"
+      >
+        <span class="action-button__content">
+          <div class="action-button__spinner" [class.spinner]="markingAll"></div>
+          <span>{{ markingAll ? ('common.pleaseWait' | translate) : ('notifications.markAllAsRead' | translate) }}</span>
+        </span>
+      </app-button>
+    </div>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[380px_1fr]">
+    <!-- List -->
+    <div class="flex h-full min-h-[480px] flex-col rounded-2xl border border-[var(--color-border)] bg-white shadow-sm">
+      <div class="border-b border-[var(--color-border)] p-4 space-y-4">
+        <label class="search-field">
+          <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
+          <input
+            type="search"
+            class="search-field__input"
+            [placeholder]="'common.search' | translate"
+            [formControl]="searchControl"
+          />
+        </label>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="filter-pill"
+            [class.filter-pill--active]="isFilterActive('all')"
+            (click)="setFilter('all')"
+          >
+            {{ 'notifications.filters.all' | translate }}
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.filter-pill--active]="isFilterActive('unread')"
+            (click)="setFilter('unread')"
+          >
+            {{ 'notifications.filters.unread' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <div *ngIf="loading$ | async" class="flex flex-col gap-4 p-4">
+          <div class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-full bg-[var(--color-border)]/70"></div>
+              <div class="flex-1 space-y-3">
+                <div class="h-4 w-3/4 rounded bg-[var(--color-border)]/70"></div>
+                <div class="h-3 w-1/2 rounded bg-[var(--color-border)]/50"></div>
+              </div>
+            </div>
+          </div>
+          <div class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-full bg-[var(--color-border)]/70"></div>
+              <div class="flex-1 space-y-3">
+                <div class="h-4 w-2/3 rounded bg-[var(--color-border)]/70"></div>
+                <div class="h-3 w-1/3 rounded bg-[var(--color-border)]/50"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!(loading$ | async)">
+          <ng-container *ngIf="filteredNotifications$ | async as notifications">
+            <div *ngIf="notifications.length === 0" class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center text-sm text-[var(--color-text-muted)]">
+              <lucide-angular [img]="Info" class="h-8 w-8 text-[var(--color-border-strong)]"></lucide-angular>
+              <p class="max-w-xs text-balance">{{ 'notifications.empty' | translate }}</p>
+            </div>
+
+            <ul *ngIf="notifications.length > 0" class="flex flex-col divide-y divide-[var(--color-border)]">
+              <li
+                *ngFor="let notification of notifications; trackBy: trackByNotification"
+                (click)="selectNotification(notification)"
+                class="notification-item"
+                [class.notification-item--active]="selectedNotification?.id === notification.id"
+              >
+                <div class="flex items-start gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-background-soft)]">
+                    <lucide-angular
+                      [img]="notification.isRead ? MailOpen : Mail"
+                      class="h-5 w-5"
+                      [class.text-[var(--color-text-muted)]]="notification.isRead"
+                      [class.text-[var(--color-brand)]]="!notification.isRead"
+                    ></lucide-angular>
+                  </div>
+
+                  <div class="min-w-0 flex-1 space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <h3 class="truncate text-sm font-semibold text-[var(--color-text)]">
+                        {{ notification.title || ('notifications.genericType' | translate) }}
+                      </h3>
+                      <span class="text-xs text-[var(--color-text-muted)]">
+                        {{ notification.createdAt | date:'MMM d, y, HH:mm' }}
+                      </span>
+                    </div>
+
+                    <p class="notification-item__message">
+                      {{ notification.message }}
+                    </p>
+
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="badge"
+                        [class.badge--success]="notification.isRead"
+                        [class.badge--warning]="!notification.isRead"
+                      >
+                        {{ getStatusLabel(notification) }}
+                      </span>
+
+                      <span *ngIf="notification.type" class="badge badge--muted">
+                        {{ notification.type }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+        </ng-container>
       </div>
     </div>
 
-    <button
-      class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--color-accent)] text-white text-sm font-medium hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      (click)="markAllAsRead()"
-      [disabled]="unreadCount === 0">
-      {{ 'notifications.markAllAsRead' | translate }}
-    </button>
-  </div>
+    <!-- Detail -->
+    <div class="rounded-2xl border border-[var(--color-border)] bg-white shadow-sm">
+      <ng-container *ngIf="selectedNotification as notification; else noSelection">
+        <div class="flex flex-col gap-6 p-6">
+          <div class="flex flex-col gap-4 border-b border-[var(--color-border)] pb-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                  <lucide-angular [img]="notification.isRead ? MailOpen : Mail" class="h-6 w-6 text-[var(--color-brand)]"></lucide-angular>
+                  <h2 class="text-2xl font-semibold text-[var(--color-text)] break-words">
+                    {{ notification.title || ('notifications.genericType' | translate) }}
+                  </h2>
+                </div>
+                <p class="text-sm text-[var(--color-text-muted)] break-words">
+                  {{ notification.message }}
+                </p>
+              </div>
 
-  <div class="flex flex-wrap items-center gap-2">
-    <button
-      class="notification-filter"
-      [class.notification-filter-active]="activeFilter === 'all'"
-      (click)="setFilter('all')">
-      {{ 'notifications.filters.all' | translate }}
-      <span *ngIf="totalCount > 0" class="notification-filter-pill">{{ totalCount }}</span>
-    </button>
-    <button
-      class="notification-filter"
-      [class.notification-filter-active]="activeFilter === 'unread'"
-      (click)="setFilter('unread')">
-      {{ 'notifications.filters.unread' | translate }}
-      <span *ngIf="unreadCount > 0" class="notification-filter-pill notification-filter-pill-unread">{{ unreadCount }}</span>
-    </button>
-    <button
-      class="notification-filter"
-      [class.notification-filter-active]="activeFilter === 'read'"
-      (click)="setFilter('read')">
-      {{ 'notifications.filters.read' | translate }}
-      <span *ngIf="readCount > 0" class="notification-filter-pill">{{ readCount }}</span>
-    </button>
-  </div>
-
-  <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div class="notification-table-header">
-        <div>{{ 'notifications.orderId' | translate }}</div>
-        <div>{{ 'notifications.updateDate' | translate }}</div>
-        <div>{{ 'notifications.time' | translate }}</div>
-        <div>{{ 'notifications.status' | translate }}</div>
-        <div></div>
-      </div>
-
-      <div *ngIf="loading" class="py-16 flex items-center justify-center text-sm text-[var(--color-text-muted)]">
-        {{ 'common.loading' | translate }}
-      </div>
-
-      <ng-container *ngIf="!loading">
-        <div *ngIf="pagedNotifications.length === 0" class="py-16 flex flex-col items-center justify-center text-center gap-2 text-[var(--color-text-muted)]">
-          <p class="text-sm">{{ 'notifications.empty' | translate }}</p>
-        </div>
-
-        <div *ngIf="pagedNotifications.length > 0" class="divide-y divide-[var(--color-border)]">
-          <div
-            *ngFor="let notification of pagedNotifications; trackBy: trackByNotification"
-            class="notification-row"
-            [class.notification-row-selected]="isSelected(notification)"
-            [class.notification-row-unread]="isUnread(notification)"
-            (click)="onNotificationSelect(notification)">
-            <div class="font-semibold text-[var(--color-text)]">{{ extractOrderId(notification) }}</div>
-            <div class="text-sm text-[var(--color-text-muted)]">{{ getFormattedDate(notification) }}</div>
-            <div class="text-sm text-[var(--color-text-muted)]">{{ getRelativeTime(notification) }}</div>
-            <div class="text-sm text-[var(--color-text)]">{{ getStatusLabel(notification) }}</div>
-            <div class="flex justify-end">
-              <button
-                type="button"
-                class="notification-row-action"
-                (click)="openDetail(notification, $event)">
-                <lucide-angular [img]="ChevronDown" class="h-4 w-4"></lucide-angular>
-              </button>
+              <div class="flex items-center gap-2">
+                <span class="badge"
+                  [class.badge--success]="notification.isRead"
+                  [class.badge--warning]="!notification.isRead"
+                >
+                  {{ getStatusLabel(notification) }}
+                </span>
+              </div>
             </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="info-pill">
+                <div class="info-pill__icon">
+                  <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
+                </div>
+                <div>
+                  <p class="info-pill__label">{{ 'notifications.updateDate' | translate }}</p>
+                  <p class="info-pill__value">{{ notification.createdAt | date:'mediumDate' }}</p>
+                </div>
+              </div>
+              <div class="info-pill">
+                <div class="info-pill__icon">
+                  <lucide-angular [img]="Clock" class="h-4 w-4"></lucide-angular>
+                </div>
+                <div>
+                  <p class="info-pill__label">{{ 'notifications.time' | translate }}</p>
+                  <p class="info-pill__value">{{ notification.createdAt | date:'shortTime' }}</p>
+                </div>
+              </div>
+              <div class="info-pill" *ngIf="notification.type">
+                <div class="info-pill__icon">
+                  <lucide-angular [img]="Info" class="h-4 w-4"></lucide-angular>
+                </div>
+                <div>
+                  <p class="info-pill__label">{{ 'notifications.notificationType' | translate }}</p>
+                  <p class="info-pill__value">{{ notification.type }}</p>
+                </div>
+              </div>
+              <div class="info-pill">
+                <div class="info-pill__icon">
+                  <lucide-angular [img]="ArrowRight" class="h-4 w-4"></lucide-angular>
+                </div>
+                <div>
+                  <p class="info-pill__label">{{ 'notifications.notificationId' | translate }}</p>
+                  <p class="info-pill__value">#{{ notification.id }}</p>
+                </div>
+              </div>
+            </div>
+
+          <div class="detail-section" *ngIf="detailLoading">
+            <div class="detail-loader">
+              <div class="detail-loader__spinner spinner"></div>
+              <span>{{ 'common.loading' | translate }}...</span>
+            </div>
+          </div>
+
+          <div class="detail-section detail-section--error" *ngIf="!detailLoading && detailError">
+            <span>{{ detailError }}</span>
+          </div>
+
+          <div class="detail-section" *ngIf="!detailLoading && !detailError && detailType === 'order' && orderDetail">
+            <h3 class="detail-section__title">{{ 'notifications.details.orderTitle' | translate }}</h3>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
+                <span class="detail-field__value">{{ orderDetail.requestNo || orderDetail.orderNo || ('#' + orderDetail.id) }}</span>
+              </div>
+              <div class="detail-field" *ngIf="orderDetail.usageDate">
+                <span class="detail-field__label">{{ 'notifications.details.requestDate' | translate }}</span>
+                <span class="detail-field__value">{{ orderDetail.usageDate | date:'medium' }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
+                <span class="detail-field__value">{{ orderDetail.departmentNameEn || orderDetail.departmentNameAr || '—' }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
+                <span class="detail-field__value">{{ orderDetail.requesterName || '—' }}</span>
+              </div>
+              <div class="detail-field" *ngIf="orderDetail.priority">
+                <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
+                <span class="detail-field__value">{{ getPriorityLabelTranslation(orderDetail.priority) | translate }}</span>
+              </div>
+              <div class="detail-field" *ngIf="orderDetail.status">
+                <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
+                <span class="detail-field__value">{{ getStatusLabelTranslation(orderDetail.status) | translate }}</span>
+              </div>
+            </div>
+            <div class="detail-field" *ngIf="orderDetail.requestPurposeNameEn || orderDetail.requestPurposeNameAr">
+              <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
+              <span class="detail-field__value">{{ orderDetail.requestPurposeNameEn || orderDetail.requestPurposeNameAr }}</span>
+            </div>
+            <div class="detail-field" *ngIf="orderDetail.notes">
+              <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
+              <span class="detail-field__value">{{ orderDetail.notes }}</span>
+            </div>
+            <div class="detail-items">
+              <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
+              <div *ngIf="!orderDetail.requestItems?.length" class="detail-items__empty">
+                {{ 'notifications.details.noItems' | translate }}
+              </div>
+              <div *ngFor="let item of orderDetail.requestItems" class="detail-item">
+                <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
+                <div class="detail-item__meta">
+                  {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
+                  <span *ngIf="item.notes">• {{ item.notes }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="!detailLoading && !detailError && detailType === 'return' && returnDetail">
+            <h3 class="detail-section__title">{{ 'notifications.details.returnTitle' | translate }}</h3>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
+                <span class="detail-field__value">{{ returnDetail.requestNo || ('#' + returnDetail.id) }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
+                <span class="detail-field__value">{{ returnDetail.departmentName || '—' }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
+                <span class="detail-field__value">{{ returnDetail.requesterName || '—' }}</span>
+              </div>
+              <div class="detail-field" *ngIf="returnDetail.priority">
+                <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
+                <span class="detail-field__value">{{ getPriorityLabelTranslation(returnDetail.priority) | translate }}</span>
+              </div>
+              <div class="detail-field" *ngIf="returnDetail.status">
+                <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
+                <span class="detail-field__value">{{ getStatusLabelTranslation(returnDetail.status) | translate }}</span>
+              </div>
+            </div>
+            <div class="detail-field" *ngIf="returnDetail.requestPurposeName">
+              <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
+              <span class="detail-field__value">{{ returnDetail.requestPurposeName }}</span>
+            </div>
+            <div class="detail-field" *ngIf="returnDetail.reason">
+              <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
+              <span class="detail-field__value">{{ returnDetail.reason }}</span>
+            </div>
+            <div class="detail-field" *ngIf="returnDetail.notes">
+              <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
+              <span class="detail-field__value">{{ returnDetail.notes }}</span>
+            </div>
+            <div class="detail-items">
+              <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
+              <div *ngIf="!returnDetail.requestItems?.length" class="detail-items__empty">
+                {{ 'notifications.details.noItems' | translate }}
+              </div>
+              <div *ngFor="let item of returnDetail.requestItems" class="detail-item">
+                <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
+                <div class="detail-item__meta">
+                  {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
+                  <span *ngIf="item.notes">• {{ item.notes }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section" *ngIf="!detailLoading && !detailError && detailType === 'discard' && discardDetail">
+            <h3 class="detail-section__title">{{ 'notifications.details.discardTitle' | translate }}</h3>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
+                <span class="detail-field__value">{{ discardDetail.requestNo || ('#' + discardDetail.id) }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
+                <span class="detail-field__value">{{ discardDetail.departmentName || '—' }}</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
+                <span class="detail-field__value">{{ discardDetail.requesterName || '—' }}</span>
+              </div>
+              <div class="detail-field" *ngIf="discardDetail.priority">
+                <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
+                <span class="detail-field__value">{{ getPriorityLabelTranslation(discardDetail.priority) | translate }}</span>
+              </div>
+              <div class="detail-field" *ngIf="discardDetail.status">
+                <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
+                <span class="detail-field__value">{{ getStatusLabelTranslation(discardDetail.status) | translate }}</span>
+              </div>
+            </div>
+            <div class="detail-field" *ngIf="discardDetail.requestPurposeName">
+              <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
+              <span class="detail-field__value">{{ discardDetail.requestPurposeName }}</span>
+            </div>
+            <div class="detail-field" *ngIf="discardDetail.reason">
+              <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
+              <span class="detail-field__value">{{ discardDetail.reason }}</span>
+            </div>
+            <div class="detail-field" *ngIf="discardDetail.notes">
+              <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
+              <span class="detail-field__value">{{ discardDetail.notes }}</span>
+            </div>
+            <div class="detail-items">
+              <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
+              <div *ngIf="!discardDetail.requestItems?.length" class="detail-items__empty">
+                {{ 'notifications.details.noItems' | translate }}
+              </div>
+              <div *ngFor="let item of discardDetail.requestItems" class="detail-item">
+                <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
+                <div class="detail-item__meta">
+                  {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
+                  <span *ngIf="item.notes">• {{ item.notes }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <ng-container *ngIf="getDisplayMetadata(notification) as metadata">
+            <div class="space-y-4" *ngIf="metadata.length > 0">
+              <h3 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'notifications.additionalInfo' | translate }}
+              </h3>
+
+              <div class="grid gap-3 md:grid-cols-2">
+                <div
+                  *ngFor="let item of metadata; trackBy: trackMetadata"
+                  class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4"
+                >
+                  <p class="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
+                    {{ formatMetadataKey(item.key) }}
+                  </p>
+                  <pre class="mt-2 whitespace-pre-wrap text-sm text-[var(--color-text)]">{{ item.value }}</pre>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <div
+            *ngIf="hasNotificationActions(notification)"
+            class="flex flex-wrap items-center gap-3 border-t border-[var(--color-border)] pt-4"
+          >
+            <app-button
+              *ngIf="!notification.isRead"
+              variant="ghost"
+              class="mark-read-button"
+              (click)="markAsRead(notification)"
+              [disabled]="isPending(notification)"
+            >
+              <span class="mark-read-button__content">
+                <div class="mark-read-button__spinner" [class.spinner]="isPending(notification)"></div>
+                <span>{{ 'notifications.markAsRead' | translate }}</span>
+              </span>
+            </app-button>
+
+            <app-button
+              *ngIf="canConfirmPickup(notification)"
+              variant="primary"
+              (click)="confirmPickup(notification)"
+              [disabled]="isPending(notification)"
+            >
+              <span class="flex items-center gap-2">
+                <lucide-angular [img]="CheckCircle2" class="h-4 w-4"></lucide-angular>
+                <span>{{ 'notifications.confirmPickupTime' | translate }}</span>
+              </span>
+            </app-button>
+
+            <app-button
+              *ngIf="canProposeNewTime(notification)"
+              variant="outline"
+              (click)="openProposeModal(notification)"
+            >
+              <span class="flex items-center gap-2">
+                <lucide-angular [img]="Clock" class="h-4 w-4"></lucide-angular>
+                <span>{{ 'notifications.proposeNewTime' | translate }}</span>
+              </span>
+            </app-button>
           </div>
         </div>
       </ng-container>
 
-      <div class="notification-pagination" *ngIf="!loading && pagedNotifications.length > 0">
-        <div class="flex items-center gap-2">
-          <span>{{ 'notifications.showing' | translate }}</span>
-          <app-dropdown
-            class="notification-select"
-            [(ngModel)]="itemsPerPage"
-            [options]="itemsPerPageOptions"
-            (selectionChange)="onItemsPerPageChange($event)"
-            [placeholderSelectable]="false">
-          </app-dropdown>
-          <span>{{ 'notifications.of' | translate }} {{ filteredNotifications.length }}</span>
+      <ng-template #noSelection>
+        <div class="flex h-full flex-col items-center justify-center gap-4 p-10 text-center text-[var(--color-text-muted)]">
+          <lucide-angular [img]="MailOpen" class="h-12 w-12 text-[var(--color-border-strong)]"></lucide-angular>
+          <div>
+            <p class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'notifications.detailTitle' | translate }}
+            </p>
+            <p class="mt-1 text-sm">{{ 'notifications.selectPrompt' | translate }}</p>
+          </div>
         </div>
-
-        <div class="flex items-center gap-1">
-          <button
-            class="notification-page-btn"
-            (click)="goToPage(currentPage - 1)"
-            [disabled]="currentPage === 1">
-            &lt;
-          </button>
-          <button
-            *ngFor="let page of pages"
-            class="notification-page-btn"
-            [class.notification-page-btn-active]="currentPage === page"
-            (click)="goToPage(page)">
-            {{ page }}
-          </button>
-          <button
-            class="notification-page-btn"
-            (click)="goToPage(currentPage + 1)"
-            [disabled]="currentPage === totalPages">
-            &gt;
-          </button>
-        </div>
-      </div>
+      </ng-template>
     </div>
-
-    <div class="bg-white rounded-2xl shadow-sm p-6" *ngIf="selectedNotification; else emptyDetail">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-xl font-semibold text-[var(--color-text)]">
-            {{ getStatusLabel(selectedNotification) }}
-          </h2>
-          <p class="text-sm text-[var(--color-text-muted)]">
-            {{ getFormattedDate(selectedNotification) }} • {{ getRelativeTime(selectedNotification) }}
-          </p>
-        </div>
-        <span *ngIf="isUnread(selectedNotification)" class="px-3 py-1 text-xs font-semibold rounded-full bg-[var(--color-accent)]/15 text-[var(--color-accent)] uppercase tracking-wide">
-          {{ 'notifications.unread' | translate }}
-        </span>
-      </div>
-
-      <div class="space-y-3 text-sm text-[var(--color-text)] leading-relaxed">
-        <div>
-          <span class="font-semibold">{{ 'notifications.orderId' | translate }}:</span>
-          <span class="ml-2">{{ extractOrderId(selectedNotification) }}</span>
-        </div>
-        <p>{{ selectedNotification.message }}</p>
-        <button
-          *ngIf="isUnread(selectedNotification)"
-          type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-background-hover)]"
-          (click)="onMarkAsRead(selectedNotification)">
-          {{ 'notifications.markAsRead' | translate }}
-        </button>
-      </div>
-    </div>
-
-    <ng-template #emptyDetail>
-      <div class="bg-white rounded-2xl shadow-sm p-6 flex items-center justify-center text-[var(--color-text-muted)]">
-        {{ 'notifications.selectPrompt' | translate }}
-      </div>
-    </ng-template>
   </div>
 </div>
+
+<!-- Propose New Time Modal -->
+<app-modal
+  [isOpen]="isProposeModalOpen"
+  [title]="'notifications.proposeNewTime' | translate"
+  size="sm"
+  (closed)="closeProposeModal()"
+>
+  <form [formGroup]="proposeForm" class="space-y-4">
+    <div class="space-y-2">
+      <label class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'notifications.pickupDate' | translate }}
+      </label>
+      <input
+        type="date"
+        formControlName="pickupDate"
+        class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]"
+      />
+      <p class="text-xs text-red-500" *ngIf="proposeForm.get('pickupDate')?.invalid && proposeForm.get('pickupDate')?.touched">
+        {{ 'validation.required' | translate }}
+      </p>
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'notifications.pickupTime' | translate }}
+      </label>
+      <input
+        type="time"
+        formControlName="pickupTime"
+        class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]"
+      />
+      <p class="text-xs text-red-500" *ngIf="proposeForm.get('pickupTime')?.invalid && proposeForm.get('pickupTime')?.touched">
+        {{ 'validation.required' | translate }}
+      </p>
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4">
+      <app-button variant="ghost" type="button" (click)="closeProposeModal()">
+        {{ 'common.cancel' | translate }}
+      </app-button>
+      <app-button
+        variant="primary"
+        type="button"
+        (click)="submitProposedTime()"
+        [disabled]="isSubmittingProposal"
+      >
+        <span class="flex items-center gap-2">
+          <div class="h-4 w-4" [class.spinner]="isSubmittingProposal"></div>
+          <span>{{ isSubmittingProposal ? ('common.pleaseWait' | translate) : ('common.submit' | translate) }}</span>
+        </span>
+      </app-button>
+    </div>
+  </form>
+</app-modal>

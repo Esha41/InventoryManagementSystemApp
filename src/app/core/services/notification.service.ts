@@ -1,9 +1,9 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject, throwError, of } from 'rxjs';
 import { catchError, finalize, map, takeUntil, tap } from 'rxjs/operators';
 import { API_ENDPOINTS, STORAGE_KEYS } from '@constants/app.constants';
-import { Notification } from '@pages/notifications/models/notification.model';
+import { Notification } from '@models/notification.model';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { BackendAuthService } from './backend-auth.service';
@@ -296,6 +296,12 @@ export class NotificationService implements OnDestroy {
       this.ngZone.run(() => this.unreadCountSubject.next(count ?? 0));
     });
 
+    this.hubConnection.onreconnected(() => {
+      this.ngZone.run(() => {
+        this.joinUserGroup().catch(() => undefined);
+      });
+    });
+
     this.hubConnection.onclose(() => {
       this.configService.logWarning('Notification hub connection closed. Attempting to reconnect...');
       this.scheduleReconnect();
@@ -304,6 +310,7 @@ export class NotificationService implements OnDestroy {
     this.hubConnection.start()
       .then(() => {
         this.configService.log('Notification hub connected');
+        this.joinUserGroup().catch(() => undefined);
       })
       .catch((error: unknown) => {
         this.configService.logError('Failed to start notification hub connection', error);
@@ -318,8 +325,11 @@ export class NotificationService implements OnDestroy {
     }
 
     if (this.hubConnection) {
-      this.hubConnection.stop().catch(() => undefined);
-      this.hubConnection = undefined;
+      this.leaveUserGroup()
+        .finally(() => {
+          this.hubConnection?.stop().catch(() => undefined);
+          this.hubConnection = undefined;
+        });
     }
   }
 
@@ -458,5 +468,21 @@ export class NotificationService implements OnDestroy {
 
     const separator = base.includes('?') ? '&' : '?';
     return `${base}${separator}userId=${encodeURIComponent(this.currentUser.id)}`;
+  }
+
+  private joinUserGroup(): Promise<void> {
+    if (!this.hubConnection || this.hubConnection.state !== HubConnectionState.Connected || !this.currentUser?.id) {
+      return Promise.resolve();
+    }
+
+    return this.hubConnection.invoke('JoinUserGroup', this.currentUser.id);
+  }
+
+  private leaveUserGroup(): Promise<void> {
+    if (!this.hubConnection || this.hubConnection.state !== HubConnectionState.Connected || !this.currentUser?.id) {
+      return Promise.resolve();
+    }
+
+    return this.hubConnection.invoke('LeaveUserGroup', this.currentUser.id).catch(() => undefined);
   }
 }

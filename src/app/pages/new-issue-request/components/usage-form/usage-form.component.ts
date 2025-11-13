@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-usage-form',
@@ -16,6 +16,8 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 export class UsageFormComponent {
   @Input() fromReserve: string = 'Yes';
   @Input() usePurpose: string = '';
+  @Input() selectedUsePurposeId: number | null = null;
+  @Input() usePurposeOptions: DropdownOption<number>[] = [];
   @Input() annualDiscardSpecialOps: string = '';
   @Input() usageLocation: string = '';
   @Input() numberOfOfficers: number | null = null;
@@ -38,6 +40,7 @@ export class UsageFormComponent {
 
   @Output() fromReserveChange = new EventEmitter<string>();
   @Output() usePurposeChange = new EventEmitter<string>();
+  @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
   @Output() annualDiscardSpecialOpsChange = new EventEmitter<string>();
   @Output() usageLocationChange = new EventEmitter<string>();
   @Output() numberOfOfficersChange = new EventEmitter<number | null>();
@@ -64,8 +67,11 @@ export class UsageFormComponent {
     this.fromReserveChange.emit(value);
   }
 
-  onUsePurposeChange(value: string): void {
-    this.usePurposeChange.emit(value);
+  onUsePurposeChange(value: number | null): void {
+    this.selectedUsePurposeId = value;
+    this.selectedUsePurposeIdChange.emit(value);
+    const label = this.resolveUsePurposeLabel(value);
+    this.usePurposeChange.emit(label);
   }
 
   onAnnualDiscardSpecialOpsChange(value: string): void {
@@ -127,7 +133,7 @@ export class UsageFormComponent {
     this.formErrors = { ...this.defaultErrors };
     let isValid = true;
 
-    if (!this.usePurpose || this.usePurpose.trim().length === 0) {
+    if (this.selectedUsePurposeId === null || this.selectedUsePurposeId === undefined) {
       this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
       isValid = false;
     }
@@ -153,6 +159,14 @@ export class UsageFormComponent {
     }
 
     return isValid;
+  }
+
+  private resolveUsePurposeLabel(value: number | null): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    const match = this.usePurposeOptions.find(option => option.value === value);
+    return match?.label ?? '';
   }
 }
 
