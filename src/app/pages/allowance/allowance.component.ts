@@ -150,6 +150,8 @@ export class AllowanceComponent implements OnInit {
     this.items[index].itemId = item.id.toString();
     this.searchTerms[index] = `${item.name} - ${item.itemNo} - ${item.batchNo}`;
     this.showDropdowns[index] = false;
+    // Clear error when item is selected
+    this.onItemSelectionChange(index);
   }
 
   toggleDropdown(index: number): void {
@@ -469,6 +471,90 @@ export class AllowanceComponent implements OnInit {
 
   getItemError(itemIndex: number, field: string): string {
     return this.itemErrors[itemIndex]?.[field] || '';
+  }
+
+
+  clearError(field: string): void {
+    if (this.errors[field]) {
+      delete this.errors[field];
+    }
+  }
+
+
+  clearItemError(itemIndex: number, field: string): void {
+    if (this.itemErrors[itemIndex] && this.itemErrors[itemIndex][field]) {
+      delete this.itemErrors[itemIndex][field];
+      if (Object.keys(this.itemErrors[itemIndex]).length === 0) {
+        delete this.itemErrors[itemIndex];
+      }
+    }
+  }
+
+
+  onDepartmentChange(): void {
+    this.clearError('department');
+    if (this.isSubmitted) {
+      if (this.selectedDepartment && this.selectedDepartment !== '' && this.selectedDepartment !== null) {
+        this.clearError('department');
+      } else {
+        this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
+      }
+    }
+  }
+
+  
+  onYearChange(): void { 
+    if (this.isSubmitted) {
+      if (!this.selectedYear || !this.selectedYear.trim()) {
+        this.errors['year'] = this.translateService.instant('allowance.errors.yearRequired');
+      } else {
+        const year = parseInt(this.selectedYear.trim(), 10);
+        if (isNaN(year) || year < 1900 || year > 5000) {
+          this.errors['year'] = this.translateService.instant('allowance.errors.yearInvalid');
+        } else {
+          this.clearError('year');
+        }
+      }
+    } else {
+
+      this.clearError('year');
+    }
+  }
+
+ 
+  onQuantityChange(itemIndex: number): void {
+    this.clearItemError(itemIndex, 'quantity');
+  
+    if (this.isSubmitted && this.items[itemIndex]) {
+      const quantity = this.items[itemIndex].quantity;
+      if (!quantity || quantity.trim() === '') {
+        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
+        this.itemErrors[itemIndex]['quantity'] = this.translateService.instant('allowance.errors.quantityRequired');
+      } else if (!/^\d+$/.test(quantity.trim())) {
+        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
+        this.itemErrors[itemIndex]['quantity'] = this.translateService.instant('allowance.errors.quantityInvalid');
+      } else {
+        this.clearItemError(itemIndex, 'quantity');
+      }
+    }
+  }
+
+  
+  onItemSelectionChange(itemIndex: number): void {
+    this.clearItemError(itemIndex, 'itemId');
+
+    if (this.isSubmitted && this.items[itemIndex]) {
+      const item = this.items[itemIndex];
+      if (!item.itemId || item.itemId.trim() === '') {
+        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
+        this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
+      } else if (!item.selectedAmmunition) {
+        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
+        this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
+      } else {
+        this.clearItemError(itemIndex, 'itemId');
+      }
+    }
   }
 }
 

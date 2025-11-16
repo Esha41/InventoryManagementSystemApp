@@ -24,6 +24,7 @@
     "view": "عرض",
     "showing": "عرض",
     "of": "من",
+    "page": "صفحة",
     "actions": "إجراءات",
     "remove": "إزالة",
     "update": "تحديث",
@@ -589,7 +590,12 @@
     "higherApprovalRole": "دور الموافقة الأعلى",
     "required": "مطلوب",
     "selectHigherApprovalRole": "اختر دور الموافقة الأعلى",
-    "higherApprovalEntity": "كيان الموافقة الأعلى"
+    "higherApprovalEntity": "كيان الموافقة الأعلى",
+    "deleteConfirmation": {
+      "title": "حذف سير العمل",
+      "message": "هل أنت متأكد أنك تريد حذف سير العمل هذا؟",
+      "workflow": "سير العمل"
+    }
   },
   "supplyRequestDetail": {
     "title": "طلب الإمداد",
@@ -771,7 +777,13 @@
     "depotUpdated": "تم تحديث المستودع بنجاح",
     "depotDeleted": "تم حذف المستودع بنجاح",
     "failedToSaveDepot": "فشل حفظ المستودع",
-    "failedToDeleteDepot": "فشل حذف المستودع"
+    "failedToDeleteDepot": "فشل حذف المستودع",
+    "workflowUpdated": "تم تحديث سير العمل بنجاح",
+    "workflowDeleted": "تم حذف سير العمل بنجاح",
+    "workflowCreated": "تم إنشاء سير العمل بنجاح",
+    "failedToUpdateWorkflow": "فشل تحديث سير العمل",
+    "failedToDeleteWorkflow": "فشل حذف سير العمل",
+    "failedToCreateWorkflow": "فشل إنشاء سير العمل"
   },
   "editInventoryDetail": {
     "title": "تعديل عنصر المخزون",
@@ -1041,7 +1053,11 @@
     "deleteConfirmTitle": "حذف البدل",
     "deleteConfirmMessage": "هل أنت متأكد أنك تريد حذف هذا البدل؟ لا يمكن التراجع عن هذا الإجراء.",
     "deletedSuccessfully": "تم حذف البدل بنجاح",
+    "itemDeletedSuccessfully": "تم حذف عنصر البدل بنجاح",
     "failedToDelete": "فشل حذف البدل",
+    "failedToDeleteItem": "فشل حذف عنصر البدل",
+    "alreadyDeleted": "تم الحذف مسبقاً",
+    "failedToLoadForDeletion": "فشل تحميل العناصر للحذف",
     "errors": {
       "departmentRequired": "القسم مطلوب",
       "dateRequired": "التاريخ مطلوب",
@@ -1056,6 +1072,35 @@
     },
     "success": {
       "sentSuccessfully": "تم إرسال طلب البدل بنجاح!"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "أدخل بيانات الاعتماد الخاصة بك للوصول إلى حسابك",
+      "username": "اسم المستخدم",
+      "password": "كلمة المرور",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "signIn": "تسجيل الدخول",
+      "signingIn": "جاري تسجيل الدخول...",
+      "passwordLogin": "تسجيل الدخول بكلمة المرور",
+      "ldapLogin": "تسجيل الدخول عبر LDAP",
+      "ldapPasswordNotRequired": "كلمة المرور غير مطلوبة لتسجيل الدخول عبر LDAP",
+      "errors": {
+        "loginFailed": "فشل تسجيل الدخول",
+        "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+        "invalidLogin": "فشل تسجيل الدخول",
+        "invalidLdapSettings": "المصادقة عبر LDAP غير متاحة. يرجى استخدام تسجيل الدخول بكلمة المرور.",
+        "serverError": "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى لاحقاً.",
+        "networkError": "تعذر الاتصال بالخادم. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
+        "unknownError": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+        "usernameRequired": "اسم المستخدم مطلوب",
+        "passwordRequired": "كلمة المرور مطلوبة",
+        "usernameMinLength": "يجب أن يكون اسم المستخدم 3 أحرف على الأقل",
+        "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+        "singleSession": "يمكن تسجيل دخول مستخدم واحد فقط في كل مرة"
+      }
     }
   }
 }

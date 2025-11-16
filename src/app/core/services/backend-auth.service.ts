@@ -64,12 +64,19 @@ export class BackendAuthService {
     try {
       const state = this.getInitialState();
       
-      if (state.isAuthenticated && state.user) {
+      
+      if (state.isAuthenticated && state.user && !this.isTokenExpired()) {
         this.currentUserSubject.next(state.user);
         this.isAuthenticatedSubject.next(true);
         this.authStateSubject.next(state);
         
         this.configService.log('User session restored', { userId: state.user.id });
+      } else {
+    
+        if (state.isAuthenticated && this.isTokenExpired()) {
+          this.configService.log('Token expired, clearing session');
+          this.clearAuthData();
+        }
       }
     } catch (error) {
       this.configService.logError('Failed to restore session', error);
@@ -425,6 +432,11 @@ export class BackendAuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
+    // Check if token is expired and clear auth if it is
+    if (this.isAuthenticatedSubject.value && this.isTokenExpired()) {
+      this.clearAuthData();
+      return false;
+    }
     return this.isAuthenticatedSubject.value;
   }
 

@@ -4,6 +4,23 @@ import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component'
 import { authGuard, permissionGuard } from '@guards/index';
 
 export const routes: Routes = [
+  // Auth routes - must be before protected routes
+  {
+    path: 'auth',
+    component: AuthLayoutComponent,
+    children: [
+      {
+        path: 'login',
+        loadComponent: () => import('@pages/auth/login/login.component').then(m => m.LoginComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      }
+    ]
+  },
+  // Protected routes with MainLayout
   {
     path: '',
     component: MainLayoutComponent,
@@ -182,24 +199,9 @@ export const routes: Routes = [
       }
     ]
   },
-  // Auth routes
-  {
-    path: 'auth',
-    component: AuthLayoutComponent,
-    children: [
-      {
-        path: 'login',
-        loadComponent: () => import('@pages/auth/login/login.component').then(m => m.LoginComponent)
-      },
-      {
-        path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
-      }
-    ]
-  },
+  // Fallback for unmatched routes - redirect to login
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: '/auth/login'
   }
 ];

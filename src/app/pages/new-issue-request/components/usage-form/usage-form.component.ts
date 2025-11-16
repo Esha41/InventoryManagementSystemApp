@@ -62,11 +62,27 @@ export class UsageFormComponent {
   formErrors: UsageFormErrors = { ...this.defaultErrors };
   hasAttemptedSubmit = false;
 
+  clearError(field: keyof UsageFormErrors): void {
+    if (this.formErrors[field]) {
+      this.formErrors[field] = null;
+    }
+  }
+
   onUsePurposeChange(value: number | null): void {
     this.selectedUsePurposeId = value;
     this.selectedUsePurposeIdChange.emit(value);
     const label = this.resolveUsePurposeLabel(value);
     this.usePurposeChange.emit(label);
+    
+    this.clearError('usePurpose');
+    
+    if (this.hasAttemptedSubmit) {
+      if (value === null || value === undefined) {
+        this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
+      } else {
+        this.clearError('usePurpose');
+      }
+    }
   }
 
   onAnnualDiscardSpecialOpsChange(value: string): void {
@@ -75,6 +91,16 @@ export class UsageFormComponent {
 
   onUsageLocationChange(value: string): void {
     this.usageLocationChange.emit(value);
+    
+    this.clearError('usageLocation');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.usageLocation = 'newIssueRequest.validation.usageLocationRequired';
+      } else {
+        this.clearError('usageLocation');
+      }
+    }
   }
 
   onNumberOfOfficersChange(value: number | null): void {
@@ -87,14 +113,44 @@ export class UsageFormComponent {
 
   onUsageDateChange(value: string): void {
     this.usageDateChange.emit(value);
+    
+    this.clearError('usageDate');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.usageDate = 'newIssueRequest.validation.usageDateRequired';
+      } else {
+        this.clearError('usageDate');
+      }
+    }
   }
 
   onUsageTimeChange(value: string): void {
     this.usageTimeChange.emit(value);
+    
+    this.clearError('usageTime');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.usageTime = 'newIssueRequest.validation.usageTimeRequired';
+      } else {
+        this.clearError('usageTime');
+      }
+    }
   }
 
   onOrderPriorityChange(value: string): void {
     this.orderPriorityChange.emit(value);
+    
+    this.clearError('orderPriority');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.orderPriority = 'newIssueRequest.validation.orderPriorityRequired';
+      } else {
+        this.clearError('orderPriority');
+      }
+    }
   }
 
   onRequesterCommentsChange(value: string): void {

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { StorageService } from '@services/storage.service';
 import { ConfigService } from '@services/config.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 /**
  * HTTP Interceptor for handling authentication
@@ -15,11 +16,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const storageService = inject(StorageService);
   const configService = inject(ConfigService);
   const router = inject(Router);
+  const backendAuth = inject(BackendAuthService);
 
-  // Get token from storage
+ 
   const token = storageService.get<string>('auth_token');
 
-  // Clone request and add authorization header if token exists
+
   let authReq = req;
   if (token) {
     authReq = req.clone({
@@ -45,9 +47,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // Handle 401 Unauthorized - redirect to login
       if (error.status === 401) {
         configService.logWarning('Unauthorized access - redirecting to login');
+        
+        const token = storageService.get<string>('auth_token');
+        const isSessionConflict = token && !backendAuth.isTokenExpired();
+        
         storageService.remove('auth_token');
         storageService.remove('current_user');
-        router.navigate(['/auth/login']);
+        
+        if (isSessionConflict) {
+          router.navigate(['/auth/login'], { queryParams: { sessionConflict: 'true' } });
+        } else {
+          router.navigate(['/auth/login']);
+        }
       }
 
       // Handle 403 Forbidden
