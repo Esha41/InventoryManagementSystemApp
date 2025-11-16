@@ -1030,6 +1030,7 @@
     "backToList": "Back to List",
     "department": "Department",
     "selectDepartment": "Select Department",
+    "selectItem": "Select Item",
     "date": "Date",
     "year": "Year",
     "yearPlaceholder": "e.g., 2024",
@@ -1048,6 +1049,7 @@
     "sending": "Sending...",
     "noAllowances": "No allowances found",
     "noAllowancesDescription": "Get started by creating a new allowance request",
+    "searchPlaceholder": "Search by department...",
     "table": {
       "department": "Department",
       "date": "Date",

@@ -1,16 +1,44 @@
 <div class="min-h-screen p-6 space-y-6">
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
-      <p class="text-[var(--color-text-muted)] mt-2">{{ 'allowance.subtitle' | translate }}</p>
+  <div>
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
+        <p class="text-[var(--color-text-muted)] mt-2">{{ 'allowance.subtitle' | translate }}</p>
+      </div>
     </div>
-    <app-button variant="primary" (click)="onAddAllowance()">
-      <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
-        <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-        <span>{{ 'allowance.addAllowance' | translate }}</span>
-      </span>
-    </app-button>
+    
+    <!-- Filters and Add Button -->
+    <div *ngIf="!loading && !error" class="flex items-center gap-4">
+      <div class="flex-1">
+        <app-dropdown
+          class="w-full"
+          [(ngModel)]="selectedDepartment"
+          (ngModelChange)="onDepartmentChange()"
+          [options]="departments"
+          optionValue="id"
+          [optionLabelFn]="departmentOptionLabel"
+          placeholder="{{ 'allowance.selectDepartment' | translate }}">
+        </app-dropdown>
+      </div>
+      <div class="flex-1">
+        <app-dropdown
+          class="w-full"
+          [(ngModel)]="selectedItem"
+          (ngModelChange)="onItemChange()"
+          [options]="filteredItems"
+          optionValue="id"
+          [optionLabelFn]="itemOptionLabel"
+          placeholder="{{ 'allowance.selectItem' | translate }}">
+        </app-dropdown>
+      </div>
+      <app-button variant="primary" (click)="onAddAllowance()">
+        <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+          <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+          <span>{{ 'allowance.addAllowance' | translate }}</span>
+        </span>
+      </app-button>
+    </div>
   </div>
 
   <!-- Loading State -->
@@ -104,7 +132,7 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="allAllowances.length === 0" class="text-center py-12">
+    <div *ngIf="filteredAllowances.length === 0" class="text-center py-12">
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
