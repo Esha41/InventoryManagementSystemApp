@@ -68,6 +68,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   ) {}
 
   // Step 1: Selection filters (populated from API)
+  itemTypeOptions: string[] = ['Ammunition', 'Explosives', 'Weapons'];
+  ammunitionTypeOptions: string[] = ['Small', 'Medium', 'Large']; // Display values: Small=1, Medium=2, Large=3
   bulletDiameters: string[] = [];
   caseLengths: string[] = [];
   linkedOptions: string[] = ['Linked', 'Not Linked'];
@@ -77,6 +79,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   selectedRequestPurposeId: number | null = null;
   loadingRequestPurposes = false;
 
+  selectedItemType = 'Ammunition';
+  selectedAmmunitionType = ''; // Will store 'Small', 'Medium', or 'Large', but filter by numeric ID (1, 2, 3)
   selectedBulletDiameter = '';
   selectedCaseLength = '';
   selectedLinked = '';
@@ -370,6 +374,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   filterCartridges(): void {
+    // Get numeric ID for ammunition type filter
+    const selectedAmmunitionTypeId = this.selectedAmmunitionType 
+      ? this.getAmmunitionTypeId(this.selectedAmmunitionType) 
+      : null;
+
     this.filteredCartridges = this.allCartridges.filter(cartridge => {
       const diameterLabel = cartridge.bulletDiameterLabel ?? '';
       const caseLabel = cartridge.caseLengthLabel ?? '';
@@ -381,6 +390,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       const byLinked = !this.selectedLinked || this.selectedLinked === linkedLabel;
       const byNature = !this.selectedNature || this.selectedNature === natureLabel;
       
+      // Ammunition type filter (search by numeric ID: 1=Small, 2=Medium, 3=Large)
+      const byAmmunitionType = !selectedAmmunitionTypeId || 
+        (cartridge.ammunitionType !== undefined && cartridge.ammunitionType === selectedAmmunitionTypeId);
+      
       // Search filter
       const searchLower = this.searchTerm.toLowerCase();
       const bySearch = !this.searchTerm || 
@@ -389,7 +402,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         (cartridge.productId?.toLowerCase().includes(searchLower)) ||
         (cartridge.ncn?.toLowerCase().includes(searchLower));
       
-      return byDiameter && byCase && byLinked && byNature && bySearch;
+      return byDiameter && byCase && byLinked && byNature && byAmmunitionType && bySearch;
     });
   }
 
@@ -453,10 +466,43 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   onClearFilters(): void {
+    this.selectedItemType = 'Ammunition';
+    this.selectedAmmunitionType = '';
     this.selectedBulletDiameter = '';
     this.selectedCaseLength = '';
     this.selectedLinked = '';
     this.selectedNature = '';
+    this.filterCartridges();
+  }
+
+  /**
+   * Map ammunition type display text to numeric ID
+   * Small = 1, Medium = 2, Large = 3
+   */
+  private getAmmunitionTypeId(displayText: string): number | null {
+    switch (displayText) {
+      case 'Small':
+        return 1;
+      case 'Medium':
+        return 2;
+      case 'Large':
+        return 3;
+      default:
+        return null;
+    }
+  }
+
+  onItemTypeChange(value: string): void {
+    this.selectedItemType = value;
+    // Clear ammunition type when item type changes
+    if (value !== 'Ammunition') {
+      this.selectedAmmunitionType = '';
+    }
+    this.filterCartridges();
+  }
+
+  onAmmunitionTypeChange(value: string): void {
+    this.selectedAmmunitionType = value;
     this.filterCartridges();
   }
 
@@ -889,7 +935,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       bulletDiameterLabel,
       caseLengthLabel,
       linkedLabel,
-      natureLabel
+      natureLabel,
+      ammunitionType: dto.ammunitionType ? Number(dto.ammunitionType) : undefined
     };
   }
 

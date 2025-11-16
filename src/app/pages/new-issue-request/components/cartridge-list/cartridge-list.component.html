@@ -119,6 +119,38 @@
         {{ 'newIssueRequest.clearFilters' | translate }}
       </app-button>
     </div>
+    <!-- Select Type -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'newIssueRequest.selectType' | translate }}
+      </label>
+      <app-dropdown
+        class="w-full"
+        [ngModel]="selectedItemType"
+        (ngModelChange)="onItemTypeChange($event)"
+        [options]="itemTypeOptions"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
+    </div>
+
+    <!-- Select Ammunition Type -->
+    <div *ngIf="selectedItemType === 'Ammunition'">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'newIssueRequest.selectAmmunitionType' | translate }}
+      </label>
+      <app-dropdown
+        class="w-full"
+        [ngModel]="selectedAmmunitionType"
+        (ngModelChange)="onAmmunitionTypeChange($event)"
+        [options]="ammunitionTypeOptions"
+        [placeholderSelectable]="true"
+        [placeholderValue]="''"
+        placeholder="{{ 'common.select' | translate }}">
+      </app-dropdown>
+    </div>
+
     <!-- Select Bullet Diameter -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
