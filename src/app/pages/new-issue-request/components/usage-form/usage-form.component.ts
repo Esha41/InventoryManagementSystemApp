@@ -38,7 +38,6 @@ export class UsageFormComponent {
     this.removeCartridge.emit(id);
   }
 
-  @Output() fromReserveChange = new EventEmitter<string>();
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
   @Output() annualDiscardSpecialOpsChange = new EventEmitter<string>();
@@ -62,10 +61,6 @@ export class UsageFormComponent {
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
   hasAttemptedSubmit = false;
-
-  onFromReserveChange(value: string): void {
-    this.fromReserveChange.emit(value);
-  }
 
   onUsePurposeChange(value: number | null): void {
     this.selectedUsePurposeId = value;

@@ -510,10 +510,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     }
   }
 
-  onFromReserveChange(value: string): void {
-    this.fromReserve = value;
-  }
-
   onUsePurposeIdChange(value: number | null): void {
     this.selectedRequestPurposeId = value;
     this.updateUsePurposeFromSelection(value);

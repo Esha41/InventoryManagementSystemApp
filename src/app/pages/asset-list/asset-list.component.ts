@@ -12,6 +12,8 @@ import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { forkJoin } from 'rxjs';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
 
 interface Asset {
   id: string;
@@ -41,7 +43,9 @@ interface Asset {
     ButtonComponent,
     LucideAngularModule,
     TranslateModule,
-    DropdownComponent
+    DropdownComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
@@ -169,6 +173,8 @@ export class AssetListComponent implements OnInit {
         }));
         this.currentPage = 1;
         this.loading = false;
+        // Validate current page after loading
+        this.validateCurrentPage();
       },
       error: (err) => {
         console.error('Failed to load ammunitions:', err);
@@ -215,9 +221,21 @@ export class AssetListComponent implements OnInit {
     return Math.ceil(totalItems / this.rowsPerPage);
   }
 
-  get pageNumbers(): number[] {
-    const total = this.totalPages;
-    return Array.from({ length: total }, (_, i) => i + 1);
+  get paginatedAssets(): Asset[] {
+    // Ensure currentPage is valid before slicing
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredAssets.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
   }
 
   get hccFilterOptions(): Array<{ label: string; value: string }> {
@@ -234,12 +252,6 @@ export class AssetListComponent implements OnInit {
 
   get compatibilityFilterOptions(): Array<{ label: string; value: string }> {
     return this.mapToFilterOptions(this.compatibilityList);
-  }
-
-  get paginatedAssets(): Asset[] {
-    const filtered = this.filteredAssets;
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return filtered.slice(startIndex, startIndex + this.rowsPerPage);
   }
 
   get filteredAssets(): Asset[] {
@@ -265,14 +277,24 @@ export class AssetListComponent implements OnInit {
   }
 
   onPageChange(page: number): void {
-    if (page < 1 || page > this.totalPages) {
+    const maxPages = this.totalPages;
+    if (page < 1 || page > maxPages || maxPages === 0) {
       return;
     }
     this.currentPage = page;
   }
 
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+    // Validate after changing rows per page
+    this.validateCurrentPage();
+  }
+
   onFilterChange(): void {
     this.currentPage = 1;
+    // Validate after search/filter in case filtered results have fewer pages
+    this.validateCurrentPage();
   }
 
   sortByColumn(column: string): void {
@@ -285,6 +307,8 @@ export class AssetListComponent implements OnInit {
       this.sortDirection = 'asc';
     }
     this.currentPage = 1;
+    // Validate after sorting
+    this.validateCurrentPage();
   }
 
   private sortAssets(assets: Asset[]): Asset[] {

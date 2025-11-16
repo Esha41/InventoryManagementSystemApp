@@ -1,34 +1,43 @@
-<div class="pagination-container">
+<div *ngIf="shouldDisplay" class="pagination-container">
   <!-- Previous Button -->
   <button
+    type="button"
     (click)="onPrevious()"
-    [disabled]="currentPage === 1"
+    [disabled]="isPreviousDisabled"
     class="pagination-nav-btn"
-    [class.pagination-nav-btn-disabled]="currentPage === 1">
-    <lucide-angular [img]="previousIcon" class="h-4 w-4"></lucide-angular>
+    [class.pagination-nav-btn-disabled]="isPreviousDisabled"
+    [attr.aria-label]="'common.previous' | translate"
+    [attr.aria-disabled]="isPreviousDisabled">
+    <lucide-angular [img]="previousIcon" class="h-3.5 w-3.5"></lucide-angular>
   </button>
 
   <!-- Page Numbers -->
   <ng-container *ngFor="let page of displayPages">
     <button
       *ngIf="page !== 'ellipsis'"
-      (click)="onPageClick($any(page))"
+      type="button"
+      (click)="onPageClick(page)"
       class="pagination-page-btn"
-      [class.pagination-page-active]="page === currentPage"
-      [class.pagination-page-inactive]="page !== currentPage">
+      [class.pagination-page-active]="page === validatedCurrentPage"
+      [class.pagination-page-inactive]="page !== validatedCurrentPage"
+      [attr.aria-label]="'Page ' + page"
+      [attr.aria-current]="page === validatedCurrentPage ? 'page' : null">
       {{ page }}
     </button>
-    <span *ngIf="page === 'ellipsis'" class="pagination-ellipsis">
+    <span *ngIf="page === 'ellipsis'" class="pagination-ellipsis" aria-hidden="true">
       ...
     </span>
   </ng-container>
 
   <!-- Next Button -->
   <button
+    type="button"
     (click)="onNext()"
-    [disabled]="currentPage === totalPages"
+    [disabled]="isNextDisabled"
     class="pagination-nav-btn"
-    [class.pagination-nav-btn-disabled]="currentPage === totalPages">
-    <lucide-angular [img]="nextIcon" class="h-4 w-4"></lucide-angular>
+    [class.pagination-nav-btn-disabled]="isNextDisabled"
+    [attr.aria-label]="'common.next' | translate"
+    [attr.aria-disabled]="isNextDisabled">
+    <lucide-angular [img]="nextIcon" class="h-3.5 w-3.5"></lucide-angular>
   </button>
 </div>

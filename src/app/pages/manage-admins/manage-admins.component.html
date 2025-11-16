@@ -191,7 +191,12 @@
       <div *ngIf="isLoading" class="text-center py-12">
         <p class="text-[var(--color-text-muted)]">{{ 'manageAdmins.loadingUsers' | translate }}</p>
       </div>
-      <div *ngIf="filteredUsers.length > 0" class="px-6 py-4 border-t border-[var(--color-border)] bg-white flex items-center justify-between">
+    </div>
+
+    <!-- Pagination Footer - Outside table overflow container -->
+    <div *ngIf="filteredUsers.length > 0 && !isLoading" class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
+      <div class="flex items-center justify-between w-full flex-nowrap">
+        <!-- Rows Per Page Selector -->
         <app-rows-per-page
           [rowsPerPage]="rowsPerPage"
           [totalItems]="filteredUsers.length"
@@ -199,11 +204,17 @@
           (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 
-        <app-pagination
-          [currentPage]="currentPage"
-          [totalPages]="totalPages"
-          (pageChange)="onPageChange($event)">
-        </app-pagination>
+        <!-- Pagination Controls -->
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+          <app-pagination
+            [currentPage]="currentPage"
+            [totalPages]="totalPages"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
       </div>
     </div>
   </app-card>
