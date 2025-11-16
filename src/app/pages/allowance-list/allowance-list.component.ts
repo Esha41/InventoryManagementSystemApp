@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LucideAngularModule, Plus, Edit2, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Search } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -67,6 +68,7 @@ export interface AllowanceTableRow {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     TranslateModule,
     LucideAngularModule,
@@ -82,11 +84,14 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
+  readonly Search = Search;
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
+  filteredAllowances: AllowanceTableRow[] = []; // Filtered allowances
   loading = true;
   error: string | null = null;
+  searchTerm: string = ''; // Department search term
 
   // Pagination
   currentPage = 1;
@@ -214,16 +219,36 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return (a.itemName || a.itemNo || '').localeCompare(b.itemName || b.itemNo || '');
     });
 
-    this.updatePagination();
+    this.applyFilters();
     this.loading = false;
   }
 
+  applyFilters(): void {
+    let filtered = [...this.allAllowances];
+
+    // Filter by department search term
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(allowance =>
+        allowance.departmentName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredAllowances = filtered;
+    this.updatePagination();
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1; // Reset to first page when searching
+    this.applyFilters();
+  }
+
   updatePagination(): void {
-    this.totalItems = this.allAllowances.length;
+    this.totalItems = this.filteredAllowances.length;
     const totalPages = Math.ceil(this.totalItems / this.rowsPerPage);
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     const endIndex = startIndex + this.rowsPerPage;
-    this.allowances = this.allAllowances.slice(startIndex, endIndex);
+    this.allowances = this.filteredAllowances.slice(startIndex, endIndex);
   }
 
   onPageChange(page: number): void {

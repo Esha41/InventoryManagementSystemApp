@@ -1034,6 +1034,7 @@
     "sending": "Sending...",
     "noAllowances": "No allowances found",
     "noAllowancesDescription": "Get started by creating a new allowance request",
+    "searchPlaceholder": "Search by department...",
     "table": {
       "department": "Department",
       "date": "Date",

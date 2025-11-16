@@ -1028,6 +1028,7 @@
     "sending": "جاري الإرسال...",
     "noAllowances": "لم يتم العثور على بدلات",
     "noAllowancesDescription": "ابدأ بإنشاء طلب بدل جديد",
+    "searchPlaceholder": "البحث حسب القسم...",
     "table": {
       "department": "القسم",
       "date": "التاريخ",
