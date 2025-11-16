@@ -226,6 +226,8 @@
     "ncn": "NCN",
     "primaryPurpose": "Primary Purpose",
     "sendRequest": "Send Request",
+    "selectType": "Select Type",
+    "selectAmmunitionType": "Select Ammunition Type",
     "selectBulletDiameter": "Select Bullet Diameter",
     "selectCaseLength": "Select Case Length",
     "linkedNotLinked": "Linked/Not Linked",

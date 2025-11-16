@@ -215,6 +215,8 @@
     "primaryPurpose": "الغرض الأساسي",
     "sendRequest": "إرسال الطلب",
     "cartidgeList": "قائمة الخراطيش",
+    "selectType": "اختر النوع",
+    "selectAmmunitionType": "اختر نوع الذخيرة",
     "selectBulletDiameter": "اختر قطر الرصاصة",
     "selectCaseLength": "اختر طول الغلاف",
     "linkedNotLinked": "مرتبط / غير مرتبط",
