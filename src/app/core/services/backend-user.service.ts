@@ -57,10 +57,55 @@ export class BackendUserService {
         }
         // Normalize militoryId to militaryId for all users
         const users = response.data || [];
-        return users.map(user => {
-          if ((user as any).militoryId && !user.militaryId) {
-            user.militaryId = (user as any).militoryId;
+        return users.map(rawUser => {
+          const user = { ...rawUser } as BackendUserDto;
+
+          if ((rawUser as any).militoryId && !user.militaryId) {
+            user.militaryId = (rawUser as any).militoryId;
           }
+
+          const rawRoles = Array.isArray((rawUser as any).roles) ? (rawUser as any).roles : [];
+          if (rawRoles.length > 0) {
+            const mappedRoles: RoleDto[] = rawRoles.map((role: any) => ({
+              id: String(role.id ?? role.roleId ?? ''),
+              name: role.name ?? role.roleName ?? '',
+              isDefaultRole: !!(role.isDefaultRole ?? role.isDefault),
+              isSuperAdmin: !!(role.isSuperAdmin ?? role.superAdmin),
+              applicationEntityIds: Array.isArray(role.applicationEntityIds)
+                ? role.applicationEntityIds
+                : undefined
+            }));
+            user.roles = mappedRoles;
+            const roleIdsFromRoles = mappedRoles
+              .map(role => role.id)
+              .filter((id): id is string => !!id);
+            user.roleIds = roleIdsFromRoles.length > 0 ? roleIdsFromRoles : (Array.isArray(user.roleIds) ? user.roleIds : []);
+          } else {
+            user.roles = [];
+            user.roleIds = Array.isArray(user.roleIds) ? user.roleIds : [];
+          }
+
+          const department = (rawUser as any).department;
+          if (department) {
+            user.departmentId = department.id ?? user.departmentId;
+            user.departmentName = department.nameEn ?? department.nameAr ?? user.departmentName;
+          }
+
+          const rank = (rawUser as any).rank;
+          if (rank) {
+            user.rankId = rank.id ?? user.rankId;
+            user.rankNameEn = rank.nameEn ?? rank.name ?? user.rankNameEn;
+            user.rankNameAr = rank.nameAr ?? user.rankNameAr;
+          }
+
+          // Normalize full names if provided separately
+          if (!user.nameEn) {
+            user.nameEn = (rawUser as any).fullNameEN ?? user.nameEn;
+          }
+          if (!user.nameAr) {
+            user.nameAr = (rawUser as any).fullNameAR ?? user.nameAr;
+          }
+
           return user;
         });
       }),

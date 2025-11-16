@@ -138,8 +138,8 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
         this.users = users;
         this.currentPage = 1;
         this.isLoading = false;
-        // Load roles for each user
-        users.forEach(user => this.loadUserRolesData(user.id));
+        this.userRolesMap.clear();
+        users.forEach(user => this.cacheUserRoles(user));
       },
       error: (error) => {
         this.isLoading = false;
@@ -160,21 +160,57 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     });
   }
 
- // Returns an array of role names for a given user ID
-getUserRoles(userId: string): string[] {
-  const user = this.filteredUsers.find(u => u.id === userId);
-  if (!user || !user.roleIds) return [];
+  private cacheUserRoles(user: BackendUserDto): void {
+    const roleNames = this.extractRoleNames(user);
+    this.userRolesMap.set(user.id, roleNames);
+    if (roleNames.length === 0 && user.roleIds && user.roleIds.length > 0 && (!user.roles || user.roles.length === 0)) {
+      this.loadUserRolesData(user.id);
+    }
+  }
 
-  // Map roleIds to role names
-  return user.roleIds
-    .map(roleId => this.roles.find(r => r.id === roleId)?.name)
-    .filter(Boolean) as string[]; // remove undefined
-}
+  private extractRoleNames(user: BackendUserDto): string[] {
+    if (user.roles && user.roles.length > 0) {
+      return user.roles
+        .map(role => role.name)
+        .filter((name): name is string => !!name && name.trim().length > 0);
+    }
+
+    if (user.roleIds && user.roleIds.length > 0) {
+      return user.roleIds
+        .map(roleId => this.roles.find(r => r.id === roleId)?.name)
+        .filter((name): name is string => !!name && name.trim().length > 0);
+    }
+
+    return [];
+  }
+
+  // Returns an array of role names for a given user ID
+  getUserRoles(userId: string): string[] {
+    const cachedRoles = this.userRolesMap.get(userId);
+    if (cachedRoles !== undefined) {
+      return cachedRoles;
+    }
+
+    const user = this.users.find(u => u.id === userId);
+    if (!user) {
+      return [];
+    }
+
+    const roleNames = this.extractRoleNames(user);
+    this.userRolesMap.set(user.id, roleNames);
+    return roleNames;
+  }
 
   loadRoles(): void {
     this.backendUserService.getRoles().subscribe({
       next: (roles) => {
         this.roles = roles;
+        // Recalculate role name cache for users that rely on role IDs
+        this.users.forEach(user => {
+          if (!user.roles || user.roles.length === 0) {
+            this.userRolesMap.set(user.id, this.extractRoleNames(user));
+          }
+        });
       },
       error: (error) => {
         this.errorMessage = 'Failed to load roles: ' + (error.message || 'Unknown error');
@@ -321,6 +357,10 @@ getUserRoles(userId: string): string[] {
   }
 
   getRankName(user: BackendUserDto): string {
+    if (user.rankNameEn || user.rankNameAr) {
+      return user.rankNameEn || user.rankNameAr || '-';
+    }
+
     if (!user.rankId) return '-';
     const rank = this.ranks.find(r => r.id === user.rankId);
     if (!rank) return '-';

@@ -20,8 +20,11 @@ export interface BackendUserDto {
   nameEn?: string;
   nameAr?: string;
   rankId?: number;
+  rankNameEn?: string;
+  rankNameAr?: string;
   militaryId?: string; // Frontend field name
   militoryId?: string; // Backend API field name (typo in API)
+  roles?: RoleDto[];
   roleIds: string[];
 }
 
