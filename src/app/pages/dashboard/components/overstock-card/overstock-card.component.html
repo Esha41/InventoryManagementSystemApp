@@ -1,0 +1,45 @@
+<div class="rounded-lg p-4 bg-white shadow-sm border border-[var(--color-border)]">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ title }}</h3>
+  </div>
+
+  <div *ngIf="items && items.length > 0; else emptyState" class="space-y-6">
+    <div *ngFor="let it of visibleItems" class="flex items-center gap-4">
+      <div class="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
+        <img *ngIf="it.imageUrl" [src]="it.imageUrl" alt="" class="w-10 h-10 object-contain" />
+        <div *ngIf="!it.imageUrl" class="w-10 h-10"></div>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between text-sm font-medium text-[var(--color-text)]">
+          <div>
+            <span>{{ it.name }}</span>
+            <span class="mx-2 text-[var(--color-text-muted)]">-</span>
+            <span>Lot {{ it.lot }}</span>
+          </div>
+          <div class="text-[var(--color-text-muted)]">
+            {{ it.expiryDate || '' }}
+          </div>
+        </div>
+        <div class="mt-2 h-3 w-full rounded-full bg-pink-100 overflow-hidden">
+          <div class="h-full rounded-full"
+               [ngStyle]="{ width: (it.percentage || 0) + '%', background: 'linear-gradient(90deg,#FFB703 0%, #FB7185 100%)' }">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="text-sm text-[var(--color-text-muted)] py-2">
+      {{ 'dashboard.noItems' | translate }}
+    </div>
+  </ng-template>
+
+  <div class="mt-4 text-center">
+    <button (click)="toggle()" class="text-[var(--color-brand)] font-medium">
+      {{ isExpanded ? 'Collapse' : 'Expand' }}
+    </button>
+  </div>
+</div>
+
+

@@ -75,6 +75,11 @@ export interface OrderDto {
   requestItems?: OrderRequestItemDto[];
 }
 
+export interface OrderStatusSummaryItem {
+  status: number;
+  count?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   constructor(
@@ -123,6 +128,26 @@ export class OrderService {
       }),
       catchError(error => {
         this.config.logError(`Failed to fetch order ${id}`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Returns a lightweight summary of orders by status for the current user scope.
+   * Backend endpoint: GET {baseUrl}/summary
+   */
+  getOrderSummary(): Observable<OrderStatusSummaryItem[]> {
+    this.config.log('Fetching order summary');
+    return this.http.get<APIOperationResponse<OrderStatusSummaryItem[]>>(`${this.baseUrl}/summary`).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to fetch order summary');
+        }
+        return response.data ?? [];
+      }),
+      catchError(error => {
+        this.config.logError('Failed to fetch order summary', error);
         return throwError(() => error);
       })
     );

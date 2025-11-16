@@ -9,6 +9,8 @@ export interface OrderItem {
   departmentName?: string;
   requesterName?: string;
   items?: ReturnItem[];
+  /** Numeric backend id for opening details */
+  requestId?: number;
 }
 
 export interface ReturnItem {
@@ -44,15 +46,41 @@ export class StatusCardComponent {
   onViewDetails(): void {
     if (this.orderRequestId) {
       this.viewOrderDetails.emit(this.orderRequestId);
-    } else if (this.returnRequestId) {
+      return;
+    }
+
+    const firstOrderId = this.orders?.[0]?.requestId;
+    if (firstOrderId != null) {
+      this.viewOrderDetails.emit(firstOrderId);
+      return;
+    }
+
+    if (this.returnRequestId) {
       this.viewDetails.emit(this.returnRequestId);
-    } else if (this.discardRequestId) {
+      return;
+    }
+
+    if (this.discardRequestId) {
       this.viewDiscardDetails.emit(this.discardRequestId);
+      return;
     }
   }
 
+  emitOrderDetails(orderRequestId?: number | null): void {
+    if (orderRequestId != null) {
+      this.viewOrderDetails.emit(orderRequestId);
+      return;
+    }
+    this.onViewDetails();
+  }
+
   hasDetailsButton(): boolean {
-    return !!(this.orderRequestId || this.returnRequestId || this.discardRequestId);
+    return !!(
+      this.orderRequestId ||
+      this.returnRequestId ||
+      this.discardRequestId ||
+      (this.orders && this.orders.length > 0 && this.orders[0]?.requestId != null)
+    );
   }
 
   getStatusColor(): string {

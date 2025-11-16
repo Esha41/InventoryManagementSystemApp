@@ -21,6 +21,12 @@ export const routes: Routes = [
         data: { permissions: ['dashboard_view'] }
       },
       {
+        path: 'inventory-dashboard',
+        loadComponent: () => import('@pages/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['dashboard_view'] }
+      },
+      {
         path: 'supply-request-management',
         loadComponent: () => import('@pages/supply-request-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
         canActivate: [permissionGuard],
