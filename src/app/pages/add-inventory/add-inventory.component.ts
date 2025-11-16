@@ -180,6 +180,46 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  validateLotNumber(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = parseFloat(input.value);
+ 
+    if (!isNaN(value) && value >= 1) {
+    
+      const intValue = Math.floor(value);
+      if (intValue !== value) {
+        this.items[index].lot = intValue;
+        input.value = intValue.toString();
+      }
+    }
+  }
+
+  validateQuantity(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = parseFloat(input.value);
+    
+    // Only validate and ensure integer, don't auto-correct unless clearly invalid
+    if (!isNaN(value) && value >= 1) {
+ 
+      const intValue = Math.floor(value);
+      if (intValue !== value) {
+        this.items[index].itemQuantity = intValue;
+        input.value = intValue.toString();
+      }
+    }
+    
+  }
+
+  isLotInvalid(index: number): boolean {
+    const item = this.items[index];
+    return item.lot !== null && item.lot !== undefined && (isNaN(item.lot) || item.lot < 1);
+  }
+
+  isQuantityInvalid(index: number): boolean {
+    const item = this.items[index];
+    return item.itemQuantity !== null && item.itemQuantity !== undefined && (isNaN(item.itemQuantity) || item.itemQuantity < 1);
+  }
+
   onSubmit(): void {
     // Validate form
     if (!this.invoiceNumber.trim()) {

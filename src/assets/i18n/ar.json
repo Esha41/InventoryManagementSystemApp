@@ -878,6 +878,8 @@
     "enterInvoiceNumber": "أدخل رقم الفاتورة",
     "enterLotNumber": "رقم الدفعة",
     "enterQuantity": "أدخل الكمية",
+    "lotNumberMustBeGreaterThanZero": "يجب أن يكون رقم الدفعة أكبر من 0",
+    "quantityMustBeGreaterThanZero": "يجب أن تكون الكمية أكبر من 0",
     "notesPlaceholder": "أضف أي ملاحظات إضافية...",
     "successMessage": "تم إنشاء المخزون بنجاح!",
     "backToInventory": "العودة إلى المخزون"

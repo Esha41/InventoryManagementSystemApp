@@ -360,6 +360,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         const step = parseInt(stepParam, 10);
         if (!isNaN(step) && step >= 0 && step < this.steps.length) {
           this.currentStep = step;
+          
+          // Restore fromReserve from query params if available
+          if (params['fromReserve'] !== undefined) {
+            this.fromReserve = params['fromReserve'];
+          }
+          
+          // If we're on step 1 or later, we need to load cartridges
+          // (step 0 is allowance selection, step 1 is cartridge selection)
+          if (step >= 1 && this.allCartridges.length === 0 && !this.loadingCartridges) {
+            this.loadCartridges();
+          }
         }
       }
     });
@@ -368,7 +379,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private updateQueryParams(step: number): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { step: step },
+      queryParams: { 
+        step: step,
+        fromReserve: this.fromReserve 
+      },
       queryParamsHandling: 'merge'
     });
   }
@@ -475,10 +489,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.filterCartridges();
   }
 
-  /**
-   * Map ammunition type display text to numeric ID
-   * Small = 1, Medium = 2, Large = 3
-   */
+
   private getAmmunitionTypeId(displayText: string): number | null {
     switch (displayText) {
       case 'Small':
@@ -494,7 +505,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   onItemTypeChange(value: string): void {
     this.selectedItemType = value;
-    // Clear ammunition type when item type changes
+  
     if (value !== 'Ammunition') {
       this.selectedAmmunitionType = '';
     }
@@ -511,11 +522,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.updateQueryParams(step);
   }
 
+  onFromReserveChange(value: string): void {
+    this.fromReserve = value;
+  
+    this.updateQueryParams(this.currentStep);
+  }
+
   onConfirmAllowanceSelection(): void {
     this.steps[0].completed = true;
     this.currentStep = 1;
     this.updateQueryParams(1);
-    // Load cartridges based on selection
+
     this.loadCartridges();
   }
 

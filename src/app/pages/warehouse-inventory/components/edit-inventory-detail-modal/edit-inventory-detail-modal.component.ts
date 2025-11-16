@@ -64,7 +64,6 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     this.detailForm = this.fb.group({
       lot: [this.inventoryDetail?.lot || 1, [Validators.required, Validators.min(1)]],
       itemQuantity: [this.inventoryDetail?.itemQuantity || 1000, [Validators.required, Validators.min(1)]],
-      currentQuantity: [this.inventoryDetail?.currentQuantity || 1000, [Validators.required, Validators.min(0)]],
       supplierId: [this.inventoryDetail?.supplierId || null],
       manufacturerId: [this.inventoryDetail?.manufacturerId || null],
       countryId: [this.inventoryDetail?.countryId || null]
@@ -76,7 +75,6 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       this.detailForm.patchValue({
         lot: this.inventoryDetail.lot,
         itemQuantity: this.inventoryDetail.itemQuantity,
-        currentQuantity: this.inventoryDetail.currentQuantity,
         supplierId: this.inventoryDetail.supplierId || null,
         manufacturerId: this.inventoryDetail.manufacturerId || null,
         countryId: this.inventoryDetail.countryId || null
@@ -112,17 +110,6 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Validate current quantity doesn't exceed item quantity
-    const itemQuantity = this.detailForm.value.itemQuantity;
-    const currentQuantity = this.detailForm.value.currentQuantity;
-    
-    if (currentQuantity > itemQuantity) {
-      this.translateService.get('editInventoryDetail.quantityExceeded').subscribe(msg => {
-        this.errorMessage = msg;
-      });
-      return;
-    }
-
     const updateDto: UpdateInventoryDetailDto = {
       id: this.inventoryDetail?.id,
       itemId: this.inventoryDetail!.itemId,
@@ -130,8 +117,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       supplierId: this.detailForm.value.supplierId || undefined,
       manufacturerId: this.detailForm.value.manufacturerId || undefined,
       countryId: this.detailForm.value.countryId || undefined,
-      itemQuantity: this.detailForm.value.itemQuantity,
-      currentQuantity: this.detailForm.value.currentQuantity
+      itemQuantity: this.detailForm.value.itemQuantity
     };
 
     this.saved.emit(updateDto);
