@@ -8,11 +8,13 @@ import { catchError } from 'rxjs/operators';
 import { LucideAngularModule, Plus, Edit2, Trash2, Search } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
+import { LookupItem } from '@models/lookup.model';
 import { AmmunitionService } from '@services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { ButtonComponent } from '@components/button/button.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -73,6 +75,7 @@ export interface AllowanceTableRow {
     TranslateModule,
     LucideAngularModule,
     ButtonComponent,
+    DropdownComponent,
     ConfirmDialogComponent,
     RowsPerPageComponent,
     PaginationComponent
@@ -91,7 +94,22 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   filteredAllowances: AllowanceTableRow[] = []; // Filtered allowances
   loading = true;
   error: string | null = null;
-  searchTerm: string = ''; // Department search term
+  
+  // Filter dropdowns
+  departments: LookupItem[] = [];
+  selectedDepartment: number | string | null = null;
+  allItems: AmmunitionReadDto[] = []; // All items from API
+  filteredItems: AmmunitionReadDto[] = []; // Items filtered by selected department
+  selectedItem: number | string | null = null;
+  
+  // Dropdown label functions
+  readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
+    const item = this.unwrapOption(option);
+    if (!item) return '';
+    return item.name || item.itemNo || `Item ${item.id}`;
+  };
 
   // Pagination
   currentPage = 1;
@@ -156,6 +174,15 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   private processAllowanceData(items: AllowanceItemDto[], departments: DepartmentDto[], ammunitionItems: AmmunitionReadDto[]): void {
+    // Store departments and items for dropdowns
+    this.departments = departments.map(dept => ({
+      id: dept.id,
+      nameEn: dept.nameEn,
+      nameAr: dept.nameAr,
+      code: dept.code
+    } as LookupItem));
+    this.allItems = ammunitionItems || [];
+    this.filteredItems = [...this.allItems]; // Initially show all items
 
     const departmentMap = new Map<number, string>();
     departments.forEach(dept => {
@@ -219,28 +246,70 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return (a.itemName || a.itemNo || '').localeCompare(b.itemName || b.itemNo || '');
     });
 
+    // Update filtered items after allAllowances is set
+    this.updateFilteredItems();
     this.applyFilters();
     this.loading = false;
+  }
+
+  unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (option === null || option === undefined) return null;
+    if (typeof option === 'object' && 'value' in option) {
+      return (option as DropdownOption<T>).value;
+    }
+    return option as T;
+  }
+
+  getLocalizedName(item: LookupItem | null): string {
+    if (!item) return '';
+    const currentLang = this.translateService.currentLang || 'en';
+    if (currentLang === 'ar' && item.nameAr) {
+      return item.nameAr;
+    }
+    return item.nameEn || item.nameAr || '';
+  }
+
+  onDepartmentChange(): void {
+    this.selectedItem = null; // Clear item selection when department changes
+    this.updateFilteredItems();
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  updateFilteredItems(): void {
+    // Always show all items in the dropdown
+    // Filtering by department/item happens in applyFilters()
+    this.filteredItems = [...this.allItems];
+  }
+
+  onItemChange(): void {
+    this.currentPage = 1;
+    this.applyFilters();
   }
 
   applyFilters(): void {
     let filtered = [...this.allAllowances];
 
-    // Filter by department search term
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
-      const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(allowance =>
-        allowance.departmentName.toLowerCase().includes(searchLower)
-      );
+    // Filter by department
+    if (this.selectedDepartment !== null && this.selectedDepartment !== undefined && this.selectedDepartment !== '') {
+      filtered = filtered.filter(allowance => {
+        const allowanceDeptId = allowance.departmentId;
+        return allowanceDeptId !== undefined && allowanceDeptId !== null && 
+               (allowanceDeptId === Number(this.selectedDepartment) || String(allowanceDeptId) === String(this.selectedDepartment));
+      });
+    }
+
+    // Filter by item
+    if (this.selectedItem !== null && this.selectedItem !== undefined && this.selectedItem !== '') {
+      filtered = filtered.filter(allowance => {
+        const allowanceItemId = allowance.itemId;
+        return allowanceItemId !== undefined && allowanceItemId !== null && 
+               (allowanceItemId === Number(this.selectedItem) || String(allowanceItemId) === String(this.selectedItem));
+      });
     }
 
     this.filteredAllowances = filtered;
     this.updatePagination();
-  }
-
-  onSearchChange(): void {
-    this.currentPage = 1; // Reset to first page when searching
-    this.applyFilters();
   }
 
   updatePagination(): void {

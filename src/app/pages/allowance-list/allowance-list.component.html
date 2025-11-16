@@ -8,17 +8,29 @@
       </div>
     </div>
     
-    <!-- Search Bar and Add Button -->
+    <!-- Filters and Add Button -->
     <div *ngIf="!loading && !error" class="flex items-center gap-4">
-      <div class="flex-1 relative">
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearchChange()"
-          [placeholder]="'allowance.searchPlaceholder' | translate"
-          class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-white"
-        />
-        <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-angular>
+      <div class="flex-1">
+        <app-dropdown
+          class="w-full"
+          [(ngModel)]="selectedDepartment"
+          (ngModelChange)="onDepartmentChange()"
+          [options]="departments"
+          optionValue="id"
+          [optionLabelFn]="departmentOptionLabel"
+          placeholder="{{ 'allowance.selectDepartment' | translate }}">
+        </app-dropdown>
+      </div>
+      <div class="flex-1">
+        <app-dropdown
+          class="w-full"
+          [(ngModel)]="selectedItem"
+          (ngModelChange)="onItemChange()"
+          [options]="filteredItems"
+          optionValue="id"
+          [optionLabelFn]="itemOptionLabel"
+          placeholder="{{ 'allowance.selectItem' | translate }}">
+        </app-dropdown>
       </div>
       <app-button variant="primary" (click)="onAddAllowance()">
         <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
