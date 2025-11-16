@@ -185,8 +185,8 @@
                           <button
                             type="button"
                             (click)="onCategoryToggleAll(category, !isCategoryFullySelected(category)); $event.stopPropagation()"
-                            class="text-xs text-[var(--color-brand)] hover:underline font-medium">
-                            {{ isCategoryFullySelected(category) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
+                            class="text-sm font-bold text-[var(--color-brand)] hover:underline">
+                            {{ isCategoryFullySelected(category) ? 'DeselectAll' : 'SelectAll' }}
                           </button>
                         </div>
                       </div>
@@ -208,8 +208,17 @@
                             Entity / Permission
                           </th>
                           <th *ngFor="let permType of getUniquePermissionTypes(category)" 
-                              class="text-center py-3 px-4 font-semibold text-sm text-[var(--color-text)] border-b border-r last:border-r-0 border-[var(--color-border)] min-w-[100px]">
-                            {{ permType }}
+                              class="text-left py-3 px-4 font-semibold text-sm text-[var(--color-text)] border-b border-r last:border-r-0 border-[var(--color-border)] min-w-[100px]">
+                            <div class="flex items-center gap-3">
+                              <label class="inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  [checked]="isColumnFullySelected(category, permType)"
+                                  (change)="onColumnToggle(category, permType, $event)"
+                                  class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer" />
+                              </label>
+                              <span>{{ permType }}</span>
+                            </div>
                           </th>
                         </tr>
                       </thead>
@@ -218,7 +227,16 @@
                             [class.border-b]="!last"
                             class="border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
                           <td class="py-3 px-4 font-medium text-sm text-[var(--color-text)] border-r border-[var(--color-border)] sticky left-0 bg-white hover:bg-[var(--color-background-hover)]">
-                            {{ group.entityName }}
+                            <div class="flex items-center gap-3">
+                              <label class="inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  [checked]="isRowFullySelected(group)"
+                                  (change)="onRowToggle(group, $event)"
+                                  class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer" />
+                              </label>
+                              <span>{{ group.entityName }}</span>
+                            </div>
                           </td>
                           <td *ngFor="let permType of getUniquePermissionTypes(category); let lastCol = last" 
                               class="py-3 px-4 text-center border-r border-[var(--color-border)]"
