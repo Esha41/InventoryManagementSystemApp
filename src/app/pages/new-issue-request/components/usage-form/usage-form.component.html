@@ -47,45 +47,20 @@
       <div class="space-y-6">
         <!-- Order Priority -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">{{ 'newIssueRequest.fromReserve' | translate }}</label>
-          <div class="flex space-x-4">
-            <label class="flex items-center cursor-pointer">
-              <input 
-                type="radio" 
-                name="fromReserve" 
-                value="Yes" 
-                [ngModel]="fromReserve"
-                (ngModelChange)="onFromReserveChange($event)"
-                class="w-4 h-4 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
-              <span class="ml-2 text-sm text-[var(--color-text)]">{{ 'newIssueRequest.yes' | translate }}</span>
-            </label>
-            <label class="flex items-center cursor-pointer">
-              <input 
-                type="radio" 
-                name="fromReserve" 
-                value="No" 
-                [ngModel]="fromReserve"
-                (ngModelChange)="onFromReserveChange($event)"
-                class="w-4 h-4 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
-              <span class="ml-2 text-sm text-[var(--color-text)]">{{ 'newIssueRequest.no' | translate }}</span>
-            </label>
-          </div>
-          <div class="mt-4">
-            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' | translate }}</label>
-            <app-dropdown
-              class="w-full"
-              [ngModel]="orderPriority"
-              (ngModelChange)="onOrderPriorityChange($event)"
-              [options]="orderPriorities"
-              [placeholderSelectable]="true"
-              [placeholderValue]="''"
-              [error]="hasError('orderPriority')"
-              placeholder="{{ 'newIssueRequest.selectPriorityPlaceholder' | translate }}">
-            </app-dropdown>
-            <p *ngIf="hasError('orderPriority')" class="mt-1 text-xs text-red-600">
-              {{ formErrors.orderPriority | translate }}
-            </p>
-          </div>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' | translate }}</label>
+          <app-dropdown
+            class="w-full"
+            [ngModel]="orderPriority"
+            (ngModelChange)="onOrderPriorityChange($event)"
+            [options]="orderPriorities"
+            [placeholderSelectable]="true"
+            [placeholderValue]="''"
+            [error]="hasError('orderPriority')"
+            placeholder="{{ 'newIssueRequest.selectPriorityPlaceholder' | translate }}">
+          </app-dropdown>
+          <p *ngIf="hasError('orderPriority')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.orderPriority | translate }}
+          </p>
         </div>
 
         <!-- Use purpose -->

@@ -138,6 +138,8 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
         this.users = users;
         this.currentPage = 1;
         this.isLoading = false;
+        // Validate current page after loading
+        this.validateCurrentPage();
         this.userRolesMap.clear();
         users.forEach(user => this.cacheUserRoles(user));
       },
@@ -243,17 +245,29 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     });
   }
 
-  get paginatedUsers(): BackendUserDto[] {
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.filteredUsers.slice(startIndex, startIndex + this.rowsPerPage);
-  }
-
   get totalPages(): number {
     const totalItems = this.filteredUsers.length;
     if (totalItems === 0) {
       return 1;
     }
     return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  get paginatedUsers(): BackendUserDto[] {
+    // Ensure currentPage is valid before slicing
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredUsers.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
   }
 
   getUserName(user: BackendUserDto): string {
@@ -266,7 +280,8 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(page: number): void {
-    if (page < 1 || page > this.totalPages) {
+    const maxPages = this.totalPages;
+    if (page < 1 || page > maxPages || maxPages === 0) {
       return;
     }
     this.currentPage = page;
@@ -275,10 +290,14 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
     this.currentPage = 1;
+    // Validate after changing rows per page
+    this.validateCurrentPage();
   }
 
   onSearchChange(): void {
     this.currentPage = 1;
+    // Validate after search in case filtered results have fewer pages
+    this.validateCurrentPage();
   }
 
   onAddUser(): void {
