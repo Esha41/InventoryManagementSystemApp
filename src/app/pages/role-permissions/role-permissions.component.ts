@@ -543,4 +543,74 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     );
     return permissionsOfType.length > 0 && permissionsOfType[0] === currentPerm;
   }
+
+  /**
+   * Check if all permissions in a row are selected
+   */
+  isRowFullySelected(group: CrudPermission): boolean {
+    if (!group.permissionsList || group.permissionsList.length === 0) {
+      return false;
+    }
+    return group.permissionsList.every(perm => {
+      const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
+      return control?.value === true;
+    });
+  }
+
+  /**
+   * Toggle all permissions for a specific row (entity group)
+   */
+  onRowToggle(group: CrudPermission, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const selectAll = checkbox.checked;
+    
+    group.permissionsList.forEach(perm => {
+      const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
+      if (control) {
+        control.setValue(selectAll);
+      }
+    });
+  }
+
+  /**
+   * Check if all permissions of a specific type (column) are selected in a category
+   */
+  isColumnFullySelected(category: PermissionCategory, permType: string): boolean {
+    let hasAnyPermission = false;
+    
+    for (const group of category.permissions) {
+      for (const perm of group.permissionsList) {
+        const label = this.getPermissionInfo(perm.displayValue).label;
+        if (label === permType) {
+          hasAnyPermission = true;
+          const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
+          if (!control || control.value !== true) {
+            return false;
+          }
+        }
+      }
+    }
+    
+    return hasAnyPermission;
+  }
+
+  /**
+   * Toggle all permissions of a specific type (column) in a category
+   */
+  onColumnToggle(category: PermissionCategory, permType: string, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const selectAll = checkbox.checked;
+    
+    category.permissions.forEach(group => {
+      group.permissionsList.forEach(perm => {
+        const label = this.getPermissionInfo(perm.displayValue).label;
+        if (label === permType) {
+          const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
+          if (control) {
+            control.setValue(selectAll);
+          }
+        }
+      });
+    });
+  }
 }
