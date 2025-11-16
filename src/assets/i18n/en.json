@@ -33,6 +33,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "inventoryDashboard": "Inventory Dashboard",
     "supplyManagement": "Supply Management",
     "warehouse": "Warehouse",
     "warehouseList": "Warehouse List",

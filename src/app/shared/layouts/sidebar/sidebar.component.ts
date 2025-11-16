@@ -48,6 +48,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['dashboard_view']
     },
     {
+      label: 'nav.inventoryDashboard',
+      icon: LayoutDashboard,
+      route: '/inventory-dashboard',
+      permissions: ['dashboard_view']
+    },
+    {
       label: 'nav.supplyManagement',
       icon: ClipboardList,
       route: '/supply-request-management',

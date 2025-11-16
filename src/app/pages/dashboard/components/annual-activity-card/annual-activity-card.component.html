@@ -1,0 +1,67 @@
+<div class="rounded-lg p-4 bg-white shadow-sm border border-[var(--color-border)] relative">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ title }}</h3>
+    <div>
+      <select [(ngModel)]="selectedMonth" class="text-sm text-[var(--color-brand)] bg-transparent outline-none">
+        <option *ngFor="let m of months" [value]="m">{{ m }}</option>
+      </select>
+    </div>
+  </div>
+  <div class="w-full" #wrap (mousemove)="onMove($event)">
+    <svg viewBox="0 0 1000 420" class="w-full h-[260px]">
+      <!-- axis line -->
+      <line x1="50" y1="380" x2="980" y2="380" stroke="#e5e7eb" stroke-width="1" />
+
+      <!-- y-axis ticks and labels -->
+      <g *ngFor="let t of tickValues">
+        <line x1="90" [attr.y1]="yFor(t)" x2="980" [attr.y2]="yFor(t)" stroke="#eef2ff" stroke-width="1" />
+        <text x="70" [attr.y]="yFor(t) + 6" text-anchor="end" class="text-[var(--color-text)] text-xs">{{ t }}</text>
+      </g>
+
+      <!-- background rails -->
+      <g *ngFor="let v of displayValues; let i = index">
+        <rect
+          [attr.x]="60 + i * 77"
+          y="60"
+          width="36"
+          height="320"
+          rx="8"
+          fill="#eef2ff"
+          opacity="0.7"
+        ></rect>
+      </g>
+
+      <!-- bars -->
+      <g *ngFor="let v of displayValues; let i = index">
+        <rect
+          [attr.x]="60 + i * 77"
+          [attr.y]="yFor(v)"
+          width="36"
+          [attr.height]="(v / maxValue) * 320"
+          rx="8"
+          fill="url(#barGradient)"
+          opacity="0.9"
+          (mouseenter)="onBarEnter(i, $event)"
+          (mouseleave)="onBarLeave()"
+        ></rect>
+        <text [attr.x]="78 + i * 77" y="410" class="text-[var(--color-text)] text-xs">{{ labels[i] }}</text>
+      </g>
+      <defs>
+        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3B82F6" />
+          <stop offset="100%" stop-color="#93C5FD" />
+        </linearGradient>
+      </defs>
+    </svg>
+    <!-- Tooltip -->
+    <div
+      class="absolute px-2 py-1 rounded bg-white shadow-md text-xs text-[var(--color-text)] pointer-events-none"
+      *ngIf="hoveredIndex !== null"
+      [ngStyle]="{ left: tooltipX + 'px', top: tooltipY + 'px' }">
+      <div class="font-semibold">{{ labels[hoveredIndex!] }}</div>
+      <div>{{ values[hoveredIndex!] }}</div>
+    </div>
+  </div>
+</div>
+
+

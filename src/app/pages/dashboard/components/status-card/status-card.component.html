@@ -13,7 +13,7 @@
   </div>
 
   <!-- Order Details -->
-  <div *ngFor="let order of orders" class="bg-white rounded-xl p-6 space-y-4">
+  <div *ngFor="let order of orders" class="bg-white rounded-xl p-6 space-y-4" (click)="emitOrderDetails(order.requestId)">
     <!-- Order ID and Date -->
     <div class="grid grid-cols-2 gap-4 pb-4 border-b border-[var(--color-border)]">
       <div>
@@ -67,11 +67,11 @@
       </div>
     </div>
 
-    <!-- View Details Button -->
+    <!-- View Details Button for this order -->
     <div class="pt-4 border-t border-[var(--color-border)]">
       <button
         *ngIf="hasDetailsButton()"
-        (click)="onViewDetails()"
+        (click)="emitOrderDetails(order.requestId); $event.stopPropagation()"
         class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors text-sm font-medium">
         <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
         {{ 'dashboard.viewDetails' | translate }}
