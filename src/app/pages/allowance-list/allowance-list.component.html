@@ -52,7 +52,7 @@
               <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {{ 'allowance.table.quantity' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center;">
                 {{ 'allowance.table.actions' | translate }}
               </th>
             </tr>
@@ -78,8 +78,8 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
                 {{ allowance.quantity | number }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                <div class="flex items-center justify-end space-x-2">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
+                <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                   <!-- Edit Button -->
                   <button 
                     (click)="onEdit(allowance)"
@@ -117,8 +117,12 @@
       </div>
     </div>
 
-    <!-- Footer with Pagination -->
-    <div *ngIf="allAllowances.length > 0" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+  </div>
+
+  <!-- Pagination Footer - Outside table overflow container -->
+  <div *ngIf="allAllowances.length > 0 && !loading" class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
+    <div class="flex items-center justify-between w-full flex-nowrap">
+      <!-- Rows Per Page Selector -->
       <app-rows-per-page
         [rowsPerPage]="rowsPerPage"
         [totalItems]="totalItems"
@@ -126,13 +130,18 @@
         (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
 
-      <app-pagination
-        [currentPage]="currentPage"
-        [totalPages]="totalPages"
-        (pageChange)="onPageChange($event)">
-      </app-pagination>
+      <!-- Pagination Controls -->
+      <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+          {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+        </span>
+      </div>
     </div>
-  </div>
 
   <!-- Delete Confirmation Dialog -->
   <app-confirm-dialog

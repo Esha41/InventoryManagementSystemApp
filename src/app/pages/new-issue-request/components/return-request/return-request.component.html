@@ -11,7 +11,7 @@
             <!-- Reason -->
             <div class="flex items-start gap-8">
               <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'returnRequest.reason' | translate }} <span class="text-red-500">*</span>
+                {{ 'returnRequest.reason' | translate }}
               </label>
               <div class="flex-1">
                 <input
@@ -34,6 +34,7 @@
                   class="w-full"
                   [(ngModel)]="priority"
                   name="priority"
+                  (ngModelChange)="onPriorityChange()"
                   [options]="priorityOptions"
                   optionLabel="labelKey"
                   optionValue="value"
@@ -66,6 +67,7 @@
                     class="w-full"
                     [(ngModel)]="departmentId"
                     name="departmentId"
+                    (ngModelChange)="onDepartmentChange()"
                     [disabled]="isLoadingDepartments"
                     [error]="hasError('departmentId')"
                     [options]="departments"
@@ -119,6 +121,7 @@
                   class="w-full"
                   [(ngModel)]="requestPurposeId"
                   name="requestPurposeId"
+                  (ngModelChange)="onRequestPurposeChange()"
                   [disabled]="isLoadingRequestPurposes"
                   [error]="hasError('requestPurposeId')"
                   [options]="requestPurposes"
@@ -275,6 +278,7 @@
                         type="number"
                         [(ngModel)]="item.quantity"
                         [name]="'quantity_' + i"
+                        (ngModelChange)="onQuantityChange(i)"
                         min="1"
                         [placeholder]="'returnRequest.enterQuantity' | translate"
                         [class.border-red-500]="hasError('returnItem_' + i + '_quantity')"

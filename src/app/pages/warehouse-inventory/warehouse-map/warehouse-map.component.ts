@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, Download, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Trash2 } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
@@ -23,7 +23,6 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   
   readonly ArrowLeft = ArrowLeft;
-  readonly Download = Download;
   readonly Trash2 = Trash2;
 
   @ViewChild('mapContainer', { static: false }) mapContainerRef!: ElementRef<HTMLElement>;
@@ -35,8 +34,8 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   // Cache status
   cacheStatus = {
     isCached: false,
-    isDownloading: false,
-    tileCount: 0
+    tileCount: 0,
+    autoCaching: false
   };
 
   warehouses: WarehouseLocationDto[] = [];
@@ -67,6 +66,11 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Check cache status
     this.checkCacheStatus();
+    
+    // Start auto-caching tiles in background if online
+    if (navigator.onLine) {
+      this.startAutoCaching();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -112,12 +116,140 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       maxBoundsViscosity: 0.5 // Reduced from 1.0 - allows more panning outside bounds before snapping back
     });
 
-    // Add tile layer with offline support
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 16, // Match map maxZoom
-      minZoom: 7 // Match map minZoom
-    }).addTo(this.map);
+    // Helper function to load tile from local assets first, then cache, then online
+    const loadTileFromLocalAssets = (coords: L.Coords): string => {
+      // Extract zoom, x, y from coordinates
+      const z = coords.z;
+      const x = coords.x;
+      const y = coords.y;
+      
+      // Load from local assets directory (bundled with app)
+      return `/assets/map-tiles/${z}/${x}/${y}.png`;
+    };
+
+    // Helper function to load tile from local assets with fallback to cache/online
+    const loadTileFromCacheWithFallback = (url: string, localUrl: string, imgElement: HTMLImageElement): void => {
+      // Try local assets first (bundled with the app - works completely offline)
+      const localImg = new Image();
+      localImg.onerror = () => {
+        // Local tile doesn't exist, try cache (if available)
+        if ('caches' in window) {
+          caches.open('qatar-map-tiles').then(cache => {
+            return cache.match(url);
+          }).then(cachedResponse => {
+            if (cachedResponse) {
+              // Use cached tile
+              return cachedResponse.blob();
+            }
+            // No cache, try online (only if online)
+            if (navigator.onLine) {
+              imgElement.src = url;
+              imgElement.addEventListener('load', () => {
+                cacheTileInBackground(url).catch(() => {});
+              }, { once: true });
+              return null; // No blob to return
+            } else {
+              // Offline and no cache - show transparent placeholder
+              console.warn('Tile not available offline:', url);
+              imgElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+              return null;
+            }
+          }).then(blob => {
+            if (blob) {
+              imgElement.src = URL.createObjectURL(blob);
+            }
+          }).catch(() => {
+            // If all fails, use transparent placeholder when offline
+            if (!navigator.onLine) {
+              imgElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+            } else {
+              imgElement.src = url;
+            }
+          });
+        } else {
+          // No cache API - if online, use online; if offline, show placeholder
+          if (navigator.onLine) {
+            imgElement.src = url;
+          } else {
+            imgElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+          }
+        }
+      };
+      localImg.onload = () => {
+        // Local tile exists and loaded successfully!
+        imgElement.src = localUrl;
+      };
+      
+      // Try to load local tile
+      localImg.src = localUrl;
+    };
+
+    // Helper function to cache tile in background
+    const cacheTileInBackground = async (url: string): Promise<void> => {
+      if (!('caches' in window) || !navigator.onLine) {
+        return;
+      }
+
+      try {
+        const cache = await caches.open('qatar-map-tiles');
+        const existing = await cache.match(url);
+        if (existing) {
+          return; // Already cached
+        }
+        
+        const response = await fetch(url, { mode: 'cors' });
+        if (response.ok) {
+          await cache.put(url, response.clone());
+        }
+      } catch (error) {
+        // Silently fail
+      }
+    };
+
+    // Create custom tile layer that loads from local assets first (completely offline capable)
+    const OfflineTileLayer = L.TileLayer.extend({
+      createTile: function(coords: L.Coords, done: L.DoneCallback): HTMLElement {
+        const tile = document.createElement('img');
+        
+        L.DomEvent.on(tile, 'load', () => {
+          (this as any)._tileOnLoad(done, tile);
+        });
+        
+        L.DomEvent.on(tile, 'error', () => {
+          (this as any)._tileOnError(done, tile);
+        });
+
+        // Get the online tile URL (for fallback only)
+        const onlineUrl = this.getTileUrl(coords);
+        
+        // Get local assets URL (bundled with app - works offline)
+        const localUrl = loadTileFromLocalAssets(coords);
+        
+        // Try local assets first, then cache, then online
+        loadTileFromCacheWithFallback(onlineUrl, localUrl, tile as HTMLImageElement);
+        
+        tile.alt = '';
+        tile.setAttribute('role', 'presentation');
+        
+        return tile;
+      }
+    });
+
+    // Add tile layer with offline support (uses bundled tiles from assets/map-tiles/)
+    const customTileLayer = new (OfflineTileLayer as any)(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', // Only used as fallback if online
+      {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 16,
+        minZoom: 7,
+        crossOrigin: true
+      }
+    );
+
+    customTileLayer.addTo(this.map);
+    
+    // Auto-cache tiles in the background when online
+    this.startAutoCaching();
 
     // Add markers for warehouses
     this.addWarehouseMarkers();
@@ -327,22 +459,37 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cacheStatus.tileCount = cacheInfo.count;
   }
 
+
+
   /**
-   * Download map tiles for offline use
+   * Start auto-caching tiles in the background
    */
-  async downloadOfflineTiles(): Promise<void> {
-    this.cacheStatus.isDownloading = true;
-    try {
-      // Cache tiles for zoom levels 7-14 (wider range for better offline experience)
-      await this.offlineMapService.preCacheTiles([7, 8, 9, 10, 11, 12, 13, 14]);
-      await this.checkCacheStatus();
-      alert('Map tiles downloaded successfully! The map will now work offline.');
-    } catch (error) {
-      console.error('Failed to download tiles:', error);
-      alert('Failed to download map tiles. Please try again.');
-    } finally {
-      this.cacheStatus.isDownloading = false;
+  private async startAutoCaching(): Promise<void> {
+    if (!navigator.onLine || this.cacheStatus.autoCaching) {
+      return;
     }
+
+    // Check if we already have enough tiles cached
+    const cacheInfo = await this.offlineMapService.getCacheInfo();
+    if (cacheInfo.count > 100) {
+      // Already have good cache, skip auto-caching
+      this.checkCacheStatus();
+      return;
+    }
+
+    this.cacheStatus.autoCaching = true;
+    
+    // Pre-cache tiles in the background (silently, without user interaction)
+    this.offlineMapService.preCacheTiles([8, 9, 10, 11, 12])
+      .then(() => {
+        this.checkCacheStatus();
+      })
+      .catch(() => {
+        // Silently fail
+      })
+      .finally(() => {
+        this.cacheStatus.autoCaching = false;
+      });
   }
 
   /**

@@ -344,6 +344,11 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
     this.returnItems[index].itemId = optionValue;
     this.closeItemDropdown(index);
+    // Clear error when item is selected
+    this.clearItemError(index, 'itemId');
+    if (this.isSubmitted && optionValue) {
+      this.clearItemError(index, 'itemId');
+    }
   }
 
   getItemOptionLabel(itemOption: any): string {
@@ -487,6 +492,42 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   getError(fieldName: string): string {
     return this.errors[fieldName] || '';
+  }
+
+  clearError(fieldName: string): void {
+    if (this.errors[fieldName]) {
+      delete this.errors[fieldName];
+    }
+  }
+
+  clearItemError(index: number, field: string): void {
+    const errorKey = `returnItem_${index}_${field}`;
+    this.clearError(errorKey);
+  }
+
+  onPriorityChange(): void {
+    this.clearError('priority');
+  }
+
+  onDepartmentChange(): void {
+    this.clearError('departmentId');
+    if (this.isSubmitted && this.departmentId) {
+      this.clearError('departmentId');
+    }
+  }
+
+  onRequestPurposeChange(): void {
+    this.clearError('requestPurposeId');
+    if (this.isSubmitted && this.requestPurposeId) {
+      this.clearError('requestPurposeId');
+    }
+  }
+
+  onQuantityChange(index: number): void {
+    this.clearItemError(index, 'quantity');
+    if (this.isSubmitted && this.returnItems[index]?.quantity && this.returnItems[index].quantity! > 0) {
+      this.clearItemError(index, 'quantity');
+    }
   }
 
   private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {

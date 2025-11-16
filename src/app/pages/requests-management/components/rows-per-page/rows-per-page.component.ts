@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-rows-per-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, DropdownComponent],
   templateUrl: './rows-per-page.component.html',
   styleUrls: ['./rows-per-page.component.css']
 })
