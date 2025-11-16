@@ -246,9 +246,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return (a.itemName || a.itemNo || '').localeCompare(b.itemName || b.itemNo || '');
     });
 
-    // Update filtered items after allAllowances is set
-    this.updateFilteredItems();
-    this.applyFilters();
+    this.currentPage = 1;
+    this.validateCurrentPage();
+    this.updatePagination();
     this.loading = false;
   }
 
@@ -313,21 +313,36 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   updatePagination(): void {
-    this.totalItems = this.filteredAllowances.length;
-    const totalPages = Math.ceil(this.totalItems / this.rowsPerPage);
+    this.totalItems = this.allAllowances.length;
+    this.validateCurrentPage();
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     const endIndex = startIndex + this.rowsPerPage;
     this.allowances = this.filteredAllowances.slice(startIndex, endIndex);
   }
 
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+  }
+
   onPageChange(page: number): void {
+    const maxPages = this.totalPages;
+    if (page < 1 || page > maxPages || maxPages === 0) {
+      return;
+    }
     this.currentPage = page;
     this.updatePagination();
   }
 
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
-    this.currentPage = 1; 
+    this.currentPage = 1;
+    this.validateCurrentPage();
     this.updatePagination();
   }
 
@@ -395,13 +410,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (result: any) => {
             if (result && result.ok === false) {
-              const errorMessage = result.error?.error?.message || result.error?.message || 'Failed to delete allowance item';
-              this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
+              const errorMessage = result.error?.error?.message || result.error?.message || this.translateService.instant('allowance.failedToDeleteItem');
+              this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe(tr => {
                 this.toastService.error(errorMessage, tr['toast.error']);
               });
             } else {
-              this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).subscribe(tr => {
-                this.toastService.success(tr['allowance.deletedSuccessfully'] || 'Allowance item deleted successfully', tr['toast.success']);
+              this.translateService.get(['toast.success', 'allowance.itemDeletedSuccessfully']).subscribe(tr => {
+                this.toastService.success(tr['allowance.itemDeletedSuccessfully'], tr['toast.success']);
               });
             }
             
@@ -410,8 +425,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             this.loadAllowances();
           },
           error: (error: any) => {
-            this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
-              this.toastService.error(tr['allowance.failedToDelete'] || 'Failed to delete allowance item', tr['toast.error']);
+            this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe(tr => {
+              this.toastService.error(tr['allowance.failedToDeleteItem'], tr['toast.error']);
             });
             this.showDeleteDialog = false;
             this.selectedAllowance = null;
@@ -432,8 +447,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
             if (ids.length === 0) {
             
-              this.translateService.get(['toast.success']).subscribe(tr => {
-                this.toastService.success('Already deleted', tr['toast.success']);
+              this.translateService.get(['toast.success', 'allowance.alreadyDeleted']).subscribe(tr => {
+                this.toastService.success(tr['allowance.alreadyDeleted'], tr['toast.success']);
               });
               this.showDeleteDialog = false;
               this.selectedAllowance = null;
@@ -459,13 +474,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                   const hasHardError = results.some(r => r && r.ok === false);
                   if (hasHardError) {
                     const firstErr = results.find(r => r && r.ok === false)?.error;
-                    const errorMessage = firstErr?.error?.message || firstErr?.message || 'Failed to delete allowance';
+                    const errorMessage = firstErr?.error?.message || firstErr?.message || this.translateService.instant('allowance.failedToDelete');
                     this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
                       this.toastService.error(errorMessage, tr['toast.error']);
                     });
                   } else {
                     this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).subscribe(tr => {
-                      this.toastService.success(tr['allowance.deletedSuccessfully'] || 'Allowance deleted successfully', tr['toast.success']);
+                      this.toastService.success(tr['allowance.deletedSuccessfully'], tr['toast.success']);
                     });
                   }
 
@@ -475,15 +490,15 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                 },
                 error: () => {
                   this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
-                    this.toastService.error(tr['allowance.failedToDelete'] || 'Failed to delete allowance', tr['toast.error']);
+                    this.toastService.error(tr['allowance.failedToDelete'], tr['toast.error']);
                   });
                   this.showDeleteDialog = false;
                 }
               });
           },
           error: () => {
-            this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
-              this.toastService.error(tr['allowance.failedToDelete'] || 'Failed to load items for deletion', tr['toast.error']);
+            this.translateService.get(['toast.error', 'allowance.failedToLoadForDeletion']).subscribe(tr => {
+              this.toastService.error(tr['allowance.failedToLoadForDeletion'], tr['toast.error']);
             });
             this.showDeleteDialog = false;
           }

@@ -117,6 +117,5 @@ export interface UpdateInventoryDetailDto {
   manufacturerId?: number;
   countryId?: number;
   itemQuantity: number;
-  currentQuantity: number;
 }
 

@@ -80,9 +80,6 @@
                 {{ 'warehouseInventory.quantity' | translate }}
               </th>
               <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {{ 'warehouseInventory.currentQty' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {{ 'warehouseInventory.expiryDate' | translate }}
               </th>
               <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -93,7 +90,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <!-- Empty State -->
             <tr *ngIf="paginatedItems.length === 0">
-              <td colspan="9" class="px-6 py-12 text-center">
+              <td colspan="8" class="px-6 py-12 text-center">
                 <p class="text-gray-500">{{ 'warehouseInventory.noItems' | translate }}</p>
               </td>
             </tr>
@@ -116,9 +113,6 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
                   {{ formatNumber(detail.itemQuantity) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
-                  {{ formatNumber(detail.currentQuantity) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
                   {{ formatDate(detail.item?.expiryDate) }}

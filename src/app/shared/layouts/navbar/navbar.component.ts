@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Bell, User, Languages, LogOut, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
@@ -19,7 +19,7 @@ import { NotificationService } from '@services/notification.service';
 export class NavbarComponent implements OnInit, OnDestroy {
   readonly Bell = Bell;
   readonly User = User;
-  readonly Languages = Languages;
+  readonly Globe = Globe;
   readonly LogOut = LogOut;
   readonly ChevronDown = ChevronDown;
 

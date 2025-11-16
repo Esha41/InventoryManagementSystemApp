@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 
@@ -34,7 +34,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private backendAuth: BackendAuthService
+    private route: ActivatedRoute,
+    private backendAuth: BackendAuthService,
+    private translate: TranslateService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -48,6 +50,13 @@ export class LoginComponent implements OnInit {
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
       this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    // Check for session conflict query parameter
+    const sessionConflict = this.route.snapshot.queryParams['sessionConflict'];
+    if (sessionConflict === 'true') {
+      this.loginError = this.translate.instant('auth.login.errors.singleSession');
     }
   }
 
@@ -84,7 +93,7 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.loginError = error.message || 'Login failed. Please try again.';
+        this.loginError = this.getUserFriendlyErrorMessage(error);
       }
     });
   }
@@ -104,15 +113,15 @@ export class LoginComponent implements OnInit {
 
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
-        const displayName = fieldName === 'username' ? 'Username' : 'Password';
-        return `${displayName} is required`;
+        const key = fieldName === 'username' ? 'auth.login.errors.usernameRequired' : 'auth.login.errors.passwordRequired';
+        return this.translate.instant(key);
       }
       if (field.errors['minlength']) {
         const required = field.errors['minlength'].requiredLength;
         if (fieldName === 'username') {
-          return `Username must be at least ${required} characters`;
+          return this.translate.instant('auth.login.errors.usernameMinLength');
         }
-        return `Password must be at least ${required} characters`;
+        return this.translate.instant('auth.login.errors.passwordMinLength');
       }
     }
     return '';
@@ -153,5 +162,94 @@ export class LoginComponent implements OnInit {
     }
 
     passwordControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  /**
+   * Get user-friendly error message from error object
+   */
+  private getUserFriendlyErrorMessage(error: any): string {
+    // Extract error message from various possible locations
+    const errorMessage = error?.message || 
+                        error?.error?.message || 
+                        error?.error?.error?.message || 
+                        '';
+    
+    // Extract error code from various possible locations
+    const errorCode = error?.error?.errorCode || 
+                     error?.errorCode || 
+                     error?.error?.code ||
+                     '';
+    
+    const lowerMessage = errorMessage.toLowerCase();
+    
+    // Check for specific error codes from backend
+    if (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || 
+        errorCode === '0008') {
+      return this.translate.instant('auth.login.errors.invalidCredentials');
+    }
+    
+    if (errorCode === 'INVALID_LDAP_SETTINGS' || 
+        errorCode === '0014') {
+      return this.translate.instant('auth.login.errors.invalidLdapSettings');
+    }
+    
+    // Check for specific error message patterns
+    if (lowerMessage.includes('server.invalidlogin') || 
+        lowerMessage.includes('invalidlogin') ||
+        lowerMessage.includes('invalid login')) {
+      return this.translate.instant('auth.login.errors.invalidLogin');
+    }
+    
+    // Check for invalid credentials patterns
+    if ((lowerMessage.includes('invalid') && 
+         (lowerMessage.includes('login') || lowerMessage.includes('password') || lowerMessage.includes('credential'))) ||
+        lowerMessage.includes('unauthorized') ||
+        lowerMessage.includes('incorrect password') ||
+        lowerMessage.includes('wrong password')) {
+      return this.translate.instant('auth.login.errors.invalidCredentials');
+    }
+    
+    // Check for LDAP errors
+    if (lowerMessage.includes('ldap') && 
+        (lowerMessage.includes('invalid') || lowerMessage.includes('not available') || lowerMessage.includes('inactive'))) {
+      return this.translate.instant('auth.login.errors.invalidLdapSettings');
+    }
+    
+    // Network/connection errors
+    if (error?.status === 0 || 
+        lowerMessage.includes('network') || 
+        lowerMessage.includes('connection') ||
+        lowerMessage.includes('failed to fetch') ||
+        lowerMessage.includes('cannot connect') ||
+        lowerMessage.includes('connection refused')) {
+      return this.translate.instant('auth.login.errors.networkError');
+    }
+    
+    // Server errors (5xx)
+    if (error?.status >= 500 || 
+        lowerMessage.includes('internal server error') ||
+        lowerMessage.includes('server error')) {
+      return this.translate.instant('auth.login.errors.serverError');
+    }
+    
+    // Unauthorized (401) - typically invalid credentials
+    if (error?.status === 401) {
+      return this.translate.instant('auth.login.errors.invalidCredentials');
+    }
+    
+    // Default fallback
+    if (errorMessage) {
+      // If it's a technical message (server.*, Error, Exception), use generic error
+      if (errorMessage.includes('server.') || 
+          errorMessage.includes('Error') || 
+          errorMessage.includes('Exception') ||
+          errorMessage.includes('APIOperationResponse')) {
+        return this.translate.instant('auth.login.errors.loginFailed');
+      }
+      // Otherwise, try to use the message if it's user-friendly
+      return errorMessage;
+    }
+    
+    return this.translate.instant('auth.login.errors.unknownError');
   }
 }

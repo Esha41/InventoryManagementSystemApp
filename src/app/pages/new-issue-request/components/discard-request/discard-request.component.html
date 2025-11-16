@@ -11,7 +11,7 @@
             <!-- Reason -->
             <div class="flex items-start gap-8">
               <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.reason' | translate }} <span class="text-red-500">*</span>
+                {{ 'discardRequest.reason' | translate }}
               </label>
               <div class="flex-1">
                 <input
@@ -34,12 +34,17 @@
                   class="w-full"
                   [(ngModel)]="priority"
                   name="priority"
+                  (ngModelChange)="onPriorityChange()"
                   [options]="priorityOptions"
                   optionLabel="labelKey"
                   optionValue="value"
                   [translateLabels]="true"
+                  [error]="hasError('priority')"
                   placeholder="{{ 'discardRequest.priority' | translate }}">
                 </app-dropdown>
+                <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-red-500">
+                  {{ getError('priority') }}
+                </p>
               </div>
             </div>
 
@@ -78,6 +83,7 @@
                     class="w-full"
                     [(ngModel)]="departmentId"
                     name="departmentId"
+                    (ngModelChange)="onDepartmentChange()"
                     [disabled]="isLoadingDepartments"
                     [error]="hasError('departmentId')"
                     [options]="departments"
@@ -131,6 +137,7 @@
                   class="w-full"
                   [(ngModel)]="requestPurposeId"
                   name="requestPurposeId"
+                  (ngModelChange)="onRequestPurposeChange()"
                   [disabled]="isLoadingRequestPurposes"
                   [error]="hasError('requestPurposeId')"
                   [options]="requestPurposes"
@@ -271,6 +278,7 @@
                         type="number"
                         [(ngModel)]="item.quantity"
                         [name]="'quantity_' + i"
+                        (ngModelChange)="onQuantityChange(i)"
                         min="1"
                         [placeholder]="'discardRequest.quantityPlaceholder' | translate"
                         [class.border-red-500]="hasError('discardItems.' + i + '.quantity')"

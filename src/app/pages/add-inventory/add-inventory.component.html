@@ -179,8 +179,16 @@
                   [name]="'lot' + i"
                   required
                   min="1"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+                  step="1"
+                  [max]="999999"
+                  (input)="validateLotNumber(i, $event)"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                  [class.border-gray-300]="!isLotInvalid(i)"
+                  [class.border-red-500]="isLotInvalid(i)"
                   [placeholder]="'addInventory.enterLotNumber' | translate">
+                <p *ngIf="isLotInvalid(i)" class="mt-1 text-sm text-red-500">
+                  {{ 'addInventory.lotNumberMustBeGreaterThanZero' | translate }}
+                </p>
               </div>
 
               <!-- Quantity -->
@@ -194,8 +202,16 @@
                   [name]="'quantity' + i"
                   required
                   min="1"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+                  step="1"
+                  [max]="999999999"
+                  (input)="validateQuantity(i, $event)"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                  [class.border-gray-300]="!isQuantityInvalid(i)"
+                  [class.border-red-500]="isQuantityInvalid(i)"
                   [placeholder]="'addInventory.enterQuantity' | translate">
+                <p *ngIf="isQuantityInvalid(i)" class="mt-1 text-sm text-red-500">
+                  {{ 'addInventory.quantityMustBeGreaterThanZero' | translate }}
+                </p>
               </div>
 
               <!-- Supplier -->

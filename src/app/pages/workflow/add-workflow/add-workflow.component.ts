@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
   templateUrl: './add-workflow.component.html',
   styleUrls: ['./add-workflow.component.css']
 })
-export class AddWorkflowComponent implements OnInit {
+export class AddWorkflowComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;
@@ -58,6 +58,10 @@ export class AddWorkflowComponent implements OnInit {
     { label: 'workflow.inactive', value: 'Inactive' as const }
   ];
 
+  hasOpenDropdown = false;
+  private mutationObserver?: MutationObserver;
+  private positioningInterval?: any;
+
   constructor(
     private workflowService: WorkflowService,
     private backendUserService: BackendUserService,
@@ -68,9 +72,119 @@ export class AddWorkflowComponent implements OnInit {
     private toastService: ToastService
   ) {}
 
+  ngOnDestroy(): void {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+    }
+    if (this.positioningInterval) {
+      clearInterval(this.positioningInterval);
+    }
+    document.removeEventListener('click', this.handleDocumentClick.bind(this));
+    document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
+  }
+
+  private handleDocumentClick(event: MouseEvent): void {
+    setTimeout(() => {
+      this.checkAndPositionDropdowns();
+    }, 0);
+  }
+
+  private checkAndPositionDropdowns(): void {
+    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
+    this.hasOpenDropdown = openDropdowns.length > 0;
+    
+    if (this.hasOpenDropdown) {
+      this.repositionDropdowns();
+      // Reposition on scroll
+      if (!this.positioningInterval) {
+        document.addEventListener('scroll', this.repositionDropdowns.bind(this), true);
+        this.positioningInterval = setInterval(() => {
+          if (this.hasOpenDropdown) {
+            this.repositionDropdowns();
+          } else {
+            clearInterval(this.positioningInterval);
+            this.positioningInterval = undefined;
+            document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
+          }
+        }, 100);
+      }
+    } else {
+      if (this.positioningInterval) {
+        clearInterval(this.positioningInterval);
+        this.positioningInterval = undefined;
+        document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
+      }
+      // Reset all dropdown panels
+      document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+        panel.style.position = '';
+        panel.style.top = '';
+        panel.style.left = '';
+        panel.style.width = '';
+        panel.style.maxWidth = '';
+      });
+    }
+  }
+
+  private repositionDropdowns(): void {
+    const scrollContainer = document.querySelector('.steps-table-scroll-container');
+    if (!scrollContainer) return;
+
+    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
+    openDropdowns.forEach((trigger: any) => {
+      const dropdown = trigger.closest('.app-dropdown');
+      if (!dropdown) return;
+
+      const panel = dropdown.querySelector('.app-dropdown-panel') as HTMLElement;
+      if (!panel) return;
+
+      // Check if dropdown is inside scroll container
+      if (scrollContainer.contains(dropdown)) {
+        const triggerRect = trigger.getBoundingClientRect();
+        
+        // Calculate position relative to viewport
+        const top = triggerRect.bottom + 8; // 0.5rem = 8px
+        const left = triggerRect.left;
+        const width = triggerRect.width;
+
+        // Apply fixed positioning to escape overflow clipping
+        panel.style.position = 'fixed';
+        panel.style.top = `${top}px`;
+        panel.style.left = `${left}px`;
+        panel.style.width = `${width}px`;
+        panel.style.maxWidth = `${width}px`;
+        panel.style.minWidth = `${width}px`;
+        panel.style.zIndex = '10000';
+        panel.style.right = 'auto';
+      }
+    });
+  }
+
   ngOnInit(): void {
     // Initialize with Active status
     this.workflowForm.status = 'Active';
+    
+    // Set up mutation observer to watch for dropdown state changes
+    setTimeout(() => {
+      this.mutationObserver = new MutationObserver(() => {
+        this.checkAndPositionDropdowns();
+      });
+
+      const stepsContainer = document.querySelector('.steps-table-wrapper');
+      if (stepsContainer) {
+        this.mutationObserver.observe(stepsContainer, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class']
+        });
+      }
+
+      // Also listen for clicks to detect dropdown toggles
+      document.addEventListener('click', this.handleDocumentClick.bind(this));
+      
+      // Initial check
+      this.checkAndPositionDropdowns();
+    }, 0);
     // Load roles for steps dropdown
     this.backendUserService.getAllRolesSimple().subscribe({
       next: roles => this.roles = roles,
@@ -151,6 +265,11 @@ if (this.workflowTypes.length > 0) {
         this.submitting = false;
         this.errorMessage = error.message || 'Failed to create workflow';
         console.error('Error creating workflow:', error);
+        
+        this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: any) => {
+          const errorMsg = error.message || translations['toast.failedToCreateWorkflow'];
+          this.toastService.error(errorMsg, translations['toast.error']);
+        });
       }
     });
   }

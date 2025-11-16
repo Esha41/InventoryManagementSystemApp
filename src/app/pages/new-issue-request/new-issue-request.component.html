@@ -30,6 +30,7 @@
             name="fromReserve" 
             value="Yes" 
             [(ngModel)]="fromReserve"
+            (ngModelChange)="onFromReserveChange($event)"
             class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
           <div class="ml-4">
             <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' | translate }}</span>
@@ -44,6 +45,7 @@
             name="fromReserve" 
             value="No" 
             [(ngModel)]="fromReserve"
+            (ngModelChange)="onFromReserveChange($event)"
             class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
           <div class="ml-4">
             <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllAmmunition' | translate }}</span>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,15 +11,19 @@ import { RoleDto } from '@models/backend-user.model';
 import { WorkflowDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { ToastService } from '@services/toast.service';
+import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent],
   templateUrl: './workflow.component.html',
   styleUrls: ['./workflow.component.css']
 })
-export class WorkflowComponent implements OnInit {
+export class WorkflowComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
@@ -36,14 +40,20 @@ export class WorkflowComponent implements OnInit {
   
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 20;
-  readonly itemsPerPageOptions = [1, 2, 5, 10, 20];
-  totalPages: number = 1;
+  rowsPerPage: number = 10;
+  readonly rowsPerPageOptions = [5, 10, 20, 50];
 
   // Modal state
   showViewModal = false;
   showEditModal = false;
+  showDeleteDialog = false;
+  workflowToDelete: { id: number; name: string } | null = null;
   selectedWorkflow: any = null;
+  
+  // Delete dialog translations
+  deleteDialogTitle = '';
+  deleteDialogMessage = '';
+  deleteDialogDescription = '';
   editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
   editWorkflowType: number = 1;
   editSteps: Array<{ order: number; roleId: string | null; applicationEntityId: number | null; requireHigherApproval?: boolean; higherApprovalRoleId?: string | null; higherApplicationEntityId?: number | null }> = [];
@@ -55,14 +65,21 @@ export class WorkflowComponent implements OnInit {
     { label: 'Inactive', value: 'Inactive' as const }
   ];
 
+  // Dropdown positioning state for edit modal
+  hasOpenDropdown = false;
+  private mutationObserver?: MutationObserver;
+  private positioningInterval?: any;
+  private boundRepositionDropdowns?: () => void;
+  private boundHandleDocumentClick?: () => void;
+
   constructor(
     private router: Router,
     private workflowService: WorkflowService,
-        private translationService: TranslationService,
-    
+    private translationService: TranslationService,
     private backendUserService: BackendUserService,
     private lookupService: LookupService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -79,16 +96,30 @@ const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
 
  this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
 
-
   }
 
-  onItemsPerPageSelect(value: number | null): void {
-    if (!value) {
-      return;
+  get totalPages(): number {
+    const totalItems = this.filteredWorkflows.length;
+    if (totalItems === 0) {
+      return 1;
     }
-    this.itemsPerPage = value;
+    return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
     this.currentPage = 1;
-    this.calculateTotalPages();
+    this.validateCurrentPage();
   }
 
 getWorkflowType (id: number)
@@ -104,11 +135,10 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     console.log('Loading workflows...');
     this.workflowService.getWorkflows().subscribe({
       next: (workflows) => {
-        console.log('Workflows loaded:', workflows);
-        console.log('Active workflows:', workflows.filter(w => w.status === 'Active').length);
         this.workflows = workflows;
+        this.currentPage = 1;
         this.filterWorkflows();
-        this.calculateTotalPages();
+        this.validateCurrentPage();
         this.loading = false;
       },
       error: (error) => {
@@ -122,7 +152,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   filterWorkflows(): void {
     let filtered = [...this.workflows];
 
-    // Filter by search term
     if (this.searchTerm) {
       filtered = filtered.filter(workflow =>
         workflow.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -131,41 +160,26 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     }
 
     this.filteredWorkflows = filtered;
-    this.calculateTotalPages();
   }
 
   onSearch(): void {
     this.currentPage = 1;
     this.filterWorkflows();
-  }
-
-  calculateTotalPages(): void {
-    this.totalPages = Math.ceil(this.filteredWorkflows.length / this.itemsPerPage);
+    this.validateCurrentPage();
   }
 
   get paginatedWorkflows(): WorkflowDto[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredWorkflows.slice(startIndex, endIndex);
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredWorkflows.slice(startIndex, startIndex + this.rowsPerPage);
   }
 
   onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+    const maxPages = this.totalPages;
+    if (page < 1 || page > maxPages || maxPages === 0) {
+      return;
     }
-  }
-
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    const startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
+    this.currentPage = page;
   }
 
   onViewDetails(id: number): void {
@@ -208,6 +222,10 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
           higherApplicationEntityId: (s as any).higherApplicationEntityId || null
         }));
         this.showEditModal = true;
+        // Initialize dropdown positioning after modal opens
+        setTimeout(() => {
+          this.initializeEditModalDropdowns();
+        }, 0);
       },
       error: () => {
         // Fallback to list data if detail fails
@@ -215,8 +233,35 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
         this.editWorkflowType = target.workflowType || 1;
         this.editSteps = [];
         this.showEditModal = true;
+        // Initialize dropdown positioning after modal opens
+        setTimeout(() => {
+          this.initializeEditModalDropdowns();
+        }, 0);
       }
     });
+  }
+
+  private initializeEditModalDropdowns(): void {
+    const stepsContainer = document.querySelector('.edit-steps-table-wrapper');
+    if (!stepsContainer) return;
+
+    this.mutationObserver = new MutationObserver(() => {
+      this.checkAndPositionDropdowns();
+    });
+
+    this.mutationObserver.observe(stepsContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    this.boundHandleDocumentClick = () => {
+      setTimeout(() => this.checkAndPositionDropdowns(), 0);
+    };
+    document.addEventListener('click', this.boundHandleDocumentClick);
+    
+    this.checkAndPositionDropdowns();
   }
 
   onAddWorkflow(): void {
@@ -227,20 +272,56 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   removeEditStep(index: number): void { this.editSteps.splice(index, 1); this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 })); }
 
   onDelete(id: number): void {
-    const confirmed = window.confirm('Are you sure you want to delete this workflow?');
-    if (!confirmed) return;
+    const workflow = this.workflows.find(w => w.id === id);
+    if (!workflow) return;
+    
+    this.workflowToDelete = { id: workflow.id, name: workflow.name };
+    
+    // Load translations synchronously using instant()
+    this.deleteDialogTitle = this.translate.instant('workflow.deleteConfirmation.title');
+    this.deleteDialogMessage = this.translate.instant('workflow.deleteConfirmation.message');
+    const workflowLabel = this.translate.instant('workflow.deleteConfirmation.workflow');
+    this.deleteDialogDescription = `${workflowLabel}: ${this.workflowToDelete.name}`;
+    
+    this.showDeleteDialog = true;
+  }
+
+  onDeleteConfirm(): void {
+    if (!this.workflowToDelete) return;
+    
+    const id = this.workflowToDelete.id;
     this.workflowService.deleteWorkflow(id).subscribe({
       next: () => {
-        // Remove from local list and refresh filtered/pagination
         this.workflows = this.workflows.filter(w => w.id !== id);
+        this.currentPage = 1;
         this.filterWorkflows();
-        this.calculateTotalPages();
+        this.validateCurrentPage();
+        
+        this.translate.get(['toast.success', 'toast.workflowDeleted']).subscribe((translations: any) => {
+          this.toastService.success(translations['toast.workflowDeleted'], translations['toast.success']);
+        });
+        
+        this.showDeleteDialog = false;
+        this.workflowToDelete = null;
       },
       error: (error) => {
         console.error('Failed to delete workflow:', error);
         this.errorMessage = error.message || 'Failed to delete workflow';
+        
+        this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: any) => {
+          const errorMsg = error.message || translations['toast.failedToDeleteWorkflow'];
+          this.toastService.error(errorMsg, translations['toast.error']);
+        });
+        
+        this.showDeleteDialog = false;
+        this.workflowToDelete = null;
       }
     });
+  }
+
+  onDeleteCancel(): void {
+    this.showDeleteDialog = false;
+    this.workflowToDelete = null;
   }
 
   getStatusButtonClass(status: string): string {
@@ -368,11 +449,105 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     return null;
   }
 
+  ngOnDestroy(): void {
+    this.cleanupDropdownPositioning();
+  }
+
+  private cleanupDropdownPositioning(): void {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+      this.mutationObserver = undefined;
+    }
+    if (this.positioningInterval) {
+      clearInterval(this.positioningInterval);
+      this.positioningInterval = undefined;
+    }
+    if (this.boundRepositionDropdowns) {
+      document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
+    }
+    if (this.boundHandleDocumentClick) {
+      document.removeEventListener('click', this.boundHandleDocumentClick);
+      this.boundHandleDocumentClick = undefined;
+    }
+    this.resetDropdownPanels();
+  }
+
+  private resetDropdownPanels(): void {
+    document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+      panel.style.position = '';
+      panel.style.top = '';
+      panel.style.left = '';
+      panel.style.width = '';
+      panel.style.maxWidth = '';
+    });
+  }
+
+  private checkAndPositionDropdowns(): void {
+    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
+    this.hasOpenDropdown = openDropdowns.length > 0;
+    
+    if (this.hasOpenDropdown) {
+      this.repositionDropdowns();
+      if (!this.positioningInterval) {
+        if (!this.boundRepositionDropdowns) {
+          this.boundRepositionDropdowns = this.repositionDropdowns.bind(this);
+        }
+        document.addEventListener('scroll', this.boundRepositionDropdowns, true);
+        this.positioningInterval = setInterval(() => {
+          if (this.hasOpenDropdown) {
+            this.repositionDropdowns();
+          } else {
+            this.stopPositioningInterval();
+          }
+        }, 100);
+      }
+    } else {
+      this.stopPositioningInterval();
+      this.resetDropdownPanels();
+    }
+  }
+
+  private stopPositioningInterval(): void {
+    if (this.positioningInterval) {
+      clearInterval(this.positioningInterval);
+      this.positioningInterval = undefined;
+      if (this.boundRepositionDropdowns) {
+        document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
+      }
+    }
+  }
+
+  private repositionDropdowns(): void {
+    const scrollContainer = document.querySelector('.edit-steps-table-scroll-container');
+    if (!scrollContainer) return;
+
+    document.querySelectorAll('.app-dropdown-open').forEach((trigger: any) => {
+      const dropdown = trigger.closest('.app-dropdown');
+      const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
+      
+      if (!panel || !scrollContainer.contains(dropdown)) return;
+
+      const rect = trigger.getBoundingClientRect();
+      Object.assign(panel.style, {
+        position: 'fixed',
+        top: `${rect.bottom + 8}px`,
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        minWidth: `${rect.width}px`,
+        maxWidth: `${rect.width}px`,
+        zIndex: '10000',
+        right: 'auto'
+      });
+    });
+  }
+
   closeModals(): void {
     this.showViewModal = false;
     this.showEditModal = false;
     this.selectedWorkflow = null;
     this.editForm = null;
+    this.hasOpenDropdown = false;
+    this.cleanupDropdownPositioning();
   }
 
   saveEdit(): void {
@@ -407,9 +582,12 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     this.workflowService.updateBackendWorkflow(backendPayload).subscribe({
       next: (response) => {
         console.log('Workflow update successful, reloading list...');
-        // Small delay to ensure backend has processed the update
+        
+        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
+          this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
+        });
+        
         setTimeout(() => {
-          // Reload workflows from API to get fresh data
           this.loadWorkflows();
           this.closeModals();
         }, 500);
@@ -418,6 +596,11 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
         console.error('Error updating workflow:', err);
         console.error('Error details:', JSON.stringify(err, null, 2));
         this.errorMessage = err.message || 'Failed to update workflow';
+        
+        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
+          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'];
+          this.toastService.error(errorMsg, translations['toast.error']);
+        });
       }
     });
   }

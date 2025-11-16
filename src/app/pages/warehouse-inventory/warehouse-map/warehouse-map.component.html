@@ -19,47 +19,10 @@
           </div>
         </div>
         
-        <!-- Offline Controls -->
-        <div class="flex items-center space-x-3">
-          <!-- Cache Status Badge -->
-          <div 
-            *ngIf="cacheStatus.isCached"
-            class="flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span class="text-sm text-green-700 font-medium">Offline Ready ({{ cacheStatus.tileCount }} tiles)</span>
-          </div>
-          
-          <!-- Download Button -->
-          <button
-            *ngIf="!cacheStatus.isCached && !cacheStatus.isDownloading"
-            (click)="downloadOfflineTiles()"
-            class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
-            <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
-            <span class="text-sm font-medium">Download for Offline</span>
-          </button>
-          
-          <!-- Downloading Status -->
-          <div 
-            *ngIf="cacheStatus.isDownloading"
-            class="flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-200 border-t-blue-600"></div>
-            <span class="text-sm text-blue-700 font-medium">Downloading tiles...</span>
-          </div>
-          
-          <!-- Clear Cache Button -->
-          <button
-            *ngIf="cacheStatus.isCached"
-            (click)="clearOfflineCache()"
-            class="flex items-center justify-center w-10 h-10 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
-            title="Clear offline cache">
-            <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
-          </button>
-          
-          <!-- Statistics Badge -->
-          <div class="hidden md:flex items-center space-x-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
-            <span class="text-sm text-gray-600">{{ 'warehouseMap.totalWarehouses' | translate }}:</span>
-            <span class="text-sm font-semibold text-gray-900">{{ warehouses.length }}</span>
-          </div>
+        <!-- Statistics Badge -->
+        <div class="flex items-center space-x-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+          <span class="text-sm text-gray-600">{{ 'warehouseMap.totalWarehouses' | translate }}:</span>
+          <span class="text-sm font-semibold text-gray-900">{{ warehouses.length }}</span>
         </div>
       </div>
     </div>

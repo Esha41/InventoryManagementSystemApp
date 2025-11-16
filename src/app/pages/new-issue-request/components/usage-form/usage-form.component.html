@@ -47,7 +47,7 @@
       <div class="space-y-6">
         <!-- Order Priority -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' | translate }}</label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' | translate }} <span class="text-red-500">*</span></label>
           <app-dropdown
             class="w-full"
             [ngModel]="orderPriority"
@@ -65,7 +65,7 @@
 
         <!-- Use purpose -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usePurpose' | translate }}</label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usePurpose' | translate }} <span class="text-red-500">*</span></label>
           <app-dropdown
             class="w-full"
             name="usePurpose"
@@ -96,7 +96,7 @@
 
         <!-- Usage Location -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageLocation' | translate }}</label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageLocation' | translate }} <span class="text-red-500">*</span></label>
           <input
             name="usageLocation"
             type="text"
@@ -137,7 +137,7 @@
       <div class="space-y-6">
         <!-- Usage Date -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDate' | translate }}</label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDate' | translate }} <span class="text-red-500">*</span></label>
           <input
             name="usageDate"
             type="date"
@@ -155,7 +155,7 @@
 
         <!-- Usage Time -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTime' | translate }}</label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTime' | translate }} <span class="text-red-500">*</span></label>
           <input
             name="usageTime"
             type="time"

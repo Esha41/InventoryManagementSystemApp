@@ -279,8 +279,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           supplierId: d.supplierId,
           manufacturerId: d.manufacturerId,
           countryId: d.countryId,
-          itemQuantity: d.itemQuantity,
-          currentQuantity: d.currentQuantity
+          itemQuantity: d.itemQuantity
         }
       )
     };
@@ -368,8 +367,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
                 supplierId: d.supplierId,
                 manufacturerId: d.manufacturerId,
                 countryId: d.countryId,
-                itemQuantity: d.itemQuantity,
-                currentQuantity: d.currentQuantity
+                itemQuantity: d.itemQuantity
               }))
             };
 

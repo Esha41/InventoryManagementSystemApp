@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 
 /**
@@ -24,7 +24,10 @@ export class PaginationComponent {
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private translate: TranslateService
+  ) {}
 
   /**
    * Validated current page - ensures it's within bounds
@@ -159,5 +162,13 @@ export class PaginationComponent {
    */
   private isValidPage(page: number): boolean {
     return Number.isInteger(page) && page >= 1 && page <= this.validatedTotalPages;
+  }
+
+  /**
+   * Get translated aria-label for page button
+   */
+  getPageAriaLabel(page: number): string {
+    const pageLabel = this.translate.instant('common.page');
+    return `${pageLabel} ${page}`;
   }
 }

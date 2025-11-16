@@ -8,7 +8,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class OfflineMapService {
-  private readonly TILE_CACHE_NAME = 'qatar-map-tiles';
+  readonly TILE_CACHE_NAME = 'qatar-map-tiles'; // Made public for component access
   private readonly TILE_URL_TEMPLATE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   
   // Qatar map bounds for tile pre-caching
@@ -29,6 +29,97 @@ export class OfflineMapService {
     // For offline capability, we use a custom tile layer that checks cache first
     // The actual caching is handled by the browser's Cache API
     return this.TILE_URL_TEMPLATE;
+  }
+
+  /**
+   * Create a custom tile layer function that checks cache first, then falls back to online
+   * This is used by Leaflet to fetch tiles
+   */
+  createTileLayerFunction(): (url: string) => HTMLElement {
+    return (url: string) => {
+      const img = document.createElement('img');
+      img.style.width = '256px';
+      img.style.height = '256px';
+      
+      // Try to load from cache first
+      this.loadTileFromCache(url).then(cachedBlob => {
+        if (cachedBlob) {
+          // Use cached tile
+          img.src = URL.createObjectURL(cachedBlob);
+          
+          // Also cache any tiles that get loaded online (for future offline use)
+          this.cacheTileInBackground(url).catch(() => {
+            // Silently fail if caching fails
+          });
+        } else {
+          // No cache, load from online
+          img.src = url;
+          
+          // Cache it for future offline use
+          this.cacheTileInBackground(url).catch(() => {
+            // Silently fail if caching fails
+          });
+        }
+      }).catch(() => {
+        // If cache check fails, just load online
+        img.src = url;
+        this.cacheTileInBackground(url).catch(() => {
+          // Silently fail if caching fails
+        });
+      });
+      
+      return img;
+    };
+  }
+
+  /**
+   * Load a tile from cache if available
+   */
+  private async loadTileFromCache(url: string): Promise<Blob | null> {
+    if (!('caches' in window)) {
+      return null;
+    }
+
+    try {
+      const cache = await caches.open(this.TILE_CACHE_NAME);
+      const cachedResponse = await cache.match(url);
+      
+      if (cachedResponse) {
+        return await cachedResponse.blob();
+      }
+    } catch (error) {
+      console.debug('Cache read failed:', error);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Cache a tile in the background
+   */
+  private async cacheTileInBackground(url: string): Promise<void> {
+    if (!('caches' in window)) {
+      return;
+    }
+
+    try {
+      const cache = await caches.open(this.TILE_CACHE_NAME);
+      
+      // Check if already cached
+      const existing = await cache.match(url);
+      if (existing) {
+        return; // Already cached
+      }
+      
+      // Fetch and cache
+      const response = await fetch(url);
+      if (response.ok) {
+        await cache.put(url, response.clone());
+      }
+    } catch (error) {
+      // Silently fail for background caching
+      console.debug('Background cache failed:', error);
+    }
   }
 
   /**
