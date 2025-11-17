@@ -13,7 +13,14 @@
   </div>
 
   <!-- Order Details -->
-  <div *ngFor="let order of orders" class="bg-white rounded-xl p-6 space-y-4" (click)="emitOrderDetails(order.requestId)">
+  <div class="space-y-4">
+    <!-- Empty State -->
+    <div *ngIf="!orders || orders.length === 0" class="bg-white rounded-xl p-8 text-center">
+      <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.noData' | translate }}</p>
+    </div>
+    
+    <!-- Orders List -->
+    <div *ngFor="let order of orders" class="bg-white rounded-xl p-6 space-y-4" (click)="emitOrderDetails(order.requestId)">
     <!-- Order ID and Date -->
     <div class="grid grid-cols-2 gap-4 pb-4 border-b border-[var(--color-border)]">
       <div>
@@ -76,6 +83,7 @@
         <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
         {{ 'dashboard.viewDetails' | translate }}
       </button>
+    </div>
     </div>
   </div>
 </div>
