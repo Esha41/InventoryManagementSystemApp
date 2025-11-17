@@ -37,11 +37,16 @@ export interface AuthenticatedUser {
   roles: string[];
   permissions: ClaimDto[];
   isLdapUser?: boolean;
+  ldapUserName?: string;
   organizationId?: number;
   departmentId?: number;
   departmentName?: string;
   nameEn?: string;
   nameAr?: string;
+  rankId?: number;
+  rankNameEn?: string;
+  rankNameAr?: string;
+  militaryId?: string;
 }
 
 /**

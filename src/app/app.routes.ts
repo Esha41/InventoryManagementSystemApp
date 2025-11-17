@@ -200,6 +200,10 @@ export const routes: Routes = [
         data: { permissions: ['notificationspage.page', 'notificationspage.view', 'dashboard_view'] }
       },
       {
+        path: 'profile',
+        loadComponent: () => import('@pages/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
         path: 'access-denied',
         loadComponent: () => import('@pages/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
       }

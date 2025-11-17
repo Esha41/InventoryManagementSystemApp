@@ -246,6 +246,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return (a.itemName || a.itemNo || '').localeCompare(b.itemName || b.itemNo || '');
     });
 
+    // Initialize filteredAllowances with all allowances on first load
+    this.filteredAllowances = [...this.allAllowances];
+
     this.currentPage = 1;
     this.validateCurrentPage();
     this.updatePagination();
@@ -313,7 +316,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   updatePagination(): void {
-    this.totalItems = this.allAllowances.length;
+    this.totalItems = this.filteredAllowances.length;
     this.validateCurrentPage();
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     const endIndex = startIndex + this.rowsPerPage;
