@@ -21,8 +21,6 @@
     ></app-status-card>
   </div>
 
-  <!-- Inventory analytics removed from main Dashboard (kept in Inventory Dashboard) -->
-
   <!-- No Cards Message -->
   <div *ngIf="visibleCards.length === 0" class="text-center py-12">
     <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-lg mx-auto bg-white border border-[var(--color-border)] rounded-xl shadow-sm p-8">
