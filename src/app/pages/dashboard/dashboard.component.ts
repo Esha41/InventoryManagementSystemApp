@@ -314,31 +314,116 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (orders: OrderDto[]) => {
           let newOrders = orders.filter(order => order.status === 1);
           const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
+          const isAdmin = this.userContext.isAdminUser();
+          if (!isAdmin && currentUser?.departmentId) {
             newOrders = newOrders.filter(order => order.departmentId === currentUser.departmentId);
           }
 
           this.orderRequestsMap = new Map(newOrders.map(order => [order.id, order]));
 
-          const orderCards = newOrders.map(order => ({
-            title: order.requestNo || order.orderNo || `#${order.id}`,
-            status: 'new-issue' as const,
-            orders: [{
-              orderId: order.requestNo || order.orderNo || `#${order.id}`,
-              requestDate: this.formatOrderDate(order),
-              departmentName: this.resolveOrderDepartmentName(order),
-              requesterName: order.requesterName || 'N/A',
-              items: this.mapOrderItems(order.requestItems)
-            }],
-            permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-            departmentIds: order.departmentId != null ? [order.departmentId] : undefined,
-            orderRequestId: order.id
+          const ordersView: OrderItem[] = newOrders.map(order => ({
+            orderId: order.requestNo || order.orderNo || `#${order.id}`,
+            requestDate: this.formatOrderDate(order),
+            departmentName: this.resolveOrderDepartmentName(order),
+            requesterName: order.requesterName || 'N/A',
+            items: this.mapOrderItems(order.requestItems),
+            requestId: order.id
           }));
 
-          this.allCards = this.allCards.filter(card => !card.orderRequestId);
-          this.allCards.push(...orderCards);
+          // Also include Return requests with status = 1
+          this.returnService.getAllReturns()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (returns: ReturnDto[]) => {
+                let returnList = (returns || []).filter(r => r.status === 1);
+                if (!isAdmin && currentUser?.departmentId) {
+                  returnList = returnList.filter(r => r.departmentId === currentUser.departmentId);
+                }
+                this.returnRequestsMap = new Map(returnList.map(r => [r.id, r]));
+                
+                const returnsView: OrderItem[] = returnList.map(r => ({
+                  orderId: r.requestNo || `#${r.id}`,
+                  requestDate: this.formatRequestDate(r),
+                  departmentName: (r as any).departmentName || 'N/A',
+                  requesterName: r.requesterName || 'N/A',
+                  items: (r.requestItems || []).map((it: any) => ({
+                    itemName: it.itemName || it.itemNo || 'N/A',
+                    itemNo: it.itemNo || 'N/A',
+                    quantity: Number(it.quantity ?? 0),
+                    notes: it.notes || undefined
+                  }))
+                }));
 
-          this.filterCardsByPermissionsAndRoles();
+                // Also include Discard requests with status = 1
+                this.discardService.getAllDiscards()
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (discards: DiscardDto[]) => {
+                      let discardList = (discards || []).filter(d => d.status === 1);
+                      if (!isAdmin && currentUser?.departmentId) {
+                        discardList = discardList.filter(d => d.departmentId === currentUser.departmentId);
+                      }
+                      this.discardRequestsMap = new Map(discardList.map(d => [d.id, d]));
+                      
+                      const discardView: OrderItem[] = discardList.map(d => ({
+                        orderId: d.requestNo || `#${d.id}`,
+                        requestDate: this.formatRequestDate(d),
+                        departmentName: (d as any).departmentName || 'N/A',
+                        requesterName: d.requesterName || 'N/A',
+                        items: (d.requestItems || []).map((it: any) => ({
+                          itemName: it.itemName || it.itemNo || 'N/A',
+                          itemNo: it.itemNo || 'N/A',
+                          quantity: Number(it.quantity ?? 0),
+                          notes: it.notes || undefined
+                        }))
+                      }));
+
+                      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined,
+                        discardRequestId: (ordersView.length === 0 && returnsView.length === 0 && discardList.length > 0) ? discardList[0].id : undefined
+                      };
+                      
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCardsByPermissionsAndRoles();
+                    },
+                    error: () => {
+                      // Fallback to orders + returns if discards fail
+                      const merged: OrderItem[] = [...ordersView, ...returnsView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined
+                      };
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCardsByPermissionsAndRoles();
+                    }
+                  });
+              },
+              error: () => {
+                // Fallback to only orders if returns fail
+                const card: DashboardCard = {
+                  title: 'New',
+                  status: 'new-issue',
+                  orders: ordersView,
+                  permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                  departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined
+                };
+                this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                this.allCards.push(card);
+                this.filterCardsByPermissionsAndRoles();
+              }
+            });
         },
         error: () => {
           // Silently fail - don't show error to user
@@ -362,7 +447,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (orders: OrderDto[]) => {
           let completed = orders.filter(order => order.status === 3);
           const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
+          const isAdmin = this.userContext.isAdminUser();
+          if (!isAdmin && currentUser?.departmentId) {
             completed = completed.filter(order => order.departmentId === currentUser.departmentId);
           }
 
@@ -371,21 +457,91 @@ export class DashboardComponent implements OnInit, OnDestroy {
             requestDate: this.formatOrderDate(order),
             departmentName: this.resolveOrderDepartmentName(order),
             requesterName: order.requesterName || 'N/A',
+            items: this.mapOrderItems(order.requestItems),
             requestId: order.id,
           }));
 
-          const aggregateCard: DashboardCard = {
-            title: 'Done',
-            status: 'completed',
-            orders: ordersList,
-            permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-            departmentIds: currentUser?.departmentId != null ? [currentUser.departmentId] : undefined
-          };
+          // Merge Return status=3
+          this.returnService.getAllReturns().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (returns: ReturnDto[]) => {
+              let ret = (returns || []).filter(r => r.status === 3);
+              if (!isAdmin && currentUser?.departmentId) ret = ret.filter(r => r.departmentId === currentUser.departmentId);
+              const returnView: OrderItem[] = ret.map(r => ({
+                orderId: r.requestNo || `#${r.id}`,
+                requestDate: this.formatRequestDate(r),
+                departmentName: (r as any).departmentName || 'N/A',
+                requesterName: r.requesterName || 'N/A',
+                items: (r.requestItems || []).map((it: any) => ({
+                  itemName: it.itemName || it.itemNo || 'N/A',
+                  itemNo: it.itemNo || 'N/A',
+                  quantity: Number(it.quantity ?? 0),
+                  notes: it.notes || undefined
+                }))
+              }));
 
-          // Replace existing aggregate completed card
-          this.allCards = this.allCards.filter(c => !(c.status === 'completed' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
-          this.allCards.push(aggregateCard);
-          this.filterCardsByPermissionsAndRoles();
+              // Merge Discard status=3
+              this.discardService.getAllDiscards().pipe(takeUntil(this.destroy$)).subscribe({
+                next: (discards: DiscardDto[]) => {
+                  let dis = (discards || []).filter(d => d.status === 3);
+                  if (!isAdmin && currentUser?.departmentId) dis = dis.filter(d => d.departmentId === currentUser.departmentId);
+                  const discardView: OrderItem[] = dis.map(d => ({
+                    orderId: d.requestNo || `#${d.id}`,
+                    requestDate: this.formatRequestDate(d),
+                    departmentName: (d as any).departmentName || 'N/A',
+                    requesterName: d.requesterName || 'N/A',
+                    items: (d.requestItems || []).map((it: any) => ({
+                      itemName: it.itemName || it.itemNo || 'N/A',
+                      itemNo: it.itemNo || 'N/A',
+                      quantity: Number(it.quantity ?? 0),
+                      notes: it.notes || undefined
+                    }))
+                  }));
+
+                  const merged = [...ordersList, ...returnView, ...discardView];
+                  const aggregateCard: DashboardCard = {
+                    title: 'Done',
+                    status: 'completed',
+                    orders: merged,
+                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                    departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined,
+                    discardRequestId: discardView.length > 0 ? dis[0]?.id : undefined
+                  };
+
+                  // Replace existing aggregate completed card
+                  this.allCards = this.allCards.filter(c => !(c.status === 'completed' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+                  this.allCards.push(aggregateCard);
+                  this.filterCardsByPermissionsAndRoles();
+                },
+                error: () => {
+                  const merged = [...ordersList, ...returnView];
+                  const aggregateCard: DashboardCard = {
+                    title: 'Done',
+                    status: 'completed',
+                    orders: merged,
+                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                    departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined
+                  };
+                  this.allCards = this.allCards.filter(c => !(c.status === 'completed' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+                  this.allCards.push(aggregateCard);
+                  this.filterCardsByPermissionsAndRoles();
+                }
+              });
+            },
+            error: () => {
+              const aggregateCard: DashboardCard = {
+                title: 'Done',
+                status: 'completed',
+                orders: ordersList,
+                permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined
+              };
+              this.allCards = this.allCards.filter(c => !(c.status === 'completed' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+              this.allCards.push(aggregateCard);
+              this.filterCardsByPermissionsAndRoles();
+            }
+          });
         },
         error: () => {
           // ignore errors silently on dashboard aggregation
@@ -408,7 +564,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (orders: OrderDto[]) => {
           let inProgress = orders.filter(order => order.status === 2);
           const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
+          const isAdmin = this.userContext.isAdminUser();
+          if (!isAdmin && currentUser?.departmentId) {
             inProgress = inProgress.filter(order => order.departmentId === currentUser.departmentId);
           }
 
@@ -417,21 +574,91 @@ export class DashboardComponent implements OnInit, OnDestroy {
             requestDate: this.formatOrderDate(order),
             departmentName: this.resolveOrderDepartmentName(order),
             requesterName: order.requesterName || 'N/A',
+            items: this.mapOrderItems(order.requestItems),
             requestId: order.id,
           }));
 
-          const aggregateCard: DashboardCard = {
-            title: 'Requests On Progress',
-            status: 'on-progress',
-            orders: ordersList,
-            permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-            departmentIds: currentUser?.departmentId != null ? [currentUser.departmentId] : undefined
-          };
+          // Merge Return status=2
+          this.returnService.getAllReturns().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (returns: ReturnDto[]) => {
+              let ret = (returns || []).filter(r => r.status === 2);
+              if (!isAdmin && currentUser?.departmentId) ret = ret.filter(r => r.departmentId === currentUser.departmentId);
+              const returnView: OrderItem[] = ret.map(r => ({
+                orderId: r.requestNo || `#${r.id}`,
+                requestDate: this.formatRequestDate(r),
+                departmentName: (r as any).departmentName || 'N/A',
+                requesterName: r.requesterName || 'N/A',
+                items: (r.requestItems || []).map((it: any) => ({
+                  itemName: it.itemName || it.itemNo || 'N/A',
+                  itemNo: it.itemNo || 'N/A',
+                  quantity: Number(it.quantity ?? 0),
+                  notes: it.notes || undefined
+                }))
+              }));
 
-          // Replace existing aggregate in-progress card
-          this.allCards = this.allCards.filter(c => !(c.status === 'on-progress' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
-          this.allCards.push(aggregateCard);
-          this.filterCardsByPermissionsAndRoles();
+              // Merge Discard status=2
+              this.discardService.getAllDiscards().pipe(takeUntil(this.destroy$)).subscribe({
+                next: (discards: DiscardDto[]) => {
+                  let dis = (discards || []).filter(d => d.status === 2);
+                  if (!isAdmin && currentUser?.departmentId) dis = dis.filter(d => d.departmentId === currentUser.departmentId);
+                  const discardView: OrderItem[] = dis.map(d => ({
+                    orderId: d.requestNo || `#${d.id}`,
+                    requestDate: this.formatRequestDate(d),
+                    departmentName: (d as any).departmentName || 'N/A',
+                    requesterName: d.requesterName || 'N/A',
+                    items: (d.requestItems || []).map((it: any) => ({
+                      itemName: it.itemName || it.itemNo || 'N/A',
+                      itemNo: it.itemNo || 'N/A',
+                      quantity: Number(it.quantity ?? 0),
+                      notes: it.notes || undefined
+                    }))
+                  }));
+
+                  const merged = [...ordersList, ...returnView, ...discardView];
+                  const aggregateCard: DashboardCard = {
+                    title: 'Requests On Progress',
+                    status: 'on-progress',
+                    orders: merged,
+                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                    departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined,
+                    discardRequestId: discardView.length > 0 ? dis[0]?.id : undefined
+                  };
+
+                  // Replace existing aggregate in-progress card
+                  this.allCards = this.allCards.filter(c => !(c.status === 'on-progress' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+                  this.allCards.push(aggregateCard);
+                  this.filterCardsByPermissionsAndRoles();
+                },
+                error: () => {
+                  const merged = [...ordersList, ...returnView];
+                  const aggregateCard: DashboardCard = {
+                    title: 'Requests On Progress',
+                    status: 'on-progress',
+                    orders: merged,
+                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                    departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined
+                  };
+                  this.allCards = this.allCards.filter(c => !(c.status === 'on-progress' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+                  this.allCards.push(aggregateCard);
+                  this.filterCardsByPermissionsAndRoles();
+                }
+              });
+            },
+            error: () => {
+              const aggregateCard: DashboardCard = {
+                title: 'Requests On Progress',
+                status: 'on-progress',
+                orders: ordersList,
+                permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined
+              };
+              this.allCards = this.allCards.filter(c => !(c.status === 'on-progress' && !c.orderRequestId && !c.returnRequestId && !c.discardRequestId));
+              this.allCards.push(aggregateCard);
+              this.filterCardsByPermissionsAndRoles();
+            }
+          });
         },
         error: () => {
           // ignore errors silently on dashboard aggregation
@@ -605,7 +832,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private formatRequestDate(request: ReturnDto | DiscardDto): string {
-    return this.formatDashboardDate();
+    const dateSource = (request as any).creationDate || (request as any).createdOn;
+    return this.formatDashboardDate(dateSource);
   }
 
     formatOrderDate(order: OrderDto): string {

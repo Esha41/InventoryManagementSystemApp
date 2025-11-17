@@ -196,19 +196,58 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
                   // Note: no requestId so View Details button will still target the first order entry
                 }));
 
-                const merged: OrderItem[] = [...ordersView, ...returnsView];
-                const card: DashboardCard = {
-                  title: 'New',
-                  status: 'new-issue',
-                  orders: merged,
-                  permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                  departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                  // Ensure details button works even if there are only returns
-                  returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined
-                };
-                this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
-                this.allCards.push(card);
-                this.filterCards();
+                // Also include Discard requests with status = 1
+                this.discardService.getAllDiscards()
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (discards: DiscardDto[]) => {
+                      let discardList = (discards || []).filter(d => d.status === 1);
+                      if (!isAdmin && user?.departmentId) {
+                        discardList = discardList.filter(d => d.departmentId === user.departmentId);
+                      }
+                      const discardView: OrderItem[] = discardList.map(d => ({
+                        orderId: d.requestNo || `#${d.id}`,
+                        requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
+                        departmentName: (d as any).departmentName || 'N/A',
+                        requesterName: d.requesterName || 'N/A',
+                        items: (d.requestItems || []).map((it: any) => ({
+                          itemName: it.itemName || it.itemNo || 'N/A',
+                          itemNo: it.itemNo || 'N/A',
+                          quantity: Number(it.quantity ?? 0),
+                          notes: it.notes || undefined
+                        }))
+                      }));
+
+                      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined,
+                        discardRequestId: (ordersView.length === 0 && returnsView.length === 0 && discardList.length > 0) ? discardList[0].id : undefined
+                      };
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCards();
+                    },
+                    error: () => {
+                      // Fallback to orders + returns if discards fail
+                      const merged: OrderItem[] = [...ordersView, ...returnsView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined
+                      };
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCards();
+                    }
+                  });
               },
               error: () => {
                 // Fallback to only orders if returns fail
@@ -534,24 +573,70 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (inventories: any[]) => {
+          console.log('Loaded inventories for overstock:', inventories);
           const out: OverstockItemView[] = [];
+          
+          if (!inventories || inventories.length === 0) {
+            console.log('No inventories found');
+            this.overstockItems = [];
+            return;
+          }
+          
           (inventories || []).forEach((inv: any) => {
-            (inv.inventoryDetails || []).forEach((d: any) => {
-              const total: number = Number(d.itemQuantity || 0);
-              const expDate: string | Date | undefined = d.item?.expiryDate;
-              const exp = expDate ? new Date(expDate as any) : null;
-              out.push({
-                name: d.item?.name || d.item?.itemNo || 'Item',
-                lot: d.lot,
-                percentage: Math.min(100, Math.round((total / Math.max(total, 1)) * 100)),
-                expiryDate: exp ? `${exp.getDate()} ${exp.toLocaleString('en', { month: 'short' })} ${exp.getFullYear()}` : undefined,
-                imageUrl: d.item?.itemType === 2 ? 'assets/Weapon .png' : 'assets/Ammunition.png'
-              });
+            console.log('Processing inventory:', inv);
+            const details = inv.inventoryDetails || [];
+            console.log('Inventory details:', details);
+            
+            if (!details || details.length === 0) {
+              console.log('No inventory details found for inventory:', inv.id);
+              return;
+            }
+            
+            details.forEach((d: any) => {
+              // Use itemQuantity (which is what warehouse inventory uses)
+              const quantity: number = Number(d.itemQuantity ?? d.currentQuantity ?? 0);
+              console.log('Processing detail:', d, 'Quantity:', quantity);
+              
+              // Only include items with quantity > 0
+              if (quantity > 0) {
+                const expDate: string | Date | undefined = d.item?.expiryDate;
+                const exp = expDate ? new Date(expDate as any) : null;
+                
+                // Calculate percentage based on quantity (normalize to 0-100)
+                // For overstock, we'll use a simple scale: items with higher quantities get higher percentages
+                // You can adjust this logic based on your business rules (e.g., compare against a threshold)
+                const maxQuantity = 10000; // Adjust this threshold based on your needs
+                const percentage = Math.min(100, Math.round((quantity / maxQuantity) * 100));
+                
+                const itemName = d.item?.name || d.item?.itemNo || 'Item';
+                console.log('Adding item to overstock:', itemName, 'Quantity:', quantity, 'Percentage:', percentage);
+                
+                out.push({
+                  name: itemName,
+                  lot: d.lot || 'N/A',
+                  percentage: percentage,
+                  expiryDate: exp && !isNaN(exp.getTime()) ? `${exp.getDate()} ${exp.toLocaleString('en', { month: 'short' })} ${exp.getFullYear()}` : undefined,
+                  imageUrl: d.item?.itemType === 2 ? 'assets/Weapon .png' : 'assets/Ammunition.png'
+                });
+              } else {
+                console.log('Skipping item with quantity 0:', d);
+              }
             });
           });
+          
+          console.log('Total items found:', out.length);
+          
+          // Sort by quantity descending to show highest stock items first
+          out.sort((a, b) => b.percentage - a.percentage);
+          
+          // Take top 10 items
           this.overstockItems = out.slice(0, 10);
+          console.log('Final overstock items:', this.overstockItems);
         },
-        error: () => { this.overstockItems = []; }
+        error: (err) => { 
+          console.error('Failed to load overstock items:', err);
+          this.overstockItems = []; 
+        }
       });
   }
 
