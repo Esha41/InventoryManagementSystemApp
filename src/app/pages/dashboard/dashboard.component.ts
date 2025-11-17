@@ -138,7 +138,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (orders: OrderDto[]) => {
           let newOrders = orders.filter(order => order.status === 1);
           const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
+          const isAdmin = this.userContext.isAdminUser();
+          if (!isAdmin && currentUser?.departmentId) {
             newOrders = newOrders.filter(order => order.departmentId === currentUser.departmentId);
           }
 
@@ -158,10 +159,100 @@ export class DashboardComponent implements OnInit, OnDestroy {
             orderRequestId: order.id
           }));
 
-          this.allCards = this.allCards.filter(card => !card.orderRequestId);
-          this.allCards.push(...orderCards);
+          // Also include Return requests with status = 1
+          this.returnService.getAllReturns()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (returns: ReturnDto[]) => {
+                let returnList = (returns || []).filter(r => r.status === 1);
+                if (!isAdmin && currentUser?.departmentId) {
+                  returnList = returnList.filter(r => r.departmentId === currentUser.departmentId);
+                }
+                this.returnRequestsMap = new Map(returnList.map(r => [r.id, r]));
+                
+                const returnsView: OrderItem[] = returnList.map(r => ({
+                  orderId: r.requestNo || `#${r.id}`,
+                  requestDate: this.formatRequestDate(r),
+                  departmentName: (r as any).departmentName || 'N/A',
+                  requesterName: r.requesterName || 'N/A',
+                  items: (r.requestItems || []).map((it: any) => ({
+                    itemName: it.itemName || it.itemNo || 'N/A',
+                    itemNo: it.itemNo || 'N/A',
+                    quantity: Number(it.quantity ?? 0),
+                    notes: it.notes || undefined
+                  }))
+                }));
 
-          this.filterCardsByPermissionsAndRoles();
+                // Also include Discard requests with status = 1
+                this.discardService.getAllDiscards()
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: (discards: DiscardDto[]) => {
+                      let discardList = (discards || []).filter(d => d.status === 1);
+                      if (!isAdmin && currentUser?.departmentId) {
+                        discardList = discardList.filter(d => d.departmentId === currentUser.departmentId);
+                      }
+                      this.discardRequestsMap = new Map(discardList.map(d => [d.id, d]));
+                      
+                      const discardView: OrderItem[] = discardList.map(d => ({
+                        orderId: d.requestNo || `#${d.id}`,
+                        requestDate: this.formatRequestDate(d),
+                        departmentName: (d as any).departmentName || 'N/A',
+                        requesterName: d.requesterName || 'N/A',
+                        items: (d.requestItems || []).map((it: any) => ({
+                          itemName: it.itemName || it.itemNo || 'N/A',
+                          itemNo: it.itemNo || 'N/A',
+                          quantity: Number(it.quantity ?? 0),
+                          notes: it.notes || undefined
+                        }))
+                      }));
+
+                      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined,
+                        discardRequestId: (ordersView.length === 0 && returnsView.length === 0 && discardList.length > 0) ? discardList[0].id : undefined
+                      };
+                      
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCardsByPermissionsAndRoles();
+                    },
+                    error: () => {
+                      // Fallback to orders + returns if discards fail
+                      const merged: OrderItem[] = [...ordersView, ...returnsView];
+                      const card: DashboardCard = {
+                        title: 'New',
+                        status: 'new-issue',
+                        orders: merged,
+                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                        departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined,
+                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined
+                      };
+                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                      this.allCards.push(card);
+                      this.filterCardsByPermissionsAndRoles();
+                    }
+                  });
+              },
+              error: () => {
+                // Fallback to only orders if returns fail
+                const card: DashboardCard = {
+                  title: 'New',
+                  status: 'new-issue',
+                  orders: ordersView,
+                  permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+                  departmentIds: (!isAdmin && currentUser?.departmentId != null) ? [currentUser.departmentId] : undefined
+                };
+                this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
+                this.allCards.push(card);
+                this.filterCardsByPermissionsAndRoles();
+              }
+            });
         },
         error: () => {
           // Silently fail - don't show error to user
@@ -335,7 +426,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private formatRequestDate(request: ReturnDto | DiscardDto): string {
-    return this.formatDashboardDate();
+    const dateSource = (request as any).creationDate || (request as any).createdOn;
+    return this.formatDashboardDate(dateSource);
   }
 
     formatOrderDate(order: OrderDto): string {
