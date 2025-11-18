@@ -148,14 +148,131 @@ export class UserContextService {
   }
 
   private fetchCurrentUserProfile(): Observable<BackendUserDto | null> {
-    return this.apiService.getWithAuth<APIOperationResponse<BackendUserDto>>(API_ENDPOINTS.AUTH.PROFILE).pipe(
+    // Use /Users/me endpoint which returns more complete user data
+    return this.apiService.getWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME).pipe(
       map(response => {
         if (response?.succeeded && response.data) {
-          return response.data;
+          // Map the API response to BackendUserDto format
+          return this.mapApiResponseToDto(response.data);
         }
         throw new Error(response?.message || 'Failed to load current user profile');
       })
     );
+  }
+
+  /**
+   * Maps the API response from /Users/me to BackendUserDto
+   * Handles field name differences and typos (DeparmentId, MilitoryId, etc.)
+   */
+  private mapApiResponseToDto(apiData: any): BackendUserDto {
+    // Extract department info from department object or use direct field
+    const departmentId = this.toNumber(
+      apiData.department?.id ?? 
+      apiData.Department?.Id ?? 
+      apiData.deparmentId ??  // Backend typo: missing 't'
+      apiData.DeparmentId ?? 
+      apiData.departmentId ?? 
+      apiData.DepartmentId
+    );
+
+    // Extract department name from department object (prefer English, fallback to Arabic)
+    const departmentName = 
+      apiData.department?.nameEn ?? 
+      apiData.department?.NameEn ?? 
+      apiData.Department?.NameEn ?? 
+      apiData.department?.nameAr ?? 
+      apiData.department?.NameAr ?? 
+      apiData.Department?.NameAr ?? 
+      apiData.departmentName ?? 
+      apiData.DepartmentName;
+
+    // Map FullNameEN/FullNameAR to nameEn/nameAr
+    const nameEn = 
+      apiData.fullNameEN ?? 
+      apiData.FullNameEN ?? 
+      apiData.fullNameEn ?? 
+      apiData.FullNameEn ?? 
+      apiData.nameEn ?? 
+      apiData.NameEn;
+
+    const nameAr = 
+      apiData.fullNameAR ?? 
+      apiData.FullNameAR ?? 
+      apiData.fullNameAr ?? 
+      apiData.FullNameAr ?? 
+      apiData.nameAr ?? 
+      apiData.NameAr;
+
+    // Extract role IDs from roles array and normalize role objects
+    const roleIds: string[] = [];
+    const normalizedRoles: any[] = [];
+    
+    const rolesArray = apiData.roles ?? apiData.Roles ?? [];
+    if (Array.isArray(rolesArray)) {
+      rolesArray.forEach((role: any) => {
+        const roleId = String(role.id ?? role.Id ?? '');
+        if (roleId !== '') {
+          roleIds.push(roleId);
+        }
+        // Normalize role object to have both camelCase and PascalCase
+        normalizedRoles.push({
+          id: roleId,
+          name: role.name ?? role.Name ?? '',
+          isDefaultRole: role.isDefaultRole ?? role.IsDefaultRole ?? false,
+          isSuperAdmin: role.isSuperAdmin ?? role.IsSuperAdmin ?? false
+        });
+      });
+    }
+
+    // Handle militaryId typo (MilitoryId in backend)
+    const militaryId = 
+      apiData.militaryId ?? 
+      apiData.MilitaryId ?? 
+      apiData.militoryId ??  // Backend typo
+      apiData.MilitoryId;
+
+    // Map rank info if available
+    const rankId = this.toNumber(
+      apiData.rankId ?? 
+      apiData.RankId ?? 
+      apiData.rank?.id ?? 
+      apiData.Rank?.Id
+    );
+
+    const rankNameEn = 
+      apiData.rank?.nameEn ?? 
+      apiData.rank?.NameEn ?? 
+      apiData.Rank?.NameEn ?? 
+      apiData.rankNameEn ?? 
+      apiData.RankNameEn;
+
+    const rankNameAr = 
+      apiData.rank?.nameAr ?? 
+      apiData.rank?.NameAr ?? 
+      apiData.Rank?.NameAr ?? 
+      apiData.rankNameAr ?? 
+      apiData.RankNameAr;
+
+    return {
+      id: String(apiData.id ?? apiData.Id ?? ''),
+      userName: String(apiData.userName ?? apiData.UserName ?? ''),
+      email: String(apiData.email ?? apiData.Email ?? ''),
+      isLdapUser: Boolean(apiData.isLdapUser ?? apiData.IsLdapUser ?? false),
+      ldapUserName: apiData.ldapUserName ?? apiData.LdapUserName,
+      extraEmployeesView: apiData.extraEmployeesView ?? apiData.ExtraEmployeesView,
+      organizationId: this.toNumber(apiData.organizationId ?? apiData.OrganizationId) ?? undefined,
+      departmentId: departmentId ?? undefined,
+      departmentName: departmentName,
+      nameEn: nameEn || undefined,
+      nameAr: nameAr || undefined,
+      rankId: rankId ?? undefined,
+      rankNameEn: rankNameEn || undefined,
+      rankNameAr: rankNameAr || undefined,
+      militaryId: militaryId || undefined,
+      militoryId: militaryId || undefined, // Also set the typo version for compatibility
+      roles: normalizedRoles,
+      roleIds: roleIds
+    };
   }
 }
 

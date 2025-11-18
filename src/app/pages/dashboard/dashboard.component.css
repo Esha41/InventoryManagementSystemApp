@@ -1,2 +1,76 @@
-/* Dashboard specific styles if needed */
+/* Dashboard specific styles */
+
+/* Smooth animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.slide-in-from-bottom-4 {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* Card hover effects */
+app-status-card {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+app-status-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1024px) {
+  .grid.lg\\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .grid.lg\\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom scrollbar for modal */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: var(--color-background-muted);
+  border-radius: var(--radius-md);
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: var(--radius-md);
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text);
+}
 

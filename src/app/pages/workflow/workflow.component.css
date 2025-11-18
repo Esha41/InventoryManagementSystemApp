@@ -88,7 +88,7 @@
   min-width: 80px;
 }
 
-/* Edit Modal Dropdown Positioning Styles */
+/* Edit Modal Table Styles */
 .edit-steps-table-wrapper {
   width: 100%;
   position: relative;
@@ -102,6 +102,7 @@
   max-height: 400px;
   overflow-y: auto;
   overflow-x: auto;
+  position: relative;
 }
 
 .edit-steps-table {

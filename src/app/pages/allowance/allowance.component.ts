@@ -126,8 +126,8 @@ export class AllowanceComponent implements OnInit {
   }
 
   onItemSearch(index: number, term: string): void {
-    this.searchTerms[index] = term;
-    this.searchSubject.next({ index, term });
+    this.searchTerms[index] = term || '';
+    this.searchSubject.next({ index, term: term || '' });
   }
 
   filterAmmunition(index: number, term: string): void {
@@ -556,5 +556,6 @@ export class AllowanceComponent implements OnInit {
       }
     }
   }
+
 }
 
