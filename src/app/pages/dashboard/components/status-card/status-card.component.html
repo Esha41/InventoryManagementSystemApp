@@ -47,7 +47,9 @@
         <div *ngIf="!order.items || order.items.length === 0" class="status-card__value status-card__value--muted">
           {{ 'dashboard.noItems' | translate }}
         </div>
-        <div *ngIf="order.items && order.items.length > 0" class="status-card__item-list">
+        <div *ngIf="order.items && order.items.length > 0" 
+             class="status-card__item-list"
+             [class.status-card__item-list--scrollable]="order.items.length > 1">
           <div *ngFor="let item of order.items" class="status-card__item">
             <div class="status-card__item-name">{{ item.itemName || item.itemNo || 'N/A' }}</div>
             <div class="status-card__item-qty">
