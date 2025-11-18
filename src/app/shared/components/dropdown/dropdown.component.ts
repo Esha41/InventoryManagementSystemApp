@@ -98,6 +98,11 @@ export class  DropdownComponent<T = Primitive>
   @Input() disabled = false;
 
   /**
+   * When true, allows multiple selections. Value will be an array.
+   */
+  @Input() multiple = false;
+
+  /**
    * Message shown when no options are available.
    */
   @Input() noDataText = 'No options available';
@@ -151,15 +156,15 @@ export class  DropdownComponent<T = Primitive>
   /**
    * Emits the value of the newly selected option.
    */
-  @Output() selectionChange = new EventEmitter<T | null>();
+  @Output() selectionChange = new EventEmitter<T | null | T[]>();
 
   isOpen = false;
   hoveredIndex: number | null = null;
   searchTerm = '';
 
-  private innerValue: T | null = null;
+  private innerValue: T | null | T[] = null;
   private _required = false;
-  private onChange: (value: T | null) => void = () => {};
+  private onChange: (value: T | null | T[]) => void = () => {};
   private onTouched: () => void = () => {};
   private onValidatorChange: () => void = () => {};
 
@@ -203,6 +208,9 @@ export class  DropdownComponent<T = Primitive>
    * Indicates whether a non-null/undefined value is currently selected.
    */
   get hasSelection(): boolean {
+    if (this.multiple) {
+      return Array.isArray(this.innerValue) && this.innerValue.length > 0;
+    }
     return this.innerValue !== null && this.innerValue !== undefined && this.innerValue !== '';
   }
 
@@ -214,7 +222,33 @@ export class  DropdownComponent<T = Primitive>
       return this.placeholder;
     }
 
-    const option = this.findOptionByValue(this.innerValue);
+    if (this.multiple && Array.isArray(this.innerValue)) {
+      if (this.innerValue.length === 0) {
+        return this.placeholder;
+      }
+      
+      // Get labels for all selected options
+      const selectedLabels = this.innerValue
+        .map(value => {
+          const option = this.findOptionByValue(value);
+          return option ? this.getOptionLabel(option) : this.formatLabel(value);
+        })
+        .filter(label => label && label.trim() !== '');
+      
+      if (selectedLabels.length === 0) {
+        return this.placeholder;
+      }
+      
+      // Show all selected role names, or count if too many
+      if (selectedLabels.length <= 3) {
+        return selectedLabels.join(', ');
+      }
+      
+      // If more than 3, show first 3 and count
+      return `${selectedLabels.slice(0, 3).join(', ')} +${selectedLabels.length - 3} more`;
+    }
+
+    const option = this.findOptionByValue(this.innerValue as T);
     if (!option) {
       return this.formatLabel(this.innerValue);
     }
@@ -222,8 +256,12 @@ export class  DropdownComponent<T = Primitive>
     return this.getOptionLabel(option);
   }
 
-  writeValue(value: T | null): void {
-    this.innerValue = value;
+  writeValue(value: T | null | T[]): void {
+    if (this.multiple) {
+      this.innerValue = Array.isArray(value) ? value : (value !== null && value !== undefined ? [value] : []);
+    } else {
+      this.innerValue = value as T | null;
+    }
   }
 
   registerOnChange(fn: any): void {
@@ -241,6 +279,11 @@ export class  DropdownComponent<T = Primitive>
   validate(_: AbstractControl): ValidationErrors | null {
     if (!this._required) {
       return null;
+    }
+
+    if (this.multiple) {
+      const hasValue = Array.isArray(this.innerValue) && this.innerValue.length > 0;
+      return hasValue ? null : { required: true };
     }
 
     const hasValue = this.innerValue !== null && this.innerValue !== undefined && this.innerValue !== '';
@@ -295,15 +338,54 @@ export class  DropdownComponent<T = Primitive>
     }
 
     const value = this.getOptionValue(option);
-    this.innerValue = value;
-    this.onChange(this.innerValue);
+    
+    // Handle placeholder option
+    if (this.placeholderSelectable && value === this.placeholderValue) {
+      if (this.multiple) {
+        this.innerValue = [] as T[];
+      } else {
+        this.innerValue = null;
+      }
+      this.onChange(this.innerValue);
+      this.selectionChange.emit(this.innerValue);
+      this.close();
+      this.onTouched();
+      return;
+    }
+    
+    if (this.multiple) {
+      const currentValues = Array.isArray(this.innerValue) ? [...this.innerValue] : [];
+      const index = currentValues.findIndex(v => v === value);
+      
+      if (index > -1) {
+        // Remove if already selected
+        currentValues.splice(index, 1);
+      } else {
+        // Add if not selected
+        currentValues.push(value);
+      }
+      
+      this.innerValue = currentValues as T[];
+      this.onChange(this.innerValue);
+      this.selectionChange.emit(this.innerValue);
+      // Don't close dropdown in multiple mode
+    } else {
+      this.innerValue = value;
+      this.onChange(this.innerValue);
+      this.selectionChange.emit(this.innerValue);
+      this.close();
+    }
+    
     this.onTouched();
-    this.selectionChange.emit(this.innerValue);
-    this.close();
   }
 
   isSelected(option: DropdownOption<T> | T): boolean {
     const optionValue = this.getOptionValue(option);
+    
+    if (this.multiple) {
+      return Array.isArray(this.innerValue) && this.innerValue.includes(optionValue);
+    }
+    
     return optionValue === this.innerValue;
   }
 
