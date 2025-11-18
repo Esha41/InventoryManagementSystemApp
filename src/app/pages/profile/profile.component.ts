@@ -10,7 +10,36 @@ import { TranslationService } from '@services/translation.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
-import { ProfileDataService, UserMeResponse } from '@services/profile-data.service';
+
+// Interface for the API response from /Users/me
+interface UserMeResponse {
+  id: string;
+  userName: string;
+  email: string;
+  isLdapUser?: boolean;
+  ldapUserName?: string;
+  isSuperAdmin?: boolean;
+  extraEmployeesView?: string;
+  deparmentId?: number | null; // Note: API has typo "deparmentId"
+  roles?: Array<{ id: string; name: string }>;
+  fullNameEN?: string;
+  fullNameAR?: string;
+  rankId?: number | null;
+  militoryId?: string | number | null; // Note: API has typo "militoryId"
+  department?: {
+    id: number;
+    code?: string;
+    nameEn?: string;
+    nameAr?: string;
+    isDeleted?: boolean;
+  };
+  rank?: {
+    id: number;
+    nameEn?: string;
+    nameAr?: string;
+    isDeleted?: boolean;
+  };
+}
 
 @Component({
   selector: 'app-profile',
@@ -42,8 +71,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private apiService: ApiService,
     private translateService: TranslateService,
-    private translationService: TranslationService,
-    private profileDataService: ProfileDataService
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -51,18 +79,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load profile data from localStorage first, then from API
+   * Load profile data from API
    */
   loadProfile(): void {
     this.loading = true;
     this.error = null;
-
-    // Try to load from localStorage first using the service
-    const cachedProfile = this.profileDataService.getProfile();
-    if (cachedProfile) {
-      this.currentUser = cachedProfile;
-      this.loading = false;
-    }
 
     // Fetch both user profile and user claims (for permissions)
     forkJoin({
@@ -86,10 +107,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           if (!profile.succeeded || !profile.data) {
             throw new Error(profile.message || 'Failed to load profile');
           }
-          const user = this.mapApiResponseToAuthenticatedUser(profile.data, claims.permissions || []);
-          // Save all fields including API response data using the service
-          this.profileDataService.saveProfile(user, profile.data);
-          return user;
+          return this.mapApiResponseToAuthenticatedUser(profile.data, claims.permissions || []);
         }),
         catchError(error => {
           this.error = error?.message || this.translateService.instant('profile.errorLoadingProfile');
@@ -100,7 +118,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
             .subscribe(user => {
               if (user) {
                 this.currentUser = user;
-                this.profileDataService.saveProfile(user);
               }
             });
           return of(null);
