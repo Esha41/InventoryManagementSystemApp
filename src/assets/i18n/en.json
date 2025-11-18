@@ -67,7 +67,10 @@
     "newReturns": "New Returns",
     "onProgress": "On Progress",
     "completed": "Completed",
-    "orderId": "Order ID",
+    "orderId": "Order Number",
+    "orderNumber": "Order Number",
+    "returnNumber": "Return Number",
+    "discardNumber": "Discard Number",
     "requestDate": "Request Date",
     "department": "Department",
     "requester": "Requester",
@@ -1042,6 +1045,7 @@
     "remove": "Remove",
     "itemId": "Item ID",
     "itemIdPlaceholder": "Search by name, item no, batch no...",
+    "clearFilter": "Clear filter",
     "itemNo": "Item No",
     "batchNo": "Batch No",
     "noItemsFound": "No items found",
@@ -1085,6 +1089,31 @@
     "success": {
       "sentSuccessfully": "Allowance request sent successfully!"
     }
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "View your account information and permissions",
+    "userInformation": "User Information",
+    "username": "Username",
+    "email": "Email",
+    "userId": "User ID",
+    "ldapUser": "LDAP Authentication",
+    "ldapEnabled": "Enabled",
+    "ldapDisabled": "Disabled",
+    "ldapUsername": "LDAP Username",
+    "rank": "Rank",
+    "department": "Department",
+    "militaryId": "Military ID",
+    "organization": "Organization",
+    "additionalInformation": "Additional Information",
+    "rolesAndPermissions": "Roles & Permissions",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "permissionCount": "permissions",
+    "noRoles": "No roles assigned",
+    "noUserData": "User data not available",
+    "noUserDataDescription": "Unable to load user information. Please try refreshing the page.",
+    "errorLoadingProfile": "Failed to load profile. Please try again later."
   },
   "auth": {
     "login": {

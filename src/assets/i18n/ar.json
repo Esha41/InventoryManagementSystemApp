@@ -67,6 +67,9 @@
     "onProgress": "قيد التنفيذ",
     "completed": "مكتمل",
     "orderId": "رقم الطلب",
+    "orderNumber": "رقم الطلب",
+    "returnNumber": "رقم الإرجاع",
+    "discardNumber": "رقم الإتلاف",
     "requestDate": "تاريخ الطلب",
     "department": "القسم",
     "requester": "المقدم",
@@ -1036,6 +1039,7 @@
     "remove": "إزالة",
     "itemId": "معرف العنصر",
     "itemIdPlaceholder": "البحث بالاسم، رقم العنصر، رقم الدفعة...",
+    "clearFilter": "مسح الفلتر",
     "itemNo": "رقم العنصر",
     "batchNo": "رقم الدفعة",
     "noItemsFound": "لم يتم العثور على عناصر",
@@ -1079,6 +1083,31 @@
     "success": {
       "sentSuccessfully": "تم إرسال طلب البدل بنجاح!"
     }
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "subtitle": "عرض معلومات حسابك والصلاحيات",
+    "userInformation": "معلومات المستخدم",
+    "username": "اسم المستخدم",
+    "email": "البريد الإلكتروني",
+    "userId": "رقم المستخدم",
+    "ldapUser": "المصادقة عبر LDAP",
+    "ldapEnabled": "مفعل",
+    "ldapDisabled": "معطل",
+    "ldapUsername": "اسم مستخدم LDAP",
+    "rank": "الرتبة",
+    "department": "القسم",
+    "militaryId": "الرقم العسكري",
+    "organization": "المنظمة",
+    "additionalInformation": "معلومات إضافية",
+    "rolesAndPermissions": "الأدوار والصلاحيات",
+    "roles": "الأدوار",
+    "permissions": "الصلاحيات",
+    "permissionCount": "صلاحية",
+    "noRoles": "لا توجد أدوار معينة",
+    "noUserData": "بيانات المستخدم غير متوفرة",
+    "noUserDataDescription": "تعذر تحميل معلومات المستخدم. يرجى محاولة تحديث الصفحة.",
+    "errorLoadingProfile": "فشل تحميل الملف الشخصي. يرجى المحاولة مرة أخرى لاحقاً."
   },
   "auth": {
     "login": {

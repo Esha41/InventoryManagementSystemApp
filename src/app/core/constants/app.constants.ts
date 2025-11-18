@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
   // User Management
   USERS: {
     BASE: '/Users',
+    ME: '/Users/me',
     BY_ID: (id: string) => `/Users/${id}`,
     ROLES: (id: string) => `/Users/${id}/roles`,
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,

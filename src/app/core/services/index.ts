@@ -19,3 +19,4 @@ export * from './return.service';
 export * from './discard.service';
 export * from './notification.service';
 export * from './offline-map.service';
+export * from './profile-data.service';

@@ -10,7 +10,7 @@
     
     <!-- Filters and Add Button -->
     <div *ngIf="!loading && !error" class="flex items-center gap-4">
-      <div class="flex-1">
+      <div class="flex-1 relative">
         <app-dropdown
           class="w-full"
           [(ngModel)]="selectedDepartment"
@@ -20,8 +20,20 @@
           [optionLabelFn]="departmentOptionLabel"
           placeholder="{{ 'allowance.selectDepartment' | translate }}">
         </app-dropdown>
+        <!-- Clear Department Filter Button -->
+        <button
+          *ngIf="selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
+          type="button"
+          (click)="clearDepartmentFilter(); $event.stopPropagation()"
+          class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-500 hover:text-gray-700 bg-white border border-gray-200 shadow-sm z-20"
+          style="pointer-events: auto;"
+          [attr.aria-label]="'allowance.clearFilter' | translate"
+          title="{{ 'allowance.clearFilter' | translate }}"
+        >
+          <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+        </button>
       </div>
-      <div class="flex-1">
+      <div class="flex-1 relative">
         <app-dropdown
           class="w-full"
           [(ngModel)]="selectedItem"
@@ -31,6 +43,18 @@
           [optionLabelFn]="itemOptionLabel"
           placeholder="{{ 'allowance.selectItem' | translate }}">
         </app-dropdown>
+        <!-- Clear Item Filter Button -->
+        <button
+          *ngIf="selectedItem !== null && selectedItem !== undefined && selectedItem !== ''"
+          type="button"
+          (click)="clearItemFilter(); $event.stopPropagation()"
+          class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-500 hover:text-gray-700 bg-white border border-gray-200 shadow-sm z-20"
+          style="pointer-events: auto;"
+          [attr.aria-label]="'allowance.clearFilter' | translate"
+          title="{{ 'allowance.clearFilter' | translate }}"
+        >
+          <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+        </button>
       </div>
       <app-button variant="primary" (click)="onAddAllowance()">
         <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">

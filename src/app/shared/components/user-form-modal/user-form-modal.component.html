@@ -131,24 +131,25 @@
       />
     </div>
 
-    <!-- Roles Selection -->
+    <!-- Roles Selection (Multiple Dropdown) -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'userFormModal.roles' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <app-dropdown
         class="w-full"
-        formControlName="roleId"
+        formControlName="roleIds"
         [options]="roles"
         optionValue="id"
         optionLabel="name"
-        [placeholderSelectable]="true"
-        [placeholderValue]="null"
-        [error]="!!(userForm.get('roleId')?.invalid && userForm.get('roleId')?.touched)"
+        [multiple]="true"
+        [required]="true"
+        [placeholderSelectable]="false"
+        [error]="!!(userForm.get('roleIds')?.invalid && userForm.get('roleIds')?.touched)"
         placeholder="{{ 'common.select' | translate }}">
       </app-dropdown>
-      <p *ngIf="getFieldError('roleId')" class="mt-2 text-sm text-[var(--color-error)]">
-        {{ getFieldError('roleId') }}
+      <p *ngIf="getFieldError('roleIds')" class="mt-2 text-sm text-[var(--color-error)]">
+        {{ getFieldError('roleIds') }}
       </p>
     </div>
 

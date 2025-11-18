@@ -1,4 +1,4 @@
-/* Dashboard specific styles */
+/* Profile component styles */
 
 /* Smooth animations */
 @keyframes fadeIn {
@@ -10,7 +10,7 @@
   }
 }
 
-@keyframes slideInFromBottom {
+@keyframes slideInUp {
   from {
     transform: translateY(1rem);
     opacity: 0;
@@ -22,40 +22,34 @@
 }
 
 .animate-in {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .fade-in {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.slide-in-from-bottom-4 {
-  animation: slideInFromBottom 0.3s ease-out;
+.slide-in-up {
+  animation: slideInUp 0.4s ease-out;
 }
 
 /* Card hover effects */
-app-status-card {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+.bg-gradient-to-br {
+  transition: all 0.2s ease-out;
 }
 
-app-status-card:hover {
+.bg-gradient-to-br:hover {
   transform: translateY(-2px);
 }
 
-/* Responsive grid adjustments */
-@media (max-width: 1024px) {
-  .grid.lg\\:grid-cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .text-2xl {
+            font-size: 1.5rem;
+          }
+        }
 
-@media (max-width: 768px) {
-  .grid.lg\\:grid-cols-3 {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Custom scrollbar for modal */
+/* Custom scrollbar for profile sections */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
 }

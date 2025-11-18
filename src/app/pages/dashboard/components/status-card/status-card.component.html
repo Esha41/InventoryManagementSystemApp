@@ -24,6 +24,14 @@
         <div class="status-card__info">
           <span class="status-card__label">{{ 'dashboard.orderId' | translate }}</span>
           <span class="status-card__value status-card__value--strong">{{ order.orderId }}</span>
+    
+    <!-- Orders List -->
+    <div *ngFor="let order of orders" class="bg-white rounded-xl p-6 space-y-4" (click)="emitOrderDetails(order.requestId)">
+    <!-- Order ID and Date -->
+    <div class="grid grid-cols-2 gap-4 pb-4 border-b border-[var(--color-border)]">
+      <div>
+        <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
+          {{ getNumberLabelKey() | translate }}
         </div>
         <div class="status-card__info">
           <span class="status-card__label">{{ 'dashboard.requestDate' | translate }}</span>
