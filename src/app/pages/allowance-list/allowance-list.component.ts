@@ -5,7 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LucideAngularModule, Plus, Edit2, Trash2, Search } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Search, X } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
@@ -88,6 +88,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
   readonly Search = Search;
+  readonly X = X;
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
@@ -287,6 +288,27 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   onItemChange(): void {
     this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  clearDepartmentFilter(): void {
+    this.selectedDepartment = null;
+    this.currentPage = 1;
+    this.updateFilteredItems();
+    this.applyFilters();
+  }
+
+  clearItemFilter(): void {
+    this.selectedItem = null;
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  clearAllFilters(): void {
+    this.selectedDepartment = null;
+    this.selectedItem = null;
+    this.currentPage = 1;
+    this.updateFilteredItems();
     this.applyFilters();
   }
 

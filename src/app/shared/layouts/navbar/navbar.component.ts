@@ -5,7 +5,9 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { UserContextService } from '@services/user-context.service';
 import { AuthenticatedUser } from '@models/auth.model';
+import { BackendUserDto } from '@models/backend-user.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
 
@@ -24,6 +26,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
 
   currentUser: AuthenticatedUser | null = null;
+  userDetails: BackendUserDto | null = null;
   showUserMenu = false;
   notificationCount = 0;
 
@@ -33,6 +36,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private router: Router,
     public translationService: TranslationService,
     private authService: BackendAuthService,
+    private userContextService: UserContextService,
     private notificationService: NotificationService
   ) {}
 
@@ -44,6 +48,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
+      });
+
+    // Get full user details from /Users/me endpoint
+    this.userContextService.getCurrentUserDetails()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(details => {
+        this.userDetails = details;
       });
 
     this.notificationService.unreadCount$
@@ -59,21 +70,57 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   getUserFullName(): string {
-    return this.currentUser?.userName || 'User';
+    // Prefer nameEn or nameAr from user details, fallback to userName
+    if (this.userDetails?.nameEn) {
+      return this.userDetails.nameEn;
+    }
+    if (this.userDetails?.nameAr) {
+      return this.userDetails.nameAr;
+    }
+    if (this.currentUser?.nameEn) {
+      return this.currentUser.nameEn;
+    }
+    if (this.currentUser?.nameAr) {
+      return this.currentUser.nameAr;
+    }
+    return this.currentUser?.userName || this.userDetails?.userName || 'User';
   }
 
   getUserInitials(): string {
-    if (!this.currentUser) return 'U';
-    const name = this.currentUser.userName;
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+    const fullName = this.getUserFullName();
+    if (!fullName || fullName === 'User') {
+      return 'U';
     }
-    return name[0]?.toUpperCase() || 'U';
+    
+    // Remove email-like patterns and split by space
+    const cleanName = fullName.split('@')[0].trim();
+    const parts = cleanName.split(/\s+/);
+    
+    if (parts.length >= 2) {
+      // Get first letter of first and last name
+      const first = parts[0][0]?.toUpperCase() || '';
+      const last = parts[parts.length - 1][0]?.toUpperCase() || '';
+      return (first + last) || 'U';
+    }
+    
+    // Single name - use first two letters if available
+    if (cleanName.length >= 2) {
+      return cleanName.substring(0, 2).toUpperCase();
+    }
+    
+    return cleanName[0]?.toUpperCase() || 'U';
   }
 
   getUserRole(): string {
+    // Try to get role from user details first
+    if (this.userDetails?.roles && this.userDetails.roles.length > 0) {
+      return this.userDetails.roles[0].name || 'User';
+    }
     return this.currentUser?.roles?.[0] || 'User';
+  }
+
+  getUserEmail(): string {
+    return this.userDetails?.email || this.currentUser?.email || '';
   }
 
   toggleUserMenu(): void {

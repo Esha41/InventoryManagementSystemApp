@@ -224,5 +224,35 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
     return this.currentUser.rankNameEn || '';
   }
+
+  /**
+   * Get user initials for avatar
+   */
+  getUserInitials(): string {
+    if (!this.currentUser) return 'U';
+    
+    const name = this.getUserName();
+    if (!name || name === '') {
+      return this.currentUser.userName?.[0]?.toUpperCase() || 'U';
+    }
+    
+    // Remove email-like patterns and split by space
+    const cleanName = name.split('@')[0].trim();
+    const parts = cleanName.split(/\s+/);
+    
+    if (parts.length >= 2) {
+      // Get first letter of first and last name
+      const first = parts[0][0]?.toUpperCase() || '';
+      const last = parts[parts.length - 1][0]?.toUpperCase() || '';
+      return (first + last) || 'U';
+    }
+    
+    // Single name - use first two letters if available
+    if (cleanName.length >= 2) {
+      return cleanName.substring(0, 2).toUpperCase();
+    }
+    
+    return cleanName[0]?.toUpperCase() || 'U';
+  }
 }
 
