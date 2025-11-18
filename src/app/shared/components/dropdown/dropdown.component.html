@@ -44,7 +44,18 @@
         [class.app-dropdown-option-disabled]="isOptionDisabled(option)"
         (click)="selectOption(option)"
       >
-        {{ getOptionLabel(option) }}
+        <span *ngIf="multiple" class="flex items-center gap-2 w-full">
+          <input
+            type="checkbox"
+            [checked]="isSelected(option)"
+            (click)="$event.stopPropagation()"
+            (change)="selectOption(option)"
+            class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
+            [disabled]="isOptionDisabled(option)"
+          />
+          <span class="flex-1">{{ getOptionLabel(option) }}</span>
+        </span>
+        <span *ngIf="!multiple">{{ getOptionLabel(option) }}</span>
       </li>
       <li class="app-dropdown-empty" *ngIf="computedOptions.length === 0">
         {{ searchTerm ? 'No results found' : noDataText }}
