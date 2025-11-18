@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
@@ -10,23 +10,17 @@ import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@servic
 import { AmmunitionService } from '@services/ammunition.service';
 import { CreateInventoryDto, CreateInventoryDetailDto } from '@models/inventory.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-
-interface InventoryItemForm {
-  itemId: number;
-  itemName: string;
-  lot: number;
-  supplierId?: number;
-  manufacturerId?: number;
-  countryId?: number;
-  itemQuantity: number;
-}
+import { ToastService } from '@services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-add-inventory',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     TranslateModule,
     LucideAngularModule,
@@ -45,15 +39,11 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   warehouseId!: number;
   warehouseName: string = '';
 
-  // Form data
-  invoiceNumber: string = '';
-  invoiceDate: string = '';
-  receivedDate: string = '';
-  notes: string = '';
-  items: InventoryItemForm[] = [];
+  // Form
+  inventoryForm!: FormGroup;
 
   // Lookup data
-  availableItems: any[] = [];
+  availableItems: AmmunitionReadDto[] = [];
   suppliers: SupplierDto[] = [];
   manufacturers: ManufacturerDto[] = [];
   countries: CountryDto[] = [];
@@ -63,7 +53,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.getLocalizedName(this.unwrapOption(option));
   readonly countryOptionLabel = (option: DropdownOption<CountryDto> | CountryDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
-  readonly itemOptionLabel = (option: DropdownOption<any> | any | null) => {
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) {
       return '';
@@ -76,17 +66,21 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
-  successMessage: string | null = null;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private fb: FormBuilder,
     private inventoryService: InventoryService,
     private lookupService: LookupService,
-    private ammunitionService: AmmunitionService
-  ) {}
+    private ammunitionService: AmmunitionService,
+    private toastService: ToastService,
+    private translateService: TranslateService
+  ) {
+    this.initializeForm();
+  }
 
   ngOnInit(): void {
     // Get warehouse ID from route
@@ -99,6 +93,31 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
     // Add initial item
     this.addItem();
+  }
+
+  private initializeForm(): void {
+    this.inventoryForm = this.fb.group({
+      invoiceNumber: [''],
+      invoiceDate: [''],
+      receivedDate: [''],
+      notes: [''],
+      items: this.fb.array([])
+    });
+  }
+
+  get itemsFormArray(): FormArray {
+    return this.inventoryForm.get('items') as FormArray;
+  }
+
+  createItemFormGroup(): FormGroup {
+    return this.fb.group({
+      itemId: [null, [Validators.required]],
+      lot: [1, [Validators.required, Validators.min(1)]],
+      itemQuantity: [1000, [Validators.required, Validators.min(1)]],
+      supplierId: [null],
+      manufacturerId: [null],
+      countryId: [null]
+    });
   }
 
   ngOnDestroy(): void {
@@ -138,20 +157,12 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   }
 
   addItem(): void {
-    this.items.push({
-      itemId: null as any,
-      itemName: '',
-      lot: 1,
-      supplierId: undefined,
-      manufacturerId: undefined,
-      countryId: undefined,
-      itemQuantity: 1000
-    });
+    this.itemsFormArray.push(this.createItemFormGroup());
   }
 
   removeItem(index: number): void {
-    if (this.items.length > 1) {
-      this.items.splice(index, 1);
+    if (this.itemsFormArray.length > 1) {
+      this.itemsFormArray.removeAt(index);
     }
   }
 
@@ -173,109 +184,162 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   }
 
   onItemChange(index: number): void {
-    const item = this.items[index];
-    const selectedItem = this.availableItems.find(i => i.id === item.itemId);
+    const itemFormGroup = this.itemsFormArray.at(index);
+    const itemId = itemFormGroup.get('itemId')?.value;
+    const selectedItem = this.availableItems.find(i => i.id === itemId);
+    // Clear validation error when item is selected
     if (selectedItem) {
-      item.itemName = selectedItem.name;
+      itemFormGroup.get('itemId')?.setErrors(null);
     }
   }
 
-  validateLotNumber(index: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = parseFloat(input.value);
- 
-    if (!isNaN(value) && value >= 1) {
+  getItemFormGroup(index: number): FormGroup {
+    return this.itemsFormArray.at(index) as FormGroup;
+  }
+
+  isFieldInvalid(fieldPath: string, index?: number): boolean {
+    let control: AbstractControl | null;
     
-      const intValue = Math.floor(value);
-      if (intValue !== value) {
-        this.items[index].lot = intValue;
-        input.value = intValue.toString();
+    if (index !== undefined) {
+      const itemGroup = this.itemsFormArray.at(index) as FormGroup;
+      control = itemGroup.get(fieldPath);
+    } else {
+      control = this.inventoryForm.get(fieldPath);
+    }
+    
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getFieldError(fieldPath: string, index?: number): string | null {
+    let control: AbstractControl | null;
+    
+    if (index !== undefined) {
+      const itemGroup = this.itemsFormArray.at(index) as FormGroup;
+      control = itemGroup.get(fieldPath);
+    } else {
+      control = this.inventoryForm.get(fieldPath);
+    }
+    
+    if (!control || !control.errors || (!control.dirty && !control.touched)) {
+      return null;
+    }
+    
+    if (control.errors['required']) {
+      return 'This field is required';
+    }
+    if (control.errors['min']) {
+      return `Value must be at least ${control.errors['min'].min}`;
+    }
+    if (control.errors['maxlength']) {
+      return `Maximum length is ${control.errors['maxlength'].requiredLength}`;
+    }
+    if (control.errors['futureDate']) {
+      return 'Date cannot be in the future';
+    }
+    
+    return null;
+  }
+
+  onFieldChange(fieldPath: string, index?: number): void {
+    let control: AbstractControl | null;
+    
+    if (index !== undefined) {
+      const itemGroup = this.itemsFormArray.at(index) as FormGroup;
+      control = itemGroup.get(fieldPath);
+    } else {
+      control = this.inventoryForm.get(fieldPath);
+    }
+    
+    if (control) {
+      control.markAsTouched();
+      // Clear errors if field becomes valid
+      if (control.valid && control.errors) {
+        control.setErrors(null);
       }
     }
   }
 
-  validateQuantity(index: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = parseFloat(input.value);
-    
-    // Only validate and ensure integer, don't auto-correct unless clearly invalid
-    if (!isNaN(value) && value >= 1) {
- 
-      const intValue = Math.floor(value);
-      if (intValue !== value) {
-        this.items[index].itemQuantity = intValue;
-        input.value = intValue.toString();
+  validateDates(): boolean {
+    const now = new Date();
+    now.setHours(23, 59, 59, 999); // End of today
+    let hasErrors = false;
+
+    const invoiceDateControl = this.inventoryForm.get('invoiceDate');
+    const invoiceDateValue = invoiceDateControl?.value;
+    if (invoiceDateValue) {
+      const invoiceDate = new Date(invoiceDateValue);
+      if (invoiceDate > now) {
+        invoiceDateControl?.setErrors({ futureDate: true });
+        hasErrors = true;
+      } else {
+        // Clear futureDate error if date is valid
+        if (invoiceDateControl?.errors?.['futureDate']) {
+          const errors = { ...invoiceDateControl.errors };
+          delete errors['futureDate'];
+          invoiceDateControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+        }
       }
     }
-    
-  }
 
-  isLotInvalid(index: number): boolean {
-    const item = this.items[index];
-    return item.lot !== null && item.lot !== undefined && (isNaN(item.lot) || item.lot < 1);
-  }
+    const receivedDateControl = this.inventoryForm.get('receivedDate');
+    const receivedDateValue = receivedDateControl?.value;
+    if (receivedDateValue) {
+      const receivedDate = new Date(receivedDateValue);
+      if (receivedDate > now) {
+        receivedDateControl?.setErrors({ futureDate: true });
+        hasErrors = true;
+      } else {
+        // Clear futureDate error if date is valid
+        if (receivedDateControl?.errors?.['futureDate']) {
+          const errors = { ...receivedDateControl.errors };
+          delete errors['futureDate'];
+          receivedDateControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+        }
+      }
+    }
 
-  isQuantityInvalid(index: number): boolean {
-    const item = this.items[index];
-    return item.itemQuantity !== null && item.itemQuantity !== undefined && (isNaN(item.itemQuantity) || item.itemQuantity < 1);
+    return !hasErrors;
   }
 
   onSubmit(): void {
-    // Validate form
-    if (!this.invoiceNumber.trim()) {
-      this.errorMessage = 'Invoice number is required';
-      return;
-    }
-
-    if (this.items.length === 0) {
-      this.errorMessage = 'At least one item is required';
-      return;
-    }
+    // Mark all fields as touched to show validation errors
+    this.inventoryForm.markAllAsTouched();
+    this.itemsFormArray.controls.forEach(itemGroup => {
+      (itemGroup as FormGroup).markAllAsTouched();
+    });
 
     // Validate dates (cannot be in the future)
-    const now = new Date();
-    now.setHours(23, 59, 59, 999); // End of today
-
-    if (this.invoiceDate) {
-      const invoiceDate = new Date(this.invoiceDate);
-      if (invoiceDate > now) {
-        this.errorMessage = 'Invoice date cannot be in the future';
-        return;
-      }
+    if (!this.validateDates()) {
+      return;
     }
 
-    if (this.receivedDate) {
-      const receivedDate = new Date(this.receivedDate);
-      if (receivedDate > now) {
-        this.errorMessage = 'Received date cannot be in the future';
-        return;
-      }
+    // Check if form is valid
+    if (this.inventoryForm.invalid) {
+      return;
     }
 
-    // Validate items
-    for (const item of this.items) {
-      if (!item.itemId || item.itemId === 0 || item.itemId === null) {
-        this.errorMessage = 'Please select an item for all entries';
-        return;
-      }
-      if (!item.lot || item.lot <= 0) {
-        this.errorMessage = 'Lot number must be greater than 0';
-        return;
-      }
-      if (!item.itemQuantity || item.itemQuantity <= 0) {
-        this.errorMessage = 'Quantity must be greater than 0';
-        return;
-      }
+    // Check if at least one item exists
+    if (this.itemsFormArray.length === 0) {
+      return;
     }
+
+    const formValue = this.inventoryForm.value;
 
     // Prepare DTO - convert empty strings to undefined
     const createDto: CreateInventoryDto = {
       depoId: this.warehouseId,
-      invoiceNumber: this.invoiceNumber.trim(),
-      invoiceDate: this.invoiceDate && this.invoiceDate.trim() ? this.invoiceDate : undefined,
-      recievedDate: this.receivedDate && this.receivedDate.trim() ? this.receivedDate : undefined,
-      notes: this.notes?.trim() || undefined,
-      inventoryDetails: this.items.map(item => ({
+      invoiceNumber: formValue.invoiceNumber?.trim() || undefined,
+      invoiceDate: formValue.invoiceDate && formValue.invoiceDate.trim() ? formValue.invoiceDate : undefined,
+      recievedDate: formValue.receivedDate && formValue.receivedDate.trim() ? formValue.receivedDate : undefined,
+      notes: formValue.notes?.trim() || undefined,
+      inventoryDetails: formValue.items.map((item: {
+        itemId: number;
+        lot: number;
+        supplierId?: number;
+        manufacturerId?: number;
+        countryId?: number;
+        itemQuantity: number;
+      }) => ({
         itemId: item.itemId,
         lot: item.lot,
         supplierId: item.supplierId || undefined,
@@ -287,29 +351,43 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     this.errorMessage = null;
-    this.successMessage = null;
 
     this.inventoryService.create(createDto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.successMessage = 'Inventory created successfully!'; // Will use toast instead
           this.submitting = false;
           
-          // Redirect after 2 seconds
+          this.translateService.get(['toast.success', 'addInventory.successMessage']).subscribe(translations => {
+            const message = translations['addInventory.successMessage'] || 'Inventory created successfully!';
+            const title = translations['toast.success'];
+            this.toastService.success(message, title);
+          });
+          
+          // Redirect after a short delay
           setTimeout(() => {
             this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
-          }, 2000);
+          }, 800);
         },
-        error: (error) => {
+        error: (error: unknown) => {
           console.error('Error creating inventory:', error);
-          this.errorMessage = error.error?.message || 'Failed to create inventory';
+          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create inventory');
+          this.errorMessage = errorMsg;
           this.submitting = false;
+          
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMsg, translations['toast.error']);
+          });
         }
       });
   }
 
   onCancel(): void {
+    // Clear all validation errors
+    this.inventoryForm.reset();
+    this.itemsFormArray.clear();
+    this.addItem();
+    this.errorMessage = null;
     this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
   }
 

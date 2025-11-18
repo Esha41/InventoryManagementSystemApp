@@ -29,8 +29,15 @@ export class ValidationUtils {
   /**
    * Check if value is numeric
    */
-  static isNumeric(value: any): boolean {
-    return !isNaN(parseFloat(value)) && isFinite(value);
+  static isNumeric(value: unknown): boolean {
+    if (typeof value === 'number') {
+      return !isNaN(value) && isFinite(value);
+    }
+    if (typeof value === 'string') {
+      const num = parseFloat(value);
+      return !isNaN(num) && isFinite(num);
+    }
+    return false;
   }
 
   /**

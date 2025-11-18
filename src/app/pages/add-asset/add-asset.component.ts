@@ -9,6 +9,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { LookupService, SupplierDto, NatureOptionDto, HccDto, CountryDto, ManufacturerDto } from '@services/lookup.service';
+import { LookupItem } from '@models/lookup.model';
 import { DepotDto } from '@models/depot.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { ApiService } from '@services/api.service';
@@ -16,6 +17,7 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 interface AssetForm {
   name: string;
@@ -61,16 +63,16 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
   // Lookup data
   hccs: HccDto[] = [];
-  units: any[] = [];
-  caseTypes: any[] = [];
-  propellants: any[] = [];
-  compatibilities: any[] = [];
-  hazardDivisions: any[] = [];
+  units: LookupItem[] = [];
+  caseTypes: LookupItem[] = [];
+  propellants: LookupItem[] = [];
+  compatibilities: LookupItem[] = [];
+  hazardDivisions: LookupItem[] = [];
   natureOptions: NatureOptionDto[] = [];
-  primaryPurposes: any[] = [];
-  projectileColors: any[] = [];
-  projectailMaterials: any[] = [];
-  readonly lookupOptionLabel = (option: DropdownOption<any> | any) => this.getLocalizedName(this.unwrapOption(option));
+  primaryPurposes: LookupItem[] = [];
+  projectileColors: LookupItem[] = [];
+  projectailMaterials: LookupItem[] = [];
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) => this.getLocalizedName(this.unwrapOption(option));
   readonly linkedOptions = [
     { label: 'common.no', value: 'false' },
     { label: 'common.yes', value: 'true' }
@@ -168,7 +170,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getLocalizedName(entity: any): string {
+  private getLocalizedName(entity: LookupItem | string | number | { nameAr?: string; nameEn?: string; nameEN?: string; label?: string } | null | undefined): string {
     if (!entity) {
       return '';
     }
@@ -183,9 +185,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     const currentLang = this.translationService.getCurrentLanguage ? this.translationService.getCurrentLanguage() : 'en';
     if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEN || entity.nameEn || entity.label || '';
+      return entity.nameAr || (entity as { nameEN?: string }).nameEN || (entity as { nameEn?: string }).nameEn || (entity as { label?: string }).label || '';
     }
-    return entity.nameEn || entity.nameEN || entity.nameAr || entity.label || '';
+    return (entity as { nameEn?: string }).nameEn || (entity as { nameEN?: string }).nameEN || entity.nameAr || (entity as { label?: string }).label || '';
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T): T {
@@ -214,7 +216,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     // Build DTO matching backend expectations
-    const ammunitionDto: any = {
+    const ammunitionDto: AmmunitionCreateDto = {
       name: this.assetForm.name.trim(),
       itemNo: this.assetForm.itemNo.trim(),
       partNo: this.assetForm.partNo.trim(),
@@ -237,10 +239,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     // Add optional fields only if they have values
     if (this.assetForm.nsn && this.assetForm.nsn.trim()) {
       ammunitionDto.nsn = this.assetForm.nsn.trim();
-    }
-
-    if (this.assetForm.expiryDate) {
-      ammunitionDto.expiryDate = this.assetForm.expiryDate;
     }
 
     if (this.assetForm.natureOptionId && parseInt(this.assetForm.natureOptionId) > 0) {
@@ -282,25 +280,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           }
           this.submitting = false;
         },
-        error: (error) => {
+        error: (error: unknown) => {
           console.error('Error creating asset:', error);
-          let fallback = 'Failed to create asset. Please try again.';
+          let errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create asset. Please try again.');
+          errorMsg = ErrorHandler.handleDuplicateError(errorMsg, 'Item No');
           
-          // Check for specific error messages
-          if (error?.error?.message) {
-            fallback = error.error.message;
-          } else if (error?.message) {
-            fallback = error.message;
-          }
-          
-          // Check for duplicate ItemNo
-          if (fallback.includes('duplicate') || fallback.includes('ItemNo') || fallback.includes('unique')) {
-            fallback = 'Item No already exists. Please use a unique Item No.';
-          }
-          
-          this.errorMessage = fallback;
+          this.errorMessage = errorMsg;
           const errorTitle = this.translationService.getTranslation('toast.error');
-          this.toastService.error(fallback, errorTitle);
+          this.toastService.error(errorMsg, errorTitle);
           this.submitting = false;
         }
       });

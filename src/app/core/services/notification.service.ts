@@ -31,8 +31,8 @@ interface NotificationDto {
   isRead?: boolean;
   read?: boolean;
   readAt?: string | null;
-  metadata?: Record<string, any> | null;
-  additionalData?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
+  additionalData?: Record<string, unknown> | null;
 }
 
 @Injectable({
@@ -51,7 +51,7 @@ export class NotificationService implements OnDestroy {
   private initialized = false;
   private destroy$ = new Subject<void>();
   private currentUser: AuthenticatedUser | null = null;
-  private reconnectTimeoutId: any = null;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly apiService: ApiService,

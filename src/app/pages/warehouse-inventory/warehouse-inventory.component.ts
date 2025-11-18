@@ -10,7 +10,7 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto } from '@models/inventory.model';
 import { DepotDto } from '@models/depot.model';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
@@ -57,7 +57,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   showEditModal = false;
   showDeleteDialog = false;
   selectedDetail?: InventoryDetailDto;
-  currentInventory?: any;
+  currentInventory?: InventoryDto;
 
   private destroy$ = new Subject<void>();
 
@@ -238,7 +238,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (inventory) => {
-          this.currentInventory = inventory;
+          this.currentInventory = inventory || undefined;
           this.showEditModal = true;
         },
         error: (error) => {
@@ -271,7 +271,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       invoiceDate: this.currentInventory.invoiceDate,
       recievedDate: this.currentInventory.recievedDate,
       notes: this.currentInventory.notes,
-      inventoryDetails: this.currentInventory.inventoryDetails.map((d: InventoryDetailDto) => 
+      inventoryDetails: (this.currentInventory.inventoryDetails || []).map((d: InventoryDetailDto) => 
         d.id === this.selectedDetail!.id ? updateDetailDto : {
           id: d.id,
           itemId: d.itemId,
@@ -356,7 +356,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             // Update inventory without this detail
             const updateDto: UpdateInventoryDto = {
               depoId: inventory.depoId,
-              invoiceNumber: inventory.invoiceNumber || '',
+              invoiceNumber: inventory.invoiceNumber || undefined,
               invoiceDate: inventory.invoiceDate,
               recievedDate: inventory.recievedDate,
               notes: inventory.notes,

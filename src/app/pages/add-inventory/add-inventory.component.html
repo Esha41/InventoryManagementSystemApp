@@ -28,98 +28,9 @@
       <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
     </div>
 
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-red-800">{{ errorMessage }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Success Message -->
-    <div *ngIf="successMessage" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-green-800">{{ successMessage }}</p>
-        </div>
-      </div>
-    </div>
 
     <!-- Form -->
-    <form *ngIf="!loading" (ngSubmit)="onSubmit()" class="space-y-6">
-      <!-- Invoice Information Card -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ 'addInventory.invoiceInformation' | translate }}</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Invoice Number -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'addInventory.invoiceNumber' | translate }} <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="invoiceNumber"
-              name="invoiceNumber"
-              required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-              [placeholder]="'addInventory.enterInvoiceNumber' | translate">
-          </div>
-
-          <!-- Invoice Date -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'addInventory.invoiceDate' | translate }}
-            </label>
-            <input
-              type="date"
-              [(ngModel)]="invoiceDate"
-              name="invoiceDate"
-              [max]="getMaxDate()"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-            <p class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
-          </div>
-
-          <!-- Received Date -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'addInventory.receivedDate' | translate }}
-            </label>
-            <input
-              type="date"
-              [(ngModel)]="receivedDate"
-              name="receivedDate"
-              [max]="getMaxDate()"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-            <p class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
-          </div>
-
-          <!-- Notes -->
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              {{ 'addInventory.notes' | translate }}
-            </label>
-            <textarea
-              [(ngModel)]="notes"
-              name="notes"
-              rows="3"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-              [placeholder]="'addInventory.notesPlaceholder' | translate"></textarea>
-          </div>
-        </div>
-      </div>
-
+    <form *ngIf="!loading" [formGroup]="inventoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <!-- Inventory Items Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
@@ -134,13 +45,13 @@
         </div>
 
         <!-- Items List -->
-        <div class="space-y-4">
-          <div *ngFor="let item of items; let i = index" class="p-4 border border-gray-200 rounded-lg">
+        <div class="space-y-4" formArrayName="items">
+          <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i" class="p-4 border border-gray-200 rounded-lg">
             <div class="flex items-start justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-700">{{ 'addInventory.item' | translate }} {{ i + 1 }}</h3>
               <button
                 type="button"
-                *ngIf="items.length > 1"
+                *ngIf="itemsFormArray.length > 1"
                 (click)="removeItem(i)"
                 class="text-red-600 hover:text-red-800 transition-colors">
                 <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
@@ -155,17 +66,19 @@
                 </label>
                 <app-dropdown
                   class="w-full"
-                  [(ngModel)]="item.itemId"
-                  [name]="'itemId' + i"
-                  (ngModelChange)="onItemChange(i)"
-                  required
+                  formControlName="itemId"
+                  (selectionChange)="onItemChange(i); onFieldChange('itemId', i)"
                   [options]="availableItems"
                   optionValue="id"
                   [optionLabelFn]="itemOptionLabel"
                   [placeholderSelectable]="true"
                   [placeholderValue]="null"
+                  [error]="isFieldInvalid('itemId', i)"
                   placeholder="{{ 'addInventory.selectItem' | translate }}">
                 </app-dropdown>
+                <p *ngIf="isFieldInvalid('itemId', i)" class="mt-1 text-sm text-red-500">
+                  {{ getFieldError('itemId', i) || ('addInventory.required' | translate) }}
+                </p>
               </div>
 
               <!-- Lot Number -->
@@ -175,19 +88,17 @@
                 </label>
                 <input
                   type="number"
-                  [(ngModel)]="item.lot"
-                  [name]="'lot' + i"
-                  required
+                  formControlName="lot"
                   min="1"
                   step="1"
                   [max]="999999"
-                  (input)="validateLotNumber(i, $event)"
+                  (input)="onFieldChange('lot', i)"
                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                  [class.border-gray-300]="!isLotInvalid(i)"
-                  [class.border-red-500]="isLotInvalid(i)"
+                  [class.border-gray-300]="!isFieldInvalid('lot', i)"
+                  [class.border-red-500]="isFieldInvalid('lot', i)"
                   [placeholder]="'addInventory.enterLotNumber' | translate">
-                <p *ngIf="isLotInvalid(i)" class="mt-1 text-sm text-red-500">
-                  {{ 'addInventory.lotNumberMustBeGreaterThanZero' | translate }}
+                <p *ngIf="isFieldInvalid('lot', i)" class="mt-1 text-sm text-red-500">
+                  {{ getFieldError('lot', i) || ('addInventory.lotNumberMustBeGreaterThanZero' | translate) }}
                 </p>
               </div>
 
@@ -198,19 +109,17 @@
                 </label>
                 <input
                   type="number"
-                  [(ngModel)]="item.itemQuantity"
-                  [name]="'quantity' + i"
-                  required
+                  formControlName="itemQuantity"
                   min="1"
                   step="1"
                   [max]="999999999"
-                  (input)="validateQuantity(i, $event)"
+                  (input)="onFieldChange('itemQuantity', i)"
                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                  [class.border-gray-300]="!isQuantityInvalid(i)"
-                  [class.border-red-500]="isQuantityInvalid(i)"
+                  [class.border-gray-300]="!isFieldInvalid('itemQuantity', i)"
+                  [class.border-red-500]="isFieldInvalid('itemQuantity', i)"
                   [placeholder]="'addInventory.enterQuantity' | translate">
-                <p *ngIf="isQuantityInvalid(i)" class="mt-1 text-sm text-red-500">
-                  {{ 'addInventory.quantityMustBeGreaterThanZero' | translate }}
+                <p *ngIf="isFieldInvalid('itemQuantity', i)" class="mt-1 text-sm text-red-500">
+                  {{ getFieldError('itemQuantity', i) || ('addInventory.quantityMustBeGreaterThanZero' | translate) }}
                 </p>
               </div>
 
@@ -221,8 +130,7 @@
                 </label>
                 <app-dropdown
                   class="w-full"
-                  [(ngModel)]="item.supplierId"
-                  [name]="'supplierId' + i"
+                  formControlName="supplierId"
                   [options]="suppliers"
                   optionValue="id"
                   [optionLabelFn]="supplierOptionLabel"
@@ -239,8 +147,7 @@
                 </label>
                 <app-dropdown
                   class="w-full"
-                  [(ngModel)]="item.manufacturerId"
-                  [name]="'manufacturerId' + i"
+                  formControlName="manufacturerId"
                   [options]="manufacturers"
                   optionValue="id"
                   [optionLabelFn]="manufacturerOptionLabel"
@@ -257,8 +164,7 @@
                 </label>
                 <app-dropdown
                   class="w-full"
-                  [(ngModel)]="item.countryId"
-                  [name]="'countryId' + i"
+                  formControlName="countryId"
                   [options]="countries"
                   optionValue="id"
                   [optionLabelFn]="countryOptionLabel"
@@ -268,6 +174,83 @@
                 </app-dropdown>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Information Card -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ 'addInventory.invoiceInformation' | translate }}</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Invoice Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'addInventory.invoiceNumber' | translate }}
+            </label>
+            <input
+              type="text"
+              formControlName="invoiceNumber"
+              (input)="onFieldChange('invoiceNumber')"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+              [class.border-red-500]="isFieldInvalid('invoiceNumber')"
+              [placeholder]="'addInventory.enterInvoiceNumber' | translate">
+            <p *ngIf="isFieldInvalid('invoiceNumber')" class="mt-1 text-sm text-red-500">
+              {{ getFieldError('invoiceNumber') }}
+            </p>
+          </div>
+
+          <!-- Invoice Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'addInventory.invoiceDate' | translate }}
+            </label>
+            <input
+              type="date"
+              formControlName="invoiceDate"
+              (input)="onFieldChange('invoiceDate'); validateDates()"
+              [max]="getMaxDate()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+              [class.border-red-500]="isFieldInvalid('invoiceDate')">
+            <p *ngIf="isFieldInvalid('invoiceDate')" class="mt-1 text-sm text-red-500">
+              {{ getFieldError('invoiceDate') || ('addInventory.cannotBeFuture' | translate) }}
+            </p>
+            <p *ngIf="!isFieldInvalid('invoiceDate')" class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
+          </div>
+
+          <!-- Received Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'addInventory.receivedDate' | translate }}
+            </label>
+            <input
+              type="date"
+              formControlName="receivedDate"
+              (input)="onFieldChange('receivedDate'); validateDates()"
+              [max]="getMaxDate()"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+              [class.border-red-500]="isFieldInvalid('receivedDate')">
+            <p *ngIf="isFieldInvalid('receivedDate')" class="mt-1 text-sm text-red-500">
+              {{ getFieldError('receivedDate') || ('addInventory.cannotBeFuture' | translate) }}
+            </p>
+            <p *ngIf="!isFieldInvalid('receivedDate')" class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
+          </div>
+
+          <!-- Notes -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ 'addInventory.notes' | translate }}
+            </label>
+            <textarea
+              formControlName="notes"
+              (input)="onFieldChange('notes')"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+              [class.border-red-500]="isFieldInvalid('notes')"
+              [placeholder]="'addInventory.notesPlaceholder' | translate"></textarea>
+            <p *ngIf="isFieldInvalid('notes')" class="mt-1 text-sm text-red-500">
+              {{ getFieldError('notes') }}
+            </p>
           </div>
         </div>
       </div>
