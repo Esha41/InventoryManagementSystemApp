@@ -11,19 +11,23 @@
     </div>
   </div>
 
-  <div *ngIf="visibleCards.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <app-status-card
-      *ngFor="let card of visibleCards"
-      [title]="card.title"
-      [status]="card.status"
-      [orders]="card.orders"
-      [orderRequestId]="card.orderRequestId || null"
-      [returnRequestId]="card.returnRequestId || null"
-      [discardRequestId]="card.discardRequestId || null"
-      (viewOrderDetails)="onViewOrderDetails($event)"
-      (viewDetails)="onViewReturnDetails($event)"
-      (viewDiscardDetails)="onViewDiscardDetails($event)">
-    </app-status-card>
+  <!-- Order Status Overview Section -->
+  <div *ngIf="visibleCards.length > 0">
+    <!-- Status Cards Grid - Show cards based on user permissions and roles -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <app-status-card
+        *ngFor="let card of visibleCards"
+        [title]="card.title"
+        [status]="card.status"
+        [orders]="card.orders"
+        [orderRequestId]="card.orderRequestId || null"
+        [returnRequestId]="card.returnRequestId || null"
+        [discardRequestId]="card.discardRequestId || null"
+        (viewOrderDetails)="onViewOrderDetails($event)"
+        (viewDetails)="onViewReturnDetails($event)"
+        (viewDiscardDetails)="onViewDiscardDetails($event)">
+      </app-status-card>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

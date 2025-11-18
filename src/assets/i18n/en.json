@@ -61,6 +61,7 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Order status overview",
+    "orderStatusOverview": "Order status overview",
     "newIssue": "New Issue",
     "newIssueOrders": "New Issue Orders",
     "newReturns": "New Returns",

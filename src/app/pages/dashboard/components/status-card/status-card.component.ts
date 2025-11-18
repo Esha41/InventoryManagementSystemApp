@@ -83,27 +83,31 @@ export class StatusCardComponent {
     );
   }
 
-  getStatusColor(): string {
+  getDotColor(): string {
     switch (this.status) {
-      case 'new-issue': return 'border-b-[#6366F1]';
-      case 'on-progress': return 'border-b-[#F59E0B]';
-      case 'completed': return 'border-b-[#10B981]';
-      case 'new': return 'border-b-[#6366F1]';
-      default: return 'border-b-gray-300';
+      case 'new-issue':
+      case 'new':
+        return 'status-card__dot--new';
+      case 'on-progress':
+        return 'status-card__dot--progress';
+      case 'completed':
+        return 'status-card__dot--done';
+      default:
+        return 'status-card__dot--muted';
     }
   }
 
-  getBackgroundColor(): string {
-    return 'bg-[#f5f5f5]';
-  }
-
-  getDotColor(): string {
+  getDividerClass(): string {
     switch (this.status) {
-      case 'new-issue': return 'bg-[#6366F1]';
-      case 'on-progress': return 'bg-[#F59E0B]';
-      case 'completed': return 'bg-[#10B981]';
-      case 'new': return 'bg-[#6366F1]';
-      default: return 'bg-gray-300';
+      case 'new-issue':
+      case 'new':
+        return 'status-card__divider--new';
+      case 'on-progress':
+        return 'status-card__divider--progress';
+      case 'completed':
+        return 'status-card__divider--done';
+      default:
+        return 'status-card__divider--muted';
     }
   }
 
