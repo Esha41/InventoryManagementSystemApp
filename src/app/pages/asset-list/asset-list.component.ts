@@ -10,6 +10,8 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
+import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
+import { LookupItem } from '@models/lookup.model';
 import { forkJoin } from 'rxjs';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
@@ -77,17 +79,17 @@ export class AssetListComponent implements OnInit {
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  hccList: any[] = [];
-  caseTypeList: any[] = [];
-  hazardDivisionList: any[] = [];
-  compatibilityList: any[] = [];
-  propellantList: any[] = [];
-  units: any[] = [];
-  natureOptions: any[] = [];
-  primaryPurposes: any[] = [];
-  projectileColors: any[] = [];
-  projectailMaterials: any[] = [];
-  readonly lookupOptionLabel = (option: DropdownOption<any> | any) => this.getLocalizedName(this.unwrapOption(option));
+  hccList: LookupItem[] = [];
+  caseTypeList: LookupItem[] = [];
+  hazardDivisionList: LookupItem[] = [];
+  compatibilityList: LookupItem[] = [];
+  propellantList: LookupItem[] = [];
+  units: LookupItem[] = [];
+  natureOptions: LookupItem[] = [];
+  primaryPurposes: LookupItem[] = [];
+  projectileColors: LookupItem[] = [];
+  projectailMaterials: LookupItem[] = [];
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) => this.getLocalizedName(this.unwrapOption(option));
   readonly linkedOptions = [
     { label: 'assetList.editModal.notLinked', value: false },
     { label: 'assetList.editModal.linked', value: true }
@@ -153,9 +155,9 @@ export class AssetListComponent implements OnInit {
 
   private loadAssets(): void {
     this.loading = true;
-    this.ammunitionService.getAll<any>().subscribe({
+    this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
       next: (items) => {
-        this.assets = (items || []).map((x: any) => ({
+        this.assets = (items || []).map((x: AmmunitionReadDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
@@ -168,7 +170,7 @@ export class AssetListComponent implements OnInit {
           compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
           propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
-          expiryDateRaw: x.expiryDate,
+          expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
           readyForIssue: x.readyForIssue ?? true
         }));
         this.currentPage = 1;
@@ -371,9 +373,31 @@ export class AssetListComponent implements OnInit {
 
   onEdit(assetId: string): void {
     this.loading = true;
-    this.ammunitionService.getById<any>(parseInt(assetId)).subscribe({
+    this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
       next: (data) => {
-        this.selectedAsset = data;
+        if (!data) {
+          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoadDetails'));
+          this.loading = false;
+          return;
+        }
+        
+        // Map to Asset interface for selectedAsset
+        this.selectedAsset = {
+          id: data.id.toString(),
+          name: data.name || 'Unknown',
+          itemNo: data.itemNo || '-',
+          partNo: data.partNo || '-',
+          batchNo: data.batchNo || '-',
+          hcc: data.hcc?.nameEn || data.hcc?.nameAr || '-',
+          nsn: data.nsn || '-',
+          caseType: data.caseType?.nameEn || data.caseType?.nameAr || '-',
+          hazardDivision: data.hazardDivision?.nameEn || data.hazardDivision?.nameAr || '-',
+          compatibility: data.compatibility?.nameEn || data.compatibility?.nameAr || '-',
+          propellant: data.propellant?.nameEn || data.propellant?.nameAr || '-',
+          expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
+          readyForIssue: data.readyForIssue ?? true
+        };
+        
         this.editForm.patchValue({
           id: data.id,
           name: data.name,
@@ -418,9 +442,26 @@ export class AssetListComponent implements OnInit {
 
   onView(assetId: string): void {
     this.loading = true;
-    this.ammunitionService.getById<any>(parseInt(assetId)).subscribe({
+    this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
       next: (data) => {
-        this.selectedAsset = data;
+        if (data) {
+          // Map AmmunitionReadDto to Asset interface for display
+          this.selectedAsset = {
+            id: data.id.toString(),
+            name: data.name || 'Unknown',
+            itemNo: data.itemNo || '-',
+            partNo: data.partNo || '-',
+            batchNo: data.batchNo || '-',
+            hcc: data.hcc?.nameEn || data.hcc?.nameAr || '-',
+            nsn: data.nsn || '-',
+            caseType: data.caseType?.nameEn || data.caseType?.nameAr || '-',
+            hazardDivision: data.hazardDivision?.nameEn || data.hazardDivision?.nameAr || '-',
+            compatibility: data.compatibility?.nameEn || data.compatibility?.nameAr || '-',
+            propellant: data.propellant?.nameEn || data.propellant?.nameAr || '-',
+            expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
+            readyForIssue: data.readyForIssue ?? true
+          };
+        }
         this.showViewModal = true;
         this.loading = false;
       },
@@ -479,7 +520,8 @@ export class AssetListComponent implements OnInit {
     const id = v.id;
 
     // Builder maps null/empty to undefined for optional fields
-    const buildDto = (m: EditFormModel) => ({
+    // Note: Backend uses CreateUpdateAmmunitionDto (same as create, without id/lot)
+    const buildDto = (m: EditFormModel): AmmunitionCreateDto => ({
       name: m.name,
       itemNo: m.itemNo,
       partNo: m.partNo?.trim() || 'N/A',
@@ -497,7 +539,7 @@ export class AssetListComponent implements OnInit {
       propellantId: m.propellantId,
       compatibilityId: m.compatibilityId,
       hazardDivisionId: m.hazardDivisionId,
-      readyForIssue: m.readyForIssue,
+      readyForIssue: m.readyForIssue ?? true,
       expiryDate: m.expiryDate || undefined,
       natureOptionId: m.natureOptionId ?? undefined,
       primaryPurposId: m.primaryPurposId ?? undefined,

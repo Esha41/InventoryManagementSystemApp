@@ -324,9 +324,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         this.saved.emit();
         this.close();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         this.isLoading = false;
-        this.errorMessage = error.message || 'Failed to create user';
+        const errorMsg = error instanceof Error ? error.message : 'Failed to create user';
+        this.errorMessage = errorMsg;
         console.error('Error creating user:', error);
       }
     });
@@ -368,9 +369,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         this.saved.emit();
         this.close();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         this.isLoading = false;
-        this.errorMessage = error.message || 'Failed to update user';
+        const errorMsg = error instanceof Error ? error.message : 'Failed to update user';
+        this.errorMessage = errorMsg;
         console.error('Error updating user:', error);
       }
     });

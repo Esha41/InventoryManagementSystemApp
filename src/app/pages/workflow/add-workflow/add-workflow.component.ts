@@ -60,7 +60,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
   hasOpenDropdown = false;
   private mutationObserver?: MutationObserver;
-  private positioningInterval?: any;
+  private positioningInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     private workflowService: WorkflowService,

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -33,7 +33,7 @@ export class ApiService {
   /**
    * POST request
    */
-  post<T>(endpoint: string, data: any): Observable<T> {
+  post<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, data)
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -41,7 +41,7 @@ export class ApiService {
   /**
    * PUT request
    */
-  put<T>(endpoint: string, data: any): Observable<T> {
+  put<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     return this.http.put<T>(`${this.baseUrl}${endpoint}`, data)
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -49,7 +49,7 @@ export class ApiService {
   /**
    * PATCH request
    */
-  patch<T>(endpoint: string, data: any): Observable<T> {
+  patch<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data)
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -74,7 +74,7 @@ export class ApiService {
   /**
    * POST request with authentication headers
    */
-  postWithAuth<T>(endpoint: string, data: any): Observable<T> {
+  postWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     const headers = this.getAuthHeaders();
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, { headers })
       .pipe(catchError(error => this.handleError(error)));
@@ -83,7 +83,7 @@ export class ApiService {
   /**
    * PUT request with authentication headers
    */
-  putWithAuth<T>(endpoint: string, data: any): Observable<T> {
+  putWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     const headers = this.getAuthHeaders();
     return this.http.put<T>(`${this.baseUrl}${endpoint}`, data, { headers })
       .pipe(catchError(error => this.handleError(error)));
@@ -92,7 +92,7 @@ export class ApiService {
   /**
    * PATCH request with authentication headers
    */
-  patchWithAuth<T>(endpoint: string, data: any): Observable<T> {
+  patchWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     const headers = this.getAuthHeaders();
     return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data, { headers })
       .pipe(catchError(error => this.handleError(error)));
@@ -125,33 +125,41 @@ export class ApiService {
   /**
    * Error handler with better error processing
    */
-  private handleError(error: any): Observable<never> {
+  private handleError(error: unknown): Observable<never> {
     let errorMessage = 'An unknown error occurred';
     
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Client Error: ${error.error.message}`;
-    } else if (error.status === 0) {
-      // Connection refused or CORS error
-      const backendUrl = this.getBackendOrigin();
-      errorMessage = `Cannot connect to server. Please ensure the backend is running on ${backendUrl}`;
-    } else {
-      // Server-side error
-      if (error.status === 401) {
-        errorMessage = 'Unauthorized. Please login again.';
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('current_user');
-      } else if (error.status === 403) {
-        errorMessage = 'Forbidden. You do not have permission to perform this action.';
-      } else if (error.status === 404) {
-        errorMessage = 'Resource not found.';
-      } else if (error.status === 500) {
-        errorMessage = 'Internal server error. Please try again later.';
-      } else if (error.error?.message) {
-        errorMessage = error.error.message;
+    // Type guard for HttpErrorResponse
+    if (error instanceof HttpErrorResponse) {
+      if (error.error instanceof ErrorEvent) {
+        // Client-side error
+        errorMessage = `Client Error: ${error.error.message}`;
+      } else if (error.status === 0) {
+        // Connection refused or CORS error
+        const backendUrl = this.getBackendOrigin();
+        errorMessage = `Cannot connect to server. Please ensure the backend is running on ${backendUrl}`;
       } else {
-        errorMessage = `Server Error: ${error.status} - ${error.statusText}`;
+        // Server-side error
+        if (error.status === 401) {
+          errorMessage = 'Unauthorized. Please login again.';
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('current_user');
+        } else if (error.status === 403) {
+          errorMessage = 'Forbidden. You do not have permission to perform this action.';
+        } else if (error.status === 404) {
+          errorMessage = 'Resource not found.';
+        } else if (error.status === 500) {
+          errorMessage = 'Internal server error. Please try again later.';
+        } else {
+          const errorData = error.error as { message?: string } | null;
+          if (errorData?.message) {
+            errorMessage = errorData.message;
+          } else {
+            errorMessage = `Server Error: ${error.status} - ${error.statusText || 'Unknown error'}`;
+          }
+        }
       }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
     }
     
     this.configService.logError('API Error:', error);
