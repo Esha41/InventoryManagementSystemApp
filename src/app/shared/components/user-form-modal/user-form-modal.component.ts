@@ -85,8 +85,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     const nameEn = this.user?.nameEn || (this.user as any)?.fullNameEN || '';
     const nameAr = this.user?.nameAr || (this.user as any)?.fullNameAR || '';
     
-    // Get the first role ID if user has roles (for single selection)
-    const roleId = this.user?.roleIds && this.user.roleIds.length > 0 ? this.user.roleIds[0] : null;
+    // Get all role IDs if user has roles (for multiple selection)
+    const roleIds = this.user?.roleIds && this.user.roleIds.length > 0 ? this.user.roleIds : [];
     
     this.userForm = this.fb.group({
       userName: [this.user?.userName || '', [Validators.required, Validators.minLength(3)]],
@@ -95,7 +95,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       ldapUserName: [this.user?.ldapUserName || ''],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
       departmentId: [this.user?.departmentId ?? null],
-      roleId: [roleId, [Validators.required]], // Single role selection - required
+      roleIds: [roleIds, [this.validateRoleIds.bind(this)]], // Multiple role selection - required
       // Common fields for both create and edit modes
       nameEn: [nameEn],
       nameAr: [nameAr],
@@ -221,7 +221,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     return entity.nameEn || entity.nameAr || '';
   }
 
-private loadUserRoles(): void {
+  private loadUserRoles(): void {
   if (!this.user?.id) return;
 
   this.backendUserService.getUserRoles(this.user.id).subscribe({
@@ -238,13 +238,13 @@ private loadUserRoles(): void {
         }));
       }
 
-      // Pre-select the first selected role (single selection)
-      const selectedRole = roles?.find(r => r.isSelected);
-      if (selectedRole) {
-        this.userForm.patchValue({ roleId: selectedRole.roleId });
+      // Pre-select all selected roles (multiple selection)
+      const selectedRoleIds = roles?.filter(r => r.isSelected).map(r => r.roleId) || [];
+      if (selectedRoleIds.length > 0) {
+        this.userForm.patchValue({ roleIds: selectedRoleIds });
       } else if (this.user?.roleIds && this.user.roleIds.length > 0) {
-        // Fallback: use the first role ID from user data
-        this.userForm.patchValue({ roleId: this.user.roleIds[0] });
+        // Fallback: use all role IDs from user data
+        this.userForm.patchValue({ roleIds: this.user.roleIds });
       }
 
       // Bind department for edit form if provided in the response
@@ -254,18 +254,29 @@ private loadUserRoles(): void {
         this.userForm.patchValue({ departmentId: deptId });
       }
 
-      console.log('Selected role for user:', selectedRole?.roleId || this.user?.roleIds?.[0]);
+      console.log('Selected roles for user:', selectedRoleIds.length > 0 ? selectedRoleIds : this.user?.roleIds);
     },
     error: (error: any) => {
-      // If getUserRoles fails, still try to set the role from user data
+      // If getUserRoles fails, still try to set the roles from user data
       if (this.user?.roleIds && this.user.roleIds.length > 0) {
-        this.userForm.patchValue({ roleId: this.user.roleIds[0] });
+        this.userForm.patchValue({ roleIds: this.user.roleIds });
       }
       console.error('Failed to load user roles:', error);
       // Don't show error message as roles might already be loaded from loadRoles()
     }
   });
 }
+
+  /**
+   * Custom validator to ensure at least one role is selected
+   */
+  validateRoleIds(control: any): { [key: string]: any } | null {
+    const roleIds = control.value;
+    if (!roleIds || !Array.isArray(roleIds) || roleIds.length === 0) {
+      return { required: true };
+    }
+    return null;
+  }
 
 
 
@@ -294,7 +305,7 @@ private loadUserRoles(): void {
       extraEmployeesView: formValue.extraEmployeesView || undefined,
       organizationId: 1,
       departmentId: formValue.departmentId || undefined,
-      roleIds: [formValue.roleId], // Single role as array
+      roleIds: formValue.roleIds || [], // Multiple roles as array
       // Map form field names to API field names
       fullNameEN: formValue.nameEn || undefined,
       fullNameAR: formValue.nameAr || undefined,
@@ -303,6 +314,7 @@ private loadUserRoles(): void {
     };
 
     console.log('Creating user with DTO:', JSON.stringify(dto, null, 2));
+    console.log('Selected roles:', dto.roleIds);
     console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId, 'In DTO (militoryId):', dto.militoryId);
 
     this.backendUserService.createUser(dto).subscribe({
@@ -336,7 +348,7 @@ private loadUserRoles(): void {
       extraEmployeesView: formValue.extraEmployeesView || undefined,
       organizationId: this.user.organizationId,
       departmentId: formValue.departmentId || undefined,
-      roleIds: [formValue.roleId], // Single role as array
+      roleIds: formValue.roleIds || [], // Multiple roles as array
       // Map form field names to API field names
       fullNameEN: formValue.nameEn || undefined,
       fullNameAR: formValue.nameAr || undefined,
@@ -345,6 +357,7 @@ private loadUserRoles(): void {
     };
 
     console.log('Updating user with DTO:', JSON.stringify(dto, null, 2));
+    console.log('Selected roles:', dto.roleIds);
     console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId);
     console.log('Military ID - Processed value (militoryId):', dto.militoryId);
 
@@ -364,6 +377,7 @@ private loadUserRoles(): void {
   }
 }
 
+
   close(): void {
     this.isLdapToggleSubscription?.unsubscribe();
     this.isLdapToggleSubscription = undefined;
@@ -382,6 +396,9 @@ private loadUserRoles(): void {
     const field = this.userForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
+        if (fieldName === 'roleIds') {
+          return 'At least one role must be selected';
+        }
         const displayName = fieldName.charAt(0).toUpperCase() + fieldName.slice(1).replace(/([A-Z])/g, ' $1');
         return `${displayName} is required`;
       }
