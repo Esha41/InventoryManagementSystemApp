@@ -36,7 +36,6 @@
     "supplyManagement": "إدارة الإمدادات",
     "warehouse": "المستودع",
     "warehouseList": "قائمة المستودعات",
-    "inventoryCategory": "فئة المخزون",
     "workflow": "سير العمل",
     "department": "القسم",
     "allowance": "البدل",
@@ -49,6 +48,7 @@
     "addAsset": "إضافة أصل",
     "assetList": "قائمة الأصول",
     "searchInventory": "البحث في المخزون",
+    "inventoryForecast": "توقعات المخزون",
     "depotManagement": "إدارة المستودعات",
     "admin": "الإدارة",
     "manageAdmins": "إدارة المسؤولين",
@@ -84,6 +84,7 @@
     "priority": "الأولوية",
     "status": "الحالة",
     "usageInformation": "معلومات الاستخدام",
+    "additionalInformation": "معلومات إضافية",
     "usagePurpose": "غرض الاستخدام",
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
@@ -185,7 +186,7 @@
     "send": "إرسال",
     "selectOrderSource": "اختر مصدر الطلب",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مخصص قسمك أو من جميع الذخائر المتاحة",
-    "fromAllowance": "من المخصص (الاحتياطي)",
+    "fromAllowance": "من المخصص",
     "fromAllowanceDescription": "طلب العناصر من مخصص قسمك المحدد مسبقاً لهذا العام",
     "fromAllAmmunition": "من جميع الذخائر",
     "fromAllAmmunitionDescription": "طلب أي عناصر من المخزون الكامل للذخائر",
@@ -282,6 +283,30 @@
       "required": "هذا الحقل مطلوب.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
     }
+  },
+  "inventoryForecast": {
+    "title": "توقعات المخزون",
+    "timeframe": "الإطار الزمني",
+    "allTime": "كل الوقت",
+    "ammunition": "الذخيرة",
+    "requests": "الطلبات",
+    "all": "الكل",
+    "activeCustomers": "العملاء النشطون",
+    "orderFulfillment": "تنفيذ الطلبات",
+    "budgetForecast": "التنبؤ بالميزانية",
+    "activeSuppliers": "الموردون النشطون",
+    "currentStock": "المخزون الحالي",
+    "activityIncrease": "زيادة النشاط",
+    "hotItems": "العناصر الساخنة",
+    "overstock": "الفائض",
+    "reStockForecast": "التنبؤ بإعادة التخزين",
+    "firstInFirstOut": "أول ما يدخل أول ما يخرج",
+    "expensesTracking": "تتبع المصروفات",
+    "shippingExpenses": "مصروفات الشحن",
+    "storageExpenses": "مصروفات التخزين",
+    "totalExpenses": "إجمالي المصروفات",
+    "entryDate": "تاريخ الدخول",
+    "consumed": "المستهلك"
   },
   "forecast": {
     "title": "التوقعات",
@@ -495,12 +520,6 @@
       "confirmDelete": "حذف",
       "cancel": "إلغاء"
     }
-  },
-  "inventoryCategory": {
-    "title": "فئة المخزون",
-    "ammunitionWarehouse": "مستودع الذخيرة",
-    "explosivesWarehouse": "مستودع المتفجرات",
-    "weaponWarehouse": "مستودع الأسلحة"
   },
   "supplyRequestManagement": {
     "title": "إدارة طلبات الإمدادات",

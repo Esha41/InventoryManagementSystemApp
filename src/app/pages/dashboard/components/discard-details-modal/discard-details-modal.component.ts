@@ -19,6 +19,7 @@ export class DiscardDetailsModalComponent {
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
+  
   onClose(): void {
     this.close.emit();
   }
@@ -29,44 +30,76 @@ export class DiscardDetailsModalComponent {
     }
   }
 
-  getPriorityText(priority: number): string {
+  getPriorityKey(priority?: number | null): string {
     switch (priority) {
-      case 1: return 'dashboard.priorityLabels.high';
-      case 2: return 'dashboard.priorityLabels.medium';
-      case 3: return 'dashboard.priorityLabels.low';
-      default: return 'N/A';
+      case 2:
+        return 'dashboard.priorityLabels.medium';
+      case 3:
+        return 'dashboard.priorityLabels.low';
+      default:
+        return 'dashboard.priorityLabels.high';
     }
   }
 
-  getStatusText(status: number): string {
+  getStatusKey(status?: number | null): string {
     switch (status) {
-      case 1: return 'dashboard.statusLabels.new';
-      case 2: return 'dashboard.statusLabels.underProcess';
-      case 3: return 'dashboard.statusLabels.approved';
-      case 4: return 'dashboard.statusLabels.rejected';
-      case 5: return 'dashboard.statusLabels.cancelled';
-      default: return 'N/A';
+      case 2:
+        return 'dashboard.statusLabels.underProcess';
+      case 3:
+        return 'dashboard.statusLabels.approved';
+      case 4:
+        return 'dashboard.statusLabels.rejected';
+      case 5:
+        return 'dashboard.statusLabels.cancelled';
+      default:
+        return 'dashboard.statusLabels.new';
     }
   }
 
-  getCurrentDate(): string {
+  formatRequestDate(request: DiscardDto | null): string {
+    if (!request) return 'N/A';
+    // Use current date if no date field available
     return this.formatDate(new Date());
   }
 
-  formatDate(date: Date | string | undefined): string {
-    if (!date) return 'N/A';
-    const d = typeof date === 'string' ? new Date(date) : date;
-    const day = d.getDate();
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 
-                    'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    const month = months[d.getMonth()];
-    const year = d.getFullYear();
+  private formatDate(source?: string | Date): string {
+    let date: Date;
+
+    if (source instanceof Date) {
+      date = source;
+    } else if (typeof source === 'string') {
+      const parsed = new Date(source);
+      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    } else {
+      date = new Date();
+    }
+
+    const day = date.getDate();
+    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
     return `${day} ${month} ${year}`;
   }
 
-  get hasItems(): boolean {
-    return !!this.discardRequest?.requestItems && this.discardRequest.requestItems.length > 0;
+  resolveDepartmentName(request: DiscardDto | null): string {
+    if (!request) return 'N/A';
+    return request.departmentName || 'N/A';
   }
 
+  resolveRequestPurpose(request: DiscardDto | null): string {
+    if (!request) return 'N/A';
+    return request.requestPurposeName || 'N/A';
+  }
+
+  resolveDepotName(request: DiscardDto | null): string {
+    if (!request) return 'N/A';
+    return request.depotName || 'N/A';
+  }
+
+  hasItems(items?: any[] | null): boolean {
+    return !!items && items.length > 0;
+  }
 }
 

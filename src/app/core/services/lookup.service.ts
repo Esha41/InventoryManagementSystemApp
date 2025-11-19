@@ -213,10 +213,6 @@ export class LookupService {
     return this.getLookupItems('Country');
   }
 
-  getEmployees(): Observable<LookupItem[]> {
-    return this.getLookupItems('Employee');
-  }
-
   /**
    * Clear cache for a specific lookup table (no-op for now, kept for backward compatibility)
    */

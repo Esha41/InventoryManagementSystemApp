@@ -50,6 +50,5 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Supplier', displayName: 'Suppliers', apiEndpoint: 'Supplier', hasCode: false },
   { name: 'Unit', displayName: 'Units', apiEndpoint: 'Unit', hasCode: false },
   { name: 'Rank', displayName: 'Ranks', apiEndpoint: 'Rank', hasCode: false },
-  { name: 'Employee', displayName: 'Employees', apiEndpoint: 'Employee', hasCode: false },
 ];
 

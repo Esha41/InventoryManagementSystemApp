@@ -62,12 +62,6 @@ export const routes: Routes = [
         data: { permissions: ['warehousepage.page', 'warehousepage.view'] }
       },
       {
-        path: 'warehouse/ammunition-display',
-        loadComponent: () => import('@pages/warehouse/ammunition-display/ammunition-display.component').then(m => m.AmmunitionDisplayComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['warehousepage.view', 'ammunition.view'] }
-      },
-      {
         path: 'allowance',
         loadComponent: () => import('@pages/allowance-list/allowance-list.component').then(m => m.AllowanceListComponent),
         canActivate: [permissionGuard],
@@ -154,6 +148,12 @@ export const routes: Routes = [
       {
         path: 'forecast',
         loadComponent: () => import('@pages/forecast/forecast.component').then(m => m.ForecastComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view'] }
+      },
+      {
+        path: 'inventory-forecast',
+        loadComponent: () => import('@pages/inventory-forecast/inventory-forecast.component').then(m => m.InventoryForecastComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view'] }
       },
