@@ -27,9 +27,18 @@ export class AmmunitionService {
     let params = new HttpParams();
     if (query?.search) params = params.set('search', query.search);
 
-    return this.http.get<ApiListResponse<T> | T[]>(this.baseUrl, { params }).pipe(
-      map((res: ApiListResponse<T> | T[] | unknown) => {
+    return this.http.get<APIOperationResponse<T[]> | ApiListResponse<T> | T[]>(this.baseUrl, { params }).pipe(
+      map((res: APIOperationResponse<T[]> | ApiListResponse<T> | T[] | unknown) => {
+        // Handle APIOperationResponse format
+        if (res && typeof res === 'object' && 'succeeded' in res && 'data' in res) {
+          const apiOpResponse = res as APIOperationResponse<T[]>;
+          if (apiOpResponse.succeeded && apiOpResponse.data && Array.isArray(apiOpResponse.data)) {
+            return apiOpResponse.data as T[];
+          }
+        }
+        // Handle array directly
         if (Array.isArray(res)) return res as T[];
+        // Handle ApiListResponse format
         const apiResponse = res as ApiListResponse<T>;
         if (apiResponse?.data && Array.isArray(apiResponse.data)) return apiResponse.data as T[];
         if (apiResponse?.result && Array.isArray(apiResponse.result)) return apiResponse.result as T[];

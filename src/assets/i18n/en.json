@@ -387,6 +387,11 @@
     "failedToLoad": "Failed to load warehouses. Please try again."
   },
   "warehouseInventory": {
+    "tabs": {
+      "ammunition": "Ammunition",
+      "weapon": "Weapons",
+      "explosive": "Explosives"
+    },
     "inventory": "Inventory",
     "backToWarehouses": "Back to Warehouses",
     "totalItems": "Total Items",
@@ -896,10 +901,15 @@
     "backToInventory": "Back to Inventory"
   },
   "assetList": {
-    "title": "Ammunition Inventory",
-    "subtitle": "Manage and track all ammunition items in the system",
+    "title": "Asset Inventory",
+    "subtitle": "Manage and track all inventory items in the system",
     "addAmmunition": "Add Ammunition",
     "searchPlaceholder": "Search by name, item no, part no...",
+    "tabs": {
+      "ammunition": "Ammunition",
+      "weapon": "Weapons",
+      "explosive": "Explosives"
+    },
     "filters": {
       "title": "Filters",
       "clear": "Clear Filters",
@@ -924,7 +934,12 @@
       "expiryClosest": "Expiry (Closest First)"
     },
     "ammunitionItems": "Ammunition Items",
-    "loading": "Loading ammunition data...",
+    "weaponItems": "Weapon Items",
+    "explosiveItems": "Explosive Items",
+    "loading": "Loading data...",
+    "loadingAmmunition": "Loading ammunition data...",
+    "loadingWeapons": "Loading weapons data...",
+    "loadingExplosives": "Loading explosives data...",
     "table": {
       "name": "Name",
       "itemNo": "Item No",
@@ -941,8 +956,14 @@
     "actions": {
       "viewDetails": "View Details"
     },
-    "noItems": "No ammunition items found",
+    "noItems": "No items found",
     "noItemsDescription": "Try adjusting your filters or add a new item",
+    "noAmmunitionItems": "No ammunition items found",
+    "noWeaponItems": "No weapon items found",
+    "noExplosiveItems": "No explosive items found",
+    "errors": {
+      "failedToLoad": "Failed to load data. Please try again."
+    },
     "ready": "Ready",
     "notReady": "Not Ready",
     "viewModal": {

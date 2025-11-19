@@ -5,13 +5,78 @@
       <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
       <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
     </div>
-    <app-button variant="primary" (click)="navigateToAddAsset()">
+    <app-button *ngIf="canEdit" variant="primary" (click)="navigateToAddAsset()">
       <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
         <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
         <span>{{ 'assetList.addAmmunition' | translate }}</span>
       </span>
     </app-button>
   </div>
+
+  <!-- Enhanced Tabs -->
+  <app-card [shadow]="true" class="overflow-hidden">
+    <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
+      <nav class="flex gap-1 p-2" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
+        <button
+          (click)="switchTab('ammunition')"
+          [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
+            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+          }"
+          class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+          [class.flex-row-reverse]="isRTL">
+          <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+            <div class="w-2 h-2 rounded-full transition-all duration-200"
+                 [ngClass]="{
+                   'bg-white': activeTab === 'ammunition',
+                   'bg-[var(--color-brand)]': activeTab !== 'ammunition'
+                 }"></div>
+            <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
+          </div>
+          <div *ngIf="activeTab === 'ammunition'" 
+               class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+        </button>
+        <button
+          (click)="switchTab('weapon')"
+          [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+          }"
+          class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+          [class.flex-row-reverse]="isRTL">
+          <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+            <div class="w-2 h-2 rounded-full transition-all duration-200"
+                 [ngClass]="{
+                   'bg-white': activeTab === 'weapon',
+                   'bg-[var(--color-brand)]': activeTab !== 'weapon'
+                 }"></div>
+            <span>{{ 'assetList.tabs.weapon' | translate }}</span>
+          </div>
+          <div *ngIf="activeTab === 'weapon'" 
+               class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+        </button>
+        <button
+          (click)="switchTab('explosive')"
+          [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+          }"
+          class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+          [class.flex-row-reverse]="isRTL">
+          <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+            <div class="w-2 h-2 rounded-full transition-all duration-200"
+                 [ngClass]="{
+                   'bg-white': activeTab === 'explosive',
+                   'bg-[var(--color-brand)]': activeTab !== 'explosive'
+                 }"></div>
+            <span>{{ 'assetList.tabs.explosive' | translate }}</span>
+          </div>
+          <div *ngIf="activeTab === 'explosive'" 
+               class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+        </button>
+      </nav>
+    </div>
+  </app-card>
 
   <!-- Filters Card -->
   <app-card [shadow]="true">
@@ -63,8 +128,8 @@
           </app-dropdown>
         </div>
 
-        <!-- Case Type Filter -->
-        <div class="w-[180px]">
+        <!-- Case Type Filter (Ammunition only) -->
+        <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
           <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'assetList.filters.caseType' | translate }}
           </label>
@@ -80,8 +145,8 @@
           </app-dropdown>
         </div>
 
-        <!-- Hazard Division Filter -->
-        <div class="w-[180px]">
+        <!-- Hazard Division Filter (Ammunition only) -->
+        <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
           <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'assetList.filters.hazardDivision' | translate }}
           </label>
@@ -97,8 +162,8 @@
           </app-dropdown>
         </div>
 
-        <!-- Compatibility Filter -->
-        <div class="w-[180px]">
+        <!-- Compatibility Filter (Ammunition only) -->
+        <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
           <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'assetList.filters.compatibility' | translate }}
           </label>
@@ -122,7 +187,10 @@
     <div class="p-6">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-semibold text-[var(--color-text)]">
-          {{ 'assetList.ammunitionItems' | translate }} ({{ filteredAssets.length }})
+          <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.ammunitionItems' | translate }}</span>
+          <span *ngIf="activeTab === 'weapon'">{{ 'assetList.weaponItems' | translate }}</span>
+          <span *ngIf="activeTab === 'explosive'">{{ 'assetList.explosiveItems' | translate }}</span>
+          ({{ filteredAssets.length }})
         </h2>
       </div>
 
@@ -192,7 +260,7 @@
                     <lucide-angular *ngIf="sortColumn === 'nsn' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                   </div>
                 </th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                <th *ngIf="activeTab === 'ammunition'" class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
                     (click)="sortByColumn('caseType')">
                   <div class="flex items-center gap-2">
                     {{ 'assetList.table.caseType' | translate }}
@@ -201,7 +269,7 @@
                     <lucide-angular *ngIf="sortColumn === 'caseType' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                   </div>
                 </th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                <th *ngIf="activeTab === 'ammunition'" class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
                     (click)="sortByColumn('hazardDivision')">
                   <div class="flex items-center gap-2">
                     {{ 'assetList.table.hazardDivision' | translate }}
@@ -242,8 +310,8 @@
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.batchNo }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hcc }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
-                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
-                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
+                <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
+                <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.expiryDate }}</td>
                 <td class="py-4 px-6">
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
@@ -261,6 +329,7 @@
                       <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
                     </button>
                     <button
+                      *ngIf="canEdit"
                       (click)="onEdit(asset.id)"
                       class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
                       [title]="'common.edit' | translate"
@@ -268,6 +337,7 @@
                       <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
                     </button>
                     <button
+                      *ngIf="canEdit"
                       (click)="onDelete(asset.id)"
                       class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
                       [title]="'common.delete' | translate"
@@ -278,7 +348,7 @@
                 </td>
               </tr>
               <tr *ngIf="filteredAssets.length === 0 && !loading">
-                <td colspan="11" class="text-center py-12">
+                <td [attr.colspan]="activeTab === 'ammunition' ? 11 : 9" class="text-center py-12">
                   <div class="flex flex-col items-center justify-center">
                     <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
                     <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>

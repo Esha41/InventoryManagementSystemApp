@@ -15,6 +15,7 @@ export interface BaseItemDto {
   batchNo: string;
   hccId: number;
   partNo: string;
+  nsn?: string;
   readyForIssue: boolean;
   expiryDate?: Date | string;
   isDeleted: boolean;

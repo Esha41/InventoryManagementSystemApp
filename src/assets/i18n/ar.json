@@ -387,6 +387,11 @@
     "failedToLoad": "فشل تحميل المستودعات. يرجى المحاولة مرة أخرى."
   },
   "warehouseInventory": {
+    "tabs": {
+      "ammunition": "الذخيرة",
+      "weapon": "الأسلحة",
+      "explosive": "المتفجرات"
+    },
     "inventory": "المخزون",
     "backToWarehouses": "العودة إلى المستودعات",
     "totalItems": "إجمالي العناصر",
@@ -890,10 +895,15 @@
     "backToInventory": "العودة إلى المخزون"
   },
   "assetList": {
-    "title": "مخزون الذخيرة",
-    "subtitle": "إدارة وتتبع جميع عناصر الذخيرة في النظام",
+    "title": "مخزون الأصول",
+    "subtitle": "إدارة وتتبع جميع عناصر المخزون في النظام",
     "addAmmunition": "إضافة ذخيرة",
     "searchPlaceholder": "البحث بالاسم، رقم العنصر، رقم القطعة...",
+    "tabs": {
+      "ammunition": "الذخيرة",
+      "weapon": "الأسلحة",
+      "explosive": "المتفجرات"
+    },
     "filters": {
       "title": "الفلاتر",
       "clear": "مسح الفلاتر",
@@ -918,7 +928,12 @@
       "expiryClosest": "الانتهاء (الأقرب أولاً)"
     },
     "ammunitionItems": "عناصر الذخيرة",
-    "loading": "جاري تحميل بيانات الذخيرة...",
+    "weaponItems": "عناصر الأسلحة",
+    "explosiveItems": "عناصر المتفجرات",
+    "loading": "جاري تحميل البيانات...",
+    "loadingAmmunition": "جاري تحميل بيانات الذخيرة...",
+    "loadingWeapons": "جاري تحميل بيانات الأسلحة...",
+    "loadingExplosives": "جاري تحميل بيانات المتفجرات...",
     "table": {
       "name": "الاسم",
       "itemNo": "رقم العنصر",
@@ -935,8 +950,14 @@
     "actions": {
       "viewDetails": "عرض التفاصيل"
     },
-    "noItems": "لم يتم العثور على عناصر ذخيرة",
+    "noItems": "لم يتم العثور على عناصر",
     "noItemsDescription": "حاول تعديل المرشحات أو إضافة عنصر جديد",
+    "noAmmunitionItems": "لم يتم العثور على عناصر ذخيرة",
+    "noWeaponItems": "لم يتم العثور على عناصر أسلحة",
+    "noExplosiveItems": "لم يتم العثور على عناصر متفجرات",
+    "errors": {
+      "failedToLoad": "فشل تحميل البيانات. يرجى المحاولة مرة أخرى."
+    },
     "ready": "جاهز",
     "notReady": "غير جاهز",
     "viewModal": {

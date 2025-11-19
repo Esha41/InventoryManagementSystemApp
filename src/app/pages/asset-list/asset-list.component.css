@@ -1,5 +1,33 @@
 /* Asset List specific styles if needed */
 
+/* Enhanced Tab Animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.scale-102 {
+  transform: scale(1.02);
+}
+
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+}
+
+/* Tab transition improvements */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Pagination footer improvements */
 :host ::ng-deep app-pagination {
   display: inline-flex;
