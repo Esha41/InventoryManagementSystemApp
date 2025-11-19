@@ -152,6 +152,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/order-report',
+        loadComponent: () => import('@pages/requests-management/order-report/order-report.component').then(m => m.OrderReportComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
         path: 'forecast',
         loadComponent: () => import('@pages/forecast/forecast.component').then(m => m.ForecastComponent),
         canActivate: [permissionGuard],
