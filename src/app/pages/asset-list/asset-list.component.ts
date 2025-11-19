@@ -7,10 +7,13 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
+import { BaseItemDto } from '@models/inventory.model';
 import { LookupItem } from '@models/lookup.model';
 import { forkJoin } from 'rxjs';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -70,6 +73,9 @@ export class AssetListComponent implements OnInit {
   assets: Asset[] = [];
   loading = false;
 
+  // Tab management
+  activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+
   searchTerm = '';
   selectedHcc: string | null = null;
   selectedCaseType: string | null = null;
@@ -113,6 +119,8 @@ export class AssetListComponent implements OnInit {
 
   constructor(
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private lookupService: LookupService,
     private fb: FormBuilder,
     private router: Router,
@@ -149,15 +157,85 @@ export class AssetListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    try {
+      this.loadAssets();
+      this.loadDropdowns();
+    } catch (error) {
+      console.error('Error initializing asset list component:', error);
+      this.loading = false;
+    }
+  }
+
+  switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+    this.activeTab = tab;
+    this.clearFilters();
     this.loadAssets();
-    this.loadDropdowns();
   }
 
   private loadAssets(): void {
     this.loading = true;
+    
+    try {
+      if (this.activeTab === 'ammunition') {
+        this.loadAmmunition();
+      } else if (this.activeTab === 'weapon') {
+        this.loadWeapons();
+      } else if (this.activeTab === 'explosive') {
+        this.loadExplosives();
+      } else {
+        // Default to ammunition if tab is invalid
+        this.activeTab = 'ammunition';
+        this.loadAmmunition();
+      }
+    } catch (error) {
+      console.error('Error in loadAssets:', error);
+      this.loading = false;
+      this.assets = [];
+    }
+  }
+
+  private loadAmmunition(): void {
     this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
       next: (items) => {
-        this.assets = (items || []).map((x: AmmunitionReadDto) => ({
+        try {
+          this.assets = (items || []).map((x: AmmunitionReadDto) => ({
+            id: x.id?.toString() || '-',
+            name: x.name || 'Unknown',
+            itemNo: x.itemNo || '-',
+            partNo: x.partNo || '-',
+            batchNo: x.batchNo || '-',
+            hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+            nsn: x.nsn || '-',
+            caseType: x.caseType?.nameEn || x.caseType?.nameAr || '-',
+            hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr || '-',
+            compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
+            propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
+            expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
+            expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
+            readyForIssue: x.readyForIssue ?? true
+          }));
+          this.currentPage = 1;
+          this.loading = false;
+          this.validateCurrentPage();
+        } catch (error) {
+          console.error('Error mapping ammunition data:', error);
+          this.assets = [];
+          this.loading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load ammunitions:', err);
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad') || 'Failed to load ammunition');
+        this.assets = [];
+        this.loading = false;
+      }
+    });
+  }
+
+  private loadWeapons(): void {
+    this.weaponService.getAll<BaseItemDto>().subscribe({
+      next: (items) => {
+        this.assets = (items || []).map((x: BaseItemDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
@@ -165,25 +243,61 @@ export class AssetListComponent implements OnInit {
           batchNo: x.batchNo || '-',
           hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
           nsn: x.nsn || '-',
-          caseType: x.caseType?.nameEn || x.caseType?.nameAr || '-',
-          hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr || '-',
-          compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
-          propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
+          caseType: '-',
+          hazardDivision: '-',
+          compatibility: '-',
+          propellant: '-',
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
           expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
           readyForIssue: x.readyForIssue ?? true
         }));
         this.currentPage = 1;
         this.loading = false;
-        // Validate current page after loading
         this.validateCurrentPage();
       },
       error: (err) => {
-        console.error('Failed to load ammunitions:', err);
+        console.error('Failed to load weapons:', err);
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad') || 'Failed to load weapons');
         this.assets = [];
         this.loading = false;
       }
     });
+  }
+
+  private loadExplosives(): void {
+    this.explosiveService.getAll<BaseItemDto>().subscribe({
+      next: (items) => {
+        this.assets = (items || []).map((x: BaseItemDto) => ({
+          id: x.id?.toString() || '-',
+          name: x.name || 'Unknown',
+          itemNo: x.itemNo || '-',
+          partNo: x.partNo || '-',
+          batchNo: x.batchNo || '-',
+          hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+          nsn: x.nsn || '-',
+          caseType: '-',
+          hazardDivision: '-',
+          compatibility: '-',
+          propellant: '-',
+          expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
+          expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
+          readyForIssue: x.readyForIssue ?? true
+        }));
+        this.currentPage = 1;
+        this.loading = false;
+        this.validateCurrentPage();
+      },
+      error: (err) => {
+        console.error('Failed to load explosives:', err);
+        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad') || 'Failed to load explosives');
+        this.assets = [];
+        this.loading = false;
+      }
+    });
+  }
+
+  get canEdit(): boolean {
+    return this.activeTab === 'ammunition';
   }
 
   private loadDropdowns(): void {
@@ -372,6 +486,7 @@ export class AssetListComponent implements OnInit {
   }
 
   onEdit(assetId: string): void {
+    if (this.activeTab !== 'ammunition') return;
     this.loading = true;
     this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
       next: (data) => {
@@ -436,13 +551,15 @@ export class AssetListComponent implements OnInit {
   }
 
   onDelete(assetId: string): void {
+    if (this.activeTab !== 'ammunition') return;
     this.selectedAsset = this.assets.find(a => a.id === assetId);
     this.showDeleteModal = true;
   }
 
   onView(assetId: string): void {
-    this.loading = true;
-    this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
+    if (this.activeTab === 'ammunition') {
+      this.loading = true;
+      this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
       next: (data) => {
         if (data) {
           // Map AmmunitionReadDto to Asset interface for display
@@ -471,6 +588,14 @@ export class AssetListComponent implements OnInit {
         this.loading = false;
       }
     });
+    } else {
+      // For weapons and explosives, just show basic info
+      const asset = this.assets.find(a => a.id === assetId);
+      if (asset) {
+        this.selectedAsset = asset;
+        this.showViewModal = true;
+      }
+    }
   }
 
   confirmDelete(): void {

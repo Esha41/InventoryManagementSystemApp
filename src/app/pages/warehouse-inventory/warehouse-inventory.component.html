@@ -15,13 +15,13 @@
 
   <div class="p-6">
     <!-- Page Title -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
           {{ depoName }} {{ 'warehouseInventory.inventory' | translate }}
         </h1>
         <p class="text-sm text-gray-600">
-          {{ 'warehouseInventory.totalItems' | translate }}: {{ totalCount }}
+          {{ 'warehouseInventory.totalItems' | translate }}: {{ filteredInventoryDetails.length }}
         </p>
       </div>
       <button
@@ -29,6 +29,68 @@
         class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
         + {{ 'warehouseInventory.addInventory' | translate }}
       </button>
+    </div>
+
+    <!-- Enhanced Tabs -->
+    <div class="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-gradient-to-r from-gray-50 to-gray-100">
+        <nav class="flex gap-1 p-2" aria-label="Tabs">
+          <button
+            (click)="switchTab('ammunition')"
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
+              'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'ammunition'
+            }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200"
+                   [ngClass]="{
+                     'bg-white': activeTab === 'ammunition',
+                     'bg-[var(--color-brand)]': activeTab !== 'ammunition'
+                   }"></div>
+              <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
+            </div>
+            <div *ngIf="activeTab === 'ammunition'" 
+                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+          </button>
+          <button
+            (click)="switchTab('weapon')"
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+              'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'weapon'
+            }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200"
+                   [ngClass]="{
+                     'bg-white': activeTab === 'weapon',
+                     'bg-[var(--color-brand)]': activeTab !== 'weapon'
+                   }"></div>
+              <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
+            </div>
+            <div *ngIf="activeTab === 'weapon'" 
+                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+          </button>
+          <button
+            (click)="switchTab('explosive')"
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+              'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'explosive'
+            }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200"
+                   [ngClass]="{
+                     'bg-white': activeTab === 'explosive',
+                     'bg-[var(--color-brand)]': activeTab !== 'explosive'
+                   }"></div>
+              <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
+            </div>
+            <div *ngIf="activeTab === 'explosive'" 
+                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+          </button>
+        </nav>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -56,65 +118,65 @@
     </div>
 
     <!-- Inventory Table -->
-    <div *ngIf="!loading && !error" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <app-card *ngIf="!loading && !error" [shadow]="true">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="w-full">
+          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
             <tr>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.itemName' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.itemNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.hcc' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.supplier' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.lot' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.quantity' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.expiryDate' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                 {{ 'warehouseInventory.actions' | translate }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="divide-y divide-[var(--color-border)]">
             <!-- Empty State -->
             <tr *ngIf="paginatedItems.length === 0">
               <td colspan="8" class="px-6 py-12 text-center">
-                <p class="text-gray-500">{{ 'warehouseInventory.noItems' | translate }}</p>
+                <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noItems' | translate }}</p>
               </td>
             </tr>
             <!-- Inventory Items -->
-            <tr *ngFor="let detail of paginatedItems" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
+            <tr *ngFor="let detail of paginatedItems" class="hover:bg-[var(--color-background-muted)] transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
                   {{ getItemName(detail) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ getItemNo(detail) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ getHccName(detail) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ getSupplierName(detail) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ detail.lot }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ formatNumber(detail.itemQuantity) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-start">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ formatDate(detail.item?.expiryDate) }}
                 </td>
               <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
@@ -122,7 +184,7 @@
                   <!-- Edit Button -->
                   <button 
                     (click)="onEditItem(detail)"
-                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                     [title]="'warehouseInventory.edit' | translate">
                     <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
                   </button>
@@ -130,7 +192,7 @@
                   <!-- Delete Button -->
                   <button 
                     (click)="onDeleteItem(detail)"
-                    class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                    class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                     [title]="'warehouseInventory.delete' | translate">
                     <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
                   </button>
@@ -138,7 +200,7 @@
                   <!-- View Details Button -->
                   <button 
                     (click)="onViewItem(detail.id)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                    class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] rounded-lg transition-colors"
                     [title]="'warehouseInventory.viewDetails' | translate">
                     <lucide-angular [img]="ChevronDown" class="h-4 w-4"></lucide-angular>
                   </button>
@@ -149,47 +211,31 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div class="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-white">
-        <!-- Items per page -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-600">{{ 'warehouseInventory.showing' | translate }}</span>
-          <app-dropdown
-            class="w-20"
-            [(ngModel)]="pageSize"
-            [options]="[5, 10, 20, 50]"
-            (selectionChange)="onPageSizeChange($event)"
-            [placeholderSelectable]="false">
-          </app-dropdown>
-          <span class="text-sm text-gray-600">{{ 'warehouseInventory.of' | translate }} {{ totalCount }}</span>
-        </div>
+      <!-- Pagination Footer - Outside table overflow container -->
+      <div *ngIf="filteredInventoryDetails.length > 0 && !loading" class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
+        <div class="flex items-center justify-between w-full flex-nowrap">
+          <!-- Rows Per Page Selector -->
+          <app-rows-per-page
+            [rowsPerPage]="rowsPerPage"
+            [totalItems]="filteredInventoryDetails.length"
+            [visibleItems]="paginatedItems.length"
+            (rowsPerPageChange)="onRowsPerPageChange($event)">
+          </app-rows-per-page>
 
-        <!-- Page Numbers -->
-        <div class="flex items-center gap-2">
-          <button 
-            (click)="onPageChange(currentPage - 1)"
-            [disabled]="currentPage === 1"
-            class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            <lucide-angular [img]="ChevronLeft" class="h-4 w-4 text-gray-700"></lucide-angular>
-          </button>
-
-          <button
-            *ngFor="let page of getPageNumbers()"
-            (click)="onPageChange(page)"
-            class="pagination-page-small"
-            [ngClass]="currentPage === page ? 'pagination-page-small-active' : 'pagination-page-small-inactive'">
-            {{ page }}
-          </button>
-
-          <button 
-            (click)="onPageChange(currentPage + 1)"
-            [disabled]="currentPage === totalPages"
-            class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            <lucide-angular [img]="ChevronLeft" class="h-4 w-4 text-gray-700 rotate-180"></lucide-angular>
-          </button>
+          <!-- Pagination Controls -->
+          <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+            <app-pagination
+              [currentPage]="currentPage"
+              [totalPages]="totalPages"
+              (pageChange)="onPageChange($event)">
+            </app-pagination>
+            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </app-card>
   </div>
 </div>
 

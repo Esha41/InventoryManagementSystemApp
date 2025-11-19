@@ -12,9 +12,12 @@ import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto } from '@models/inventory.model';
 import { DepotDto } from '@models/depot.model';
+import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -25,9 +28,12 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
     RouterModule, 
     LucideAngularModule, 
     TranslateModule,
+    CardComponent,
     ConfirmDialogComponent,
     EditInventoryDetailModalComponent,
-    DropdownComponent
+    DropdownComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css']
@@ -36,15 +42,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depoId: number = 0;
   depoName: string = '';
   inventoryDetails: InventoryDetailDto[] = [];
-  paginatedItems: InventoryDetailDto[] = [];
+  filteredInventoryDetails: InventoryDetailDto[] = [];
   loading = true;
   error: string | null = null;
 
+  // Tab management
+  activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+
   // Pagination
   currentPage = 1;
-  pageSize = 10;
-  totalCount = 0;
-  totalPages = 0;
+  rowsPerPage = 10;
 
   readonly ArrowLeft = ArrowLeft;
   readonly ChevronLeft = ChevronLeft;
@@ -103,11 +110,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         
         // Set inventory details
         this.inventoryDetails = inventoryDetails;
-        this.totalCount = inventoryDetails.length;
-        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-        
-        // Update paginated items
-        this.updatePaginatedItems();
+        this.filterInventoryByTab();
         this.loading = false;
       },
       error: (error) => {
@@ -118,16 +121,60 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updatePaginatedItems(): void {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedItems = this.inventoryDetails.slice(startIndex, endIndex);
+  switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+    this.activeTab = tab;
+    this.currentPage = 1;
+    this.filterInventoryByTab();
+  }
+
+  private filterInventoryByTab(): void {
+    if (this.activeTab === 'ammunition') {
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+        d.item?.itemType === 1 || d.item?.itemType === undefined
+      );
+    } else if (this.activeTab === 'weapon') {
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+        d.item?.itemType === 2
+      );
+    } else if (this.activeTab === 'explosive') {
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+        d.item?.itemType === 3
+      );
+    } else {
+      this.filteredInventoryDetails = this.inventoryDetails;
+    }
+
+    this.validateCurrentPage();
+  }
+
+  get totalPages(): number {
+    const totalItems = this.filteredInventoryDetails.length;
+    if (totalItems === 0) {
+      return 1;
+    }
+    return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  get paginatedItems(): InventoryDetailDto[] {
+    // Ensure currentPage is valid before slicing
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredInventoryDetails.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
   }
 
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.updatePaginatedItems();
     }
   }
 
@@ -139,14 +186,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/warehouse', this.depoId, 'inventory', itemId]);
   }
 
-  onPageSizeChange(newSize: number | null): void {
-    if (!newSize) {
-      return;
-    }
-    this.pageSize = newSize;
+  onRowsPerPageChange(newSize: number): void {
+    this.rowsPerPage = newSize;
     this.currentPage = 1; // Reset to first page
-    this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-    this.updatePaginatedItems();
+    this.validateCurrentPage();
   }
 
   /**
@@ -197,21 +240,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     return num.toLocaleString();
   }
 
-  /**
-   * Get page numbers for pagination
-   */
-  getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    const startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
-  }
 
   /**
    * Refresh inventory data
