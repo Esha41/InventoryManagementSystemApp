@@ -116,7 +116,7 @@
         [disabled]="isLoadingRanks"
         [placeholderSelectable]="true"
         [placeholderValue]="null"
-        placeholder="{{ 'common.select' | translate }}">
+        placeholder="{{ 'userFormModal.rankPlaceholder' | translate }}">
       </app-dropdown>
     </div>
 
@@ -146,7 +146,7 @@
         [required]="true"
         [placeholderSelectable]="false"
         [error]="!!(userForm.get('roleIds')?.invalid && userForm.get('roleIds')?.touched)"
-        placeholder="{{ 'common.select' | translate }}">
+        placeholder="{{ 'userFormModal.rolesPlaceholder' | translate }}">
       </app-dropdown>
       <p *ngIf="getFieldError('roleIds')" class="mt-2 text-sm text-[var(--color-error)]">
         {{ getFieldError('roleIds') }}
@@ -167,7 +167,7 @@
         [disabled]="isLoadingDepartments"
         [placeholderSelectable]="true"
         [placeholderValue]="null"
-        placeholder="{{ 'common.select' | translate }}">
+        placeholder="{{ 'userFormModal.departmentPlaceholder' | translate }}">
       </app-dropdown>
     </div>
 

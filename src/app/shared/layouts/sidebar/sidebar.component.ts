@@ -60,6 +60,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['request.page', 'request.view', 'order.view']
     },
     {
+      label: 'nav.supplyOrder',
+      icon: Package,
+      route: '/supply-order',
+      permissions: ['supply.page', 'supply.view']
+    },
+    {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
