@@ -1,115 +1,156 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" (click)="onBackdropClick($event)">
-  <!-- Backdrop -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
-
-  <!-- Modal -->
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"></div>
   <div class="flex min-h-full items-center justify-center p-4">
-    <div class="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6" (click)="$event.stopPropagation()">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-[var(--color-text)]">{{ 'dashboard.discardDetails' | translate }}</h2>
-        <button
-          (click)="onClose()"
-          class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
-          <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-        </button>
+    <div class="relative bg-white rounded-2xl shadow-custom-2xl max-w-5xl w-full my-8 animate-in fade-in slide-in-from-bottom-4 duration-300" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="sticky top-0 bg-white border-b border-[var(--color-border)] rounded-t-2xl px-6 py-4 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--color-brand)]/20 to-[var(--color-brand)]/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-[var(--color-brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-[var(--color-text)]">{{ 'dashboard.discardDetails' | translate }}</h2>
+          </div>
+          <button
+            (click)="onClose()"
+            class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors group">
+            <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors"></lucide-angular>
+          </button>
+        </div>
       </div>
 
-      <!-- Content -->
-      <div *ngIf="discardRequest" class="space-y-6">
-        <!-- Basic Information -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.discardNumber' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ discardRequest.requestNo || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.requestDate' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ getCurrentDate() }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.department' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ discardRequest.departmentName || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.requester' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ discardRequest.requesterName || 'N/A' }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.priority' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ getPriorityText(discardRequest.priority) | translate }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.status' | translate }}</p>
-            <p class="text-base font-semibold text-[var(--color-text)]">{{ getStatusText(discardRequest.status) | translate }}</p>
-          </div>
-        </div>
-
-        <!-- Reason and Notes -->
-        <div *ngIf="discardRequest.reason || discardRequest.notes" class="border-t border-[var(--color-border)] pt-4">
-          <div class="space-y-3">
-            <div *ngIf="discardRequest.reason">
-              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.reason' | translate }}</p>
-              <p class="text-sm text-[var(--color-text)]">{{ discardRequest.reason }}</p>
+      <!-- Modal Content -->
+      <div class="flex flex-col max-h-[calc(100vh-8rem)]">
+        <div class="p-6 overflow-y-auto flex-1">
+          <div *ngIf="discardRequest as request" class="space-y-6">
+            <!-- Basic Information Card -->
+            <div class="bg-gradient-to-br from-[var(--color-background-muted)] to-white rounded-xl p-6 border border-[var(--color-border)]">
+              <h3 class="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">{{ 'dashboard.discardDetails' | translate }}</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.discardNumber' | translate }}</p>
+                  <p class="text-lg font-bold text-[var(--color-text)]">{{ request.requestNo || 'N/A' }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.requestDate' | translate }}</p>
+                  <p class="text-lg font-bold text-[var(--color-text)]">{{ formatRequestDate(request) }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.department' | translate }}</p>
+                  <p class="text-lg font-bold text-[var(--color-text)]">{{ resolveDepartmentName(request) }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.requester' | translate }}</p>
+                  <p class="text-lg font-bold text-[var(--color-text)]">{{ request.requesterName || 'N/A' }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.priority' | translate }}</p>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
+                        [ngClass]="{
+                          'bg-red-100 text-red-800': request.priority === 1,
+                          'bg-yellow-100 text-yellow-800': request.priority === 2,
+                          'bg-green-100 text-green-800': request.priority === 3
+                        }">
+                    {{ getPriorityKey(request.priority) | translate }}
+                  </span>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-[var(--color-border-muted)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.status' | translate }}</p>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+                    {{ getStatusKey(request.status) | translate }}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div *ngIf="discardRequest.notes">
-              <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'dashboard.notes' | translate }}</p>
-              <p class="text-sm text-[var(--color-text)]">{{ discardRequest.notes }}</p>
+
+            <!-- Additional Information Card -->
+            <div class="bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'dashboard.additionalInformation' | translate }}</h3>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.requestPurpose' | translate }}</p>
+                  <p class="text-base font-medium text-[var(--color-text)]">{{ resolveRequestPurpose(request) }}</p>
+                </div>
+                <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{ 'dashboard.depot' | translate }}</p>
+                  <p class="text-base font-medium text-[var(--color-text)]">{{ resolveDepotName(request) }}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Items -->
-        <div class="border-t border-[var(--color-border)] pt-4">
-          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'dashboard.items' | translate }}</h3>
+            <!-- Reason and Notes Card -->
+            <div *ngIf="request.reason || request.notes" class="bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+              <div class="space-y-4">
+                <div *ngIf="request.reason" class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-4">
+                  <p class="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2">{{ 'dashboard.reason' | translate }}</p>
+                  <p class="text-sm text-amber-900">{{ request.reason }}</p>
+                </div>
+                <div *ngIf="request.notes" class="bg-blue-50 border-l-4 border-blue-400 rounded-r-lg p-4">
+                  <p class="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2">{{ 'dashboard.notes' | translate }}</p>
+                  <p class="text-sm text-blue-900">{{ request.notes }}</p>
+                </div>
+              </div>
+            </div>
 
-          <div *ngIf="!hasItems" class="text-sm text-[var(--color-text-muted)]">
-            {{ 'dashboard.noItems' | translate }}
-          </div>
-
-          <div *ngIf="hasItems" class="space-y-4">
-            <div
-              *ngFor="let item of discardRequest!.requestItems"
-              class="bg-gray-50 rounded-lg p-4 border border-[var(--color-border-muted)]"
-            >
-              <div class="grid grid-cols-3 gap-4">
-                <div>
-                  <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemName' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">
-                    {{ item.itemName || item.itemNo || 'N/A' }}
-                  </p>
+            <!-- Items Card -->
+            <div class="bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-[var(--color-brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
                 </div>
-                <div>
-                  <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.itemNo' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">
-                    {{ item.itemNo || 'N/A' }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.quantity' | translate }}</p>
-                  <p class="text-sm font-medium text-[var(--color-text)]">
-                    {{ item.quantity }}
-                  </p>
-                </div>
-                <div *ngIf="item.notes" class="col-span-3">
-                  <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'dashboard.notes' | translate }}</p>
-                  <p class="text-sm text-[var(--color-text)]">{{ item.notes }}</p>
+                <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'dashboard.items' | translate }}</h3>
+              </div>
+              <div *ngIf="!hasItems(request.requestItems)" class="text-center py-8">
+                <p class="text-sm text-[var(--color-text-muted)]">{{ 'dashboard.noItems' | translate }}</p>
+              </div>
+              <div *ngIf="hasItems(request.requestItems)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let item of request.requestItems" class="bg-gradient-to-br from-[var(--color-background-muted)] to-white rounded-lg p-4 border border-[var(--color-border-muted)] hover:shadow-custom-md transition-shadow">
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'dashboard.itemName' | translate }}</p>
+                      <p class="text-base font-semibold text-[var(--color-text)]">{{ item?.itemName || item?.itemNo || 'N/A' }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                      <div>
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'dashboard.itemNo' | translate }}</p>
+                        <p class="text-sm font-medium text-[var(--color-text)]">{{ item?.itemNo || 'N/A' }}</p>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'dashboard.quantity' | translate }}</p>
+                        <p class="text-sm font-bold text-[var(--color-brand)]">{{ item?.quantity }}</p>
+                      </div>
+                    </div>
+                    <div *ngIf="item?.notes" class="pt-2 border-t border-[var(--color-border-muted)]">
+                      <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'dashboard.notes' | translate }}</p>
+                      <p class="text-sm text-[var(--color-text)]">{{ item?.notes }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Footer -->
-      <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-[var(--color-border)]">
-        <button
-          (click)="onClose()"
-          class="px-4 py-2 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-colors">
-          {{ 'common.close' | translate }}
-        </button>
+        <!-- Modal Footer -->
+        <div class="sticky bottom-0 bg-white border-t border-[var(--color-border)] rounded-b-2xl px-6 py-4 flex justify-end gap-3 z-10">
+          <button
+            (click)="onClose()"
+            class="px-6 py-2.5 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
+            {{ 'common.close' | translate }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
-

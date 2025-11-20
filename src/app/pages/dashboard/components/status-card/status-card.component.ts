@@ -114,13 +114,12 @@ export class StatusCardComponent {
   getStatusTranslationKey(): string {
     switch (this.status) {
       case 'new-issue':
-        return 'dashboard.newIssue';
+      case 'new':
+        return 'dashboard.statusLabels.new';
       case 'on-progress':
         return 'dashboard.onProgress';
       case 'completed':
         return 'dashboard.completed';
-      case 'new':
-        return 'dashboard.statusLabels.new';
       default:
         return 'dashboard.statusLabels.new';
     }

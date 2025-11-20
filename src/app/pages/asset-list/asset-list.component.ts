@@ -562,20 +562,27 @@ export class AssetListComponent implements OnInit {
       this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
       next: (data) => {
         if (data) {
-          // Map AmmunitionReadDto to Asset interface for display
+        
           this.selectedAsset = {
             id: data.id.toString(),
             name: data.name || 'Unknown',
             itemNo: data.itemNo || '-',
             partNo: data.partNo || '-',
             batchNo: data.batchNo || '-',
-            hcc: data.hcc?.nameEn || data.hcc?.nameAr || '-',
+            hcc: data.hcc, 
             nsn: data.nsn || '-',
-            caseType: data.caseType?.nameEn || data.caseType?.nameAr || '-',
-            hazardDivision: data.hazardDivision?.nameEn || data.hazardDivision?.nameAr || '-',
-            compatibility: data.compatibility?.nameEn || data.compatibility?.nameAr || '-',
-            propellant: data.propellant?.nameEn || data.propellant?.nameAr || '-',
-            expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
+            caseType: data.caseType, 
+            hazardDivision: data.hazardDivision, 
+            compatibility: data.compatibility,
+            propellant: data.propellant, 
+            bulletDiameter: data.bulletDiameter,
+            bulletDiameterUnit: data.bulletDiameterUnit,
+            caseLength: data.caseLength,
+            caseLengthUnit: data.caseLengthUnit, 
+            primer: data.primer || '-',
+            totalWeight: data.totalWeight,
+            isLinked: data.isLinked ?? false,
+            expiryDate: data.expiryDate ? (typeof data.expiryDate === 'string' ? data.expiryDate : new Date(data.expiryDate).toISOString()) : undefined,
             readyForIssue: data.readyForIssue ?? true
           };
         }

@@ -146,7 +146,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
           const orderCards = newOrders.map(order => ({
             title: order.requestNo || order.orderNo || `#${order.id}`,
-            status: 'new-issue' as const,
+            status: 'new' as const,
             orders: [{
               orderId: order.requestNo || order.orderNo || `#${order.id}`,
               requestDate: this.formatOrderDate(order),

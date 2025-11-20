@@ -434,11 +434,11 @@
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.bulletDiameter' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter }} {{ selectedAsset.bulletDiameterUnit?.nameEn }}</p>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter != null ? (selectedAsset.bulletDiameter + ' ' + (selectedAsset.bulletDiameterUnit?.nameEn || selectedAsset.bulletDiameterUnit?.nameAr || '')) : '-' }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.caseLength' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseLength }} {{ selectedAsset.caseLengthUnit?.nameEn }}</p>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caseLength != null ? (selectedAsset.caseLength + ' ' + (selectedAsset.caseLengthUnit?.nameEn || selectedAsset.caseLengthUnit?.nameAr || '')) : '-' }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.caseType' | translate }}</label>
@@ -462,7 +462,7 @@
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.totalWeight' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight }} g</p>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ? (selectedAsset.totalWeight + ' g') : '-' }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.isLinked' | translate }}</label>

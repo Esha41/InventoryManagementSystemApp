@@ -37,7 +37,6 @@
     "supplyManagement": "Supply Management",
     "warehouse": "Warehouse",
     "warehouseList": "Warehouse List",
-    "inventoryCategory": "Inventory Category",
     "workflow": "Work Flows",
     "department": "Department",
     "allowance": "Allowance",
@@ -50,6 +49,7 @@
     "addAsset": "Add Asset",
     "assetList": "Asset List",
     "searchInventory": "Search Inventory",
+    "inventoryForecast": "Inventory Forecast",
     "depotManagement": "Depot Management",
     "admin": "ADMIN",
     "manageAdmins": "Manage Admins",
@@ -86,6 +86,7 @@
     "priority": "Priority",
     "status": "Status",
     "usageInformation": "Usage Information",
+    "additionalInformation": "Additional Information",
     "usagePurpose": "Usage Purpose",
     "usageLocation": "Usage Location",
     "usageDate": "Usage Date",
@@ -187,7 +188,7 @@
     "send": "Send",
     "selectOrderSource": "Select Order Source",
     "selectOrderSourceDescription": "Choose whether you want to order from your department's allowance or from all available ammunition",
-    "fromAllowance": "From Allowance (Reserve)",
+    "fromAllowance": "From Allowance",
     "fromAllowanceDescription": "Order items from your department's pre-allocated allowance for this year",
     "fromAllAmmunition": "From All Ammunition",
     "fromAllAmmunitionDescription": "Order any items from the complete ammunition inventory",
@@ -282,6 +283,30 @@
       "required": "This field is required.",
       "correctErrors": "Please fix the highlighted fields before continuing."
     }
+  },
+  "inventoryForecast": {
+    "title": "Inventory Forecast",
+    "timeframe": "Timeframe",
+    "allTime": "All-time",
+    "ammunition": "Ammunition",
+    "requests": "Requests",
+    "all": "All",
+    "activeCustomers": "Active Customers",
+    "orderFulfillment": "Order Fulfillment",
+    "budgetForecast": "Budget Forecast",
+    "activeSuppliers": "Active Suppliers",
+    "currentStock": "Current Stock",
+    "activityIncrease": "Activity Increase",
+    "hotItems": "Hot Items",
+    "overstock": "Overstock",
+    "reStockForecast": "Re-Stock Forecast",
+    "firstInFirstOut": "First In First Out",
+    "expensesTracking": "Expenses Tracking",
+    "shippingExpenses": "Shipping Expenses",
+    "storageExpenses": "Storage Expenses",
+    "totalExpenses": "Total Expenses",
+    "entryDate": "Entry Date",
+    "consumed": "Consumed"
   },
   "forecast": {
     "title": "Forecast",
@@ -495,12 +520,6 @@
       "confirmDelete": "Delete",
       "cancel": "Cancel"
     }
-  },
-  "inventoryCategory": {
-    "title": "Inventory Category",
-    "ammunitionWarehouse": "Ammunition Warehouse",
-    "explosivesWarehouse": "Explosives Warehouse",
-    "weaponWarehouse": "Weapon Warehouse"
   },
   "supplyRequestManagement": {
     "title": "Supply Request Management",
