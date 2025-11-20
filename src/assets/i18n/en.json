@@ -55,6 +55,7 @@
     "manageAdmins": "Manage Admins",
     "adminRoles": "Admin Roles",
     "rolePermissions": "Role Permissions",
+    "emailSettings": "Email Settings",
     "notifications": "Notifications",
     "integratedInventoryManagement": "Integrated Inventory Management"
   },
@@ -724,6 +725,40 @@
     "tryAdjusting": "Try adjusting your filters or search term.",
     "clearSearch": "Clear search",
     "selected": "selected"
+  },
+  "emailSettings": {
+    "title": "System Settings",
+    "emailSettings": {
+      "title": "E-mail Settings",
+      "enableEmailNotifications": "Enable E-mail Notifications",
+      "host": "Host",
+      "port": "Port",
+      "enableSSL": "Enable SSL",
+      "senderName": "Sender Name",
+      "accountUsername": "Account Username",
+      "accountPassword": "Account Password"
+    },
+    "assetReturnEmailContent": {
+      "title": "Asset Return E-mail Content",
+      "placeholder": "Enter email content for asset return notifications",
+      "hint": "Use **text** for bold formatting. Variables: AssetName, ReturnStatus"
+    },
+    "bulkAssetNotificationEmailContent": {
+      "title": "Bulk Asset Notification E-mail Content",
+      "placeholder": "Enter email content for bulk asset notifications",
+      "hint": "This content will be used for bulk asset assignment notifications"
+    },
+    "otpSettings": {
+      "title": "OTP Settings",
+      "enableEmailLoginOTP": "Enable E-mail Login OTP"
+    },
+    "organizationSettings": {
+      "title": "Organization Settings",
+      "organizationName": "Organization Name",
+      "organizationNameArabic": "Organization Name Arabic",
+      "organizationLogoFilename": "Organization Logo Filename",
+      "organizationReportLogoFilename": "Organization Report Logo Filename"
+    }
   },
   "accessDenied": {
     "title": "Access denied",

@@ -122,7 +122,7 @@ export const API_ENDPOINTS = {
     SEND_TO_USER: '/Notification/send',
     SEND_TO_GROUP: '/Notification/send-to-group'
   },
- 
+
   // Depot Management (Warehouses)
   DEPOT: {
     BASE: '/Lookup/Depot',
@@ -135,6 +135,11 @@ export const API_ENDPOINTS = {
     BY_DEPARTMENT_AND_YEAR: (departmentId: number, year: number) => `/AllowanceItem/department/${departmentId}/year/${year}`,
     BY_DEPARTMENT: (departmentId: number) => `/AllowanceItem/department/${departmentId}`,
     RESERVE_DETAILS: (departmentId: number, year: number) => `/AllowanceItem/reserve-details/${departmentId}/${year}`,
+  },
+
+  // Email Configuration
+  EMAIL_CONFIGURATION: {
+    BASE: '/EmailConfiguration',
   },
 } as const;
 
