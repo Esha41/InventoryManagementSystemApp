@@ -57,6 +57,13 @@ export const API_ENDPOINTS = {
     ALL_LIST: '/Workflows/all-list',
   },
   
+  // Workflow Approval
+  WORKFLOW_APPROVAL: {
+    BASE: '/WorkflowApproval',
+    ALL_ORDERS: '/WorkflowApproval/AllOrders',
+    ALL_BASE_REQUESTS: '/WorkflowApproval/AllBaseRequests',
+  },
+  
   // Requests Management
   REQUESTS: {
     BASE: '/requests',

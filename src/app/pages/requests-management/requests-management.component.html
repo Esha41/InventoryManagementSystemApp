@@ -20,7 +20,13 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[var(--color-border)]">
-          <tr *ngFor="let request of requests" class="hover:bg-[var(--color-background-muted)] transition-colors">
+          <tr *ngIf="loading" class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">Loading...</td>
+          </tr>
+          <tr *ngIf="!loading && paginatedRequests.length === 0" class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">No requests found</td>
+          </tr>
+          <tr *ngFor="let request of paginatedRequests" class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.requestDate }}</td>
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.priority }}</td>
@@ -53,7 +59,7 @@
 
       <app-pagination
         [currentPage]="currentPage"
-        [totalPages]="5"
+        [totalPages]="totalPages"
         (pageChange)="onPageChange($event)">
       </app-pagination>
     </div>
