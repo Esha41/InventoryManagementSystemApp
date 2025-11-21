@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+section {
+  background: #ffffff;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  button {
+    display: none !important;
+  }
+
+  section {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}
+

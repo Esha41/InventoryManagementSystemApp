@@ -44,6 +44,8 @@
     "returnRequest": "Return Request",
     "discardRequest": "Discard Request",
     "requestsManagement": "Requests Management",
+    "requestsOverview": "Requests Overview",
+    "orderReport": "Order Report",
     "forecast": "Forecast",
     "inventory": "INVENTORY",
     "addAsset": "Add Asset",
@@ -338,7 +340,52 @@
     "discard": "Discard",
     "pending": "Pending",
     "confirmed": "Confirmed",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "orderReport": {
+      "breadcrumb": "Requests · Order Report",
+      "title": "Order Report",
+      "subtitle": "Detailed workflow overview for {{department}}",
+      "print": "Print",
+      "exportPdf": "Export PDF",
+      "generating": "Generating...",
+      "section": {
+        "orderDetails": "Order Detail",
+        "approvalWorkflow": "Approval Workflow",
+        "workflowDetails": "Workflow Details from Order",
+        "qrCode": "QR Code"
+      },
+      "labels": {
+        "department": "Department",
+        "requester": "Requester",
+        "workflowVersion": "Workflow Version",
+        "totalItems": "Total Items",
+        "totalQuantity": "Total Quantity",
+        "lastUpdated": "Last Updated",
+        "itemsIncluded": "Items Included in Request",
+        "rounds": "rounds",
+        "currentStatus": "Current status: {{status}}",
+        "workflowOwner": "Workflow Orchestration",
+        "orderId": "Order ID",
+        "scanHeading": "Scan to track this order",
+        "scanDescription": "Authorized personnel can scan the QR code to view live issuance status and custody trail.",
+        "qrGenerating": "Generating QR code...",
+        "qrFootnote": "QR code encodes order metadata, workflow version, and issuance timestamp."
+      },
+      "table": {
+        "phase": "Phase",
+        "owner": "Owner",
+        "description": "Description",
+        "sla": "SLA",
+        "status": "Status"
+      },
+      "list": {
+        "title": "Orders",
+        "count": "{{count}} orders",
+        "empty": "No orders available yet.",
+        "unknown": "Unknown department"
+      },
+      "detailPlaceholder": "Select an order from the list to view its report."
+    }
   },
   "returnRequest": {
     "pageTitle": "Integrated Order Management",

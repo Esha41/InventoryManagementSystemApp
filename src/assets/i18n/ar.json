@@ -43,6 +43,8 @@
     "returnRequest": "طلب إرجاع",
     "discardRequest": "طلب إتلاف",
     "requestsManagement": "إدارة الطلبات",
+    "requestsOverview": "عرض الطلبات",
+    "orderReport": "تقرير الطلب",
     "forecast": "التوقعات",
     "inventory": "المخزون",
     "addAsset": "إضافة أصل",
@@ -338,7 +340,52 @@
     "discard": "إتلاف",
     "pending": "قيد الانتظار",
     "confirmed": "مؤكد",
-    "rejected": "مرفوض"
+    "rejected": "مرفوض",
+    "orderReport": {
+      "breadcrumb": "الطلبات · تقرير الطلب",
+      "title": "تقرير الطلب",
+      "subtitle": "نظرة تفصيلية لسير العمل لـ {{department}}",
+      "print": "طباعة",
+      "exportPdf": "تصدير PDF",
+      "generating": "جاري التحضير...",
+      "section": {
+        "orderDetails": "تفاصيل الطلب",
+        "approvalWorkflow": "مسار الموافقات",
+        "workflowDetails": "تفاصيل سير العمل من الطلب",
+        "qrCode": "رمز الاستجابة السريعة"
+      },
+      "labels": {
+        "department": "القسم",
+        "requester": "مقدم الطلب",
+        "workflowVersion": "إصدار سير العمل",
+        "totalItems": "إجمالي العناصر",
+        "totalQuantity": "إجمالي الكمية",
+        "lastUpdated": "آخر تحديث",
+        "itemsIncluded": "العناصر ضمن الطلب",
+        "rounds": "طلقة",
+        "currentStatus": "الحالة الحالية: {{status}}",
+        "workflowOwner": "تنسيق سير العمل",
+        "orderId": "رقم الطلب",
+        "scanHeading": "امسح لتتبع هذا الطلب",
+        "scanDescription": "يمكن للموظفين المخولين مسح الرمز لعرض حالة الصرف وسجل الحيازة مباشرة.",
+        "qrGenerating": "جاري إنشاء رمز QR...",
+        "qrFootnote": "يحتوي رمز QR على بيانات الطلب وإصدار سير العمل وطابع زمن الصرف."
+      },
+      "table": {
+        "phase": "المرحلة",
+        "owner": "المالك",
+        "description": "الوصف",
+        "sla": "SLA",
+        "status": "الحالة"
+      },
+      "list": {
+        "title": "الطلبات",
+        "count": "{{count}} طلبًا",
+        "empty": "لا توجد طلبات حتى الآن.",
+        "unknown": "قسم غير معروف"
+      },
+      "detailPlaceholder": "اختر طلبًا من القائمة لعرض تقريره."
+    }
   },
   "returnRequest": {
     "pageTitle": "إدارة الطلبات المتكاملة",
