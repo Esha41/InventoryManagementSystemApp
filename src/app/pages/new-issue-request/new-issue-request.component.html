@@ -92,7 +92,9 @@
         [selectedLinked]="selectedLinked"
         [selectedNature]="selectedNature"
         [canProceed]="canProceedFromSelection"
+        [fromReserve]="fromReserve"
         (cartridgeClick)="onCartridgeClick($event)"
+        (allowanceError)="onAllowanceError($event)"
         (addSelection)="onCartridgeAdded($event)"
         (filterChange)="filterCartridges()"
         (clearFilters)="onClearFilters()"
@@ -107,6 +109,11 @@
         (natureChange)="onNatureChange($event)"
         (removeSelection)="onRemoveSelectedCartridge($event)">
       </app-cartridge-list>
+      
+      <!-- Allowance Error Banner -->
+      <div *ngIf="allowanceError" class="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
+        {{ allowanceError }}
+      </div>
     </ng-container>
 
     <ng-template #cartridgeState>

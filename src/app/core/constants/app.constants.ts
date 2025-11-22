@@ -89,6 +89,7 @@ export const API_ENDPOINTS = {
   ORDERS: {
     BASE: '/Order',
     BY_ID: (id: number) => `/Order/${id}`,
+    VERIFY_ALLOWANCE: '/Order/verify-allowance',
   },
   
   // Request Purposes

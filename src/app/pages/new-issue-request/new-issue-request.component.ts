@@ -98,6 +98,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   submittingOrder = false;
   orderSubmitError: string | null = null;
   createdOrderId: number | null = null;
+  allowanceError: string | null = null;
   orderNumber: string | null = null;
 
   private selectedEntries: Array<{ id: number; quantity: number }> = [];
@@ -479,6 +480,14 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     }
   }
 
+  onAllowanceError(errorMessage: string): void {
+    this.allowanceError = errorMessage;
+    // Clear error after 5 seconds
+    setTimeout(() => {
+      this.allowanceError = null;
+    }, 5000);
+  }
+
   onClearFilters(): void {
     this.selectedItemType = 'Ammunition';
     this.selectedAmmunitionType = '';
@@ -700,8 +709,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.submittingOrder = false;
 
         if (!response?.succeeded) {
-          const backendMessage = response?.message || this.extractFirstError(response) || 'Failed to submit order. Please try again.';
+          // Try multiple ways to extract the error message
+          const responseAny = response as any;
+          const backendMessage = response?.message || 
+                                 responseAny?.Message ||
+                                 this.extractFirstError(response) || 
+                                 'Failed to submit order. Please try again.';
           this.orderSubmitError = backendMessage;
+          // Ensure we're on the review step to show the error
+          this.currentStep = 3;
+          this.updateQueryParams(3);
           return;
         }
 
@@ -715,8 +732,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       },
       error: (error: unknown) => {
         this.submittingOrder = false;
+        console.log('Order submission error:', error); // Debug log
         const message = this.resolveHttpErrorMessage(error);
+        console.log('Resolved error message:', message); // Debug log
         this.orderSubmitError = message;
+        // Ensure we're on the review step to show the error
+        this.currentStep = 3;
+        this.updateQueryParams(3);
       }
     });
   }
@@ -970,15 +992,63 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private resolveHttpErrorMessage(error: unknown): string {
+    // First check if error has userMessage (set by error interceptor)
+    const errorAny = error as any;
+    if (errorAny?.userMessage) {
+      return errorAny.userMessage;
+    }
+    
     if (error instanceof HttpErrorResponse) {
-      const backendMessage = error.error?.message || error.error?.Message || error.error?.title || error.message;
-      if (backendMessage) {
-        return backendMessage;
+      const errorObj = error.error;
+      
+      // Check for message in various possible locations (most common first)
+      const message = errorObj?.message || 
+                     errorObj?.Message || 
+                     errorObj?.title ||
+                     errorObj?.error?.message ||
+                     errorObj?.error?.Message;
+      
+      if (message) {
+        return message;
+      }
+      
+      // Check for errors array
+      if (errorObj?.errors) {
+        if (Array.isArray(errorObj.errors) && errorObj.errors.length > 0) {
+          // If it's an array of strings, return the first one
+          if (typeof errorObj.errors[0] === 'string') {
+            return errorObj.errors[0];
+          }
+          // If it's an array of objects, try to get message or description
+          const firstError = errorObj.errors[0];
+          return firstError?.message || firstError?.Message || firstError?.description || firstError?.error || String(firstError);
+        }
+        
+        // If errors is an object (validation errors)
+        if (typeof errorObj.errors === 'object' && !Array.isArray(errorObj.errors)) {
+          const errorKeys = Object.keys(errorObj.errors);
+          if (errorKeys.length > 0) {
+            const firstErrorValue = errorObj.errors[errorKeys[0]];
+            if (Array.isArray(firstErrorValue) && firstErrorValue.length > 0) {
+              return firstErrorValue[0];
+            }
+            if (typeof firstErrorValue === 'string') {
+              return firstErrorValue;
+            }
+          }
+        }
+      }
+      
+      // Fallback to HTTP status text
+      if (error.message) {
+        return error.message;
       }
     }
+    
     if (error instanceof Error && error.message) {
       return error.message;
     }
+    
     return 'Failed to submit order. Please try again.';
   }
 

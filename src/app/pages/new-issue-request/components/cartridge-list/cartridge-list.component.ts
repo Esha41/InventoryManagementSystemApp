@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { OrderService } from '@services/order.service';
+import { ConfigService } from '@services/config.service';
 
 export interface Cartridge {
   id: number;
@@ -52,8 +54,10 @@ export class CartridgeListComponent {
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
   @Input() canProceed: boolean = false;
+  @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
+  @Output() allowanceError = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<void>();
   @Output() confirmSelection = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
@@ -72,6 +76,13 @@ export class CartridgeListComponent {
   pendingCartridgeId: number | null = null;
   pendingQuantity: number = 1;
   searchTerm: string = '';
+  verifyingAllowance: boolean = false;
+  allowanceErrorMessage: string | null = null;
+
+  constructor(
+    private orderService: OrderService,
+    private config: ConfigService
+  ) {}
 
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeClick.emit(cartridge);
@@ -89,19 +100,58 @@ export class CartridgeListComponent {
     const value = (event.target as HTMLInputElement).value;
     const parsed = value ? parseInt(value, 10) : 1;
     this.pendingQuantity = parsed > 0 ? parsed : 1;
+    // Clear error when quantity changes
+    this.allowanceErrorMessage = null;
   }
 
   confirmAdd(cartridge: Cartridge, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
+    
     const quantity = this.pendingQuantity > 0 ? this.pendingQuantity : 1;
+    this.allowanceErrorMessage = null;
+    
+    // If "From Allowance" is selected, verify allowance before confirming
+    if (this.fromReserve === 'Yes') {
+      this.verifyingAllowance = true;
+      this.orderService.verifyAllowance(cartridge.id, quantity).subscribe({
+        next: (result) => {
+          this.verifyingAllowance = false;
+          
+          if (!result.isValid) {
+            // Quantity exceeds available allowance
+            const errorMsg = result.message || 
+              `Requested quantity (${quantity}) exceeds available allowance. Available: ${result.availableQuantity}`;
+            this.allowanceErrorMessage = errorMsg;
+            this.allowanceError.emit(errorMsg);
+            return; // Don't confirm, show error
+          }
+          
+          // Quantity is valid, proceed with confirmation
+          this.proceedWithConfirmation(cartridge, quantity);
+        },
+        error: (error) => {
+          this.verifyingAllowance = false;
+          const errorMsg = error?.message || 'Failed to verify allowance. Please try again.';
+          this.allowanceErrorMessage = errorMsg;
+          this.allowanceError.emit(errorMsg);
+        }
+      });
+    } else {
+      // Not from allowance, proceed directly
+      this.proceedWithConfirmation(cartridge, quantity);
+    }
+  }
+
+  private proceedWithConfirmation(cartridge: Cartridge, quantity: number): void {
     cartridge.quantity = quantity;
     cartridge.added = true;
     cartridge.selected = true;
     this.addSelection.emit({ cartridge, quantity });
     this.pendingCartridgeId = null;
     this.pendingQuantity = 1;
+    this.allowanceErrorMessage = null;
   }
 
   removePending(cartridge: Cartridge, event?: Event): void {
@@ -122,6 +172,8 @@ export class CartridgeListComponent {
     }
     this.pendingCartridgeId = null;
     this.pendingQuantity = 1;
+    this.allowanceErrorMessage = null;
+    this.verifyingAllowance = false;
   }
 
   onFilterChange(): void {
