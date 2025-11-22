@@ -14,7 +14,7 @@ export interface Request {
   orderId: string;
   requestDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Critical';
-  requestType: 'Issue' | 'Return' | 'Discard';
+  requestType: 'Order' | 'Return' | 'Discard';
   status: 'Pending' | 'Confirmed' | 'Rejected';
 }
 
@@ -110,13 +110,16 @@ export class RequestsManagementComponent implements OnInit {
     }
   }
 
-  private mapRequestType(type: number): 'Issue' | 'Return' | 'Discard' {
-    // RequestType enum: 1=Order/Issue, 2=Return, 3=Discard
+  /**
+   * Maps request type enum number to display string
+   * RequestType enum: 1=Order, 2=Return, 3=Discard
+   */
+  private mapRequestType(type: number): 'Order' | 'Return' | 'Discard' {
     switch (type) {
-      case 1: return 'Issue';
+      case 1: return 'Order';
       case 2: return 'Return';
       case 3: return 'Discard';
-      default: return 'Issue';
+      default: return 'Order';
     }
   }
 

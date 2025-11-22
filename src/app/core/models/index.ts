@@ -14,3 +14,4 @@ export * from './ammunition.model';
 export * from './workflow.model';
 export * from './inventory.model';
 export * from './notification.model';
+export * from './supply-order.model';

@@ -5,6 +5,12 @@ import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 
+export interface CreateUpdateRequestItemDto {
+  itemId: number;
+  quantity: number;
+  notes?: string;
+}
+
 export interface CreateOrderRequest {
   orderNo: string;
   requestNo: string;
@@ -148,6 +154,48 @@ export class OrderService {
       }),
       catchError(error => {
         this.config.logError('Failed to fetch order summary', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Add a new item to an existing order
+   * Backend endpoint: POST {baseUrl}/{orderId}/items
+   */
+  addOrderItem(orderId: number, itemDto: CreateUpdateRequestItemDto): Observable<APIOperationResponse<number>> {
+    this.config.log(`Adding item to order ${orderId}`, itemDto);
+    return this.http.post<APIOperationResponse<number>>(`${this.baseUrl}/${orderId}/items`, itemDto).pipe(
+      catchError(error => {
+        this.config.logError(`Failed to add item to order ${orderId}`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Update the quantity of an existing order item
+   * Backend endpoint: PUT {baseUrl}/{orderId}/items/{itemId}/quantity
+   */
+  updateOrderItemQuantity(orderId: number, itemId: number, newQuantity: number): Observable<APIOperationResponse<boolean>> {
+    this.config.log(`Updating item ${itemId} quantity in order ${orderId}`, { newQuantity });
+    return this.http.put<APIOperationResponse<boolean>>(`${this.baseUrl}/${orderId}/items/${itemId}/quantity`, newQuantity).pipe(
+      catchError(error => {
+        this.config.logError(`Failed to update item ${itemId} quantity in order ${orderId}`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Delete an item from an order
+   * Backend endpoint: DELETE {baseUrl}/{orderId}/items/{itemId}
+   */
+  deleteOrderItem(orderId: number, itemId: number): Observable<APIOperationResponse<boolean>> {
+    this.config.log(`Deleting item ${itemId} from order ${orderId}`);
+    return this.http.delete<APIOperationResponse<boolean>>(`${this.baseUrl}/${orderId}/items/${itemId}`).pipe(
+      catchError(error => {
+        this.config.logError(`Failed to delete item ${itemId} from order ${orderId}`, error);
         return throwError(() => error);
       })
     );
