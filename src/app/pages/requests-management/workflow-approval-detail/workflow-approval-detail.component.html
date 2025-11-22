@@ -1,0 +1,311 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && error" class="flex flex-col items-center justify-center py-20">
+    <lucide-angular [img]="AlertTriangle" class="h-16 w-16 text-red-500 mb-4"></lucide-angular>
+    <p class="text-lg text-gray-700 mb-4">{{ error }}</p>
+    <button
+      (click)="goBack()"
+      class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:opacity-90 transition-opacity">
+      Go Back
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error && requestDetail">
+    <!-- Header with Back Button -->
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button
+          (click)="goBack()"
+          class="p-2 hover:bg-white rounded-lg transition-colors border border-gray-200">
+          <lucide-angular [img]="ArrowLeft" class="h-5 w-5 text-gray-600"></lucide-angular>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-[var(--color-text)]">
+            Workflow Approval - {{ requestDetail.requestNo }}
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">
+            Request Date: {{ requestDetail.requestDate }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-4 py-2 rounded-lg border font-medium text-sm {{ getStatusClass(requestDetail.status) }}">
+          {{ requestDetail.status }}
+        </span>
+        <span class="px-4 py-2 rounded-lg border font-medium text-sm {{ getPriorityClass(requestDetail.priority) }}">
+          {{ requestDetail.priority }} Priority
+        </span>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Request Information -->
+        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+            <lucide-angular [img]="FileText" class="h-5 w-5"></lucide-angular>
+            Request Information
+          </h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Request Number
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestNo }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Request Type
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestType }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Request Date
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestDate }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Priority
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.priority }}</p>
+            </div>
+
+            <div *ngIf="requestDetail.departmentName">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Department
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.departmentName }}</p>
+            </div>
+
+            <div *ngIf="requestDetail.requestPurposeName">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Request Purpose
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestPurposeName }}</p>
+            </div>
+
+            <div *ngIf="requestDetail.requesterName" class="col-span-2">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Requester
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">
+                {{ requestDetail.requesterName }}
+                <span *ngIf="requestDetail.requesterUserName" class="text-gray-500 ml-2">
+                  ({{ requestDetail.requesterUserName }})
+                </span>
+              </p>
+            </div>
+
+            <div *ngIf="requestDetail.notes" class="col-span-2">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                Notes
+              </label>
+              <p class="text-sm text-gray-900 mt-1">{{ requestDetail.notes }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approval Workflow -->
+        <div *ngIf="requestDetail.approvalHistory && requestDetail.approvalHistory.length > 0" class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
+            Approval Workflow
+          </h2>
+          
+          <div class="space-y-4">
+            <div *ngFor="let approval of requestDetail.approvalHistory; let i = index" 
+                 class="relative">
+              <!-- Connection Line -->
+              <div *ngIf="i < requestDetail.approvalHistory!.length - 1" 
+                   class="absolute left-5 top-12 w-0.5 h-16 bg-gray-200"></div>
+              
+              <div class="flex gap-4">
+                <!-- Status Icon -->
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center"
+                       [ngClass]="getApprovalStatusClass(approval.status)">
+                    <lucide-angular 
+                      [img]="getApprovalStatusIcon(approval.status)" 
+                      class="h-5 w-5">
+                    </lucide-angular>
+                  </div>
+                </div>
+                
+                <!-- Approval Details -->
+                <div class="flex-1 pb-6">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="font-semibold text-gray-900">{{ approval.approverName || 'Unknown Approver' }}</p>
+                      <p class="text-sm text-gray-500" *ngIf="approval.changedBy">
+                        {{ approval.changedBy }}
+                      </p>
+                    </div>
+                    <div class="text-right">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                            [ngClass]="getApprovalStatusClass(approval.status)">
+                        {{ approval.status }}
+                      </span>
+                      <p *ngIf="approval.approvedDate" class="text-xs text-gray-500 mt-1">
+                        {{ approval.approvedDate }}
+                      </p>
+                    </div>
+                  </div>
+                  <p *ngIf="approval.comments" class="text-sm text-gray-600 mt-2 italic">
+                    "{{ approval.comments }}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Items -->
+        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+            <lucide-angular [img]="Package" class="h-5 w-5"></lucide-angular>
+            Request Items
+          </h2>
+          
+          <div *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Item Name</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Item Code</th>
+                  <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Quantity</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Unit</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let item of requestDetail.requestItems" class="hover:bg-gray-50">
+                  <td class="px-4 py-3 text-sm text-gray-900">{{ item.itemName }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-600">{{ item.itemNo || '-' }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-900 text-right">{{ item.quantity }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-600">{{ item.unit || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div *ngIf="!requestDetail.requestItems || requestDetail.requestItems.length === 0" class="text-center py-8 text-gray-500">
+            <p class="text-sm">No items found for this request</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Status Card -->
+        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Status</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">Current Status</p>
+                <p class="text-xs text-gray-500 mt-1">{{ requestDetail.status }}</p>
+              </div>
+              <div [ngClass]="getStatusClass(requestDetail.status)" class="px-3 py-1 rounded-full text-xs font-medium">
+                {{ requestDetail.status }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Summary -->
+        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-500 uppercase mb-4">Summary</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Request ID:</span>
+              <span class="font-medium text-gray-900">#{{ requestDetail.id }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Type:</span>
+              <span class="font-medium text-gray-900">{{ requestDetail.requestType }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Priority:</span>
+              <span class="font-medium text-gray-900">{{ requestDetail.priority }}</span>
+            </div>
+            <div class="flex justify-between text-sm" *ngIf="requestDetail.requestItems">
+              <span class="text-gray-600">Items:</span>
+              <span class="font-medium text-gray-900">{{ requestDetail.requestItems.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approval/Rejection Actions - At the end -->
+    <div *ngIf="!loading && !error && requestDetail && canApproveOrReject()" class="mt-6">
+      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
+          Take Action
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- Higher Approval Checkbox -->
+          <div *ngIf="hasHigherApproval()" class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="sendToHigherApproval"
+              [(ngModel)]="sendToHigherApproval"
+              [disabled]="processing"
+              class="w-4 h-4 text-[var(--color-accent)] border-gray-300 rounded focus:ring-[var(--color-accent)] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <label for="sendToHigherApproval" class="text-sm font-medium text-gray-700 cursor-pointer">
+              Send to Higher Approval
+            </label>
+          </div>
+
+          <!-- Comments Textarea -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Comments
+            </label>
+            <textarea
+              [(ngModel)]="comments"
+              [disabled]="processing"
+              rows="4"
+              placeholder="Enter your comments here..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none">
+            </textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              (click)="rejectRequest()"
+              [disabled]="processing"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+              <lucide-angular [img]="AlertTriangle" class="h-5 w-5"></lucide-angular>
+              <span *ngIf="!processing">Reject</span>
+              <span *ngIf="processing">Processing...</span>
+            </button>
+            
+            <button
+              (click)="approveRequest()"
+              [disabled]="processing"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+              <lucide-angular [img]="CheckCircle" class="h-5 w-5"></lucide-angular>
+              <span *ngIf="!processing">Approve</span>
+              <span *ngIf="processing">Processing...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

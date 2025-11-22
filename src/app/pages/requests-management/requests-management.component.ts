@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { PaginationComponent } from './components/pagination/pagination.component';
@@ -9,10 +10,11 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 
 export interface Request {
+  id: number;
   orderId: string;
   requestDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Critical';
-  requestType: 'Issue' | 'Return' | 'Discard';
+  requestType: 'Order' | 'Return' | 'Discard';
   status: 'Pending' | 'Confirmed' | 'Rejected';
 }
 
@@ -46,7 +48,10 @@ export class RequestsManagementComponent implements OnInit {
   isModalOpen = false;
   selectedOrder: Request | null = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -77,6 +82,7 @@ export class RequestsManagementComponent implements OnInit {
 
   private mapToRequests(data: BaseRequestDto[]): Request[] {
     return data.map(item => ({
+      id: item.id,
       orderId: `#${item.requestNo || item.id.toString().padStart(4, '0')}`,
       requestDate: this.formatDate(item.requestDate),
       priority: this.mapPriority(item.priority),
@@ -104,13 +110,16 @@ export class RequestsManagementComponent implements OnInit {
     }
   }
 
-  private mapRequestType(type: number): 'Issue' | 'Return' | 'Discard' {
-    // RequestType enum: 1=Order/Issue, 2=Return, 3=Discard
+  /**
+   * Maps request type enum number to display string
+   * RequestType enum: 1=Order, 2=Return, 3=Discard
+   */
+  private mapRequestType(type: number): 'Order' | 'Return' | 'Discard' {
     switch (type) {
-      case 1: return 'Issue';
+      case 1: return 'Order';
       case 2: return 'Return';
       case 3: return 'Discard';
-      default: return 'Issue';
+      default: return 'Order';
     }
   }
 
@@ -154,8 +163,7 @@ export class RequestsManagementComponent implements OnInit {
   }
 
   openOrderDetails(order: Request): void {
-    this.selectedOrder = order;
-    this.isModalOpen = true;
+    this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
   }
 
   closeOrderDetails(): void {

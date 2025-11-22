@@ -3,13 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, Sparkles, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, X, ChevronDown, ChevronUp, Plus } from 'lucide-angular';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
-import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { OrderService, OrderDto, OrderRequestItemDto, CreateUpdateRequestItemDto } from '@services/order.service';
 import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto } from '@services/supply.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
+import { AmmunitionService } from '@services/ammunition.service';
 import { Subject, takeUntil } from 'rxjs';
 
 export interface ApprovalStep {
@@ -50,7 +54,7 @@ export interface OrderItem {
 
 export interface SupplyRequestDetail {
   issueNo: string;
-  requestType: 'Issue' | 'Return';
+  requestType: 'Order' | 'Return';
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   requestDate: string;
   requesterName: string;
@@ -64,7 +68,7 @@ export interface SupplyRequestDetail {
 @Component({
   selector: 'app-supply-request-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, ModalComponent, ConfirmDialogComponent, DropdownComponent],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']
 })
@@ -78,14 +82,22 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly Clock = Clock;
   readonly User = User;
   readonly Package = Package;
-  readonly Sparkles = Sparkles;
   readonly XIcon = X;
+  readonly ChevronDown = ChevronDown;
+  readonly ChevronUp = ChevronUp;
+  readonly Plus = Plus;
 
   // ==================== STATE ====================
   orderId: number = 0;
   issueNo: string = '';
   requestDetail: SupplyRequestDetail | null = null;
   orderData: OrderDto | null = null;
+  
+  // Collapsible sections state
+  isRequestInfoExpanded: boolean = true;
+  isReceiverInfoExpanded: boolean = true;
+  isApprovalWorkflowExpanded: boolean = true;
+  isOrderItemsExpanded: boolean = true;
   
   // Loading states
   loading: boolean = true;
@@ -101,10 +113,24 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   manualLotNumber: string = ''; // For manual lot entry
   loadingManualLot: boolean = false;
 
+  // Item management modals
+  isAddItemModalOpen: boolean = false;
+  isEditItemModalOpen: boolean = false;
+  isRemoveItemModalOpen: boolean = false;
+  selectedItemForEdit: OrderItem | null = null;
+  selectedItemForRemove: OrderItem | null = null;
+  addItemForm!: FormGroup;
+  editItemForm!: FormGroup;
+  availableItems: any[] = [];
+  loadingItems: boolean = false;
+  savingItem: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private orderService: OrderService,
+    private ammunitionService: AmmunitionService,
+    private fb: FormBuilder,
     private supplyService: SupplyService,
     private inventoryService: InventoryService,
     private toastService: ToastService,
@@ -119,6 +145,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       this.router.navigate(['/supply-request-management']);
       return;
     }
+    this.initializeAddItemForm();
+    this.initializeEditItemForm({} as OrderItem);
     this.loadRequestDetail();
   }
 
@@ -132,6 +160,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   /**
    * Load order details from backend
    */
+  /**
+   * Load order details from backend and automatically load suggestions
+   */
   loadRequestDetail(): void {
     this.loading = true;
     this.orderService.getOrderById(this.orderId)
@@ -141,15 +172,44 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.orderData = order;
           this.issueNo = order.requestNo || order.orderNo || `#${order.id}`;
           
-      
           this.requestDetail = this.mapOrderToRequestDetail(order);
           this.loading = false;
+          
+          // Automatically load suggestions after order details are loaded
+          this.loadSuggestionsAutomatically();
         },
         error: (error) => {
           console.error('Failed to load order details:', error);
           this.toastService.error('Failed to load order details');
           this.loading = false;
           this.goBack();
+        }
+      });
+  }
+
+  /**
+   * Automatically load supply suggestions on page load
+   */
+  private loadSuggestionsAutomatically(): void {
+    if (!this.orderData) return;
+
+    this.loadingSuggestion = true;
+    this.supplyService.getSupplySuggestion(this.orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (suggestion: OrderSupplySuggestionDto) => {
+          this.applySuggestionToItems(suggestion);
+          this.loadingSuggestion = false;
+          
+          // Silent success - suggestions are loaded automatically
+          if (!suggestion.canFulfillCompletely) {
+            this.toastService.warning('Note: Insufficient inventory for full fulfillment.');
+          }
+        },
+        error: (error) => {
+          console.error('Failed to load suggestions:', error);
+          // Don't show error toast for automatic loading - just log it
+          this.loadingSuggestion = false;
         }
       });
   }
@@ -184,7 +244,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     return {
       issueNo: order.requestNo || order.orderNo || `#${order.id}`,
-      requestType: order.requestType === 1 ? 'Issue' : 'Return',
+      requestType: order.requestType === 1 ? 'Order' : 'Return',
       priority: priorityMap[order.priority] || 'Low',
       requestDate: this.formatOrderDate(order.usageDate),
       requesterName: order.requesterName || 'N/A',
@@ -271,16 +331,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Button 1: Show ALL lots for this item (by itemId only)
-   * Endpoint: GET /api/Inventory/item/{itemId}/lots
-   */
-  onShowAllLots(): void {
-    if (!this.selectedItem) return;
-    this.loadAllLotsForItem(this.selectedItem);
-  }
-
-  /**
-   * Button 2: Show AVAILABLE lots for this item and quantity
+   * Show AVAILABLE lots for this item and quantity (FEFO logic)
    * Endpoint: GET /api/Inventory/item/{itemId}/available-lots?quantity=X
    */
   onShowAvailableLots(): void {
@@ -289,7 +340,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Button 3: Add lot manually by lot number
+   * Add lot by lot number
    * Shows input field for manual entry
    */
   onAddLotManually(): void {
@@ -372,37 +423,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           console.error('Failed to load lot details:', error);
           this.toastService.error('Lot not found or error loading details');
           this.loadingManualLot = false;
-        }
-      });
-  }
-
-  /**
-   * Load ALL lots for an item by itemId
-   * Endpoint: GET /api/Inventory/item/{itemId}/lots
-   */
-  private loadAllLotsForItem(item: OrderItem): void {
-    this.loadingAllLots = true;
-    this.inventoryService.getLotsByItemId(item.itemId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (lots: LotDetailDto[]) => {
-          // Save current selections before updating
-          const currentSelections = new Map(this.tempLotSelections);
-          
-          // Map lots to UI format and preserve selections
-          item.availableLots = this.mapLotDetailsToLotItems(lots, currentSelections);
-          this.loadingAllLots = false;
-          
-          if (item.availableLots.length > 0) {
-            this.toastService.success(`Loaded ${item.availableLots.length} total lot(s) for item`);
-          } else {
-            this.toastService.warning('No lots found for this item');
-          }
-        },
-        error: (error) => {
-          console.error('Failed to load all lots:', error);
-          this.toastService.error('Failed to load lots');
-          this.loadingAllLots = false;
         }
       });
   }
@@ -825,5 +845,235 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   getDepartmentName(): string {
     if (!this.orderData) return 'N/A';
     return this.orderData.departmentNameEn || this.orderData.departmentNameAr || 'N/A';
+  }
+
+  // ==================== ITEM MANAGEMENT ====================
+
+  /**
+   * Get product ID for an item
+   */
+  getItemProductId(item: OrderItem): string {
+    // Try to get from orderData requestItems
+    if (this.orderData?.requestItems) {
+      const orderItem = this.orderData.requestItems.find(ri => ri.id === item.requestItemId);
+      if (orderItem?.itemNo) {
+        return orderItem.itemNo;
+      }
+    }
+    return '-';
+  }
+
+  /**
+   * Get nature option for an item
+   */
+  getItemNature(item: OrderItem): string {
+    // Nature is not directly available in OrderRequestItemDto
+    // This would need to be fetched from item details if needed
+    return '-';
+  }
+
+  /**
+   * Get linked status for an item
+   */
+  getItemLinkedStatus(item: OrderItem): string {
+    // Linked status is not directly available in OrderRequestItemDto
+    // This would need to be fetched from item details if needed
+    return '-';
+  }
+
+  /**
+   * Open add item modal
+   */
+  openAddItemModal(): void {
+    this.initializeAddItemForm();
+    this.loadAvailableItems();
+    this.isAddItemModalOpen = true;
+  }
+
+  /**
+   * Close add item modal
+   */
+  closeAddItemModal(): void {
+    this.isAddItemModalOpen = false;
+    this.addItemForm.reset();
+  }
+
+  /**
+   * Open edit item modal
+   */
+  openEditItemModal(item: OrderItem): void {
+    this.selectedItemForEdit = item;
+    this.initializeEditItemForm(item);
+    this.isEditItemModalOpen = true;
+  }
+
+  /**
+   * Close edit item modal
+   */
+  closeEditItemModal(): void {
+    this.isEditItemModalOpen = false;
+    this.selectedItemForEdit = null;
+    this.editItemForm.reset();
+  }
+
+  /**
+   * Open remove item confirmation modal
+   */
+  openRemoveItemModal(item: OrderItem): void {
+    this.selectedItemForRemove = item;
+    this.isRemoveItemModalOpen = true;
+  }
+
+  /**
+   * Close remove item modal
+   */
+  closeRemoveItemModal(): void {
+    this.isRemoveItemModalOpen = false;
+    this.selectedItemForRemove = null;
+  }
+
+  /**
+   * Initialize add item form
+   */
+  private initializeAddItemForm(): void {
+    this.addItemForm = this.fb.group({
+      itemId: [null, Validators.required],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+      notes: ['']
+    });
+  }
+
+  /**
+   * Initialize edit item form
+   */
+  private initializeEditItemForm(item: OrderItem): void {
+    this.editItemForm = this.fb.group({
+      quantity: [item?.approvedQuantity || 1, [Validators.required, Validators.min(1)]],
+      notes: ['']
+    });
+  }
+
+  /**
+   * Load available items for dropdown
+   */
+  private loadAvailableItems(): void {
+    this.loadingItems = true;
+    this.ammunitionService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items) => {
+          this.availableItems = items || [];
+          this.loadingItems = false;
+        },
+        error: (error) => {
+          console.error('Failed to load items:', error);
+          this.toastService.error('supplyRequestDetail.failedToLoadItems');
+          this.loadingItems = false;
+        }
+      });
+  }
+
+  /**
+   * Get item option label for dropdown
+   */
+  itemOptionLabel(item: any): string {
+    return item?.name || item?.itemNo || `Item #${item?.id}`;
+  }
+
+  /**
+   * Save new item
+   */
+  onSaveAddItem(): void {
+    if (this.addItemForm.invalid) {
+      this.addItemForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.addItemForm.value;
+    const itemDto: CreateUpdateRequestItemDto = {
+      itemId: formValue.itemId,
+      quantity: formValue.quantity,
+      notes: formValue.notes || undefined
+    };
+
+    this.savingItem = true;
+    this.orderService.addOrderItem(this.orderId, itemDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            this.toastService.success('supplyRequestDetail.itemAddedSuccessfully');
+            this.closeAddItemModal();
+            this.loadRequestDetail(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'supplyRequestDetail.failedToAddItem');
+          }
+          this.savingItem = false;
+        },
+        error: (error) => {
+          console.error('Failed to add item:', error);
+          this.toastService.error('supplyRequestDetail.failedToAddItem');
+          this.savingItem = false;
+        }
+      });
+  }
+
+  /**
+   * Save edited item quantity
+   */
+  onSaveEditItem(): void {
+    if (!this.selectedItemForEdit || this.editItemForm.invalid) {
+      this.editItemForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.editItemForm.value;
+    const newQuantity = formValue.quantity;
+
+    this.savingItem = true;
+    this.orderService.updateOrderItemQuantity(this.orderId, this.selectedItemForEdit.requestItemId, newQuantity)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            this.toastService.success('supplyRequestDetail.itemQuantityUpdatedSuccessfully');
+            this.closeEditItemModal();
+            this.loadRequestDetail(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'supplyRequestDetail.failedToUpdateItemQuantity');
+          }
+          this.savingItem = false;
+        },
+        error: (error) => {
+          console.error('Failed to update item quantity:', error);
+          this.toastService.error('supplyRequestDetail.failedToUpdateItemQuantity');
+          this.savingItem = false;
+        }
+      });
+  }
+
+  /**
+   * Confirm remove item
+   */
+  onConfirmRemoveItem(): void {
+    if (!this.selectedItemForRemove) return;
+
+    this.orderService.deleteOrderItem(this.orderId, this.selectedItemForRemove.requestItemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.succeeded) {
+            this.toastService.success('supplyRequestDetail.itemRemovedSuccessfully');
+            this.closeRemoveItemModal();
+            this.loadRequestDetail(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'supplyRequestDetail.failedToRemoveItem');
+          }
+        },
+        error: (error) => {
+          console.error('Failed to remove item:', error);
+          this.toastService.error('supplyRequestDetail.failedToRemoveItem');
+        }
+      });
   }
 }
