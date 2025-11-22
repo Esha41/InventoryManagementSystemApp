@@ -8,9 +8,10 @@ export interface WorkflowTypeItem {
   name: string;
 }
 export enum WorkflowType {
-  Supply = 1,
+  Order = 1,
   Return = 2,
-  Discard = 3
+  Discard = 3,
+  OrderFromReservedAllowance = 4
 }
 export interface WorkflowDto {
   id: number;
@@ -73,9 +74,10 @@ export interface BackendCreateWorkflowDto {
   workflowSteps: BackendWorkflowStepDto[];
 }
 export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: string } } = {
-  [WorkflowType.Supply]: { en: 'Supply', ar: 'توريد' },
+  [WorkflowType.Order]: { en: 'Order', ar: 'طلب' },
   [WorkflowType.Return]: { en: 'Return', ar: 'إرجاع' },
-  [WorkflowType.Discard]: { en: 'Discard', ar: 'تخلص' }
+  [WorkflowType.Discard]: { en: 'Discard', ar: 'تخلص' },
+  [WorkflowType.OrderFromReservedAllowance]: { en: 'Order From Reserved Allowance', ar: 'طلب من المخصص المحجوز' }
 };
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
