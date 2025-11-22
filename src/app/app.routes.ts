@@ -158,6 +158,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/workflow-approval',
+        loadComponent: () => import('@pages/requests-management/workflow-approval-detail/workflow-approval-detail.component').then(m => m.WorkflowApprovalDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
         path: 'requests-management/order-report',
         loadComponent: () => import('@pages/requests-management/order-report/order-report.component').then(m => m.OrderReportComponent),
         canActivate: [permissionGuard],
