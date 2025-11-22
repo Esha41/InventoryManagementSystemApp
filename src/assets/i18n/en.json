@@ -370,8 +370,8 @@
         "lastUpdated": "Last Updated",
         "itemsIncluded": "Items Included in Request",
         "rounds": "rounds",
-        "currentStatus": "Current status: {{status}}",
-        "workflowOwner": "Workflow Orchestration",
+        "currentStatus": "Current status",
+        "workflowOwner": "Workflow Details",
         "orderId": "Order ID",
         "scanHeading": "Scan to track this order",
         "scanDescription": "Authorized personnel can scan the QR code to view live issuance status and custody trail.",
@@ -383,7 +383,11 @@
         "owner": "Owner",
         "description": "Description",
         "sla": "SLA",
-        "status": "Status"
+        "status": "Status",
+        "step": "Step",
+        "role": "Role",
+        "approver": "Approver",
+        "date": "Date"
       },
       "list": {
         "title": "Orders",
