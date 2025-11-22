@@ -106,64 +106,64 @@
           </div>
         </div>
 
-        <div #reportContent class="space-y-6">
+        <div #reportContent class="space-y-0">
           <!-- QR Code -->
-    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[var(--color-border)]">
-      <div class="flex flex-col gap-6 lg:flex-row">
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="flex flex-col gap-3 lg:flex-row">
         <div class="flex-1">
-          <p class="text-sm font-semibold text-[var(--color-accent)]">
+          <p class="text-xs font-semibold text-[var(--color-accent)]">
             {{ 'requestsManagement.orderReport.section.qrCode' | translate }}
           </p>
-          <h2 class="text-2xl font-semibold text-[var(--color-text)]">
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">
             {{ 'requestsManagement.orderReport.labels.scanHeading' | translate }}
           </h2>
-          <p class="mt-2 text-[var(--color-text-muted)]">
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.scanDescription' | translate }}
           </p>
 
-          <div class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl border border-[var(--color-border)] p-4">
+          <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
               <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
                 {{ 'requestsManagement.orderReport.labels.orderId' | translate }}
               </p>
-              <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.orderId }}</p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.orderId }}</p>
             </div>
-            <div class="rounded-xl border border-[var(--color-border)] p-4">
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
               <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
                 {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
               </p>
-              <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
             </div>
-            <div class="rounded-xl border border-[var(--color-border)] p-4">
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
               <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
                 {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
               </p>
-              <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
             </div>
-            <div class="rounded-xl border border-[var(--color-border)] p-4">
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
               <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
                 {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
               </p>
-              <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
             </div>
           </div>
         </div>
 
-        <div class="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed border-[var(--color-border)] bg-[var(--color-background-muted)] p-6 text-center">
-          <div class="rounded-2xl bg-white p-6 shadow-inner">
+        <div class="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed border-[var(--color-border)] bg-[var(--color-background-muted)] p-3 text-center">
+          <div class="rounded-2xl bg-white p-3 shadow-inner">
             <ng-container *ngIf="qrCodeDataUrl; else qrPlaceholder">
-              <img [src]="qrCodeDataUrl" alt="Order QR Code" class="h-48 w-48" />
+              <img [src]="qrCodeDataUrl" alt="Order QR Code" class="h-32 w-32" />
             </ng-container>
             <ng-template #qrPlaceholder>
-              <div class="flex h-48 w-48 flex-col items-center justify-center gap-2 text-[var(--color-text-muted)]">
-                <lucide-angular [img]="QrCode" class="h-8 w-8"></lucide-angular>
-                <p class="text-sm font-medium">
+              <div class="flex h-32 w-32 flex-col items-center justify-center gap-2 text-[var(--color-text-muted)]">
+                <lucide-angular [img]="QrCode" class="h-6 w-6"></lucide-angular>
+                <p class="text-xs font-medium">
                   {{ 'requestsManagement.orderReport.labels.qrGenerating' | translate }}
                 </p>
               </div>
             </ng-template>
           </div>
-          <p class="mt-4 text-sm text-[var(--color-text-muted)]">
+          <p class="mt-2 text-xs text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.qrFootnote' | translate }}
           </p>
         </div>
@@ -171,82 +171,82 @@
     </section>
 
           <!-- Order Details -->
-    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[var(--color-border)]">
-      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
         <div>
-          <p class="text-sm font-semibold text-[var(--color-accent)]">
+          <p class="text-xs font-semibold text-[var(--color-accent)]">
             {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
           </p>
-          <h2 class="text-2xl font-semibold text-[var(--color-text)]">{{ orderSummary.usagePurpose }}</h2>
-          <p class="text-[var(--color-text-muted)]">{{ orderSummary.submittedOn }}</p>
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.usagePurpose }}</h2>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ orderSummary.submittedOn }}</p>
         </div>
-        <div class="flex flex-wrap gap-3">
-          <span class="rounded-full bg-[var(--color-background-muted)] px-3 py-1 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+        <div class="flex flex-wrap gap-2">
+          <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ orderSummary.status }}
           </span>
-          <span class="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs font-semibold uppercase text-[var(--color-text)]">
+          <span class="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text)]">
             {{ orderSummary.priority }} Priority
           </span>
         </div>
       </div>
 
-      <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+      <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.department' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.department }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.department }}</p>
         </div>
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.requester' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.requester }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.requester }}</p>
         </div>
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
         </div>
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
         </div>
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.totalQuantity' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.totalQuantity | number }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalQuantity | number }}</p>
         </div>
-        <div class="rounded-xl border border-[var(--color-border)] p-4">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
           <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
             {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
           </p>
-          <p class="mt-2 text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
         </div>
       </div>
 
-      <div class="mt-8 overflow-hidden rounded-2xl border border-[var(--color-border)]">
-        <div class="bg-[var(--color-background-muted)] px-5 py-3 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+      <div class="mt-3 overflow-hidden rounded-2xl border border-[var(--color-border)]">
+        <div class="bg-[var(--color-background-muted)] px-3 py-2 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
           {{ 'requestsManagement.orderReport.labels.itemsIncluded' | translate }}
         </div>
         <div class="divide-y divide-[var(--color-border)]">
           <div
             *ngFor="let item of orderItems"
-            class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            class="flex flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <p class="text-base font-semibold text-[var(--color-text)]">{{ item.name }}</p>
-              <p class="text-sm text-[var(--color-text-muted)]">{{ item.caliber }}</p>
+              <p class="text-sm font-semibold text-[var(--color-text)]">{{ item.name }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">{{ item.caliber }}</p>
             </div>
-            <div class="flex flex-wrap items-center gap-4">
-              <p class="text-sm font-semibold text-[var(--color-text)]">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="text-xs font-semibold text-[var(--color-text)]">
                 {{ item.quantity | number }} {{ 'requestsManagement.orderReport.labels.rounds' | translate }}
               </p>
-              <span class="rounded-full bg-[var(--color-background-muted)] px-3 py-1 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+              <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
                 {{ item.status }}
               </span>
             </div>
@@ -256,77 +256,75 @@
     </section>
 
     <!-- Approval Workflow -->
-    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[var(--color-border)]">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="text-sm font-semibold text-[var(--color-accent)]">
-            {{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate }}
-          </p>
-          <h2 class="text-2xl font-semibold text-[var(--color-text)]">
-            {{ 'requestsManagement.orderReport.labels.currentStatus' | translate:{ status: orderSummary.status } }}
-          </h2>
-        </div>
-        <lucide-angular [img]="ArrowRight" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="mb-3">
+        <p class="text-xs font-semibold text-[var(--color-accent)]">
+          {{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate }}
+        </p>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'requestsManagement.orderReport.labels.currentStatus' | translate:{ status: orderSummary.status } }}
+        </h2>
       </div>
 
-      <div class="mt-6 space-y-6">
-        <div
-          *ngFor="let step of approvalWorkflow; let idx = index"
-          class="flex gap-4"
-        >
-          <div class="flex flex-col items-center">
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-full border-2"
-              [class.border-green-500]="step.status === 'approved'"
-              [class.border-[var(--color-text-muted)]]="step.status !== 'approved'"
-              [class.bg-green-50]="step.status === 'approved'"
-            >
-              <lucide-angular
-                [img]="step.status === 'approved' ? CheckCircle2 : Clock4"
-                class="h-5 w-5"
+      <div class="overflow-hidden rounded-2xl border border-[var(--color-border)]">
+        <div *ngIf="approvalWorkflow.length > 0" class="bg-[var(--color-background-muted)] px-3 py-2 text-xs font-semibold uppercase text-[var(--color-text-muted)] grid grid-cols-5 gap-2">
+          <span>{{ 'requestsManagement.orderReport.table.step' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.role' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.approver' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.date' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
+        </div>
+        <div class="divide-y divide-[var(--color-border)]">
+          <div
+            *ngFor="let step of approvalWorkflow"
+            class="grid grid-cols-5 gap-2 px-3 py-2 text-xs text-[var(--color-text)]"
+          >
+            <div class="font-semibold">{{ step.step }}</div>
+            <div class="text-[var(--color-text-muted)]">{{ step.role }}</div>
+            <div class="font-medium">{{ step.approver }}</div>
+            <div class="text-[var(--color-text-muted)]">{{ step.date }}</div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold uppercase"
+                [class.bg-green-50]="step.status === 'approved'"
                 [class.text-green-600]="step.status === 'approved'"
-                [class.text-[var(--color-text-muted)]]="step.status !== 'approved'"
-              ></lucide-angular>
-            </div>
-            <div
-              *ngIf="idx !== approvalWorkflow.length - 1"
-              class="mt-1 flex-1 border-l border-dashed border-[var(--color-border)]"
-            ></div>
-          </div>
-          <div class="flex-1 rounded-2xl border border-[var(--color-border)] p-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
-                  {{ step.role }}
-                </p>
-                <p class="text-lg font-semibold text-[var(--color-text)]">{{ step.approver }}</p>
-              </div>
-              <span class="rounded-full bg-[var(--color-background-muted)] px-3 py-1 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
-                {{ step.step }}
+                [class.bg-red-50]="step.status === 'rejected'"
+                [class.text-red-600]="step.status === 'rejected'"
+                [class.bg-yellow-50]="step.status === 'pending'"
+                [class.text-yellow-600]="step.status === 'pending'"
+                [class.bg-blue-50]="step.status === 'in-progress'"
+                [class.text-blue-600]="step.status === 'in-progress'"
+                [class.bg-[var(--color-background-muted)]]="step.status !== 'approved' && step.status !== 'rejected' && step.status !== 'pending' && step.status !== 'in-progress'"
+                [class.text-[var(--color-text-muted)]]="step.status !== 'approved' && step.status !== 'rejected' && step.status !== 'pending' && step.status !== 'in-progress'"
+              >
+                <lucide-angular
+                  [img]="step.status === 'approved' ? CheckCircle2 : Clock4"
+                  class="h-3 w-3"
+                ></lucide-angular>
+                {{ step.status }}
               </span>
             </div>
-            <p class="mt-4 text-sm text-[var(--color-text-muted)]">{{ step.notes }}</p>
-            <p class="mt-2 text-sm font-semibold text-[var(--color-text)]">{{ step.date }}</p>
+          </div>
+          <div *ngIf="approvalWorkflow.length === 0" class="px-3 py-4 text-center text-xs text-[var(--color-text-muted)]">
+            No approval history available yet.
           </div>
         </div>
       </div>
     </section>
 
     <!-- Workflow Details -->
-    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[var(--color-border)]">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="text-sm font-semibold text-[var(--color-accent)]">
-            {{ 'requestsManagement.orderReport.section.workflowDetails' | translate }}
-          </p>
-          <h2 class="text-2xl font-semibold text-[var(--color-text)]">
-            {{ 'requestsManagement.orderReport.labels.workflowOwner' | translate }}
-          </h2>
-        </div>
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="mb-3">
+        <p class="text-xs font-semibold text-[var(--color-accent)]">
+          {{ 'requestsManagement.orderReport.section.workflowDetails' | translate }}
+        </p>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'requestsManagement.orderReport.labels.workflowOwner' | translate }}
+        </h2>
       </div>
 
-      <div class="mt-6 overflow-hidden rounded-2xl border border-[var(--color-border)]">
-        <div class="hidden bg-[var(--color-background-muted)] px-5 py-3 text-xs font-semibold uppercase text-[var(--color-text-muted)] md:grid md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
+      <div class="overflow-hidden rounded-2xl border border-[var(--color-border)]">
+        <div *ngIf="workflowDetails.length > 0" class="hidden bg-[var(--color-background-muted)] px-3 py-2 text-xs font-semibold uppercase text-[var(--color-text-muted)] md:grid md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
           <span>{{ 'requestsManagement.orderReport.table.phase' | translate }}</span>
           <span>{{ 'requestsManagement.orderReport.table.owner' | translate }}</span>
           <span>{{ 'requestsManagement.orderReport.table.description' | translate }}</span>
@@ -334,7 +332,7 @@
           <span>{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
         </div>
         <div *ngFor="let detail of workflowDetails" class="border-t border-[var(--color-border)] first:border-t-0">
-          <div class="grid gap-4 px-5 py-4 text-sm text-[var(--color-text)] md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
+          <div class="grid gap-2 px-3 py-2 text-xs text-[var(--color-text)] md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
             <div>
               <p class="font-semibold">{{ detail.phase }}</p>
               <p class="text-xs text-[var(--color-text-muted)] md:hidden">
@@ -344,10 +342,13 @@
             <p class="hidden text-[var(--color-text-muted)] md:block">{{ detail.owner }}</p>
             <p class="text-[var(--color-text-muted)]">{{ detail.description }}</p>
             <p class="font-semibold text-[var(--color-text)]">{{ detail.sla }}</p>
-            <span class="rounded-full bg-[var(--color-background-muted)] px-3 py-1 text-center text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-center text-xs font-semibold uppercase text-[var(--color-text-muted)]">
               {{ detail.status }}
             </span>
           </div>
+        </div>
+        <div *ngIf="workflowDetails.length === 0" class="px-3 py-4 text-center text-xs text-[var(--color-text-muted)]">
+          No workflow details available.
         </div>
       </div>
     </section>
@@ -362,3 +363,4 @@
     </div>
   </div>
 </div>
+

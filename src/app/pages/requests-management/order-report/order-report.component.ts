@@ -3,12 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { OrderService, OrderDto } from '@services/order.service';
 import { ToastService } from '@services/toast.service';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
+import { APIOperationResponse } from '@models/api-response.model';
 
 interface OrderSummary {
   orderId: string;
@@ -97,7 +101,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private orderService: OrderService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private apiService: ApiService
   ) {}
 
   ngOnInit(): void {
@@ -145,6 +150,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   loadOrder(id: number): void {
     this.detailsLoading = true;
     this.errorMessage = null;
+    // Clear previous data while loading
+    this.approvalWorkflow = [];
+    this.workflowDetails = [];
     this.orderService.getOrderById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -186,11 +194,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       status: this.mapItemStatus(order.status)
     }));
 
-    // Generate approval workflow (replace with real API call when available)
-    this.approvalWorkflow = this.generateApprovalWorkflow(order);
-
-    // Generate workflow details (replace with real API call when available)
-    this.workflowDetails = this.generateWorkflowDetails(order);
+    // Load approval workflow and workflow details from API
+    this.loadApprovalWorkflow(order.id);
+    this.loadWorkflowDetails(order);
   }
 
   private mapStatusToString(status: number): string {
@@ -236,8 +242,123 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
   }
 
-  private generateApprovalWorkflow(order: OrderDto): ApprovalStep[] {
-    // Mock approval workflow - replace with real API call when available
+  private loadApprovalWorkflow(orderId: number): void {
+    console.log('loadApprovalWorkflow called with orderId:', orderId);
+    this.apiService.getWithAuth<any>(
+      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
+    )
+      .pipe(
+        takeUntil(this.destroy$),
+        map(response => {
+          // Handle both wrapped response and direct array response
+          let dataArray: any[] = [];
+          
+          if (Array.isArray(response)) {
+            // Direct array response
+            dataArray = response;
+          } else if (response && response.succeeded && Array.isArray(response.data)) {
+            // Wrapped APIOperationResponse
+            dataArray = response.data;
+          } else if (response && Array.isArray(response.data)) {
+            // Alternative wrapped structure
+            dataArray = response.data;
+          } else {
+            console.log('Unexpected API response structure:', response);
+            return [];
+          }
+          
+          console.log('Processing data array for orderId:', orderId, 'Array:', dataArray);
+          console.log('Available request IDs:', dataArray.map((i: any) => ({ id: i.id, requestNo: i.requestNo })));
+          
+          // Find the request that matches the order ID - prioritize exact ID match
+          const matchedRequest = dataArray.find((item: any) => {
+            // Exact ID match (most reliable)
+            if (item.id === orderId) {
+              console.log('Exact ID match:', { itemId: item.id, orderId });
+              return true;
+            }
+            
+            // Check other ID fields
+            if (item.orderId === orderId || item.requestId === orderId) {
+              console.log('Other ID field match:', { itemId: item.id, orderId, orderIdField: item.orderId || item.requestId });
+              return true;
+            }
+            
+            // Check requestNo - but be more specific (look for order ID in the request number pattern)
+            // Request numbers like "ORD-2025-000001-OPS" should match order ID 1, not order ID 2
+            if (item.requestNo) {
+              // Try to extract the order number from requestNo (e.g., "000001" from "ORD-2025-000001-OPS")
+              const orderNumMatch = item.requestNo.match(/0*(\d+)/);
+              if (orderNumMatch && parseInt(orderNumMatch[1]) === orderId) {
+                console.log('RequestNo match:', { itemId: item.id, requestNo: item.requestNo, orderId, extractedNum: orderNumMatch[1] });
+                return true;
+              }
+            }
+            
+            return false;
+          });
+          
+          if (!matchedRequest) {
+            console.log('No matching request found for order ID:', orderId, 'Available IDs:', dataArray.map((i: any) => i.id));
+            return [];
+          }
+          
+          console.log('Matched request for orderId', orderId, ':', matchedRequest);
+          
+          // Extract approvalHistory array from the matched request
+          const approvalHistory = matchedRequest.approvalHistory || [];
+          
+          if (!Array.isArray(approvalHistory)) {
+            console.log('approvalHistory is not an array for order ID:', orderId, approvalHistory);
+            return [];
+          }
+          
+          // If approvalHistory is empty, check if we should use fallback or show empty
+          if (approvalHistory.length === 0) {
+            console.log('Empty approval history for order ID:', orderId, '- Matched request:', matchedRequest);
+            console.log('Full matched request data:', JSON.stringify(matchedRequest, null, 2));
+            // Return empty array - will show empty state message in UI
+            return [];
+          }
+          
+          // Map approvalHistory items to ApprovalStep format
+          console.log('Mapping approval history items:', approvalHistory);
+          return approvalHistory.map((item: any, index: number) => ({
+            step: item.stepName || item.step || item.stepOrder || `Step ${index + 1}`,
+            role: item.roleName || item.role || item.applicationRoleName || item.roleId || 'N/A',
+            approver: item.approverName || item.approver || item.userName || item.approverId || 'N/A',
+            status: this.mapApprovalStatus(item.status || item.approvalStatus || item.approvalState),
+            date: item.approvedDate || item.date || item.createdDate || item.actionDate || 'Pending',
+            notes: item.comments || item.notes || item.comment || item.reason || ''
+          }));
+        }),
+        catchError(error => {
+          console.error('Failed to load approval workflow', error);
+          // Fallback to mock data if API fails
+          return of(this.generateApprovalWorkflowFallback(orderId));
+        })
+      )
+      .subscribe({
+        next: (steps) => {
+          console.log('Loaded approval workflow steps:', steps);
+          // Always use API data (even if empty) - only fallback on error
+          this.approvalWorkflow = steps;
+        },
+        error: (error) => {
+          console.error('Error loading approval workflow', error);
+          // Only use fallback if API call fails completely
+          this.approvalWorkflow = this.generateApprovalWorkflowFallback(orderId);
+        }
+      });
+  }
+
+  private generateApprovalWorkflowFallback(orderId: number): ApprovalStep[] {
+    // Fallback mock data if API fails or returns empty
+    const order = this.orders.find(o => o.id === orderId);
+    if (!order) {
+      return [];
+    }
+    
     const steps: ApprovalStep[] = [
       {
         step: 'Submission',
@@ -281,8 +402,34 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return steps;
   }
 
-  private generateWorkflowDetails(order: OrderDto): WorkflowDetail[] {
-    // Mock workflow details - replace with real API call when available
+  private mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' {
+    if (!status) return 'pending';
+    
+    const statusStr = String(status).toLowerCase();
+    if (statusStr.includes('approved') || statusStr === '1' || statusStr === 'true') {
+      return 'approved';
+    }
+    if (statusStr.includes('rejected') || statusStr === '2' || statusStr === 'false') {
+      return 'rejected';
+    }
+    if (statusStr.includes('progress') || statusStr.includes('processing')) {
+      return 'in-progress';
+    }
+    return 'pending';
+  }
+
+  private loadWorkflowDetails(order: OrderDto): void {
+    // Try to get workflow details from API response
+    // For now, set to empty array - only populate when API provides real data
+    // If the API response includes workflow details, we can extract them here
+    this.workflowDetails = [];
+    
+    // TODO: Fetch workflow details from API endpoint when available
+    // Example: this.apiService.getWithAuth(...).subscribe(...)
+  }
+
+  private generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail[] {
+    // Fallback workflow details - can be enhanced when API provides this data
     return [
       {
         phase: 'Intake & Validation',
