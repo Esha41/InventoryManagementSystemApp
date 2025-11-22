@@ -32,10 +32,9 @@
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.priority }}</td>
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.requestType }}</td>
             <td class="px-6 py-4 text-start">
-              <app-status-dropdown
-                [status]="request.status"
-                (statusChange)="onStatusChange(request.orderId, $event)">
-              </app-status-dropdown>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(request.status) }}">
+                {{ request.status }}
+              </span>
             </td>
             <td class="px-6 py-4 text-end">
               <button

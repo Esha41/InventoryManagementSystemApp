@@ -4,7 +4,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { PaginationComponent } from './components/pagination/pagination.component';
 import { RowsPerPageComponent } from './components/rows-per-page/rows-per-page.component';
-import { StatusDropdownComponent } from './components/status-dropdown/status-dropdown.component';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -30,7 +29,7 @@ interface BaseRequestDto {
 @Component({
   selector: 'app-requests-management',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, StatusDropdownComponent, OrderDetailsModalComponent],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, OrderDetailsModalComponent],
   templateUrl: './requests-management.component.html',
   styleUrls: ['./requests-management.component.css']
 })
@@ -145,10 +144,12 @@ export class RequestsManagementComponent implements OnInit {
     this.currentPage = 1; // Reset to first page when changing rows per page
   }
 
-  onStatusChange(orderId: string, newStatus: string): void {
-    const request = this.requests.find(r => r.orderId === orderId);
-    if (request) {
-      request.status = newStatus as 'Pending' | 'Confirmed' | 'Rejected';
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
+      case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
+      case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
+      default: return 'bg-gray-100 text-gray-800';
     }
   }
 
