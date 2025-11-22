@@ -339,15 +339,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.isExportingPdf = true;
     try {
       const canvas = await html2canvas(this.reportContent.nativeElement, {
-        backgroundColor: '#ffffff',
+        background: '#ffffff',
         scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
         useCORS: true
-      });
+      } as any);
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`order-report-${this.orderSummary.orderId.replace('#', '')}.pdf`);
     } catch (error) {

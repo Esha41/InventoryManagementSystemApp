@@ -12,7 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 export interface SupplyRequest {
   id: number;
   issueNo: string;
-  requestType: 'Issue' | 'Return';
+  requestType: 'Order' | 'Return';
   quantity: number;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   requestDate: string;
@@ -111,7 +111,7 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
     return {
       id: order.id,
       issueNo: order.requestNo || order.orderNo || `#${order.id}`,
-      requestType: order.requestType === 1 ? 'Issue' : 'Return',
+      requestType: order.requestType === 1 ? 'Order' : 'Return',
       quantity: totalQuantity,
       priority: priorityMap[order.priority] || 'Low',
       requestDate: this.formatDate(order.usageDate),
