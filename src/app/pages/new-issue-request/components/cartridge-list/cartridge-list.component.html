@@ -82,9 +82,10 @@
             <app-button
               variant="primary"
               (clicked)="confirmAdd(cartridge, $event)"
-              class="bg-[#D0B888] text-white hover:bg-[#BEA06E]"
+              [disabled]="verifyingAllowance"
+              class="bg-[#D0B888] text-white hover:bg-[#BEA06E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ 'common.confirm' | translate }}
+              {{ verifyingAllowance ? ('common.loading' | translate) : ('common.confirm' | translate) }}
             </app-button>
             <app-button
               *ngIf="cartridge.added"
@@ -101,6 +102,16 @@
             >
               {{ 'common.cancel' | translate }}
             </app-button>
+          </div>
+          <!-- Allowance Error Message -->
+          <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id" 
+               class="mt-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+            {{ allowanceErrorMessage }}
+          </div>
+          <!-- Loading indicator for allowance verification -->
+          <div *ngIf="verifyingAllowance && pendingCartridgeId === cartridge.id" 
+               class="mt-3 text-sm text-[var(--color-text-muted)]">
+            {{ 'common.loading' | translate }}...
           </div>
         </div>
       </div>

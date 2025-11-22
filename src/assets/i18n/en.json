@@ -272,6 +272,7 @@
     "showingAllAvailableItems": "Showing all available items",
     "next": "Next",
     "previous": "Previous",
+    "submit": "Submit",
     "clearFilters": "Clear Filters",
     "name": "Name",
     "comments": "Comments",
@@ -286,6 +287,10 @@
       "orderPriorityRequired": "Order priority is required.",
       "required": "This field is required.",
       "correctErrors": "Please fix the highlighted fields before continuing."
+    },
+    "errors": {
+      "allowanceExceeded": "Requested quantity ({{requestedQuantity}}) exceeds available allowance. Available: {{availableQuantity}}",
+      "failedToVerifyAllowance": "Failed to verify allowance. Please try again."
     }
   },
   "inventoryForecast": {

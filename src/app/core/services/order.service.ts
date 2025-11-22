@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
@@ -160,6 +160,32 @@ export class OrderService {
   }
 
   /**
+   * Verify if requested quantity is available in allowance
+   * Backend endpoint: GET /api/Order/verify-allowance?itemId={itemId}&requestedQuantity={quantity}
+   */
+  verifyAllowance(itemId: number, requestedQuantity: number): Observable<{ availableQuantity: number; isValid: boolean; message?: string }> {
+    this.config.log(`Verifying allowance for item ${itemId}, quantity ${requestedQuantity}`);
+    const params = new HttpParams()
+      .set('itemId', itemId.toString())
+      .set('requestedQuantity', requestedQuantity.toString());
+    
+    return this.http.get<any>(`${this.baseUrl}/verify-allowance`, { params }).pipe(
+      map(response => {
+        // Handle different response structures
+        const availableQuantity = response?.availableQuantity ?? response?.data?.availableQuantity ?? 0;
+        const isValid = requestedQuantity <= availableQuantity;
+        
+        return {
+          availableQuantity,
+          isValid,
+          message: response?.message
+        };
+      }),
+      catchError(error => {
+        this.config.logError('Failed to verify allowance', error);
+        // Extract error message if available
+        const errorMessage = error?.error?.message || error?.message || 'Failed to verify allowance';
+        return throwError(() => new Error(errorMessage));
    * Add a new item to an existing order
    * Backend endpoint: POST {baseUrl}/{orderId}/items
    */

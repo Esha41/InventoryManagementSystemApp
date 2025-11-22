@@ -277,6 +277,7 @@
     "yes": "نعم",
     "no": "لا",
     "previous": "السابق",
+    "submit": "إرسال",
     "clearFilters": "مسح المرشحات",
     "validation": {
       "usePurposeRequired": "غرض الاستخدام مطلوب.",
@@ -286,6 +287,10 @@
       "orderPriorityRequired": "أولوية الطلب مطلوبة.",
       "required": "هذا الحقل مطلوب.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
+    },
+    "errors": {
+      "allowanceExceeded": "الكمية المطلوبة ({{requestedQuantity}}) تتجاوز البدل المتاح. المتاح: {{availableQuantity}}",
+      "failedToVerifyAllowance": "فشل التحقق من البدل. يرجى المحاولة مرة أخرى."
     }
   },
   "inventoryForecast": {
