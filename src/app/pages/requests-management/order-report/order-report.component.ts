@@ -97,6 +97,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   orderItems: OrderItem[] = [];
   approvalWorkflow: ApprovalStep[] = [];
   workflowDetails: WorkflowDetail[] = [];
+  approvalWorkflowStatus: string = '';
 
   constructor(
     private router: Router,
@@ -153,6 +154,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     // Clear previous data while loading
     this.approvalWorkflow = [];
     this.workflowDetails = [];
+    this.approvalWorkflowStatus = '';
     this.orderService.getOrderById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -206,6 +208,23 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       case 2: return 'Rejected';
       default: return 'Pending';
     }
+  }
+
+  private mapStatusFromApi(status: any): string {
+    if (status === 'Approved' || status === 'approved') {
+      return 'Approved';
+    }
+    if (status === 'Rejected' || status === 'rejected') {
+      return 'Rejected';
+    }
+    if (status === 'Pending' || status === 'pending') {
+      return 'Pending';
+    }
+    // Handle numeric status
+    if (typeof status === 'number') {
+      return this.mapStatusToString(status);
+    }
+    return 'Pending';
   }
 
   private mapPriorityToString(priority: number): string {
@@ -305,18 +324,29 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           
           console.log('Matched request for orderId', orderId, ':', matchedRequest);
           
-          // Extract approvalHistory array from the matched request
+          // Extract approvalHistory array and status from the matched request
           const approvalHistory = matchedRequest.approvalHistory || [];
+          const requestStatus = matchedRequest.status;
+          
+          // Store the status for display in the UI
+          this.approvalWorkflowStatus = this.mapStatusFromApi(requestStatus);
           
           if (!Array.isArray(approvalHistory)) {
             console.log('approvalHistory is not an array for order ID:', orderId, approvalHistory);
             return [];
           }
           
-          // If approvalHistory is empty, check if we should use fallback or show empty
+          // If approvalHistory is empty but status is "Approved", generate workflow steps from request data
           if (approvalHistory.length === 0) {
-            console.log('Empty approval history for order ID:', orderId, '- Matched request:', matchedRequest);
+            console.log('Empty approval history for order ID:', orderId, '- Status:', requestStatus);
             console.log('Full matched request data:', JSON.stringify(matchedRequest, null, 2));
+            
+            // If status is "Approved" (or 1), generate approval workflow steps
+            if (requestStatus === 'Approved' || requestStatus === 1 || requestStatus === 'approved') {
+              console.log('Status is Approved, generating approval workflow steps');
+              return this.generateApprovalWorkflowFromRequest(matchedRequest);
+            }
+            
             // Return empty array - will show empty state message in UI
             return [];
           }
@@ -343,6 +373,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           console.log('Loaded approval workflow steps:', steps);
           // Always use API data (even if empty) - only fallback on error
           this.approvalWorkflow = steps;
+          // If no status was set and we have steps, try to get status from first step or fallback
+          if (!this.approvalWorkflowStatus && steps.length > 0) {
+            const firstStepStatus = steps[0]?.status;
+            if (firstStepStatus === 'approved') {
+              this.approvalWorkflowStatus = 'Approved';
+            }
+          }
         },
         error: (error) => {
           console.error('Error loading approval workflow', error);
@@ -350,6 +387,61 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           this.approvalWorkflow = this.generateApprovalWorkflowFallback(orderId);
         }
       });
+  }
+
+  private generateApprovalWorkflowFromRequest(request: any): ApprovalStep[] {
+    // Generate approval workflow steps from request data when status is "Approved"
+    const steps: ApprovalStep[] = [];
+    
+    // Get order data for requester name
+    const orderId = request.id;
+    const order = this.orders.find(o => o.id === orderId);
+    const requesterName = order?.requesterName || request.requesterName || request.requester || 'N/A';
+    const requestDate = request.requestDate || order?.usageDate;
+    const requestTime = order?.usageTime;
+    
+    // Step 1: Submission
+    steps.push({
+      step: 'Submission',
+      role: 'Request Owner',
+      approver: requesterName,
+      status: 'approved',
+      date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
+      notes: 'Initial request submitted.'
+    });
+    
+    // Step 2: Review/Approval (based on status)
+    const status = request.status;
+    if (status === 'Approved' || status === 1 || status === 'approved') {
+      steps.push({
+        step: 'Review',
+        role: 'Reviewer',
+        approver: request.approverName || request.approver || 'System',
+        status: 'approved',
+        date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
+        notes: request.reason || 'Order approved.'
+      });
+    } else if (status === 'Rejected' || status === 2 || status === 'rejected') {
+      steps.push({
+        step: 'Review',
+        role: 'Reviewer',
+        approver: request.approverName || request.approver || 'System',
+        status: 'rejected',
+        date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
+        notes: request.reason || 'Order rejected.'
+      });
+    } else {
+      steps.push({
+        step: 'Review',
+        role: 'Reviewer',
+        approver: 'System',
+        status: 'pending',
+        date: 'Pending',
+        notes: 'Awaiting review.'
+      });
+    }
+    
+    return steps;
   }
 
   private generateApprovalWorkflowFallback(orderId: number): ApprovalStep[] {
@@ -537,6 +629,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.orderItems = [];
     this.approvalWorkflow = [];
     this.workflowDetails = [];
+    this.approvalWorkflowStatus = '';
     this.qrCodeDataUrl = null;
   }
 

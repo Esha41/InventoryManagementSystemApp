@@ -370,7 +370,7 @@
         "lastUpdated": "آخر تحديث",
         "itemsIncluded": "العناصر ضمن الطلب",
         "rounds": "طلقة",
-        "currentStatus": "الحالة الحالية: {{status}}",
+        "currentStatus": "الحالة الحالية",
         "workflowOwner": "تفاصيل سير العمل",
         "orderId": "رقم الطلب",
         "scanHeading": "امسح لتتبع هذا الطلب",

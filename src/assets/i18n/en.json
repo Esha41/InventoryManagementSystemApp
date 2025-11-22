@@ -370,7 +370,7 @@
         "lastUpdated": "Last Updated",
         "itemsIncluded": "Items Included in Request",
         "rounds": "rounds",
-        "currentStatus": "Current status: {{status}}",
+        "currentStatus": "Current status",
         "workflowOwner": "Workflow Details",
         "orderId": "Order ID",
         "scanHeading": "Scan to track this order",
