@@ -22,6 +22,10 @@ export interface ApprovalStep {
   approverName?: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   approvedDate?: string;
+  applicationRoleName?: string;
+  isPending?: boolean;
+  requireHigherApproval?: boolean;
+  higherApprovalRoleId?: string;
 }
 
 export interface RequestDetail {
@@ -94,6 +98,7 @@ export class WorkflowApprovalDetailComponent implements OnInit {
   
   // Approval/Rejection form
   comments: string = '';
+  sendToHigherApproval: boolean = false;
   processing: boolean = false;
 
   constructor(
@@ -266,8 +271,21 @@ export class WorkflowApprovalDetailComponent implements OnInit {
     return history
       .filter(h => h && (h.id || h.workflowApprovalstepId || h.workflowStepId || h.workflowstepId))
       .map((h, index) => {
-        const newStatus = h.newRequestStatus ?? h.oldRequestStatus ?? 0;
-        const status = this.mapApprovalStatus(newStatus);
+        // Check if this is a pending step (IsPending flag or no changedBy)
+        const isPending = h.isPending === true || (!h.changedBy && (h.oldRequestStatus === 1 || h.oldRequestStatus === 2));
+        
+        let status: 'Pending' | 'Approved' | 'Rejected';
+        if (isPending) {
+          status = 'Pending';
+        } else {
+          const newStatus = h.newRequestStatus ?? h.oldRequestStatus ?? 0;
+          status = this.mapApprovalStatus(newStatus);
+        }
+        
+        // For pending steps, show role name instead of approver name
+        const approverName = isPending 
+          ? (h.applicationRoleName || h.applicationRoleId || 'Pending Approval')
+          : this.getApproverName(h.changedBy);
         
         return {
           id: h.id || index,
@@ -278,11 +296,15 @@ export class WorkflowApprovalDetailComponent implements OnInit {
           comments: h.comments,
           changedBy: h.changedBy,
           changedAt: h.changedAt,
-          steporder: h.steporder || index + 1,
+          steporder: h.steporder || h.stepOrder || index + 1,
           applicationRoleId: h.applicationRoleId,
-          approverName: this.getApproverName(h.changedBy),
+          approverName: approverName,
           status: status,
-          approvedDate: h.changedAt ? this.formatApprovalDate(h.changedAt) : undefined
+          approvedDate: h.changedAt && !isPending ? this.formatApprovalDate(h.changedAt) : undefined,
+          applicationRoleName: h.applicationRoleName,
+          isPending: isPending,
+          requireHigherApproval: h.requireHigherApproval || false,
+          higherApprovalRoleId: h.higherApprovalRoleId
         };
       })
       .sort((a, b) => (a.steporder || 0) - (b.steporder || 0)); // Sort by step order
@@ -402,7 +424,7 @@ export class WorkflowApprovalDetailComponent implements OnInit {
       baseRequestID: this.requestId,
       isApproved: true,
       comments: this.comments || undefined,
-      sendToHigherApproval: false,
+      sendToHigherApproval: this.sendToHigherApproval || false,
       action: 3 // RequestStatus.Approved
     };
 
@@ -415,6 +437,7 @@ export class WorkflowApprovalDetailComponent implements OnInit {
       next: (response: any) => {
         console.log('✅ Approval successful:', response);
         this.comments = '';
+        this.sendToHigherApproval = false;
         this.loadRequestDetail(); // Reload to get updated status
         this.processing = false;
       },
@@ -434,7 +457,7 @@ export class WorkflowApprovalDetailComponent implements OnInit {
       baseRequestID: this.requestId,
       isApproved: false,
       comments: this.comments || undefined,
-      sendToHigherApproval: false,
+      sendToHigherApproval: this.sendToHigherApproval || false,
       action: 4 // RequestStatus.Rejected
     };
 
@@ -447,6 +470,7 @@ export class WorkflowApprovalDetailComponent implements OnInit {
       next: (response: any) => {
         console.log('✅ Rejection successful:', response);
         this.comments = '';
+        this.sendToHigherApproval = false;
         this.loadRequestDetail(); // Reload to get updated status
         this.processing = false;
       },
@@ -520,6 +544,17 @@ export class WorkflowApprovalDetailComponent implements OnInit {
     // The backend will handle permission check (only current approver can approve)
     console.log('🔍 canApproveOrReject: true - user can approve/reject');
     return true;
+  }
+
+  hasHigherApproval(): boolean {
+    if (!this.requestDetail || !this.requestDetail.approvalHistory) {
+      return false;
+    }
+
+    // Find the current pending step
+    const pendingStep = this.requestDetail.approvalHistory.find(step => step.status === 'Pending' && step.isPending);
+    
+    return pendingStep?.requireHigherApproval === true;
   }
 
   goBack(): void {

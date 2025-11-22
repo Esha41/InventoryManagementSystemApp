@@ -257,6 +257,19 @@
         </h2>
         
         <div class="space-y-4">
+          <!-- Higher Approval Checkbox -->
+          <div *ngIf="hasHigherApproval()" class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="sendToHigherApproval"
+              [(ngModel)]="sendToHigherApproval"
+              [disabled]="processing"
+              class="w-4 h-4 text-[var(--color-accent)] border-gray-300 rounded focus:ring-[var(--color-accent)] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <label for="sendToHigherApproval" class="text-sm font-medium text-gray-700 cursor-pointer">
+              Send to Higher Approval
+            </label>
+          </div>
+
           <!-- Comments Textarea -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -274,20 +287,20 @@
           <!-- Action Buttons -->
           <div class="flex gap-3">
             <button
-              (click)="approveRequest()"
-              [disabled]="processing"
-              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
-              <lucide-angular [img]="CheckCircle" class="h-5 w-5"></lucide-angular>
-              <span *ngIf="!processing">Approve</span>
-              <span *ngIf="processing">Processing...</span>
-            </button>
-            
-            <button
               (click)="rejectRequest()"
               [disabled]="processing"
               class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
               <lucide-angular [img]="AlertTriangle" class="h-5 w-5"></lucide-angular>
               <span *ngIf="!processing">Reject</span>
+              <span *ngIf="processing">Processing...</span>
+            </button>
+            
+            <button
+              (click)="approveRequest()"
+              [disabled]="processing"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+              <lucide-angular [img]="CheckCircle" class="h-5 w-5"></lucide-angular>
+              <span *ngIf="!processing">Approve</span>
               <span *ngIf="processing">Processing...</span>
             </button>
           </div>
