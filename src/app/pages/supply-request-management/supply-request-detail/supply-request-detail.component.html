@@ -42,23 +42,30 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.orderNo' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.issueNo }}</p>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.requestType' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestType }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
                 {{ 'supplyRequestDetail.requesterName' | translate }}
               </label>
               <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requesterName }}</p>
             </div>
-            
+
             <div>
               <label class="text-xs font-semibold text-gray-500 uppercase">
-                {{ 'supplyRequestDetail.requesterId' | translate }}
+                {{ 'supplyRequestDetail.departmentName' | translate }}
               </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requesterId }}</p>
-            </div>
-            
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase">
-                {{ 'supplyRequestDetail.militaryRank' | translate }}
-              </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requesterRank }}</p>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ getDepartmentName() }}</p>
             </div>
             
             <div>
@@ -71,6 +78,34 @@
                 'text-yellow-600': requestDetail.priority === 'Medium',
                 'text-green-600': requestDetail.priority === 'Low'
               }">{{ requestDetail.priority }}</p>
+            </div>
+
+            <div *ngIf="orderData?.reason">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.reason' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.reason }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usagePurpose">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usagePurpose' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usagePurpose }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usageLocation">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usageLocation' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usageLocation }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usageDate">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usageDate' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ formatOrderDate(orderData?.usageDate) }}</p>
             </div>
           </div>
         </div>
@@ -128,9 +163,19 @@
 
         <!-- Order Items -->
         <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
-            {{ 'supplyRequestDetail.orderItems' | translate }}
-          </h2>
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'supplyRequestDetail.orderItems' | translate }}
+            </h2>
+            <button
+              (click)="onSuggestForAllItems()"
+              [disabled]="loadingSuggestion || loading"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">
+              <lucide-angular [img]="Sparkles" class="h-4 w-4"></lucide-angular>
+              <span *ngIf="!loadingSuggestion">{{ 'supplyRequestDetail.suggestForAll' | translate }}</span>
+              <span *ngIf="loadingSuggestion">{{ 'common.loading' | translate }}...</span>
+            </button>
+          </div>
           
           <div class="space-y-3">
             <div *ngFor="let item of requestDetail.items" 
@@ -256,13 +301,14 @@
           <!-- Discharge Button -->
           <button
             (click)="onProcessDischarge()"
-            [disabled]="!canProcessDischarge()"
+            [disabled]="!canProcessDischarge() || processingDischarge"
             class="w-full mt-6 px-4 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
             [ngClass]="{
-              'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canProcessDischarge(),
-              'bg-gray-400': !canProcessDischarge()
+              'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canProcessDischarge() && !processingDischarge,
+              'bg-gray-400': !canProcessDischarge() || processingDischarge
             }">
-            {{ 'supplyRequestDetail.processDischarge' | translate }}
+            <span *ngIf="!processingDischarge">{{ 'supplyRequestDetail.processDischarge' | translate }}</span>
+            <span *ngIf="processingDischarge">{{ 'common.processing' | translate }}...</span>
           </button>
           
           <p *ngIf="!canProcessDischarge() && getTotalSelectedForDischarge() === 0" 
@@ -304,24 +350,92 @@
       </div>
     </div>
 
-    <!-- Lots List -->
-    <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
-      <div class="mb-3 flex items-center gap-2 text-sm text-gray-600">
-        <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-yellow-600"></lucide-angular>
-        <span>{{ 'supplyRequestDetail.sortedByExpiry' | translate }}</span>
+    <!-- Lot Loading Options -->
+    <div class="mb-4 space-y-3">
+      <!-- Three Buttons -->
+      <div class="grid grid-cols-3 gap-2">
+        <button
+          (click)="onShowAllLots()"
+          [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100">
+          <span *ngIf="!loadingAllLots">{{ 'supplyRequestDetail.showAllLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button
+          (click)="onShowAvailableLots()"
+          [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+          <span *ngIf="!loadingAllLots">{{ 'supplyRequestDetail.showAvailableLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button
+          (click)="onAddLotManually()"
+          [disabled]="loadingAllLots || loadingManualLot"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed"
+          [ngClass]="{
+            'bg-purple-100 text-purple-900 border-purple-400': showManualLotEntry,
+            'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100': !showManualLotEntry
+          }">
+          {{ 'supplyRequestDetail.addLotManually' | translate }}
+        </button>
       </div>
 
+      <!-- Manual Lot Entry (Only shows when button is clicked) -->
+      <div *ngIf="showManualLotEntry" class="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-200 animate-fadeIn">
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-purple-900 mb-1 block">
+            {{ 'supplyRequestDetail.enterLotNumber' | translate }}
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="manualLotNumber"
+            [disabled]="loadingManualLot"
+            (keyup.enter)="onGetManualLotDetails()"
+            placeholder="{{ 'supplyRequestDetail.lotNumberPlaceholder' | translate }}"
+            class="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50"
+          />
+        </div>
+        <button
+          type="button"
+          (click)="onGetManualLotDetails()"
+          [disabled]="!manualLotNumber || !manualLotNumber.trim() || loadingManualLot"
+          class="mt-6 px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+          <span *ngIf="!loadingManualLot">{{ 'supplyRequestDetail.getDetails' | translate }}</span>
+          <span *ngIf="loadingManualLot">{{ 'common.loading' | translate }}...</span>
+        </button>
+      </div>
+
+      <!-- Info Message -->
+      <div class="flex items-center gap-2 text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+        <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-blue-600 flex-shrink-0"></lucide-angular>
+        <span>{{ 'supplyRequestDetail.lotSelectionInfo' | translate }}</span>
+      </div>
+    </div>
+
+    <!-- Lots List -->
+    <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+
       <div *ngFor="let lot of selectedItem.availableLots" 
-           class="border rounded-lg p-4 transition-all"
+           class="border rounded-lg p-4 transition-all relative group"
            [class.border-red-300]="lot.condition === 'Near Expiry'"
            [class.bg-red-50]="lot.condition === 'Near Expiry'"
            [class.border-gray-200]="lot.condition !== 'Near Expiry'"
            [class.bg-white]="lot.condition !== 'Near Expiry'">
         
+        <!-- Remove Button -->
+        <button
+          (click)="onRemoveLot(lot.lotNumber)"
+          class="absolute top-2 right-2 p-1.5 rounded-full hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          title="{{ 'common.remove' | translate }}">
+          <lucide-angular [img]="XIcon" class="h-4 w-4"></lucide-angular>
+        </button>
+
         <div class="flex items-start justify-between mb-3">
-          <div class="flex-1">
+          <div class="flex-1 pr-8">
             <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-900">{{ lot.lotNumber }}</span>
+              <span class="font-semibold text-gray-900">LOT-{{ lot.lotNumber }}</span>
               <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
                     [ngClass]="getLotConditionClass(lot.condition)">
                 {{ lot.condition }}
@@ -339,8 +453,11 @@
             <p class="text-sm font-semibold text-gray-900">
               {{ formatNumber(lot.quantity) }} {{ 'supplyRequestDetail.available' | translate }}
             </p>
-            <p class="text-xs text-gray-500 mt-1">
+            <p *ngIf="lot.expiryDate" class="text-xs text-gray-500 mt-1">
               {{ formatDate(lot.expiryDate) }}
+            </p>
+            <p *ngIf="!lot.expiryDate" class="text-xs text-gray-500 mt-1">
+              No Expiry
             </p>
             <p class="text-xs mt-1 font-medium" [ngClass]="{
               'text-red-600': lot.daysUntilExpiry < 60,

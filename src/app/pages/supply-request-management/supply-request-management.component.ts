@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,8 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { OrderService, OrderDto } from '@services/order.service';
+import { Subject, takeUntil } from 'rxjs';
 
 export interface SupplyRequest {
+  id: number;
   issueNo: string;
   requestType: 'Issue' | 'Return';
   quantity: number;
@@ -23,7 +26,8 @@ export interface SupplyRequest {
   templateUrl: './supply-request-management.component.html',
   styleUrls: ['./supply-request-management.component.css']
 })
-export class SupplyRequestManagementComponent implements OnInit {
+export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   readonly Search = Search;
   readonly Calendar = Calendar;
   readonly ChevronDown = ChevronDown;
@@ -32,21 +36,12 @@ export class SupplyRequestManagementComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private orderService: OrderService
   ) {}
 
-  requests: SupplyRequest[] = [
-    { issueNo: '#1056', requestType: 'Issue', quantity: 30000, priority: 'Low', requestDate: '10 Sept 2024', status: 'Processing' },
-    { issueNo: '#1055', requestType: 'Issue', quantity: 200000, priority: 'High', requestDate: '1 Sept 2024', status: 'Completed' },
-    { issueNo: '#1054', requestType: 'Return', quantity: 15000, priority: 'Low', requestDate: '29 Aug 2024', status: 'Delivered' },
-    { issueNo: '#1053', requestType: 'Issue', quantity: 150000, priority: 'Critical', requestDate: '23 Aug 2024', status: 'Delivered' },
-    { issueNo: '#0152', requestType: 'Issue', quantity: 40000, priority: 'Low', requestDate: '19 Aug 2024', status: 'Processing' },
-    { issueNo: '#1051', requestType: 'Issue', quantity: 300000, priority: 'High', requestDate: '10 Aug 2024', status: 'Completed' },
-    { issueNo: '#0150', requestType: 'Return', quantity: 100000, priority: 'Low', requestDate: '1 Aug 2024', status: 'Processing' },
-    { issueNo: '#0149', requestType: 'Issue', quantity: 25000, priority: 'Low', requestDate: '25 July 2024', status: 'Pending' },
-    { issueNo: '#0148', requestType: 'Issue', quantity: 75000, priority: 'Medium', requestDate: '22 July 2024', status: 'Processing' },
-    { issueNo: '#0147', requestType: 'Return', quantity: 50000, priority: 'Low', requestDate: '15 July 2024', status: 'Completed' }
-  ];
+  requests: SupplyRequest[] = [];
+  loading: boolean = true;
 
   filteredRequests: SupplyRequest[] = [];
   activeTab: string = 'Pending';
@@ -63,8 +58,72 @@ export class SupplyRequestManagementComponent implements OnInit {
   readonly itemsPerPageOptions = [1, 2, 5, 10, 20];
 
   ngOnInit(): void {
-    this.filterRequests();
-    this.calculateTotalPages();
+    this.loadOrders();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadOrders(): void {
+    this.loading = true;
+    this.orderService.getAllOrders()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (orders: OrderDto[]) => {
+          this.requests = orders.map(order => this.mapOrderToSupplyRequest(order));
+          this.filterRequests();
+          this.calculateTotalPages();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Failed to load orders:', error);
+          this.loading = false;
+          // Still show empty state
+          this.filterRequests();
+          this.calculateTotalPages();
+        }
+      });
+  }
+
+  private mapOrderToSupplyRequest(order: OrderDto): SupplyRequest {
+    // Map order status to supply request status
+    const statusMap: { [key: number]: SupplyRequest['status'] } = {
+      1: 'Pending',      // New
+      2: 'Processing',   // InProgress
+      3: 'Completed',    // Completed
+      4: 'Delivered',    // Delivered
+      5: 'Cancelled'     // Cancelled
+    };
+
+    // Map priority (assuming priority field is 1-4)
+    const priorityMap: { [key: number]: SupplyRequest['priority'] } = {
+      1: 'Low',
+      2: 'Medium',
+      3: 'High',
+      4: 'Critical'
+    };
+
+    // Calculate total quantity from request items
+    const totalQuantity = order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+    return {
+      id: order.id,
+      issueNo: order.requestNo || order.orderNo || `#${order.id}`,
+      requestType: order.requestType === 1 ? 'Issue' : 'Return',
+      quantity: totalQuantity,
+      priority: priorityMap[order.priority] || 'Low',
+      requestDate: this.formatDate(order.usageDate),
+      status: statusMap[order.status] || 'Pending'
+    };
+  }
+
+  private formatDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
   }
 
   onTabChange(tab: string): void {
@@ -155,7 +214,10 @@ export class SupplyRequestManagementComponent implements OnInit {
   }
 
   onViewDetails(issueNo: string): void {
-    this.router.navigate(['/supply-request-management', issueNo]);
+    const request = this.requests.find(r => r.issueNo === issueNo);
+    if (request) {
+      this.router.navigate(['/supply-request-management', request.id]);
+    }
   }
 
   getPriorityColor(priority: string): string {

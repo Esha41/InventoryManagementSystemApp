@@ -56,6 +56,18 @@ export const routes: Routes = [
         data: { permissions: ['request.view', 'order.view'] }
       },
       {
+        path: 'supply-order',
+        loadComponent: () => import('@pages/supply-order/supply-order-list.component').then(m => m.SupplyOrderListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['supply.page', 'supply.view'] }
+      },
+      {
+        path: 'supply-order/:supplyId',
+        loadComponent: () => import('@pages/supply-order/supply-order.component').then(m => m.SupplyOrderComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['supply.view', 'supply.page'] }
+      },
+      {
         path: 'warehouse',
         loadComponent: () => import('@pages/warehouse/warehouse.component').then(m => m.WarehouseComponent),
         canActivate: [permissionGuard],
