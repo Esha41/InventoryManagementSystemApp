@@ -114,6 +114,10 @@
       "rejected": "Rejected",
       "cancelled": "Cancelled"
     },
+    "filters": {
+      "all": "All",
+      "filterByStatus": "Filter by Status"
+    },
     "viewAll": "View All",
     "noOrders": "No orders",
     "noAccess": "You don't have permission to view any dashboard sections",

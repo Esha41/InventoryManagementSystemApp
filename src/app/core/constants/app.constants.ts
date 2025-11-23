@@ -9,6 +9,20 @@ export const APP_CONSTANTS = {
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
 
+/**
+ * Request Status Constants
+ * Maps to backend RequestStatus enum
+ */
+export const REQUEST_STATUS = {
+  NEW: 1,
+  UNDER_PROCESS: 2,
+  APPROVED: 3,
+  REJECTED: 4,
+  CANCELLED: 5
+} as const;
+
+export type RequestStatusValue = typeof REQUEST_STATUS[keyof typeof REQUEST_STATUS];
+
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {

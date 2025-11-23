@@ -112,6 +112,10 @@
       "rejected": "مرفوض",
       "cancelled": "ملغي"
     },
+    "filters": {
+      "all": "الكل",
+      "filterByStatus": "تصفية حسب الحالة"
+    },
     "viewAll": "عرض الكل",
     "noOrders": "لا توجد طلبات",
     "noAccess": "ليس لديك إذن لعرض أي أقسام في لوحة التحكم",
