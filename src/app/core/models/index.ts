@@ -16,3 +16,4 @@ export * from './inventory.model';
 export * from './notification.model';
 export * from './supply-order.model';
 export * from './supply-request.model';
+export * from './workflow-approval.model';

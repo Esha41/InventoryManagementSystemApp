@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, X, ShieldAlert } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from './components/status-card/status-card.component';
@@ -10,6 +11,18 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
 import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { REQUEST_STATUS } from '@constants/app.constants';
+import {
+  mapRequestStatusToCardStatus,
+  getRequestStatusTranslationKey,
+  filterDisplayableRequests,
+  filterRequestsByDepartment,
+  getRequestTitle,
+  mapRequestItems,
+  DisplayableRequest,
+  CardStatus
+} from '@utils/dashboard.utils';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 export interface DashboardCard {
   title: string;
@@ -25,7 +38,16 @@ export interface DashboardCard {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, StatusCardComponent, ReturnDetailsModalComponent, DiscardDetailsModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    LucideAngularModule,
+    StatusCardComponent,
+    ReturnDetailsModalComponent,
+    DiscardDetailsModalComponent,
+    DropdownComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -33,10 +55,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // All dashboard cards with their permission/role requirements
-  private allCards: DashboardCard[] = [];
+  allCards: DashboardCard[] = [];
 
   // Filtered cards based on user permissions and roles
   visibleCards: DashboardCard[] = [];
+  
+  // Status filter
+  selectedStatusFilter: CardStatus | 'all' = 'all';
+  statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+    { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'dashboard.statusLabels.new', value: 'new' },
+    { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
+    { label: 'dashboard.statusLabels.approved', value: 'completed' }
+  ];
 
   // Modal state
   isOrderModalOpen = false;
@@ -57,7 +88,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private orderService: OrderService,
     private returnService: ReturnService,
-    private discardService: DiscardService
+    private discardService: DiscardService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -96,7 +128,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     // Filter cards based on permissions and roles
-    this.visibleCards = this.allCards.filter(card => {
+    let filteredCards = this.allCards.filter(card => {
       if (card.roles && card.roles.length > 0) {
         const hasRequiredRole = card.roles.some(requiredRole =>
           userRoles.some(userRole => 
@@ -119,12 +151,70 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return this.authService.hasAnyPermission(card.permissions);
     });
 
+    // Apply status filter
+    if (this.selectedStatusFilter !== 'all') {
+      filteredCards = filteredCards.filter(card => card.status === this.selectedStatusFilter);
+    }
+
+    this.visibleCards = filteredCards;
+
     const permissionsArray = Array.isArray(user?.permissions) ? user?.permissions : [];
     this.showContactAdminNotice = isAuthenticated && permissionsArray.length === 0 && this.visibleCards.length === 0;
   }
 
+  onStatusFilterChange(): void {
+    this.filterCardsByPermissionsAndRoles();
+  }
+
+  get filteredCardsCount(): number {
+    return this.visibleCards.length;
+  }
+
+  // Translate function for dropdown labels
+  statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+    if (typeof option === 'object' && option !== null && 'label' in option) {
+      return this.translate.instant(option.label as string);
+    }
+    return '';
+  };
+
   shouldShowCard(card: DashboardCard): boolean {
     return this.visibleCards.includes(card);
+  }
+
+  // Helper: Remove existing cards of a specific type
+  private removeCardsByType(predicate: (card: DashboardCard) => boolean): void {
+    this.allCards = this.allCards.filter(card => !predicate(card));
+  }
+
+  // Generic method to process and add request cards
+  private processRequestCards<T extends DisplayableRequest>(
+    requests: T[],
+    cardConfig: {
+      permissions: string[];
+      getCardId: (req: T) => number | undefined;
+      getCardPredicate: (card: DashboardCard) => boolean;
+      mapToCard: (req: T) => DashboardCard;
+      storeInMap: (req: T) => void;
+    }
+  ): void {
+    const currentUser = this.authService.getCurrentUser();
+    const filtered = filterRequestsByDepartment(
+      filterDisplayableRequests(requests),
+      currentUser?.departmentId
+    );
+
+    // Store in appropriate map
+    filtered.forEach(req => cardConfig.storeInMap(req));
+
+    // Create cards
+    const cards = filtered.map(req => cardConfig.mapToCard(req));
+
+    // Remove old cards and add new ones
+    this.removeCardsByType(cardConfig.getCardPredicate);
+    this.allCards.push(...cards);
+
+    this.filterCardsByPermissionsAndRoles();
   }
 
   private loadOrderRequests(): void {
@@ -136,32 +226,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders: OrderDto[]) => {
-          let newOrders = orders.filter(order => order.status === 1);
-          const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
-            newOrders = newOrders.filter(order => order.departmentId === currentUser.departmentId);
-          }
-
-          this.orderRequestsMap = new Map(newOrders.map(order => [order.id, order]));
-
-          const orderCards = newOrders.map(order => ({
-            title: order.requestNo || order.orderNo || `#${order.id}`,
-            status: 'new' as const,
-            orders: [{
-              orderId: order.requestNo || order.orderNo || `#${order.id}`,
-              requestDate: this.formatOrderDate(order),
-              departmentName: this.resolveOrderDepartmentName(order),
-              requesterName: order.requesterName || 'N/A',
-              items: this.mapOrderItems(order.requestItems)
-            }],
+          this.processRequestCards(orders, {
             permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-            orderRequestId: order.id
-          }));
-
-          this.allCards = this.allCards.filter(card => !card.orderRequestId);
-          this.allCards.push(...orderCards);
-
-          this.filterCardsByPermissionsAndRoles();
+            getCardId: (order) => order.id,
+            getCardPredicate: (card) => !!card.orderRequestId,
+            mapToCard: (order) => ({
+              title: getRequestTitle(order, order.orderNo),
+              status: mapRequestStatusToCardStatus(order.status),
+              orders: [{
+                orderId: getRequestTitle(order, order.orderNo),
+                requestDate: this.formatOrderDate(order),
+                departmentName: this.resolveOrderDepartmentName(order),
+                requesterName: order.requesterName || 'N/A',
+                items: mapRequestItems(order.requestItems)
+              }],
+              permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+              orderRequestId: order.id
+            }),
+            storeInMap: (order) => this.orderRequestsMap.set(order.id, order)
+          });
         },
         error: () => {
           // Silently fail - don't show error to user
@@ -178,40 +261,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returns: ReturnDto[]) => {
-          let newReturns = returns.filter(r => r.status === 1);
-          const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
-            newReturns = newReturns.filter(r => r.departmentId === currentUser.departmentId);
-          }
-
-          this.returnRequestsMap = new Map(newReturns.map(r => [r.id, r]));
-
-          const returnCards = newReturns.map(r => {
-            const items: ReturnItem[] = (r.requestItems || []).map(item => ({
-              itemName: item.itemName || 'Unknown',
-              itemNo: item.itemNo || '',
-              quantity: item.quantity,
-              notes: item.notes || undefined
-            }));
-
-            return {
-              title: r.requestNo || `#${r.id}`,
-              status: 'new' as const,
+          this.processRequestCards(returns, {
+            permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+            getCardId: (ret) => ret.id,
+            getCardPredicate: (card) => !!card.returnRequestId,
+            mapToCard: (ret) => ({
+              title: getRequestTitle(ret),
+              status: mapRequestStatusToCardStatus(ret.status),
               orders: [{
-                orderId: r.requestNo || `#${r.id}`,
-                requestDate: this.formatRequestDate(r),
-                departmentName: r.departmentName || 'N/A',
-                requesterName: r.requesterName || 'N/A',
-                items: items
+                orderId: getRequestTitle(ret),
+                requestDate: this.formatRequestDate(ret),
+                departmentName: ret.departmentName || 'N/A',
+                requesterName: ret.requesterName || 'N/A',
+                items: mapRequestItems(ret.requestItems)
               }],
               permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
-              returnRequestId: r.id
-            };
+              returnRequestId: ret.id
+            }),
+            storeInMap: (ret) => this.returnRequestsMap.set(ret.id, ret)
           });
-
-          this.allCards = this.allCards.filter(c => !c.returnRequestId);
-          this.allCards.push(...returnCards);
-          this.filterCardsByPermissionsAndRoles();
         },
         error: () => {}
       });
@@ -226,40 +294,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discards: DiscardDto[]) => {
-          let newDiscards = discards.filter(d => d.status === 1);
-          const currentUser = this.authService.getCurrentUser();
-          if (currentUser?.departmentId) {
-            newDiscards = newDiscards.filter(d => d.departmentId === currentUser.departmentId);
-          }
-
-          this.discardRequestsMap = new Map(newDiscards.map(d => [d.id, d]));
-
-          const discardCards = newDiscards.map(d => {
-            const items: ReturnItem[] = (d.requestItems || []).map(item => ({
-              itemName: item.itemName || 'Unknown',
-              itemNo: item.itemNo || '',
-              quantity: item.quantity,
-              notes: item.notes || undefined
-            }));
-
-            return {
-              title: d.requestNo || `#${d.id}`,
-              status: 'new' as const,
+          this.processRequestCards(discards, {
+            permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+            getCardId: (discard) => discard.id,
+            getCardPredicate: (card) => !!card.discardRequestId,
+            mapToCard: (discard) => ({
+              title: getRequestTitle(discard),
+              status: mapRequestStatusToCardStatus(discard.status),
               orders: [{
-                orderId: d.requestNo || `#${d.id}`,
-                requestDate: this.formatRequestDate(d),
-                departmentName: d.departmentName || 'N/A',
-                requesterName: d.requesterName || 'N/A',
-                items: items
+                orderId: getRequestTitle(discard),
+                requestDate: this.formatRequestDate(discard),
+                departmentName: discard.departmentName || 'N/A',
+                requesterName: discard.requesterName || 'N/A',
+                items: mapRequestItems(discard.requestItems)
               }],
               permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
-              discardRequestId: d.id
-            };
+              discardRequestId: discard.id
+            }),
+            storeInMap: (discard) => this.discardRequestsMap.set(discard.id, discard)
           });
-
-          this.allCards = this.allCards.filter(c => !c.discardRequestId);
-          this.allCards.push(...discardCards);
-          this.filterCardsByPermissionsAndRoles();
         },
         error: () => {}
       });
@@ -381,18 +434,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return order.depotNameEn || order.depotNameAr || 'N/A';
   }
 
-  private mapOrderItems(items?: OrderRequestItemDto[] | null): ReturnItem[] {
-    if (!items || items.length === 0) {
-      return [];
-    }
-
-    return items.map(item => ({
-      itemName: item.itemName || item.itemNo || 'N/A',
-      itemNo: item.itemNo || 'N/A',
-      quantity: Number(item.quantity ?? 0),
-      notes: item.notes || undefined
-    }));
-  }
 
   getOrderPriorityKey(priority?: number | null): string {
     switch (priority) {
@@ -406,18 +447,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getOrderStatusKey(status?: number | null): string {
-    switch (status) {
-      case 2:
-        return 'dashboard.statusLabels.underProcess';
-      case 3:
-        return 'dashboard.statusLabels.approved';
-      case 4:
-        return 'dashboard.statusLabels.rejected';
-      case 5:
-        return 'dashboard.statusLabels.cancelled';
-      default:
-        return 'dashboard.statusLabels.new';
-    }
+    return getRequestStatusTranslationKey(status);
   }
 
   getOrderAllowanceKey(isFromAllowance?: boolean | null): string {

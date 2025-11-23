@@ -5,4 +5,26 @@ export * from './form-utils';
 export * from './format.utils';
 export * from './status.utils';
 export * from './priority.utils';
+// Export dashboard utils but exclude mapRequestItems to avoid conflict
+export {
+  DisplayableRequest,
+  CardStatus,
+  DisplayableStatus,
+  filterRequestsByDepartment,
+  filterDisplayableRequests,
+  getRequestTitle,
+  mapRequestStatusToCardStatus,
+  getRequestStatusTranslationKey
+} from './dashboard.utils';
+export { mapRequestItems as mapDashboardRequestItems } from './dashboard.utils';
+export * from './request-mapper.utils';
+// Export status-class utils explicitly to avoid conflicts with priority.utils
+export {
+  getRequestStatusBadgeClass,
+  getPriorityBadgeClass,
+  getApprovalStatusBadgeClass,
+  // Legacy exports for backward compatibility
+  getRequestStatusClass,
+  getApprovalStatusClass
+} from './status-class.utils';
 

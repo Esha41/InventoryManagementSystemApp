@@ -17,21 +17,6 @@ export enum SubmissionStatus {
   Rejected = 3
 }
 
-/**
- * Get CSS classes for approval status badge
- */
-export function getApprovalStatusClass(status: string): string {
-  switch (status) {
-    case 'Approved':
-      return 'text-green-600 bg-green-50 border-green-200';
-    case 'Rejected':
-      return 'text-red-600 bg-red-50 border-red-200';
-    case 'Pending':
-      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    default:
-      return 'text-gray-600 bg-gray-50 border-gray-200';
-  }
-}
 
 /**
  * Get text representation of submission status
@@ -66,6 +51,65 @@ export function getSubmissionStatusClass(status: number): string {
       return 'bg-red-100 text-red-800 border border-red-300';
     default:
       return 'bg-gray-100 text-gray-800';
+  }
+}
+
+/**
+ * Request Status Utilities
+ * For handling request statuses (Orders, Returns, Discards)
+ */
+
+// Request Status values (matching REQUEST_STATUS constants)
+const REQUEST_STATUS_NEW = 1;
+const REQUEST_STATUS_UNDER_PROCESS = 2;
+const REQUEST_STATUS_APPROVED = 3;
+const REQUEST_STATUS_REJECTED = 4;
+const REQUEST_STATUS_CANCELLED = 5;
+
+export type CardStatus = 'new' | 'on-progress' | 'completed';
+export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED;
+
+/**
+ * Check if a request status should be displayed on the dashboard
+ * Only shows New, UnderProcess, and Approved statuses
+ */
+export function isDisplayableRequestStatus(status: number): status is DisplayableStatus {
+  return status === REQUEST_STATUS_NEW || 
+         status === REQUEST_STATUS_UNDER_PROCESS || 
+         status === REQUEST_STATUS_APPROVED;
+}
+
+/**
+ * Map request status to dashboard card status
+ */
+export function mapRequestStatusToCardStatus(status: number): CardStatus {
+  switch (status) {
+    case REQUEST_STATUS_UNDER_PROCESS:
+      return 'on-progress';
+    case REQUEST_STATUS_APPROVED:
+      return 'completed';
+    case REQUEST_STATUS_NEW:
+    default:
+      return 'new';
+  }
+}
+
+/**
+ * Get translation key for request status
+ */
+export function getRequestStatusTranslationKey(status?: number | null): string {
+  switch (status) {
+    case REQUEST_STATUS_UNDER_PROCESS:
+      return 'dashboard.statusLabels.underProcess';
+    case REQUEST_STATUS_APPROVED:
+      return 'dashboard.statusLabels.approved';
+    case REQUEST_STATUS_REJECTED:
+      return 'dashboard.statusLabels.rejected';
+    case REQUEST_STATUS_CANCELLED:
+      return 'dashboard.statusLabels.cancelled';
+    case REQUEST_STATUS_NEW:
+    default:
+      return 'dashboard.statusLabels.new';
   }
 }
 

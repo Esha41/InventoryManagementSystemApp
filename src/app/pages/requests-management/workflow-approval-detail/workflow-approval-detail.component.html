@@ -232,7 +232,6 @@
                   <th class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Item Name</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Item Code</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Quantity</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Unit</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--color-border)]">
@@ -240,7 +239,6 @@
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">{{ item.quantity }}</td>
-                  <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.unit || '-' }}</td>
                 </tr>
               </tbody>
             </table>
