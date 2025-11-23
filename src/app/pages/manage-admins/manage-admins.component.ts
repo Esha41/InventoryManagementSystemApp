@@ -15,8 +15,7 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 
 @Component({
   selector: 'app-manage-admins',

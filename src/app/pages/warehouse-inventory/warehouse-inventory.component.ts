@@ -16,8 +16,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 
 @Component({
   selector: 'app-warehouse-inventory',

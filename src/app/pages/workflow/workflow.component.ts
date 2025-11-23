@@ -11,8 +11,7 @@ import { RoleDto } from '@models/backend-user.model';
 import { WorkflowDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 

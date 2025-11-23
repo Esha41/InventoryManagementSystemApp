@@ -18,8 +18,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 
 export interface AllowanceItemDto {
   id: number;

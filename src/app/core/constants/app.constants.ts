@@ -162,6 +162,13 @@ export const ROUTES = {
   ASSET_LIST: '/asset-list',
   MANAGE_ADMINS: '/manage-admins',
   ADMIN_ROLES: '/admin-roles',
+} as const;
 
+/**
+ * Supply Order Component Constants
+ */
+export const SUPPLY_ORDER_CONSTANTS = {
+  NAVIGATION_DELAY_MS: 1500,
+  REJECTION_DELAY_MS: 1000,
 } as const;
 

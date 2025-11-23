@@ -186,6 +186,11 @@ export class OrderService {
         // Extract error message if available
         const errorMessage = error?.error?.message || error?.message || 'Failed to verify allowance';
         return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
    * Add a new item to an existing order
    * Backend endpoint: POST {baseUrl}/{orderId}/items
    */
