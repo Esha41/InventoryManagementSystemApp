@@ -95,7 +95,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.orderId = parseInt(idParam, 10);
     if (isNaN(this.orderId)) {
       this.toastService.error('Invalid order ID');
-      this.router.navigate(['/supply-request-management']);
+      this.router.navigate(['/requests-management']);
       return;
     }
     this.initializeAddItemForm();
@@ -258,7 +258,13 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/supply-request-management']);
+    // Navigate back to workflow-approval-detail (main approval page)
+    // The orderId is the same as requestId used in workflow-approval-detail
+    if (this.orderId) {
+      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+    } else {
+      this.router.navigate(['/requests-management']);
+    }
   }
 
   // ==================== LOT SELECTION MODAL ====================

@@ -1,36 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthenticatedUser, ClaimDto } from '@models/auth.model';
+import { UserMeResponse } from '@models/profile.model';
 import { StorageService } from './storage.service';
-
-// Interface for the API response from /Users/me
-export interface UserMeResponse {
-  id: string;
-  userName: string;
-  email: string;
-  isLdapUser?: boolean;
-  ldapUserName?: string;
-  isSuperAdmin?: boolean;
-  extraEmployeesView?: string;
-  deparmentId?: number | null; // Note: API has typo "deparmentId"
-  roles?: Array<{ id: string; name: string }>;
-  fullNameEN?: string;
-  fullNameAR?: string;
-  rankId?: number | null;
-  militoryId?: string | number | null; // Note: API has typo "militoryId"
-  department?: {
-    id: number;
-    code?: string;
-    nameEn?: string;
-    nameAr?: string;
-    isDeleted?: boolean;
-  };
-  rank?: {
-    id: number;
-    nameEn?: string;
-    nameAr?: string;
-    isDeleted?: boolean;
-  };
-}
 
 // Comprehensive profile data interface for localStorage
 export interface ProfileData {

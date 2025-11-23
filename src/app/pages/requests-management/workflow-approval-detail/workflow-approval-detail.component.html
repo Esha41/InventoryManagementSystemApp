@@ -219,10 +219,19 @@
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               Request Items
             </h2>
-            <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" 
-                  class="ml-auto px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
-              {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ? 'item' : 'items' }}
-            </span>
+            <div class="ml-auto flex items-center gap-3">
+              <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" 
+                    class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
+                {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ? 'item' : 'items' }}
+              </span>
+              <button
+                *ngIf="canReviewSupply()"
+                (click)="navigateToSupplyReview()"
+                class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
+                <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                <span>Review</span>
+              </button>
+            </div>
           </div>
           
           <div *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" class="overflow-x-auto">
