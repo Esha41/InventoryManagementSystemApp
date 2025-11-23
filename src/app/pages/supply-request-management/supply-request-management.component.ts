@@ -205,10 +205,9 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   }
 
   onViewDetails(issueNo: string): void {
-    const request = this.requests.find(r => r.issueNo === issueNo);
-    if (request) {
-      this.router.navigate(['/supply-request-management', request.id]);
-    }
+    // Supply request management doesn't have a detail page
+    // Redirect to dashboard instead
+    this.router.navigate(['/dashboard']);
   }
 
   getPriorityColor(priority: string): string {

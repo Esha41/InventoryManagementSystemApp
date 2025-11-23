@@ -18,6 +18,10 @@ export {
 } from './dashboard.utils';
 export { mapRequestItems as mapDashboardRequestItems } from './dashboard.utils';
 export * from './request-mapper.utils';
+export * from './profile.mapper';
+export * from './profile.utils';
+export * from './allowance.mapper';
+export * from './allowance.utils';
 // Export status-class utils explicitly to avoid conflicts with priority.utils
 export {
   getRequestStatusBadgeClass,

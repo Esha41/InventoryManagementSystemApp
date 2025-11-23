@@ -50,8 +50,10 @@ export const routes: Routes = [
         data: { permissions: ['request.page', 'request.view', 'order.view'] }
       },
       {
+        // Supply request detail (item management) - accessed through "Review" button in workflow-approval-detail
+        // Note: This route is only for accessing from workflow-approval-detail, not from supply-request-management list
         path: 'supply-request-management/:id',
-        loadComponent: () => import('@pages/supply-request-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
+        loadComponent: () => import('@pages/requests-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['request.view', 'order.view'] }
       },
