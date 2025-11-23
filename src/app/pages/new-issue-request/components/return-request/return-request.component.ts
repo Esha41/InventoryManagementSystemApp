@@ -53,7 +53,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
-  
+
   reason: string = '';
   priority: number = 1;
   notes: string = '';
@@ -425,7 +425,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       priority: Number(this.priority),
       notes: this.notes || undefined,
       departmentId: Number(this.departmentId!),
-      requesterId: undefined, 
+      requesterId: undefined,
       requestPurposeId: Number(this.requestPurposeId!),
       returnItems: this.returnItems
         .filter(item => item.itemId && item.quantity)
@@ -444,7 +444,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.toastService.success('Return request created successfully');
           this.resetForm();
           this.isLoading = false;
-          
+
           setTimeout(() => {
             this.router.navigate(['/dashboard']);
           }, 1000);
@@ -455,22 +455,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             const errors = error.error.errors;
             const errorMessages: string[] = [];
 
-            if (errors.dto) {
-              errorMessages.push(...errors.dto);
-            }
-            if (errors['$.priority']) {
-              errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
-            }
-            if (errors['$.departmentId']) {
-              errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
-            }
-            if (errors['$.requestPurposeId']) {
-              errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
-            }
-            if (errors['$.returnItems']) {
-              errorMessages.push(`Return Items: ${errors['$.returnItems'].join(', ')}`);
-            }
-            
+            if (errors.dto) errorMessages.push(...errors.dto);
+            if (errors['$.priority']) errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
+            if (errors['$.departmentId']) errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
+            if (errors['$.requestPurposeId']) errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
+            if (errors['$.returnItems']) errorMessages.push(`Return Items: ${errors['$.returnItems'].join(', ')}`);
+
             if (errorMessages.length > 0) {
               errorMessage = errorMessages.join('; ');
             } else if (error.error?.title) {
@@ -479,7 +469,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           } else if (error.message) {
             errorMessage = error.message;
           }
-          
+
           this.toastService.error(errorMessage);
           this.isLoading = false;
         }
@@ -495,9 +485,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   clearError(fieldName: string): void {
-    if (this.errors[fieldName]) {
-      delete this.errors[fieldName];
-    }
+    if (this.errors[fieldName]) delete this.errors[fieldName];
   }
 
   clearItemError(index: number, field: string): void {
@@ -511,16 +499,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   onDepartmentChange(): void {
     this.clearError('departmentId');
-    if (this.isSubmitted && this.departmentId) {
-      this.clearError('departmentId');
-    }
+    if (this.isSubmitted && this.departmentId) this.clearError('departmentId');
   }
 
   onRequestPurposeChange(): void {
     this.clearError('requestPurposeId');
-    if (this.isSubmitted && this.requestPurposeId) {
-      this.clearError('requestPurposeId');
-    }
+    if (this.isSubmitted && this.requestPurposeId) this.clearError('requestPurposeId');
   }
 
   onQuantityChange(index: number): void {
@@ -531,9 +515,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     this.applyUserContext({
       nameEn: user.nameEn,
@@ -603,15 +585,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     nameAr?: string | null,
     userName?: string | null
   ): string | null {
-    if (nameEn && nameEn.trim().length > 0) {
-      return nameEn;
-    }
-    if (nameAr && nameAr.trim().length > 0) {
-      return nameAr;
-    }
-    if (userName && userName.trim().length > 0) {
-      return userName;
-    }
+    if (nameEn && nameEn.trim().length > 0) return nameEn;
+    if (nameAr && nameAr.trim().length > 0) return nameAr;
+    if (userName && userName.trim().length > 0) return userName;
     return null;
   }
 
@@ -637,23 +613,17 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   private toNumber(value: any): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
+    if (value === null || value === undefined || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
 
   private applyLockedDepartment(): void {
-    if (this.isDepartmentLocked && this.preferredDepartmentId != null) {
-      this.departmentId = this.preferredDepartmentId;
-    }
+    if (this.isDepartmentLocked && this.preferredDepartmentId != null) this.departmentId = this.preferredDepartmentId;
   }
 
   private applyLockedRequester(): void {
-    if (this.isRequesterLocked && this.preferredRequesterId != null) {
-      this.requesterId = this.preferredRequesterId;
-    }
+    if (this.isRequesterLocked && this.preferredRequesterId != null) this.requesterId = this.preferredRequesterId;
   }
 
   private updateLockedDepartmentName(): void {
@@ -663,9 +633,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   private buildLockedDepartmentName(): string {
     if (this.preferredDepartmentId != null) {
       const match = this.departments.find(d => this.toNumber(d.id) === this.preferredDepartmentId);
-      if (match) {
-        return match.nameEn || match.nameAr || `Department ${match.id}`;
-      }
+      if (match) return match.nameEn || match.nameAr || `Department ${match.id}`;
     }
     return this.currentUserDetails?.departmentName || this.fallbackDepartmentName || '';
   }

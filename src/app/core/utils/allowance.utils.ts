@@ -1,31 +1,26 @@
-/**
- * Allowance Utility Functions
- */
-
 import { AllowanceTableRow } from '@models/allowance.model';
 import { LookupItem } from '@models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
 
-export function getLocalizedName(item: LookupItem | null, translateService: TranslateService): string {
+export const getLocalizedName = (item: LookupItem | null, translateService: TranslateService): string => {
   if (!item) return '';
   const currentLang = translateService.currentLang || 'en';
-  if (currentLang === 'ar' && item.nameAr) {
-    return item.nameAr;
-  }
+  if (currentLang === 'ar' && item.nameAr) return item.nameAr;
+
   return item.nameEn || item.nameAr || '';
 }
 
-export function filterAllowances(
+export const filterAllowances = (
   allowances: AllowanceTableRow[],
   selectedDepartment: number | string | null | undefined,
   selectedItem: number | string | null | undefined
-): AllowanceTableRow[] {
+): AllowanceTableRow[] => {
   let filtered = [...allowances];
 
   if (selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== '') {
     filtered = filtered.filter(allowance => {
       const allowanceDeptId = allowance.departmentId;
-      return allowanceDeptId !== undefined && allowanceDeptId !== null && 
+      return allowanceDeptId !== undefined && allowanceDeptId !== null &&
              (allowanceDeptId === Number(selectedDepartment) || String(allowanceDeptId) === String(selectedDepartment));
     });
   }
@@ -33,7 +28,7 @@ export function filterAllowances(
   if (selectedItem !== null && selectedItem !== undefined && selectedItem !== '') {
     filtered = filtered.filter(allowance => {
       const allowanceItemId = allowance.itemId;
-      return allowanceItemId !== undefined && allowanceItemId !== null && 
+      return allowanceItemId !== undefined && allowanceItemId !== null &&
              (allowanceItemId === Number(selectedItem) || String(allowanceItemId) === String(selectedItem));
     });
   }
