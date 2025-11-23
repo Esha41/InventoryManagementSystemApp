@@ -173,6 +173,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private mapOrderToReport(order: OrderDto): void {
+    // Debug: Log priority value
+    console.log('Order priority value:', order.priority, 'Type:', typeof order.priority);
+    
     // Map order summary
     this.orderSummary = {
       orderId: order.orderNo || `#${order.id}`,
@@ -187,6 +190,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       workflowVersion: `WF-${order.requestType}-${order.id}`,
       lastUpdated: this.formatDateTime(order.usageDate, order.usageTime)
     };
+    
+    // Debug: Log mapped priority
+    console.log('Mapped priority:', this.orderSummary.priority);
 
     // Map order items
     this.orderItems = (order.requestItems || []).map(item => ({
@@ -227,13 +233,26 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return 'Pending';
   }
 
-  private mapPriorityToString(priority: number): string {
-    switch (priority) {
-      case 1: return 'Low';
+  private mapPriorityToString(priority: number | undefined | null): string {
+    // Handle null, undefined, or invalid values
+    if (priority === null || priority === undefined || isNaN(Number(priority))) {
+      console.warn('Invalid priority value:', priority);
+      return 'Medium';
+    }
+    
+    // Convert to number in case it's a string
+    const priorityNum = Number(priority);
+    
+    // Map priority values to match the order creation mapping:
+    // 1 = High, 2 = Medium, 3 = Low (from mapPriorityToEnum in new-issue-request.component.ts)
+    switch (priorityNum) {
+      case 1: return 'High';
       case 2: return 'Medium';
-      case 3: return 'High';
+      case 3: return 'Low';
       case 4: return 'Critical';
-      default: return 'Medium';
+      default: 
+        console.warn('Unknown priority value:', priorityNum);
+        return 'Medium';
     }
   }
 
@@ -289,27 +308,22 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           console.log('Processing data array for orderId:', orderId, 'Array:', dataArray);
           console.log('Available request IDs:', dataArray.map((i: any) => ({ id: i.id, requestNo: i.requestNo })));
           
-          // Find the request that matches the order ID - prioritize exact ID match
-          const matchedRequest = dataArray.find((item: any) => {
+          // Filter approval records that match the order ID
+          const approvalRecords = dataArray.filter((item: any) => {
             // Exact ID match (most reliable)
             if (item.id === orderId) {
-              console.log('Exact ID match:', { itemId: item.id, orderId });
               return true;
             }
             
             // Check other ID fields
             if (item.orderId === orderId || item.requestId === orderId) {
-              console.log('Other ID field match:', { itemId: item.id, orderId, orderIdField: item.orderId || item.requestId });
               return true;
             }
             
-            // Check requestNo - but be more specific (look for order ID in the request number pattern)
-            // Request numbers like "ORD-2025-000001-OPS" should match order ID 1, not order ID 2
+            // Check requestNo - extract order number from request number pattern
             if (item.requestNo) {
-              // Try to extract the order number from requestNo (e.g., "000001" from "ORD-2025-000001-OPS")
               const orderNumMatch = item.requestNo.match(/0*(\d+)/);
               if (orderNumMatch && parseInt(orderNumMatch[1]) === orderId) {
-                console.log('RequestNo match:', { itemId: item.id, requestNo: item.requestNo, orderId, extractedNum: orderNumMatch[1] });
                 return true;
               }
             }
@@ -317,50 +331,57 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             return false;
           });
           
-          if (!matchedRequest) {
-            console.log('No matching request found for order ID:', orderId, 'Available IDs:', dataArray.map((i: any) => i.id));
+          if (approvalRecords.length === 0) {
+            console.log('No matching approval records found for order ID:', orderId);
             return [];
           }
           
-          console.log('Matched request for orderId', orderId, ':', matchedRequest);
+          console.log('Found approval records for orderId', orderId, ':', approvalRecords);
           
-          // Extract approvalHistory array and status from the matched request
-          const approvalHistory = matchedRequest.approvalHistory || [];
-          const requestStatus = matchedRequest.status;
-          
-          // Store the status for display in the UI
-          this.approvalWorkflowStatus = this.mapStatusFromApi(requestStatus);
-          
-          if (!Array.isArray(approvalHistory)) {
-            console.log('approvalHistory is not an array for order ID:', orderId, approvalHistory);
-            return [];
-          }
-          
-          // If approvalHistory is empty but status is "Approved", generate workflow steps from request data
-          if (approvalHistory.length === 0) {
-            console.log('Empty approval history for order ID:', orderId, '- Status:', requestStatus);
-            console.log('Full matched request data:', JSON.stringify(matchedRequest, null, 2));
+          // Map approval records to ApprovalStep format using the specified field mappings
+          const steps = approvalRecords.map((item: any, index: number) => {
+            const step = item.higherApprovalRoleId || `Step ${index + 1}`;
+            const role = item.applicationRoleName || 'N/A';
+            const approver = item.changedBy || 'N/A';
             
-            // If status is "Approved" (or 1), generate approval workflow steps
-            if (requestStatus === 'Approved' || requestStatus === 1 || requestStatus === 'approved') {
-              console.log('Status is Approved, generating approval workflow steps');
-              return this.generateApprovalWorkflowFromRequest(matchedRequest);
+            // Format date - handle both date-only and datetime strings
+            let date = 'Pending';
+            if (item.changedAt) {
+              try {
+                const dateObj = new Date(item.changedAt);
+                if (!isNaN(dateObj.getTime())) {
+                  // Extract time if it's a datetime string
+                  const timeStr = item.changedAt.includes('T') 
+                    ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                    : '';
+                  date = this.formatDateTime(item.changedAt, timeStr);
+                }
+              } catch {
+                date = item.changedAt;
+              }
             }
             
-            // Return empty array - will show empty state message in UI
-            return [];
+            const status = this.mapApprovalStatus(item.oldRequestStatus);
+            
+            return {
+              step,
+              role,
+              approver,
+              status,
+              date,
+              notes: item.comments || item.notes || item.comment || item.reason || ''
+            };
+          });
+          
+          // Set workflow status from the last record's status if available
+          if (steps.length > 0) {
+            const lastStatus = approvalRecords[approvalRecords.length - 1]?.oldRequestStatus;
+            if (lastStatus) {
+              this.approvalWorkflowStatus = this.mapStatusFromApi(lastStatus);
+            }
           }
           
-          // Map approvalHistory items to ApprovalStep format
-          console.log('Mapping approval history items:', approvalHistory);
-          return approvalHistory.map((item: any, index: number) => ({
-            step: item.stepName || item.step || item.stepOrder || `Step ${index + 1}`,
-            role: item.roleName || item.role || item.applicationRoleName || item.roleId || 'N/A',
-            approver: item.approverName || item.approver || item.userName || item.approverId || 'N/A',
-            status: this.mapApprovalStatus(item.status || item.approvalStatus || item.approvalState),
-            date: item.approvedDate || item.date || item.createdDate || item.actionDate || 'Pending',
-            notes: item.comments || item.notes || item.comment || item.reason || ''
-          }));
+          return steps;
         }),
         catchError(error => {
           console.error('Failed to load approval workflow', error);
@@ -373,11 +394,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           console.log('Loaded approval workflow steps:', steps);
           // Always use API data (even if empty) - only fallback on error
           this.approvalWorkflow = steps;
-          // If no status was set and we have steps, try to get status from first step or fallback
+          // If no status was set and we have steps, try to get status from last step
           if (!this.approvalWorkflowStatus && steps.length > 0) {
-            const firstStepStatus = steps[0]?.status;
-            if (firstStepStatus === 'approved') {
+            const lastStepStatus = steps[steps.length - 1]?.status;
+            if (lastStepStatus === 'approved') {
               this.approvalWorkflowStatus = 'Approved';
+            } else if (lastStepStatus === 'rejected') {
+              this.approvalWorkflowStatus = 'Rejected';
             }
           }
         },
@@ -560,7 +583,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         JSON.stringify({
           orderId: this.orderSummary.orderId,
           workflow: this.orderSummary.workflowVersion,
-          issuedOn: this.orderSummary.lastUpdated
+          issuedOn: this.orderSummary.lastUpdated,
+          totalItems: this.orderSummary.totalItems
         }),
         { width: 280, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
       );
