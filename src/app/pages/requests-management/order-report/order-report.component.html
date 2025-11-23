@@ -111,7 +111,7 @@
     <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
       <div class="flex flex-col gap-3 lg:flex-row">
         <div class="flex-1">
-          <p class="text-xs font-semibold text-[var(--color-accent)]">
+          <p class="text-sm font-semibold text-[var(--color-accent)]">
             {{ 'requestsManagement.orderReport.section.qrCode' | translate }}
           </p>
           <h2 class="text-lg font-semibold text-[var(--color-text)]">
@@ -174,18 +174,15 @@
     <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
       <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
         <div>
-          <p class="text-xs font-semibold text-[var(--color-accent)]">
+          <p class="text-sm font-semibold text-[var(--color-accent)]">
             {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
           </p>
           <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.usagePurpose }}</h2>
           <p class="text-xs text-[var(--color-text-muted)]">{{ orderSummary.submittedOn }}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
-            {{ orderSummary.status }}
-          </span>
           <span class="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text)]">
-            {{ orderSummary.priority }} Priority
+            Priority {{ orderSummary.priority }}
           </span>
         </div>
       </div>
@@ -259,11 +256,11 @@
     <!-- Approval Workflow -->
     <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
       <div class="mb-3">
-        <p class="text-xs font-semibold text-[var(--color-accent)]">
+        <p class="text-sm font-semibold text-[var(--color-accent)]">
           {{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate }}
         </p>
         <h2 class="text-lg font-semibold text-[var(--color-text)]">
-          {{ 'requestsManagement.orderReport.labels.currentStatus' | translate }}: {{ approvalWorkflowStatus || orderSummary.status }}
+          {{ 'requestsManagement.orderReport.labels.workflowOwner' | translate }}
         </h2>
       </div>
 
@@ -313,46 +310,6 @@
       </div>
     </section>
 
-    <!-- Workflow Details -->
-    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
-      <div class="mb-3">
-        <p class="text-xs font-semibold text-[var(--color-accent)]">
-          {{ 'requestsManagement.orderReport.section.workflowDetails' | translate }}
-        </p>
-        <h2 class="text-lg font-semibold text-[var(--color-text)]">
-          {{ 'requestsManagement.orderReport.labels.workflowOwner' | translate }}
-        </h2>
-      </div>
-
-      <div class="overflow-hidden rounded-2xl border border-[var(--color-border)]">
-        <div *ngIf="workflowDetails.length > 0" class="hidden bg-[var(--color-background-muted)] px-3 py-2 text-xs font-semibold uppercase text-[var(--color-text-muted)] md:grid md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
-          <span>{{ 'requestsManagement.orderReport.table.phase' | translate }}</span>
-          <span>{{ 'requestsManagement.orderReport.table.owner' | translate }}</span>
-          <span>{{ 'requestsManagement.orderReport.table.description' | translate }}</span>
-          <span>{{ 'requestsManagement.orderReport.table.sla' | translate }}</span>
-          <span>{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
-        </div>
-        <div *ngFor="let detail of workflowDetails" class="border-t border-[var(--color-border)] first:border-t-0">
-          <div class="grid gap-2 px-3 py-2 text-xs text-[var(--color-text)] md:grid-cols-[1.2fr_1fr_1.8fr_0.8fr_0.8fr]">
-            <div>
-              <p class="font-semibold">{{ detail.phase }}</p>
-              <p class="text-xs text-[var(--color-text-muted)] md:hidden">
-                {{ 'requestsManagement.orderReport.table.owner' | translate }} · {{ detail.owner }}
-              </p>
-            </div>
-            <p class="hidden text-[var(--color-text-muted)] md:block">{{ detail.owner }}</p>
-            <p class="text-[var(--color-text-muted)]">{{ detail.description }}</p>
-            <p class="font-semibold text-[var(--color-text)]">{{ detail.sla }}</p>
-            <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-center text-xs font-semibold uppercase text-[var(--color-text-muted)]">
-              {{ detail.status }}
-            </span>
-          </div>
-        </div>
-        <div *ngIf="workflowDetails.length === 0" class="px-3 py-4 text-center text-xs text-[var(--color-text-muted)]">
-          No workflow details available.
-        </div>
-      </div>
-    </section>
     </div>
       </div>
 

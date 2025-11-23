@@ -380,7 +380,7 @@
         "scanHeading": "Scan to track this order",
         "scanDescription": "Authorized personnel can scan the QR code to view live issuance status and custody trail.",
         "qrGenerating": "Generating QR code...",
-        "qrFootnote": "QR code encodes order metadata, workflow version, and issuance timestamp."
+        "qrFootnote": "QR code encodes order metadata, workflow version, totalItems, and issuance timestamp."
       },
       "table": {
         "phase": "Phase",
