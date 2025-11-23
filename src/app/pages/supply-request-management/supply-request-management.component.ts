@@ -7,17 +7,8 @@ import { LucideAngularModule, Search, Calendar, ChevronDown, ChevronLeft, Chevro
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderService, OrderDto } from '@services/order.service';
+import { SupplyRequest } from '@models/supply-request.model';
 import { Subject, takeUntil } from 'rxjs';
-
-export interface SupplyRequest {
-  id: number;
-  issueNo: string;
-  requestType: 'Order' | 'Return';
-  quantity: number;
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  requestDate: string;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Delivered' | 'Returned' | 'Cancelled';
-}
 
 @Component({
   selector: 'app-supply-request-management',

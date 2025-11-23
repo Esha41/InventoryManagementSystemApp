@@ -15,3 +15,4 @@ export * from './workflow.model';
 export * from './inventory.model';
 export * from './notification.model';
 export * from './supply-order.model';
+export * from './supply-request.model';

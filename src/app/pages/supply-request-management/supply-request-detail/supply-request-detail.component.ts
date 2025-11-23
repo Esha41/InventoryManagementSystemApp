@@ -9,61 +9,14 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OrderService, OrderDto, OrderRequestItemDto, CreateUpdateRequestItemDto } from '@services/order.service';
+import { APIOperationResponse } from '@models/api-response.model';
 import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto } from '@services/supply.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { AmmunitionService } from '@services/ammunition.service';
+import { SupplyRequestDetail, OrderItem, LotItem, ApprovalStep } from '@models/supply-request.model';
 import { Subject, takeUntil } from 'rxjs';
-
-export interface ApprovalStep {
-  id: string;
-  approverName: string;
-  approverId: string;
-  militaryRank: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  approvedDate?: string;
-  comments?: string;
-}
-
-export interface LotItem {
-  inventoryDetailId: number;
-  lotNumber: number;
-  quantity: number;
-  expiryDate?: Date;
-  location: string;
-  condition: 'Good' | 'Fair' | 'Near Expiry';
-  daysUntilExpiry: number;
-  selectedQuantity: number;
-  depotName?: string;
-  supplierName?: string;
-  manufacturerName?: string;
-}
-
-export interface OrderItem {
-  requestItemId: number;
-  itemId: number;
-  itemName: string;
-  itemType: string;
-  requestedQuantity: number;
-  approvedQuantity: number;
-  availableLots: LotItem[];
-  totalSelectedForDischarge: number;
-  canFulfillCompletely: boolean;
-}
-
-export interface SupplyRequestDetail {
-  issueNo: string;
-  requestType: 'Order' | 'Return';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  requestDate: string;
-  requesterName: string;
-  requesterId: string;
-  requesterRank: string;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Delivered' | 'Returned' | 'Cancelled';
-  approvalWorkflow: ApprovalStep[];
-  items: OrderItem[];
-}
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -1000,7 +953,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.orderService.addOrderItem(this.orderId, itemDto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: APIOperationResponse<number>) => {
           if (response.succeeded) {
             this.toastService.success('supplyRequestDetail.itemAddedSuccessfully');
             this.closeAddItemModal();
@@ -1010,7 +963,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           }
           this.savingItem = false;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Failed to add item:', error);
           this.toastService.error('supplyRequestDetail.failedToAddItem');
           this.savingItem = false;
@@ -1034,7 +987,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.orderService.updateOrderItemQuantity(this.orderId, this.selectedItemForEdit.requestItemId, newQuantity)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
             this.toastService.success('supplyRequestDetail.itemQuantityUpdatedSuccessfully');
             this.closeEditItemModal();
@@ -1044,7 +997,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           }
           this.savingItem = false;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Failed to update item quantity:', error);
           this.toastService.error('supplyRequestDetail.failedToUpdateItemQuantity');
           this.savingItem = false;
@@ -1061,7 +1014,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.orderService.deleteOrderItem(this.orderId, this.selectedItemForRemove.requestItemId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
             this.toastService.success('supplyRequestDetail.itemRemovedSuccessfully');
             this.closeRemoveItemModal();
@@ -1070,7 +1023,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             this.toastService.error(response.message || 'supplyRequestDetail.failedToRemoveItem');
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Failed to remove item:', error);
           this.toastService.error('supplyRequestDetail.failedToRemoveItem');
         }

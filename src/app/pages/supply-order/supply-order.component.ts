@@ -19,6 +19,9 @@ import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '
 import { getApprovalStatusClass, SubmissionStatus, getSubmissionStatusText, getSubmissionStatusClass } from '@utils/status.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
+import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
+import { SUPPLY_ORDER_CONSTANTS } from '@constants/app.constants';
 
 @Component({
   selector: 'app-supply-order',
@@ -36,11 +39,6 @@ import { ErrorHandler } from '@utils/error-handler.utils';
   styleUrls: ['./supply-order.component.css']
 })
 export class SupplyOrderComponent implements OnInit, OnDestroy {
-  // ==================== CONSTANTS ====================
-  private static readonly DAYS_NEAR_EXPIRY_THRESHOLD = 60;
-  private static readonly DAYS_FAIR_CONDITION_THRESHOLD = 180;
-  private static readonly DAYS_UNTIL_EXPIRY_UNDEFINED = 999999;
-
   // ==================== LIFECYCLE & ICONS ====================
   private destroy$ = new Subject<void>();
   
@@ -55,46 +53,44 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   readonly AlertTriangle = AlertTriangle;
 
   // ==================== STATE ====================
+  // Core data
   orderId: number = 0;
   supplyId: number = 0;
   orderData: OrderDto | null = null;
   supplyData: SupplyDto | null = null;
   
+  // Loading states
   loading: boolean = true;
   submitting: boolean = false;
   rejecting: boolean = false;
   updatingItem: boolean = false;
   deletingItem: boolean = false;
+  loadingRanks: boolean = false;
   
-  // Add lot modal state
-  isAddLotModalOpen: boolean = false;
+  // Forms
+  receiverForm!: FormGroup;
   addLotForm!: FormGroup;
-  loadingLotDetails: boolean = false;
   
-  // Lot selection state
+  // Add lot modal state (grouped for better organization)
+  isAddLotModalOpen: boolean = false;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
   selectedLotNumber: number | null = null;
-  loadingAllLots: boolean = false;
   showManualLotEntry: boolean = false;
   manualLotNumber: string = '';
+  loadingAllLots: boolean = false;
   loadingManualLot: boolean = false;
+  loadingLotDetails: boolean = false;
   
-  // Order items for dropdown
-  orderItems: OrderRequestItemDto[] = [];
-  
-  // Confirmation modal state
+  // Confirmation modal state (grouped for better organization)
   isConfirmModalOpen: boolean = false;
   confirmModalTitle: string = '';
   confirmModalMessage: string = '';
   confirmModalAction: (() => void) | null = null;
   
-  // Receiver form
-  receiverForm!: FormGroup;
+  // Data collections
+  orderItems: OrderRequestItemDto[] = [];
   ranks: LookupItem[] = [];
-  loadingRanks: boolean = false;
-  
-  // Display data
   approvalWorkflow: ApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
 
@@ -149,6 +145,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   // ==================== DATA LOADING ====================
 
+  /**
+   * Load rank lookup items for the receiver form dropdown
+   */
   private loadRanks(): void {
     this.loadingRanks = true;
     this.lookupService.getLookupItems('Rank')
@@ -165,6 +164,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Load supply order data including order details and supply information
+   */
   private loadSupplyData(): void {
     this.loading = true;
     
@@ -191,7 +193,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           }
           
           // Map supply details to display items
-          this.supplyItems = this.mapSupplyDetailsToDisplay(supply);
+          this.supplyItems = mapSupplyDetailsToDisplay(supply);
           
           // Set static approval workflow
           this.approvalWorkflow = this.getStaticApprovalWorkflow();
@@ -207,37 +209,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Maps supply details from API DTO to display model for UI
-   */
-  private mapSupplyDetailsToDisplay(supply: SupplyDto): SupplyItemDisplay[] {
-    return supply.supplyDetails.map(detail => {
-      const itemId = detail.itemId;
-      const itemName = detail.item?.name || this.getItemDisplayName(itemId);
-      
-      return {
-        supplyDetailId: detail.id,
-        itemId: itemId,
-        itemName: itemName,
-        itemType: this.getItemTypeName(detail.item?.itemNo),
-        lot: detail.lot,
-        quantity: detail.quantity,
-        requestedQuantity: detail.requestedQuantity,
-        totalSuppliedQuantity: detail.totalSuppliedQuantity,
-        isFullyFulfilled: detail.isFullyFulfilled,
-        notes: detail.notes,
-        isEditing: false
-      };
-    });
-  }
-
-  /**
-   * Gets item type name from item number or returns default
-   */
-  private getItemTypeName(itemNo?: string): string {
-    // TODO: Implement logic to determine type from item number
-    return 'Supply Item';
-  }
 
   /**
    * Gets static approval workflow steps
@@ -278,6 +249,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   // ==================== ACTIONS ====================
 
+  /**
+   * Navigate back to the supply order list
+   */
   goBack(): void {
     this.router.navigate(['/supply-order']);
   }
@@ -402,8 +376,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
     
     // Handle DropdownOption wrapper or direct OrderRequestItemDto
-    const item = (selectedValue as any).value || selectedValue;
-    return (item as OrderRequestItemDto).id || (item as OrderRequestItemDto).itemId || null;
+    const wrappedValue = selectedValue as { value?: OrderRequestItemDto } | OrderRequestItemDto;
+    const item = 'value' in wrappedValue && wrappedValue.value ? wrappedValue.value : (wrappedValue as OrderRequestItemDto);
+    return item.id || item.itemId || null;
   }
 
   /**
@@ -541,9 +516,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             lotNumber: lot.lot,
             quantity: lot.remainingQuantity,
             expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
-            location: this.formatLocation(lot.depot),
-            condition: lot.isExpired ? 'Near Expiry' : this.determineCondition(lot.expiryDate),
-            daysUntilExpiry: this.calculateDaysUntilExpiry(lot.expiryDate),
+            location: formatLocation(lot.depot),
+            condition: lot.isExpired ? 'Near Expiry' : determineCondition(lot.expiryDate),
+            daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
+            selectedQuantity: 0,
             depotName: lot.depot?.nameEn || lot.depot?.nameAr,
             supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
             manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
@@ -573,7 +549,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (lots: LotDetailDto[]) => {
-          this.availableLots = this.mapLotDetailsToLotItems(lots);
+          this.availableLots = mapLotDetailsToLotItems(lots);
           this.loadingAllLots = false;
           
           if (this.availableLots.length > 0) {
@@ -599,7 +575,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (lots: LotDetailDto[]) => {
-          this.availableLots = this.mapLotDetailsToLotItems(lots);
+          this.availableLots = mapLotDetailsToLotItems(lots);
           this.loadingAllLots = false;
           
           if (this.availableLots.length > 0) {
@@ -616,62 +592,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Map LotDetailDto from inventory API to UI LotItem format
-   */
-  private mapLotDetailsToLotItems(lotDetails: LotDetailDto[]): LotItem[] {
-    const lots = lotDetails
-      .filter(lot => !lot.isEmptyLot) // Exclude empty lots
-      .map(lot => ({
-        inventoryDetailId: lot.inventoryDetailId,
-        lotNumber: lot.lot,
-        quantity: lot.remainingQuantity,
-        expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
-        location: this.formatLocation(lot.depot),
-        condition: lot.isExpired ? 'Near Expiry' as const : this.determineCondition(lot.expiryDate),
-        daysUntilExpiry: this.calculateDaysUntilExpiry(lot.expiryDate),
-        depotName: lot.depot?.nameEn || lot.depot?.nameAr,
-        supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
-        manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
-      }));
-
-    // Sort by expiry date (FEFO)
-    return lots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
-  }
-
-  /**
-   * Format location string from depot information
-   */
-  private formatLocation(depot?: { nameEn?: string; nameAr?: string }): string {
-    if (!depot) return 'Unknown Location';
-    return depot.nameEn || depot.nameAr || 'Unknown Location';
-  }
-
-  /**
-   * Determines condition based on expiry date
-   */
-  private determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near Expiry' {
-    if (!expiryDate) return 'Good';
-    
-    const days = this.calculateDaysUntilExpiry(expiryDate);
-    if (days < SupplyOrderComponent.DAYS_NEAR_EXPIRY_THRESHOLD) return 'Near Expiry';
-    if (days < SupplyOrderComponent.DAYS_FAIR_CONDITION_THRESHOLD) return 'Fair';
-    return 'Good';
-  }
-
-  /**
-   * Calculates days until expiry date
-   * Returns large number (999999) if no expiry date or already expired
-   */
-  private calculateDaysUntilExpiry(expiryDate?: string): number {
-    if (!expiryDate) return SupplyOrderComponent.DAYS_UNTIL_EXPIRY_UNDEFINED;
-    
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const diffTime = expiry.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
 
   /**
    * Select a lot for adding
@@ -692,12 +612,14 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   /**
    * Show confirmation modal before deleting item
+   * @param item - The supply item to delete
    */
   onDeleteItem(item: SupplyItemDisplay): void {
-    this.confirmModalTitle = 'Delete Item';
-    this.confirmModalMessage = `Are you sure you want to delete "${item.itemName}" (LOT-${item.lot}, Qty: ${item.quantity}) from this supply?`;
-    this.confirmModalAction = () => this.confirmDeleteItem(item);
-    this.isConfirmModalOpen = true;
+    this.showConfirmationModal({
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${item.itemName}" (LOT-${item.lot}, Qty: ${item.quantity}) from this supply?`,
+      action: () => this.confirmDeleteItem(item)
+    });
   }
 
   /**
@@ -723,7 +645,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Accept (Submit) the supply - requires receiver information
+   * Accept (Submit) the supply order - requires receiver information
+   * Validates receiver form and submits the supply order to the backend
    * Endpoint: POST /api/Supply/{id}/submit
    */
   onAccept(): void {
@@ -747,7 +670,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           
           setTimeout(() => {
             this.goBack();
-          }, 1500);
+          }, SUPPLY_ORDER_CONSTANTS.NAVIGATION_DELAY_MS);
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
@@ -758,16 +681,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Show confirmation modal before rejecting
+   * Show confirmation modal before rejecting the supply order
    */
   onReject(): void {
     if (!this.supplyData) return;
 
     const orderNo = this.orderData?.requestNo || this.orderData?.orderNo || `#${this.orderId}`;
-    this.confirmModalTitle = 'Reject Supply Order';
-    this.confirmModalMessage = `Are you sure you want to reject supply order ${orderNo}? You can edit it later.`;
-    this.confirmModalAction = () => this.confirmReject();
-    this.isConfirmModalOpen = true;
+    this.showConfirmationModal({
+      title: 'Reject Supply Order',
+      message: `Are you sure you want to reject supply order ${orderNo}? You can edit it later.`,
+      action: () => this.confirmReject()
+    });
   }
 
   /**
@@ -780,11 +704,22 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.rejecting = false;
       this.goBack();
-    }, 1000);
+    }, SUPPLY_ORDER_CONSTANTS.REJECTION_DELAY_MS);
   }
 
   /**
-   * Handle confirmation modal actions
+   * Show confirmation modal with specified configuration
+   * @param config - Configuration for the confirmation modal
+   */
+  private showConfirmationModal(config: { title: string; message: string; action: () => void }): void {
+    this.confirmModalTitle = config.title;
+    this.confirmModalMessage = config.message;
+    this.confirmModalAction = config.action;
+    this.isConfirmModalOpen = true;
+  }
+
+  /**
+   * Handle confirmation modal confirm action
    */
   onConfirmAction(): void {
     this.isConfirmModalOpen = false;
@@ -794,6 +729,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Handle confirmation modal cancel action
+   */
   onCancelConfirmation(): void {
     this.isConfirmModalOpen = false;
     this.confirmModalAction = null;
@@ -835,11 +773,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
    * Get display label for item dropdown option
    * Handles both DropdownOption wrapper and direct OrderRequestItemDto
    */
-  itemOptionLabel = (option: OrderRequestItemDto | any): string => {
+  itemOptionLabel = (option: OrderRequestItemDto | { value?: OrderRequestItemDto } | null): string => {
     if (!option) return '';
     
     // Handle DropdownOption wrapper or direct OrderRequestItemDto
-    const item: OrderRequestItemDto | undefined = option.value || option;
+    const item: OrderRequestItemDto | undefined = (option as { value?: OrderRequestItemDto }).value || (option as OrderRequestItemDto);
     
     // Ensure we have a valid item with itemId
     if (!item || (item.itemId === undefined && item.id === undefined)) {
@@ -847,7 +785,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
     
     const itemId = item.itemId || item.id || 0;
-    const itemName = item.itemName || (item as any).name;
+    const itemName = item.itemName;
     
     return itemName || this.getItemDisplayName(itemId);
   };
@@ -859,13 +797,18 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return `Item #${itemId}`;
   }
 
+  /**
+   * Calculate total quantity across all supply items
+   * @returns Sum of all item quantities
+   */
   getTotalQuantity(): number {
     return this.supplyItems.reduce((sum, item) => sum + item.quantity, 0);
   }
 
   /**
-   * Checks if the order can be submitted/accepted
+   * Checks if the supply order can be submitted/accepted
    * Requires valid receiver form and order must be in draft or submitted state
+   * @returns True if the order can be submitted
    */
   canSubmit(): boolean {
     return this.receiverForm.valid && 
@@ -875,9 +818,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if the order can be modified (accepted/rejected)
+   * Checks if the supply order can be modified (accepted/rejected)
    * Orders can only be modified if they are in Draft or Submitted status
    * Approved or Rejected orders cannot be modified
+   * @returns True if the order can be modified
    */
   canModifyOrder(): boolean {
     if (!this.supplyData) return false;
@@ -887,7 +831,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if the order is already approved
+   * Checks if the supply order is already approved
+   * @returns True if the order status is Approved
    */
   isOrderApproved(): boolean {
     if (!this.supplyData) return false;
@@ -895,7 +840,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if the order is already rejected
+   * Checks if the supply order is already rejected
+   * @returns True if the order status is Rejected
    */
   isOrderRejected(): boolean {
     if (!this.supplyData) return false;
@@ -909,7 +855,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   getSubmissionStatusClass = getSubmissionStatusClass;
 
   /**
-   * Gets the current order status for display
+   * Gets the current submission status of the supply order
+   * @returns The submission status number or null if not available
    */
   getCurrentOrderStatus(): number | null {
     return this.supplyData?.submissionStatus ?? null;

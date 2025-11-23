@@ -43,6 +43,7 @@ export interface LotItem {
   location: string;
   condition: 'Good' | 'Fair' | 'Near Expiry';
   daysUntilExpiry: number;
+  selectedQuantity: number;
   depotName?: string;
   supplierName?: string;
   manufacturerName?: string;

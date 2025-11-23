@@ -381,20 +381,20 @@ export class WorkflowApprovalDetailComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Pending': return 'bg-[#FEF3C7] text-[#92400E] border-[#FCD34D]';
-      case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46] border-[#10B981]';
-      case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B] border-[#EF4444]';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Confirmed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Rejected': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-[var(--color-border)]';
     }
   }
 
   getPriorityClass(priority: string): string {
     switch (priority) {
-      case 'Critical': return 'bg-red-100 text-red-800 border-red-300';
-      case 'High': return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Low': return 'bg-blue-100 text-blue-800 border-blue-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Critical': return 'bg-red-50 text-red-700 border-red-200';
+      case 'High': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Medium': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Low': return 'bg-blue-50 text-blue-700 border-blue-200';
+      default: return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-[var(--color-border)]';
     }
   }
 
@@ -409,10 +409,10 @@ export class WorkflowApprovalDetailComponent implements OnInit {
 
   getApprovalStatusClass(status: string): string {
     switch (status) {
-      case 'Approved': return 'text-green-600 bg-green-50 border-green-200';
-      case 'Rejected': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Pending': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'Approved': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      case 'Rejected': return 'text-red-700 bg-red-50 border-red-200';
+      case 'Pending': return 'text-amber-700 bg-amber-50 border-amber-200';
+      default: return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
     }
   }
 

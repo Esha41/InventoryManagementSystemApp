@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
+/**
+ * Rows per page selector component
+ * Allows users to select how many items to display per page
+ */
 @Component({
   selector: 'app-rows-per-page',
   standalone: true,
