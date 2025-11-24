@@ -24,3 +24,5 @@ export * from './error-handling.service';
 export * from './cartridge-mapper.service';
 export * from './cartridge-data.service';
 export * from './order-submission.service';
+export * from './email.service';
+export * from './email-configuration.service';

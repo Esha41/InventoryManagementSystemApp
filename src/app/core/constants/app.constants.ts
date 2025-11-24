@@ -153,6 +153,17 @@ export const API_ENDPOINTS = {
     BY_DEPARTMENT: (departmentId: number) => `/AllowanceItem/department/${departmentId}`,
     RESERVE_DETAILS: (departmentId: number, year: number) => `/AllowanceItem/reserve-details/${departmentId}/${year}`,
   },
+
+  // Email Configuration
+  EMAIL_CONFIGURATION: {
+    BASE: '/EmailConfiguration',
+  },
+
+  // Email
+  EMAIL: {
+    BASE: '/Email',
+    SEND: '/Email/send',
+  },
 } as const;
 
 export const STORAGE_KEYS = {
