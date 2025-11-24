@@ -22,7 +22,7 @@ interface BaseRequestDto {
   requestNo: string;
   requestType: number; // RequestType enum: 1=Order, 2=Return, 3=Discard
   reason: string;
-  priority: number; // RequestPriority enum: 0=Low, 1=Medium, 2=High, 3=Critical
+  priority: number; // RequestPriority enum: High = 1, Medium = 2, Low = 3
   status: number; // RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
   requestDate: string | Date;
 }
@@ -99,12 +99,11 @@ export class RequestsManagementComponent implements OnInit {
   }
 
   private mapPriority(priority: number): 'High' | 'Medium' | 'Low' | 'Critical' {
-    // RequestPriority enum: 0=Low, 1=Medium, 2=High, 3=Critical
+    // RequestPriority enum: High = 1, Medium = 2, Low = 3
     switch (priority) {
-      case 0: return 'Low';
-      case 1: return 'Medium';
-      case 2: return 'High';
-      case 3: return 'Critical';
+      case 1: return 'High';
+      case 2: return 'Medium';
+      case 3: return 'Low';
       default: return 'Low';
     }
   }

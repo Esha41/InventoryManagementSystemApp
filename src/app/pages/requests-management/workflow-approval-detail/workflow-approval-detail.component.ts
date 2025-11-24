@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -29,6 +29,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   readonly Package = Package;
   readonly FileText = FileText;
   readonly Eye = Eye;
+  readonly ChevronDown = ChevronDown;
+  readonly ChevronUp = ChevronUp;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -41,6 +43,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   requestDetail: RequestDetail | null = null;
   loading: boolean = true;
   error: string | null = null;
+  
+  // Collapsible sections state
+  isApprovalWorkflowExpanded: boolean = true;
   
   // Approval/Rejection form
   comments: string = '';

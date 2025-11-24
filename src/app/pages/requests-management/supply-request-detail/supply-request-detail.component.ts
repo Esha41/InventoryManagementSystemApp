@@ -17,6 +17,17 @@ import { ConfigService } from '@services/config.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { SupplyRequestDetail, OrderItem, LotItem, ApprovalStep } from '@models/supply-request.model';
 import { Subject, takeUntil } from 'rxjs';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
+import { BaseRequestDto } from '@models/workflow-approval.model';
+import { mapApprovalHistory } from '@utils/request-mapper.utils';
+import { mapOrderToRequestDetail, applySuggestionToItems, calculateDischargeTotals, canProcessDischarge } from '../utils/supply-request.mapper';
+import { mapLotDetailsToLotItems, mapSuggestedLotsToLotItems } from '../utils/lot-mapper.utils';
+import { mapWorkflowStepsToApprovalSteps } from '../utils/approval-workflow.utils';
+import { getLotConditionClass } from '../utils/ui-helpers.utils';
+import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
+import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -87,7 +98,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private supplyService: SupplyService,
     private inventoryService: InventoryService,
     private toastService: ToastService,
-    private config: ConfigService
+    private config: ConfigService,
+    private apiService: ApiService
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +130,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    */
   loadRequestDetail(): void {
     this.loading = true;
+    
+    // Load both order details and base request (for approval history)
     this.orderService.getOrderById(this.orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -125,7 +139,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.orderData = order;
           this.issueNo = order.requestNo || order.orderNo || `#${order.id}`;
           
-          this.requestDetail = this.mapOrderToRequestDetail(order);
+          // Load base request to get approval history
+          this.loadBaseRequestForApprovalHistory();
+          
+          this.requestDetail = mapOrderToRequestDetail(order);
           this.loading = false;
           
           // Automatically load suggestions after order details are loaded
@@ -141,6 +158,40 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Load base request data to get approval workflow history
+   */
+  private loadBaseRequestForApprovalHistory(): void {
+    this.apiService.getWithAuth<BaseRequestDto[]>(
+      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: any) => {
+        const data: BaseRequestDto[] = Array.isArray(response) 
+          ? response 
+          : (response?.data || []);
+        
+        const baseRequest = data.find(r => r.id === this.orderId);
+        
+        if (baseRequest && baseRequest.approvalHistory) {
+          // Map approval history to ApprovalStep format
+          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory);
+          
+          // Update requestDetail with real approval workflow
+          if (this.requestDetail) {
+            this.requestDetail.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load approval history:', error);
+        // Don't show error to user - just use empty/default workflow
+      }
+    });
+  }
+
+
+  /**
    * Automatically load supply suggestions on page load
    */
   private loadSuggestionsAutomatically(): void {
@@ -151,7 +202,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (suggestion: OrderSupplySuggestionDto) => {
-          this.applySuggestionToItems(suggestion);
+          if (this.requestDetail) {
+            applySuggestionToItems(this.requestDetail, suggestion);
+          }
           this.loadingSuggestion = false;
           
           // Silent success - suggestions are loaded automatically
@@ -167,95 +220,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  private mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
-    const priorityMap: { [key: number]: SupplyRequestDetail['priority'] } = {
-      1: 'Low',
-      2: 'Medium',
-      3: 'High',
-      4: 'Critical'
-    };
-
-    const statusMap: { [key: number]: SupplyRequestDetail['status'] } = {
-      1: 'Pending',
-      2: 'Processing',
-      3: 'Completed',
-      4: 'Delivered',
-      5: 'Cancelled'
-    };
-
-    const items: OrderItem[] = (order.requestItems || []).map(item => ({
-      requestItemId: item.id,
-      itemId: item.itemId,
-      itemName: item.itemName || 'N/A',
-      itemType: this.getItemTypeName(item.itemType),
-      requestedQuantity: item.quantity,
-      approvedQuantity: item.quantity,
-      availableLots: [],
-      totalSelectedForDischarge: 0,
-      canFulfillCompletely: false
-    }));
-
-    return {
-      issueNo: order.requestNo || order.orderNo || `#${order.id}`,
-      requestType: order.requestType === 1 ? 'Order' : 'Return',
-      priority: priorityMap[order.priority] || 'Low',
-      requestDate: this.formatOrderDate(order.usageDate),
-      requesterName: order.requesterName || 'N/A',
-      requesterId: order.requesterId || 'N/A',
-      requesterRank: 'N/A', // This would need to come from user/rank service
-      status: statusMap[order.status] || 'Pending',
-      approvalWorkflow: this.getStaticApprovalWorkflow(),
-      items: items
-    };
-  }
-
-  private getItemTypeName(itemType?: number): string {
-    const typeMap: { [key: number]: string } = {
-      1: 'Ammunition',
-      2: 'Weapon',
-      3: 'Explosive'
-    };
-    return itemType ? typeMap[itemType] || 'Other' : 'Other';
-  }
-
-  formatOrderDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  }
-
-  private getStaticApprovalWorkflow(): ApprovalStep[] {
-    // Static workflow as requested by user
-    return [
-      {
-        id: '1',
-        approverName: 'Maj. Khalid Hassan',
-        approverId: 'MIL-32145',
-        militaryRank: 'Major',
-        status: 'Approved',
-        approvedDate: '11 Sept 2024',
-        comments: 'Approved for operational needs'
-      },
-      {
-        id: '2',
-        approverName: 'Lt. Col. Mohammed Al-Farsi',
-        approverId: 'MIL-21087',
-        militaryRank: 'Lieutenant Colonel',
-        status: 'Approved',
-        approvedDate: '11 Sept 2024',
-        comments: 'Verified inventory availability'
-      },
-      {
-        id: '3',
-        approverName: 'Col. Saeed Abdullah',
-        approverId: 'MIL-10234',
-        militaryRank: 'Colonel',
-        status: 'Pending',
-        comments: ''
-      }
-    ];
-  }
 
   goBack(): void {
     // Navigate back to workflow-approval-detail (main approval page)
@@ -360,9 +324,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             lotNumber: lot.lot,
             quantity: lot.remainingQuantity,
             expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
-            location: this.formatLocation(lot.depot),
-            condition: lot.isExpired ? 'Near Expiry' : this.determineCondition(lot.expiryDate),
-            daysUntilExpiry: this.calculateDaysUntilExpiry(lot.expiryDate),
+            location: formatLocation(lot.depot),
+            condition: lot.isExpired ? 'Near Expiry' : determineCondition(lot.expiryDate),
+            daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
             selectedQuantity: 0,
             depotName: lot.depot?.nameEn || lot.depot?.nameAr,
             supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
@@ -400,7 +364,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const currentSelections = new Map(this.tempLotSelections);
           
           // Map lots to UI format and preserve selections
-          item.availableLots = this.mapLotDetailsToLotItems(lots, currentSelections);
+          item.availableLots = mapLotDetailsToLotItems(lots, currentSelections);
           this.loadingAllLots = false;
           
           if (item.availableLots.length > 0) {
@@ -417,13 +381,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Format location string from depot information
-   */
-  private formatLocation(depot?: { nameEn?: string; nameAr?: string }): string {
-    if (!depot) return 'Unknown Location';
-    return depot.nameEn || depot.nameAr || 'Unknown Location';
-  }
 
   closeLotModal(): void {
     this.isLotModalOpen = false;
@@ -513,7 +470,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    */
   getTotalApproved(): number {
     if (!this.requestDetail?.items) return 0;
-    return this.requestDetail.items.reduce((sum, item) => sum + item.approvedQuantity, 0);
+    return calculateDischargeTotals(this.requestDetail.items).totalApproved;
   }
 
   /**
@@ -522,7 +479,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    */
   getTotalSelectedForDischarge(): number {
     if (!this.requestDetail?.items) return 0;
-    return this.requestDetail.items.reduce((sum, item) => sum + item.totalSelectedForDischarge, 0);
+    return calculateDischargeTotals(this.requestDetail.items).totalSelected;
   }
 
   /**
@@ -530,7 +487,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    * Remaining = Total Approved - Total Selected
    */
   getTotalRemaining(): number {
-    return this.getTotalApproved() - this.getTotalSelectedForDischarge();
+    if (!this.requestDetail?.items) return 0;
+    return calculateDischargeTotals(this.requestDetail.items).totalRemaining;
   }
 
   /**
@@ -538,8 +496,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    * Requirements: Must have selections AND not exceed approved quantity
    */
   canProcessDischarge(): boolean {
-    const total = this.getTotalSelectedForDischarge();
-    return total > 0 && total <= this.getTotalApproved();
+    if (!this.requestDetail?.items) return false;
+    return canProcessDischarge(this.requestDetail.items);
   }
 
   // ==================== SUPPLY SUGGESTIONS ====================
@@ -553,7 +511,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (suggestion: OrderSupplySuggestionDto) => {
-          this.applySuggestionToItems(suggestion);
+          if (this.requestDetail) {
+            applySuggestionToItems(this.requestDetail, suggestion);
+          }
           this.loadingSuggestion = false;
           
           if (suggestion.canFulfillCompletely) {
@@ -570,99 +530,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Apply suggestion results to all items in the request
-   * Updates lots and pre-selects suggested quantities
-   */
-  private applySuggestionToItems(suggestion: OrderSupplySuggestionDto): void {
-    if (!this.requestDetail) return;
-
-    suggestion.itemSuggestions.forEach(itemSuggestion => {
-      const item = this.requestDetail!.items.find(i => i.requestItemId === itemSuggestion.requestItemId);
-      if (item) {
-        item.canFulfillCompletely = itemSuggestion.canFulfillCompletely;
-        
-        // Map lot suggestions and pre-select suggested quantities
-        item.availableLots = this.mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions);
-        
-        // Update total selected for discharge summary
-        item.totalSelectedForDischarge = item.availableLots.reduce((sum, lot) => sum + lot.selectedQuantity, 0);
-      }
-    });
-  }
-
-  // ==================== LOT MAPPING HELPERS ====================
-
-
-  private mapSuggestedLotsToLotItems(
-    suggestions: any[],
-    existingSelections?: Map<number, number>
-  ): LotItem[] {
-    const lots = suggestions.map(lotSuggestion => ({
-      inventoryDetailId: lotSuggestion.inventoryDetailId,
-      lotNumber: lotSuggestion.lot,
-      quantity: lotSuggestion.availableQuantity,
-      expiryDate: lotSuggestion.expiryDate ? new Date(lotSuggestion.expiryDate) : undefined,
-      location: this.formatLocation(lotSuggestion.depot),
-      condition: this.determineCondition(lotSuggestion.expiryDate),
-      daysUntilExpiry: this.calculateDaysUntilExpiry(lotSuggestion.expiryDate),
-      selectedQuantity: existingSelections?.get(lotSuggestion.lot) ?? lotSuggestion.suggestedQuantity,
-      depotName: lotSuggestion.depot?.nameEn || lotSuggestion.depot?.nameAr,
-      supplierName: lotSuggestion.supplier?.nameEn || lotSuggestion.supplier?.nameAr,
-      manufacturerName: lotSuggestion.manufacturer?.nameEn || lotSuggestion.manufacturer?.nameAr
-    }));
-
-    // Sort by expiry date (FEFO)
-    return lots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
-  }
-
-  /**
-   * Map LotDetailDto from inventory API to UI LotItem format
-   */
-  private mapLotDetailsToLotItems(
-    lotDetails: LotDetailDto[],
-    existingSelections?: Map<number, number>
-  ): LotItem[] {
-    const lots = lotDetails
-      .filter(lot => !lot.isEmptyLot) // Exclude empty lots
-      .map(lot => ({
-        inventoryDetailId: lot.inventoryDetailId,
-        lotNumber: lot.lot,
-        quantity: lot.remainingQuantity,
-        expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
-        location: this.formatLocation(lot.depot),
-        condition: lot.isExpired ? 'Near Expiry' as const : this.determineCondition(lot.expiryDate),
-        daysUntilExpiry: this.calculateDaysUntilExpiry(lot.expiryDate),
-        selectedQuantity: existingSelections?.get(lot.lot) ?? 0,
-        depotName: lot.depot?.nameEn || lot.depot?.nameAr,
-        supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
-        manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
-      }));
-
-    // Sort by expiry date
-    return lots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
-  }
-
-  // ==================== UTILITY METHODS ====================
-
-  private determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near Expiry' {
-    if (!expiryDate) return 'Good';
-    
-    const days = this.calculateDaysUntilExpiry(expiryDate);
-    if (days < 60) return 'Near Expiry';
-    if (days < 180) return 'Fair';
-    return 'Good';
-  }
-
-  private calculateDaysUntilExpiry(expiryDate?: string): number {
-    if (!expiryDate) return 999999;
-    
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const diffTime = expiry.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
 
   // ==================== DISCHARGE PROCESSING ====================
 
@@ -671,7 +538,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    * First checks if draft supply already exists for this order
    */
   onProcessDischarge(): void {
-    if (!this.canProcessDischarge() || !this.requestDetail) return;
+    if (!this.requestDetail?.items || !canProcessDischarge(this.requestDetail.items)) return;
 
     // First check if draft supply already exists
     this.processingDischarge = true;
@@ -745,9 +612,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.toastService.success(`Discharge processed successfully! Supply ID: ${supplyId}`);
           this.processingDischarge = false;
           
-          // Navigate to supply order detail page to fill receiver info and submit
           setTimeout(() => {
-            this.router.navigate(['/supply-order', supplyId]);
+            this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
           }, 1500);
         },
         error: (error) => {
@@ -771,34 +637,23 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   getApprovalStatusClass(status: string): string {
-    switch (status) {
-      case 'Approved': return 'text-green-600 bg-green-50 border-green-200';
-      case 'Rejected': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Pending': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
-    }
+    return getApprovalStatusBadgeClass(status);
   }
 
   getLotConditionClass(condition: string): string {
-    switch (condition) {
-      case 'Near Expiry': return 'bg-red-100 text-red-800 border-red-300';
-      case 'Fair': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Good': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
+    return getLotConditionClass(condition);
   }
 
   getItemTypeIcon(type: string): any {
     return this.Package;
   }
 
-  formatDate(date: Date): string {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(date).toLocaleDateString('en-US', options);
+  formatDate(date: Date | string | undefined): string {
+    return formatDateUtil(date);
   }
 
   formatNumber(num: number): string {
-    return num.toLocaleString();
+    return formatNumberUtil(num);
   }
 
   getDepartmentName(): string {
