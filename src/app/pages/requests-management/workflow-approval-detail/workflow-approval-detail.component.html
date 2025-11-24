@@ -151,61 +151,69 @@
         </div>
 
         <!-- Approval Workflow -->
-        <div *ngIf="requestDetail.approvalHistory && requestDetail.approvalHistory.length > 0" class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="CheckCircle" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <button
+            (click)="isApprovalWorkflowExpanded = !isApprovalWorkflowExpanded"
+            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               Approval Workflow
             </h2>
-          </div>
+            <lucide-angular 
+              [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" 
+              class="h-5 w-5 text-gray-500">
+            </lucide-angular>
+          </button>
           
-          <div class="space-y-6">
-            <div *ngFor="let approval of requestDetail.approvalHistory; let i = index; let isLast = last" 
-                 class="relative">
-              <!-- Connection Line -->
-              <div *ngIf="!isLast" 
-                   class="absolute left-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
-              
-              <div class="flex gap-4 relative z-10">
-                <!-- Status Icon -->
-                <div class="flex-shrink-0">
-                  <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm"
-                       [ngClass]="getApprovalStatusClass(approval.status)">
-                    <lucide-angular 
-                      [img]="getApprovalStatusIcon(approval.status)" 
-                      class="h-6 w-6">
-                    </lucide-angular>
-                  </div>
-                </div>
+          <div *ngIf="isApprovalWorkflowExpanded" class="px-6 pb-6">
+            <div *ngIf="requestDetail.approvalHistory && requestDetail.approvalHistory.length > 0" class="space-y-6">
+              <div *ngFor="let approval of requestDetail.approvalHistory; let i = index; let isLast = last" 
+                   class="relative">
+                <!-- Connection Line -->
+                <div *ngIf="!isLast" 
+                     class="absolute left-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
                 
-                <!-- Approval Details -->
-                <div class="flex-1 pb-6">
-                  <div class="bg-[var(--color-background-muted)] rounded-lg p-4 border border-[var(--color-border)]">
-                    <div class="flex items-start justify-between mb-3">
-                      <div class="flex-1">
-                        <p class="font-semibold text-[var(--color-text)] mb-1">{{ approval.approverName || 'Unknown Approver' }}</p>
-                        <p class="text-xs text-[var(--color-text-muted)]" *ngIf="approval.changedBy">
-                          {{ approval.changedBy }}
-                        </p>
-                      </div>
-                      <div class="text-right ml-4">
-                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
-                              [ngClass]="getApprovalStatusClass(approval.status)">
-                          {{ approval.status }}
-                        </span>
-                        <p *ngIf="approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
-                          {{ approval.approvedDate }}
-                        </p>
-                      </div>
+                <div class="flex gap-4 relative z-10">
+                  <!-- Status Icon -->
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm"
+                         [ngClass]="getApprovalStatusClass(approval.status)">
+                      <lucide-angular 
+                        [img]="getApprovalStatusIcon(approval.status)" 
+                        class="h-6 w-6">
+                      </lucide-angular>
                     </div>
-                    <p *ngIf="approval.comments" class="text-sm text-[var(--color-text)] mt-3 pt-3 border-t border-[var(--color-border)] italic">
-                      "{{ approval.comments }}"
-                    </p>
+                  </div>
+                  
+                  <!-- Approval Details -->
+                  <div class="flex-1 pb-6">
+                    <div class="bg-[var(--color-background-muted)] rounded-lg p-4 border border-[var(--color-border)]">
+                      <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                          <p class="font-semibold text-[var(--color-text)] mb-1">{{ approval.approverName || 'Unknown Approver' }}</p>
+                          <p class="text-xs text-[var(--color-text-muted)]" *ngIf="approval.applicationRoleName">
+                            {{ approval.applicationRoleName }}
+                          </p>
+                        </div>
+                        <div class="text-right ml-4">
+                          <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
+                                [ngClass]="getApprovalStatusClass(approval.status)">
+                            {{ approval.status }}
+                          </span>
+                          <p *ngIf="approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
+                            {{ approval.approvedDate }}
+                          </p>
+                        </div>
+                      </div>
+                      <p *ngIf="approval.comments" class="text-sm text-[var(--color-text)] mt-3 pt-3 border-t border-[var(--color-border)] italic">
+                        "{{ approval.comments }}"
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+            <div *ngIf="!requestDetail.approvalHistory || requestDetail.approvalHistory.length === 0" class="text-center py-8">
+              <p class="text-sm text-[var(--color-text-muted)]">No approval workflow data available</p>
             </div>
           </div>
         </div>

@@ -40,7 +40,6 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Color', displayName: 'Colors', apiEndpoint: 'Color', hasCode: false },
   { name: 'Compatibility', displayName: 'Compatibilities', apiEndpoint: 'Compatibility', hasCode: false },
   { name: 'Country', displayName: 'Countries', apiEndpoint: 'Country', hasCode: true },
-  { name: 'Depot', displayName: 'Depots', apiEndpoint: 'Depot', hasCode: false },
   { name: 'HazardDivision', displayName: 'Hazard Divisions', apiEndpoint: 'HazardDivision', hasCode: false },
   { name: 'Manufacturer', displayName: 'Manufacturers', apiEndpoint: 'Manufacturer', hasCode: false },
   { name: 'NatureOption', displayName: 'Nature Options', apiEndpoint: 'NatureOption', hasCode: false },

@@ -219,12 +219,14 @@ export class OrderSubmissionService {
 
   /**
    * Maps priority label to enum value
+   * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
    */
   private mapPriorityToEnum(priorityLabel: string): number {
     const normalized = (priorityLabel || '').toLowerCase();
-    if (normalized.includes('medium')) return 2;
-    if (normalized.includes('low')) return 3;
-    return 1; // default high
+    if (normalized.includes('high')) return 1; 
+    if (normalized.includes('medium')) return 2; 
+    if (normalized.includes('low')) return 3; 
+    return 3; // default to Low
   }
 }
 

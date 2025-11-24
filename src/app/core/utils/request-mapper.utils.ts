@@ -16,12 +16,12 @@ export enum RequestTypeEnum {
 
 /**
  * Priority enum values (matching backend)
+ * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
  */
 export enum PriorityEnum {
-  Low = 0,
-  Medium = 1,
-  High = 2,
-  Critical = 3
+  High = 1,
+  Medium = 2,
+  Low = 3
 }
 
 /**
@@ -52,17 +52,16 @@ export function mapRequestType(type: number): RequestType {
 
 /**
  * Map numeric priority to string
+ * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
  */
 export function mapPriority(priority: number): Priority {
   switch (priority) {
-    case PriorityEnum.Low:
-      return 'Low';
-    case PriorityEnum.Medium:
-      return 'Medium';
     case PriorityEnum.High:
       return 'High';
-    case PriorityEnum.Critical:
-      return 'Critical';
+    case PriorityEnum.Medium:
+      return 'Medium';
+    case PriorityEnum.Low:
+      return 'Low';
     default:
       return 'Low';
   }
