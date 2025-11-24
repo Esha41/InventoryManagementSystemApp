@@ -32,6 +32,14 @@ import {
   ReviewFormData
 } from './new-issue-request.state';
 import { toNumber, normalizeArrayResponse, getLocalizedNameFromItem, resolveUserDisplayName, getAmmunitionTypeId } from '@utils/index';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
+import { NotificationService } from '@services/notification.service';
+
+interface RequestPurposeDto {
+  id: number;
+  nameEn?: string | null;
+  nameAr?: string | null;
+}
 
 @Component({
   selector: 'app-new-issue-request',
@@ -70,6 +78,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private translate: TranslateService,
     private cartridgeDataService: CartridgeDataService,
     private orderSubmissionService: OrderSubmissionService
+    private notificationService: NotificationService
   ) {}
 
   // Grouped state objects
@@ -664,6 +673,20 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
           this.currentStep = 3;
           this.updateQueryParams(3);
         }
+
+        this.createdOrderId = (response.data ?? null) as number | null;
+        this.orderNumber = payload.orderNo;
+        this.orderSubmitted = true;
+        this.steps[3].completed = true; // Step 3: Review
+        this.steps[4].completed = true; // Step 4: Send
+        this.currentStep = 4; // Move to final step (Send)
+        this.updateQueryParams(4);
+
+        // Refresh notifications after order creation to ensure we receive any notifications from backend
+        // There might be a slight delay before backend sends notification via SignalR
+        setTimeout(() => {
+          this.notificationService.refresh();
+        }, 1000);
       },
       error: (error) => {
         this.orderSubmissionState.submittingOrder = false;
