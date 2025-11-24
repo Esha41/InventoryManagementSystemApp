@@ -72,17 +72,18 @@ export class EmailService {
     entityType?: string
   ): Observable<APIOperationResponse<void>> {
     const emailBody = this.buildNotificationEmailBody(title, message, details, entityDetails, entityType);
+    console.log('[EmailService] Sending notification email with body:', emailBody);
     
     return this.sendEmail({
       to: recipientEmail,
       subject: title,
       body: emailBody,
-      isHtml: true
+      isHtml: false
     });
   }
 
   /**
-   * Build HTML email body from notification details
+   * Build a plain-text compatible email body so details survive even if HTML is stripped.
    */
   private buildNotificationEmailBody(
     title: string,
@@ -91,90 +92,157 @@ export class EmailService {
     entityDetails?: any,
     entityType?: string
   ): string {
-    let html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #4a90e2; color: white; padding: 20px; text-align: center; }
-          .content { padding: 20px; background-color: #f9f9f9; }
-          .details { margin-top: 20px; padding: 15px; background-color: white; border-left: 4px solid #4a90e2; }
-          .detail-row { margin: 10px 0; }
-          .detail-label { font-weight: bold; color: #555; }
-          .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h2>${this.escapeHtml(title)}</h2>
-          </div>
-          <div class="content">
-            <p>${this.escapeHtml(message)}</p>
-    `;
+    const lines: string[] = [];
 
-    // Add entity-specific detailed information
-    if (entityDetails && entityType) {
-      html += this.buildEntityDetailsSection(entityDetails, entityType);
+    lines.push(title || 'New Notification');
+
+    if (message) {
+      lines.push('', message);
     }
 
-    // Add general details
-    if (details && Object.keys(details).length > 0) {
-      html += '<div class="details"><h3>Notification Details:</h3>';
-      for (const [key, value] of Object.entries(details)) {
-        if (value !== null && value !== undefined && !this.isEntityDetailKey(key, entityType)) {
-          html += `
-            <div class="detail-row">
-              <span class="detail-label">${this.escapeHtml(String(key))}:</span>
-              <span>${this.escapeHtml(String(value))}</span>
-            </div>
-          `;
-        }
-      }
-      html += '</div>';
+    const detailLines = this.buildPlainTextDetails(details);
+    if (detailLines.length > 0) {
+      lines.push('', 'Details:');
+      lines.push(...detailLines);
     }
 
-    html += `
-          </div>
-          <div class="footer">
-            <p>This is an automated notification email.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    const entityLines = this.buildEntityPlainText(entityDetails, entityType);
+    if (entityLines.length > 0) {
+      lines.push('', 'Items:');
+      lines.push(...entityLines);
+    }
 
-    return html;
+    lines.push('', 'This is an automated notification email.');
+
+    return lines.join('\n');
   }
 
   /**
-   * Build entity-specific details section (Order, Return, Discard)
+   * Build plain text details from a details object
    */
-  private buildEntityDetailsSection(entityDetails: any, entityType: string): string {
-    let html = '<div class="details"><h3>';
-    
-    switch (entityType) {
-      case 'order':
-        html += 'Order Details:</h3>';
-        html += this.buildOrderDetails(entityDetails);
-        break;
-      case 'return':
-        html += 'Return Request Details:</h3>';
-        html += this.buildReturnDetails(entityDetails);
-        break;
-      case 'discard':
-        html += 'Discard Request Details:</h3>';
-        html += this.buildDiscardDetails(entityDetails);
-        break;
-      default:
-        html += 'Details:</h3>';
+  private buildPlainTextDetails(details?: Record<string, any>): string[] {
+    if (!details || Object.keys(details).length === 0) {
+      return [];
     }
-    
-    html += '</div>';
-    return html;
+
+    return Object.entries(details)
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([key, value]) => {
+        const formattedValue = this.formatPlainTextValue(value);
+        return `  ${key}: ${formattedValue}`;
+      });
+  }
+
+  /**
+   * Build plain text representation of entity details (order, return, discard)
+   */
+  private buildEntityPlainText(entityDetails?: any, entityType?: string): string[] {
+    if (!entityDetails || !entityType) {
+      return [];
+    }
+
+    const lines: string[] = [];
+
+    switch (entityType.toLowerCase()) {
+      case 'order':
+        if (entityDetails.orderNo || entityDetails.requestNo) {
+          lines.push(`  Order Number: ${entityDetails.orderNo || entityDetails.requestNo || `#${entityDetails.id}`}`);
+        }
+        if (entityDetails.departmentNameEn || entityDetails.departmentNameAr) {
+          lines.push(`  Department: ${entityDetails.departmentNameEn || entityDetails.departmentNameAr}`);
+        }
+        if (entityDetails.requesterName) {
+          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        }
+        if (entityDetails.priority !== undefined) {
+          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+          lines.push(`  Priority: ${priorityLabel}`);
+        }
+        if (entityDetails.status !== undefined) {
+          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+        }
+        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+          lines.push('  Items:');
+          entityDetails.requestItems.forEach((item: any) => {
+            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          });
+        }
+        break;
+
+      case 'return':
+        if (entityDetails.requestNo) {
+          lines.push(`  Return Number: ${entityDetails.requestNo || `#${entityDetails.id}`}`);
+        }
+        if (entityDetails.departmentName) {
+          lines.push(`  Department: ${entityDetails.departmentName}`);
+        }
+        if (entityDetails.requesterName) {
+          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        }
+        if (entityDetails.priority !== undefined) {
+          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+          lines.push(`  Priority: ${priorityLabel}`);
+        }
+        if (entityDetails.status !== undefined) {
+          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+        }
+        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+          lines.push('  Items:');
+          entityDetails.requestItems.forEach((item: any) => {
+            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          });
+        }
+        break;
+
+      case 'discard':
+        if (entityDetails.requestNo) {
+          lines.push(`  Discard Number: ${entityDetails.requestNo || `#${entityDetails.id}`}`);
+        }
+        if (entityDetails.departmentName) {
+          lines.push(`  Department: ${entityDetails.departmentName}`);
+        }
+        if (entityDetails.requesterName) {
+          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        }
+        if (entityDetails.priority !== undefined) {
+          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+          lines.push(`  Priority: ${priorityLabel}`);
+        }
+        if (entityDetails.status !== undefined) {
+          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+        }
+        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+          lines.push('  Items:');
+          entityDetails.requestItems.forEach((item: any) => {
+            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          });
+        }
+        break;
+    }
+
+    return lines;
+  }
+
+  /**
+   * Format a value for plain text output
+   */
+  private formatPlainTextValue(value: any): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+
+    return String(value);
   }
 
   /**

@@ -502,12 +502,12 @@ export class NotificationService implements OnDestroy {
         // Fetch detailed information and then send email
         this.fetchEntityDetails(entityType, numericId).subscribe({
           next: (details) => {
-            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, details, entityType);
+            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, details, entityType);
           },
           error: (error) => {
             console.warn('[NotificationService] Failed to fetch entity details, sending email with basic info:', error);
             // Send email with basic information if detailed fetch fails
-            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, null, entityType);
+            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, null, entityType);
           }
         });
         return;
@@ -515,7 +515,7 @@ export class NotificationService implements OnDestroy {
     }
 
     // Send email with basic information if no entity details available
-    this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, null, entityType);
+    this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, null, entityType);
   }
 
   /**
@@ -575,17 +575,20 @@ export class NotificationService implements OnDestroy {
     title: string,
     message: string,
     notification: Notification,
+    dto: NotificationDto | null,
     details: OrderDto | ReturnDto | DiscardDto | null,
     entityType: string
   ): void {
     // Build email details
-    const emailDetails = this.buildEmailDetails(notification, details, entityType);
+    const emailDetails = this.buildEmailDetails(notification, dto, details, entityType);
 
     // Send email asynchronously (don't block notification handling)
+    const enrichedMessage = this.buildDetailedMessage(message, emailDetails);
+
     this.emailService.sendNotificationEmail(
       recipientEmail,
       title,
-      message,
+      enrichedMessage,
       emailDetails,
       details,
       entityType
@@ -614,6 +617,7 @@ export class NotificationService implements OnDestroy {
    */
   private buildEmailDetails(
     notification: Notification,
+    dto: NotificationDto | null,
     details: OrderDto | ReturnDto | DiscardDto | null,
     entityType: string
   ): Record<string, any> {
@@ -622,6 +626,27 @@ export class NotificationService implements OnDestroy {
       'Type': notification.type || notification.entityType || 'General',
       'Created At': new Date(notification.createdAt).toLocaleString(),
     };
+    if (notification.title) {
+      emailDetails['Title'] = notification.title;
+    }
+    if (notification.message) {
+      emailDetails['Message'] = notification.message;
+    }
+
+    if (dto) {
+      if (dto.createdBy) {
+        emailDetails['Created By'] = dto.createdBy;
+      }
+      if (dto.senderId) {
+        emailDetails['Sender'] = dto.senderId;
+      }
+      if (dto.recipientId) {
+        emailDetails['Recipient'] = dto.recipientId;
+      }
+      if (dto.createdAt || dto.creationDate || dto.timestamp) {
+        emailDetails['Server Timestamp'] = dto.createdAt ?? dto.creationDate ?? dto.timestamp ?? '';
+      }
+    }
 
     // Add entity-specific details
     if (details) {
@@ -686,15 +711,61 @@ export class NotificationService implements OnDestroy {
     }
 
     // Add metadata if available
-    if (notification.metadata) {
-      Object.entries(notification.metadata).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && key !== 'email' && !emailDetails[key]) {
-          emailDetails[key] = String(value);
+    const appendKeyValues = (data?: Record<string, unknown> | null, prefix?: string) => {
+      if (!data) {
+        return;
+      }
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === null || value === undefined) {
+          return;
+        }
+        if (key === 'email') {
+          return;
+        }
+        const label = prefix ? `${prefix} ${key}` : key;
+        if (!emailDetails[label]) {
+          emailDetails[label] = typeof value === 'object' ? JSON.stringify(value) : String(value);
         }
       });
-    }
+    };
+
+    appendKeyValues(notification.metadata);
+    appendKeyValues(dto?.metadata);
+    appendKeyValues(dto?.additionalData, 'Detail');
 
     return emailDetails;
+  }
+
+  private buildDetailedMessage(baseMessage: string, details: Record<string, any>): string {
+    if (!details || Object.keys(details).length === 0) {
+      return baseMessage;
+    }
+
+    const lines = Object.entries(details)
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([key, value]) => `${key}: ${this.formatDetailValue(value)}`);
+
+    if (lines.length === 0) {
+      return baseMessage;
+    }
+
+    return `${baseMessage}\n\nDetails:\n${lines.join('\n')}`;
+  }
+
+  private formatDetailValue(value: any): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+
+    return String(value);
   }
 
   /**
