@@ -3,12 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Search, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderService, OrderDto } from '@services/order.service';
 import { SupplyRequest } from '@models/supply-request.model';
 import { Subject, takeUntil } from 'rxjs';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { mapOrderToSupplyRequest } from './utils/supply-request-mapper.utils';
+import { getPriorityColor, getStatusButtonClass, getPageNumbers } from './utils/ui-helpers.utils';
+import { formatNumber } from '@utils/format.utils';
 
 @Component({
   selector: 'app-supply-request-management',
@@ -20,7 +24,6 @@ import { Subject, takeUntil } from 'rxjs';
 export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   readonly Search = Search;
-  readonly Calendar = Calendar;
   readonly ChevronDown = ChevronDown;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
@@ -33,20 +36,25 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
 
   requests: SupplyRequest[] = [];
   loading: boolean = true;
+  error: string | null = null;
 
   filteredRequests: SupplyRequest[] = [];
   activeTab: string = 'Pending';
   
-  tabs = ['Pending', 'New', 'Processing', 'Completed', 'Delivered', 'Returned', 'Cancelled'];
+  tabs = ['Pending', 'New', 'Processing', 'Completed', 'Delivered', 'Returned', 'Cancelled'] as const;
   
   searchTerm: string = '';
-  dateFilter: string = '';
   
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 20;
   totalPages: number = 1;
-  readonly itemsPerPageOptions = [1, 2, 5, 10, 20];
+  readonly itemsPerPageOptions: number[] = [1, 2, 5, 10, 20];
+  
+  // Expose utilities for template
+  readonly getPriorityColor = getPriorityColor;
+  readonly getStatusButtonClass = getStatusButtonClass;
+  readonly formatNumber = formatNumber;
 
   ngOnInit(): void {
     this.loadOrders();
@@ -59,62 +67,24 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
 
   private loadOrders(): void {
     this.loading = true;
+    this.error = null;
     this.orderService.getAllOrders()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders: OrderDto[]) => {
-          this.requests = orders.map(order => this.mapOrderToSupplyRequest(order));
+          this.requests = orders.map(order => mapOrderToSupplyRequest(order));
           this.filterRequests();
           this.calculateTotalPages();
           this.loading = false;
         },
         error: (error) => {
-          console.error('Failed to load orders:', error);
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load supply requests. Please try again.');
           this.loading = false;
           // Still show empty state
           this.filterRequests();
           this.calculateTotalPages();
         }
       });
-  }
-
-  private mapOrderToSupplyRequest(order: OrderDto): SupplyRequest {
-    // Map order status to supply request status
-    const statusMap: { [key: number]: SupplyRequest['status'] } = {
-      1: 'Pending',      // New
-      2: 'Processing',   // InProgress
-      3: 'Completed',    // Completed
-      4: 'Delivered',    // Delivered
-      5: 'Cancelled'     // Cancelled
-    };
-
-    // Map priority (assuming priority field is 1-4)
-    const priorityMap: { [key: number]: SupplyRequest['priority'] } = {
-      1: 'Low',
-      2: 'Medium',
-      3: 'High',
-      4: 'Critical'
-    };
-
-    // Calculate total quantity from request items
-    const totalQuantity = order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-
-    return {
-      id: order.id,
-      issueNo: order.requestNo || order.orderNo || `#${order.id}`,
-      requestType: order.requestType === 1 ? 'Order' : 'Return',
-      quantity: totalQuantity,
-      priority: priorityMap[order.priority] || 'Low',
-      requestDate: this.formatDate(order.usageDate),
-      status: statusMap[order.status] || 'Pending'
-    };
-  }
-
-  private formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
   }
 
   onTabChange(tab: string): void {
@@ -153,10 +123,6 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
     this.filterRequests();
   }
 
-  onDateFilterChange(): void {
-    this.currentPage = 1;
-    this.filterRequests();
-  }
 
   calculateTotalPages(): void {
     this.totalPages = Math.ceil(this.filteredRequests.length / this.itemsPerPage);
@@ -184,54 +150,26 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   }
 
   getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    const startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
-    const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
+    return getPageNumbers(this.currentPage, this.totalPages);
   }
 
   onStatusChange(issueNo: string, newStatus: string): void {
     const request = this.requests.find(r => r.issueNo === issueNo);
-    if (request) {
-      request.status = newStatus as any;
+    if (request && this.isValidStatus(newStatus)) {
+      request.status = newStatus as SupplyRequest['status'];
       this.filterRequests();
     }
   }
 
+  private isValidStatus(status: string): status is SupplyRequest['status'] {
+    return ['Pending', 'Processing', 'Completed', 'Delivered', 'Returned', 'Cancelled'].includes(status);
+  }
+
   onViewDetails(issueNo: string): void {
-    // Supply request management doesn't have a detail page
-    // Redirect to dashboard instead
-    this.router.navigate(['/dashboard']);
-  }
-
-  getPriorityColor(priority: string): string {
-    switch (priority) {
-      case 'Critical': return 'text-red-600';
-      case 'High': return 'text-orange-600';
-      case 'Medium': return 'text-yellow-600';
-      case 'Low': return 'text-green-600';
-      default: return 'text-gray-600';
+    const request = this.requests.find(r => r.issueNo === issueNo);
+    if (request) {
+      this.router.navigate(['/supply-request-management', request.id]);
     }
-  }
-
-  getStatusButtonClass(status: string): string {
-    switch (status) {
-      case 'Completed': return 'bg-green-100 text-green-800 border-green-300';
-      case 'Processing': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Delivered': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'Pending': return 'bg-gray-100 text-gray-800 border-gray-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  }
-
-  formatNumber(num: number): string {
-    return num.toLocaleString();
   }
 
   // Return correct icon for previous button based on RTL/LTR

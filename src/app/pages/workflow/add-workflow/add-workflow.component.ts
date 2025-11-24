@@ -309,6 +309,14 @@ if (this.workflowTypes.length > 0) {
       higherApplicationEntityId: null,
       errors: { role: true, entity: true, higherRole: false, higherEntity: false }
     });
+
+    // Scroll to the newly added row after Angular updates the view
+    setTimeout(() => {
+      const scrollContainer = document.querySelector('.steps-table-scroll-container');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }, 0);
   }
 
   removeStep(index: number): void {

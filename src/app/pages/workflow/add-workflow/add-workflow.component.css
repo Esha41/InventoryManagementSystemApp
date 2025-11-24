@@ -57,13 +57,18 @@ input[type="number"].no-spinner {
   text-overflow: ellipsis;
 }
 
-.steps-table th,
-.steps-table td {
+.steps-table th {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0.5rem 0.75rem;
   box-sizing: border-box;
+}
+
+.steps-table td {
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+  vertical-align: top;
 }
 
 /* Responsive column widths - using fixed table layout for better control */
@@ -116,6 +121,30 @@ input[type="number"].no-spinner {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+}
+
+/* Allow placeholder text to wrap and show fully when it's a placeholder */
+.steps-table td app-dropdown ::ng-deep .app-dropdown-label.app-dropdown-placeholder {
+  white-space: normal !important;
+  word-wrap: break-word;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+/* Keep selected values on one line */
+.steps-table td app-dropdown ::ng-deep .app-dropdown-label:not(.app-dropdown-placeholder) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.steps-table td app-dropdown ::ng-deep .app-dropdown-trigger {
+  min-height: 2.5rem;
+  align-items: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 /* Prevent text from breaking in checkbox label */
@@ -183,14 +212,6 @@ input[type="number"].no-spinner {
 .steps-table-wrapper :host ::ng-deep app-dropdown .app-dropdown-panel {
   position: absolute;
   /* Will be overridden to fixed by JavaScript when needed */
-}
-
-/* Prevent table cells from resizing when dropdown opens */
-.steps-table td {
-  position: relative;
-  vertical-align: top;
-  height: auto;
-  min-height: 3rem; /* Ensure cells maintain minimum height */
 }
 
 label,

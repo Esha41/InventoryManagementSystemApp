@@ -504,7 +504,12 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/warehouse', this.warehouseId, 'inventory', this.itemId]);
+
+    if (!this.itemId || this.itemId === '0' || this.itemId === '') {
+      this.router.navigate(['/warehouse']);
+    } else {
+      this.router.navigate(['/warehouse', this.warehouseId, 'inventory', this.itemId]);
+    }
   }
 
   selectWarehouse(warehouseId: string): void {

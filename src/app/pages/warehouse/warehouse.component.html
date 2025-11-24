@@ -1,10 +1,16 @@
 <div class="min-h-screen bg-white p-8">
   <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="mb-12">
+    <div class="mb-12 flex items-center justify-between">
       <h1 class="text-4xl font-bold text-gray-900 mb-4">
         {{ 'warehouse.title' | translate }}
       </h1>
+      <button
+        (click)="onViewOnMap()"
+        class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-sm">
+        <lucide-angular [img]="Map" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'warehouse.viewOnMap' | translate }}</span>
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -45,7 +51,7 @@
         class="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8">
         
         <!-- Warehouse Emblem and Name -->
-        <div class="flex items-center mb-8">
+        <div class="flex items-center mb-6">
           <!-- Military Emblem with Logo -->
           <div class="w-20 h-20 bg-gradient-to-br from-red-800 to-red-900 rounded-full flex items-center justify-center border-4 border-yellow-400 shadow-lg mr-6 overflow-hidden military-emblem">
             <img 
@@ -56,17 +62,52 @@
           </div>
           <div class="flex-1">
             <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ warehouse.name }}</h3>
-            <p class="text-gray-600">{{ warehouse.code }}</p>
+            <p class="text-gray-600 text-sm">{{ warehouse.code }}</p>
+          </div>
+        </div>
+
+        <!-- Statistics Progress Bars -->
+        <div class="mb-6 space-y-4">
+          <!-- NEQ Progress Bar -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-700">NEQ</span>
+              <span class="text-sm font-bold text-gray-900">{{ warehouse.neqPercentage }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div 
+                class="progress-fill-orange h-full rounded-full transition-all duration-500 ease-out"
+                [style.width.%]="warehouse.neqPercentage">
+              </div>
+            </div>
+          </div>
+
+          <!-- Consumed Progress Bar -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-700">Consumed</span>
+              <span class="text-sm font-bold text-gray-900">{{ warehouse.consumedPercentage }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div 
+                class="progress-fill-green h-full rounded-full transition-all duration-500 ease-out"
+                [style.width.%]="warehouse.consumedPercentage">
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Warehouse Info and Actions -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
           <!-- Warehouse Info -->
-          <div class="space-y-2">
-            <div class="text-sm text-gray-600">
+          <div class="space-y-1">
+            <div class="text-xs text-gray-500">
               <span class="font-medium">{{ 'warehouse.location' | translate }}:</span>
               <span class="ml-2">{{ warehouse.code }}</span>
+            </div>
+            <div class="text-xs text-gray-500">
+              <span class="font-medium">Capacity:</span>
+              <span class="ml-2">{{ warehouse.currentStock | number }} / {{ warehouse.totalCapacity | number }}</span>
             </div>
           </div>
           
@@ -74,8 +115,8 @@
           <div>
             <button 
               (click)="onViewWarehouse(warehouse.id)"
-              class="bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-              <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
+              class="bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
               <span>{{ 'warehouse.viewInventory' | translate }}</span>
             </button>
           </div>
