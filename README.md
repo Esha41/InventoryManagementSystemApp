@@ -51,7 +51,7 @@ ETTAD Frontend is a comprehensive inventory management system built with Angular
 
 ---
 
-## 🚀 Sprint 1 Deliverables
+## Sprint 1 Deliverables
 
 ###  Authentication & Authorization
 - JWT-based authentication system
@@ -161,7 +161,7 @@ ETTAD Frontend is a comprehensive inventory management system built with Angular
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/app/
@@ -266,7 +266,7 @@ npm run build:local
 
 ---
 
-## 💻 Development
+## Development
 
 ### Available Scripts
 

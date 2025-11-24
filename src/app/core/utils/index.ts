@@ -5,6 +5,15 @@ export * from './form-utils';
 export * from './format.utils';
 export * from './status.utils';
 export * from './priority.utils';
+export * from './number.utils';
+export * from './api-response.utils';
+export * from './user.utils';
+export * from './ammunition.utils';
+// Export localization utils explicitly to avoid conflict with allowance.utils
+export {
+  Localizable,
+  getLocalizedName as getLocalizedNameFromItem
+} from './localization.utils';
 // Export dashboard utils but exclude mapRequestItems to avoid conflict
 export {
   DisplayableRequest,

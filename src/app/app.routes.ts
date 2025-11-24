@@ -4,7 +4,6 @@ import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component'
 import { authGuard, permissionGuard } from '@guards/index';
 
 export const routes: Routes = [
-  // Auth routes - must be before protected routes
   {
     path: 'auth',
     component: AuthLayoutComponent,
@@ -20,7 +19,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // Protected routes with MainLayout
   {
     path: '',
     component: MainLayoutComponent,
@@ -50,8 +48,6 @@ export const routes: Routes = [
         data: { permissions: ['request.page', 'request.view', 'order.view'] }
       },
       {
-        // Supply request detail (item management) - accessed through "Review" button in workflow-approval-detail
-        // Note: This route is only for accessing from workflow-approval-detail, not from supply-request-management list
         path: 'supply-request-management/:id',
         loadComponent: () => import('@pages/requests-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],
@@ -235,7 +231,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // Fallback for unmatched routes - redirect to login
   {
     path: '**',
     redirectTo: '/auth/login'

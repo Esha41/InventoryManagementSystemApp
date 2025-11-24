@@ -265,33 +265,22 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   private validateForm(): void {
     this.errors = {};
 
-    if (!this.departmentId) {
-      this.errors['departmentId'] = 'Department is required';
-    }
+    if (!this.departmentId) this.errors['departmentId'] = 'Department is required';
 
-    if (!this.requestPurposeId) {
-      this.errors['requestPurposeId'] = 'Request Purpose is required';
-    }
+    if (!this.requestPurposeId) this.errors['requestPurposeId'] = 'Request Purpose is required';
 
     const validItems = this.discardItems.filter(item => item.itemId && item.quantity);
-    if (validItems.length === 0) {
-      this.errors['discardItems'] = 'At least one discard item is required';
-    }
+    if (validItems.length === 0) this.errors['discardItems'] = 'At least one discard item is required';
 
     this.discardItems.forEach((item, index) => {
-      if (item.itemId && !item.quantity) {
-        this.errors[`discardItems.${index}.quantity`] = 'Quantity is required';
-      }
-      if (!item.itemId && item.quantity) {
-        this.errors[`discardItems.${index}.itemId`] = 'Item is required';
-      }
+      if (item.itemId && !item.quantity) this.errors[`discardItems.${index}.quantity`] = 'Quantity is required';
+      if (!item.itemId && item.quantity) this.errors[`discardItems.${index}.itemId`] = 'Item is required';
     });
   }
 
   toggleItemDropdown(index: number): void {
-    if (this.isLoadingItems) {
-      return;
-    }
+    if (this.isLoadingItems) return;
+
     this.itemDropdownOpen = this.itemDropdownOpen.map((open, i) => (i === index ? !open : false));
     if (!this.itemDropdownOpen[index]) {
       this.itemDropdownSearchTerms[index] = '';
@@ -316,9 +305,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.closeItemDropdown(index);
     // Clear error when item is selected
     this.clearItemError(index, 'itemId');
-    if (this.isSubmitted && optionValue) {
-      this.clearItemError(index, 'itemId');
-    }
+    if (this.isSubmitted && optionValue) this.clearItemError(index, 'itemId');
   }
 
   getItemOptionLabel(itemOption: any): string {
@@ -327,21 +314,18 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
 
   getSelectedItemLabel(index: number): string {
     const itemId = this.discardItems[index]?.itemId;
-    if (itemId === null || itemId === undefined) {
-      return '';
-    }
+    if (itemId === null || itemId === undefined) return '';
+
     const selected = this.items.find(option => this.isSameItem(option, itemId));
     return selected ? this.getItemOptionLabel(selected) : '';
   }
 
   getFilteredItems(index: number): any[] {
-    if (!this.items?.length) {
-      return [];
-    }
+    if (!this.items?.length) return [];
+
     const term = (this.itemDropdownSearchTerms[index] || '').trim().toLowerCase();
-    if (!term) {
-      return this.items;
-    }
+    if (!term) return this.items;
+
     return this.items.filter(option => {
       const label = this.getItemOptionLabel(option).toLowerCase();
       const code = option?.itemNo ? String(option.itemNo).toLowerCase() : '';
@@ -355,43 +339,28 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
 
   private isSameItem(option: any, itemId: any): boolean {
     const optionValue = option?.id ?? option?.itemNo;
-    if (optionValue === undefined || optionValue === null) {
-      return false;
-    }
+    if (optionValue === undefined || optionValue === null) return false;
+
     return String(optionValue) === String(itemId);
   }
 
   private getLocalizedName(entity: any): string {
-    if (!entity) {
-      return '';
-    }
+    if (!entity) return '';
 
-    if (typeof entity === 'string') {
-      return entity;
-    }
 
-    if (typeof entity === 'number') {
-      return String(entity);
-    }
-
-    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
-      return entity.label;
-    }
+    if (typeof entity === 'string') return entity;
+    if (typeof entity === 'number') return String(entity);
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') return entity.label;
 
     const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEn || '';
-    }
+    if (currentLang === 'ar') return entity.nameAr || entity.nameEn || '';
     return entity.nameEn || entity.nameAr || '';
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
-    if (!option) {
-      return null;
-    }
-    if (typeof option === 'object' && option !== null && 'value' in option) {
-      return option.value as T;
-    }
+    if (!option) return null;
+
+    if (typeof option === 'object' && option !== null && 'value' in option) return option.value as T;
     return option as T;
   }
 
@@ -409,7 +378,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       priority: Number(this.priority),
       notes: this.notes || undefined,
       departmentId: Number(this.departmentId!),
-      requesterId: undefined, 
+      requesterId: undefined,
       requestPurposeId: Number(this.requestPurposeId!),
       discardItems: this.discardItems
         .filter(item => item.itemId && item.quantity)
@@ -439,21 +408,11 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             const errors = error.error.errors;
             const errorMessages: string[] = [];
 
-            if (errors.dto) {
-              errorMessages.push(...errors.dto);
-            }
-            if (errors['$.priority']) {
-              errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
-            }
-            if (errors['$.departmentId']) {
-              errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
-            }
-            if (errors['$.requestPurposeId']) {
-              errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
-            }
-            if (errors['$.discardItems']) {
-              errorMessages.push(`Discard Items: ${errors['$.discardItems'].join(', ')}`);
-            }
+            if (errors.dto) errorMessages.push(...errors.dto);
+            if (errors['$.priority']) errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
+            if (errors['$.departmentId']) errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
+            if (errors['$.requestPurposeId']) errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
+            if (errors['$.discardItems']) errorMessages.push(`Discard Items: ${errors['$.discardItems'].join(', ')}`);
 
             if (errorMessages.length > 0) {
               errorMessage = errorMessages.join('; ');
@@ -471,9 +430,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   }
 
   private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     this.applyUserContext({
       nameEn: user.nameEn,
@@ -485,9 +442,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   }
 
   private applyBackendUserDetails(details: BackendUserDto | null): void {
-    if (!details) {
-      return;
-    }
+    if (!details) return;
 
     this.applyUserContext({
       nameEn: details.nameEn,
@@ -543,15 +498,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     nameAr?: string | null,
     userName?: string | null
   ): string | null {
-    if (nameEn && nameEn.trim().length > 0) {
-      return nameEn;
-    }
-    if (nameAr && nameAr.trim().length > 0) {
-      return nameAr;
-    }
-    if (userName && userName.trim().length > 0) {
-      return userName;
-    }
+    if (nameEn && nameEn.trim().length > 0) return nameEn;
+    if (nameAr && nameAr.trim().length > 0) return nameAr;
+    if (userName && userName.trim().length > 0) return userName;
     return null;
   }
 
@@ -585,9 +534,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   }
 
   clearError(fieldName: string): void {
-    if (this.errors[fieldName]) {
-      delete this.errors[fieldName];
-    }
+    if (this.errors[fieldName]) delete this.errors[fieldName];
   }
 
   clearItemError(index: number, field: string): void {
@@ -601,45 +548,33 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
 
   onDepartmentChange(): void {
     this.clearError('departmentId');
-    if (this.isSubmitted && this.departmentId) {
-      this.clearError('departmentId');
-    }
+    if (this.isSubmitted && this.departmentId) this.clearError('departmentId');
   }
 
   onRequestPurposeChange(): void {
     this.clearError('requestPurposeId');
-    if (this.isSubmitted && this.requestPurposeId) {
-      this.clearError('requestPurposeId');
-    }
+    if (this.isSubmitted && this.requestPurposeId) this.clearError('requestPurposeId');
   }
 
   onQuantityChange(index: number): void {
     this.clearItemError(index, 'quantity');
-    if (this.isSubmitted && this.discardItems[index]?.quantity) {
-      this.clearItemError(index, 'quantity');
-    }
+    if (this.isSubmitted && this.discardItems[index]?.quantity) this.clearItemError(index, 'quantity');
   }
 
   private toNumber(value: any): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
+    if (value === null || value === undefined || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
 
   private applyLockedDepartment(): void {
-    if (this.isDepartmentLocked && this.preferredDepartmentId != null) {
-      this.departmentId = this.preferredDepartmentId;
-    }
+    if (this.isDepartmentLocked && this.preferredDepartmentId != null) this.departmentId = this.preferredDepartmentId;
   }
 
   private applyLockedRequester(): void {
-    if (this.isRequesterLocked && this.preferredRequesterId != null) {
-      this.requesterId = this.preferredRequesterId;
-    }
+    if (this.isRequesterLocked && this.preferredRequesterId != null) this.requesterId = this.preferredRequesterId;
   }
-  
+
   getRequesterName(requesterId: string): string {
     // requesterId is now a string (user ID), find in requesters list by converting id to string
     const requester = this.requesters.find(r => String(r.id) === requesterId);
@@ -653,9 +588,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   private buildLockedDepartmentName(): string {
     if (this.preferredDepartmentId != null) {
       const match = this.departments.find(d => this.toNumber(d.id) === this.preferredDepartmentId);
-      if (match) {
-        return match.nameEn || match.nameAr || `Department ${match.id}`;
-      }
+      if (match) return match.nameEn || match.nameAr || `Department ${match.id}`;
     }
     return this.currentUserDetails?.departmentName || this.fallbackDepartmentName || '';
   }
