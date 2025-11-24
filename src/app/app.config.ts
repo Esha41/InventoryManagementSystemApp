@@ -7,10 +7,6 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { authInterceptor, errorInterceptor } from './core/interceptors/index';
 
-/**
- * Custom Translation Loader
- * Loads translation files from assets/i18n directory
- */
 export class JsonTranslationLoader implements TranslateLoader {
   constructor(private http: HttpClient) {}
 
@@ -18,19 +14,13 @@ export class JsonTranslationLoader implements TranslateLoader {
     return this.http.get(`/assets/i18n/${lang}.json`).pipe(
       catchError(error => {
         console.error(`Failed to load translations for ${lang}:`, error);
-        // Return empty object to prevent app crash
         return of({});
       })
     );
   }
 }
 
-/**
- * Factory function to create translation loader
- */
-export function createTranslateLoader(http: HttpClient): TranslateLoader {
-  return new JsonTranslationLoader(http);
-}
+export const createTranslateLoader = (http: HttpClient): TranslateLoader => new JsonTranslationLoader(http);
 
 export const appConfig: ApplicationConfig = {
   providers: [

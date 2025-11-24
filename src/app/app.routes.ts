@@ -4,7 +4,6 @@ import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component'
 import { authGuard, permissionGuard } from '@guards/index';
 
 export const routes: Routes = [
-  // Auth routes - must be before protected routes
   {
     path: 'auth',
     component: AuthLayoutComponent,
@@ -20,7 +19,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // Protected routes with MainLayout
   {
     path: '',
     component: MainLayoutComponent,
@@ -51,9 +49,21 @@ export const routes: Routes = [
       },
       {
         path: 'supply-request-management/:id',
-        loadComponent: () => import('@pages/supply-request-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
+        loadComponent: () => import('@pages/requests-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['request.view', 'order.view'] }
+      },
+      {
+        path: 'supply-order',
+        loadComponent: () => import('@pages/supply-order/supply-order-list.component').then(m => m.SupplyOrderListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['supply.page', 'supply.view'] }
+      },
+      {
+        path: 'supply-order/:supplyId',
+        loadComponent: () => import('@pages/supply-order/supply-order.component').then(m => m.SupplyOrderComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['supply.view', 'supply.page'] }
       },
       {
         path: 'warehouse',
@@ -146,6 +156,18 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/workflow-approval',
+        loadComponent: () => import('@pages/requests-management/workflow-approval-detail/workflow-approval-detail.component').then(m => m.WorkflowApprovalDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
+        path: 'requests-management/order-report',
+        loadComponent: () => import('@pages/requests-management/order-report/order-report.component').then(m => m.OrderReportComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
         path: 'forecast',
         loadComponent: () => import('@pages/forecast/forecast.component').then(m => m.ForecastComponent),
         canActivate: [permissionGuard],
@@ -215,7 +237,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // Fallback for unmatched routes - redirect to login
   {
     path: '**',
     redirectTo: '/auth/login'

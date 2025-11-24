@@ -18,52 +18,10 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { RowsPerPageComponent } from '@pages/requests-management/components/rows-per-page/rows-per-page.component';
-import { PaginationComponent } from '@pages/requests-management/components/pagination/pagination.component';
-
-export interface AllowanceItemDto {
-  id: number;
-  itemId: number;
-  departmentId: number;
-  year: number;
-  quantity: number;
-  itemType?: number;
-}
-
-export interface AllowanceItemDetailDto {
-  id: number;
-  itemId: number;
-  year: number;
-  quantity: number;
-  itemType?: number;
-  itemName?: string;
-  itemNo?: string;
-  batchNo?: string;
-}
-
-export interface AllowanceItemByDepartmentDto {
-  departmentId: number;
-  departmentCode: string;
-  departmentNameAr: string;
-  departmentNameEn: string;
-  year: number;
-  itemType?: number;
-  items: AllowanceItemDetailDto[];
-}
-
-export interface AllowanceTableRow {
-  id: number;
-  departmentId: number;
-  departmentName: string;
-  year: number;
-  itemId: number;
-  itemName: string;
-  itemNo: string;
-  batchNo: string;
-  quantity: number;
-  // Keep items array for edit/delete operations (all items in same department/year group)
-  items: AllowanceItemDetailDto[];
-}
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
+import { processAllowanceData } from '@utils/allowance.mapper';
+import { getLocalizedName, filterAllowances } from '@utils/allowance.utils';
 
 @Component({
   selector: 'app-allowance-list',
@@ -105,7 +63,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
-    this.getLocalizedName(this.unwrapOption(option));
+    getLocalizedName(this.unwrapOption(option), this.translateService);
   readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
@@ -175,79 +133,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   private processAllowanceData(items: AllowanceItemDto[], departments: DepartmentDto[], ammunitionItems: AmmunitionReadDto[]): void {
-    // Store departments and items for dropdowns
-    this.departments = departments.map(dept => ({
-      id: dept.id,
-      nameEn: dept.nameEn,
-      nameAr: dept.nameAr,
-      code: dept.code
-    } as LookupItem));
-    this.allItems = ammunitionItems || [];
-    this.filteredItems = [...this.allItems]; // Initially show all items
-
-    const departmentMap = new Map<number, string>();
-    departments.forEach(dept => {
-      if (dept.id !== undefined) {
-        departmentMap.set(dept.id, dept.nameEn || dept.nameAr || `Department ${dept.id}`);
-      }
-    });
-
-  
-    const ammunitionMap = new Map<number, AmmunitionReadDto>();
-    ammunitionItems.forEach(ammo => {
-      ammunitionMap.set(ammo.id, ammo);
-    });
-
-
-    const groupedItems = new Map<string, AllowanceItemDetailDto[]>();
+    const processed = processAllowanceData(items, departments, ammunitionItems);
     
-    items.forEach(item => {
-      const ammunition = ammunitionMap.get(item.itemId);
-      const key = `${item.departmentId}_${item.year}`;
-      
-      if (!groupedItems.has(key)) {
-        groupedItems.set(key, []);
-      }
-      
-      groupedItems.get(key)!.push({
-        id: item.id,
-        itemId: item.itemId,
-        year: item.year,
-        quantity: item.quantity,
-        itemType: item.itemType,
-        itemName: ammunition?.name,
-        itemNo: ammunition?.itemNo,
-        batchNo: ammunition?.batchNo
-      });
-    });
-    
-  
-    const rows: AllowanceTableRow[] = items.map(item => {
-      const ammunition = ammunitionMap.get(item.itemId);
-      const key = `${item.departmentId}_${item.year}`;
-      
-      return {
-        id: item.id,
-        departmentId: item.departmentId,
-        departmentName: departmentMap.get(item.departmentId) || `Department ${item.departmentId}`,
-        year: item.year,
-        itemId: item.itemId,
-        itemName: ammunition?.name || '',
-        itemNo: ammunition?.itemNo || '',
-        batchNo: ammunition?.batchNo || '',
-        quantity: item.quantity,
-        items: groupedItems.get(key)! 
-      };
-    });
-
-  
-    this.allAllowances = rows.sort((a, b) => {
-      if (a.year !== b.year) return b.year - a.year;
-      if (a.departmentName !== b.departmentName) return a.departmentName.localeCompare(b.departmentName);
-      return (a.itemName || a.itemNo || '').localeCompare(b.itemName || b.itemNo || '');
-    });
-
-    // Initialize filteredAllowances with all allowances on first load
+    this.departments = processed.departments;
+    this.allItems = processed.allItems;
+    this.filteredItems = [...processed.allItems];
+    this.allAllowances = processed.allAllowances;
     this.filteredAllowances = [...this.allAllowances];
 
     this.currentPage = 1;
@@ -264,14 +155,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     return option as T;
   }
 
-  getLocalizedName(item: LookupItem | null): string {
-    if (!item) return '';
-    const currentLang = this.translateService.currentLang || 'en';
-    if (currentLang === 'ar' && item.nameAr) {
-      return item.nameAr;
-    }
-    return item.nameEn || item.nameAr || '';
-  }
 
   onDepartmentChange(): void {
     this.selectedItem = null; // Clear item selection when department changes
@@ -313,27 +196,11 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    let filtered = [...this.allAllowances];
-
-    // Filter by department
-    if (this.selectedDepartment !== null && this.selectedDepartment !== undefined && this.selectedDepartment !== '') {
-      filtered = filtered.filter(allowance => {
-        const allowanceDeptId = allowance.departmentId;
-        return allowanceDeptId !== undefined && allowanceDeptId !== null && 
-               (allowanceDeptId === Number(this.selectedDepartment) || String(allowanceDeptId) === String(this.selectedDepartment));
-      });
-    }
-
-    // Filter by item
-    if (this.selectedItem !== null && this.selectedItem !== undefined && this.selectedItem !== '') {
-      filtered = filtered.filter(allowance => {
-        const allowanceItemId = allowance.itemId;
-        return allowanceItemId !== undefined && allowanceItemId !== null && 
-               (allowanceItemId === Number(this.selectedItem) || String(allowanceItemId) === String(this.selectedItem));
-      });
-    }
-
-    this.filteredAllowances = filtered;
+    this.filteredAllowances = filterAllowances(
+      this.allAllowances,
+      this.selectedDepartment,
+      this.selectedItem
+    );
     this.updatePagination();
   }
 

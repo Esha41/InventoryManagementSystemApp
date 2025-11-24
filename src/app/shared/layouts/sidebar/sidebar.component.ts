@@ -60,6 +60,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['request.page', 'request.view', 'order.view']
     },
     {
+      label: 'nav.supplyOrder',
+      icon: Package,
+      route: '/supply-order',
+      permissions: ['supply.page', 'supply.view']
+    },
+    {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
@@ -104,8 +110,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.requestsManagement',
       icon: FileText,
-      route: '/requests-management',
-      permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
+      permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view'],
+      children: [
+        {
+          label: 'nav.requestsOverview',
+          route: '/requests-management',
+          permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
+        },
+        {
+          label: 'nav.orderReport',
+          route: '/requests-management/order-report',
+          permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
+        }
+      ]
     },
     {
       label: 'nav.forecast',
@@ -207,6 +224,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Auto-expand warehouse menu if on warehouse routes
     if (url.startsWith('/warehouse')) {
       this.expandedMenus.add('nav.warehouse');
+    }
+    // Auto-expand requests management menu if inside its routes
+    if (url.startsWith('/requests-management')) {
+      this.expandedMenus.add('nav.requestsManagement');
     }
     // Auto-expand department menu if on department/allowance routes
     if (url.startsWith('/allowance') || url.startsWith('/department')) {

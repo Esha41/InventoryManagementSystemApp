@@ -1,6 +1,3 @@
-/**
- * Application-wide constants
- */
 
 export const APP_CONSTANTS = {
   APP_NAME: 'Ettad',
@@ -9,8 +6,19 @@ export const APP_CONSTANTS = {
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
 
+ // request Status Constants, Maps to backend RequestStatus enum
+export const REQUEST_STATUS = {
+  NEW: 1,
+  UNDER_PROCESS: 2,
+  APPROVED: 3,
+  REJECTED: 4,
+  CANCELLED: 5
+} as const;
+
+export type RequestStatusValue = typeof REQUEST_STATUS[keyof typeof REQUEST_STATUS];
+
 export const API_ENDPOINTS = {
-  // Authentication
+  // authentication
   AUTH: {
     LOGIN: '/account/login',
     LOGOUT: '/account/logout',
@@ -20,8 +28,8 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/account/forgot-password',
     RESET_PASSWORD: '/account/reset-password',
   },
-  
-  // User Management
+
+  // user management
   USERS: {
     BASE: '/Users',
     ME: '/Users/me',
@@ -29,8 +37,8 @@ export const API_ENDPOINTS = {
     ROLES: (id: string) => `/Users/${id}/roles`,
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
   },
-  
-  // Role Management (match backend casing)
+
+  // role management (match backend casing)
   ROLES: {
     BASE: '/Roles',
     PAGINATED: '/roles/GetRolesWithPagination',
@@ -43,47 +51,56 @@ export const API_ENDPOINTS = {
     APPLICATION_ENTITIES_BY_ROLE: (id: string) => `/Roles/getApplicationentities/${id}`
   },
 
-  // Application Entities
+  // application entities
   APPLICATION_ENTITIES: {
     BASE: '/Roles/entities',
     ALL: '/Roles/entities',
   },
-  
-  // Workflow Management
+
+  // workflow management
   WORKFLOWS: {
     BASE: '/Workflows',
     BY_ID: (id: number) => `/Workflows/${id}`,
     ALL: '/Workflows/all',
     ALL_LIST: '/Workflows/all-list',
   },
-  
-  // Requests Management
+
+  // workflow approval
+  WORKFLOW_APPROVAL: {
+    BASE: '/WorkflowApproval',
+    ALL_ORDERS: '/WorkflowApproval/AllOrders',
+    ALL_BASE_REQUESTS: '/WorkflowApproval/AllBaseRequests',
+    APPROVE_REJECT: '/WorkflowApproval/approve-reject',
+  },
+
+  // requests management
   REQUESTS: {
     BASE: '/requests',
     BY_ID: (id: number) => `/requests/${id}`,
     ALL: '/requests/all',
   },
-  
+
   // Return Requests
   RETURNS: {
     BASE: '/Return',
     BY_ID: (id: number) => `/Return/${id}`,
     CHANGE_PRIORITY: (id: number) => `/Return/${id}/priority`,
   },
-  
+
   // Discard Requests
   DISCARDS: {
     BASE: '/Discard',
     BY_ID: (id: number) => `/Discard/${id}`,
     CHANGE_PRIORITY: (id: number) => `/Discard/${id}/priority`,
   },
-  
+
   // Order Requests
   ORDERS: {
     BASE: '/Order',
     BY_ID: (id: number) => `/Order/${id}`,
+    VERIFY_ALLOWANCE: '/Order/verify-allowance',
   },
-  
+
   // Request Purposes
   REQUEST_PURPOSES: {
     BASE: '/RequestPurpose',
@@ -92,7 +109,7 @@ export const API_ENDPOINTS = {
     FOR_ORDER: '/RequestPurpose/order',
     BY_ID: (id: number) => `/RequestPurpose/${id}`,
   },
-  
+
   // Lookup Services
   LOOKUPS: {
     BASE: '/lookups',
@@ -104,7 +121,7 @@ export const API_ENDPOINTS = {
     BASE: '/ammunition',
     BY_ID: (id: number) => `/ammunition/${id}`,
   },
-  
+
   // Inventory Management
   INVENTORY: {
     BASE: '/inventory',
@@ -158,6 +175,10 @@ export const ROUTES = {
   ASSET_LIST: '/asset-list',
   MANAGE_ADMINS: '/manage-admins',
   ADMIN_ROLES: '/admin-roles',
-
 } as const;
 
+   // Supply order Component Constants
+export const SUPPLY_ORDER_CONSTANTS = {
+  NAVIGATION_DELAY_MS: 1500,
+  REJECTION_DELAY_MS: 1000,
+} as const;

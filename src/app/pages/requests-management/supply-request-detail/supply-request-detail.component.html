@@ -1,0 +1,749 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && requestDetail">
+    <!-- Header with Back Button -->
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button
+          (click)="goBack()"
+          class="p-2 hover:bg-white rounded-lg transition-colors border border-gray-200">
+          <lucide-angular [img]="ArrowLeft" class="h-5 w-5 text-gray-600"></lucide-angular>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-[var(--color-text)]">
+            {{ 'supplyRequestDetail.title' | translate }} {{ requestDetail.issueNo }}
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">
+            {{ 'supplyRequestDetail.requestedOn' | translate }}: {{ requestDetail.requestDate }}
+          </p>
+        </div>
+      </div>
+      <div class="px-4 py-2 rounded-lg border font-medium text-sm"
+           [ngClass]="getApprovalStatusClass(requestDetail.status)">
+        {{ requestDetail.status }}
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column - Request Info, Order Items & Approval Workflow -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Request Information -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <button
+            (click)="isRequestInfoExpanded = !isRequestInfoExpanded"
+            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'supplyRequestDetail.requestInformation' | translate }}
+            </h2>
+            <lucide-angular 
+              [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown" 
+              class="h-5 w-5 text-gray-500">
+            </lucide-angular>
+          </button>
+          
+          <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6">
+            <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.orderNo' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.issueNo }}</p>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.requestType' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestType }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.requesterName' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requesterName }}</p>
+            </div>
+
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.departmentName' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ getDepartmentName() }}</p>
+            </div>
+            
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.priority' | translate }}
+              </label>
+              <p class="text-sm mt-1 font-semibold" [ngClass]="{
+                'text-red-600': requestDetail.priority === 'Critical',
+                'text-orange-600': requestDetail.priority === 'High',
+                'text-yellow-600': requestDetail.priority === 'Medium',
+                'text-green-600': requestDetail.priority === 'Low'
+              }">{{ requestDetail.priority }}</p>
+            </div>
+
+            <div *ngIf="orderData?.reason">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.reason' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.reason }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usagePurpose">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usagePurpose' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usagePurpose }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usageLocation">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usageLocation' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usageLocation }}</p>
+            </div>
+
+            <div *ngIf="orderData?.usageDate">
+              <label class="text-xs font-semibold text-gray-500 uppercase">
+                {{ 'supplyRequestDetail.usageDate' | translate }}
+              </label>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ formatDate(orderData?.usageDate) }}</p>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <button
+            (click)="isOrderItemsExpanded = !isOrderItemsExpanded"
+            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'supplyRequestDetail.orderItems' | translate }}
+            </h2>
+            <lucide-angular 
+              [img]="isOrderItemsExpanded ? ChevronUp : ChevronDown" 
+              class="h-5 w-5 text-gray-500">
+            </lucide-angular>
+          </button>
+          
+          <div *ngIf="isOrderItemsExpanded" class="px-6 pb-6">
+            <!-- Add Item Button -->
+            <div class="mb-4 flex justify-end">
+              <button
+                (click)="openAddItemModal()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
+                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+                {{ 'supplyRequestDetail.addItem' | translate }}
+              </button>
+            </div>
+
+            <!-- Item Management Table -->
+            <div class="mb-6 overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-gray-700">
+                  <tr>
+                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+                    <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of requestDetail.items" class="border-t border-gray-200">
+                    <td class="px-4 py-2 text-gray-900">{{ item.itemName }}</td>
+                    <td class="px-4 py-2 text-gray-600">{{ getItemProductId(item) }}</td>
+                    <td class="px-4 py-2 text-gray-900">{{ formatNumber(item.approvedQuantity) }}</td>
+                    <td class="px-4 py-2">
+                      <button
+                        type="button"
+                        (click)="openEditItemModal(item); $event.stopPropagation()"
+                        class="text-sm text-blue-600 hover:text-blue-700 mr-3">
+                        {{ 'common.edit' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="openRemoveItemModal(item); $event.stopPropagation()"
+                        class="text-sm text-red-600 hover:text-red-700">
+                        {{ 'common.remove' | translate }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Existing Item Cards (for lot selection) -->
+            <div class="space-y-3">
+              <div *ngFor="let item of requestDetail.items" 
+                   class="border border-gray-200 rounded-lg p-4 hover:border-[var(--color-brand)] hover:shadow-md transition-all cursor-pointer"
+                   (click)="openLotModal(item)">
+                
+                <div class="flex items-start gap-4">
+                  <!-- Item Icon -->
+                  <div class="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <lucide-angular [img]="getItemTypeIcon(item.itemType)" class="h-6 w-6 text-blue-600"></lucide-angular>
+                  </div>
+                  
+                  <!-- Item Details -->
+                  <div class="flex-1">
+                    <div class="flex items-start justify-between mb-2">
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ item.itemName }}</h3>
+                        <p class="text-xs text-gray-500 mt-1">{{ item.itemType }}</p>
+                      </div>
+                      <div class="text-right ml-4">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">
+                          {{ 'supplyRequestDetail.approvedQty' | translate }}
+                        </p>
+                        <p class="text-lg font-bold text-gray-900">{{ formatNumber(item.approvedQuantity) }}</p>
+                      </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-3">
+                      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>{{ 'supplyRequestDetail.selectedForDischarge' | translate }}</span>
+                        <span class="font-semibold">{{ formatNumber(item.totalSelectedForDischarge) }} / {{ formatNumber(item.approvedQuantity) }}</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          class="h-2 rounded-full transition-all"
+                          [class.bg-green-500]="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge <= item.approvedQuantity"
+                          [class.bg-red-500]="item.totalSelectedForDischarge > item.approvedQuantity"
+                          [style.width.%]="(item.totalSelectedForDischarge / item.approvedQuantity) * 100">
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Status Badge -->
+                    <div class="mt-3 flex items-center gap-2">
+                      <span *ngIf="item.totalSelectedForDischarge === 0" 
+                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                        {{ 'supplyRequestDetail.clickToSelectLots' | translate }}
+                      </span>
+                      <span *ngIf="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge < item.approvedQuantity" 
+                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
+                        {{ 'supplyRequestDetail.partiallySelected' | translate }}
+                      </span>
+                      <span *ngIf="item.totalSelectedForDischarge === item.approvedQuantity" 
+                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-300">
+                        <lucide-angular [img]="CheckCircle" class="h-3 w-3 mr-1"></lucide-angular>
+                        {{ 'supplyRequestDetail.fullySelected' | translate }}
+                      </span>
+                      <span *ngIf="item.totalSelectedForDischarge > item.approvedQuantity" 
+                            class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+                        <lucide-angular [img]="AlertTriangle" class="h-3 w-3 mr-1"></lucide-angular>
+                        {{ 'supplyRequestDetail.exceedsApproved' | translate }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approval Workflow -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+          <button
+            (click)="isApprovalWorkflowExpanded = !isApprovalWorkflowExpanded"
+            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'supplyRequestDetail.approvalWorkflow' | translate }}
+            </h2>
+            <lucide-angular 
+              [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" 
+              class="h-5 w-5 text-gray-500">
+            </lucide-angular>
+          </button>
+          
+          <div *ngIf="isApprovalWorkflowExpanded" class="px-6 pb-6">
+            <div *ngIf="requestDetail.approvalWorkflow && requestDetail.approvalWorkflow.length > 0" class="space-y-6">
+              <div *ngFor="let approval of requestDetail.approvalWorkflow; let i = index; let isLast = last" 
+                   class="relative">
+                <!-- Connection Line -->
+                <div *ngIf="!isLast" 
+                     class="absolute left-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
+                
+                <div class="flex gap-4 relative z-10">
+                  <!-- Status Icon -->
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm"
+                         [ngClass]="getApprovalStatusClass(approval.status)">
+                      <lucide-angular 
+                        [img]="getApprovalStatusIcon(approval.status)" 
+                        class="h-6 w-6">
+                      </lucide-angular>
+                    </div>
+                  </div>
+                  
+                  <!-- Approval Details -->
+                  <div class="flex-1 pb-6">
+                    <div class="bg-[var(--color-background-muted)] rounded-lg p-4 border border-[var(--color-border)]">
+                      <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                          <p class="font-semibold text-[var(--color-text)] mb-1">{{ approval.approverName }}</p>
+                          <p class="text-xs text-[var(--color-text-muted)]" *ngIf="approval.militaryRank">
+                            {{ approval.militaryRank }}
+                          </p>
+                        </div>
+                        <div class="text-right ml-4">
+                          <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
+                                [ngClass]="getApprovalStatusClass(approval.status)">
+                            {{ approval.status }}
+                          </span>
+                          <p *ngIf="approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
+                            {{ approval.approvedDate }}
+                          </p>
+                        </div>
+                      </div>
+                      <p *ngIf="approval.comments" class="text-sm text-[var(--color-text)] mt-3 pt-3 border-t border-[var(--color-border)] italic">
+                        "{{ approval.comments }}"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!requestDetail.approvalWorkflow || requestDetail.approvalWorkflow.length === 0" class="text-center py-8">
+              <p class="text-sm text-[var(--color-text-muted)]">No approval workflow data available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Discharge Summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 sticky top-6">
+          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
+            {{ 'supplyRequestDetail.dischargeSummary' | translate }}
+          </h2>
+          
+          <div class="space-y-4">
+            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-xs font-semibold text-gray-600 uppercase mb-1">
+                {{ 'supplyRequestDetail.totalApproved' | translate }}
+              </p>
+              <p class="text-2xl font-bold text-gray-900">
+                {{ formatNumber(getTotalApproved()) }}
+              </p>
+            </div>
+            
+            <div class="p-4 rounded-lg border" 
+                 [class.bg-green-50]="getTotalSelectedForDischarge() > 0 && getTotalSelectedForDischarge() <= getTotalApproved()"
+                 [class.border-green-200]="getTotalSelectedForDischarge() > 0 && getTotalSelectedForDischarge() <= getTotalApproved()"
+                 [class.bg-red-50]="getTotalSelectedForDischarge() > getTotalApproved()"
+                 [class.border-red-200]="getTotalSelectedForDischarge() > getTotalApproved()"
+                 [class.bg-gray-50]="getTotalSelectedForDischarge() === 0"
+                 [class.border-gray-200]="getTotalSelectedForDischarge() === 0">
+              <p class="text-xs font-semibold text-gray-600 uppercase mb-1">
+                {{ 'supplyRequestDetail.selectedForDischarge' | translate }}
+              </p>
+              <p class="text-2xl font-bold"
+                 [class.text-green-600]="getTotalSelectedForDischarge() > 0 && getTotalSelectedForDischarge() <= getTotalApproved()"
+                 [class.text-red-600]="getTotalSelectedForDischarge() > getTotalApproved()"
+                 [class.text-gray-900]="getTotalSelectedForDischarge() === 0">
+                {{ formatNumber(getTotalSelectedForDischarge()) }}
+              </p>
+            </div>
+            
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <p class="text-xs font-semibold text-gray-600 uppercase mb-1">
+                {{ 'supplyRequestDetail.remaining' | translate }}
+              </p>
+              <p class="text-2xl font-bold text-gray-900">
+                {{ formatNumber(getTotalRemaining()) }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Discharge Button -->
+          <button
+            (click)="onProcessDischarge()"
+            [disabled]="!canProcessDischarge() || processingDischarge"
+            class="w-full mt-6 px-4 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            [ngClass]="{
+              'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canProcessDischarge() && !processingDischarge,
+              'bg-gray-400': !canProcessDischarge() || processingDischarge
+            }">
+            <span *ngIf="!processingDischarge">{{ 'supplyRequestDetail.apply' | translate }}</span>
+            <span *ngIf="processingDischarge">{{ 'common.processing' | translate }}...</span>
+          </button>
+          
+          <p *ngIf="!canProcessDischarge() && getTotalSelectedForDischarge() === 0" 
+             class="text-xs text-gray-500 text-center mt-3">
+            {{ 'supplyRequestDetail.selectItemsToDischarge' | translate }}
+          </p>
+          <p *ngIf="getTotalSelectedForDischarge() > getTotalApproved()" 
+             class="text-xs text-red-600 text-center mt-3 font-medium">
+            {{ 'supplyRequestDetail.exceedsApprovedAmount' | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lot Selection Modal -->
+<app-modal
+  [isOpen]="isLotModalOpen"
+  [title]="'supplyRequestDetail.selectLots' | translate"
+  size="lg"
+  (closed)="closeLotModal()">
+  
+  <div *ngIf="selectedItem">
+    <!-- Item Info Header -->
+    <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+          <lucide-angular [img]="Package" class="h-5 w-5 text-blue-600"></lucide-angular>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900">{{ selectedItem.itemName }}</h3>
+          <p class="text-sm text-gray-500">{{ selectedItem.itemType }}</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-600">{{ 'supplyRequestDetail.approvedQuantity' | translate }}:</span>
+        <span class="font-bold text-gray-900">{{ formatNumber(selectedItem.approvedQuantity) }}</span>
+      </div>
+    </div>
+
+    <!-- Lot Loading Options -->
+    <div class="mb-4 space-y-3">
+      <!-- Two Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        <button
+          (click)="onShowAvailableLots()"
+          [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+          <span *ngIf="!loadingAllLots">{{ 'supplyRequestDetail.showAvailableLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button
+          (click)="onAddLotManually()"
+          [disabled]="loadingAllLots || loadingManualLot"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed"
+          [ngClass]="{
+            'bg-purple-100 text-purple-900 border-purple-400': showManualLotEntry,
+            'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100': !showManualLotEntry
+          }">
+          {{ 'supplyRequestDetail.addLot' | translate }}
+        </button>
+      </div>
+
+      <!-- Manual Lot Entry (Only shows when button is clicked) -->
+      <div *ngIf="showManualLotEntry" class="flex items-center gap-2 p-3 bg-purple-50 rounded-lg border border-purple-200 animate-fadeIn">
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-purple-900 mb-1 block">
+            {{ 'supplyRequestDetail.enterLotNumber' | translate }}
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="manualLotNumber"
+            [disabled]="loadingManualLot"
+            (keyup.enter)="onGetManualLotDetails()"
+            placeholder="{{ 'supplyRequestDetail.lotNumberPlaceholder' | translate }}"
+            class="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50"
+          />
+        </div>
+        <button
+          type="button"
+          (click)="onGetManualLotDetails()"
+          [disabled]="!manualLotNumber || !manualLotNumber.trim() || loadingManualLot"
+          class="mt-6 px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+          <span *ngIf="!loadingManualLot">{{ 'supplyRequestDetail.getDetails' | translate }}</span>
+          <span *ngIf="loadingManualLot">{{ 'common.loading' | translate }}...</span>
+        </button>
+      </div>
+
+      <!-- Info Message -->
+      <div class="flex items-center gap-2 text-xs text-gray-600 bg-blue-50 p-2 rounded border border-blue-200">
+        <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-blue-600 flex-shrink-0"></lucide-angular>
+        <span>{{ 'supplyRequestDetail.lotSelectionInfo' | translate }}</span>
+      </div>
+    </div>
+
+    <!-- Lots List -->
+    <div class="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+
+      <div *ngFor="let lot of selectedItem.availableLots" 
+           class="border rounded-lg p-4 transition-all relative group"
+           [class.border-red-300]="lot.condition === 'Near Expiry'"
+           [class.bg-red-50]="lot.condition === 'Near Expiry'"
+           [class.border-gray-200]="lot.condition !== 'Near Expiry'"
+           [class.bg-white]="lot.condition !== 'Near Expiry'">
+        
+        <!-- Remove Button -->
+        <button
+          (click)="onRemoveLot(lot.lotNumber)"
+          class="absolute top-2 right-2 p-1.5 rounded-full hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          title="{{ 'common.remove' | translate }}">
+          <lucide-angular [img]="XIcon" class="h-4 w-4"></lucide-angular>
+        </button>
+
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex-1 pr-8">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-semibold text-gray-900">LOT-{{ lot.lotNumber }}</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
+                    [ngClass]="getLotConditionClass(lot.condition)">
+                {{ lot.condition }}
+              </span>
+              <lucide-angular 
+                *ngIf="lot.condition === 'Near Expiry'" 
+                [img]="AlertTriangle" 
+                class="h-4 w-4 text-red-600">
+              </lucide-angular>
+            </div>
+            <p class="text-sm text-gray-600">{{ lot.location }}</p>
+          </div>
+          
+          <div class="text-right pr-5">
+            <p class="text-sm font-semibold text-gray-900">
+              {{ formatNumber(lot.quantity) }} {{ 'supplyRequestDetail.available' | translate }}
+            </p>
+            <p *ngIf="lot.expiryDate" class="text-xs text-gray-500 mt-1">
+              {{ formatDate(lot.expiryDate) }}
+            </p>
+            <p *ngIf="!lot.expiryDate" class="text-xs text-gray-500 mt-1">
+              No Expiry
+            </p>
+            <p class="text-xs mt-1 font-medium" [ngClass]="{
+              'text-red-600': lot.daysUntilExpiry < 60,
+              'text-yellow-600': lot.daysUntilExpiry >= 60 && lot.daysUntilExpiry < 180,
+              'text-green-600': lot.daysUntilExpiry >= 180
+            }">
+              {{ lot.daysUntilExpiry }} {{ 'supplyRequestDetail.daysRemaining' | translate }}
+            </p>
+          </div>
+        </div>
+        
+        <!-- Quantity Input -->
+        <div class="flex items-center gap-3">
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">
+            {{ 'supplyRequestDetail.dischargeQuantity' | translate }}:
+          </label>
+          <input
+            type="number"
+            min="0"
+            [max]="lot.quantity"
+            [value]="tempLotSelections.get(lot.lotNumber) || 0"
+            (input)="onTempLotQuantityChange(lot.lotNumber, +$any($event.target).value)"
+            placeholder="0"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+          />
+          <span class="text-sm text-gray-500 whitespace-nowrap">
+            / {{ formatNumber(lot.quantity) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Summary -->
+    <div class="mt-6 p-4 border-t border-gray-200 bg-gray-50 rounded-lg">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">{{ 'supplyRequestDetail.totalSelected' | translate }}:</span>
+        <span class="text-lg font-bold" 
+              [class.text-green-600]="getTempTotalSelected() > 0 && getTempTotalSelected() <= selectedItem.approvedQuantity"
+              [class.text-red-600]="getTempTotalSelected() > selectedItem.approvedQuantity"
+              [class.text-gray-900]="getTempTotalSelected() === 0">
+          {{ formatNumber(getTempTotalSelected()) }} / {{ formatNumber(selectedItem.approvedQuantity) }}
+        </span>
+      </div>
+      <p *ngIf="getTempTotalSelected() > selectedItem.approvedQuantity" 
+         class="text-xs text-red-600 font-medium">
+        {{ 'supplyRequestDetail.exceedsApprovedAmount' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Modal Footer -->
+  <div modal-footer class="flex gap-3">
+    <button
+      (click)="closeLotModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      (click)="confirmLotSelection()"
+      [disabled]="!canConfirmSelection()"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canConfirmSelection(),
+        'bg-gray-400': !canConfirmSelection()
+      }">
+      {{ 'supplyRequestDetail.confirmSelection' | translate }}
+    </button>
+  </div>
+</app-modal>
+
+<!-- Add Item Modal -->
+<app-modal
+  [isOpen]="isAddItemModalOpen"
+  [title]="'supplyRequestDetail.addItem' | translate"
+  size="md"
+  (closed)="closeAddItemModal()">
+  
+  <form [formGroup]="addItemForm" class="space-y-4">
+    <!-- Item Selection -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.selectItem' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <app-dropdown
+        class="w-full"
+        formControlName="itemId"
+        [options]="availableItems"
+        optionValue="id"
+        [optionLabelFn]="itemOptionLabel"
+        [disabled]="loadingItems"
+        [placeholderSelectable]="true"
+        [placeholderValue]="null"
+        [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
+        placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">
+      </app-dropdown>
+      <p *ngIf="addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.itemRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input
+        type="number"
+        formControlName="quantity"
+        min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched"
+      />
+      <p *ngIf="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.notes' | translate }}
+      </label>
+      <textarea
+        formControlName="notes"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyRequestDetail.notesPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button
+      (click)="closeAddItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      (click)="onSaveAddItem()"
+      [disabled]="addItemForm.invalid || savingItem || loadingItems"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingItems,
+        'bg-gray-400': addItemForm.invalid || savingItem || loadingItems
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Edit Item Quantity Modal -->
+<app-modal
+  [isOpen]="isEditItemModalOpen"
+  [title]="'supplyRequestDetail.editItemQuantity' | translate"
+  size="md"
+  (closed)="closeEditItemModal()">
+  
+  <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <p class="text-sm font-semibold text-gray-700 mb-1">{{ 'supplyRequestDetail.item' | translate }}:</p>
+    <p class="text-base text-gray-900">{{ selectedItemForEdit.itemName }}</p>
+    <p class="text-xs text-gray-600 mt-1">{{ 'supplyRequestDetail.productId' | translate }}: {{ getItemProductId(selectedItemForEdit) }}</p>
+  </div>
+
+  <form [formGroup]="editItemForm" class="space-y-4">
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input
+        type="number"
+        formControlName="quantity"
+        min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched"
+      />
+      <p *ngIf="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.notes' | translate }}
+      </label>
+      <textarea
+        formControlName="notes"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyRequestDetail.notesPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button
+      (click)="closeEditItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      (click)="onSaveEditItem()"
+      [disabled]="editItemForm.invalid || savingItem"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
+        'bg-gray-400': editItemForm.invalid || savingItem
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Remove Item Confirmation Modal -->
+<app-confirm-dialog
+  [isOpen]="isRemoveItemModalOpen"
+  [title]="'supplyRequestDetail.removeItem' | translate"
+  [message]="('supplyRequestDetail.removeItemConfirm' | translate) + ' ' + (selectedItemForRemove?.itemName || '') + '?'"
+  [confirmText]="'common.remove' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onConfirmRemoveItem()"
+  (cancelled)="closeRemoveItemModal()">
+</app-confirm-dialog>

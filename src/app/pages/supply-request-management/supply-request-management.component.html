@@ -4,8 +4,13 @@
     <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'supplyRequestManagement.title' | translate }}</h1>
   </div>
 
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
+  </div>
+
   <!-- Search and Filter Bar -->
-  <div class="flex items-center gap-4 mb-4">
+  <div *ngIf="!loading" class="flex items-center gap-4 mb-4">
     <!-- Search Input -->
     <div class="flex-1 relative">
       <input
@@ -29,7 +34,7 @@
   </div>
 
   <!-- Tabs -->
-  <div class="border-b border-gray-200 mb-4">
+  <div *ngIf="!loading" class="border-b border-gray-200 mb-4">
     <nav class="-mb-px flex space-x-8">
       <button
         *ngFor="let tab of tabs"
@@ -47,7 +52,7 @@
   </div>
 
   <!-- Table -->
-  <div class="bg-white">
+  <div *ngIf="!loading" class="bg-white">
     <div class="overflow-x-auto">
       <table class="min-w-full">
         <thead class="bg-white border-b border-gray-200">
@@ -125,7 +130,7 @@
           (selectionChange)="onItemsPerPageChange($event)"
           [placeholderSelectable]="false">
         </app-dropdown>
-        <span>{{ 'supplyRequestManagement.of' | translate }} 20</span>
+        <span class="min-w-fit">{{ 'supplyRequestManagement.of' | translate }} 20</span>
       </div>
 
       <!-- Page Numbers -->

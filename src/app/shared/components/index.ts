@@ -11,3 +11,5 @@ export * from './toast/toast.component';
 export * from './role-form-modal/role-form-modal.component';
 export * from './user-form-modal/user-form-modal.component';
 export * from './dropdown/dropdown.component';
+export * from './pagination/pagination.component';
+export * from './rows-per-page/rows-per-page.component';

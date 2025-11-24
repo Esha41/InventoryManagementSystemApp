@@ -20,3 +20,7 @@ export * from './discard.service';
 export * from './notification.service';
 export * from './offline-map.service';
 export * from './profile-data.service';
+export * from './error-handling.service';
+export * from './cartridge-mapper.service';
+export * from './cartridge-data.service';
+export * from './order-submission.service';

@@ -3,9 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { TranslationService } from '@services/translation.service';
 import { NotificationService } from '@services/notification.service';
 
-/**
- * Root Application Component
- */
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -22,7 +19,6 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Translation service initializes automatically
     this.notificationService.initialize();
   }
 }

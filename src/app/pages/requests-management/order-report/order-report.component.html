@@ -1,0 +1,324 @@
+<div class="space-y-6">
+  <button
+    (click)="goBack()"
+    class="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+    <lucide-angular [img]="ArrowLeft" class="h-4 w-4"></lucide-angular>
+    {{ 'common.back' | translate }}
+  </button>
+
+  <div class="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <!-- Orders List -->
+    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[var(--color-border)] h-fit">
+      <div class="flex items-center justify-between gap-2">
+        <div>
+          <p class="text-sm font-semibold text-[var(--color-accent)]">
+            {{ 'requestsManagement.orderReport.list.title' | translate }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.list.count' | translate:{ count: orders.length } }}
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="ordersLoading" class="py-6 text-center text-sm text-[var(--color-text-muted)]">
+        {{ 'common.loading' | translate }}
+      </div>
+
+      <div *ngIf="ordersError && !ordersLoading" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ ordersError }}
+      </div>
+
+      <div *ngIf="!ordersLoading && !ordersError && orders.length === 0" class="py-6 text-center text-sm text-[var(--color-text-muted)]">
+        {{ 'requestsManagement.orderReport.list.empty' | translate }}
+      </div>
+
+      <ul *ngIf="!ordersLoading && !ordersError && orders.length > 0" class="mt-4 space-y-2 max-h-[70vh] overflow-y-auto pr-1">
+        <li *ngFor="let order of orders; trackBy: trackByOrderId">
+          <button
+            (click)="selectOrder(order)"
+            class="w-full rounded-2xl border px-4 py-3 text-left transition-all"
+            [ngClass]="order.id === selectedOrderId ? 'border-[var(--color-accent)] bg-[var(--color-background-muted)]' : 'border-[var(--color-border)] hover:border-[var(--color-accent)]'"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-[var(--color-text)]">{{ order.orderNo || ('#' + order.id) }}</p>
+                <p class="text-xs text-[var(--color-text-muted)]">
+                  {{ order.departmentNameEn || order.departmentNameAr || ('requestsManagement.orderReport.list.unknown' | translate) }}
+                </p>
+              </div>
+              <span class="rounded-full bg-[var(--color-background-muted)] px-3 py-1 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ getStatusLabel(order.status) }}
+              </span>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+              <span>{{ getOrderDateLabel(order) }}</span>
+              <span class="font-medium">{{ getPriorityLabel(order.priority) }}</span>
+            </div>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Order Details -->
+    <div class="space-y-6">
+      <div *ngIf="detailsLoading" class="rounded-2xl border border-[var(--color-border)] bg-white px-6 py-8 text-center text-sm text-[var(--color-text-muted)] shadow-sm">
+        {{ 'common.loading' | translate }}
+      </div>
+
+      <div *ngIf="!detailsLoading && errorMessage" class="rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-700">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="!detailsLoading && !errorMessage && orderSummary.orderId; else selectOrderPlaceholder">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'requestsManagement.orderReport.breadcrumb' | translate }}
+            </p>
+            <h1 class="text-3xl font-semibold text-[var(--color-text)]">
+              {{ 'requestsManagement.orderReport.title' | translate }} · {{ orderSummary.orderId }}
+            </h1>
+            <p class="text-[var(--color-text-muted)]">
+              {{ 'requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department } }}
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              (click)="printReport()"
+              class="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] px-5 py-3 text-sm font-semibold text-[var(--color-text)] transition hover:bg-[var(--color-background-hover)]"
+            >
+              <lucide-angular [img]="Printer" class="h-4 w-4"></lucide-angular>
+              {{ 'requestsManagement.orderReport.print' | translate }}
+            </button>
+            <button
+              type="button"
+              (click)="exportToPdf()"
+              [disabled]="isExportingPdf"
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <lucide-angular [img]="FileDown" class="h-4 w-4"></lucide-angular>
+              <span>
+                {{ isExportingPdf ? ('requestsManagement.orderReport.generating' | translate) : ('requestsManagement.orderReport.exportPdf' | translate) }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div #reportContent class="space-y-0">
+          <!-- QR Code -->
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="flex flex-col gap-3 lg:flex-row">
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-[var(--color-accent)]">
+            {{ 'requestsManagement.orderReport.section.qrCode' | translate }}
+          </p>
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">
+            {{ 'requestsManagement.orderReport.labels.scanHeading' | translate }}
+          </h2>
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.scanDescription' | translate }}
+          </p>
+
+          <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
+              <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ 'requestsManagement.orderReport.labels.orderId' | translate }}
+              </p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.orderId }}</p>
+            </div>
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
+              <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
+              </p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
+            </div>
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
+              <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
+              </p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
+            </div>
+            <div class="rounded-xl border border-[var(--color-border)] p-2">
+              <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
+              </p>
+              <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-1 flex-col items-center justify-center rounded-3xl border border-dashed border-[var(--color-border)] bg-[var(--color-background-muted)] p-3 text-center">
+          <div class="rounded-2xl bg-white p-3 shadow-inner">
+            <ng-container *ngIf="qrCodeDataUrl; else qrPlaceholder">
+              <img [src]="qrCodeDataUrl" alt="Order QR Code" class="h-32 w-32" />
+            </ng-container>
+            <ng-template #qrPlaceholder>
+              <div class="flex h-32 w-32 flex-col items-center justify-center gap-2 text-[var(--color-text-muted)]">
+                <lucide-angular [img]="QrCode" class="h-6 w-6"></lucide-angular>
+                <p class="text-xs font-medium">
+                  {{ 'requestsManagement.orderReport.labels.qrGenerating' | translate }}
+                </p>
+              </div>
+            </ng-template>
+          </div>
+          <p class="mt-2 text-xs text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.qrFootnote' | translate }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+          <!-- Order Details -->
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-[var(--color-accent)]">
+            {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
+          </p>
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ orderSummary.usagePurpose }}</h2>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ orderSummary.submittedOn }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="rounded-full border border-[var(--color-border)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text)]">
+            Priority {{ orderSummary.priority }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.department' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.department }}</p>
+        </div>
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.requester' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.requester }}</p>
+        </div>
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.workflowVersion }}</p>
+        </div>
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalItems }}</p>
+        </div>
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.totalQuantity' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.totalQuantity | number }}</p>
+        </div>
+        <div class="rounded-xl border border-[var(--color-border)] p-2">
+          <p class="text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+            {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
+          </p>
+          <p class="mt-1 text-sm font-semibold text-[var(--color-text)]">{{ orderSummary.lastUpdated }}</p>
+        </div>
+      </div>
+
+      <div class="mt-3 overflow-hidden rounded-2xl border border-[var(--color-border)]">
+        <div class="bg-[var(--color-background-muted)] px-2 py-1.5 text-xs font-semibold uppercase text-[var(--color-text-muted)] grid grid-cols-4 gap-2">
+          <span>Item Name</span>
+          <span>Item No</span>
+          <span>Quantity</span>
+          <span>Status</span>
+        </div>
+        <div class="divide-y divide-[var(--color-border)]">
+          <div
+            *ngFor="let item of orderItems"
+            class="grid grid-cols-4 gap-2 px-2 py-1.5 text-xs text-[var(--color-text)]"
+          >
+            <div class="font-semibold">{{ item.name }}</div>
+            <div class="text-[var(--color-text-muted)]">{{ item.caliber }}</div>
+            <div class="text-[var(--color-text-muted)]">
+              {{ item.quantity | number }} {{ 'requestsManagement.orderReport.labels.rounds' | translate }}
+            </div>
+            <div>
+              <span class="rounded-full bg-[var(--color-background-muted)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--color-text-muted)]">
+                {{ item.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Approval Workflow -->
+    <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[var(--color-border)] mb-0">
+      <div class="mb-3">
+        <p class="text-sm font-semibold text-[var(--color-accent)]">
+          {{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate }}
+        </p>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'requestsManagement.orderReport.labels.workflowOwner' | translate }}
+        </h2>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-[var(--color-border)]">
+        <div *ngIf="approvalWorkflow.length > 0" class="bg-[var(--color-background-muted)] px-3 py-2 text-xs font-semibold uppercase text-[var(--color-text-muted)] grid grid-cols-5 gap-2">
+          <span>{{ 'requestsManagement.orderReport.table.step' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.role' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.approver' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.date' | translate }}</span>
+          <span>{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
+        </div>
+        <div class="divide-y divide-[var(--color-border)]">
+          <div
+            *ngFor="let step of approvalWorkflow"
+            class="grid grid-cols-5 gap-2 px-3 py-2 text-xs text-[var(--color-text)]"
+          >
+            <div class="font-semibold">{{ step.step }}</div>
+            <div class="text-[var(--color-text-muted)]">{{ step.role }}</div>
+            <div class="font-medium">{{ step.approver }}</div>
+            <div class="text-[var(--color-text-muted)]">{{ step.date }}</div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold uppercase"
+                [class.bg-green-50]="step.status === 'approved'"
+                [class.text-green-600]="step.status === 'approved'"
+                [class.bg-red-50]="step.status === 'rejected'"
+                [class.text-red-600]="step.status === 'rejected'"
+                [class.bg-yellow-50]="step.status === 'pending'"
+                [class.text-yellow-600]="step.status === 'pending'"
+                [class.bg-blue-50]="step.status === 'in-progress'"
+                [class.text-blue-600]="step.status === 'in-progress'"
+                [class.bg-[var(--color-background-muted)]]="step.status !== 'approved' && step.status !== 'rejected' && step.status !== 'pending' && step.status !== 'in-progress'"
+                [class.text-[var(--color-text-muted)]]="step.status !== 'approved' && step.status !== 'rejected' && step.status !== 'pending' && step.status !== 'in-progress'"
+              >
+                <lucide-angular
+                  [img]="step.status === 'approved' ? CheckCircle2 : Clock4"
+                  class="h-3 w-3"
+                ></lucide-angular>
+                {{ step.status }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="approvalWorkflow.length === 0" class="px-3 py-4 text-center text-xs text-[var(--color-text-muted)]">
+            No approval history available yet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    </div>
+      </div>
+
+      <ng-template #selectOrderPlaceholder>
+        <div class="rounded-2xl border border-dashed border-[var(--color-border)] bg-white px-6 py-12 text-center text-sm text-[var(--color-text-muted)]">
+          {{ 'requestsManagement.orderReport.detailPlaceholder' | translate }}
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
