@@ -11,7 +11,7 @@ import { AuthenticatedUser } from '@models/auth.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EmailService } from './email.service';
-import { EmailConfigurationService } from './email-configuration.service';
+import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
 import { OrderService, OrderDto } from './order.service';
 import { ReturnService, ReturnDto } from './return.service';
 import { DiscardService, DiscardDto } from './discard.service';
@@ -401,7 +401,7 @@ export class NotificationService implements OnDestroy {
   private checkEmailConfiguration(): void {
     console.log('[NotificationService] Checking email configuration...');
     this.emailConfigService.getEmailConfiguration().subscribe({
-      next: (config) => {
+      next: (config: EmailConfigurationDto) => {
         this.emailNotificationsEnabled = config.enableEmailNotifications ?? false;
         this.emailConfigChecked = true;
         console.log('[NotificationService] Email configuration loaded:', {
@@ -410,9 +410,10 @@ export class NotificationService implements OnDestroy {
           host: config.hostIp
         });
       },
-      error: (error) => {
+      error: (error: unknown) => {
+        const httpError = error as { status?: number };
         // If 404, email config doesn't exist yet, so disable email notifications
-        if (error?.status === 404) {
+        if (httpError?.status === 404) {
           this.emailNotificationsEnabled = false;
           this.emailConfigChecked = true;
           console.warn('[NotificationService] Email configuration not found (404). Email notifications disabled.');
