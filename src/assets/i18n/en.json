@@ -36,7 +36,7 @@
     "dashboard": "Dashboard",
     "inventoryDashboard": "Inventory Dashboard",
     "supplyManagement": "Supply Management",
-    "warehouse": "Warehouse",
+    "warehouse": "Depots",
     "warehouseList": "Warehouse List",
     "workflow": "Work Flows",
     "department": "Department",
@@ -162,7 +162,7 @@
     "scheduledPickup": "Your Order Has Been Scheduled for Pick-Up at",
     "sunday": "Sunday",
     "at": "at",
-    "warehouse": "Warehouse",
+    "warehouse": "Depots",
     "proposeNewTime": "Propose New Time",
     "pickupDate": "Pick-Up Date",
     "pickupTime": "Pick-Up Time",
@@ -460,7 +460,7 @@
     "copyright": "Copyright © Barzan Holdings 2024"
   },
   "warehouse": {
-    "title": "General Headquarters Warehouse",
+    "title": "Depots",
     "subtitle": "Warehouse inventory overview and management",
     "consumed": "Consumed",
     "totalCapacity": "Total Capacity",
@@ -469,6 +469,7 @@
     "noWarehousesDescription": "There are currently no warehouses configured in the system.",
     "viewDetails": "View Details",
     "viewInventory": "View Inventory",
+    "viewOnMap": "View on Map",
     "refresh": "Refresh",
     "location": "Location",
     "failedToLoad": "Failed to load warehouses. Please try again."
@@ -528,7 +529,7 @@
     "quantity": "Quantity",
     "lot": "LOT",
     "expiryDate": "Expiry Date",
-    "warehouse": "Warehouse",
+    "warehouse": "Depots",
     "dragImageHere": "Drag image here",
     "or": "or",
     "browseImage": "Browse image",
@@ -596,7 +597,34 @@
     "showing": "Showing",
     "of": "of",
     "noRequests": "No Requests Found",
-    "noRequestsDescription": "There are no supply requests matching your criteria."
+    "noRequestsDescription": "There are no supply requests matching your criteria.",
+    "detail": {
+      "title": "Supply Request Details",
+      "loadingDetails": "Loading request details...",
+      "errorLoading": "Error Loading Request",
+      "requestNumber": "Request Number",
+      "requestDate": "Request Date",
+      "prioritySuffix": "Priority",
+      "requestInformation": "Request Information",
+      "requestPurpose": "Request Purpose",
+      "department": "Department",
+      "requester": "Requester",
+      "notes": "Notes",
+      "requestItems": "Request Items",
+      "item": "item",
+      "items": "items",
+      "itemName": "Item Name",
+      "itemCode": "Item Code",
+      "quantity": "Quantity",
+      "noItemsFound": "No items found for this request",
+      "status": "Status",
+      "currentStatus": "Current Status",
+      "summary": "Summary",
+      "requestId": "Request ID",
+      "type": "Type",
+      "itemsLabel": "Items",
+      "requestPrefix": "Request"
+    }
   },
   "workflow": {
     "title": "Work Flows",
@@ -848,6 +876,9 @@
     "thisUser": "this user",
     "editUser": "Edit user",
     "deleteUserTitle": "Delete user",
+    "userDeletedSuccess": "User {{userName}} has been deleted successfully",
+    "userDeletedError": "Failed to delete user",
+    "user": "user",
     "usersTab": "Users"
   },
   "adminRoles": {
@@ -921,8 +952,12 @@
     "ldapUserNamePlaceholder": "Enter LDAP username",
     "create": "Create User",
     "update": "Update User",
+    "createTitle": "Create User",
+    "updateTitle": "Update User",
     "createSuccess": "User created successfully",
-    "updateSuccess": "User updated successfully"
+    "updateSuccess": "User updated successfully",
+    "createError": "Failed to create user",
+    "updateError": "Failed to update user"
   },
   "roleFormModal": {
     "roleName": "Role Name",

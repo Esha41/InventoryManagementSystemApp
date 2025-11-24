@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Eye } from 'lucide-angular';
+import { LucideAngularModule, Eye, Map } from 'lucide-angular';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 
@@ -20,6 +20,7 @@ export class WarehouseComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   readonly Eye = Eye;
+  readonly Map = Map;
 
   private destroy$ = new Subject<void>();
 
@@ -78,15 +79,50 @@ export class WarehouseComponent implements OnInit, OnDestroy {
       depot.depotCode ||
       (codeFromName ? codeFromName[1] : `DEP-${depot.id.toString().padStart(2, '0')}`);
 
+    // Generate dummy statistics based on warehouse code for consistency
+    // This will be replaced with actual data later
+    const dummyStats = this.getDummyStatistics(depot.id, code);
+
     return {
       id: depot.id.toString(),
       name: depot.nameEn,
       code: code,
-      // TODO: Calculate these from actual inventory data
-      neqPercentage: 0,
-      consumedPercentage: 0,
-      totalCapacity: 0,
-      currentStock: 0
+      neqPercentage: dummyStats.neqPercentage,
+      consumedPercentage: dummyStats.consumedPercentage,
+      totalCapacity: dummyStats.totalCapacity,
+      currentStock: dummyStats.currentStock
+    };
+  }
+
+  /**
+   * Generate dummy statistics for warehouse display
+   * TODO: Replace with actual API data when backend is ready
+   */
+  private getDummyStatistics(warehouseId: number, code: string): {
+    neqPercentage: number;
+    consumedPercentage: number;
+    totalCapacity: number;
+    currentStock: number;
+  } {
+    // Use warehouse ID to generate consistent dummy data
+    // This ensures the same warehouse always shows the same stats
+    const seed = warehouseId % 10;
+    
+    // Generate NEQ percentage (30-95% range)
+    const neqPercentage = 30 + (seed * 7) + (warehouseId % 3) * 5;
+    
+    // Generate Consumed percentage (50-95% range)
+    const consumedPercentage = 50 + (seed * 5) + (warehouseId % 4) * 3;
+    
+    // Generate capacity and stock values
+    const totalCapacity = 10000 + (warehouseId * 500);
+    const currentStock = Math.round(totalCapacity * (consumedPercentage / 100));
+
+    return {
+      neqPercentage: Math.min(95, Math.max(30, neqPercentage)),
+      consumedPercentage: Math.min(95, Math.max(50, consumedPercentage)),
+      totalCapacity,
+      currentStock
     };
   }
 
@@ -97,5 +133,13 @@ export class WarehouseComponent implements OnInit, OnDestroy {
 
   refreshWarehouses(): void {
     this.loadWarehouses();
+  }
+
+  onViewOnMap(): void {
+ 
+    if (this.warehouses.length > 0) {
+      const firstWarehouseId = this.warehouses[0].id;
+      this.router.navigate(['/warehouse', firstWarehouseId, 'inventory', '0', 'map']);
+    }
   }
 }

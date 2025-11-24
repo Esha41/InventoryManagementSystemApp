@@ -457,10 +457,10 @@
     "low": "منخفضة"
   },
   "footer": {
-    "copyright": "حقوق النشر © بارزان القابضة 2024"
+    "copyright": "حقوق النشر © برزان القابضة 2024"
   },
   "warehouse": {
-    "title": "المستودعات الرئيسية",
+    "title": "المستودعات",
     "subtitle": "نظرة عامة على مخزون المستودع وإدارته",
     "consumed": "مستهلك",
     "totalCapacity": "السعة الإجمالية",
@@ -469,6 +469,7 @@
     "noWarehousesDescription": "لا توجد مستودعات مكونة حالياً في النظام.",
     "viewDetails": "عرض التفاصيل",
     "viewInventory": "عرض المخزون",
+    "viewOnMap": "عرض على الخريطة",
     "refresh": "تحديث",
     "location": "الموقع",
     "failedToLoad": "فشل تحميل المستودعات. يرجى المحاولة مرة أخرى."
@@ -596,7 +597,34 @@
     "showing": "عرض",
     "of": "من",
     "noRequests": "لم يتم العثور على طلبات",
-    "noRequestsDescription": "لا توجد طلبات إمدادات تطابق معايير البحث الخاصة بك."
+    "noRequestsDescription": "لا توجد طلبات إمدادات تطابق معايير البحث الخاصة بك.",
+    "detail": {
+      "title": "تفاصيل طلب الإمداد",
+      "loadingDetails": "جاري تحميل تفاصيل الطلب...",
+      "errorLoading": "خطأ في تحميل الطلب",
+      "requestNumber": "رقم الطلب",
+      "requestDate": "تاريخ الطلب",
+      "prioritySuffix": "الأولوية",
+      "requestInformation": "معلومات الطلب",
+      "requestPurpose": "غرض الطلب",
+      "department": "القسم",
+      "requester": "مقدم الطلب",
+      "notes": "ملاحظات",
+      "requestItems": "أصناف الطلب",
+      "item": "صنف",
+      "items": "أصناف",
+      "itemName": "اسم الصنف",
+      "itemCode": "رمز الصنف",
+      "quantity": "الكمية",
+      "noItemsFound": "لم يتم العثور على أصناف لهذا الطلب",
+      "status": "الحالة",
+      "currentStatus": "الحالة الحالية",
+      "summary": "ملخص",
+      "requestId": "رقم الطلب",
+      "type": "النوع",
+      "itemsLabel": "الأصناف",
+      "requestPrefix": "طلب"
+    }
   },
   "workflow": {
     "title": "سير العمل",
@@ -848,6 +876,9 @@
     "thisUser": "هذا المستخدم",
     "editUser": "تعديل المستخدم",
     "deleteUserTitle": "حذف المستخدم",
+    "userDeletedSuccess": "تم حذف المستخدم {{userName}} بنجاح",
+    "userDeletedError": "فشل حذف المستخدم",
+    "user": "مستخدم",
     "usersTab": "المستخدمون"
   },
   "adminRoles": {
@@ -916,7 +947,13 @@
     "ldapUserName": "اسم مستخدم LDAP",
     "ldapUserNamePlaceholder": "أدخل اسم مستخدم LDAP",
     "create": "إنشاء مستخدم",
-    "update": "تحديث المستخدم"
+    "update": "تحديث المستخدم",
+    "createTitle": "إنشاء مستخدم",
+    "updateTitle": "تحديث المستخدم",
+    "createSuccess": "تم إنشاء المستخدم بنجاح",
+    "updateSuccess": "تم تحديث المستخدم بنجاح",
+    "createError": "فشل إنشاء المستخدم",
+    "updateError": "فشل تحديث المستخدم"
   },
   "roleFormModal": {
     "roleName": "اسم الدور",

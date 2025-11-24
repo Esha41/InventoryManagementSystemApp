@@ -49,7 +49,7 @@ export const routes: Routes = [
       },
       {
         path: 'supply-request-management/:id',
-        loadComponent: () => import('@pages/requests-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
+        loadComponent: () => import('@pages/supply-request-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['request.view', 'order.view'] }
       },
@@ -158,6 +158,12 @@ export const routes: Routes = [
       {
         path: 'requests-management/:id/workflow-approval',
         loadComponent: () => import('@pages/requests-management/workflow-approval-detail/workflow-approval-detail.component').then(m => m.WorkflowApprovalDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
+        path: 'requests-management/:id/supply-request-detail',
+        loadComponent: () => import('@pages/requests-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
