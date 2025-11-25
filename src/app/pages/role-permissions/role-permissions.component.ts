@@ -10,6 +10,7 @@ import { RoleDto, CrudPermission } from '@models/backend-user.model';
 import { CardComponent } from '@components/card/card.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 
 // ============================================================================
 // INTERFACES
@@ -46,7 +47,8 @@ interface PermissionInfo {
     LucideAngularModule,
     CardComponent,
     TranslateModule,
-    ButtonComponent
+    ButtonComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.css']
@@ -79,6 +81,8 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   
   isLoading = false;
   isSaving = false;
+  
+  rowsPerPage = 10;
   
   permissionForm: FormGroup;
   private destroy$ = new Subject<void>();
@@ -134,6 +138,14 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     const search = this.roleSearchTerm.trim().toLowerCase();
     if (!search) return this.roles;
     return this.roles.filter(role => role.name?.toLowerCase().includes(search));
+  }
+
+  get paginatedRoles(): RoleDto[] {
+    return this.filteredRoles.slice(0, this.rowsPerPage);
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
   }
 
   // ============================================================================

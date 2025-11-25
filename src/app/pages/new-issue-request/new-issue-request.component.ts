@@ -148,7 +148,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   };
 
   reviewFormData: ReviewFormData = {
-    requesterName: 'Name',
+    requesterName: '', // Will be populated from /Users/me API
     requesterComments: '',
     orderType: 'New Issue Request',
     orderDocument: ''
@@ -182,6 +182,15 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     const hasSelection = this.cartridgeState.selectedEntries.length > 0;
     const quantitiesValid = this.cartridgeState.selectedEntries.every(entry => entry.quantity > 0);
     return hasSelection && quantitiesValid;
+  }
+
+  get currentRequesterName(): string {
+
+    return resolveUserDisplayName(
+      this.userContextState.currentUserDetails?.nameEn,
+      this.userContextState.currentUserDetails?.nameAr,
+      this.userContextState.currentUserDetails?.userName
+    ) || this.userContextState.fallbackRequesterName || this.reviewFormData.requesterName || '';
   }
 
   ngOnInit(): void {
@@ -375,6 +384,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
           // (step 0 is allowance selection, step 1 is cartridge selection)
           if (step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
             this.loadCartridges();
+          }
+
+          // Ensure requester name is synced when navigating to review step (step 3)
+          if (step === 3) {
+            this.syncRequesterNameFromUserDetails();
           }
         }
       }
@@ -691,6 +705,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       userName: user.userName,
       departmentId: user.departmentId
     });
+
+    // Update requester name if backend details not yet available (fallback)
+    if (!this.userContextState.currentUserDetails) {
+      this.syncRequesterNameFromUserDetails();
+    }
   }
 
   private applyBackendUserDetails(details: BackendUserDto | null): void {
@@ -704,6 +723,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       userName: details.userName,
       departmentId: details.departmentId
     });
+
+   
+    this.syncRequesterNameFromUserDetails();
   }
 
   private applyUserContext(context: {
@@ -728,9 +750,25 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     const preferredName = resolveUserDisplayName(context.nameEn, context.nameAr, context.userName);
     if (preferredName) {
       this.userContextState.fallbackRequesterName = preferredName;
-      if (this.userContextState.lockRequesterName) {
-        this.reviewFormData.requesterName = preferredName;
-      }
+    }
+  }
+
+  /**
+   * Syncs requester name from user details to reviewFormData
+   * Called when user details are loaded or updated
+   * Single source of truth for updating the name
+   */
+  private syncRequesterNameFromUserDetails(): void {
+    // Prioritize currentUserDetails from /Users/me API
+    const preferredName = resolveUserDisplayName(
+      this.userContextState.currentUserDetails?.nameEn,
+      this.userContextState.currentUserDetails?.nameAr,
+      this.userContextState.currentUserDetails?.userName
+    ) || this.userContextState.fallbackRequesterName;
+
+    // Update reviewFormData only if we have a valid name
+    if (preferredName) {
+      this.reviewFormData.requesterName = preferredName;
     }
   }
 
@@ -801,9 +839,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.requestPurposeState.selectedRequestPurposeId = null;
 
     // Reset review form data
-    this.reviewFormData.requesterName = this.userContextState.lockRequesterName
-      ? this.getPreferredRequesterName()
-      : 'Name';
+    // Sync name from /Users/me API data
+    this.syncRequesterNameFromUserDetails();
+    if (!this.reviewFormData.requesterName) {
+      // Fallback if no user details available
+      this.reviewFormData.requesterName = this.getPreferredRequesterName();
+    }
     this.reviewFormData.requesterComments = '';
 
     // Reset order submission state

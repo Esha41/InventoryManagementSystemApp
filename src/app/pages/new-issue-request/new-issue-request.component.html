@@ -169,7 +169,7 @@
   <!-- Step 3: Review -->
   <app-review-form
     *ngIf="currentStep === 3"
-    [requesterName]="reviewFormData.requesterName"
+    [requesterName]="currentRequesterName"
     [requesterComments]="reviewFormData.requesterComments"
     [orderType]="reviewFormData.orderType"
     [orderPriority]="usageFormData.orderPriority"
@@ -188,10 +188,6 @@
       <div *ngIf="orderSubmissionState.orderNumber">
         <span class="font-semibold">{{ 'newIssueRequest.orderNumber' | translate }}:</span>
         <span>{{ orderSubmissionState.orderNumber }}</span>
-      </div>
-      <div *ngIf="orderSubmissionState.createdOrderId !== null">
-        <span class="font-semibold">ID:</span>
-        <span>{{ orderSubmissionState.createdOrderId }}</span>
       </div>
     </div>
 
