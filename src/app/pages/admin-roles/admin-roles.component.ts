@@ -5,10 +5,12 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { RoleFormModalComponent } from '@components/role-form-modal/role-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ToastService } from '@services/toast.service';
 
 @Component({
   selector: 'app-admin-roles',
@@ -20,7 +22,8 @@ import { TranslateModule } from '@ngx-translate/core';
     LucideAngularModule,
     RoleFormModalComponent,
     ConfirmDialogComponent,
-    TranslateModule
+    TranslateModule,
+    HasPermissionDirective
   ],
   templateUrl: './admin-roles.component.html',
   styleUrls: ['./admin-roles.component.css']
@@ -47,7 +50,11 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private backendUserService: BackendUserService) {}
+  constructor(
+    private backendUserService: BackendUserService,
+    private toastService: ToastService,
+    private translateService: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.loadRoles();
@@ -66,6 +73,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   loadRoles(): void {
     this.isLoading = true;
+    this.errorMessage = '';
     this.backendUserService.getRoles().subscribe({
       next: (roles: RoleDto[]) => {
         this.roles = roles;
@@ -73,7 +81,14 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         this.isLoading = false;
-        this.errorMessage = 'Failed to load roles: ' + (error.message || 'Unknown error');
+        const errorMsg = error.message || 'Unknown error';
+        this.errorMessage = 'Failed to load roles: ' + errorMsg;
+        this.translateService.get(['toast.error', 'toast.failedToLoadRoles']).subscribe(translations => {
+          this.toastService.error(
+            translations['toast.failedToLoadRoles'] || `Failed to load roles: ${errorMsg}`,
+            translations['toast.error']
+          );
+        });
       }
     });
   }
@@ -97,23 +112,70 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   confirmDelete(): void {
     if (this.selectedRole) {
+      const roleName = this.selectedRole.name;
       this.backendUserService.deleteRole(this.selectedRole.id).subscribe({
         next: (success: boolean) => {
           if (success) {
             this.showDeleteConfirm = false;
             this.selectedRole = undefined;
+            this.translateService.get(['toast.success', 'toast.roleDeleted']).subscribe(translations => {
+              const message = (translations['toast.roleDeleted'] || 'Role deleted successfully').replace('{roleName}', roleName);
+              this.toastService.success(message, translations['toast.success']);
+            });
             this.loadRoles();
           }
         },
         error: (error: any) => {
-          this.errorMessage = error.message || 'Failed to delete role';
+          const errorMsg = error.message || 'Failed to delete role';
+          this.errorMessage = errorMsg;
+          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe(translations => {
+            const message = (translations['toast.failedToDeleteRole'] || `Failed to delete role: ${errorMsg}`).replace('{roleName}', roleName);
+            this.toastService.error(message, translations['toast.error']);
+          });
         }
       });
     }
   }
 
-  onRoleSaved(): void {
+  onRoleSaved(role: RoleDto): void {
+    // Role was saved successfully (create or update)
+    const isCreate = this.roleModalMode === 'create';
+    const roleName = role?.name || this.selectedRole?.name || '';
+    
+    this.translateService.get([
+      'toast.success',
+      isCreate ? 'toast.roleCreated' : 'toast.roleUpdated'
+    ]).subscribe(translations => {
+      const messageKey = isCreate ? 'toast.roleCreated' : 'toast.roleUpdated';
+      let message = translations[messageKey] || (isCreate ? 'Role created successfully' : 'Role updated successfully');
+      if (roleName && message.includes('{roleName}')) {
+        message = message.replace('{roleName}', roleName);
+      }
+      this.toastService.success(message, translations['toast.success']);
+    });
+    
     this.loadRoles();
+  }
+
+  onRoleError(errorMessage: string): void {
+    // Role save failed (create or update)
+    const isCreate = this.roleModalMode === 'create';
+    const roleName = this.selectedRole?.name || '';
+    
+    this.translateService.get([
+      'toast.error',
+      isCreate ? 'toast.failedToCreateRole' : 'toast.failedToUpdateRole'
+    ]).subscribe(translations => {
+      const messageKey = isCreate ? 'toast.failedToCreateRole' : 'toast.failedToUpdateRole';
+      let message = translations[messageKey] || (isCreate ? 'Failed to create role' : 'Failed to update role');
+      if (roleName && message.includes('{roleName}')) {
+        message = message.replace('{roleName}', roleName);
+      }
+      if (errorMessage && !message.includes(errorMessage)) {
+        message += `: ${errorMessage}`;
+      }
+      this.toastService.error(message, translations['toast.error']);
+    });
   }
 
   formatDate(date: Date | undefined): string {

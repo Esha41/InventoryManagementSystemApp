@@ -18,6 +18,7 @@ import { LookupItem } from '@models/lookup.model';
 import { forkJoin } from 'rxjs';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 interface Asset {
   id: string;
@@ -48,6 +49,7 @@ interface Asset {
     LucideAngularModule,
     TranslateModule,
     DropdownComponent,
+    HasPermissionDirective,
     PaginationComponent,
     RowsPerPageComponent
   ],

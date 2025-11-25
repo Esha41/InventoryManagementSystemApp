@@ -90,22 +90,26 @@ export class SidebarComponent implements OnInit, OnDestroy {
       ]
     },
     {
-      label: "nav.newIssueRequest",
-      icon: File,
-      route: '/new-issue-request',
-      permissions: ['newrequest.page', 'newrequest.create', 'order.create']
-    },
-    {
-      label: 'nav.returnRequest',
-      icon: RotateCcw,
-      route: '/return-request',
-      permissions: ['returnrequest.page', 'returnrequest.create', 'order.create']
-    },
-    {
-      label: 'nav.discardRequest',
-      icon: File,
-      route: '/discard-request',
-      permissions: ['discard.page', 'discard.create', 'order.create']
+      label: 'nav.orderManagement',
+      icon: ClipboardList,
+      permissions: ['newrequest.page', 'newrequest.create', 'returnrequest.page', 'returnrequest.create', 'discard.page', 'discard.create', 'order.create'],
+      children: [
+        {
+          label: 'nav.newIssueRequest',
+          route: '/new-issue-request',
+          permissions: ['newrequest.page', 'newrequest.create', 'order.create']
+        },
+        {
+          label: 'nav.returnRequest',
+          route: '/return-request',
+          permissions: ['returnrequest.page', 'returnrequest.create', 'order.create']
+        },
+        {
+          label: 'nav.discardRequest',
+          route: '/discard-request',
+          permissions: ['discard.page', 'discard.create', 'order.create']
+        }
+      ]
     },
     {
       label: 'nav.requestsManagement',
@@ -232,6 +236,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Auto-expand department menu if on department/allowance routes
     if (url.startsWith('/allowance') || url.startsWith('/department')) {
       this.expandedMenus.add('nav.department');
+    }
+   
+    if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
+      this.expandedMenus.add('nav.orderManagement');
     }
   }
 

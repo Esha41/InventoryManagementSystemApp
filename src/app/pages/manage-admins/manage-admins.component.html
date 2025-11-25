@@ -5,14 +5,16 @@
       <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'manageAdmins.title' | translate }}</h1>
       <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'manageAdmins.subtitle' | translate }}</p>
     </div>
-    <button
-      *ngIf="activeTab === 'users'"
-      (click)="onAddUser()"
-      class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors"
-    >
-      <lucide-angular [img]="UserPlus" class="h-4 w-4"></lucide-angular>
-      {{ 'manageAdmins.addUser' | translate }}
-    </button>
+    <ng-container *ngIf="activeTab === 'users'">
+      <button
+        *appHasPermission="'Users.Create'"
+        (click)="onAddUser()"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors"
+      >
+        <lucide-angular [img]="UserPlus" class="h-4 w-4"></lucide-angular>
+        {{ 'manageAdmins.addUser' | translate }}
+      </button>
+    </ng-container>
     <button
       *ngIf="activeTab === 'lookups' && selectedTable"
       (click)="onAddLookup()"
@@ -163,6 +165,7 @@
             <td class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
                 <button
+                  *appHasPermission="'Users.Edit'"
                   (click)="onEdit(user)"
                   class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                   [title]="'manageAdmins.editUser' | translate"
@@ -170,6 +173,7 @@
                   <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                 </button>
                 <button
+                  *appHasPermission="'Users.Delete'"
                   (click)="onDelete(user)"
                   class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                   [title]="'manageAdmins.deleteUserTitle' | translate"

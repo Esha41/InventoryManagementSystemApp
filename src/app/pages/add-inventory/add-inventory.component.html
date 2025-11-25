@@ -71,7 +71,7 @@
                   [options]="availableItems"
                   optionValue="id"
                   [optionLabelFn]="itemOptionLabel"
-                  [placeholderSelectable]="true"
+                  [placeholderSelectable]="false"
                   [placeholderValue]="null"
                   [error]="isFieldInvalid('itemId', i)"
                   placeholder="{{ 'addInventory.selectItem' | translate }}">
@@ -134,7 +134,7 @@
                   [options]="suppliers"
                   optionValue="id"
                   [optionLabelFn]="supplierOptionLabel"
-                  [placeholderSelectable]="true"
+                  [placeholderSelectable]="false"
                   [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectSupplier' | translate }}">
                 </app-dropdown>
@@ -151,7 +151,7 @@
                   [options]="manufacturers"
                   optionValue="id"
                   [optionLabelFn]="manufacturerOptionLabel"
-                  [placeholderSelectable]="true"
+                  [placeholderSelectable]="false"
                   [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectManufacturer' | translate }}">
                 </app-dropdown>
@@ -168,7 +168,7 @@
                   [options]="countries"
                   optionValue="id"
                   [optionLabelFn]="countryOptionLabel"
-                  [placeholderSelectable]="true"
+                  [placeholderSelectable]="false"
                   [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectCountry' | translate }}">
                 </app-dropdown>

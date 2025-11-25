@@ -6,6 +6,7 @@
       <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'adminRoles.subtitle' | translate }}</p>
     </div>
     <button
+      *appHasPermission="'Roles.Create'"
       (click)="onAddRole()"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors"
     >
@@ -73,14 +74,18 @@
 
         <!-- Actions -->
         <div class="flex items-center gap-2 pt-4 border-t border-[var(--color-border)]">
+          <!-- Edit Button - Only visible if user has Roles.Edit permission -->
           <button
+            *appHasPermission="'Roles.Edit'"
             (click)="onEditRole(role)"
             class="flex-1 px-3 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
           >
             <lucide-angular [img]="Edit" class="h-4 w-4 inline mr-1"></lucide-angular>
             {{ 'adminRoles.edit' | translate }}
           </button>
+          <!-- Delete Button - Only visible if user has Roles.Delete permission -->
           <button
+            *appHasPermission="'Roles.Delete'"
             (click)="onDeleteRole(role)"
             [disabled]="role.isDefaultRole"
             [class.opacity-50]="role.isDefaultRole"
@@ -118,7 +123,8 @@
   [role]="selectedRole"
   [mode]="roleModalMode"
   (closed)="showRoleModal = false"
-  (saved)="onRoleSaved()"
+  (saved)="onRoleSaved($event)"
+  (error)="onRoleError($event)"
 />
 
 <!-- Delete Confirmation -->

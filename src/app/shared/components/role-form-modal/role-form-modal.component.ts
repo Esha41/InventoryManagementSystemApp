@@ -40,7 +40,8 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   @Input() mode: 'create' | 'edit' = 'create';
   
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<RoleDto>();
+  @Output() error = new EventEmitter<string>();
   
   roleForm!: FormGroup;
   isLoading = false;
@@ -158,13 +159,15 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         next: (role: RoleDto) => {
           console.log('Role created successfully:', role);
           this.isLoading = false;
-          this.saved.emit();
+          this.saved.emit(role);
           this.close();
         },
         error: (error: any) => {
           console.error('Error creating role:', error);
           this.isLoading = false;
-          this.errorMessage = error.message || 'Failed to create role';
+          const errorMsg = error.message || 'Failed to create role';
+          this.errorMessage = errorMsg;
+          this.error.emit(errorMsg);
         }
       });
     } else if (this.role) {
@@ -180,12 +183,14 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       this.backendUserService.updateRole(this.role.id, dto).subscribe({
         next: (role: RoleDto) => {
           this.isLoading = false;
-          this.saved.emit();
+          this.saved.emit(role);
           this.close();
         },
         error: (error: any) => {
           this.isLoading = false;
-          this.errorMessage = error.message || 'Failed to update role';
+          const errorMsg = error.message || 'Failed to update role';
+          this.errorMessage = errorMsg;
+          this.error.emit(errorMsg);
         }
       });
     }

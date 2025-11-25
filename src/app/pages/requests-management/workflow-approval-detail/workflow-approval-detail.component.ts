@@ -12,11 +12,12 @@ import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum, RequestStatusEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-workflow-approval-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, HasPermissionDirective],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css']
 })

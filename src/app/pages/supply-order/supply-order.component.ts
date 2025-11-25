@@ -23,6 +23,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
 import { SUPPLY_ORDER_CONSTANTS } from '@constants/app.constants';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-supply-order',
@@ -34,7 +35,8 @@ import { SUPPLY_ORDER_CONSTANTS } from '@constants/app.constants';
     TranslateModule,
     LucideAngularModule,
     DropdownComponent,
-    ModalComponent
+    ModalComponent,
+    HasPermissionDirective
   ],
   templateUrl: './supply-order.component.html',
   styleUrls: ['./supply-order.component.css']

@@ -19,6 +19,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -34,7 +35,8 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
     EditInventoryDetailModalComponent,
     DropdownComponent,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    HasPermissionDirective
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css']
