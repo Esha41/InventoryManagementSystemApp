@@ -57,7 +57,6 @@
     "manageAdmins": "إدارة المسؤولين",
     "adminRoles": "أدوار المسؤولين",
     "rolePermissions": "صلاحيات الأدوار",
-    "emailSettings": "إعدادات البريد الإلكتروني",
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "إدارة المخزون المتكاملة",
     "supplyOrder": "طلب التوريد"
@@ -919,40 +918,6 @@
     "tryAdjusting": "حاول تعديل معايير البحث أو التصفية.",
     "clearSearch": "مسح البحث",
     "selected": "مختارة"
-  },
-  "emailSettings": {
-    "title": "إعدادات النظام",
-    "emailSettings": {
-      "title": "إعدادات البريد الإلكتروني",
-      "enableEmailNotifications": "تفعيل إشعارات البريد الإلكتروني",
-      "host": "المضيف",
-      "port": "المنفذ",
-      "enableSSL": "تفعيل SSL",
-      "senderName": "اسم المرسل",
-      "accountUsername": "اسم مستخدم الحساب",
-      "accountPassword": "كلمة مرور الحساب"
-    },
-    "assetReturnEmailContent": {
-      "title": "محتوى بريد إرجاع الأصل",
-      "placeholder": "أدخل محتوى البريد الإلكتروني لإشعارات إرجاع الأصل",
-      "hint": "استخدم **نص** للتنسيق العريض. المتغيرات: AssetName, ReturnStatus"
-    },
-    "bulkAssetNotificationEmailContent": {
-      "title": "محتوى إشعار الأصول المجمعة",
-      "placeholder": "أدخل محتوى البريد الإلكتروني لإشعارات الأصول المجمعة",
-      "hint": "سيتم استخدام هذا المحتوى لإشعارات تعيين الأصول المجمعة"
-    },
-    "otpSettings": {
-      "title": "إعدادات OTP",
-      "enableEmailLoginOTP": "تفعيل تسجيل الدخول عبر البريد الإلكتروني OTP"
-    },
-    "organizationSettings": {
-      "title": "إعدادات المؤسسة",
-      "organizationName": "اسم المؤسسة",
-      "organizationNameArabic": "اسم المؤسسة بالعربية",
-      "organizationLogoFilename": "اسم ملف شعار المؤسسة",
-      "organizationReportLogoFilename": "اسم ملف شعار تقرير المؤسسة"
-    }
   },
   "accessDenied": {
     "title": "تم رفض الوصول",
