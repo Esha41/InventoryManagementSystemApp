@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Shield, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -179,6 +179,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.rolePermissions',
       icon: Settings,
       route: '/role-permissions',
+      permissions: ['roles.edit', 'roles.view']
+    },
+    {
+      label: 'nav.emailSettings',
+      icon: Mail,
+      route: '/email-settings',
       permissions: ['roles.edit', 'roles.view']
     }
   ];

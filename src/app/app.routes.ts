@@ -222,6 +222,12 @@ export const routes: Routes = [
         data: { permissions: ['roles.edit', 'roles.view'] }
       },
       {
+        path: 'email-settings',
+        loadComponent: () => import('@pages/email-settings/email-settings.component').then(m => m.EmailSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['roles.edit', 'roles.view'] }
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@pages/notifications/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],
