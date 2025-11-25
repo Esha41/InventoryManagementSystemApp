@@ -57,6 +57,7 @@
     "manageAdmins": "إدارة المسؤولين",
     "adminRoles": "أدوار المسؤولين",
     "rolePermissions": "صلاحيات الأدوار",
+    "emailSettings": "إعدادات البريد الإلكتروني",
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "إدارة المخزون المتكاملة",
     "supplyOrder": "طلب التوريد"
@@ -1395,6 +1396,31 @@
         "singleSession": "يمكن تسجيل دخول مستخدم واحد فقط في كل مرة"
       }
     }
+  },
+  "emailSettings": {
+    "title": "إعدادات النظام",
+    "subtitle": "تكوين إعدادات إشعارات البريد الإلكتروني",
+    "emailSettings": "إعدادات البريد الإلكتروني",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "loading": "جاري التحميل...",
+    "enableEmailNotifications": "تفعيل إشعارات البريد الإلكتروني",
+    "host": "المضيف",
+    "hostPlaceholder": "مثال: smtp.office365.com",
+    "port": "المنفذ",
+    "portPlaceholder": "مثال: 587",
+    "enableSsl": "تفعيل SSL",
+    "senderName": "اسم المرسل",
+    "senderNamePlaceholder": "مثال: Asset Admin MSDF",
+    "accountUsername": "اسم مستخدم الحساب",
+    "accountUsernamePlaceholder": "مثال: Asset_Notification@MSDF.gov.qa",
+    "accountPassword": "كلمة مرور الحساب",
+    "passwordPlaceholder": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+    "passwordRequiredPlaceholder": "أدخل كلمة المرور",
+    "leaveBlankToKeep": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "savedSuccessfully": "تم حفظ إعدادات البريد الإلكتروني بنجاح"
   }
 }
 
