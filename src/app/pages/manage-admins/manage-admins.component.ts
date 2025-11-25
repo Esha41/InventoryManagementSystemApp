@@ -16,6 +16,7 @@ import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } f
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-manage-admins',
@@ -31,7 +32,8 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
     ConfirmDialogComponent,
     TranslateModule,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    HasPermissionDirective
   ],
   templateUrl: './manage-admins.component.html',
   styleUrls: ['./manage-admins.component.css']

@@ -3,6 +3,7 @@
   <div class="mb-8 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'depot.title' | translate }}</h1>
     <button
+      *appHasPermission="'Depots.Create'"
       (click)="openAddModal()"
       class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors"
     >
@@ -49,6 +50,7 @@
           <td class="px-6 py-4 text-start">
             <div class="flex gap-2">
               <button
+                *appHasPermission="'Depots.Edit'"
                 (click)="openEditModal(depot)"
                 class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 [title]="'depot.edit' | translate"
@@ -56,6 +58,7 @@
                 <lucide-icon [img]="Edit" [size]="18"></lucide-icon>
               </button>
               <button
+                *appHasPermission="'Depots.Delete'"
                 (click)="deleteDepot(depot)"
                 class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 [title]="'depot.delete' | translate"

@@ -607,7 +607,7 @@
         optionValue="id"
         [optionLabelFn]="itemOptionLabel"
         [disabled]="loadingItems"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="null"
         [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
         placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">

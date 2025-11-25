@@ -123,7 +123,7 @@
             [options]="hccFilterOptions"
             optionLabel="label"
             optionValue="value"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             placeholder="{{ 'assetList.filters.allHcc' | translate }}">
           </app-dropdown>
         </div>
@@ -140,7 +140,7 @@
             [options]="caseTypeFilterOptions"
             optionLabel="label"
             optionValue="value"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
           </app-dropdown>
         </div>
@@ -157,7 +157,7 @@
             [options]="hazardDivisionFilterOptions"
             optionLabel="label"
             optionValue="value"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
           </app-dropdown>
         </div>
@@ -174,7 +174,7 @@
             [options]="compatibilityFilterOptions"
             optionLabel="label"
             optionValue="value"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
           </app-dropdown>
         </div>
@@ -329,7 +329,7 @@
                       <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
                     </button>
                     <button
-                      *ngIf="canEdit"
+                      *appHasPermission="'Ammunition.Edit'"
                       (click)="onEdit(asset.id)"
                       class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
                       [title]="'common.edit' | translate"
@@ -337,7 +337,7 @@
                       <lucide-angular [img]="Edit" class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
                     </button>
                     <button
-                      *ngIf="canEdit"
+                      *appHasPermission="'Ammunition.Delete'"
                       (click)="onDelete(asset.id)"
                       class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
                       [title]="'common.delete' | translate"
@@ -577,7 +577,7 @@
                     [options]="hccList"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('hccId')?.invalid && editForm.get('hccId')?.touched)"
                     placeholder="Select HCC">
@@ -609,7 +609,7 @@
                     [options]="units"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('bulletDiameterUnitId')?.invalid && editForm.get('bulletDiameterUnitId')?.touched)"
                     placeholder="Select bullet diameter unit">
@@ -641,7 +641,7 @@
                     [options]="units"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('caseLengthUnitId')?.invalid && editForm.get('caseLengthUnitId')?.touched)"
                     placeholder="Select case length unit">
@@ -659,7 +659,7 @@
                     [options]="caseTypeList"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('caseTypeId')?.invalid && editForm.get('caseTypeId')?.touched)"
                     placeholder="Select case type">
@@ -677,7 +677,7 @@
                     [options]="propellantList"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('propellantId')?.invalid && editForm.get('propellantId')?.touched)"
                     placeholder="Select propellant">
@@ -695,7 +695,7 @@
                     [options]="compatibilityList"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('compatibilityId')?.invalid && editForm.get('compatibilityId')?.touched)"
                     placeholder="Select compatibility">
@@ -713,7 +713,7 @@
                     [options]="hazardDivisionList"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     [error]="!!(editForm.get('hazardDivisionId')?.invalid && editForm.get('hazardDivisionId')?.touched)"
                     placeholder="Select hazard division">
@@ -813,7 +813,7 @@
                     [options]="natureOptions"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     placeholder="Select nature option">
                   </app-dropdown>
@@ -828,7 +828,7 @@
                     [options]="primaryPurposes"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     placeholder="Select primary purpose">
                   </app-dropdown>
@@ -843,7 +843,7 @@
                     [options]="projectileColors"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     placeholder="Select projectile color">
                   </app-dropdown>
@@ -858,7 +858,7 @@
                     [options]="projectailMaterials"
                     optionValue="id"
                     [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true"
+                    [placeholderSelectable]="false"
                     [placeholderValue]="null"
                     placeholder="Select projectile material">
                   </app-dropdown>

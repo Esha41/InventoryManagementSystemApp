@@ -25,6 +25,7 @@
         </p>
       </div>
       <button
+        *appHasPermission="'Inventory.Create'"
         (click)="onAddInventory()"
         class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
         + {{ 'warehouseInventory.addInventory' | translate }}
@@ -182,22 +183,26 @@
               <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                 <div class="flex items-center justify-center space-x-2">
                   <!-- Edit Button - Only for inventory items (not static) -->
-                  <button 
-                    *ngIf="!isStaticItem(detail)"
-                    (click)="onEditItem(detail)"
-                    class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
-                    [title]="'warehouseInventory.edit' | translate">
-                    <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
-                  </button>
+                  <ng-container *ngIf="!isStaticItem(detail)">
+                    <button 
+                      *appHasPermission="'Inventory.Edit'"
+                      (click)="onEditItem(detail)"
+                      class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+                      [title]="'warehouseInventory.edit' | translate">
+                      <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </ng-container>
                   
                   <!-- Delete Button - Only for inventory items (not static) -->
-                  <button 
-                    *ngIf="!isStaticItem(detail)"
-                    (click)="onDeleteItem(detail)"
-                    class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
-                    [title]="'warehouseInventory.delete' | translate">
-                    <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                  </button>
+                  <ng-container *ngIf="!isStaticItem(detail)">
+                    <button 
+                      *appHasPermission="'Inventory.Delete'"
+                      (click)="onDeleteItem(detail)"
+                      class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                      [title]="'warehouseInventory.delete' | translate">
+                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </ng-container>
                   
                   <!-- View Details Button - For all items -->
                   <button 

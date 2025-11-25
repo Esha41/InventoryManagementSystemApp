@@ -140,7 +140,7 @@
         [ngModel]="selectedItemType"
         (ngModelChange)="onItemTypeChange($event)"
         [options]="itemTypeOptions"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.selectType' | translate }}">
       </app-dropdown>
@@ -156,7 +156,7 @@
         [ngModel]="selectedAmmunitionType"
         (ngModelChange)="onAmmunitionTypeChange($event)"
         [options]="ammunitionTypeOptions"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.selectAmmunitionType' | translate }}">
       </app-dropdown>
@@ -172,7 +172,7 @@
         [ngModel]="selectedBulletDiameter"
         (ngModelChange)="onBulletDiameterChange($event)"
         [options]="bulletDiameters"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.selectBulletDiameter' | translate }}">
       </app-dropdown>
@@ -188,7 +188,7 @@
         [ngModel]="selectedCaseLength"
         (ngModelChange)="onCaseLengthChange($event)"
         [options]="caseLengths"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.selectCaseLength' | translate }}">
       </app-dropdown>
@@ -204,7 +204,7 @@
         [ngModel]="selectedLinked"
         (ngModelChange)="onLinkedChange($event)"
         [options]="linkedOptions"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
       </app-dropdown>
@@ -220,7 +220,7 @@
         [ngModel]="selectedNature"
         (ngModelChange)="onNatureChange($event)"
         [options]="natureOptions"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="''"
         placeholder="{{ 'newIssueRequest.natureOptions' | translate }}">
       </app-dropdown>

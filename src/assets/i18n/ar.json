@@ -40,10 +40,11 @@
     "workflow": "سير العمل",
     "department": "منصة إدارة الطلبات",
     "allowance": "البدل",
+    "orderManagement": "إدارة الطلبات",
     "newIssueRequest": "انشاء طلب جديد",
     "returnRequest": "طلب إرجاع",
     "discardRequest": "طلب إتلاف",
-    "requestsManagement": "إدارة الطلبات",
+    "requestsManagement": "إدارة الموافقات",
     "requestsOverview": "عرض الطلبات",
     "orderReport": "تقرير الطلب",
     "forecast": "التوقعات",
@@ -1031,7 +1032,14 @@
     "workflowCreated": "تم إنشاء سير العمل بنجاح",
     "failedToUpdateWorkflow": "فشل تحديث سير العمل",
     "failedToDeleteWorkflow": "فشل حذف سير العمل",
-    "failedToCreateWorkflow": "فشل إنشاء سير العمل"
+    "failedToCreateWorkflow": "فشل إنشاء سير العمل",
+    "roleCreated": "تم إنشاء الدور \"{roleName}\" بنجاح",
+    "roleUpdated": "تم تحديث الدور \"{roleName}\" بنجاح",
+    "roleDeleted": "تم حذف الدور \"{roleName}\" بنجاح",
+    "failedToCreateRole": "فشل إنشاء الدور",
+    "failedToUpdateRole": "فشل تحديث الدور",
+    "failedToDeleteRole": "فشل حذف الدور \"{roleName}\"",
+    "failedToLoadRoles": "فشل تحميل الأدوار"
   },
   "editInventoryDetail": {
     "title": "تعديل عنصر المخزون",

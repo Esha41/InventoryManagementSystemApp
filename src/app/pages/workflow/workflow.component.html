@@ -20,6 +20,7 @@
 
     <!-- Add Work Flow Button -->
     <button
+      *appHasPermission="'WorkFlowType.Create'"
       type="button"
       (click)="onAddWorkflow()"
       class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-brand-dark)] transition-colors whitespace-nowrap">
@@ -92,6 +93,7 @@
                   <lucide-angular [img]="Eye" class="h-4 w-4 action-icon"></lucide-angular>
                 </button>
                 <button
+                  *appHasPermission="'WorkFlowType.Edit'"
                   type="button"
                   (click)="onEdit(workflow.id)"
                   class="action-icon-button"
@@ -99,6 +101,7 @@
                   <lucide-angular [img]="FileEdit" class="h-4 w-4 action-icon"></lucide-angular>
                 </button>
                 <button
+                  *appHasPermission="'WorkFlowType.Delete'"
                   type="button"
                   (click)="onDelete(workflow.id)"
                   class="action-icon-button action-icon-button-danger"

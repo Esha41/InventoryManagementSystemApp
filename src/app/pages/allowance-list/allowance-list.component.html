@@ -56,7 +56,7 @@
           <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
         </button>
       </div>
-      <app-button variant="primary" (click)="onAddAllowance()">
+      <app-button *appHasPermission="'Allowance.Create'" variant="primary" (click)="onAddAllowance()">
         <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
           <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
           <span>{{ 'allowance.addAllowance' | translate }}</span>
@@ -134,6 +134,7 @@
                 <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                   <!-- Edit Button -->
                   <button 
+                    *appHasPermission="'Allowance.Edit'"
                     (click)="onEdit(allowance)"
                     class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                     [title]="'allowance.edit' | translate">
@@ -142,6 +143,7 @@
                   
                   <!-- Delete Button -->
                   <button 
+                    *appHasPermission="'Allowance.Delete'"
                     (click)="onDelete(allowance)"
                     class="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                     [title]="'allowance.delete' | translate">
@@ -163,7 +165,7 @@
       <h3 class="mt-2 text-sm font-medium text-gray-900">{{ 'allowance.noAllowances' | translate }}</h3>
       <p class="mt-1 text-sm text-gray-500">{{ 'allowance.noAllowancesDescription' | translate }}</p>
       <div class="mt-6">
-        <app-button variant="primary" (click)="onAddAllowance()">
+        <app-button *appHasPermission="'Allowance.Create'" variant="primary" (click)="onAddAllowance()">
           {{ 'allowance.addAllowance' | translate }}
         </app-button>
       </div>

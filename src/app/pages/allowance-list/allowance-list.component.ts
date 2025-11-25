@@ -22,6 +22,7 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
 import { processAllowanceData } from '@utils/allowance.mapper';
 import { getLocalizedName, filterAllowances } from '@utils/allowance.utils';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-allowance-list',
@@ -36,7 +37,8 @@ import { getLocalizedName, filterAllowances } from '@utils/allowance.utils';
     DropdownComponent,
     ConfirmDialogComponent,
     RowsPerPageComponent,
-    PaginationComponent
+    PaginationComponent,
+    HasPermissionDirective
   ],
   templateUrl: './allowance-list.component.html',
   styleUrls: ['./allowance-list.component.css']

@@ -149,7 +149,7 @@
               optionValue="id"
               [optionLabelFn]="rankOptionLabel"
               [disabled]="loadingRanks"
-              [placeholderSelectable]="true"
+              [placeholderSelectable]="false"
               [placeholderValue]="null"
               [error]="!!(receiverForm.get('receiverRankId')?.invalid && receiverForm.get('receiverRankId')?.touched)"
               placeholder="{{ 'supplyOrder.receiverRankPlaceholder' | translate }}">
@@ -233,6 +233,7 @@
             {{ 'supplyOrder.orderItems' | translate }}
           </h2>
           <button
+            *appHasPermission="'Order.Edit'"
             (click)="openAddLotModal()"
             class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
             <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
@@ -312,11 +313,13 @@
                 <div class="flex gap-2 mt-3">
                   <div *ngIf="!item.isEditing" class="flex gap-2">
                     <button
+                      *appHasPermission="'Order.Edit'"
                       (click)="onEditItem(item)"
                       class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-lg hover:bg-blue-100 transition-colors">
                       {{ 'common.edit' | translate }}
                     </button>
                     <button
+                      *appHasPermission="'Order.Delete'"
                       (click)="onDeleteItem(item)"
                       [disabled]="deletingItem"
                       class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50">
@@ -355,6 +358,7 @@
       <div *ngIf="canModifyOrder()" class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div class="flex gap-4">
           <button
+            *appHasPermission="'Order.Manage'"
             (click)="onReject()"
             [disabled]="rejecting || submitting"
             class="flex-1 px-6 py-3 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">
@@ -366,6 +370,7 @@
           </button>
 
           <button
+            *appHasPermission="'Order.Manage'"
             (click)="onAccept()"
             [disabled]="!canSubmit()"
             class="flex-1 px-6 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
@@ -430,7 +435,7 @@
         [options]="orderItems"
         optionValue="id"
         [optionLabelFn]="itemOptionLabel"
-        [placeholderSelectable]="true"
+        [placeholderSelectable]="false"
         [placeholderValue]="null"
         [error]="!!(addLotForm.get('itemId')?.invalid && addLotForm.get('itemId')?.touched)"
         placeholder="{{ 'supplyOrder.selectItem' | translate }}">

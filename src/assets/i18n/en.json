@@ -41,10 +41,11 @@
     "workflow": "Work Flows",
     "department": "Department",
     "allowance": "Allowance",
+    "orderManagement": "Orders Management",
     "newIssueRequest": "New Issue Request",
     "returnRequest": "Return Request",
     "discardRequest": "Discard Request",
-    "requestsManagement": "Requests Management",
+    "requestsManagement": "Approval Management",
     "requestsOverview": "Requests Overview",
     "orderReport": "Order Report",
     "forecast": "Forecast",
@@ -1035,7 +1036,14 @@
     "workflowCreated": "Workflow created successfully",
     "failedToUpdateWorkflow": "Failed to update workflow",
     "failedToDeleteWorkflow": "Failed to delete workflow",
-    "failedToCreateWorkflow": "Failed to create workflow"
+    "failedToCreateWorkflow": "Failed to create workflow",
+    "roleCreated": "Role \"{roleName}\" created successfully",
+    "roleUpdated": "Role \"{roleName}\" updated successfully",
+    "roleDeleted": "Role \"{roleName}\" deleted successfully",
+    "failedToCreateRole": "Failed to create role",
+    "failedToUpdateRole": "Failed to update role",
+    "failedToDeleteRole": "Failed to delete role \"{roleName}\"",
+    "failedToLoadRoles": "Failed to load roles"
   },
   "editInventoryDetail": {
     "title": "Edit Inventory Item",

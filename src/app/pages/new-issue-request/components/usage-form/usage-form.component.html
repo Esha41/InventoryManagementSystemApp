@@ -53,7 +53,7 @@
             [ngModel]="orderPriority"
             (ngModelChange)="onOrderPriorityChange($event)"
             [options]="orderPriorities"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             [placeholderValue]="''"
             [error]="hasError('orderPriority')"
             placeholder="{{ 'newIssueRequest.selectPriorityPlaceholder' | translate }}">
@@ -72,7 +72,7 @@
             [ngModel]="selectedUsePurposeId"
             (ngModelChange)="onUsePurposeChange($event)"
             [options]="usePurposeOptions"
-            [placeholderSelectable]="true"
+            [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="hasError('usePurpose')"
             [disabled]="usePurposeOptions.length === 0"
