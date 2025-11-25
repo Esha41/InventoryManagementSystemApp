@@ -55,3 +55,28 @@ export function isValidPriority(priority: number): boolean {
   return Object.values(Priority).includes(priority);
 }
 
+/**
+ * Map order priority number to string
+ * Handles null, undefined, and invalid values
+ */
+export function mapOrderPriorityToString(priority: number | undefined | null): string {
+  // Handle null, undefined, or invalid values
+  if (priority === null || priority === undefined || isNaN(Number(priority))) {
+    return 'Medium';
+  }
+  
+  // Convert to number in case it's a string
+  const priorityNum = Number(priority);
+  
+  // Map priority values to match the order creation mapping:
+  // 1 = High, 2 = Medium, 3 = Low (from mapPriorityToEnum in new-issue-request.component.ts)
+  switch (priorityNum) {
+    case 1: return 'High';
+    case 2: return 'Medium';
+    case 3: return 'Low';
+    case 4: return 'Critical';
+    default: 
+      return 'Medium';
+  }
+}
+

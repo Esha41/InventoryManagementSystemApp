@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, BaseItemDto, ItemType } from '@models/inventory.model';
 import { DepotDto } from '@models/depot.model';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -58,11 +60,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
+  readonly Eye = Eye;
+  readonly X = X;
 
   // Modal states
   showEditModal = false;
   showDeleteDialog = false;
+  showViewModal = false;
   selectedDetail?: InventoryDetailDto;
+  selectedDetailForView?: InventoryDetailDto;
   currentInventory?: InventoryDto;
 
   private destroy$ = new Subject<void>();
@@ -70,6 +76,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   constructor(
     private inventoryService: InventoryService,
     private lookupService: LookupService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
@@ -95,20 +103,36 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    // Load depot details and inventory details in parallel
     forkJoin({
       depot: this.lookupService.getDepots(),
-      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
+      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
+      weapons: this.weaponService.getAll<BaseItemDto>(),
+      explosives: this.explosiveService.getAll<BaseItemDto>()
     })
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: ({ depot, inventoryDetails }) => {
+      next: ({ depot, inventoryDetails, weapons, explosives }) => {
         // Find the specific depot
         const currentDepot = depot.find((d: LookupItem) => d.id === this.depoId);
         this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
         
+        const weaponDetails: InventoryDetailDto[] = (weapons || [])
+          .filter(weapon => !weapon.isDeleted)
+          .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
+        
+     
+        const explosiveDetails: InventoryDetailDto[] = (explosives || [])
+          .filter(explosive => !explosive.isDeleted)
+          .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
+        
+  
+        const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
+        
+        
+        const uniqueDetails = this.removeDuplicateItems(allDetails);
+        
         // Set inventory details
-        this.inventoryDetails = inventoryDetails;
+        this.inventoryDetails = uniqueDetails;
         this.filterInventoryByTab();
         this.loading = false;
       },
@@ -118,6 +142,50 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  /**
+   * Convert BaseItemDto to InventoryDetailDto format for static display
+   */
+  private convertBaseItemToInventoryDetail(item: BaseItemDto, itemType: ItemType): InventoryDetailDto {
+    return {
+      id: item.id * -1, // Use negative ID to distinguish static items from inventory items
+      itemId: item.id,
+      lot: 0,
+      inventoryId: 0,
+      supplierId: undefined,
+      manufacturerId: undefined,
+      countryId: undefined,
+      itemQuantity: 0,
+      currentQuantity: 0,
+      item: {
+        ...item,
+        itemType: item.itemType || itemType // Preserve original itemType or use provided one
+      }
+    };
+  }
+
+  /**
+   * Remove duplicate items, keeping inventory items over static items
+   */
+  private removeDuplicateItems(details: InventoryDetailDto[]): InventoryDetailDto[] {
+    const itemIdMap = new Map<number, InventoryDetailDto>();
+    
+    // First, add all inventory items (positive IDs)
+    details.forEach(detail => {
+      if (detail.id > 0) {
+        itemIdMap.set(detail.itemId, detail);
+      }
+    });
+    
+    // Then, add static items only if they don't exist in inventory
+    details.forEach(detail => {
+      if (detail.id < 0 && !itemIdMap.has(detail.itemId)) {
+        itemIdMap.set(detail.itemId, detail);
+      }
+    });
+    
+    return Array.from(itemIdMap.values());
   }
 
   switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
@@ -181,8 +249,30 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.router.navigate(['/warehouse']);
   }
 
-  onViewItem(itemId: number): void {
-    this.router.navigate(['/warehouse', this.depoId, 'inventory', itemId]);
+  /**
+   * Check if an item is static (weapon/explosive dummy data)
+   */
+  isStaticItem(detail: InventoryDetailDto): boolean {
+    return detail.id < 0; // Static items have negative IDs
+  }
+
+  onViewItem(detail: InventoryDetailDto): void {
+    // For static items (weapons/explosives), show view modal
+    if (this.isStaticItem(detail)) {
+      this.selectedDetailForView = detail;
+      this.showViewModal = true;
+    } else {
+      // For inventory items, navigate to inventory detail page
+      this.router.navigate(['/warehouse', this.depoId, 'inventory', detail.id]);
+    }
+  }
+
+  /**
+   * Close view modal
+   */
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.selectedDetailForView = undefined;
   }
 
   onRowsPerPageChange(newSize: number): void {

@@ -124,6 +124,16 @@
     "noCards": "No dashboard cards available",
     "noCardsDescription": "You don't have the necessary permissions or roles to view any dashboard cards."
   },
+  "inventoryDashboard": {
+    "statistics": {
+      "totalItems": "Total Items",
+      "totalQuantity": "Total Quantity",
+      "expiringSoon": "Expiring Soon",
+      "lowStock": "Low Stock",
+      "next30Days": "Next 30 days",
+      "belowThreshold": "Below threshold"
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "subtitle": "{{count}} unread notifications",
@@ -380,7 +390,8 @@
         "scanHeading": "Scan to track this order",
         "scanDescription": "Authorized personnel can scan the QR code to view live issuance status and custody trail.",
         "qrGenerating": "Generating QR code...",
-        "qrFootnote": "QR code encodes order metadata, workflow version, totalItems, and issuance timestamp."
+        "qrFootnote": "QR code encodes order metadata, workflow version, totalItems, and issuance timestamp.",
+        "priority": "Priority"
       },
       "table": {
         "phase": "Phase",
@@ -391,8 +402,12 @@
         "step": "Step",
         "role": "Role",
         "approver": "Approver",
-        "date": "Date"
+        "date": "Date",
+        "itemName": "Item Name",
+        "itemNo": "Item No",
+        "quantity": "Quantity"
       },
+      "noApprovalHistory": "No approval history available yet.",
       "list": {
         "title": "Orders",
         "count": "{{count}} orders",
@@ -457,7 +472,7 @@
     "low": "Low"
   },
   "footer": {
-    "copyright": "Copyright © Barzan Holdings 2024"
+    "copyright": "Copyright © Barzan Holdings 2025"
   },
   "warehouse": {
     "title": "Depots",

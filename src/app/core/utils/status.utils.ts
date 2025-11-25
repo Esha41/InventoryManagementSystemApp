@@ -113,3 +113,40 @@ export function getRequestStatusTranslationKey(status?: number | null): string {
   }
 }
 
+/**
+ * Order Status Utilities
+ * For handling order status mapping
+ */
+
+/**
+ * Map order status number to string
+ */
+export function mapOrderStatusToString(status: number): string {
+  switch (status) {
+    case 0: return 'Pending';
+    case 1: return 'Approved';
+    case 2: return 'Rejected';
+    default: return 'Pending';
+  }
+}
+
+/**
+ * Map order status from API response (handles both string and number)
+ */
+export function mapOrderStatusFromApi(status: any): string {
+  if (status === 'Approved' || status === 'approved') {
+    return 'Approved';
+  }
+  if (status === 'Rejected' || status === 'rejected') {
+    return 'Rejected';
+  }
+  if (status === 'Pending' || status === 'pending') {
+    return 'Pending';
+  }
+  // Handle numeric status
+  if (typeof status === 'number') {
+    return mapOrderStatusToString(status);
+  }
+  return 'Pending';
+}
+

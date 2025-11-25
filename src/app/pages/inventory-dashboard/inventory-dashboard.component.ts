@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, X } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { LucideAngularModule, X, ShieldAlert, RefreshCw } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from '@pages/dashboard/components/return-details-modal/return-details-modal.component';
 import { DiscardDetailsModalComponent } from '@pages/dashboard/components/discard-details-modal/discard-details-modal.component';
@@ -15,10 +16,21 @@ import { OverstockCardComponent, OverstockItemView } from '@pages/dashboard/comp
 import { AnnualActivityCardComponent } from '@pages/dashboard/components/annual-activity-card/annual-activity-card.component';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import {
+  mapRequestStatusToCardStatus,
+  getRequestStatusTranslationKey,
+  filterDisplayableRequests,
+  filterRequestsByDepartment,
+  getRequestTitle,
+  mapRequestItems,
+  DisplayableRequest,
+  CardStatus
+} from '@utils/dashboard.utils';
 
 interface DashboardCard {
   title: string;
-  status: 'new-issue' | 'on-progress' | 'completed';
+  status: 'new-issue' | 'on-progress' | 'completed' | 'new';
   orders: OrderItem[];
   permissions: string[];
   departmentIds?: number[];
@@ -27,18 +39,30 @@ interface DashboardCard {
   discardRequestId?: number;
 }
 
+interface StatisticsData {
+  totalItems: number;
+  totalQuantity: number;
+  expiringSoon: number; // Items expiring in next 30 days
+  lowStock: number; // Items below threshold
+  overstockItems: OverstockItemView[];
+  monthlyActivity: number[]; // Orders per month (current year only)
+  monthlyActivityPercentages: number[]; // Percentage distribution
+}
+
 @Component({
   selector: 'app-inventory-dashboard',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     TranslateModule,
     LucideAngularModule,
     StatusCardComponent,
     ReturnDetailsModalComponent,
     DiscardDetailsModalComponent,
     OverstockCardComponent,
-    AnnualActivityCardComponent
+    AnnualActivityCardComponent,
+    DropdownComponent
   ],
   templateUrl: './inventory-dashboard.component.html',
   styleUrls: ['./inventory-dashboard.component.css']
@@ -47,23 +71,45 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private refreshTimer: any = null;
 
-  private allCards: DashboardCard[] = [];
+  // Dashboard cards
+  allCards: DashboardCard[] = [];
   visibleCards: DashboardCard[] = [];
 
+  // Status filter
+  selectedStatusFilter: CardStatus | 'all' = 'all';
+  statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+    { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'dashboard.statusLabels.new', value: 'new' },
+    { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
+    { label: 'dashboard.statusLabels.approved', value: 'completed' }
+  ];
+
+  // Modal state
   isOrderModalOpen = false;
-  selectedOrderRequest: OrderDto | null = null;
-  private orderRequestsMap = new Map<number, OrderDto>();
-
   isReturnModalOpen = false;
-  selectedReturnRequest: ReturnDto | null = null;
-
   isDiscardModalOpen = false;
+  selectedOrderRequest: OrderDto | null = null;
+  selectedReturnRequest: ReturnDto | null = null;
   selectedDiscardRequest: DiscardDto | null = null;
+  private orderRequestsMap = new Map<number, OrderDto>();
+  private returnRequestsMap = new Map<number, ReturnDto>();
+  private discardRequestsMap = new Map<number, DiscardDto>();
 
-  overstockItems: OverstockItemView[] = [];
-  annualActivityValues: number[] = Array(12).fill(0);
+  // Statistics
+  statistics: StatisticsData = {
+    totalItems: 0,
+    totalQuantity: 0,
+    expiringSoon: 0,
+    lowStock: 0,
+    overstockItems: [],
+    monthlyActivity: Array(12).fill(0),
+    monthlyActivityPercentages: Array(12).fill(0)
+  };
 
   readonly XIcon = X;
+  readonly ShieldAlert = ShieldAlert;
+  readonly RefreshCw = RefreshCw;
+  showContactAdminNotice = false;
 
   constructor(
     private authService: BackendAuthService,
@@ -72,16 +118,21 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private discardService: DiscardService,
     private notificationService: NotificationService,
     private inventoryService: InventoryService,
-    private userContext: UserContextService
+    private userContext: UserContextService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.loadAll());
+      .subscribe(() => {
+        this.filterCards();
+        this.loadAll();
+      });
+    
     this.loadAll();
 
-    // Auto-refresh periodically to reflect DB changes
+    // Auto-refresh periodically
     this.refreshTimer = setInterval(() => this.loadAll(), 15000);
   }
 
@@ -94,19 +145,17 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadAll(): void {
-    this.filterCards();
-    this.loadNewOrders();
-    this.loadInProgressOrders();
-    this.loadCompletedOrders();
-    this.loadOverstock();
-    this.loadAnnualActivity();
-    this.notificationService.refresh();
-  }
-
-  // Expose manual refresh action for UI button
   onRefresh(): void {
     this.loadAll();
+  }
+
+  private loadAll(): void {
+    this.filterCards();
+    this.loadOrderRequests();
+    this.loadReturnRequests();
+    this.loadDiscardRequests();
+    this.loadStatistics();
+    this.notificationService.refresh();
   }
 
   private filterCards(): void {
@@ -121,7 +170,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const filtered = this.allCards.filter(card => {
+    let filtered = this.allCards.filter(card => {
       if (!isAdmin && card.departmentIds && card.departmentIds.length > 0) {
         if (userDeptId == null) return false;
         if (!card.departmentIds.includes(userDeptId)) return false;
@@ -131,9 +180,16 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       return this.authService.hasAnyPermission(card.permissions);
     });
 
+    // Apply status filter
+    if (this.selectedStatusFilter !== 'all') {
+      filtered = filtered.filter(card => card.status === this.selectedStatusFilter);
+    }
+
+    // Sort by status priority
     const rank = (c: DashboardCard): number => {
       switch (c.status) {
         case 'new-issue': return 0;
+        case 'new': return 0;
         case 'on-progress': return 1;
         case 'completed': return 2;
         default: return 99;
@@ -149,346 +205,343 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         return a.i - b.i;
       })
       .map(x => x.c);
+
+    const permissionsArray = Array.isArray(user?.permissions) ? user?.permissions : [];
+    this.showContactAdminNotice = isAuthenticated && permissionsArray.length === 0 && this.visibleCards.length === 0;
   }
 
-  private loadNewOrders(): void {
-    if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) return;
-    this.orderService.getAllOrders()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (orders: OrderDto[]) => {
-          let orderList = orders.filter(o => o.status === 1);
-          const user = this.authService.getCurrentUser();
-          const isAdmin = this.userContext.isAdminUser();
-          if (!isAdmin && user?.departmentId) {
-            orderList = orderList.filter(o => o.departmentId === user.departmentId);
-          }
-          this.orderRequestsMap = new Map(orderList.map(o => [o.id, o]));
-          const ordersView: OrderItem[] = orderList.map(o => ({
-            orderId: o.requestNo || o.orderNo || `#${o.id}`,
-            requestDate: this.formatOrderDate(o),
-            departmentName: this.resolveOrderDepartmentName(o),
-            requesterName: o.requesterName || 'N/A',
-            items: this.mapOrderItems(o.requestItems),
-            requestId: o.id
-          }));
-
-          // Also include Return requests with status = 1 in the same "New" column
-          this.returnService.getAllReturns()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: (returns: ReturnDto[]) => {
-                let returnList = (returns || []).filter(r => r.status === 1);
-                if (!isAdmin && user?.departmentId) {
-                  returnList = returnList.filter(r => r.departmentId === user.departmentId);
-                }
-                const returnsView: OrderItem[] = returnList.map(r => ({
-                  orderId: r.requestNo || `#${r.id}`,
-                  requestDate: this.formatDate((r as any).createdOn || (r as any).creationDate),
-                  departmentName: (r as any).departmentName || 'N/A',
-                  requesterName: r.requesterName || 'N/A',
-                  items: (r.requestItems || []).map((it: any) => ({
-                    itemName: it.itemName || it.itemNo || 'N/A',
-                    itemNo: it.itemNo || 'N/A',
-                    quantity: Number(it.quantity ?? 0),
-                    notes: it.notes || undefined
-                  }))
-                  // Note: no requestId so View Details button will still target the first order entry
-                }));
-
-                // Also include Discard requests with status = 1
-                this.discardService.getAllDiscards()
-                  .pipe(takeUntil(this.destroy$))
-                  .subscribe({
-                    next: (discards: DiscardDto[]) => {
-                      let discardList = (discards || []).filter(d => d.status === 1);
-                      if (!isAdmin && user?.departmentId) {
-                        discardList = discardList.filter(d => d.departmentId === user.departmentId);
-                      }
-                      const discardView: OrderItem[] = discardList.map(d => ({
-                        orderId: d.requestNo || `#${d.id}`,
-                        requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
-                        departmentName: (d as any).departmentName || 'N/A',
-                        requesterName: d.requesterName || 'N/A',
-                        items: (d.requestItems || []).map((it: any) => ({
-                          itemName: it.itemName || it.itemNo || 'N/A',
-                          itemNo: it.itemNo || 'N/A',
-                          quantity: Number(it.quantity ?? 0),
-                          notes: it.notes || undefined
-                        }))
-                      }));
-
-                      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardView];
-                      const card: DashboardCard = {
-                        title: 'New',
-                        status: 'new-issue',
-                        orders: merged,
-                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                        departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined,
-                        discardRequestId: (ordersView.length === 0 && returnsView.length === 0 && discardList.length > 0) ? discardList[0].id : undefined
-                      };
-                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
-                      this.allCards.push(card);
-                      this.filterCards();
-                    },
-                    error: () => {
-                      // Fallback to orders + returns if discards fail
-                      const merged: OrderItem[] = [...ordersView, ...returnsView];
-                      const card: DashboardCard = {
-                        title: 'New',
-                        status: 'new-issue',
-                        orders: merged,
-                        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                        departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                        returnRequestId: (ordersView.length === 0 && returnList.length > 0) ? returnList[0].id : undefined
-                      };
-                      this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
-                      this.allCards.push(card);
-                      this.filterCards();
-                    }
-                  });
-              },
-              error: () => {
-                // Fallback to only orders if returns fail
-                const card: DashboardCard = {
-                  title: 'New',
-                  status: 'new-issue',
-                  orders: ordersView,
-                  permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                  departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined
-                };
-                this.allCards = this.allCards.filter(c => c.status !== 'new-issue');
-                this.allCards.push(card);
-                this.filterCards();
-              }
-            });
-        },
-        error: () => {}
-      });
+  onStatusFilterChange(): void {
+    this.filterCards();
   }
 
-  private loadInProgressOrders(): void {
-    if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) return;
-    this.orderService.getAllOrders()
+  get filteredCardsCount(): number {
+    return this.visibleCards.length;
+  }
+
+  statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+    if (typeof option === 'object' && option !== null && 'label' in option) {
+      return this.translate.instant(option.label as string);
+    }
+    return '';
+  };
+
+  // Generic method to process and add request cards
+  private processRequestCards<T extends DisplayableRequest>(
+    requests: T[],
+    cardConfig: {
+      status: CardStatus;
+      permissions: string[];
+      getCardId: (req: T) => number | undefined;
+      getCardPredicate: (card: DashboardCard) => boolean;
+      mapToCard: (req: T) => DashboardCard;
+      storeInMap: (req: T) => void;
+    }
+  ): void {
+    const currentUser = this.authService.getCurrentUser();
+    const isAdmin = this.userContext.isAdminUser();
+    const filtered = filterRequestsByDepartment(
+      filterDisplayableRequests(requests),
+      isAdmin ? null : currentUser?.departmentId
+    );
+
+    // Store in appropriate map
+    filtered.forEach(req => cardConfig.storeInMap(req));
+
+    // Create cards
+    const cards = filtered.map(req => cardConfig.mapToCard(req));
+
+    // Remove old cards and add new ones
+    this.allCards = this.allCards.filter(card => !cardConfig.getCardPredicate(card));
+    this.allCards.push(...cards);
+
+    this.filterCards();
+  }
+
+  private loadOrderRequests(): void {
+    if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) {
+      return;
+    }
+
+    forkJoin({
+      orders: this.orderService.getAllOrders(),
+      returns: this.returnService.getAllReturns(),
+      discards: this.discardService.getAllDiscards()
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (orders: OrderDto[]) => {
-          let list = orders.filter(o => o.status === 2);
+        next: ({ orders, returns, discards }) => {
           const user = this.authService.getCurrentUser();
           const isAdmin = this.userContext.isAdminUser();
-          if (!isAdmin && user?.departmentId) {
-            list = list.filter(o => o.departmentId === user.departmentId);
-          }
-          const ordersList: OrderItem[] = list.map(o => ({
-            orderId: o.requestNo || o.orderNo || `#${o.id}`,
-            requestDate: this.formatOrderDate(o),
-            departmentName: this.resolveOrderDepartmentName(o),
-            requesterName: o.requesterName || 'N/A',
-            items: this.mapOrderItems(o.requestItems),
-            requestId: o.id
-          }));
 
-          // Merge Return status=2
-          this.returnService.getAllReturns().pipe(takeUntil(this.destroy$)).subscribe({
-            next: (returns: ReturnDto[]) => {
-              let ret = (returns || []).filter(r => r.status === 2);
-              if (!isAdmin && user?.departmentId) ret = ret.filter(r => r.departmentId === user.departmentId);
-              const returnView: OrderItem[] = ret.map(r => ({
-                orderId: r.requestNo || `#${r.id}`,
-                requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
-                departmentName: (r as any).departmentName || 'N/A',
-                requesterName: r.requesterName || 'N/A',
-                items: (r.requestItems || []).map((it: any) => ({
-                  itemName: it.itemName || it.itemNo || 'N/A',
-                  itemNo: it.itemNo || 'N/A',
-                  quantity: Number(it.quantity ?? 0),
-                  notes: it.notes || undefined
-                }))
-              }));
+          // Process orders by status
+          [1, 2, 3].forEach(status => {
+            let orderList = orders.filter(o => o.status === status);
+            let returnList = (returns || []).filter(r => r.status === status);
+            let discardList = (discards || []).filter(d => d.status === status);
 
-              // Merge Discard status=2
-              this.discardService.getAllDiscards().pipe(takeUntil(this.destroy$)).subscribe({
-                next: (discards: DiscardDto[]) => {
-                  let dis = (discards || []).filter(d => d.status === 2);
-                  if (!isAdmin && user?.departmentId) dis = dis.filter(d => d.departmentId === user.departmentId);
-                  const discardView: OrderItem[] = dis.map(d => ({
-                    orderId: d.requestNo || `#${d.id}`,
-                    requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
-                    departmentName: (d as any).departmentName || 'N/A',
-                    requesterName: d.requesterName || 'N/A',
-                    items: (d.requestItems || []).map((it: any) => ({
-                      itemName: it.itemName || it.itemNo || 'N/A',
-                      itemNo: it.itemNo || 'N/A',
-                      quantity: Number(it.quantity ?? 0),
-                      notes: it.notes || undefined
-                    }))
-                  }));
+            if (!isAdmin && user?.departmentId) {
+              orderList = orderList.filter(o => o.departmentId === user.departmentId);
+              returnList = returnList.filter(r => r.departmentId === user.departmentId);
+              discardList = discardList.filter(d => d.departmentId === user.departmentId);
+            }
 
-                  const merged = [...ordersList, ...returnView, ...discardView];
-                  const card: DashboardCard = {
-                    title: 'Requests On Progress',
-                    status: 'on-progress',
-                    orders: merged,
-                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                    departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined,
-                    discardRequestId: discardView.length > 0 ? dis[0]?.id : undefined
-                  };
-                  this.allCards = this.allCards.filter(c => c.status !== 'on-progress');
-                  this.allCards.push(card);
-                  this.filterCards();
-                },
-                error: () => {
-                  const merged = [...ordersList, ...returnView];
-                  const card: DashboardCard = {
-                    title: 'Requests On Progress',
-                    status: 'on-progress',
-                    orders: merged,
-                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                    departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined
-                  };
-                  this.allCards = this.allCards.filter(c => c.status !== 'on-progress');
-                  this.allCards.push(card);
-                  this.filterCards();
-                }
-              });
-            },
-            error: () => {
+            // Store in maps
+            orderList.forEach(o => this.orderRequestsMap.set(o.id, o));
+            returnList.forEach(r => this.returnRequestsMap.set(r.id, r));
+            discardList.forEach(d => this.discardRequestsMap.set(d.id, d));
+
+            // Map to OrderItem format
+            const ordersView: OrderItem[] = orderList.map(o => ({
+              orderId: getRequestTitle(o, o.orderNo),
+              requestDate: this.formatOrderDate(o),
+              departmentName: this.resolveOrderDepartmentName(o),
+              requesterName: o.requesterName || 'N/A',
+              items: mapRequestItems(o.requestItems),
+              requestId: o.id
+            }));
+
+            const returnsView: OrderItem[] = returnList.map(r => ({
+              orderId: getRequestTitle(r),
+              requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
+              departmentName: (r as any).departmentName || 'N/A',
+              requesterName: r.requesterName || 'N/A',
+              items: mapRequestItems(r.requestItems)
+            }));
+
+            const discardsView: OrderItem[] = discardList.map(d => ({
+              orderId: getRequestTitle(d),
+              requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
+              departmentName: (d as any).departmentName || 'N/A',
+              requesterName: d.requesterName || 'N/A',
+              items: mapRequestItems(d.requestItems)
+            }));
+
+            const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardsView];
+            
+            if (merged.length > 0) {
+              const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : 'completed';
+              const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : 'Done';
+              
               const card: DashboardCard = {
-                title: 'Requests On Progress',
-                status: 'on-progress',
-                orders: ordersList,
+                title,
+                status: cardStatus,
+                orders: merged,
                 permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined
+                departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
+                orderRequestId: ordersView.length > 0 ? orderList[0].id : undefined,
+                returnRequestId: returnsView.length > 0 ? returnList[0]?.id : undefined,
+                discardRequestId: discardsView.length > 0 ? discardList[0]?.id : undefined
               };
-              this.allCards = this.allCards.filter(c => c.status !== 'on-progress');
+
+              this.allCards = this.allCards.filter(c => 
+                !(c.status === cardStatus && c.title === title)
+              );
               this.allCards.push(card);
-              this.filterCards();
             }
           });
+
+          this.filterCards();
         },
         error: () => {}
       });
   }
 
-  private loadCompletedOrders(): void {
-    if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) return;
-    this.orderService.getAllOrders()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (orders: OrderDto[]) => {
-          let list = orders.filter(o => o.status === 3);
-          const user = this.authService.getCurrentUser();
-          const isAdmin = this.userContext.isAdminUser();
-          if (!isAdmin && user?.departmentId) {
-            list = list.filter(o => o.departmentId === user.departmentId);
-          }
-          const ordersList: OrderItem[] = list.map(o => ({
-            orderId: o.requestNo || o.orderNo || `#${o.id}`,
-            requestDate: this.formatOrderDate(o),
-            departmentName: this.resolveOrderDepartmentName(o),
-            requesterName: o.requesterName || 'N/A',
-            items: this.mapOrderItems(o.requestItems),
-            requestId: o.id
-          }));
-
-          this.returnService.getAllReturns().pipe(takeUntil(this.destroy$)).subscribe({
-            next: (returns: ReturnDto[]) => {
-              let ret = (returns || []).filter(r => r.status === 3);
-              if (!isAdmin && user?.departmentId) ret = ret.filter(r => r.departmentId === user.departmentId);
-              const returnView: OrderItem[] = ret.map(r => ({
-                orderId: r.requestNo || `#${r.id}`,
-                requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
-                departmentName: (r as any).departmentName || 'N/A',
-                requesterName: r.requesterName || 'N/A',
-                items: (r.requestItems || []).map((it: any) => ({
-                  itemName: it.itemName || it.itemNo || 'N/A',
-                  itemNo: it.itemNo || 'N/A',
-                  quantity: Number(it.quantity ?? 0),
-                  notes: it.notes || undefined
-                }))
-              }));
-
-              this.discardService.getAllDiscards().pipe(takeUntil(this.destroy$)).subscribe({
-                next: (discards: DiscardDto[]) => {
-                  let dis = (discards || []).filter(d => d.status === 3);
-                  if (!isAdmin && user?.departmentId) dis = dis.filter(d => d.departmentId === user.departmentId);
-                  const discardView: OrderItem[] = dis.map(d => ({
-                    orderId: d.requestNo || `#${d.id}`,
-                    requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
-                    departmentName: (d as any).departmentName || 'N/A',
-                    requesterName: d.requesterName || 'N/A',
-                    items: (d.requestItems || []).map((it: any) => ({
-                      itemName: it.itemName || it.itemNo || 'N/A',
-                      itemNo: it.itemNo || 'N/A',
-                      quantity: Number(it.quantity ?? 0),
-                      notes: it.notes || undefined
-                    }))
-                  }));
-
-                  const merged = [...ordersList, ...returnView, ...discardView];
-                  const card: DashboardCard = {
-                    title: 'Done',
-                    status: 'completed',
-                    orders: merged,
-                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                    departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined,
-                    discardRequestId: discardView.length > 0 ? dis[0]?.id : undefined
-                  };
-                  this.allCards = this.allCards.filter(c => c.status !== 'completed');
-                  this.allCards.push(card);
-                  this.filterCards();
-                },
-                error: () => {
-                  const merged = [...ordersList, ...returnView];
-                  const card: DashboardCard = {
-                    title: 'Done',
-                    status: 'completed',
-                    orders: merged,
-                    permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                    departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                    returnRequestId: returnView.length > 0 ? ret[0]?.id : undefined
-                  };
-                  this.allCards = this.allCards.filter(c => c.status !== 'completed');
-                  this.allCards.push(card);
-                  this.filterCards();
-                }
-              });
-            },
-            error: () => {
-              const card: DashboardCard = {
-                title: 'Done',
-                status: 'completed',
-                orders: ordersList,
-                permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined
-              };
-              this.allCards = this.allCards.filter(c => c.status !== 'completed');
-              this.allCards.push(card);
-              this.filterCards();
-            }
-          });
-        },
-        error: () => {}
-      });
+  private loadReturnRequests(): void {
+    // Handled in loadOrderRequests via forkJoin
   }
 
-  onViewOrderDetails(orderRequestId: number): void {
-    this.orderService.getOrderById(orderRequestId)
+  private loadDiscardRequests(): void {
+    // Handled in loadOrderRequests via forkJoin
+  }
+
+  private loadStatistics(): void {
+    forkJoin({
+      inventories: this.inventoryService.getAll(),
+      orders: this.orderService.getAllOrders()
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (order: OrderDto) => {
-          this.selectedOrderRequest = order;
-          this.isOrderModalOpen = true;
+        next: ({ inventories, orders }) => {
+          this.calculateStatistics(inventories, orders);
         },
         error: () => {
-          this.selectedOrderRequest = this.orderRequestsMap.get(orderRequestId) || null;
-          this.isOrderModalOpen = true;
+          // Reset statistics on error
+          this.statistics = {
+            totalItems: 0,
+            totalQuantity: 0,
+            expiringSoon: 0,
+            lowStock: 0,
+            overstockItems: [],
+            monthlyActivity: Array(12).fill(0),
+            monthlyActivityPercentages: Array(12).fill(0)
+          };
         }
       });
+  }
+
+  private calculateStatistics(inventories: any[], orders: OrderDto[]): void {
+    const stats: StatisticsData = {
+      totalItems: 0,
+      totalQuantity: 0,
+      expiringSoon: 0,
+      lowStock: 0,
+      overstockItems: [],
+      monthlyActivity: Array(12).fill(0),
+      monthlyActivityPercentages: Array(12).fill(0)
+    };
+
+    const now = new Date();
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const currentYear = now.getFullYear();
+    const overstockThreshold = 10000; // Adjust based on business rules
+    const lowStockThreshold = 100; // Items below this are considered low stock
+
+    // Process inventories
+    const itemMap = new Map<number, { quantity: number; expiryDate?: Date; name: string; hasExpiringLot: boolean; hasLowStockLot: boolean }>();
+    
+    (inventories || []).forEach((inv: any) => {
+      const details = inv.inventoryDetails || [];
+      details.forEach((d: any) => {
+        const quantity = Number(d.itemQuantity ?? d.currentQuantity ?? 0);
+        const itemId = d.itemId;
+        const itemName = d.item?.name || d.item?.itemNo || 'Item';
+        
+        if (quantity > 0) {
+          stats.totalQuantity += quantity;
+
+          const expDate = d.item?.expiryDate ? new Date(d.item.expiryDate) : null;
+          const isExpiring = expDate && expDate <= thirtyDaysFromNow && expDate > now;
+          const isLowStock = quantity < lowStockThreshold;
+
+          // Track for overstock calculation and unique item counting
+          const existing = itemMap.get(itemId);
+          if (existing) {
+            existing.quantity += quantity;
+            if (isExpiring) existing.hasExpiringLot = true;
+            if (isLowStock) existing.hasLowStockLot = true;
+          } else {
+            itemMap.set(itemId, {
+              quantity,
+              expiryDate: expDate && !isNaN(expDate.getTime()) ? expDate : undefined,
+              name: itemName,
+              hasExpiringLot: isExpiring || false,
+              hasLowStockLot: isLowStock || false
+            });
+          }
+        }
+      });
+    });
+
+    // Count unique items and calculate statistics
+    stats.totalItems = itemMap.size;
+    itemMap.forEach(item => {
+      if (item.hasExpiringLot) stats.expiringSoon++;
+      if (item.hasLowStockLot) stats.lowStock++;
+    });
+
+    // Calculate overstock items (top items by quantity)
+    const overstockItems: OverstockItemView[] = Array.from(itemMap.values())
+      .map(item => {
+        const percentage = Math.min(100, Math.round((item.quantity / overstockThreshold) * 100));
+        return {
+          name: item.name,
+          lot: 'N/A',
+          percentage,
+          expiryDate: item.expiryDate 
+            ? `${item.expiryDate.getDate()} ${item.expiryDate.toLocaleString('en', { month: 'short' })} ${item.expiryDate.getFullYear()}`
+            : undefined,
+          imageUrl: 'assets/Ammunition.png' // Default, can be enhanced
+        };
+      })
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 10);
+
+    stats.overstockItems = overstockItems;
+
+    // Calculate monthly activity for current year only (not accumulating)
+    // This shows distribution of orders across months in the current year
+    const monthlyCounts = Array(12).fill(0);
+    orders.forEach((order: OrderDto) => {
+      if (order.usageDate) {
+        const orderDate = new Date(order.usageDate);
+        // Only count orders from current year
+        if (orderDate.getFullYear() === currentYear && !isNaN(orderDate.getTime())) {
+          const month = orderDate.getMonth();
+          if (month >= 0 && month < 12) {
+            monthlyCounts[month]++;
+          }
+        }
+      }
+    });
+
+    stats.monthlyActivity = monthlyCounts;
+
+    // Calculate percentages (distribution across months)
+    const totalOrders = monthlyCounts.reduce((sum, count) => sum + count, 0);
+    if (totalOrders > 0) {
+      stats.monthlyActivityPercentages = monthlyCounts.map(count => 
+        Math.round((count / totalOrders) * 100)
+      );
+    } else {
+      stats.monthlyActivityPercentages = Array(12).fill(0);
+    }
+
+    this.statistics = stats;
+  }
+
+  // Modal handlers
+  onViewOrderDetails(orderRequestId: number): void {
+    const orderRequest = this.orderRequestsMap.get(orderRequestId);
+    if (orderRequest) {
+      this.orderService.getOrderById(orderRequestId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (order) => {
+            this.selectedOrderRequest = order;
+            this.isOrderModalOpen = true;
+          },
+          error: () => {
+            this.selectedOrderRequest = this.orderRequestsMap.get(orderRequestId) || null;
+            this.isOrderModalOpen = true;
+          }
+        });
+    }
+  }
+
+  onViewReturnDetails(returnRequestId: number): void {
+    const returnRequest = this.returnRequestsMap.get(returnRequestId);
+    if (returnRequest) {
+      this.returnService.getReturnById(returnRequestId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (ret: ReturnDto) => {
+            this.selectedReturnRequest = ret;
+            this.isReturnModalOpen = true;
+          },
+          error: () => {
+            this.selectedReturnRequest = this.returnRequestsMap.get(returnRequestId) || null;
+            this.isReturnModalOpen = true;
+          }
+        });
+    }
+  }
+
+  onViewDiscardDetails(discardRequestId: number): void {
+    const discardRequest = this.discardRequestsMap.get(discardRequestId);
+    if (discardRequest) {
+      this.discardService.getDiscardById(discardRequestId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: DiscardDto) => {
+            this.selectedDiscardRequest = res;
+            this.isDiscardModalOpen = true;
+          },
+          error: () => {
+            this.selectedDiscardRequest = this.discardRequestsMap.get(discardRequestId) || null;
+            this.isDiscardModalOpen = true;
+          }
+        });
+    }
   }
 
   closeOrderModal(): void {
@@ -496,39 +549,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.selectedOrderRequest = null;
   }
 
-  onViewReturnDetails(returnRequestId: number): void {
-    this.returnService.getReturnById(returnRequestId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (ret: ReturnDto) => {
-          this.selectedReturnRequest = ret;
-          this.isReturnModalOpen = true;
-        },
-        error: () => {
-          this.selectedReturnRequest = null;
-          this.isReturnModalOpen = false;
-        }
-      });
-  }
-
   closeReturnModal(): void {
     this.isReturnModalOpen = false;
     this.selectedReturnRequest = null;
-  }
-
-  onViewDiscardDetails(discardRequestId: number): void {
-    this.discardService.getDiscardById(discardRequestId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res: DiscardDto) => {
-          this.selectedDiscardRequest = res;
-          this.isDiscardModalOpen = true;
-        },
-        error: () => {
-          this.selectedDiscardRequest = null;
-          this.isDiscardModalOpen = false;
-        }
-      });
   }
 
   closeDiscardModal(): void {
@@ -536,6 +559,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.selectedDiscardRequest = null;
   }
 
+  // Formatting helpers
   formatOrderDate(order: OrderDto): string {
     return this.formatDate(order.usageDate);
   }
@@ -550,7 +574,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     } else {
       date = new Date();
     }
-    const months = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
@@ -558,104 +583,48 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return (order as any).departmentNameEn || (order as any).departmentNameAr || 'N/A';
   }
 
-  private mapOrderItems(items?: OrderRequestItemDto[] | null): ReturnItem[] {
-    if (!items || items.length === 0) return [];
-    return items.map((i: OrderRequestItemDto) => ({
-      itemName: (i as any).itemName || i.itemNo || 'N/A',
-      itemNo: i.itemNo || 'N/A',
-      quantity: Number((i as any).quantity ?? 0),
-      notes: (i as any).notes || undefined
-    }));
+  resolveRequestPurpose(order: OrderDto | null): string {
+    if (!order) return 'N/A';
+    return (order as any).requestPurposeNameEn || (order as any).requestPurposeNameAr || 'N/A';
   }
 
-  private loadOverstock(): void {
-    this.inventoryService.getAll()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (inventories: any[]) => {
-          console.log('Loaded inventories for overstock:', inventories);
-          const out: OverstockItemView[] = [];
-          
-          if (!inventories || inventories.length === 0) {
-            console.log('No inventories found');
-            this.overstockItems = [];
-            return;
-          }
-          
-          (inventories || []).forEach((inv: any) => {
-            console.log('Processing inventory:', inv);
-            const details = inv.inventoryDetails || [];
-            console.log('Inventory details:', details);
-            
-            if (!details || details.length === 0) {
-              console.log('No inventory details found for inventory:', inv.id);
-              return;
-            }
-            
-            details.forEach((d: any) => {
-              // Use itemQuantity (which is what warehouse inventory uses)
-              const quantity: number = Number(d.itemQuantity ?? d.currentQuantity ?? 0);
-              console.log('Processing detail:', d, 'Quantity:', quantity);
-              
-              // Only include items with quantity > 0
-              if (quantity > 0) {
-                const expDate: string | Date | undefined = d.item?.expiryDate;
-                const exp = expDate ? new Date(expDate as any) : null;
-                
-                // Calculate percentage based on quantity (normalize to 0-100)
-                // For overstock, we'll use a simple scale: items with higher quantities get higher percentages
-                // You can adjust this logic based on your business rules (e.g., compare against a threshold)
-                const maxQuantity = 10000; // Adjust this threshold based on your needs
-                const percentage = Math.min(100, Math.round((quantity / maxQuantity) * 100));
-                
-                const itemName = d.item?.name || d.item?.itemNo || 'Item';
-                console.log('Adding item to overstock:', itemName, 'Quantity:', quantity, 'Percentage:', percentage);
-                
-                out.push({
-                  name: itemName,
-                  lot: d.lot || 'N/A',
-                  percentage: percentage,
-                  expiryDate: exp && !isNaN(exp.getTime()) ? `${exp.getDate()} ${exp.toLocaleString('en', { month: 'short' })} ${exp.getFullYear()}` : undefined,
-                  imageUrl: d.item?.itemType === 2 ? 'assets/Weapon .png' : 'assets/Ammunition.png'
-                });
-              } else {
-                console.log('Skipping item with quantity 0:', d);
-              }
-            });
-          });
-          
-          console.log('Total items found:', out.length);
-          
-          // Sort by quantity descending to show highest stock items first
-          out.sort((a, b) => b.percentage - a.percentage);
-          
-          // Take top 10 items
-          this.overstockItems = out.slice(0, 10);
-          console.log('Final overstock items:', this.overstockItems);
-        },
-        error: (err) => { 
-          console.error('Failed to load overstock items:', err);
-          this.overstockItems = []; 
-        }
-      });
+  resolveDepotName(order: OrderDto | null): string {
+    if (!order) return 'N/A';
+    return (order as any).depotNameEn || (order as any).depotNameAr || 'N/A';
   }
 
-  private loadAnnualActivity(): void {
-    this.orderService.getAllOrders()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (orders: OrderDto[]) => {
-          const months: number[] = Array(12).fill(0);
-          orders.forEach((o: OrderDto) => {
-            const d = o.usageDate ? new Date(o.usageDate) : null;
-            const m = d && !isNaN(d.getTime()) ? d.getMonth() : null;
-            if (m !== null) months[m] = months[m] + 1;
-          });
-          this.annualActivityValues = months;
-        },
-        error: () => { this.annualActivityValues = Array(12).fill(0); }
-      });
+  getOrderPriorityKey(priority?: number | null): string {
+    switch (priority) {
+      case 2: return 'dashboard.priorityLabels.medium';
+      case 3: return 'dashboard.priorityLabels.low';
+      default: return 'dashboard.priorityLabels.high';
+    }
+  }
+
+  getOrderStatusKey(status?: number | null): string {
+    return getRequestStatusTranslationKey(status);
+  }
+
+  getOrderAllowanceKey(isFromAllowance?: boolean | null): string {
+    return isFromAllowance ? 'common.yes' : 'common.no';
+  }
+
+  hasOrderItems(items?: OrderRequestItemDto[] | null): boolean {
+    return !!items && items.length > 0;
+  }
+
+  formatOrderUsageTime(order: OrderDto | null): string {
+    if (!order?.usageTime) return 'N/A';
+    return order.usageTime.length >= 5 ? order.usageTime.substring(0, 5) : order.usageTime;
+  }
+
+  // Statistics getters
+  get annualActivityValues(): number[] {
+    // Return actual counts for the chart (can be switched to percentages if needed)
+    return this.statistics.monthlyActivity;
+  }
+
+  get overstockItems(): OverstockItemView[] {
+    return this.statistics.overstockItems;
   }
 }
-
-
