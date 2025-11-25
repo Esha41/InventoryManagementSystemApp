@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { RoleFormModalComponent } from '@components/role-form-modal/role-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
-import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X } from 'lucide-angular';
+import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X, Search } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -16,12 +18,15 @@ import { ToastService } from '@services/toast.service';
   selector: 'app-admin-roles',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
+    FormsModule,
     CardComponent, 
     ButtonComponent, 
     LucideAngularModule,
     RoleFormModalComponent,
     ConfirmDialogComponent,
+    PaginationComponent,
+    RowsPerPageComponent,
     TranslateModule,
     HasPermissionDirective
   ],
@@ -38,10 +43,18 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   readonly Copy = Copy;
   readonly Check = Check;
   readonly X = X;
+  readonly Search = Search;
 
   roles: RoleDto[] = [];
   isLoading = false;
   errorMessage = '';
+  
+  // Search
+  searchTerm = '';
+  
+  // Pagination
+  currentPage = 1;
+  rowsPerPage = 10;
   
   showRoleModal = false;
   showDeleteConfirm = false;
@@ -197,5 +210,62 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   getActiveRolesCount(): number {
     return this.roles.length;
+  }
+
+  // Search and Filter
+  get filteredRoles(): RoleDto[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.roles;
+    }
+
+    return this.roles.filter(role => {
+      const name = (role.name || '').toLowerCase();
+      return name.includes(term);
+    });
+  }
+
+  onSearchChange(): void {
+    this.currentPage = 1;
+    this.validateCurrentPage();
+  }
+
+  // Pagination
+  get totalPages(): number {
+    const totalItems = this.filteredRoles.length;
+    if (totalItems === 0) {
+      return 1;
+    }
+    return Math.ceil(totalItems / this.rowsPerPage);
+  }
+
+  get paginatedRoles(): RoleDto[] {
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredRoles.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const maxPages = this.totalPages;
+    if (this.currentPage > maxPages && maxPages > 0) {
+      this.currentPage = maxPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+  }
+
+  onPageChange(page: number): void {
+    const maxPages = this.totalPages;
+    if (page < 1 || page > maxPages || maxPages === 0) {
+      return;
+    }
+    this.currentPage = page;
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+    this.validateCurrentPage();
   }
 }

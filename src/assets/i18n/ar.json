@@ -60,7 +60,7 @@
     "rolePermissions": "صلاحيات الأدوار",
     "emailSettings": "إعدادات البريد الإلكتروني",
     "notifications": "الإشعارات",
-    "integratedInventoryManagement": "إدارة المخزون المتكاملة",
+    "integratedInventoryManagement": "نظام التسلح المتكامل",
     "supplyOrder": "طلب التوريد"
   },
   "dashboard": {
@@ -197,8 +197,8 @@
     }
   },
   "newIssueRequest": {
-    "title": "طلب إصدار جديد",
-    "newOrderIssue": "إصدار أمر جديد",
+    "title": "انشاء طلب جديد",
+    "newOrderIssue": "انشاء طلب جديد",
     "allowanceSelection": "مصدر الطلب",
     "selection": "الاختيار",
     "usage": "الاستخدام",
@@ -212,7 +212,7 @@
     "fromAllAmmunitionDescription": "طلب أي عناصر من المخزون الكامل للذخائر",
     "cartridgeList": "قائمة الذخائر",
     "filters": "التصفية",
-    "searchCartridges": "ابحث عن الخراطيش...",
+    "searchCartridges": "ابحث عن الذخائر...",
     "bulletDiameter": "قطر الرصاصة",
     "caseLength": "طول الغلاف",
     "linked": "مرتبط",
@@ -241,7 +241,6 @@
     "ncn": "NCN",
     "primaryPurpose": "الغرض الأساسي",
     "sendRequest": "إرسال الطلب",
-    "cartidgeList": "قائمة الذخائر",
     "selectType": "اختر النوع",
     "selectAmmunitionType": "اختر نوع الذخيرة",
     "selectBulletDiameter": "اختر قطر الرصاصة",
@@ -906,6 +905,10 @@
     "activeRoles": "الأدوار النشطة",
     "systemStatus": "حالة النظام",
     "operational": "يعمل",
+    "role": "الدور",
+    "type": "النوع",
+    "actions": "الإجراءات",
+    "searchPlaceholder": "البحث عن الأدوار...",
     "superAdmin": "مدير فائق",
     "default": "افتراضي",
     "edit": "تعديل",

@@ -182,6 +182,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (this.processing || !this.requestDetail) return;
     
     this.processing = true;
+    // Immediately update status to prevent buttons from showing
+    if (this.requestDetail) {
+      this.requestDetail.status = 'Confirmed';
+    }
+    
     const payload = {
       baseRequestID: this.requestId,
       isApproved: true,
@@ -199,12 +204,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.comments = '';
         this.sendToHigherApproval = false;
-        this.loadRequestDetail(); // Reload to get updated status
-        this.processing = false;
+        // Reload to get updated status and approval history
+        this.loadRequestDetail();
       },
       error: (error) => {
         this.error = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
         this.processing = false;
+        // Revert status on error by reloading
+        if (this.requestDetail) {
+          this.loadRequestDetail();
+        }
       }
     });
   }
@@ -213,6 +222,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (this.processing || !this.requestDetail) return;
     
     this.processing = true;
+    // Immediately update status to prevent buttons from showing
+    if (this.requestDetail) {
+      this.requestDetail.status = 'Rejected';
+    }
+    
     const payload = {
       baseRequestID: this.requestId,
       isApproved: false,
@@ -230,12 +244,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.comments = '';
         this.sendToHigherApproval = false;
-        this.loadRequestDetail(); // Reload to get updated status
-        this.processing = false;
+        // Reload to get updated status and approval history
+        this.loadRequestDetail();
       },
       error: (error) => {
         this.error = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
         this.processing = false;
+        // Revert status on error
+        if (this.requestDetail) {
+          this.loadRequestDetail();
+        }
       }
     });
   }
@@ -323,7 +341,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-
     if (this.requestDetail.requestType !== 'Order') {
       return false;
     }
@@ -332,8 +349,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-   
-    return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
+    // Safely check permission - catch any token decoding errors
+    try {
+      return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
+    } catch (error) {
+      // If permission check fails (e.g., token issue), return false
+      return false;
+    }
   }
 
  

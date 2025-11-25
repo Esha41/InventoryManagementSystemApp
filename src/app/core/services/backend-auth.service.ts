@@ -346,10 +346,25 @@ export class BackendAuthService {
    */
   private decodeToken(token: string): any {
     try {
-      const payload = token.split('.')[1];
-      return JSON.parse(atob(payload));
+      if (!token || typeof token !== 'string') {
+        return null;
+      }
+      
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return null;
+      }
+      
+      const payload = parts[1];
+      if (!payload) {
+        return null;
+      }
+      
+      // Decode base64 and parse JSON
+      const decoded = atob(payload);
+      return JSON.parse(decoded);
     } catch (error) {
-      this.configService.logError('Failed to decode token', error);
+      // Silently fail - token might be invalid or malformed
       return null;
     }
   }
@@ -515,9 +530,14 @@ export class BackendAuthService {
     // Check if user has IsSuperAdmin claim from token
     const token = this.storageService.get<string>('auth_token');
     if (token) {
-      const payload = this.decodeToken(token);
-      if (payload?.IsSuperAdmin === 'true') {
-        return true; // Super admin has ALL permissions
+      try {
+        const payload = this.decodeToken(token);
+        if (payload?.IsSuperAdmin === 'true') {
+          return true; // Super admin has ALL permissions
+        }
+      } catch (error) {
+        // If token decoding fails, continue with permission check
+        // Don't log error here to avoid console spam
       }
     }
 

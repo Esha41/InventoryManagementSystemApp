@@ -61,7 +61,7 @@
     "rolePermissions": "Role Permissions",
     "emailSettings": "Email Settings",
     "notifications": "Notifications",
-    "integratedInventoryManagement": "Integrated Inventory Management",
+    "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order"
   },
   "dashboard": {
@@ -906,6 +906,10 @@
     "activeRoles": "Active Roles",
     "systemStatus": "System Status",
     "operational": "Operational",
+    "role": "Role",
+    "type": "Type",
+    "actions": "Actions",
+    "searchPlaceholder": "Search roles...",
     "superAdmin": "Super Admin",
     "default": "Default",
     "edit": "Edit",
