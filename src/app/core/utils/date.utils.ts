@@ -46,3 +46,23 @@ export class DateUtils {
   }
 }
 
+/**
+ * Format date and time for order display
+ * Format: "DD Month YYYY · HH:MM" (e.g., "15 January 2024 · 14:30")
+ */
+export function formatOrderDateTime(date?: string, time?: string): string {
+  if (!date) return 'N/A';
+  try {
+    const d = new Date(date);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const timeStr = time || '';
+    return `${day} ${month} ${year}${timeStr ? ' · ' + timeStr : ''}`;
+  } catch {
+    return date;
+  }
+}
+

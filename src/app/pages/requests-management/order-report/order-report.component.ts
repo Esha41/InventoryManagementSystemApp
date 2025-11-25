@@ -13,44 +13,18 @@ import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
-
-interface OrderSummary {
-  orderId: string;
-  status: string;
-  priority: string;
-  submittedOn: string;
-  department: string;
-  requester: string;
-  usagePurpose: string;
-  totalItems: number;
-  totalQuantity: number;
-  workflowVersion: string;
-  lastUpdated: string;
-}
-
-interface OrderItem {
-  name: string;
-  caliber: string;
-  quantity: number;
-  status: string;
-}
-
-interface ApprovalStep {
-  step: string;
-  role: string;
-  approver: string;
-  status: 'pending' | 'approved' | 'rejected' | 'in-progress';
-  date: string;
-  notes: string;
-}
-
-interface WorkflowDetail {
-  phase: string;
-  owner: string;
-  description: string;
-  sla: string;
-  status: string;
-}
+import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
+import { mapOrderStatusFromApi } from '@utils/status.utils';
+import { formatOrderDateTime } from '@utils/date.utils';
+import { mapOrderPriorityToString } from '@utils/priority.utils';
+import {
+  mapOrderToSummary,
+  mapOrderItems,
+  mapApprovalRecordsToSteps,
+  generateApprovalWorkflowFallback,
+  generateQrCodeData,
+  filterApprovalRecordsByOrderId
+} from '../utils/order-report.utils';
 
 @Component({
   selector: 'app-order-report',
@@ -94,8 +68,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     lastUpdated: ''
   };
 
-  orderItems: OrderItem[] = [];
-  approvalWorkflow: ApprovalStep[] = [];
+  orderItems: OrderReportItem[] = [];
+  approvalWorkflow: OrderReportApprovalStep[] = [];
   workflowDetails: WorkflowDetail[] = [];
   approvalWorkflowStatus: string = '';
 
@@ -173,112 +147,17 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private mapOrderToReport(order: OrderDto): void {
-    // Debug: Log priority value
-    console.log('Order priority value:', order.priority, 'Type:', typeof order.priority);
+    // Map order summary using utility function
+    this.orderSummary = mapOrderToSummary(order);
     
-    // Map order summary
-    this.orderSummary = {
-      orderId: order.orderNo || `#${order.id}`,
-      status: this.mapStatusToString(order.status),
-      priority: this.mapPriorityToString(order.priority),
-      submittedOn: this.formatDateTime(order.usageDate, order.usageTime),
-      department: order.departmentNameEn || order.departmentNameAr || 'N/A',
-      requester: order.requesterName || 'N/A',
-      usagePurpose: order.usagePurpose || 'N/A',
-      totalItems: order.requestItems?.length || 0,
-      totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-      workflowVersion: `WF-${order.requestType}-${order.id}`,
-      lastUpdated: this.formatDateTime(order.usageDate, order.usageTime)
-    };
-    
-    // Debug: Log mapped priority
-    console.log('Mapped priority:', this.orderSummary.priority);
-
-    // Map order items
-    this.orderItems = (order.requestItems || []).map(item => ({
-      name: item.itemName || 'Unknown Item',
-      caliber: item.itemNo || 'N/A',
-      quantity: item.quantity,
-      status: this.mapItemStatus(order.status)
-    }));
+    // Map order items using utility function
+    this.orderItems = mapOrderItems(order);
 
     // Load approval workflow and workflow details from API
     this.loadApprovalWorkflow(order.id);
     this.loadWorkflowDetails(order);
   }
 
-  private mapStatusToString(status: number): string {
-    switch (status) {
-      case 0: return 'Pending';
-      case 1: return 'Approved';
-      case 2: return 'Rejected';
-      default: return 'Pending';
-    }
-  }
-
-  private mapStatusFromApi(status: any): string {
-    if (status === 'Approved' || status === 'approved') {
-      return 'Approved';
-    }
-    if (status === 'Rejected' || status === 'rejected') {
-      return 'Rejected';
-    }
-    if (status === 'Pending' || status === 'pending') {
-      return 'Pending';
-    }
-    // Handle numeric status
-    if (typeof status === 'number') {
-      return this.mapStatusToString(status);
-    }
-    return 'Pending';
-  }
-
-  private mapPriorityToString(priority: number | undefined | null): string {
-    // Handle null, undefined, or invalid values
-    if (priority === null || priority === undefined || isNaN(Number(priority))) {
-      console.warn('Invalid priority value:', priority);
-      return 'Medium';
-    }
-    
-    // Convert to number in case it's a string
-    const priorityNum = Number(priority);
-    
-    // Map priority values to match the order creation mapping:
-    // 1 = High, 2 = Medium, 3 = Low (from mapPriorityToEnum in new-issue-request.component.ts)
-    switch (priorityNum) {
-      case 1: return 'High';
-      case 2: return 'Medium';
-      case 3: return 'Low';
-      case 4: return 'Critical';
-      default: 
-        console.warn('Unknown priority value:', priorityNum);
-        return 'Medium';
-    }
-  }
-
-  private mapItemStatus(orderStatus: number): string {
-    switch (orderStatus) {
-      case 1: return 'Allocated';
-      case 2: return 'Rejected';
-      default: return 'Pending allocation';
-    }
-  }
-
-  private formatDateTime(date?: string, time?: string): string {
-    if (!date) return 'N/A';
-    try {
-      const d = new Date(date);
-      const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                     'July', 'August', 'September', 'October', 'November', 'December'];
-      const day = d.getDate();
-      const month = months[d.getMonth()];
-      const year = d.getFullYear();
-      const timeStr = time || '';
-      return `${day} ${month} ${year}${timeStr ? ' · ' + timeStr : ''}`;
-    } catch {
-      return date;
-    }
-  }
 
   private loadApprovalWorkflow(orderId: number): void {
     console.log('loadApprovalWorkflow called with orderId:', orderId);
@@ -308,28 +187,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           console.log('Processing data array for orderId:', orderId, 'Array:', dataArray);
           console.log('Available request IDs:', dataArray.map((i: any) => ({ id: i.id, requestNo: i.requestNo })));
           
-          // Filter approval records that match the order ID
-          const approvalRecords = dataArray.filter((item: any) => {
-            // Exact ID match (most reliable)
-            if (item.id === orderId) {
-              return true;
-            }
-            
-            // Check other ID fields
-            if (item.orderId === orderId || item.requestId === orderId) {
-              return true;
-            }
-            
-            // Check requestNo - extract order number from request number pattern
-            if (item.requestNo) {
-              const orderNumMatch = item.requestNo.match(/0*(\d+)/);
-              if (orderNumMatch && parseInt(orderNumMatch[1]) === orderId) {
-                return true;
-              }
-            }
-            
-            return false;
-          });
+          // Filter approval records that match the order ID using utility function
+          const approvalRecords = filterApprovalRecordsByOrderId(dataArray, orderId);
           
           if (approvalRecords.length === 0) {
             console.log('No matching approval records found for order ID:', orderId);
@@ -338,46 +197,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           
           console.log('Found approval records for orderId', orderId, ':', approvalRecords);
           
-          // Map approval records to ApprovalStep format using the specified field mappings
-          const steps = approvalRecords.map((item: any, index: number) => {
-            const step = item.higherApprovalRoleId || `Step ${index + 1}`;
-            const role = item.applicationRoleName || 'N/A';
-            const approver = item.changedBy || 'N/A';
-            
-            // Format date - handle both date-only and datetime strings
-            let date = 'Pending';
-            if (item.changedAt) {
-              try {
-                const dateObj = new Date(item.changedAt);
-                if (!isNaN(dateObj.getTime())) {
-                  // Extract time if it's a datetime string
-                  const timeStr = item.changedAt.includes('T') 
-                    ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-                    : '';
-                  date = this.formatDateTime(item.changedAt, timeStr);
-                }
-              } catch {
-                date = item.changedAt;
-              }
-            }
-            
-            const status = this.mapApprovalStatus(item.oldRequestStatus);
-            
-            return {
-              step,
-              role,
-              approver,
-              status,
-              date,
-              notes: item.comments || item.notes || item.comment || item.reason || ''
-            };
-          });
+          // Map approval records to steps using utility function
+          const steps = mapApprovalRecordsToSteps(approvalRecords, this.orders, formatOrderDateTime);
           
           // Set workflow status from the last record's status if available
           if (steps.length > 0) {
             const lastStatus = approvalRecords[approvalRecords.length - 1]?.oldRequestStatus;
             if (lastStatus) {
-              this.approvalWorkflowStatus = this.mapStatusFromApi(lastStatus);
+              this.approvalWorkflowStatus = mapOrderStatusFromApi(lastStatus);
             }
           }
           
@@ -386,7 +213,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         catchError(error => {
           console.error('Failed to load approval workflow', error);
           // Fallback to mock data if API fails
-          return of(this.generateApprovalWorkflowFallback(orderId));
+          const order = this.orders.find(o => o.id === orderId);
+          if (order) {
+            return of(generateApprovalWorkflowFallback(order, formatOrderDateTime));
+          }
+          return of([]);
         })
       )
       .subscribe({
@@ -407,131 +238,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading approval workflow', error);
           // Only use fallback if API call fails completely
-          this.approvalWorkflow = this.generateApprovalWorkflowFallback(orderId);
+          const order = this.orders.find(o => o.id === orderId);
+          if (order) {
+            this.approvalWorkflow = generateApprovalWorkflowFallback(order, formatOrderDateTime);
+          } else {
+            this.approvalWorkflow = [];
+          }
         }
       });
   }
 
-  private generateApprovalWorkflowFromRequest(request: any): ApprovalStep[] {
-    // Generate approval workflow steps from request data when status is "Approved"
-    const steps: ApprovalStep[] = [];
-    
-    // Get order data for requester name
-    const orderId = request.id;
-    const order = this.orders.find(o => o.id === orderId);
-    const requesterName = order?.requesterName || request.requesterName || request.requester || 'N/A';
-    const requestDate = request.requestDate || order?.usageDate;
-    const requestTime = order?.usageTime;
-    
-    // Step 1: Submission
-    steps.push({
-      step: 'Submission',
-      role: 'Request Owner',
-      approver: requesterName,
-      status: 'approved',
-      date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
-      notes: 'Initial request submitted.'
-    });
-    
-    // Step 2: Review/Approval (based on status)
-    const status = request.status;
-    if (status === 'Approved' || status === 1 || status === 'approved') {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: request.approverName || request.approver || 'System',
-        status: 'approved',
-        date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
-        notes: request.reason || 'Order approved.'
-      });
-    } else if (status === 'Rejected' || status === 2 || status === 'rejected') {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: request.approverName || request.approver || 'System',
-        status: 'rejected',
-        date: requestDate ? this.formatDateTime(requestDate, requestTime) : 'Pending',
-        notes: request.reason || 'Order rejected.'
-      });
-    } else {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: 'System',
-        status: 'pending',
-        date: 'Pending',
-        notes: 'Awaiting review.'
-      });
-    }
-    
-    return steps;
-  }
-
-  private generateApprovalWorkflowFallback(orderId: number): ApprovalStep[] {
-    // Fallback mock data if API fails or returns empty
-    const order = this.orders.find(o => o.id === orderId);
-    if (!order) {
-      return [];
-    }
-    
-    const steps: ApprovalStep[] = [
-      {
-        step: 'Submission',
-        role: 'Request Owner',
-        approver: order.requesterName || 'N/A',
-        status: 'approved',
-        date: this.formatDateTime(order.usageDate, order.usageTime),
-        notes: 'Initial request submitted.'
-      }
-    ];
-
-    if (order.status === 1) {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: 'System',
-        status: 'approved',
-        date: this.formatDateTime(order.usageDate, order.usageTime),
-        notes: 'Order approved.'
-      });
-    } else if (order.status === 2) {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: 'System',
-        status: 'rejected',
-        date: this.formatDateTime(order.usageDate, order.usageTime),
-        notes: order.reason || 'Order rejected.'
-      });
-    } else {
-      steps.push({
-        step: 'Review',
-        role: 'Reviewer',
-        approver: 'System',
-        status: 'pending',
-        date: 'Pending',
-        notes: 'Awaiting review.'
-      });
-    }
-
-    return steps;
-  }
-
-  private mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' {
-    if (!status) return 'pending';
-    
-    const statusStr = String(status).toLowerCase();
-    if (statusStr.includes('approved') || statusStr === '1' || statusStr === 'true') {
-      return 'approved';
-    }
-    if (statusStr.includes('rejected') || statusStr === '2' || statusStr === 'false') {
-      return 'rejected';
-    }
-    if (statusStr.includes('progress') || statusStr.includes('processing')) {
-      return 'in-progress';
-    }
-    return 'pending';
-  }
 
   private loadWorkflowDetails(order: OrderDto): void {
     // Try to get workflow details from API response
@@ -543,33 +259,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     // Example: this.apiService.getWithAuth(...).subscribe(...)
   }
 
-  private generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail[] {
-    // Fallback workflow details - can be enhanced when API provides this data
-    return [
-      {
-        phase: 'Intake & Validation',
-        owner: 'Request Management',
-        description: 'Validate requester credentials and order details.',
-        sla: '2 business hours',
-        status: 'Completed'
-      },
-      {
-        phase: 'Approval Process',
-        owner: 'Approval System',
-        description: 'Review and approve order request.',
-        sla: '1 business day',
-        status: order.status === 1 ? 'Completed' : order.status === 2 ? 'Rejected' : 'In progress'
-      },
-      {
-        phase: 'Issuance & Tracking',
-        owner: 'Depot',
-        description: 'Issue order and register tracking information.',
-        sla: 'Pending',
-        status: order.status === 1 ? 'In progress' : 'Pending'
-      }
-    ];
-  }
-
   goBack(): void {
     this.router.navigate(['/requests-management']);
   }
@@ -579,13 +268,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
     try {
+      const qrData = generateQrCodeData(this.orderSummary);
       this.qrCodeDataUrl = await QRCode.toDataURL(
-        JSON.stringify({
-          orderId: this.orderSummary.orderId,
-          workflow: this.orderSummary.workflowVersion,
-          issuedOn: this.orderSummary.lastUpdated,
-          totalItems: this.orderSummary.totalItems
-        }),
+        qrData,
         { width: 280, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
       );
     } catch (error) {
@@ -620,15 +305,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   getStatusLabel(status: number): string {
-    return this.mapStatusToString(status);
+    return mapOrderStatusFromApi(status);
   }
 
   getPriorityLabel(priority: number): string {
-    return this.mapPriorityToString(priority);
+    return mapOrderPriorityToString(priority);
   }
 
   getOrderDateLabel(order: OrderDto): string {
-    return this.formatDateTime(order.usageDate, order.usageTime);
+    return formatOrderDateTime(order.usageDate, order.usageTime);
   }
 
   trackByOrderId(_: number, order: OrderDto): number | undefined {
