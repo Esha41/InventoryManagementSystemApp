@@ -1,0 +1,49 @@
+/* Email Settings Component Styles */
+
+/* Form input focus states */
+input[type="text"],
+input[type="number"],
+input[type="password"] {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--color-brand);
+}
+
+input[type="checkbox"]:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Password visibility toggle button */
+button[type="button"] {
+  cursor: pointer;
+}
+
+/* Required field indicator */
+.text-red-500 {
+  color: #ef4444;
+}
+
+/* Error message styling */
+.bg-red-50 {
+  background-color: #fef2f2;
+}
+
+.border-red-200 {
+  border-color: #fecaca;
+}
+
+.text-red-700 {
+  color: #b91c1c;
+}
+

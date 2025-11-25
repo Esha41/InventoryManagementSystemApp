@@ -156,7 +156,7 @@ export const API_ENDPOINTS = {
 
   // Email Configuration
   EMAIL_CONFIGURATION: {
-    BASE: '/EmailConfiguration',
+    BASE: '/EmailSettings',
   },
 
   // Email

@@ -58,6 +58,7 @@
     "manageAdmins": "Manage Admins",
     "adminRoles": "Admin Roles",
     "rolePermissions": "Role Permissions",
+    "emailSettings": "Email Settings",
     "notifications": "Notifications",
     "integratedInventoryManagement": "Integrated Inventory Management",
     "supplyOrder": "Supply Order"
@@ -1384,6 +1385,31 @@
         "singleSession": "Only one instance of a user can be logged in at once"
       }
     }
+  },
+  "emailSettings": {
+    "title": "System Settings",
+    "subtitle": "Configure email notification settings",
+    "emailSettings": "E-mail Settings",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "enableEmailNotifications": "Enable E-mail Notifications",
+    "host": "Host",
+    "hostPlaceholder": "e.g., smtp.office365.com",
+    "port": "Port",
+    "portPlaceholder": "e.g., 587",
+    "enableSsl": "Enable SSL",
+    "senderName": "Sender Name",
+    "senderNamePlaceholder": "e.g., Asset Admin MSDF",
+    "accountUsername": "Account Username",
+    "accountUsernamePlaceholder": "e.g., Asset_Notification@MSDF.gov.qa",
+    "accountPassword": "Account Password",
+    "passwordPlaceholder": "Leave blank to keep existing password",
+    "passwordRequiredPlaceholder": "Enter password",
+    "leaveBlankToKeep": "Leave blank to keep existing password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "savedSuccessfully": "Email settings saved successfully"
   }
 }
 

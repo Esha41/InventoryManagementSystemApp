@@ -1,11 +1,23 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
 
+// API Request/Response DTO matching the backend structure
+export interface EmailSettingsApiDto {
+  enableEmailNotifications: boolean;
+  host: string;
+  port: number;
+  enableSSL: boolean;
+  senderName: string;
+  accountUsername: string;
+  accountPassword?: string;
+}
+
+// Internal DTO for component usage
 export interface EmailConfigurationDto {
   id?: number;
   hostIp?: string | null;
@@ -13,6 +25,7 @@ export interface EmailConfigurationDto {
   senderEmail?: string | null;
   senderDisplayName?: string | null;
   username?: string | null;
+  password?: string | null;
   enableSsl?: boolean | null;
   enableEmailNotifications?: boolean | null;
   hasPassword?: boolean | null;
@@ -24,93 +37,136 @@ export interface EmailConfigurationDto {
 })
 export class EmailConfigurationService {
   constructor(
-    private readonly http: HttpClient,
+    private readonly apiService: ApiService,
     private readonly config: ConfigService
   ) {}
 
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}${API_ENDPOINTS.EMAIL_CONFIGURATION.BASE}`;
+  private get endpoint(): string {
+    return API_ENDPOINTS.EMAIL_CONFIGURATION.BASE;
   }
 
   getEmailConfiguration(): Observable<EmailConfigurationDto> {
     this.config.log('Fetching email configuration');
 
-    return this.http
-      .get<APIOperationResponse<EmailConfigurationDto>>(this.baseUrl)
+    return this.apiService
+      .getWithAuth<APIOperationResponse<EmailSettingsApiDto>>(this.endpoint)
       .pipe(
-        map(response => this.normalizeConfig(response?.data)),
+        map(response => {
+          // If response succeeded but no data, return empty config
+          if (response.succeeded && !response.data) {
+            return {};
+          }
+          return this.apiDtoToInternalDto(response?.data);
+        }),
         catchError(error => {
+          // If 404, return empty config (settings don't exist yet)
+          // Check both HttpErrorResponse status and error message
+          const is404 = (error as any)?.status === 404 || 
+                       error?.message?.includes('404') || 
+                       error?.message?.includes('Resource not found') ||
+                       error?.message?.includes('Not Found');
+          
+          // If 403, also return empty config (user might not have permission to view, but can still configure)
+          const is403 = (error as any)?.status === 403 || 
+                       error?.message?.includes('403') || 
+                       error?.message?.includes('Forbidden');
+          
+          if (is404) {
+            this.config.log('Email configuration not found, returning empty config');
+            return of({} as EmailConfigurationDto);
+          }
+          
+          if (is403) {
+            this.config.log('Email configuration access forbidden, returning empty config (user may still be able to save)');
+            return of({} as EmailConfigurationDto);
+          }
+          
           this.config.logError('Failed to fetch email configuration', error);
           return throwError(() => error);
         })
       );
   }
 
+  updateEmailConfiguration(config: EmailConfigurationDto): Observable<EmailConfigurationDto> {
+    this.config.log('Updating email configuration');
+
+    // Convert internal DTO to API DTO
+    const apiDto = this.internalDtoToApiDto(config);
+
+    return this.apiService
+      .postWithAuth<APIOperationResponse<EmailSettingsApiDto>>(this.endpoint, apiDto)
+      .pipe(
+        map(response => {
+          if (!response.succeeded) {
+            throw new Error(response.message || 'Failed to update email configuration');
+          }
+          return this.apiDtoToInternalDto(response?.data);
+        }),
+        catchError(error => {
+          // Provide more specific error messages
+          let errorMessage = 'Failed to update email configuration';
+          
+          // Check for status code in HttpErrorResponse
+          const status = (error as any)?.status;
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          
+          if (status === 403 || errorMsg?.includes('403') || errorMsg?.includes('Forbidden')) {
+            errorMessage = 'You do not have permission to update email settings. Please contact your administrator.';
+          } else if (status === 404 || errorMsg?.includes('404') || errorMsg?.includes('Not Found')) {
+            errorMessage = 'Email settings endpoint not found. Please verify the API endpoint is configured correctly.';
+          } else if (error instanceof Error && error.message && error.message !== 'An unknown error occurred') {
+            errorMessage = error.message;
+          } else if (errorMsg && errorMsg !== 'An unknown error occurred') {
+            errorMessage = errorMsg;
+          }
+          
+          this.config.logError('Failed to update email configuration', error);
+          return throwError(() => new Error(errorMessage));
+        })
+      );
+  }
+
   /**
-   * Normalize configuration payload coming from backend so downstream consumers can rely on consistent flags.
+   * Convert API DTO to internal DTO for component usage
    */
-  private normalizeConfig(config?: EmailConfigurationDto | null): EmailConfigurationDto {
-    if (!config) {
+  private apiDtoToInternalDto(apiDto?: EmailSettingsApiDto | null): EmailConfigurationDto {
+    if (!apiDto) {
       return {};
     }
 
-    const normalized: EmailConfigurationDto = { ...config };
-    const resolvedFlag = this.resolveBooleanFlag(normalized, [
-      'enableEmailNotifications',
-      'enableEmailNotification',
-      'emailNotificationsEnabled',
-      'emailNotificationEnabled',
-      'enableNotifications',
-      'notificationsEnabled'
-    ]);
-
-    if (resolvedFlag !== null) {
-      normalized.enableEmailNotifications = resolvedFlag;
-    }
-
-    return normalized;
+    return {
+      enableEmailNotifications: apiDto.enableEmailNotifications ?? false,
+      hostIp: apiDto.host || null,
+      port: apiDto.port ?? null,
+      enableSsl: apiDto.enableSSL ?? false,
+      senderDisplayName: apiDto.senderName || null,
+      username: apiDto.accountUsername || null,
+      // Password is typically not returned in GET responses, so we check if it exists
+      hasPassword: apiDto.accountPassword !== undefined && apiDto.accountPassword !== null && apiDto.accountPassword !== ''
+    };
   }
 
-  private resolveBooleanFlag(source: Record<string, unknown>, keys: string[]): boolean | null {
-    for (const key of keys) {
-      if (!Object.prototype.hasOwnProperty.call(source, key)) {
-        continue;
-      }
+  /**
+   * Convert internal DTO to API DTO for API requests
+   */
+  private internalDtoToApiDto(internalDto: EmailConfigurationDto): EmailSettingsApiDto {
+    const apiDto: EmailSettingsApiDto = {
+      enableEmailNotifications: internalDto.enableEmailNotifications ?? false,
+      host: internalDto.hostIp || '',
+      port: internalDto.port ?? 0,
+      enableSSL: internalDto.enableSsl ?? false,
+      senderName: internalDto.senderDisplayName || '',
+      accountUsername: internalDto.username || ''
+    };
 
-      const coerced = this.coerceBoolean(source[key]);
-      if (coerced !== null) {
-        return coerced;
-      }
+    // Only include password if it's provided
+    if (internalDto.password) {
+      apiDto.accountPassword = internalDto.password;
     }
 
-    return null;
+    return apiDto;
   }
 
-  private coerceBoolean(value: unknown): boolean | null {
-    if (value === null || value === undefined) {
-      return null;
-    }
-
-    if (typeof value === 'boolean') {
-      return value;
-    }
-
-    if (typeof value === 'number') {
-      return value !== 0;
-    }
-
-    if (typeof value === 'string') {
-      const normalized = value.trim().toLowerCase();
-      if (['true', '1', 'yes', 'y'].includes(normalized)) {
-        return true;
-      }
-      if (['false', '0', 'no', 'n'].includes(normalized)) {
-        return false;
-      }
-    }
-
-    return null;
-  }
 }
 
 
