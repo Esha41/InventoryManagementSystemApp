@@ -158,6 +158,12 @@ export const API_ENDPOINTS = {
   EMAIL_CONFIGURATION: {
     BASE: '/EmailConfiguration',
   },
+
+  // Email
+  EMAIL: {
+    BASE: '/Email',
+    SEND: '/Email/send',
+  },
 } as const;
 
 export const STORAGE_KEYS = {

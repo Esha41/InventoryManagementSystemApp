@@ -322,12 +322,23 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
         next: (success) => {
           if (success) {
             this.showDeleteConfirm = false;
+            const userName = this.selectedUser?.userName || this.translateService.instant('manageAdmins.user');
             this.selectedUser = undefined;
             this.loadUsers();
+            // Show success toast
+            this.toastService.success(
+              this.translateService.instant('manageAdmins.userDeletedSuccess', { userName }),
+              this.translateService.instant('manageAdmins.deleteUserTitle')
+            );
           }
         },
         error: (error) => {
           this.errorMessage = error.message || 'Failed to delete user';
+          // Show error toast
+          this.toastService.error(
+            error.message || this.translateService.instant('manageAdmins.userDeletedError'),
+            this.translateService.instant('manageAdmins.deleteUserTitle')
+          );
         }
       });
     }

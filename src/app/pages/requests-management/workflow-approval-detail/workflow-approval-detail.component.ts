@@ -34,10 +34,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  // Configurable permission for supply review access
-  // TODO: Update this when roles/users are properly seeded
-  // Can be changed to check workflow step's ApplicationEntityId and ApplicationRoleId
-  private readonly SUPPLY_REVIEW_PERMISSION = 'supply.review'; // Simple permission check - easy to change later
+  
+  private readonly SUPPLY_REVIEW_PERMISSION = 'supply.review'; 
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
@@ -314,47 +312,37 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    // Navigate back to requests-management (main entry point)
+
     this.router.navigate(['/requests-management']);
   }
 
-  /**
-   * Check if current user can review/manage supply details
-   * Simple permission-based check for now - can be enhanced later to check:
-   * - Workflow step's ApplicationEntityId matches supply management entity
-   * - Current user's role matches the pending workflow step's ApplicationRoleId
-   * - Request status allows supply management
-   */
+ 
   canReviewSupply(): boolean {
     if (!this.requestDetail) {
       return false;
     }
 
-    // Only allow for Order type requests (supply management is for orders)
+
     if (this.requestDetail.requestType !== 'Order') {
       return false;
     }
 
-    // Only allow if request is in a state that allows supply management
-    // Pending status covers both New and UnderProcess requests (as per request-mapper.utils.ts)
     if (this.requestDetail.status !== 'Pending') {
       return false;
     }
 
-    // Simple permission check - can be enhanced later with workflow-based logic
+   
     return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
   }
 
-  /**
-   * Navigate to supply request detail page for reviewing/managing items
-   */
+ 
   navigateToSupplyReview(): void {
     if (!this.requestDetail || !this.requestId) {
       return;
     }
 
     // For Order requests, the requestId maps to orderId
-    // Navigate to supply-request-detail with the requestId
-    this.router.navigate(['/supply-request-management', this.requestId]);
+  
+    this.router.navigate(['/requests-management', this.requestId, 'supply-request-detail']);
   }
 }

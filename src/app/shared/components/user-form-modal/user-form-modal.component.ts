@@ -320,7 +320,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     this.backendUserService.createUser(dto).subscribe({
       next: (user: BackendUserDto) => {
         this.isLoading = false;
-        this.toastService.success(this.translate.instant('userFormModal.createSuccess'));
+        this.toastService.success(
+          this.translate.instant('userFormModal.createSuccess'),
+          this.translate.instant('userFormModal.createTitle')
+        );
         this.saved.emit();
         this.close();
       },
@@ -328,6 +331,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         this.isLoading = false;
         const errorMsg = error instanceof Error ? error.message : 'Failed to create user';
         this.errorMessage = errorMsg;
+        this.toastService.error(
+          errorMsg || this.translate.instant('userFormModal.createError'),
+          this.translate.instant('userFormModal.createTitle')
+        );
         console.error('Error creating user:', error);
       }
     });
@@ -365,7 +372,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     this.backendUserService.updateUser(this.user.id, dto).subscribe({
       next: (user: BackendUserDto) => {
         this.isLoading = false;
-        this.toastService.success(this.translate.instant('userFormModal.updateSuccess'));
+        this.toastService.success(
+          this.translate.instant('userFormModal.updateSuccess'),
+          this.translate.instant('userFormModal.updateTitle')
+        );
         this.saved.emit();
         this.close();
       },
@@ -373,6 +383,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         this.isLoading = false;
         const errorMsg = error instanceof Error ? error.message : 'Failed to update user';
         this.errorMessage = errorMsg;
+        this.toastService.error(
+          errorMsg || this.translate.instant('userFormModal.updateError'),
+          this.translate.instant('userFormModal.updateTitle')
+        );
         console.error('Error updating user:', error);
       }
     });

@@ -10,6 +10,11 @@ import { BackendAuthService } from './backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { EmailService } from './email.service';
+import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
+import { OrderService, OrderDto } from './order.service';
+import { ReturnService, ReturnDto } from './return.service';
+import { DiscardService, DiscardDto } from './discard.service';
 
 interface NotificationDto {
   id?: number;
@@ -52,6 +57,8 @@ export class NotificationService implements OnDestroy {
   private destroy$ = new Subject<void>();
   private currentUser: AuthenticatedUser | null = null;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private emailNotificationsEnabled: boolean = false;
+  private emailConfigChecked: boolean = false;
 
   constructor(
     private readonly apiService: ApiService,
@@ -59,8 +66,16 @@ export class NotificationService implements OnDestroy {
     private readonly authService: BackendAuthService,
     private readonly toastService: ToastService,
     private readonly translate: TranslateService,
-    private readonly ngZone: NgZone
-  ) {}
+    private readonly ngZone: NgZone,
+    private readonly emailService: EmailService,
+    private readonly emailConfigService: EmailConfigurationService,
+    private readonly orderService: OrderService,
+    private readonly returnService: ReturnService,
+    private readonly discardService: DiscardService
+  ) {
+    // Check email configuration on initialization
+    this.checkEmailConfiguration();
+  }
 
   initialize(): void {
     if (this.initialized) {
@@ -309,11 +324,18 @@ export class NotificationService implements OnDestroy {
 
     this.hubConnection.start()
       .then(() => {
-        this.configService.log('Notification hub connected');
-        this.joinUserGroup().catch(() => undefined);
+        this.configService.log('Notification hub connected successfully');
+        console.log('[NotificationService] SignalR hub connected. Listening for notifications...');
+        this.joinUserGroup().catch((err) => {
+          this.configService.logError('Failed to join user group', err);
+          console.error('[NotificationService] Failed to join user group:', err);
+        });
       })
       .catch((error: unknown) => {
         this.configService.logError('Failed to start notification hub connection', error);
+        console.error('[NotificationService] Failed to start SignalR connection:', error);
+        console.error('[NotificationService] Hub URL:', hubUrl);
+        console.error('[NotificationService] Current User:', this.currentUser?.id);
         this.scheduleReconnect();
       });
   }
@@ -346,6 +368,7 @@ export class NotificationService implements OnDestroy {
   }
 
   private handleIncomingNotification(dto: NotificationDto): void {
+    console.log('[NotificationService] Received notification via SignalR:', dto);
     const notification = this.mapDtoToNotification(dto);
     const current = this.notificationsSubject.getValue();
     const updated = [notification, ...current.filter(item => item.id !== notification.id)];
@@ -360,6 +383,440 @@ export class NotificationService implements OnDestroy {
     const toastMessage = notification.message || notification.title || 'New notification';
     const toastTitle = notification.title || 'Notification';
     this.toastService.info(toastMessage, toastTitle);
+
+    console.log('[NotificationService] Notification processed:', {
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type
+    });
+
+    // Send email notification if enabled
+    this.sendEmailNotification(notification, dto);
+  }
+
+  /**
+   * Check email configuration to see if email notifications are enabled
+   */
+  private checkEmailConfiguration(): void {
+    console.log('[NotificationService] Checking email configuration...');
+    this.emailConfigService.getEmailConfiguration().subscribe({
+      next: (config: EmailConfigurationDto) => {
+        this.emailNotificationsEnabled = config.enableEmailNotifications ?? false;
+        this.emailConfigChecked = true;
+        console.log('[NotificationService] Email configuration loaded:', {
+          enabled: this.emailNotificationsEnabled,
+          hasPassword: config.hasPassword,
+          host: config.hostIp
+        });
+      },
+      error: (error: unknown) => {
+        const httpError = error as { status?: number };
+        // If 404, email config doesn't exist yet, so disable email notifications
+        if (httpError?.status === 404) {
+          this.emailNotificationsEnabled = false;
+          this.emailConfigChecked = true;
+          console.warn('[NotificationService] Email configuration not found (404). Email notifications disabled.');
+        } else {
+          // For other errors, log but don't block notifications
+          this.configService.logError('Failed to check email configuration', error);
+          console.error('[NotificationService] Failed to load email configuration:', error);
+          this.emailNotificationsEnabled = false;
+          this.emailConfigChecked = true;
+        }
+      }
+    });
+  }
+
+  /**
+   * Send email notification when a notification is received
+   */
+  private sendEmailNotification(notification: Notification, dto: NotificationDto): void {
+    console.log('[NotificationService] Attempting to send email notification:', {
+      emailEnabled: this.emailNotificationsEnabled,
+      emailConfigChecked: this.emailConfigChecked,
+      hasCurrentUser: !!this.currentUser,
+      currentUserEmail: this.currentUser?.email,
+      notificationId: notification.id
+    });
+
+    // Only send email if email notifications are enabled
+    if (!this.emailNotificationsEnabled) {
+      console.warn('[NotificationService] Email notifications are disabled in settings');
+      return;
+    }
+
+    if (!this.emailConfigChecked) {
+      console.warn('[NotificationService] Email configuration not yet checked');
+      return;
+    }
+
+    // Notifications received via SignalR are typically for the current user
+    // Use current user's email if available
+    if (!this.currentUser) {
+      console.error('[NotificationService] Cannot send email: current user is null');
+      this.configService.logWarning('Cannot send email notification: current user not available');
+      return;
+    }
+
+    // Try to get email from current user, or from token payload as fallback
+    let recipientEmail = this.currentUser.email;
+    
+    if (!recipientEmail) {
+      // Try to get email from JWT token payload as fallback
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          recipientEmail = payload.email || payload.Email;
+          console.log('[NotificationService] Got email from token payload:', recipientEmail);
+        } catch (e) {
+          console.error('[NotificationService] Failed to parse token:', e);
+        }
+      }
+    }
+
+    if (!recipientEmail) {
+      console.error('[NotificationService] Cannot send email: email not found in user object or token', {
+        userId: this.currentUser.id,
+        userName: this.currentUser.userName,
+        hasEmailInUser: !!this.currentUser.email
+      });
+      this.configService.logWarning('Cannot send email notification: user email not available');
+      this.toastService.warning('Email notification skipped: User email not found. Please update your profile.');
+      return;
+    }
+
+    console.log('[NotificationService] Sending email to:', recipientEmail);
+
+    const emailTitle = notification.title || 'New Notification';
+    const emailMessage = notification.message || 'You have received a new notification.';
+
+    // Fetch detailed information based on entity type
+    const entityType = (notification.entityType || notification.type || '').toLowerCase();
+    const entityId = notification.entityId ?? this.extractEntityIdFromMetadata(notification);
+
+    if (entityType && entityId != null) {
+      const numericId = Number(entityId);
+      if (!isNaN(numericId)) {
+        // Fetch detailed information and then send email
+        this.fetchEntityDetails(entityType, numericId).subscribe({
+          next: (details) => {
+            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, details, entityType);
+          },
+          error: (error) => {
+            console.warn('[NotificationService] Failed to fetch entity details, sending email with basic info:', error);
+            // Send email with basic information if detailed fetch fails
+            this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, null, entityType);
+          }
+        });
+        return;
+      }
+    }
+
+    // Send email with basic information if no entity details available
+    this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, null, entityType);
+  }
+
+  /**
+   * Extract entity ID from notification metadata
+   */
+  private extractEntityIdFromMetadata(notification: Notification): number | null {
+    if (!notification.metadata) {
+      return null;
+    }
+
+    const metadata = notification.metadata as Record<string, any>;
+    const possibleKeys = ['entityId', 'orderId', 'returnId', 'discardId', 'requestId', 'id'];
+
+    for (const key of possibleKeys) {
+      const value = metadata[key];
+      if (value != null) {
+        if (typeof value === 'number') {
+          return value;
+        }
+        const parsed = Number(value);
+        if (!isNaN(parsed)) {
+          return parsed;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Fetch detailed information for order, return, discard, or workflow
+   */
+  private fetchEntityDetails(entityType: string, entityId: number): Observable<OrderDto | ReturnDto | DiscardDto | null> {
+    switch (entityType) {
+      case 'order':
+        return this.orderService.getOrderById(entityId).pipe(
+          catchError(() => of(null))
+        );
+      case 'return':
+        return this.returnService.getReturnById(entityId).pipe(
+          catchError(() => of(null))
+        );
+      case 'discard':
+        return this.discardService.getDiscardById(entityId).pipe(
+          catchError(() => of(null))
+        );
+      default:
+        return of(null);
+    }
+  }
+
+  /**
+   * Send email with detailed information
+   */
+  private sendEmailWithDetails(
+    recipientEmail: string,
+    title: string,
+    message: string,
+    notification: Notification,
+    dto: NotificationDto | null,
+    details: OrderDto | ReturnDto | DiscardDto | null,
+    entityType: string
+  ): void {
+    // Build email details
+    const emailDetails = this.buildEmailDetails(notification, dto, details, entityType);
+
+    // Send email asynchronously (don't block notification handling)
+    const enrichedMessage = this.buildDetailedMessage(message, emailDetails);
+
+    this.emailService.sendNotificationEmail(
+      recipientEmail,
+      title,
+      enrichedMessage,
+      emailDetails,
+      details,
+      entityType
+    ).subscribe({
+      next: () => {
+        console.log('[NotificationService] ✅ Email sent successfully to:', recipientEmail);
+        this.configService.log('Email notification sent successfully', { recipientEmail, notificationId: notification.id });
+      },
+      error: (error) => {
+        // Log error but don't block notification flow
+        console.error('[NotificationService] ❌ Failed to send email notification:', error);
+        console.error('[NotificationService] Error details:', {
+          status: error?.status,
+          message: error?.message,
+          error: error?.error
+        });
+        this.configService.logError('Failed to send email notification', error);
+        // Show user-friendly error message
+        this.toastService.error('Failed to send email notification. Please check email settings.');
+      }
+    });
+  }
+
+  /**
+   * Build email details object from notification and entity details
+   */
+  private buildEmailDetails(
+    notification: Notification,
+    dto: NotificationDto | null,
+    details: OrderDto | ReturnDto | DiscardDto | null,
+    entityType: string
+  ): Record<string, any> {
+    const emailDetails: Record<string, any> = {
+      'Notification ID': notification.id,
+      'Type': notification.type || notification.entityType || 'General',
+      'Created At': new Date(notification.createdAt).toLocaleString(),
+    };
+    if (notification.title) {
+      emailDetails['Title'] = notification.title;
+    }
+    if (notification.message) {
+      emailDetails['Message'] = notification.message;
+    }
+
+    if (dto) {
+      if (dto.createdBy) {
+        emailDetails['Created By'] = dto.createdBy;
+      }
+      if (dto.senderId) {
+        emailDetails['Sender'] = dto.senderId;
+      }
+      if (dto.recipientId) {
+        emailDetails['Recipient'] = dto.recipientId;
+      }
+      if (dto.createdAt || dto.creationDate || dto.timestamp) {
+        emailDetails['Server Timestamp'] = dto.createdAt ?? dto.creationDate ?? dto.timestamp ?? '';
+      }
+    }
+
+    // Add entity-specific details
+    if (details) {
+      if (entityType === 'order' && this.isOrderDto(details)) {
+        emailDetails['Order Number'] = details.orderNo || details.requestNo || `#${details.id}`;
+        emailDetails['Department'] = details.departmentNameEn || details.departmentNameAr || 'N/A';
+        emailDetails['Requester'] = details.requesterName || 'N/A';
+        emailDetails['Priority'] = this.getPriorityLabel(details.priority);
+        emailDetails['Status'] = this.getStatusLabel(details.status);
+        if (details.requestPurposeNameEn || details.requestPurposeNameAr) {
+          emailDetails['Request Purpose'] = details.requestPurposeNameEn || details.requestPurposeNameAr;
+        }
+        if (details.usageDate) {
+          emailDetails['Usage Date'] = new Date(details.usageDate).toLocaleString();
+        }
+        if (details.usageLocation) {
+          emailDetails['Usage Location'] = details.usageLocation;
+        }
+        if (details.notes) {
+          emailDetails['Notes'] = details.notes;
+        }
+        if (details.requestItems && details.requestItems.length > 0) {
+          emailDetails['Items Count'] = details.requestItems.length;
+        }
+      } else if (entityType === 'return' && this.isReturnDto(details)) {
+        emailDetails['Return Number'] = details.requestNo || `#${details.id}`;
+        emailDetails['Department'] = details.departmentName || 'N/A';
+        emailDetails['Requester'] = details.requesterName || 'N/A';
+        emailDetails['Priority'] = this.getPriorityLabel(details.priority);
+        emailDetails['Status'] = this.getStatusLabel(details.status);
+        if (details.requestPurposeName) {
+          emailDetails['Request Purpose'] = details.requestPurposeName;
+        }
+        if (details.reason) {
+          emailDetails['Reason'] = details.reason;
+        }
+        if (details.notes) {
+          emailDetails['Notes'] = details.notes;
+        }
+        if (details.requestItems && details.requestItems.length > 0) {
+          emailDetails['Items Count'] = details.requestItems.length;
+        }
+      } else if (entityType === 'discard' && this.isDiscardDto(details)) {
+        emailDetails['Discard Number'] = details.requestNo || `#${details.id}`;
+        emailDetails['Department'] = details.departmentName || 'N/A';
+        emailDetails['Requester'] = details.requesterName || 'N/A';
+        emailDetails['Priority'] = this.getPriorityLabel(details.priority);
+        emailDetails['Status'] = this.getStatusLabel(details.status);
+        if (details.requestPurposeName) {
+          emailDetails['Request Purpose'] = details.requestPurposeName;
+        }
+        if (details.reason) {
+          emailDetails['Reason'] = details.reason;
+        }
+        if (details.notes) {
+          emailDetails['Notes'] = details.notes;
+        }
+        if (details.requestItems && details.requestItems.length > 0) {
+          emailDetails['Items Count'] = details.requestItems.length;
+        }
+      }
+    }
+
+    // Add metadata if available
+    const appendKeyValues = (data?: Record<string, unknown> | null, prefix?: string) => {
+      if (!data) {
+        return;
+      }
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === null || value === undefined) {
+          return;
+        }
+        if (key === 'email') {
+          return;
+        }
+        const label = prefix ? `${prefix} ${key}` : key;
+        if (!emailDetails[label]) {
+          emailDetails[label] = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        }
+      });
+    };
+
+    appendKeyValues(notification.metadata);
+    appendKeyValues(dto?.metadata);
+    appendKeyValues(dto?.additionalData, 'Detail');
+
+    return emailDetails;
+  }
+
+  private buildDetailedMessage(baseMessage: string, details: Record<string, any>): string {
+    if (!details || Object.keys(details).length === 0) {
+      return baseMessage;
+    }
+
+    const lines = Object.entries(details)
+      .filter(([, value]) => value !== null && value !== undefined && value !== '')
+      .map(([key, value]) => `${key}: ${this.formatDetailValue(value)}`);
+
+    if (lines.length === 0) {
+      return baseMessage;
+    }
+
+    return `${baseMessage}\n\nDetails:\n${lines.join('\n')}`;
+  }
+
+  private formatDetailValue(value: any): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+
+    return String(value);
+  }
+
+  /**
+   * Type guards for DTOs
+   */
+  private isOrderDto(details: any): details is OrderDto {
+    return details && 'orderNo' in details;
+  }
+
+  private isReturnDto(details: any): details is ReturnDto {
+    return details && 'requestNo' in details && !('orderNo' in details);
+  }
+
+  private isDiscardDto(details: any): details is DiscardDto {
+    return details && 'requestNo' in details && !('orderNo' in details);
+  }
+
+  /**
+   * Get priority label
+   */
+  private getPriorityLabel(priority: number): string {
+    switch (priority) {
+      case 1:
+        return 'High';
+      case 2:
+        return 'Medium';
+      case 3:
+        return 'Low';
+      default:
+        return `Priority ${priority}`;
+    }
+  }
+
+  /**
+   * Get status label
+   */
+  private getStatusLabel(status: number): string {
+    switch (status) {
+      case 0:
+        return 'New';
+      case 1:
+        return 'Under Process';
+      case 2:
+        return 'Approved';
+      case 3:
+        return 'Rejected';
+      case 4:
+        return 'Cancelled';
+      default:
+        return `Status ${status}`;
+    }
   }
 
   private mapDtoToNotification(dto: NotificationDto): Notification {
