@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { OrderService, CreateOrderRequest } from './order.service';
+import { Observable, of, throwError } from 'rxjs';
+import { switchMap, map, catchError } from 'rxjs/operators';
+import { OrderService, CreateOrderRequest, OrderDto } from './order.service';
 import { ErrorHandlingService } from './error-handling.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
@@ -148,44 +149,58 @@ export class OrderSubmissionService {
 
   /**
    * Submits an order
+   * Uses RxJS operators to chain observables properly (no nested subscribes)
    */
   submitOrder(payload: CreateOrderRequest): Observable<OrderSubmissionResult> {
-    return new Observable(observer => {
-      this.orderService.createOrder(payload).subscribe({
-        next: (response: APIOperationResponse<number>) => {
-          if (!response?.succeeded) {
-            const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
-              response,
-              undefined
-            );
-            observer.next({
-              success: false,
-              error: errorMessage
-            });
-            observer.complete();
-            return;
-          }
-
-          observer.next({
-            success: true,
-            orderId: (response.data ?? null) as number | null,
-            orderNumber: payload.orderNo
-          });
-          observer.complete();
-        },
-        error: (error: unknown) => {
+    return this.orderService.createOrder(payload).pipe(
+      switchMap((response: APIOperationResponse<number>) => {
+        if (!response?.succeeded) {
           const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
-            undefined,
-            error
+            response,
+            undefined
           );
-          observer.next({
+          return of({
             success: false,
             error: errorMessage
-          });
-          observer.complete();
+          } as OrderSubmissionResult);
         }
-      });
-    });
+
+        const createdOrderId = response.data;
+        if (!createdOrderId) {
+          return of({
+            success: false,
+            error: 'Order created but no ID returned'
+          } as OrderSubmissionResult);
+        }
+
+        // Fetch the full order to get the correct ID and order number
+        return this.orderService.getOrderById(createdOrderId).pipe(
+          map((order: OrderDto): OrderSubmissionResult => ({
+            success: true,
+            orderId: order.id,
+            orderNumber: order.requestNo || order.orderNo || payload.orderNo
+          })),
+          catchError(() => {
+            // Fallback to response data if fetching order fails
+            return of({
+              success: true,
+              orderId: createdOrderId,
+              orderNumber: payload.orderNo
+            } as OrderSubmissionResult);
+          })
+        );
+      }),
+      catchError((error: unknown) => {
+        const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
+          undefined,
+          error
+        );
+        return of({
+          success: false,
+          error: errorMessage
+        } as OrderSubmissionResult);
+      })
+    );
   }
 
   /**

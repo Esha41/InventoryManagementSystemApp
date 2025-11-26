@@ -1,44 +1,40 @@
 /* Role Permissions Component Styles */
-.role-card {
-  transition: all var(--transition-base);
-  cursor: pointer;
+
+/* Table row hover effects */
+table tbody tr {
+  transition: background-color 0.15s ease;
 }
 
-.role-card:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-custom-md);
+:host ::ng-deep app-rows-per-page {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
 }
 
-.role-card.selected {
-  border-color: var(--color-accent);
-  background-color: var(--color-accent);
-  background-opacity: 0.1;
-  box-shadow: var(--shadow-custom-md);
+:host ::ng-deep app-rows-per-page > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  flex-wrap: wrap !important;
+  flex-direction: row !important;
 }
 
-.permission-item {
-  transition: all var(--transition-base);
-  cursor: pointer;
+:host ::ng-deep app-rows-per-page span {
+  display: inline-block !important;
+  vertical-align: middle;
 }
 
-.permission-item:hover {
-  background-color: var(--color-background-hover);
-  border-color: var(--color-accent);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-custom-sm);
+:host ::ng-deep app-rows-per-page app-dropdown {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 80px;
+  flex-shrink: 0;
 }
 
-.permission-checkbox {
-  accent-color: var(--color-accent);
-}
-
-.permission-group {
-  transition: all var(--transition-base);
-}
-
-.permission-group:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-custom-sm);
+/* Sticky header for permissions table */
+table thead th.sticky {
+  position: sticky;
+  z-index: 10;
 }
 
 /* Loading animation */
@@ -55,25 +51,36 @@
   animation: spin 1s linear infinite;
 }
 
-/* Custom scrollbar for permission lists */
-.permission-scroll {
+/* Custom scrollbar for tables */
+.overflow-x-auto {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
 
-.permission-scroll::-webkit-scrollbar {
-  width: 6px;
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
 }
 
-.permission-scroll::-webkit-scrollbar-track {
+.overflow-x-auto::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.permission-scroll::-webkit-scrollbar-thumb {
+.overflow-x-auto::-webkit-scrollbar-thumb {
   background-color: var(--color-border);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
-.permission-scroll::-webkit-scrollbar-thumb:hover {
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-text-muted);
+}
+
+/* Ensure checkbox styling is consistent */
+input[type="checkbox"] {
+  accent-color: #2563eb; /* blue-600 */
+}
+
+/* Table cell text wrapping */
+table td {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
