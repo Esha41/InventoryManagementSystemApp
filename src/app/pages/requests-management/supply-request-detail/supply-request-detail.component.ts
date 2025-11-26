@@ -28,11 +28,12 @@ import { getLotConditionClass } from '../utils/ui-helpers.utils';
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-supply-request-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, ModalComponent, ConfirmDialogComponent, DropdownComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, ModalComponent, ConfirmDialogComponent, DropdownComponent, HasPermissionDirective],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']
 })
