@@ -43,18 +43,24 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.notificationService.initialize();
 
-    // Subscribe to current user changes
+    // Register userContextService with authService for cache clearing
+    this.authService.setUserContextService(this.userContextService);
+
+    // Subscribe to current user changes and refresh user details
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
-      });
-
-    // Get full user details from /Users/me endpoint
-    this.userContextService.getCurrentUserDetails()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(details => {
-        this.userDetails = details;
+        // Refresh user details when user changes (force refresh to clear cache)
+        if (user) {
+          this.userContextService.getCurrentUserDetails(true)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(details => {
+              this.userDetails = details;
+            });
+        } else {
+          this.userDetails = null;
+        }
       });
 
     this.notificationService.unreadCount$

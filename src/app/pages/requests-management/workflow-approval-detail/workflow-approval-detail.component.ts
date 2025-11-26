@@ -278,34 +278,38 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const currentUserName = currentUser.userName?.toLowerCase() || '';
     const currentUserEmail = currentUser.email?.toLowerCase() || '';
     
-    // Check if current user has already approved or rejected in the approval history
+    const currentPendingStep = this.requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending
+    );
+    if (!currentPendingStep) {
+      return false;
+    }
+    
+ 
     if (this.requestDetail.approvalHistory && this.requestDetail.approvalHistory.length > 0) {
-      const hasUserAlreadyActed = this.requestDetail.approvalHistory.some(step => {
-        // Only check steps that have been approved or rejected (not pending)
-        if (step.status === 'Approved' || step.status === 'Rejected') {
-          const changedBy = step.changedBy?.toLowerCase() || '';
-          const approverName = step.approverName?.toLowerCase() || '';
-          
-          // Check if the changedBy or approverName matches current user
-          // Match by user ID, username, or email
-          const matchesUserId = currentUserId && changedBy.includes(currentUserId);
-          const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
-          const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
-          
-          if (matchesUserId || matchesUserName || matchesUserEmail) {
-            return true;
+      const hasUserAlreadyActedInCurrentStep = this.requestDetail.approvalHistory.some(step => {
+        if (step.workflowStepId === currentPendingStep.workflowStepId) {
+          if (step.status === 'Approved' || step.status === 'Rejected') {
+            const changedBy = step.changedBy?.toLowerCase() || '';
+            const approverName = step.approverName?.toLowerCase() || '';
+            
+            const matchesUserId = currentUserId && changedBy.includes(currentUserId);
+            const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
+            const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
+            
+            if (matchesUserId || matchesUserName || matchesUserEmail) {
+              return true;
+            }
           }
         }
         return false;
       });
       
-      if (hasUserAlreadyActed) {
+      if (hasUserAlreadyActedInCurrentStep) {
         return false;
       }
     }
     
-    // If we reach here, the user hasn't acted yet and status is Pending
-    // The backend will handle permission check (only current approver can approve)
     return true;
   }
 

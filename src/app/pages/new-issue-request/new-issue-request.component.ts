@@ -32,6 +32,7 @@ import {
   ReviewFormData
 } from './new-issue-request.state';
 import { toNumber, normalizeArrayResponse, getLocalizedNameFromItem, resolveUserDisplayName, getAmmunitionTypeId } from '@utils/index';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-new-issue-request',
@@ -45,7 +46,8 @@ import { toNumber, normalizeArrayResponse, getLocalizedNameFromItem, resolveUser
     CartridgeDetailsComponent,
     CartridgeListComponent,
     UsageFormComponent,
-    ReviewFormComponent
+    ReviewFormComponent,
+    HasPermissionDirective
   ],
   templateUrl: './new-issue-request.component.html',
   styleUrls: ['./new-issue-request.component.css']

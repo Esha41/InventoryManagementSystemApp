@@ -116,6 +116,7 @@
               </div>
             </div>
             <app-button
+              *appHasPermission="'Roles.Edit'"
               [variant]="'primary'"
               (click)="onSavePermissions()"
               [disabled]="isSaving || isLoading">

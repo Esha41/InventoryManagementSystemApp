@@ -145,6 +145,7 @@
       {{ 'newIssueRequest.previous' | translate }}
     </app-button>
     <app-button 
+      *appHasPermission="'Order.Create'"
       variant="primary" 
       (clicked)="onNext()"
       class="bg-[#D0B888] text-white hover:bg-[#BEA06E]">

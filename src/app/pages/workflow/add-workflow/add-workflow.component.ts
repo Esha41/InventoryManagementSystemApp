@@ -13,11 +13,12 @@ import { CreateWorkflowDto } from '@models/workflow.model';
 import { ToastService } from '@services/toast.service';
 import { WorkflowType } from '@models/workflow.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-add-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './add-workflow.component.html',
   styleUrls: ['./add-workflow.component.css']
 })

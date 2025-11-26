@@ -160,23 +160,17 @@ export class UserContextService {
     );
   }
 
-  /**
-   * Maps the API response from /Users/me to BackendUserDto
-   * Handles field name differences and typos (DeparmentId, MilitoryId, etc.)
-   */
   private mapApiResponseToDto(apiData: any): BackendUserDto {
-    // Extract department info from department object or use direct field
     const departmentId = this.toNumber(
       apiData.department?.id ?? 
       apiData.Department?.Id ?? 
-      apiData.deparmentId ??  // Backend typo: missing 't'
+      apiData.deparmentId ??
       apiData.DeparmentId ?? 
       apiData.departmentId ?? 
       apiData.DepartmentId
     );
 
-    // Extract department name from department object (prefer English, fallback to Arabic)
-    const departmentName = 
+    const departmentName = (
       apiData.department?.nameEn ?? 
       apiData.department?.NameEn ?? 
       apiData.Department?.NameEn ?? 
@@ -184,26 +178,27 @@ export class UserContextService {
       apiData.department?.NameAr ?? 
       apiData.Department?.NameAr ?? 
       apiData.departmentName ?? 
-      apiData.DepartmentName;
+      apiData.DepartmentName
+    ) || undefined;
 
-    // Map FullNameEN/FullNameAR to nameEn/nameAr
-    const nameEn = 
+    const nameEn = (
       apiData.fullNameEN ?? 
       apiData.FullNameEN ?? 
       apiData.fullNameEn ?? 
       apiData.FullNameEn ?? 
       apiData.nameEn ?? 
-      apiData.NameEn;
+      apiData.NameEn
+    ) || undefined;
 
-    const nameAr = 
+    const nameAr = (
       apiData.fullNameAR ?? 
       apiData.FullNameAR ?? 
       apiData.fullNameAr ?? 
       apiData.FullNameAr ?? 
       apiData.nameAr ?? 
-      apiData.NameAr;
+      apiData.NameAr
+    ) || undefined;
 
-    // Extract role IDs from roles array and normalize role objects
     const roleIds: string[] = [];
     const normalizedRoles: any[] = [];
     
@@ -214,7 +209,6 @@ export class UserContextService {
         if (roleId !== '') {
           roleIds.push(roleId);
         }
-        // Normalize role object to have both camelCase and PascalCase
         normalizedRoles.push({
           id: roleId,
           name: role.name ?? role.Name ?? '',
@@ -224,14 +218,12 @@ export class UserContextService {
       });
     }
 
-    // Handle militaryId typo (MilitoryId in backend)
     const militaryId = 
       apiData.militaryId ?? 
       apiData.MilitaryId ?? 
-      apiData.militoryId ??  // Backend typo
+      apiData.militoryId ??
       apiData.MilitoryId;
 
-    // Map rank info if available
     const rankId = this.toNumber(
       apiData.rankId ?? 
       apiData.RankId ?? 
@@ -263,13 +255,13 @@ export class UserContextService {
       organizationId: this.toNumber(apiData.organizationId ?? apiData.OrganizationId) ?? undefined,
       departmentId: departmentId ?? undefined,
       departmentName: departmentName,
-      nameEn: nameEn || undefined,
-      nameAr: nameAr || undefined,
+      nameEn: nameEn,
+      nameAr: nameAr,
       rankId: rankId ?? undefined,
       rankNameEn: rankNameEn || undefined,
       rankNameAr: rankNameAr || undefined,
       militaryId: militaryId || undefined,
-      militoryId: militaryId || undefined, // Also set the typo version for compatibility
+      militoryId: militaryId || undefined,
       roles: normalizedRoles,
       roleIds: roleIds
     };

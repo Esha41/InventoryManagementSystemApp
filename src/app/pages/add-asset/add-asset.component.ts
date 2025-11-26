@@ -18,6 +18,7 @@ import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 interface AssetForm {
   name: string;
@@ -50,7 +51,7 @@ interface AssetForm {
 @Component({
   selector: 'app-add-asset',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './add-asset.component.html',
   styleUrls: ['./add-asset.component.css']
 })

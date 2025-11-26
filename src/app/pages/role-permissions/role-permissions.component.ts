@@ -11,6 +11,7 @@ import { CardComponent } from '@components/card/card.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 // ============================================================================
 // INTERFACES
@@ -48,7 +49,8 @@ interface PermissionInfo {
     CardComponent,
     TranslateModule,
     ButtonComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    HasPermissionDirective
   ],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.css']

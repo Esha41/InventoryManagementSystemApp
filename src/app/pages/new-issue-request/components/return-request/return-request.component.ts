@@ -171,6 +171,13 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
         next: (departments) => {
           this.departments = departments;
           this.isLoadingDepartments = false;
+          if (this.currentUserDetails) {
+            this.applyBackendUserDetails(this.currentUserDetails);
+          }
+          const authUser = this.backendAuthService.getCurrentUser();
+          if (authUser) {
+            this.applyAuthenticatedUserContext(authUser);
+          }
           this.updateLockedDepartmentName();
           this.applyLockedDepartment();
         },

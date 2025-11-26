@@ -14,6 +14,7 @@ import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-add-inventory',
@@ -24,7 +25,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     RouterModule,
     TranslateModule,
     LucideAngularModule,
-    DropdownComponent
+    DropdownComponent,
+    HasPermissionDirective
   ],
   templateUrl: './add-inventory.component.html',
   styleUrls: ['./add-inventory.component.css']

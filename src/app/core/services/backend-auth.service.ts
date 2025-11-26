@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
+import { map, tap, catchError, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { APIOperationResponse } from '@models/api-response.model';
 import { 
   LoginRequest, 
   LoginResponse, 
@@ -39,6 +40,12 @@ export class BackendAuthService {
     private configService: ConfigService
   ) {
     this.checkAuthStatus();
+  }
+
+  private userContextService: { clearCache: () => void } | null = null;
+  
+  setUserContextService(service: { clearCache: () => void }): void {
+    this.userContextService = service;
   }
 
   /**
@@ -100,11 +107,10 @@ export class BackendAuthService {
         }
         return response.data;
       }),
-      tap(loginResponse => {
-        this.handleLoginSuccess(loginResponse);
-      }),
+      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
       catchError(error => {
         this.configService.logError('Login failed', error);
+        this.clearAuthData();
         return throwError(() => new Error(
           error.userMessage || error.message || 'Login failed. Please check your credentials.'
         ));
@@ -112,95 +118,148 @@ export class BackendAuthService {
     );
   }
 
-  /**
-   * Handle successful login
-   */
-  private handleLoginSuccess(response: LoginResponse): void {
+  private handleLoginSuccess(response: LoginResponse): Observable<LoginResponse> {
     this.configService.log('Login successful');
 
-    // Parse expiration date from backend
     const expiresAt = new Date(response.expiresAt);
 
-    // Store authentication data
     this.storageService.set('auth_token', response.accessToken);
     if (response.refreshToken) {
       this.storageService.set('refresh_token', response.refreshToken);
     }
     this.storageService.set('token_expires_at', expiresAt);
 
-    // Decode token to get basic user info
-    const tokenPayload = this.decodeToken(response.accessToken);
-
-    const departmentId =
-      this.tryParseNumber(response.departmentId) ??
-      this.tryParseNumber(tokenPayload?.DepartmentId ?? tokenPayload?.departmentId ?? tokenPayload?.DeptId);
-
-    const organizationId =
-      this.tryParseNumber(response.organizationId) ??
-      this.tryParseNumber(tokenPayload?.OrganizationId ?? tokenPayload?.organizationId ?? tokenPayload?.OrgId);
-
-    const departmentName =
-      response.departmentName ??
-      tokenPayload?.DepartmentName ??
-      tokenPayload?.departmentName ??
-      tokenPayload?.DeptName;
-
-    const nameEn =
-      response.nameEn ??
-      tokenPayload?.FullNameEN ??
-      tokenPayload?.fullNameEN ??
-      tokenPayload?.FullNameEn ??
-      tokenPayload?.fullNameEn ??
-      tokenPayload?.NameEn ??
-      tokenPayload?.nameEn;
-
-    const nameAr =
-      response.nameAr ??
-      tokenPayload?.FullNameAR ??
-      tokenPayload?.fullNameAR ??
-      tokenPayload?.FullNameAr ??
-      tokenPayload?.fullNameAr ??
-      tokenPayload?.NameAr ??
-      tokenPayload?.nameAr;
-
-    const tokenUserNameFallback = tokenPayload?.unique_name || tokenPayload?.name || 'User';
-
-    const resolvedUserName =
-      response.userName ??
-      tokenPayload?.UserName ??
-      tokenPayload?.userName ??
-      tokenUserNameFallback;
-
-    const basicUser: AuthenticatedUser = {
-      id: tokenPayload?.sub || tokenPayload?.nameid || 'unknown',
-      userName: resolvedUserName,
-      email: tokenPayload?.email || '',
-      roles: [],
-      permissions: [],
-      departmentId: departmentId ?? undefined,
-      departmentName: departmentName ?? undefined,
-      organizationId: organizationId ?? undefined,
-      nameEn: nameEn ?? undefined,
-      nameAr: nameAr ?? undefined
-    };
-
-    // Store user and update auth state
-    this.storageService.set('current_user', basicUser);
-    this.updateAuthState(basicUser, response.accessToken, expiresAt);
-
-    // Fetch claims in background
-    setTimeout(() => {
-      this.getUserClaims().subscribe({
-        next: (user) => {
-          this.storageService.set('current_user', user);
-          this.currentUserSubject.next(user);
-          this.configService.log('User claims loaded', { permissions: user.permissions.length });
-        },
-        error: (error) => {
-          this.configService.logError('Failed to fetch user claims', error);
+    return this.fetchCompleteUserData().pipe(
+      switchMap(completeUser => {
+        if (!completeUser) {
+          this.configService.logError('Failed to fetch user data from /Users/me API', null);
+          this.clearAuthData();
+          return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
         }
-      });
-    }, 300);
+
+        const authenticatedUser: AuthenticatedUser = {
+          id: completeUser.id || '',
+          userName: completeUser.userName || '',
+          email: completeUser.email || '',
+          roles: [],
+          permissions: [],
+          departmentId: completeUser.departmentId,
+          departmentName: completeUser.departmentName,
+          organizationId: completeUser.organizationId,
+          nameEn: completeUser.nameEn,
+          nameAr: completeUser.nameAr
+        };
+
+        if (this.userContextService) {
+          this.userContextService.clearCache();
+        }
+
+        return this.getUserClaims().pipe(
+          map(userWithClaims => {
+            const mergedUser: AuthenticatedUser = {
+              ...authenticatedUser,
+              permissions: userWithClaims.permissions || [],
+              roles: userWithClaims.roles || []
+            };
+
+            this.configService.log('Login complete with permissions', {
+              userId: mergedUser.id,
+              userName: mergedUser.userName,
+              permissionsCount: mergedUser.permissions?.length || 0,
+              rolesCount: mergedUser.roles?.length || 0,
+              samplePermissions: mergedUser.permissions?.slice(0, 5).map(p => p.id || p.claimType)
+            });
+
+            this.storageService.set('current_user', mergedUser);
+            this.currentUserSubject.next(mergedUser);
+            this.updateAuthState(mergedUser, response.accessToken, expiresAt);
+
+            return response;
+          }),
+          catchError((error) => {
+            this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
+            this.storageService.set('current_user', authenticatedUser);
+            this.currentUserSubject.next(authenticatedUser);
+            this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
+            return of(response);
+          })
+        );
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to fetch user data from /Users/me API', error);
+        this.clearAuthData();
+        return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
+      })
+    );
+  }
+
+  private fetchCompleteUserData(): Observable<AuthenticatedUser | null> {
+    return this.apiService.getWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME).pipe(
+      map(response => {
+        if (!response?.succeeded || !response.data) {
+          return null;
+        }
+
+        const apiData = response.data;
+        
+        const departmentId = this.tryParseNumber(
+          apiData.department?.id ??
+          apiData.deparmentId ??
+          apiData.DeparmentId ??
+          apiData.departmentId ??
+          apiData.DepartmentId
+        );
+
+        const departmentName = (
+          apiData.department?.nameEn ??
+          apiData.department?.NameEn ??
+          apiData.Department?.NameEn ??
+          apiData.department?.nameAr ??
+          apiData.department?.NameAr ??
+          apiData.Department?.NameAr ??
+          apiData.departmentName ??
+          apiData.DepartmentName
+        ) || undefined;
+
+        const nameEn = (
+          apiData.fullNameEN ??
+          apiData.FullNameEN ??
+          apiData.fullNameEn ??
+          apiData.FullNameEn ??
+          apiData.nameEn ??
+          apiData.NameEn
+        ) || undefined;
+
+        const nameAr = (
+          apiData.fullNameAR ??
+          apiData.FullNameAR ??
+          apiData.fullNameAr ??
+          apiData.FullNameAr ??
+          apiData.nameAr ??
+          apiData.NameAr
+        ) || undefined;
+
+        const organizationId = this.tryParseNumber(
+          apiData.organizationId ?? apiData.OrganizationId
+        );
+
+        return {
+          id: apiData.id ?? apiData.Id ?? '',
+          userName: apiData.userName ?? apiData.UserName ?? '',
+          email: apiData.email ?? apiData.Email ?? '',
+          roles: [],
+          permissions: [],
+          departmentId: departmentId ?? undefined,
+          departmentName: departmentName,
+          organizationId: organizationId ?? undefined,
+          nameEn: nameEn,
+          nameAr: nameAr
+        } as AuthenticatedUser;
+      }),
+      catchError(() => {
+        return of(null);
+      })
+    );
   }
 
   /**
@@ -218,7 +277,6 @@ export class BackendAuthService {
         // Extract user info from token or claims
         const token = this.storageService.get<string>('auth_token');
         const tokenPayload = token ? this.decodeToken(token) : null;
-
         const claims = response.data;
 
         const user: AuthenticatedUser = {
@@ -360,11 +418,9 @@ export class BackendAuthService {
         return null;
       }
       
-      // Decode base64 and parse JSON
       const decoded = atob(payload);
       return JSON.parse(decoded);
     } catch (error) {
-      // Silently fail - token might be invalid or malformed
       return null;
     }
   }
@@ -391,12 +447,7 @@ export class BackendAuthService {
    */
   logout(): Observable<boolean> {
     this.configService.log('Logging out user');
-    
-    // Clear auth data
     this.clearAuthData();
-    
-    // You can optionally call a backend logout endpoint here
-    // return this.apiService.post(API_ENDPOINTS.AUTH.LOGOUT, {});
     
     return new Observable(observer => {
       observer.next(true);
@@ -447,7 +498,6 @@ export class BackendAuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    // Check if token is expired and clear auth if it is
     if (this.isAuthenticatedSubject.value && this.isTokenExpired()) {
       this.clearAuthData();
       return false;

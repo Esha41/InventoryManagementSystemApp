@@ -14,6 +14,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 export interface AllowanceItem {
   itemId: string;
@@ -30,7 +31,8 @@ export interface AllowanceItem {
     TranslateModule,
     LucideAngularModule,
     ButtonComponent,
-    DropdownComponent
+    DropdownComponent,
+    HasPermissionDirective
   ],
   templateUrl: './allowance.component.html',
   styleUrls: ['./allowance.component.css']
