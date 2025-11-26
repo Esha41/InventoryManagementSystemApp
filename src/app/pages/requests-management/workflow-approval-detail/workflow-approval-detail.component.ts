@@ -9,6 +9,8 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
+import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
+import { LookupService, LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum, RequestStatusEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -41,7 +43,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   private readonly UPDATE_REQUEST_AND_SUPPLY_PERMISSION = 'UpdateRequestAndSupply';
   private readonly CANNOT_REJECT_PERMISSION = 'CannotRejectRequest';
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
-  private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate'; 
+  private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
+  private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply'; 
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
@@ -62,12 +65,27 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   confirmPickupDateProcessing: boolean = false;
   isPickupDateAlreadySet: boolean = false; // Track if date was already set (from backend or after setting)
 
+  // Receiver information for supply submission
+  receiverInfo = {
+    recieverName: "",
+    receiverRankId: 0,
+    recieverMilitaryId: "",
+    notes: ""
+  };
+  supplyId: number | null = null;
+  supplyData: SupplyDto | null = null;
+  ranks: LookupItem[] = [];
+  isLoadingRanks: boolean = false;
+  isSubmittingSupply: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
     private authService: BackendAuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private supplyService: SupplyService,
+    private lookupService: LookupService
   ) {}
 
   ngOnInit(): void {
@@ -178,21 +196,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load supply data for the order and populate pickup date if available
+   * Load supply data for the order and populate pickup date and receiver info if available
    */
   private loadSupplyData(): void {
-    this.apiService.getWithAuth<any>(
-      API_ENDPOINTS.SUPPLY.BY_ORDER_ID(this.requestId)
-    )
+    this.supplyService.getByOrderId(this.requestId)
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: (response: any) => {
-        const supplyData = response?.data || response;
+      next: (supply: SupplyDto) => {
+        this.supplyData = supply;
+        this.supplyId = supply.id;
         
         // If supply exists and has a supply date, populate the pickup date field
-        if (supplyData && supplyData.supplyDate) {
-          // Convert ISO date string to datetime-local format (YYYY-MM-DDTHH:mm)
-          const supplyDate = new Date(supplyData.supplyDate);
+        if (supply.supplyDate) {
+          const supplyDate = new Date(supply.supplyDate);
           if (!isNaN(supplyDate.getTime())) {
             // Format to datetime-local input format
             const year = supplyDate.getFullYear();
@@ -206,12 +222,51 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             this.isPickupDateAlreadySet = true;
           }
         }
+
+        // Populate receiver information if already exists
+        if (supply.recieverName) {
+          this.receiverInfo.recieverName = supply.recieverName;
+        }
+        if (supply.receiverRankId) {
+          this.receiverInfo.receiverRankId = supply.receiverRankId;
+        }
+        if (supply.recieverMilitaryId) {
+          this.receiverInfo.recieverMilitaryId = supply.recieverMilitaryId;
+        }
+        if (supply.notes) {
+          this.receiverInfo.notes = supply.notes;
+        }
+
+        // Load ranks for dropdown if user can submit supply
+        if (this.canSubmitSupply()) {
+          this.loadRanks();
+        }
       },
       error: (error) => {
         // Silently handle error - supply might not exist yet, which is fine
         console.log('No supply data found for this order');
       }
     });
+  }
+
+  /**
+   * Load ranks for dropdown
+   */
+  private loadRanks(): void {
+    this.isLoadingRanks = true;
+    this.lookupService.getLookupItems('Rank')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items: LookupItem[]) => {
+          this.ranks = items ?? [];
+          this.isLoadingRanks = false;
+        },
+        error: () => {
+          this.ranks = [];
+          this.isLoadingRanks = false;
+          this.toastService.error('Failed to load ranks');
+        }
+      });
   }
 
   getStatusClass(status: string): string {
@@ -621,5 +676,95 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         this.confirmPickupDateProcessing = false;
       }
     });
+  }
+
+  /**
+   * Check if user can submit supply (requires SubmitSupply permission)
+   */
+  canSubmitSupply(): boolean {
+    if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    try {
+      return this.authService.hasPermission(this.SUBMIT_SUPPLY_PERMISSION);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if supply exists and is ready for submission
+   */
+  isSupplyReadyForSubmission(): boolean {
+    // Supply must exist
+    if (!this.supplyId || !this.supplyData) {
+      return false;
+    }
+
+    // Check if already submitted (SupplySubmissionStatus: Draft = 1, Submitted = 2)
+    if (this.supplyData.submissionStatus === 2) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Submit supply with receiver information
+   */
+  submitSupply(): void {
+    if (this.isSubmittingSupply || !this.supplyId) {
+      return;
+    }
+
+    // Validate required fields
+    if (!this.receiverInfo.recieverName || !this.receiverInfo.recieverName.trim()) {
+      this.toastService.error('Receiver name is required');
+      return;
+    }
+
+    if (!this.receiverInfo.receiverRankId || this.receiverInfo.receiverRankId <= 0) {
+      this.toastService.error('Receiver rank is required');
+      return;
+    }
+
+    if (!this.receiverInfo.recieverMilitaryId || !this.receiverInfo.recieverMilitaryId.trim()) {
+      this.toastService.error('Military ID is required');
+      return;
+    }
+
+    this.isSubmittingSupply = true;
+
+    const submitDto: SubmitSupplyDto = {
+      recieverName: this.receiverInfo.recieverName.trim(),
+      receiverRankId: this.receiverInfo.receiverRankId,
+      recieverMilitaryId: this.receiverInfo.recieverMilitaryId.trim(),
+      notes: this.receiverInfo.notes?.trim() || undefined
+    };
+
+    this.supplyService.submit(this.supplyId, submitDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.success('Supply submitted successfully');
+          this.isSubmittingSupply = false;
+          // Reload to refresh supply status
+          this.loadRequestDetail();
+        },
+        error: (error) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
+          this.toastService.error(errorMessage);
+          this.isSubmittingSupply = false;
+        }
+      });
+  }
+
+  /**
+   * Get rank name by ID
+   */
+  getRankName(rankId: number): string {
+    const rank = this.ranks.find(r => r.id === rankId);
+    return rank ? rank.nameEn : `Rank #${rankId}`;
   }
 }

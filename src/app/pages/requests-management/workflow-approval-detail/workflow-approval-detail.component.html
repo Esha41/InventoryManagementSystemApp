@@ -413,6 +413,112 @@
       </div>
     </div>
 
+    <!-- Receiver Information Section (Submit Supply) -->
+    <div *ngIf="!loading && !error && requestDetail && canSubmitSupply()" class="mt-6">
+      <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+            <lucide-angular [img]="User" class="h-5 w-5 text-purple-600"></lucide-angular>
+          </div>
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">
+            Submit Supply - Receiver Information
+          </h2>
+        </div>
+
+        <!-- Supply Status Warning -->
+        <div *ngIf="!isSupplyReadyForSubmission()" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="flex items-start gap-3">
+            <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5"></lucide-angular>
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-yellow-800 mb-1" *ngIf="!supplyId">Supply Not Created</h3>
+              <h3 class="text-sm font-semibold text-yellow-800 mb-1" *ngIf="supplyId && supplyData?.submissionStatus === 2">Already Submitted</h3>
+              <p class="text-sm text-yellow-700 mb-3" *ngIf="!supplyId">
+                No supply has been created for this order yet. Please create the supply first using the "Update Request & Supply" button in the Request Items section above.
+              </p>
+              <p class="text-sm text-yellow-700" *ngIf="supplyId && supplyData?.submissionStatus === 2">
+                This supply has already been submitted and cannot be modified.
+              </p>
+              <button
+                *ngIf="!supplyId && canUpdateRequestAndSupply()"
+                (click)="navigateToSupplyOrder()"
+                class="mt-3 px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2">
+                Go to Supply Management
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="isSupplyReadyForSubmission()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Receiver Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                Receiver Name <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="receiverInfo.recieverName"
+                [disabled]="isSubmittingSupply"
+                placeholder="Enter receiver name"
+                class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            </div>
+
+            <!-- Receiver Rank -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                Receiver Rank <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <select
+                [(ngModel)]="receiverInfo.receiverRankId"
+                [disabled]="isSubmittingSupply || isLoadingRanks"
+                class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <option [ngValue]="0" disabled>Select rank</option>
+                <option *ngFor="let rank of ranks" [ngValue]="rank.id">{{ rank.nameEn }}</option>
+              </select>
+            </div>
+
+            <!-- Military ID -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                Military ID <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="receiverInfo.recieverMilitaryId"
+                [disabled]="isSubmittingSupply"
+                placeholder="Enter military ID"
+                class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            </div>
+          </div>
+
+          <!-- Notes (Full Width) -->
+          <div>
+            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              Notes
+            </label>
+            <textarea
+              [(ngModel)]="receiverInfo.notes"
+              [disabled]="isSubmittingSupply"
+              rows="3"
+              placeholder="Enter any additional notes..."
+              class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
+            </textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button
+              (click)="submitSupply()"
+              [disabled]="isSubmittingSupply || !receiverInfo.recieverName || receiverInfo.receiverRankId <= 0 || !receiverInfo.recieverMilitaryId"
+              class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2">
+              <span *ngIf="!isSubmittingSupply">Submit Supply</span>
+              <span *ngIf="isSubmittingSupply">Submitting...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Approval/Rejection Actions - At the end -->
     <div *ngIf="!loading && !error && requestDetail && canApproveOrReject()" class="mt-6">
       <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">

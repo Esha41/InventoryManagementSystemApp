@@ -238,8 +238,8 @@ export class SupplyService {
     this.config.log(`Checking for draft supply for order ${orderId}`);
     return this.getAll().pipe(
       map(supplies => {
-        // Find draft supply for this order (SubmissionStatus = 0 is Draft)
-        const draftSupply = supplies.find(s => s.orderId === orderId && s.submissionStatus === 0);
+        // Find draft supply for this order (SupplySubmissionStatus: Draft = 1, Submitted = 2)
+        const draftSupply = supplies.find(s => s.orderId === orderId && s.submissionStatus === 1);
         return draftSupply || null;
       }),
       catchError(error => {
