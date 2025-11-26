@@ -164,6 +164,16 @@ export const API_ENDPOINTS = {
     BASE: '/Email',
     SEND: '/Email/send',
   },
+
+  // Supply Management
+  SUPPLY: {
+    BASE: '/Supply',
+    BY_ID: (id: number) => `/Supply/${id}`,
+    BY_ORDER_ID: (orderId: number) => `/Supply/${orderId}/getByOrderId`,
+    SET_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/set-pickup-date`,
+    CONFIRM_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/confirm-pickup-date`,
+    SUBMIT: (id: number) => `/Supply/${id}/submit`,
+  },
 } as const;
 
 export const STORAGE_KEYS = {

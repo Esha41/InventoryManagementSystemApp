@@ -39,7 +39,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   
   private readonly SUPPLY_REVIEW_PERMISSION = 'UpdateRequestAndSuggestLots';
   private readonly UPDATE_REQUEST_AND_SUPPLY_PERMISSION = 'UpdateRequestAndSupply';
-  private readonly CANNOT_REJECT_PERMISSION = 'CannotRejectRequest'; 
+  private readonly CANNOT_REJECT_PERMISSION = 'CannotRejectRequest';
+  private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
+  private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate'; 
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
@@ -53,6 +55,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   comments: string = '';
   sendToHigherApproval: boolean = false;
   processing: boolean = false;
+
+  // Pickup date management
+  pickupDate: string = '';
+  pickupDateProcessing: boolean = false;
+  confirmPickupDateProcessing: boolean = false;
+  isPickupDateAlreadySet: boolean = false; // Track if date was already set (from backend or after setting)
 
   constructor(
     private route: ActivatedRoute,
@@ -86,6 +94,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   loadRequestDetail(): void {
     this.loading = true;
     this.error = null;
+    // Reset pickup date state when loading new request
+    this.isPickupDateAlreadySet = false;
 
     this.apiService.getWithAuth<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
@@ -107,9 +117,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
         this.loadRequestItems(baseRequest).then(() => {
           this.requestDetail = mapToRequestDetail(baseRequest);
+          // Load supply data if this is an order request
+          if (this.requestDetail.requestType === 'Order') {
+            this.loadSupplyData();
+          }
           this.loading = false;
         }).catch(() => {
           this.requestDetail = mapToRequestDetail(baseRequest);
+          // Load supply data if this is an order request
+          if (this.requestDetail.requestType === 'Order') {
+            this.loadSupplyData();
+          }
           this.loading = false;
         });
       },
@@ -156,6 +174,43 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             resolve();
           }
         });
+    });
+  }
+
+  /**
+   * Load supply data for the order and populate pickup date if available
+   */
+  private loadSupplyData(): void {
+    this.apiService.getWithAuth<any>(
+      API_ENDPOINTS.SUPPLY.BY_ORDER_ID(this.requestId)
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: any) => {
+        const supplyData = response?.data || response;
+        
+        // If supply exists and has a supply date, populate the pickup date field
+        if (supplyData && supplyData.supplyDate) {
+          // Convert ISO date string to datetime-local format (YYYY-MM-DDTHH:mm)
+          const supplyDate = new Date(supplyData.supplyDate);
+          if (!isNaN(supplyDate.getTime())) {
+            // Format to datetime-local input format
+            const year = supplyDate.getFullYear();
+            const month = String(supplyDate.getMonth() + 1).padStart(2, '0');
+            const day = String(supplyDate.getDate()).padStart(2, '0');
+            const hours = String(supplyDate.getHours()).padStart(2, '0');
+            const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
+            
+            this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+            // Mark that the date has already been set
+            this.isPickupDateAlreadySet = true;
+          }
+        }
+      },
+      error: (error) => {
+        // Silently handle error - supply might not exist yet, which is fine
+        console.log('No supply data found for this order');
+      }
     });
   }
 
@@ -433,5 +488,137 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/supply-order', this.requestId]);
+  }
+
+  canSetSupplyPickupDate(): boolean {
+    if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
+                                currentUser?.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+      
+      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
+      
+      if (isAdministrator) {
+        return true;
+      }
+      
+      return this.authService.hasPermission(this.SET_SUPPLY_PICKUP_DATE_PERMISSION);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  canConfirmSupplyPickupDate(): boolean {
+    if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
+                                currentUser?.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+      
+      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
+      
+      if (isAdministrator) {
+        return true;
+      }
+      
+      return this.authService.hasPermission(this.CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  setSupplyPickupDate(): void {
+    if (this.pickupDateProcessing || !this.requestDetail || !this.pickupDate) {
+      if (!this.pickupDate) {
+        this.toastService.error('Please select a pickup date');
+      }
+      return;
+    }
+
+    // Prevent changes if date already set
+    if (this.isPickupDateAlreadySet) {
+      this.toastService.error('Pickup date has already been set and cannot be modified');
+      return;
+    }
+
+    this.pickupDateProcessing = true;
+
+    const supplyDate = new Date(this.pickupDate).toISOString();
+
+    const payload = {
+      supplyDate: supplyDate
+    };
+
+    this.apiService.putWithAuth(
+      API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(this.requestId),
+      payload
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: () => {
+        this.toastService.success('Pickup date set successfully and locked for confirmation');
+        // Mark the date as set and lock the input
+        this.isPickupDateAlreadySet = true;
+        this.pickupDateProcessing = false;
+        // Don't clear pickupDate - keep it to show in both sections
+        this.loadRequestDetail();
+      },
+      error: (error) => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to set pickup date');
+        this.toastService.error(errorMessage);
+        this.pickupDateProcessing = false;
+      }
+    });
+  }
+
+  confirmSupplyPickupDate(): void {
+    if (this.confirmPickupDateProcessing || !this.requestDetail || !this.pickupDate) {
+      if (!this.pickupDate) {
+        this.toastService.error('Please select a pickup date');
+      }
+      return;
+    }
+
+    this.confirmPickupDateProcessing = true;
+
+    const supplyDate = new Date(this.pickupDate).toISOString();
+
+    const payload = {
+      supplyDate: supplyDate
+    };
+
+    this.apiService.putWithAuth(
+      API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(this.requestId),
+      payload
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: () => {
+        this.toastService.success('Pickup date confirmed successfully');
+        // Mark as set so the Set section shows the updated date as locked
+        this.isPickupDateAlreadySet = true;
+        this.confirmPickupDateProcessing = false;
+        // Reload to sync everything
+        this.loadRequestDetail();
+      },
+      error: (error) => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to confirm pickup date');
+        this.toastService.error(errorMessage);
+        this.confirmPickupDateProcessing = false;
+      }
+    });
   }
 }
