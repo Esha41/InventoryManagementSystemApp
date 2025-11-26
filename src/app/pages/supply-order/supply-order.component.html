@@ -326,38 +326,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
-          {{ 'supplyOrder.actions' | translate }}
-        </h2>
-        <div class="flex gap-4">
-          <button
-            *appHasPermission="'Order.Manage'"
-            (click)="onReject()"
-            [disabled]="rejecting"
-            class="flex-1 px-6 py-3 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">
-            <span class="flex items-center justify-center gap-2">
-              <lucide-angular [img]="XIcon" class="h-5 w-5"></lucide-angular>
-              <span *ngIf="!rejecting">{{ 'supplyOrder.reject' | translate }}</span>
-              <span *ngIf="rejecting">{{ 'common.processing' | translate }}...</span>
-            </span>
-          </button>
-
-          <button
-            *appHasPermission="'Order.Manage'"
-            (click)="onAccept()"
-            [disabled]="submitting"
-            class="flex-1 px-6 py-3 rounded-lg font-semibold text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">
-            <span class="flex items-center justify-center gap-2">
-              <lucide-angular [img]="Check" class="h-5 w-5"></lucide-angular>
-              <span *ngIf="!submitting">{{ 'supplyOrder.accept' | translate }}</span>
-              <span *ngIf="submitting">{{ 'common.processing' | translate }}...</span>
-            </span>
-          </button>
-        </div>
-      </div>
-
     </div>
   </div>
 </div>

@@ -487,7 +487,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/supply-order', this.requestId]);
+    // Navigate with query param to indicate this is an orderId, not a supplyId
+    this.router.navigate(['/supply-order', this.requestId], { queryParams: { byOrder: true } });
   }
 
   canSetSupplyPickupDate(): boolean {

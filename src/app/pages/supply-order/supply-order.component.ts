@@ -67,8 +67,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   
   // Loading states
   loading: boolean = true;
-  submitting: boolean = false;
-  rejecting: boolean = false;
   updatingItem: boolean = false;
   deletingItem: boolean = false;
   
@@ -123,12 +121,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Can receive either supplyId or orderId (coming from workflow-approval)
-    const supplyIdParam = this.route.snapshot.params['supplyId'];
-    const orderIdParam = this.route.snapshot.params['id'];
-    
-    const idParam = supplyIdParam || orderIdParam;
+    // Get the ID from route params
+    const idParam = this.route.snapshot.params['supplyId'];
     const receivedId = parseInt(idParam, 10);
+    
+    // Check if this is an orderId (coming from workflow-approval with byOrder=true)
+    const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
     
     if (isNaN(receivedId)) {
       this.toastService.error('Invalid ID');
@@ -139,8 +137,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.initializeAddItemForm();
     this.initializeEditItemForm({} as OrderRequestItemDto);
     
-    // If we received an orderId (from workflow-approval), fetch supply by orderId
-    if (orderIdParam) {
+    // If byOrder query param is true, fetch supply by orderId
+    if (byOrder) {
       this.loadSupplyByOrderId(receivedId);
     } else {
       // Normal case: we have a supplyId
@@ -329,8 +327,24 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
    * Endpoint: PUT /api/Supply/{supplyId}/details/{detailId}
    */
   onUpdateItem(item: SupplyItemDisplay): void {
-    if (!this.supplyData || item.quantity <= 0) {
-      this.toastService.error('Invalid quantity');
+    // Validation
+    if (!this.supplyData) {
+      this.toastService.error('Supply data not loaded');
+      return;
+    }
+    
+    if (!item.quantity || item.quantity <= 0) {
+      this.toastService.error('Quantity must be greater than 0');
+      return;
+    }
+    
+    if (!item.lot || item.lot <= 0) {
+      this.toastService.error('Invalid lot number');
+      return;
+    }
+    
+    if (!item.itemId || item.itemId <= 0) {
+      this.toastService.error('Invalid item');
       return;
     }
 
@@ -339,7 +353,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       itemId: item.itemId,
       lot: item.lot,
       quantity: item.quantity,
-      notes: item.notes
+      notes: item.notes || undefined
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -353,6 +367,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
           this.toastService.error(errorMessage);
           this.updatingItem = false;
+          // Reset to original value on error
+          this.loadSupplyData();
         }
       });
   }
@@ -726,28 +742,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.confirmModalAction = null;
   }
 
-  onAccept(): void {
-    if (!this.orderData || this.submitting) return;
-    
-    this.submitting = true;
-    
-    setTimeout(() => {
-      this.submitting = false;
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
-    }, 300);
-  }
-
-  onReject(): void {
-    if (!this.orderData || this.rejecting) return;
-    
-    this.rejecting = true;
-    
-    setTimeout(() => {
-      this.rejecting = false;
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
-    }, 300);
-  }
-
   // ==================== UI HELPER METHODS ====================
 
   /**
@@ -877,7 +871,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load available items for dropdown
+   * Load available items for dropdown (excluding items already in order)
    */
   private loadAvailableItems(): void {
     this.loadingItems = true;
@@ -885,7 +879,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
-          this.availableItems = items || [];
+          // Filter out items that are already in the order
+          const existingItemIds = this.orderItems.map(item => item.itemId);
+          this.availableItems = (items || []).filter(item => !existingItemIds.includes(item.id));
           this.loadingItems = false;
         },
         error: (error) => {
@@ -913,6 +909,14 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.addItemForm.value;
+    
+    // Check if item already exists in order
+    const existingItem = this.orderItems.find(item => item.itemId === formValue.itemId);
+    if (existingItem) {
+      this.toastService.error(`Item already exists in this order. Please use Edit to update the quantity instead.`);
+      return;
+    }
+
     const itemDto: CreateUpdateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
@@ -987,6 +991,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
+          console.log('Delete response:', response);
           if (response.succeeded) {
             this.toastService.success('Item removed successfully');
             this.closeRemoveOrderItemModal();
