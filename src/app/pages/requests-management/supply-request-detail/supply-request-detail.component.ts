@@ -20,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
-import { mapApprovalHistory } from '@utils/request-mapper.utils';
+import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { mapOrderToRequestDetail, applySuggestionToItems, calculateDischargeTotals, canProcessDischarge } from '../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems, mapSuggestedLotsToLotItems } from '../utils/lot-mapper.utils';
 import { mapWorkflowStepsToApprovalSteps } from '../utils/approval-workflow.utils';
@@ -176,7 +176,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         
         if (baseRequest && baseRequest.approvalHistory) {
           // Map approval history to ApprovalStep format
-          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory);
+          const requestStatus = mapRequestStatus(baseRequest.status);
+          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
           
           // Update requestDetail with real approval workflow
           if (this.requestDetail) {
