@@ -14,9 +14,11 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
+import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { mapApprovalHistory } from '@utils/request-mapper.utils';
 import {
   mapOrderToSummary,
   mapOrderItems,
@@ -64,7 +66,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     usagePurpose: '',
     totalItems: 0,
     totalQuantity: 0,
-    workflowVersion: '',
     lastUpdated: ''
   };
 
@@ -147,7 +148,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private mapOrderToReport(order: OrderDto): void {
-    // Map order summary using utility function
+    // Map order summary using utility function - this uses the actual order.status
     this.orderSummary = mapOrderToSummary(order);
     
     // Map order items using utility function
@@ -160,55 +161,47 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
 
   private loadApprovalWorkflow(orderId: number): void {
-    console.log('loadApprovalWorkflow called with orderId:', orderId);
     this.apiService.getWithAuth<any>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     )
       .pipe(
         takeUntil(this.destroy$),
-        map(response => {
+        map((response: any) => {
           // Handle both wrapped response and direct array response
-          let dataArray: any[] = [];
+          const data: BaseRequestDto[] = Array.isArray(response) 
+            ? response 
+            : (response?.data || []);
           
-          if (Array.isArray(response)) {
-            // Direct array response
-            dataArray = response;
-          } else if (response && response.succeeded && Array.isArray(response.data)) {
-            // Wrapped APIOperationResponse
-            dataArray = response.data;
-          } else if (response && Array.isArray(response.data)) {
-            // Alternative wrapped structure
-            dataArray = response.data;
-          } else {
-            console.log('Unexpected API response structure:', response);
-            return [];
-          }
+          // Find the base request that matches the order ID
+          const baseRequest = data.find(r => r.id === orderId);
           
-          console.log('Processing data array for orderId:', orderId, 'Array:', dataArray);
-          console.log('Available request IDs:', dataArray.map((i: any) => ({ id: i.id, requestNo: i.requestNo })));
-          
-          // Filter approval records that match the order ID using utility function
-          const approvalRecords = filterApprovalRecordsByOrderId(dataArray, orderId);
-          
-          if (approvalRecords.length === 0) {
-            console.log('No matching approval records found for order ID:', orderId);
-            return [];
-          }
-          
-          console.log('Found approval records for orderId', orderId, ':', approvalRecords);
-          
-          // Map approval records to steps using utility function
-          const steps = mapApprovalRecordsToSteps(approvalRecords, this.orders, formatOrderDateTime);
-          
-          // Set workflow status from the last record's status if available
-          if (steps.length > 0) {
-            const lastStatus = approvalRecords[approvalRecords.length - 1]?.oldRequestStatus;
-            if (lastStatus) {
-              this.approvalWorkflowStatus = mapOrderStatusFromApi(lastStatus);
+          // Update order summary status with baseRequest.status if available (authoritative source)
+          if (baseRequest && baseRequest.status !== undefined && baseRequest.status !== null) {
+            const order = this.orders.find(o => o.id === orderId);
+            if (order) {
+              // Re-map order summary with the correct status from baseRequest
+              this.orderSummary = mapOrderToSummary(order, baseRequest.status);
+              // Regenerate QR code with updated status
+              this.generateQrCode();
             }
           }
           
-          return steps;
+          if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
+            return [];
+          }
+          
+          // Use the same mapping function as other components
+          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory);
+          
+          // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
+          return workflowSteps.map((step, index) => ({
+            step: step.steporder?.toString() || `Step ${index + 1}`,
+            role: step.applicationRoleName || 'N/A',
+            approver: step.approverName || 'N/A',
+            status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
+            date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString()),
+            notes: step.comments || ''
+          }));
         }),
         catchError(error => {
           console.error('Failed to load approval workflow', error);
@@ -222,18 +215,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (steps) => {
-          console.log('Loaded approval workflow steps:', steps);
-          // Always use API data (even if empty) - only fallback on error
           this.approvalWorkflow = steps;
-          // If no status was set and we have steps, try to get status from last step
-          if (!this.approvalWorkflowStatus && steps.length > 0) {
-            const lastStepStatus = steps[steps.length - 1]?.status;
-            if (lastStepStatus === 'approved') {
-              this.approvalWorkflowStatus = 'Approved';
-            } else if (lastStepStatus === 'rejected') {
-              this.approvalWorkflowStatus = 'Rejected';
-            }
-          }
         },
         error: (error) => {
           console.error('Error loading approval workflow', error);
@@ -271,7 +253,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       const qrData = generateQrCodeData(this.orderSummary);
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
-        { width: 280, margin: 1, color: { dark: '#000000', light: '#FFFFFF' } }
+        { 
+          width: 320, 
+          margin: 2, 
+          color: { dark: '#000000', light: '#FFFFFF' },
+          errorCorrectionLevel: 'M'
+        }
       );
     } catch (error) {
       console.error('Failed to generate QR code', error);
@@ -331,7 +318,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       usagePurpose: '',
       totalItems: 0,
       totalQuantity: 0,
-      workflowVersion: '',
       lastUpdated: ''
     };
     this.orderItems = [];
@@ -353,35 +339,213 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
 
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Order Report ${this.orderSummary.orderId}</title>
+          <meta charset="UTF-8">
+          <title>Order Report - ${this.orderSummary.orderId}</title>
           <style>
+            @page {
+              size: A4;
+              margin: 1.5cm;
+            }
+            
+            * {
+              -webkit-print-color-adjust: exact;
+              color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            
             body {
               font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
               margin: 0;
-              padding: 24px;
-              color: #0f172a;
+              padding: 0;
+              color: #000000;
               background: #ffffff;
+              font-size: 11pt;
+              line-height: 1.4;
             }
+            
+            /* Hide non-printable elements */
+            button, aside, .no-print {
+              display: none !important;
+            }
+            
+            /* Report container */
+            .print-report-content {
+              max-width: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            
+            /* Header section with QR */
+            .print-header-section {
+              display: flex !important;
+              flex-direction: row !important;
+              justify-content: space-between !important;
+              align-items: flex-start !important;
+              border-bottom: 3px solid #000 !important;
+              padding-bottom: 1rem !important;
+              margin-bottom: 1.5rem !important;
+              page-break-after: always;
+            }
+            
+            .print-header-section > div {
+              display: flex !important;
+              flex-direction: row !important;
+              width: 100% !important;
+              gap: 2rem !important;
+            }
+            
+            .print-header-section > div > div:first-child {
+              flex: 1 !important;
+            }
+            
+            .print-header-section > div > div:last-child {
+              flex-shrink: 0 !important;
+              width: 180px !important;
+              border: 2px solid #000 !important;
+              padding: 0.75rem !important;
+              background: #ffffff !important;
+              text-align: center !important;
+            }
+            
+            /* QR Code */
+            img[alt="Order QR Code"] {
+              width: 140px !important;
+              height: 140px !important;
+              max-width: 140px !important;
+              border: 1px solid #000 !important;
+              padding: 0.5rem !important;
+              background: #ffffff !important;
+              display: block !important;
+              margin: 0 auto !important;
+            }
+            
+            /* Sections */
+            section {
+              break-inside: avoid;
+              page-break-inside: avoid;
+              border: 1px solid #000 !important;
+              border-radius: 0 !important;
+              padding: 1rem !important;
+              margin-bottom: 1rem !important;
+              background: #ffffff !important;
+              box-shadow: none !important;
+            }
+            
+            /* Headers */
             h1, h2, h3, h4 {
-              margin: 0 0 12px 0;
+              color: #000000 !important;
+              margin: 0.5rem 0 !important;
+              page-break-after: avoid;
             }
-            .card {
-              border: 1px solid #e2e8f0;
-              border-radius: 16px;
-              padding: 20px;
-              margin-bottom: 20px;
+            
+            h2 {
+              font-size: 18pt !important;
+              font-weight: bold !important;
             }
+            
+            h3 {
+              font-size: 14pt !important;
+              font-weight: bold !important;
+            }
+            
+            h4 {
+              font-size: 12pt !important;
+              font-weight: bold !important;
+            }
+            
+            /* Remove backgrounds */
+            .bg-gradient-to-br,
+            .bg-gradient-to-r,
+            .bg-white,
+            .bg-slate-50,
+            .bg-blue-50,
+            .bg-indigo-100,
+            .bg-green-100 {
+              background: #ffffff !important;
+            }
+            
+            .bg-gradient-to-r.from-slate-900,
+            .bg-gradient-to-r.from-slate-800 {
+              background: #000000 !important;
+              color: #ffffff !important;
+            }
+            
+            /* Tables */
             .grid {
-              display: grid;
-              gap: 12px;
+              width: 100% !important;
+              display: grid !important;
             }
-            .grid-2 {
-              grid-template-columns: repeat(2, minmax(0, 1fr));
+            
+            .divide-y > div {
+              border-bottom: 1px solid #ccc !important;
+              page-break-inside: avoid;
             }
-            .muted {
-              color: #64748b;
+            
+            /* Text colors */
+            .text-slate-900,
+            .text-slate-700,
+            .text-slate-600,
+            .text-slate-500 {
+              color: #000000 !important;
+            }
+            
+            .text-white {
+              color: #ffffff !important;
+            }
+            
+            /* Badges */
+            span[class*="bg-"],
+            div[class*="bg-"] {
+              background: #f0f0f0 !important;
+              border: 1px solid #000 !important;
+              color: #000000 !important;
+            }
+            
+            /* Remove effects */
+            .shadow-lg,
+            .shadow-xl,
+            .shadow-sm {
+              box-shadow: none !important;
+            }
+            
+            /* Spacing */
+            .space-y-6 > * + * {
+              margin-top: 1rem !important;
+            }
+            
+            .p-8, .p-6, .p-5, .p-4 {
+              padding: 0.75rem !important;
+            }
+            
+            /* Hide icons */
+            lucide-angular {
+              display: none !important;
+            }
+            
+            /* Page breaks */
+            .page-break-before {
+              page-break-before: always;
+            }
+            
+            .page-break-after {
+              page-break-after: always;
+            }
+            
+            /* Print specific adjustments */
+            .rounded-2xl {
+              border-radius: 0 !important;
+            }
+            
+            /* Ensure tables don't break */
+            table, .grid {
+              page-break-inside: avoid;
+            }
+            
+            tr {
+              page-break-inside: avoid;
             }
           </style>
         </head>

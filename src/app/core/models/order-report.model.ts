@@ -16,7 +16,6 @@ export interface OrderSummary {
   usagePurpose: string;
   totalItems: number;
   totalQuantity: number;
-  workflowVersion: string;
   lastUpdated: string;
 }
 

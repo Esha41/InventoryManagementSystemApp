@@ -33,28 +33,252 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
 section {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Enhanced Table Styling */
+.grid {
+  transition: all 0.2s ease;
+}
+
+/* Professional Hover Effects */
+.hover\:bg-slate-50:hover {
+  background-color: #f8fafc;
+}
+
+.hover\:bg-blue-50\/50:hover {
+  background-color: rgba(239, 246, 255, 0.5);
+}
+
+/* QR Code Enhancement */
+img[alt="Order QR Code"] {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  border-radius: 8px;
+}
+
 /* Print Styles */
 @media print {
-  body {
-    background: #ffffff;
+  @page {
+    size: A4;
+    margin: 1.5cm;
   }
 
-  button {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Hide non-essential elements */
+  button,
+  aside,
+  .bg-gradient-to-r.from-slate-900,
+  .bg-gradient-to-r.from-slate-800 {
     display: none !important;
   }
 
-  section {
-    break-inside: avoid;
-    box-shadow: none !important;
-    border: 1px solid #e2e8f0 !important;
+  /* Report container */
+  #reportContent {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .bg-gradient-to-br,
-  .bg-gradient-to-r {
+  /* Header section - QR Code and Order Info */
+  section:first-of-type {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 2rem !important;
+    page-break-after: always;
+    border-bottom: 2px solid #000 !important;
+    padding-bottom: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* QR Code positioning for print */
+  section:first-of-type > div > div:last-child {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 180px !important;
+    border: 2px solid #000 !important;
+    padding: 1rem !important;
     background: #ffffff !important;
+  }
+
+  section:first-of-type > div > div:first-child {
+    flex: 1 !important;
+    margin-right: 200px !important;
+  }
+
+  /* QR Code image */
+  img[alt="Order QR Code"] {
+    width: 150px !important;
+    height: 150px !important;
+    max-width: 150px !important;
+    border: 1px solid #000 !important;
+    padding: 0.5rem !important;
+    background: #ffffff !important;
+  }
+
+  /* Sections */
+  section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    background: #ffffff !important;
+  }
+
+  /* Remove gradients and backgrounds */
+  .bg-gradient-to-br,
+  .bg-gradient-to-r,
+  .bg-white,
+  .bg-slate-50,
+  .bg-blue-50,
+  .bg-indigo-100,
+  .bg-green-100 {
+    background: #ffffff !important;
+  }
+
+  /* Headers */
+  h1, h2, h3, h4 {
+    color: #000000 !important;
+    margin: 0.5rem 0 !important;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 18pt !important;
+    font-weight: bold !important;
+  }
+
+  h3 {
+    font-size: 14pt !important;
+    font-weight: bold !important;
+  }
+
+  h4 {
+    font-size: 12pt !important;
+    font-weight: bold !important;
+  }
+
+  /* Tables */
+  table,
+  .grid {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  /* Table headers */
+  .bg-gradient-to-r.from-slate-900,
+  .bg-gradient-to-r.from-slate-800 {
+    background: #000000 !important;
+    color: #ffffff !important;
+  }
+
+  /* Table rows */
+  .divide-y > div {
+    border-bottom: 1px solid #ccc !important;
+    page-break-inside: avoid;
+  }
+
+  /* Text colors */
+  .text-slate-900,
+  .text-slate-700,
+  .text-slate-600,
+  .text-slate-500 {
+    color: #000000 !important;
+  }
+
+  .text-white {
+    color: #ffffff !important;
+  }
+
+  /* Badges and labels */
+  span[class*="bg-"],
+  div[class*="bg-"] {
+    background: #f0f0f0 !important;
+    border: 1px solid #000 !important;
+    color: #000000 !important;
+  }
+
+  /* Remove shadows and effects */
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  /* Spacing */
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  .gap-4 {
+    gap: 0.5rem !important;
+  }
+
+  .p-8,
+  .p-6,
+  .p-5,
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+
+  /* Ensure proper page breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  /* Approval workflow section */
+  section:last-of-type {
+    page-break-before: always;
+  }
+
+  /* Hide icons in print */
+  lucide-angular {
+    display: none !important;
+  }
+
+  /* Print-specific QR section layout */
+  .print-qr-section {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+  }
+
+  .print-qr-code {
+    position: fixed !important;
+    top: 1.5cm !important;
+    right: 1.5cm !important;
+    width: 150px !important;
+    text-align: center !important;
   }
 }

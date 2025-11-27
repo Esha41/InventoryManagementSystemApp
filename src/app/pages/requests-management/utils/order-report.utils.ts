@@ -6,16 +6,30 @@
 import { OrderDto } from '@services/order.service';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { mapOrderStatusToString, mapOrderStatusFromApi } from '@utils/status.utils';
+import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
+import { getRequestTitle } from '@utils/dashboard.utils';
 
 /**
  * Map OrderDto to OrderSummary for report display
  */
-export function mapOrderToSummary(order: OrderDto): OrderSummary {
+export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | null): OrderSummary {
+  // Use the same format as dashboard: requestNo || orderNo || fallback
+  const orderId = getRequestTitle(order, order.orderNo);
+  
+  // Use baseRequest.status if available (from workflow API), otherwise use order.status
+  // This ensures we use the authoritative status from the workflow system
+  const statusValue = baseRequestStatus !== undefined && baseRequestStatus !== null 
+    ? baseRequestStatus 
+    : order.status;
+  
+  // Use the same status translation key system as dashboard
+  const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
+  
   return {
-    orderId: order.orderNo || `#${order.id}`,
-    status: mapOrderStatusToString(order.status),
+    orderId: orderId,
+    status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
     priority: mapOrderPriorityToString(order.priority),
     submittedOn: formatOrderDateTime(order.usageDate, order.usageTime),
     department: order.departmentNameEn || order.departmentNameAr || 'N/A',
@@ -23,7 +37,6 @@ export function mapOrderToSummary(order: OrderDto): OrderSummary {
     usagePurpose: order.usagePurpose || 'N/A',
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    workflowVersion: `WF-${order.requestType}-${order.id}`,
     lastUpdated: formatOrderDateTime(order.usageDate, order.usageTime)
   };
 }
@@ -194,14 +207,53 @@ export function generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail
 
 /**
  * Generate QR code data for order
+ * Includes comprehensive order information for scanning and verification
+ * Format: Human-readable text that can be easily parsed
  */
 export function generateQrCodeData(orderSummary: OrderSummary): string {
-  return JSON.stringify({
+  // Get actual status text (not translation key) for QR code
+  // Status is a translation key like 'dashboard.statusLabels.new', so we extract readable text
+  const statusText = orderSummary.status.includes('new') ? 'NEW' :
+                     orderSummary.status.includes('approved') ? 'APPROVED' :
+                     orderSummary.status.includes('rejected') ? 'REJECTED' :
+                     orderSummary.status.includes('underProcess') ? 'UNDER PROCESS' :
+                     orderSummary.status.includes('cancelled') ? 'CANCELLED' : 
+                     orderSummary.status.includes('Pending') ? 'PENDING' : 'NEW';
+  
+  // Create a human-readable format that's easy to scan and verify
+  const qrLines = [
+    '=== ORDER REPORT ===',
+    `Order ID: ${orderSummary.orderId}`,
+    `Department: ${orderSummary.department}`,
+    `Requester: ${orderSummary.requester}`,
+    `Status: ${statusText}`,
+    `Priority: ${orderSummary.priority}`,
+    `Usage Purpose: ${orderSummary.usagePurpose}`,
+    `Submitted: ${orderSummary.submittedOn}`,
+    `Total Items: ${orderSummary.totalItems}`,
+    `Total Quantity: ${orderSummary.totalQuantity}`,
+    `Last Updated: ${orderSummary.lastUpdated}`,
+    '==================='
+  ];
+  
+  // Also include JSON format for programmatic parsing
+  const qrData = {
+    type: 'order-report',
     orderId: orderSummary.orderId,
-    workflow: orderSummary.workflowVersion,
-    issuedOn: orderSummary.lastUpdated,
-    totalItems: orderSummary.totalItems
-  });
+    department: orderSummary.department,
+    requester: orderSummary.requester,
+    status: statusText,
+    priority: orderSummary.priority,
+    usagePurpose: orderSummary.usagePurpose,
+    submittedOn: orderSummary.submittedOn,
+    totalItems: orderSummary.totalItems,
+    totalQuantity: orderSummary.totalQuantity,
+    lastUpdated: orderSummary.lastUpdated,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Return both human-readable and JSON format
+  return qrLines.join('\n') + '\n\n' + JSON.stringify(qrData);
 }
 
 /**

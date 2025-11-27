@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, X, ChevronDown, ChevronUp, Plus } from 'lucide-angular';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -100,14 +100,15 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private inventoryService: InventoryService,
     private toastService: ToastService,
     private config: ConfigService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.params['id'];
     this.orderId = parseInt(idParam, 10);
     if (isNaN(this.orderId)) {
-      this.toastService.error('Invalid order ID');
+      this.toastService.error('supplyRequestDetail.invalidOrderId');
       this.router.navigate(['/requests-management']);
       return;
     }
@@ -151,7 +152,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load order details:', error);
-          this.toastService.error('Failed to load order details');
+          this.toastService.error('supplyRequestDetail.failedToLoadOrderDetails');
           this.loading = false;
           this.goBack();
         }
@@ -211,7 +212,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           
           // Silent success - suggestions are loaded automatically
           if (!suggestion.canFulfillCompletely) {
-            this.toastService.warning('Note: Insufficient inventory for full fulfillment.');
+            this.toastService.warning('supplyRequestDetail.insufficientInventoryNote');
           }
         },
         error: (error) => {
@@ -287,7 +288,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     });
 
     if (!this.selectedItem || !this.manualLotNumber.trim()) {
-      this.toastService.warning('Please enter a lot number');
+      this.toastService.warning('supplyRequestDetail.pleaseEnterLotNumber');
       return;
     }
 
@@ -295,7 +296,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     console.log('Parsed lot number:', lotNum);
     
     if (isNaN(lotNum)) {
-      this.toastService.error('Invalid lot number');
+      this.toastService.error('supplyRequestDetail.invalidLotNumber');
       return;
     }
 
@@ -307,7 +308,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         next: (lot: LotDetailDto) => {
           // Check if lot is for the correct item
           if (lot.itemId !== this.selectedItem!.itemId) {
-            this.toastService.error(`Lot ${lotNum} belongs to a different item (${lot.itemName})`);
+            const message = this.translate.instant('supplyRequestDetail.lotBelongsToDifferentItem', {
+              lotNumber: lotNum,
+              itemName: lot.itemName
+            });
+            this.toastService.error(message);
             this.loadingManualLot = false;
             return;
           }
@@ -315,7 +320,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           // Check if lot already exists in the list
           const existingLot = this.selectedItem!.availableLots.find(l => l.lotNumber === lot.lot);
           if (existingLot) {
-            this.toastService.warning(`Lot ${lotNum} is already in the list`);
+            const message = this.translate.instant('supplyRequestDetail.lotAlreadyInList', {
+              lotNumber: lotNum
+            });
+            this.toastService.warning(message);
             this.loadingManualLot = false;
             return;
           }
@@ -340,13 +348,16 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           // Sort by expiry date
           this.selectedItem!.availableLots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
-          this.toastService.success(`Lot ${lotNum} added successfully`);
+          const message = this.translate.instant('supplyRequestDetail.lotAddedSuccessfully', {
+            lotNumber: lotNum
+          });
+          this.toastService.success(message);
           this.manualLotNumber = '';
           this.loadingManualLot = false;
         },
         error: (error) => {
           console.error('Failed to load lot details:', error);
-          this.toastService.error('Lot not found or error loading details');
+          this.toastService.error('supplyRequestDetail.lotNotFoundOrError');
           this.loadingManualLot = false;
         }
       });
@@ -370,14 +381,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
           
           if (item.availableLots.length > 0) {
-            this.toastService.success(`Loaded ${item.availableLots.length} available lot(s) optimized for quantity ${item.approvedQuantity}`);
+            const message = this.translate.instant('supplyRequestDetail.loadedAvailableLots', {
+              count: item.availableLots.length,
+              quantity: item.approvedQuantity
+            });
+            this.toastService.success(message);
           } else {
-            this.toastService.warning('No available lots found for requested quantity');
+            this.toastService.warning('supplyRequestDetail.noAvailableLotsFound');
           }
         },
         error: (error) => {
           console.error('Failed to load available lots:', error);
-          this.toastService.error('Failed to load available lots');
+          this.toastService.error('supplyRequestDetail.failedToLoadAvailableLots');
           this.loadingAllLots = false;
         }
       });
@@ -417,7 +432,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       // Remove from temp selections if it was selected
       this.tempLotSelections.delete(lotNumber);
       
-      this.toastService.success(`Lot ${lotNumber} removed from list`);
+      const message = this.translate.instant('supplyRequestDetail.lotRemovedFromList', {
+        lotNumber: lotNumber
+      });
+      this.toastService.success(message);
     }
   }
 
@@ -519,14 +537,14 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.loadingSuggestion = false;
           
           if (suggestion.canFulfillCompletely) {
-            this.toastService.success('Suggestions loaded! All items can be fulfilled from inventory.');
+            this.toastService.success('supplyRequestDetail.suggestionsLoadedAllFulfilled');
           } else {
-            this.toastService.warning('Suggestions loaded. Note: Insufficient inventory for full fulfillment.');
+            this.toastService.warning('supplyRequestDetail.suggestionsLoadedInsufficient');
           }
         },
         error: (error) => {
           console.error('Failed to load suggestions:', error);
-          this.toastService.error('Failed to load supply suggestions');
+          this.toastService.error('supplyRequestDetail.failedToLoadSuggestions');
           this.loadingSuggestion = false;
         }
       });
@@ -551,7 +569,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           if (existingSupply) {
             // Draft supply already exists
             this.processingDischarge = false;
-            this.toastService.warning(`A draft supply (ID: ${existingSupply.id}) already exists for this order. Please update it instead.`);
+            const message = this.translate.instant('supplyRequestDetail.draftSupplyExists', {
+              supplyId: existingSupply.id
+            });
+            this.toastService.warning(message);
             return;
           }
 
@@ -591,7 +612,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     // Validation
     if (supplyDetails.length === 0) {
-      this.toastService.error('No items selected for discharge');
+      this.toastService.error('supplyRequestDetail.noItemsSelectedForDischarge');
       this.processingDischarge = false;
       return;
     }
@@ -611,7 +632,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (supplyId: number) => {
-          this.toastService.success(`Discharge processed successfully! Supply ID: ${supplyId}`);
+          const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
+            supplyId: supplyId
+          });
+          this.toastService.success(message);
           this.processingDischarge = false;
           
           setTimeout(() => {
@@ -620,7 +644,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to create supply:', error);
-          const errorMessage = error?.error?.message || error?.message || 'Failed to process discharge';
+          const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
           this.toastService.error(errorMessage);
           this.processingDischarge = false;
         }
