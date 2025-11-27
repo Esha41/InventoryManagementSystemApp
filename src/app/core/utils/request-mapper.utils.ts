@@ -73,7 +73,7 @@ export function mapPriority(priority: number): Priority {
 export function mapRequestStatus(status: number): RequestStatus {
   switch (status) {
     case RequestStatusEnum.Approved:
-      return 'Confirmed';
+      return 'Approved';
     case RequestStatusEnum.Rejected:
       return 'Rejected';
     case RequestStatusEnum.New:
@@ -120,13 +120,15 @@ export function mapRequestItems(items: any[]): RequestItem[] {
 
 /**
  * Map approval history from backend format
+ * @param history - Approval history array from backend
+ * @param requestStatus - Optional base request status to filter pending steps if approved
  */
-export function mapApprovalHistory(history: any[]): WorkflowApprovalStep[] {
+export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus): WorkflowApprovalStep[] {
   if (!history || history.length === 0) {
     return [];
   }
 
-  return history
+  const mappedHistory = history
     .filter(h => h && (h.id || h.workflowApprovalstepId || h.workflowStepId || h.workflowstepId))
     .map((h, index) => {
       const isPending = h.isPending === true || (!h.changedBy && (h.oldRequestStatus === RequestStatusEnum.New || h.oldRequestStatus === RequestStatusEnum.UnderProcess));
@@ -160,6 +162,13 @@ export function mapApprovalHistory(history: any[]): WorkflowApprovalStep[] {
       };
     })
     .sort((a, b) => (a.steporder || 0) - (b.steporder || 0));
+
+  // If base request is approved, filter out pending steps
+  if (requestStatus === 'Approved') {
+    return mappedHistory.filter(step => step.status !== 'Pending');
+  }
+
+  return mappedHistory;
 }
 
 /**
@@ -205,12 +214,14 @@ export function formatRequestDate(date: string | Date | undefined): string {
  * Map base request DTO to request detail
  */
 export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
+  const requestStatus = mapRequestStatus(data.status);
+  
   return {
     id: data.id,
     requestNo: data.requestNo,
     requestType: mapRequestType(data.requestType),
     priority: mapPriority(data.priority),
-    status: mapRequestStatus(data.status),
+    status: requestStatus,
     requestDate: formatRequestDate(data.requestDate),
     reason: data.reason,
     notes: data.notes,
@@ -220,7 +231,7 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     requesterUserName: data.requesterUserName,
     requestPurposeName: data.requestPurposeName,
     requestItems: mapRequestItems(data.requestItems || []),
-    approvalHistory: mapApprovalHistory(data.approvalHistory || [])
+    approvalHistory: mapApprovalHistory(data.approvalHistory || [], requestStatus)
   };
 }
 

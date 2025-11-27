@@ -296,7 +296,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.processing = true;
     // Immediately update status to prevent buttons from showing
     if (this.requestDetail) {
-      this.requestDetail.status = 'Confirmed';
+      this.requestDetail.status = 'Approved';
     }
     
     const payload = {

@@ -39,7 +39,7 @@ export type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
 /**
  * Request status options
  */
-export type RequestStatus = 'Pending' | 'Confirmed' | 'Rejected';
+export type RequestStatus = 'Pending' | 'Approved' | 'Rejected';
 
 /**
  * Request item in a request
