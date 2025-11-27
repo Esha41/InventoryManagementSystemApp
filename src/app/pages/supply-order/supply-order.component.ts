@@ -9,14 +9,16 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
-import { OrderDto, OrderRequestItemDto } from '@services/order.service';
-import { SupplyService, SupplyDto, SubmitSupplyDto } from '@services/supply.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { OrderDto, OrderRequestItemDto, CreateUpdateRequestItemDto } from '@services/order.service';
+import { OrderService } from '@services/order.service';
+import { SupplyService, SupplyDto } from '@services/supply.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
-import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
+import { AmmunitionService } from '@services/ammunition.service';
+import { APIOperationResponse } from '@models/api-response.model';
 import { ApprovalStep, SupplyItemDisplay, LotItem } from '@models/supply-order.model';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
-import { SubmissionStatus, getSubmissionStatusText, getSubmissionStatusClass } from '@utils/status.utils';
 import { getApprovalStatusClass } from '@utils/status-class.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -36,6 +38,7 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
     LucideAngularModule,
     DropdownComponent,
     ModalComponent,
+    ConfirmDialogComponent,
     HasPermissionDirective
   ],
   templateUrl: './supply-order.component.html',
@@ -64,14 +67,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   
   // Loading states
   loading: boolean = true;
-  submitting: boolean = false;
-  rejecting: boolean = false;
   updatingItem: boolean = false;
   deletingItem: boolean = false;
-  loadingRanks: boolean = false;
   
   // Forms
-  receiverForm!: FormGroup;
   addLotForm!: FormGroup;
   
   // Add lot modal state (grouped for better organization)
@@ -91,9 +90,20 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   confirmModalMessage: string = '';
   confirmModalAction: (() => void) | null = null;
   
+  // Item management modals
+  isAddItemModalOpen: boolean = false;
+  isEditItemModalOpen: boolean = false;
+  isRemoveItemModalOpen: boolean = false;
+  selectedItemForEdit: OrderRequestItemDto | null = null;
+  selectedItemForRemove: OrderRequestItemDto | null = null;
+  addItemForm!: FormGroup;
+  editItemForm!: FormGroup;
+  availableItems: any[] = [];
+  loadingItems: boolean = false;
+  savingItem: boolean = false;
+  
   // Data collections
   orderItems: OrderRequestItemDto[] = [];
-  ranks: LookupItem[] = [];
   approvalWorkflow: ApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
 
@@ -101,26 +111,40 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
+    private orderService: OrderService,
     private supplyService: SupplyService,
     private inventoryService: InventoryService,
-    private lookupService: LookupService,
+    private ammunitionService: AmmunitionService,
     private toastService: ToastService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
+    // Get the ID from route params
     const idParam = this.route.snapshot.params['supplyId'];
-    this.supplyId = parseInt(idParam, 10);
+    const receivedId = parseInt(idParam, 10);
     
-    if (isNaN(this.supplyId)) {
-      this.toastService.error('Invalid supply ID');
+    // Check if this is an orderId (coming from workflow-approval with byOrder=true)
+    const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
+    
+    if (isNaN(receivedId)) {
+      this.toastService.error('Invalid ID');
       this.router.navigate(['/supply-order']);
       return;
     }
     
-    this.loadRanks();
-    this.loadSupplyData();
+    this.initializeAddItemForm();
+    this.initializeEditItemForm({} as OrderRequestItemDto);
+    
+    // If byOrder query param is true, fetch supply by orderId
+    if (byOrder) {
+      this.loadSupplyByOrderId(receivedId);
+    } else {
+      // Normal case: we have a supplyId
+      this.supplyId = receivedId;
+      this.loadSupplyData();
+    }
   }
 
   ngOnDestroy(): void {
@@ -131,13 +155,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   // ==================== FORM INITIALIZATION ====================
 
   private initializeForm(): void {
-    this.receiverForm = this.fb.group({
-      recieverName: ['', Validators.required],
-      receiverRankId: [null, Validators.required],
-      recieverMilitaryId: ['', Validators.required],
-      notes: ['']
-    });
-
     this.addLotForm = this.fb.group({
       itemId: [null, Validators.required], // Required - set via dropdown
       lot: [null, Validators.required], // Required - set via lot selection
@@ -146,23 +163,61 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Initialize add item form
+   */
+  private initializeAddItemForm(): void {
+    this.addItemForm = this.fb.group({
+      itemId: [null, Validators.required],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+      notes: ['']
+    });
+  }
+
+  /**
+   * Initialize edit item form
+   */
+  private initializeEditItemForm(item: OrderRequestItemDto): void {
+    this.editItemForm = this.fb.group({
+      quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
+      notes: ['']
+    });
+  }
+
   // ==================== DATA LOADING ====================
 
   /**
-   * Load rank lookup items for the receiver form dropdown
+   * Load supply by orderId (when coming from workflow-approval)
    */
-  private loadRanks(): void {
-    this.loadingRanks = true;
-    this.lookupService.getLookupItems('Rank')
+  private loadSupplyByOrderId(orderId: number): void {
+    this.loading = true;
+    this.orderId = orderId;
+    
+    // Fetch supply by orderId
+    this.supplyService.getByOrderId(orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (items: LookupItem[]) => {
-          this.ranks = items ?? [];
-          this.loadingRanks = false;
+        next: (supply: SupplyDto) => {
+          this.supplyId = supply.id;
+          this.supplyData = supply;
+          this.orderData = supply.order;
+          
+          // Extract order items for dropdown
+          this.orderItems = supply.order?.requestItems || [];
+          
+          // Map supply details to display items
+          this.supplyItems = mapSupplyDetailsToDisplay(supply);
+          
+          // Set static approval workflow
+          this.approvalWorkflow = this.getStaticApprovalWorkflow();
+          
+          this.loading = false;
         },
-        error: () => {
-          this.ranks = [];
-          this.loadingRanks = false;
+        error: (error) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply for this order');
+          this.toastService.error(errorMessage);
+          this.loading = false;
+          this.goBack();
         }
       });
   }
@@ -184,16 +239,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           
           // Extract order items for dropdown
           this.orderItems = supply.order?.requestItems || [];
-          
-          // Pre-fill receiver form if data exists
-          if (supply.recieverName || supply.receiverRankId || supply.recieverMilitaryId) {
-            this.receiverForm.patchValue({
-              recieverName: supply.recieverName || '',
-              receiverRankId: supply.receiverRankId || null,
-              recieverMilitaryId: supply.recieverMilitaryId || '',
-              notes: supply.notes || ''
-            });
-          }
           
           // Map supply details to display items
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
@@ -282,8 +327,24 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
    * Endpoint: PUT /api/Supply/{supplyId}/details/{detailId}
    */
   onUpdateItem(item: SupplyItemDisplay): void {
-    if (!this.supplyData || item.quantity <= 0) {
-      this.toastService.error('Invalid quantity');
+    // Validation
+    if (!this.supplyData) {
+      this.toastService.error('Supply data not loaded');
+      return;
+    }
+    
+    if (!item.quantity || item.quantity <= 0) {
+      this.toastService.error('Quantity must be greater than 0');
+      return;
+    }
+    
+    if (!item.lot || item.lot <= 0) {
+      this.toastService.error('Invalid lot number');
+      return;
+    }
+    
+    if (!item.itemId || item.itemId <= 0) {
+      this.toastService.error('Invalid item');
       return;
     }
 
@@ -292,7 +353,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       itemId: item.itemId,
       lot: item.lot,
       quantity: item.quantity,
-      notes: item.notes
+      notes: item.notes || undefined
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -306,6 +367,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
           this.toastService.error(errorMessage);
           this.updatingItem = false;
+          // Reset to original value on error
+          this.loadSupplyData();
         }
       });
   }
@@ -647,68 +710,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Accept (Submit) the supply order - requires receiver information
-   * Validates receiver form and submits the supply order to the backend
-   * Endpoint: POST /api/Supply/{id}/submit
-   */
-  onAccept(): void {
-    if (this.receiverForm.invalid) {
-      this.receiverForm.markAllAsTouched();
-      this.toastService.error('Please fill in all required receiver information');
-      return;
-    }
 
-    if (!this.supplyData) return;
-
-    const submitDto: SubmitSupplyDto = this.receiverForm.value;
-
-    this.submitting = true;
-    this.supplyService.submit(this.supplyId, submitDto)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.toastService.success('Supply order accepted and submitted successfully!');
-          this.submitting = false;
-          
-          setTimeout(() => {
-            this.goBack();
-          }, SUPPLY_ORDER_CONSTANTS.NAVIGATION_DELAY_MS);
-        },
-        error: (error) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
-          this.toastService.error(errorMessage);
-          this.submitting = false;
-        }
-      });
-  }
-
-  /**
-   * Show confirmation modal before rejecting the supply order
-   */
-  onReject(): void {
-    if (!this.supplyData) return;
-
-    const orderNo = this.orderData?.requestNo || this.orderData?.orderNo || `#${this.orderId}`;
-    this.showConfirmationModal({
-      title: 'Reject Supply Order',
-      message: `Are you sure you want to reject supply order ${orderNo}? You can edit it later.`,
-      action: () => this.confirmReject()
-    });
-  }
-
-  /**
-   * Actually reject after confirmation
-   */
-  private confirmReject(): void {
-    this.rejecting = true;
-    this.toastService.warning('Supply order rejected. No changes submitted.');
-    
-    setTimeout(() => {
-      this.rejecting = false;
-      this.goBack();
-    }, SUPPLY_ORDER_CONSTANTS.REJECTION_DELAY_MS);
-  }
 
   /**
    * Show confirmation modal with specified configuration
@@ -767,11 +769,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return this.orderData.departmentNameEn || this.orderData.departmentNameAr || 'N/A';
   }
 
-  rankOptionLabel = (option: any): string => {
-    if (!option) return '';
-    return option.nameEn || option.nameAr || '';
-  };
-
   /**
    * Get display label for item dropdown option
    * Handles both DropdownOption wrapper and direct OrderRequestItemDto
@@ -808,61 +805,207 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return this.supplyItems.reduce((sum, item) => sum + item.quantity, 0);
   }
 
+
+
+  // ==================== ITEM MANAGEMENT (for Order Items) ====================
+
   /**
-   * Checks if the supply order can be submitted/accepted
-   * Requires valid receiver form and order must be in draft or submitted state
-   * @returns True if the order can be submitted
+   * Get product ID for an item
    */
-  canSubmit(): boolean {
-    return this.receiverForm.valid && 
-           !this.submitting && 
-           !this.rejecting && 
-           this.canModifyOrder();
+  getItemProductId(item: OrderRequestItemDto): string {
+    if (item.itemNo) {
+      return item.itemNo;
+    }
+    return '-';
   }
 
   /**
-   * Checks if the supply order can be modified (accepted/rejected)
-   * Orders can only be modified if they are in Draft or Submitted status
-   * Approved or Rejected orders cannot be modified
-   * @returns True if the order can be modified
+   * Open add item modal
    */
-  canModifyOrder(): boolean {
-    if (!this.supplyData) return false;
+  openAddOrderItemModal(): void {
+    this.initializeAddItemForm();
+    this.loadAvailableItems();
+    this.isAddItemModalOpen = true;
+  }
+
+  /**
+   * Close add item modal
+   */
+  closeAddOrderItemModal(): void {
+    this.isAddItemModalOpen = false;
+    this.addItemForm.reset();
+  }
+
+  /**
+   * Open edit item modal
+   */
+  openEditOrderItemModal(item: OrderRequestItemDto): void {
+    this.selectedItemForEdit = item;
+    this.initializeEditItemForm(item);
+    this.isEditItemModalOpen = true;
+  }
+
+  /**
+   * Close edit item modal
+   */
+  closeEditOrderItemModal(): void {
+    this.isEditItemModalOpen = false;
+    this.selectedItemForEdit = null;
+    this.editItemForm.reset();
+  }
+
+  /**
+   * Open remove item confirmation modal
+   */
+  openRemoveOrderItemModal(item: OrderRequestItemDto): void {
+    this.selectedItemForRemove = item;
+    this.isRemoveItemModalOpen = true;
+  }
+
+  /**
+   * Close remove item modal
+   */
+  closeRemoveOrderItemModal(): void {
+    this.isRemoveItemModalOpen = false;
+    this.selectedItemForRemove = null;
+  }
+
+  /**
+   * Load available items for dropdown (excluding items already in order)
+   */
+  private loadAvailableItems(): void {
+    this.loadingItems = true;
+    this.ammunitionService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items) => {
+          // Filter out items that are already in the order
+          const existingItemIds = this.orderItems.map(item => item.itemId);
+          this.availableItems = (items || []).filter(item => !existingItemIds.includes(item.id));
+          this.loadingItems = false;
+        },
+        error: (error) => {
+          console.error('Failed to load items:', error);
+          this.toastService.error('Failed to load items');
+          this.loadingItems = false;
+        }
+      });
+  }
+
+  /**
+   * Get item option label for dropdown
+   */
+  itemManagementOptionLabel = (item: any): string => {
+    return item?.name || item?.itemNo || `Item #${item?.id}`;
+  };
+
+  /**
+   * Save new item
+   */
+  onSaveAddOrderItem(): void {
+    if (this.addItemForm.invalid) {
+      this.addItemForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.addItemForm.value;
     
-    const status = this.supplyData.submissionStatus;
-    return status === SubmissionStatus.Draft || status === SubmissionStatus.Submitted;
+    // Check if item already exists in order
+    const existingItem = this.orderItems.find(item => item.itemId === formValue.itemId);
+    if (existingItem) {
+      this.toastService.error(`Item already exists in this order. Please use Edit to update the quantity instead.`);
+      return;
+    }
+
+    const itemDto: CreateUpdateRequestItemDto = {
+      itemId: formValue.itemId,
+      quantity: formValue.quantity,
+      notes: formValue.notes || undefined
+    };
+
+    this.savingItem = true;
+    this.orderService.addOrderItem(this.orderId, itemDto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: APIOperationResponse<number>) => {
+          if (response.succeeded) {
+            this.toastService.success('Item added successfully');
+            this.closeAddOrderItemModal();
+            this.loadSupplyData(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'Failed to add item');
+          }
+          this.savingItem = false;
+        },
+        error: (error: any) => {
+          console.error('Failed to add item:', error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add item');
+          this.toastService.error(errorMessage);
+          this.savingItem = false;
+        }
+      });
   }
 
   /**
-   * Checks if the supply order is already approved
-   * @returns True if the order status is Approved
+   * Save edited item quantity
    */
-  isOrderApproved(): boolean {
-    if (!this.supplyData) return false;
-    return this.supplyData.submissionStatus === SubmissionStatus.Approved;
+  onSaveEditOrderItem(): void {
+    if (!this.selectedItemForEdit || this.editItemForm.invalid) {
+      this.editItemForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.editItemForm.value;
+    const newQuantity = formValue.quantity;
+
+    this.savingItem = true;
+    this.orderService.updateOrderItemQuantity(this.orderId, this.selectedItemForEdit.id, newQuantity)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: APIOperationResponse<boolean>) => {
+          if (response.succeeded) {
+            this.toastService.success('Item quantity updated successfully');
+            this.closeEditOrderItemModal();
+            this.loadSupplyData(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'Failed to update item quantity');
+          }
+          this.savingItem = false;
+        },
+        error: (error: any) => {
+          console.error('Failed to update item quantity:', error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item quantity');
+          this.toastService.error(errorMessage);
+          this.savingItem = false;
+        }
+      });
   }
 
   /**
-   * Checks if the supply order is already rejected
-   * @returns True if the order status is Rejected
+   * Confirm remove item
    */
-  isOrderRejected(): boolean {
-    if (!this.supplyData) return false;
-    return this.supplyData.submissionStatus === SubmissionStatus.Rejected;
-  }
+  onConfirmRemoveOrderItem(): void {
+    if (!this.selectedItemForRemove) return;
 
-  /**
-   * Gets the current submission status text for display
-   */
-  getSubmissionStatusText = getSubmissionStatusText;
-  getSubmissionStatusClass = getSubmissionStatusClass;
-
-  /**
-   * Gets the current submission status of the supply order
-   * @returns The submission status number or null if not available
-   */
-  getCurrentOrderStatus(): number | null {
-    return this.supplyData?.submissionStatus ?? null;
+    this.orderService.deleteOrderItem(this.orderId, this.selectedItemForRemove.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: APIOperationResponse<boolean>) => {
+          console.log('Delete response:', response);
+          if (response.succeeded) {
+            this.toastService.success('Item removed successfully');
+            this.closeRemoveOrderItemModal();
+            this.loadSupplyData(); // Reload to refresh data
+          } else {
+            this.toastService.error(response.message || 'Failed to remove item');
+          }
+        },
+        error: (error: any) => {
+          console.error('Failed to remove item:', error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove item');
+          this.toastService.error(errorMessage);
+        }
+      });
   }
 }
 

@@ -94,85 +94,57 @@
         </div>
       </div>
 
-      <!-- Receiver Information Form -->
+      <!-- Order Items Management Table -->
       <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-gray-200">
-          {{ 'supplyOrder.receiverInformation' | translate }}
-        </h2>
-        
-        <form [formGroup]="receiverForm" class="grid grid-cols-2 gap-4">
-          <!-- Receiver Name -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              {{ 'supplyOrder.receiverName' | translate }} <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              formControlName="recieverName"
-              placeholder="{{ 'supplyOrder.receiverNamePlaceholder' | translate }}"
-              class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-              [class.border-red-500]="receiverForm.get('recieverName')?.invalid && receiverForm.get('recieverName')?.touched"
-            />
-            <p *ngIf="receiverForm.get('recieverName')?.invalid && receiverForm.get('recieverName')?.touched" 
-               class="mt-1 text-sm text-red-600">
-              {{ 'supplyOrder.receiverNameRequired' | translate }}
-            </p>
-          </div>
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">
+            {{ 'supplyOrder.orderItemsManagement' | translate }}
+          </h2>
+          <button
+            *appHasPermission="'Order.Edit'"
+            (click)="openAddOrderItemModal()"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
+            <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+            {{ 'supplyOrder.addItem' | translate }}
+          </button>
+        </div>
 
-          <!-- Military ID -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              {{ 'supplyOrder.receiverMilitaryId' | translate }} <span class="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              formControlName="recieverMilitaryId"
-              placeholder="{{ 'supplyOrder.receiverMilitaryIdPlaceholder' | translate }}"
-              class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-              [class.border-red-500]="receiverForm.get('recieverMilitaryId')?.invalid && receiverForm.get('recieverMilitaryId')?.touched"
-            />
-            <p *ngIf="receiverForm.get('recieverMilitaryId')?.invalid && receiverForm.get('recieverMilitaryId')?.touched" 
-               class="mt-1 text-sm text-red-600">
-              {{ 'supplyOrder.receiverMilitaryIdRequired' | translate }}
-            </p>
-          </div>
-
-          <!-- Rank Dropdown -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              {{ 'supplyOrder.receiverRank' | translate }} <span class="text-red-600">*</span>
-            </label>
-            <app-dropdown
-              class="w-full"
-              formControlName="receiverRankId"
-              [options]="ranks"
-              optionValue="id"
-              [optionLabelFn]="rankOptionLabel"
-              [disabled]="loadingRanks"
-              [placeholderSelectable]="false"
-              [placeholderValue]="null"
-              [error]="!!(receiverForm.get('receiverRankId')?.invalid && receiverForm.get('receiverRankId')?.touched)"
-              placeholder="{{ 'supplyOrder.receiverRankPlaceholder' | translate }}">
-            </app-dropdown>
-            <p *ngIf="receiverForm.get('receiverRankId')?.invalid && receiverForm.get('receiverRankId')?.touched" 
-               class="mt-1 text-sm text-red-600">
-              {{ 'supplyOrder.receiverRankRequired' | translate }}
-            </p>
-          </div>
-
-          <!-- Notes -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              {{ 'supplyOrder.notes' | translate }}
-            </label>
-            <input
-              type="text"
-              formControlName="notes"
-              placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"
-              class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-            />
-          </div>
-        </form>
+        <!-- Item Management Table -->
+        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 text-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+                <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+                <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+                <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of orderItems" class="border-t border-gray-200">
+                <td class="px-4 py-2 text-gray-900">{{ item.itemName }}</td>
+                <td class="px-4 py-2 text-gray-600">{{ getItemProductId(item) }}</td>
+                <td class="px-4 py-2 text-gray-900">{{ formatNumber(item.quantity) }}</td>
+                <td class="px-4 py-2">
+                  <button
+                    *appHasPermission="'Order.Edit'"
+                    type="button"
+                    (click)="openEditOrderItemModal(item); $event.stopPropagation()"
+                    class="text-sm text-blue-600 hover:text-blue-700 mr-3">
+                    {{ 'common.edit' | translate }}
+                  </button>
+                  <button
+                    *appHasPermission="'Order.Delete'"
+                    type="button"
+                    (click)="openRemoveOrderItemModal(item); $event.stopPropagation()"
+                    class="text-sm text-red-600 hover:text-red-700">
+                    {{ 'common.remove' | translate }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Approval Workflow -->
@@ -354,63 +326,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons - Only show if order can be modified -->
-      <div *ngIf="canModifyOrder()" class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <div class="flex gap-4">
-          <button
-            *appHasPermission="'Order.Manage'"
-            (click)="onReject()"
-            [disabled]="rejecting || submitting"
-            class="flex-1 px-6 py-3 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg">
-            <span class="flex items-center justify-center gap-2">
-              <lucide-angular [img]="XIcon" class="h-5 w-5"></lucide-angular>
-              <span *ngIf="!rejecting">{{ 'supplyOrder.reject' | translate }}</span>
-              <span *ngIf="rejecting">{{ 'common.processing' | translate }}...</span>
-            </span>
-          </button>
-
-          <button
-            *appHasPermission="'Order.Manage'"
-            (click)="onAccept()"
-            [disabled]="!canSubmit()"
-            class="flex-1 px-6 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-            [ngClass]="{
-              'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canSubmit(),
-              'bg-gray-400': !canSubmit()
-            }">
-            <span class="flex items-center justify-center gap-2">
-              <lucide-angular [img]="Check" class="h-5 w-5"></lucide-angular>
-              <span *ngIf="!submitting">{{ 'supplyOrder.accept' | translate }}</span>
-              <span *ngIf="submitting">{{ 'common.processing' | translate }}...</span>
-            </span>
-          </button>
-        </div>
-
-        <p *ngIf="!receiverForm.valid" class="text-xs text-gray-500 text-center mt-3">
-          {{ 'supplyOrder.fillReceiverInfo' | translate }}
-        </p>
-      </div>
-
-      <!-- Status Display - Show when order is already approved or rejected -->
-      <div *ngIf="!canModifyOrder() && supplyData" class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <div class="flex flex-col items-center justify-center gap-3">
-          <div 
-            class="px-4 py-2 rounded-lg font-semibold border"
-            [ngClass]="getSubmissionStatusClass(supplyData.submissionStatus)">
-            <span class="flex items-center gap-2">
-              <lucide-angular 
-                [img]="isOrderApproved() ? CheckCircle : XIcon" 
-                class="h-5 w-5">
-              </lucide-angular>
-              <span>{{ getSubmissionStatusText(supplyData.submissionStatus) | translate }}</span>
-            </span>
-          </div>
-          <p class="text-sm text-gray-600 text-center">
-            <span *ngIf="isOrderApproved()">{{ 'supplyOrder.orderAlreadyApproved' | translate }}</span>
-            <span *ngIf="isOrderRejected()">{{ 'supplyOrder.orderAlreadyRejected' | translate }}</span>
-          </p>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -653,4 +568,165 @@
     </button>
   </div>
 </app-modal>
+
+<!-- Add Order Item Modal -->
+<app-modal
+  [isOpen]="isAddItemModalOpen"
+  [title]="'supplyOrder.addItem' | translate"
+  size="md"
+  (closed)="closeAddOrderItemModal()">
+  
+  <form [formGroup]="addItemForm" class="space-y-4">
+    <!-- Item Selection -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyOrder.selectItem' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <app-dropdown
+        class="w-full"
+        formControlName="itemId"
+        [options]="availableItems"
+        optionValue="id"
+        [optionLabelFn]="itemManagementOptionLabel"
+        [disabled]="loadingItems"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
+        placeholder="{{ 'supplyOrder.selectItemPlaceholder' | translate }}">
+      </app-dropdown>
+      <p *ngIf="addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyOrder.itemRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyOrder.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input
+        type="number"
+        formControlName="quantity"
+        min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched"
+      />
+      <p *ngIf="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyOrder.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyOrder.notes' | translate }}
+      </label>
+      <textarea
+        formControlName="notes"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button
+      (click)="closeAddOrderItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      (click)="onSaveAddOrderItem()"
+      [disabled]="addItemForm.invalid || savingItem || loadingItems"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingItems,
+        'bg-gray-400': addItemForm.invalid || savingItem || loadingItems
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Edit Order Item Quantity Modal -->
+<app-modal
+  [isOpen]="isEditItemModalOpen"
+  [title]="'supplyOrder.editItemQuantity' | translate"
+  size="md"
+  (closed)="closeEditOrderItemModal()">
+  
+  <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <p class="text-sm font-semibold text-gray-700 mb-1">{{ 'supplyOrder.item' | translate }}:</p>
+    <p class="text-base text-gray-900">{{ selectedItemForEdit.itemName }}</p>
+    <p class="text-xs text-gray-600 mt-1">{{ 'supplyOrder.productId' | translate }}: {{ getItemProductId(selectedItemForEdit) }}</p>
+  </div>
+
+  <form [formGroup]="editItemForm" class="space-y-4">
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyOrder.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input
+        type="number"
+        formControlName="quantity"
+        min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched"
+      />
+      <p *ngIf="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched" 
+         class="mt-1 text-sm text-red-600">
+        {{ 'supplyOrder.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyOrder.notes' | translate }}
+      </label>
+      <textarea
+        formControlName="notes"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"
+      ></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button
+      (click)="closeEditOrderItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      (click)="onSaveEditOrderItem()"
+      [disabled]="editItemForm.invalid || savingItem"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
+        'bg-gray-400': editItemForm.invalid || savingItem
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Remove Order Item Confirmation Modal -->
+<app-confirm-dialog
+  [isOpen]="isRemoveItemModalOpen"
+  [title]="'supplyOrder.removeItem' | translate"
+  [message]="('supplyOrder.removeItemConfirm' | translate) + ' ' + (selectedItemForRemove?.itemName || '') + '?'"
+  [confirmText]="'common.remove' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onConfirmRemoveOrderItem()"
+  (cancelled)="closeRemoveOrderItemModal()">
+</app-confirm-dialog>
 
