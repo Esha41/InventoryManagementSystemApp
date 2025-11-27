@@ -73,7 +73,7 @@ export function mapPriority(priority: number): Priority {
 export function mapRequestStatus(status: number): RequestStatus {
   switch (status) {
     case RequestStatusEnum.Approved:
-      return 'Confirmed';
+      return 'Approved';
     case RequestStatusEnum.Rejected:
       return 'Rejected';
     case RequestStatusEnum.New:
@@ -121,7 +121,7 @@ export function mapRequestItems(items: any[]): RequestItem[] {
 /**
  * Map approval history from backend format
  * @param history - Approval history array from backend
- * @param requestStatus - Optional base request status to filter pending steps if confirmed
+ * @param requestStatus - Optional base request status to filter pending steps if approved
  */
 export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus): WorkflowApprovalStep[] {
   if (!history || history.length === 0) {
@@ -163,8 +163,8 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
     })
     .sort((a, b) => (a.steporder || 0) - (b.steporder || 0));
 
-  // If base request is confirmed, filter out pending steps
-  if (requestStatus === 'Confirmed') {
+  // If base request is approved, filter out pending steps
+  if (requestStatus === 'Approved') {
     return mappedHistory.filter(step => step.status !== 'Pending');
   }
 
