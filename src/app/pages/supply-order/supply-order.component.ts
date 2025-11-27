@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -57,6 +57,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   readonly XIcon = XIcon;
   readonly Plus = Plus;
   readonly AlertTriangle = AlertTriangle;
+  readonly ChevronDown = ChevronDown;
+  readonly ChevronUp = ChevronUp;
 
   // ==================== STATE ====================
   // Core data
@@ -106,6 +108,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   orderItems: OrderRequestItemDto[] = [];
   approvalWorkflow: ApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
+  
+  // Collapsible sections state
+  isApprovalWorkflowExpanded: boolean = true;
 
   constructor(
     private route: ActivatedRoute,

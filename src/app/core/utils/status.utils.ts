@@ -120,33 +120,38 @@ export function getRequestStatusTranslationKey(status?: number | null): string {
 
 /**
  * Map order status number to string
+ * Maps to backend RequestStatus enum: New=1, UnderProcess=2, Approved=3, Rejected=4, Cancelled=5
  */
 export function mapOrderStatusToString(status: number): string {
   switch (status) {
-    case 0: return 'Pending';
-    case 1: return 'Approved';
-    case 2: return 'Rejected';
-    default: return 'Pending';
+    case 1: return 'New';
+    case 2: return 'Under Process';
+    case 3: return 'Approved';
+    case 4: return 'Rejected';
+    case 5: return 'Cancelled';
+    default: return 'New';
   }
 }
 
 /**
  * Map order status from API response (handles both string and number)
+ * Maps to backend RequestStatus enum: New=1, UnderProcess=2, Approved=3, Rejected=4, Cancelled=5
  */
 export function mapOrderStatusFromApi(status: any): string {
-  if (status === 'Approved' || status === 'approved') {
-    return 'Approved';
-  }
-  if (status === 'Rejected' || status === 'rejected') {
-    return 'Rejected';
-  }
-  if (status === 'Pending' || status === 'pending') {
-    return 'Pending';
+  // Handle string status
+  if (typeof status === 'string') {
+    const lowerStatus = status.toLowerCase();
+    if (lowerStatus === 'new') return 'New';
+    if (lowerStatus === 'underprocess' || lowerStatus === 'under process') return 'Under Process';
+    if (lowerStatus === 'approved') return 'Approved';
+    if (lowerStatus === 'rejected') return 'Rejected';
+    if (lowerStatus === 'cancelled') return 'Cancelled';
+    if (lowerStatus === 'pending') return 'New';
   }
   // Handle numeric status
   if (typeof status === 'number') {
     return mapOrderStatusToString(status);
   }
-  return 'Pending';
+  return 'New';
 }
 

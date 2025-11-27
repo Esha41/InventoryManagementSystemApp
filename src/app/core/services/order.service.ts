@@ -125,7 +125,13 @@ export class OrderService {
 
   getOrderById(id: number): Observable<OrderDto> {
     this.config.log(`Fetching order ${id}`);
-    return this.http.get<APIOperationResponse<OrderDto>>(`${this.baseUrl}/${id}`).pipe(
+    // Add cache-busting headers to ensure fresh data
+    const headers = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+    return this.http.get<APIOperationResponse<OrderDto>>(`${this.baseUrl}/${id}`, { headers }).pipe(
       map(response => {
         if (!response.succeeded || !response.data) {
           throw new Error(response.message || 'Failed to fetch order details');

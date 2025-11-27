@@ -135,10 +135,9 @@
               </div>
             </div>
           </div>
-
-          <div #reportContent class="space-y-6">
+          <div #reportContent class="space-y-6 print-report-content">
             <!-- QR Code Section -->
-            <section class="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
+            <section class="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8 print-header-section">
               <div class="flex flex-col gap-8 lg:flex-row">
                 <div class="flex-1">
                   <div class="mb-6">
@@ -148,9 +147,15 @@
                     <h3 class="text-2xl font-bold text-slate-900 mb-2">
                       {{ 'requestsManagement.orderReport.labels.scanHeading' | translate }}
                     </h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">
                       {{ 'requestsManagement.orderReport.labels.scanDescription' | translate }}
                     </p>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
+                      <lucide-angular [img]="QrCode" class="h-4 w-4 text-blue-600"></lucide-angular>
+                      <p class="text-xs font-semibold text-blue-700">
+                        {{ 'requestsManagement.orderReport.labels.qrContains' | translate }}
+                      </p>
+                    </div>
                   </div>
 
                   <div class="grid gap-4 sm:grid-cols-2">
@@ -162,9 +167,21 @@
                     </div>
                     <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
                       <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                        {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
+                        {{ 'requestsManagement.orderReport.labels.department' | translate }}
                       </p>
-                      <p class="text-base font-bold text-slate-900">{{ orderSummary.workflowVersion }}</p>
+                      <p class="text-base font-bold text-slate-900">{{ orderSummary.department }}</p>
+                    </div>
+                    <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                      <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        {{ 'requestsManagement.orderReport.labels.requester' | translate }}
+                      </p>
+                      <p class="text-base font-bold text-slate-900">{{ orderSummary.requester }}</p>
+                    </div>
+                    <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                      <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        {{ 'requestsManagement.orderReport.labels.status' | translate }}
+                      </p>
+                      <p class="text-base font-bold text-slate-900">{{ orderSummary.status | translate }}</p>
                     </div>
                     <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
                       <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -172,32 +189,31 @@
                       </p>
                       <p class="text-base font-bold text-slate-900">{{ orderSummary.lastUpdated }}</p>
                     </div>
-                    <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
-                      <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                        {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
-                      </p>
-                      <p class="text-base font-bold text-slate-900">{{ orderSummary.totalItems }}</p>
-                    </div>
                   </div>
                 </div>
 
-                <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white p-8 lg:w-72">
-                  <div class="rounded-xl bg-white p-5 shadow-xl mb-4 border border-slate-200">
+                <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50/50 to-white p-8 lg:w-80">
+                  <div class="rounded-xl bg-white p-6 shadow-xl mb-4 border-2 border-blue-100">
                     <ng-container *ngIf="qrCodeDataUrl; else qrPlaceholder">
-                      <img [src]="qrCodeDataUrl" alt="Order QR Code" class="h-36 w-36" />
+                      <img [src]="qrCodeDataUrl" alt="Order QR Code" class="h-40 w-40 mx-auto" />
                     </ng-container>
                     <ng-template #qrPlaceholder>
-                      <div class="flex h-36 w-36 flex-col items-center justify-center gap-3 text-slate-400">
-                        <lucide-angular [img]="QrCode" class="h-10 w-10 animate-pulse"></lucide-angular>
+                      <div class="flex h-40 w-40 flex-col items-center justify-center gap-3 text-slate-400">
+                        <lucide-angular [img]="QrCode" class="h-12 w-12 animate-pulse"></lucide-angular>
                         <p class="text-xs font-medium text-center">
                           {{ 'requestsManagement.orderReport.labels.qrGenerating' | translate }}
                         </p>
                       </div>
                     </ng-template>
                   </div>
-                  <p class="text-xs text-slate-500 text-center leading-relaxed">
-                    {{ 'requestsManagement.orderReport.labels.qrFootnote' | translate }}
-                  </p>
+                  <div class="text-center space-y-2">
+                    <p class="text-sm font-semibold text-slate-700">
+                      {{ 'requestsManagement.orderReport.labels.scanToVerify' | translate }}
+                    </p>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                      {{ 'requestsManagement.orderReport.labels.qrFootnote' | translate }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -211,46 +227,49 @@
                       {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
                     </span>
                     <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ orderSummary.usagePurpose }}</h3>
-                    <p class="text-sm text-slate-600">{{ orderSummary.submittedOn }}</p>
+                    <p class="text-sm text-slate-600 flex items-center gap-2">
+                      <span>{{ 'requestsManagement.orderReport.labels.submitted' | translate }}:</span>
+                      <span class="font-semibold">{{ orderSummary.submittedOn }}</span>
+                    </p>
                   </div>
-                  <span class="inline-flex items-center gap-2 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-2 text-sm font-bold text-slate-900">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                    {{ 'requestsManagement.orderReport.labels.priority' | translate }}: {{ orderSummary.priority }}
-                  </span>
+                  <div class="flex flex-col gap-2 sm:flex-row">
+                    <span class="inline-flex items-center gap-2 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white px-4 py-2 text-sm font-bold text-slate-700">
+                      <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                      {{ 'requestsManagement.orderReport.labels.statusLabel' | translate }}: {{ orderSummary.status | translate }}
+                    </span>
+                    <span class="inline-flex items-center gap-2 rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-2 text-sm font-bold text-slate-900">
+                      <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                      {{ 'requestsManagement.orderReport.labels.priority' | translate }}: {{ orderSummary.priority }}
+                    </span>
+                  </div>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       {{ 'requestsManagement.orderReport.labels.department' | translate }}
                     </p>
                     <p class="text-base font-bold text-slate-900">{{ orderSummary.department }}</p>
                   </div>
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       {{ 'requestsManagement.orderReport.labels.requester' | translate }}
                     </p>
                     <p class="text-base font-bold text-slate-900">{{ orderSummary.requester }}</p>
                   </div>
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      {{ 'requestsManagement.orderReport.labels.workflowVersion' | translate }}
-                    </p>
-                    <p class="text-base font-bold text-slate-900">{{ orderSummary.workflowVersion }}</p>
-                  </div>
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       {{ 'requestsManagement.orderReport.labels.totalItems' | translate }}
                     </p>
                     <p class="text-base font-bold text-slate-900">{{ orderSummary.totalItems }}</p>
                   </div>
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       {{ 'requestsManagement.orderReport.labels.totalQuantity' | translate }}
                     </p>
                     <p class="text-base font-bold text-slate-900">{{ orderSummary.totalQuantity | number }}</p>
                   </div>
-                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
                     </p>
@@ -260,31 +279,29 @@
               </div>
 
               <div>
-                <h4 class="text-lg font-bold text-slate-900 mb-4">
-                  {{ 'requestsManagement.orderReport.labels.itemsIncluded' | translate }}
+                <h4 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <span>{{ 'requestsManagement.orderReport.labels.itemsIncluded' | translate }}</span>
+                  <span class="text-sm font-normal text-slate-500">({{ orderItems.length }} {{ orderItems.length === 1 ? ('requestsManagement.orderReport.labels.item' | translate) : ('requestsManagement.orderReport.labels.items' | translate) }})</span>
                 </h4>
                 <div class="overflow-hidden rounded-xl border-2 border-slate-200 shadow-sm">
-                  <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-4 grid grid-cols-4 gap-4">
+                  <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-4 grid grid-cols-3 gap-4">
                     <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.itemName' | translate }}</span>
                     <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.itemNo' | translate }}</span>
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.quantity' | translate }}</span>
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
+                    <span class="text-xs font-bold text-white uppercase tracking-wider text-right">{{ 'requestsManagement.orderReport.table.quantity' | translate }}</span>
                   </div>
                   <div class="divide-y divide-slate-100">
-                    <div
-                      *ngFor="let item of orderItems"
-                      class="grid grid-cols-4 gap-4 px-5 py-4 text-sm hover:bg-slate-50 transition-colors"
-                    >
-                      <div class="font-bold text-slate-900">{{ item.name }}</div>
-                      <div class="text-slate-600">{{ item.caliber }}</div>
-                      <div class="text-slate-600">
+                    <div 
+                      *ngFor="let item of orderItems; let i = index" 
+                      class="grid grid-cols-3 gap-4 px-6 py-4 text-sm hover:bg-blue-50/50 transition-colors"
+                      [ngClass]="{'bg-slate-50/50': i % 2 === 0}">
+                      <div class="font-bold text-slate-900 flex items-center">{{ item.name }}</div>
+                      <div class="text-slate-600 font-medium flex items-center">{{ item.caliber }}</div>
+                      <div class="text-slate-700 font-semibold text-right flex items-center justify-end">
                         {{ item.quantity | number }} {{ 'requestsManagement.orderReport.labels.rounds' | translate }}
                       </div>
-                      <div>
-                        <span class="inline-flex items-center rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700">
-                          {{ item.status }}
-                        </span>
-                      </div>
+                    </div>
+                    <div *ngIf="orderItems.length === 0" class="px-6 py-12 text-center">
+                      <p class="text-sm text-slate-500">{{ 'requestsManagement.orderReport.labels.noItemsFound' | translate }}</p>
                     </div>
                   </div>
                 </div>
@@ -311,10 +328,7 @@
                   <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
                 </div>
                 <div class="divide-y divide-slate-100">
-                  <div
-                    *ngFor="let step of approvalWorkflow"
-                    class="grid grid-cols-5 gap-4 px-5 py-4 text-sm hover:bg-slate-50 transition-colors"
-                  >
+                  <div *ngFor="let step of approvalWorkflow" class="grid grid-cols-5 gap-4 px-5 py-4 text-sm hover:bg-slate-50 transition-colors">
                     <div class="font-bold text-slate-900">{{ step.step }}</div>
                     <div class="text-slate-600">{{ step.role }}</div>
                     <div class="font-bold text-slate-900">{{ step.approver }}</div>
@@ -351,7 +365,6 @@
             </section>
           </div>
         </div>
-
         <!-- Empty State -->
         <ng-template #selectOrderPlaceholder>
           <div class="bg-white rounded-2xl shadow-lg border-2 border-dashed border-slate-300 px-8 py-20 text-center">

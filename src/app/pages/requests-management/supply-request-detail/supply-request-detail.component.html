@@ -317,7 +317,7 @@
               </div>
             </div>
             <div *ngIf="!requestDetail.approvalWorkflow || requestDetail.approvalWorkflow.length === 0" class="text-center py-8">
-              <p class="text-sm text-[var(--color-text-muted)]">No approval workflow data available</p>
+              <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestDetail.noApprovalWorkflowData' | translate }}</p>
             </div>
           </div>
         </div>
@@ -519,7 +519,7 @@
               {{ formatDate(lot.expiryDate) }}
             </p>
             <p *ngIf="!lot.expiryDate" class="text-xs text-gray-500 mt-1">
-              No Expiry
+              {{ 'supplyRequestDetail.noExpiry' | translate }}
             </p>
             <p class="text-xs mt-1 font-medium" [ngClass]="{
               'text-red-600': lot.daysUntilExpiry < 60,
