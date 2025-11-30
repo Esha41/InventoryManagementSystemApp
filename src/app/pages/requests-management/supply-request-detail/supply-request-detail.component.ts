@@ -10,13 +10,14 @@ import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { OrderService, OrderDto, OrderRequestItemDto, CreateUpdateRequestItemDto } from '@services/order.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto } from '@services/supply.service';
+import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto, SupplyDto } from '@services/supply.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { SupplyRequestDetail, OrderItem, LotItem, ApprovalStep } from '@models/supply-request.model';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, of, Observable, forkJoin } from 'rxjs';
+import { switchMap, catchError, tap, delay, map } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
@@ -108,7 +109,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     const idParam = this.route.snapshot.params['id'];
     this.orderId = parseInt(idParam, 10);
     if (isNaN(this.orderId)) {
-      this.toastService.error('supplyRequestDetail.invalidOrderId');
+      const message = this.translate.instant('supplyRequestDetail.invalidOrderId');
+      const title = this.translate.instant('toast.error');
+      this.toastService.error(message, title);
       this.router.navigate(['/requests-management']);
       return;
     }
@@ -152,7 +155,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load order details:', error);
-          this.toastService.error('supplyRequestDetail.failedToLoadOrderDetails');
+          const message = this.translate.instant('supplyRequestDetail.failedToLoadOrderDetails');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.loading = false;
           this.goBack();
         }
@@ -196,33 +201,284 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Automatically load supply suggestions on page load
+   * Also restores existing selections if a draft supply exists
    */
   private loadSuggestionsAutomatically(): void {
-    if (!this.orderData) return;
+    if (!this.orderData || !this.requestDetail) {
+      this.config.log('Cannot load suggestions: missing orderData or requestDetail', {
+        hasOrderData: !!this.orderData,
+        hasRequestDetail: !!this.requestDetail
+      });
+      return;
+    }
 
     this.loadingSuggestion = true;
+
+    // Load fresh suggestions first (always needed)
     this.supplyService.getSupplySuggestion(this.orderId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        switchMap((suggestion) => {
+          this.config.log('Suggestions loaded', {
+            orderId: this.orderId,
+            itemCount: suggestion.itemSuggestions?.length || 0,
+            canFulfill: suggestion.canFulfillCompletely
+          });
+
+          // Then check if draft supply exists to restore selections
+          return this.supplyService.checkDraftSupplyExists(this.orderId).pipe(
+            switchMap((existingSupply) => {
+              if (existingSupply) {
+                this.config.log('Draft supply found, loading details to restore selections', {
+                  supplyId: existingSupply.id
+                });
+                return this.supplyService.getById(existingSupply.id).pipe(
+                  map((supply) => ({ suggestion, supply }))
+                );
+              }
+              return of({ suggestion, supply: null });
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
-        next: (suggestion: OrderSupplySuggestionDto) => {
-          if (this.requestDetail) {
-            applySuggestionToItems(this.requestDetail, suggestion);
+        next: ({ suggestion, supply }) => {
+          if (!this.requestDetail) {
+            this.loadingSuggestion = false;
+            return;
           }
+
+          // Check if suggestions are empty but we have existing supply
+          const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
+          const hasExistingSupply = supply && supply.supplyDetails && supply.supplyDetails.length > 0;
+
+          // Verify suggestions match all items
+          const itemsInSuggestions = new Set(suggestion.itemSuggestions?.map(s => s.requestItemId) || []);
+          const itemsInRequest = new Set(this.requestDetail.items.map(i => i.requestItemId));
+          const missingItems = Array.from(itemsInRequest).filter(id => !itemsInSuggestions.has(id));
+
+          if (missingItems.length > 0) {
+            this.config.log('Some items are missing from suggestions', {
+              missingItemIds: missingItems,
+              totalItems: itemsInRequest.size,
+              itemsInSuggestions: itemsInSuggestions.size
+            });
+          }
+
+          if (hasEmptySuggestions && hasExistingSupply) {
+            this.config.log('Suggestions are empty but draft supply exists - loading lots for existing selections', {
+              supplyId: supply.id,
+              detailCount: supply.supplyDetails.length
+            });
+            
+            // Load lots for items that have existing selections but no suggestions
+            this.loadLotsForExistingSelections(supply.supplyDetails);
+          } else {
+            // Normal flow: apply suggestions first, then restore selections
+            applySuggestionToItems(this.requestDetail, suggestion);
+
+            // If some items are missing from suggestions, they'll have empty lots
+            // This is expected for newly added items that backend hasn't processed yet
+            if (missingItems.length > 0) {
+              this.config.log('Some items missing from suggestions - may need to reload', {
+                missingCount: missingItems.length
+              });
+            }
+
+            // Restore existing selections from draft supply if it exists
+            if (supply && supply.supplyDetails) {
+              this.config.log('Restoring existing selections', {
+                supplyId: supply.id,
+                detailCount: supply.supplyDetails.length
+              });
+              this.restoreExistingSelections(supply.supplyDetails);
+            }
+          }
+
           this.loadingSuggestion = false;
-          
-          // Silent success - suggestions are loaded automatically
-          if (!suggestion.canFulfillCompletely) {
-            this.toastService.warning('supplyRequestDetail.insufficientInventoryNote');
+
+          // Show warning if inventory is insufficient
+          if (!suggestion.canFulfillCompletely && !hasEmptySuggestions) {
+            const message = this.translate.instant('supplyRequestDetail.insufficientInventoryNote');
+            const title = this.translate.instant('toast.warning');
+            this.toastService.warning(message, title);
           }
         },
         error: (error) => {
-          console.error('Failed to load suggestions:', error);
-          // Don't show error toast for automatic loading - just log it
+          this.config.logError('Failed to load suggestions or existing supply', error);
           this.loadingSuggestion = false;
+          
+          // Show error to user if suggestions fail (important for functionality)
+          const message = this.translate.instant('supplyRequestDetail.failedToLoadSuggestions');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
         }
       });
   }
 
+  /**
+   * Restore existing selections from draft supply details
+   * Maps supply details back to UI lot selections
+   */
+  private restoreExistingSelections(supplyDetails: any[]): void {
+    if (!this.requestDetail || !supplyDetails || supplyDetails.length === 0) {
+      this.config.log('Cannot restore selections: missing data', {
+        hasRequestDetail: !!this.requestDetail,
+        hasSupplyDetails: !!supplyDetails,
+        detailCount: supplyDetails?.length || 0
+      });
+      return;
+    }
+
+    // Group supply details by itemId and lot
+    const selectionsByItemAndLot = new Map<string, number>();
+    supplyDetails.forEach(detail => {
+      if (detail.itemId && detail.lot && detail.quantity > 0) {
+        const key = `${detail.itemId}_${detail.lot}`;
+        selectionsByItemAndLot.set(key, detail.quantity);
+      }
+    });
+
+    let restoredCount = 0;
+    let notFoundCount = 0;
+
+    // Restore selections in UI
+    this.requestDetail.items.forEach(item => {
+      if (!item.availableLots || item.availableLots.length === 0) {
+        this.config.log('Item has no available lots to restore to', {
+          itemId: item.itemId,
+          itemName: item.itemName
+        });
+        return;
+      }
+
+      item.availableLots.forEach(lot => {
+        const key = `${item.itemId}_${lot.lotNumber}`;
+        const existingQuantity = selectionsByItemAndLot.get(key);
+        if (existingQuantity !== undefined) {
+          lot.selectedQuantity = existingQuantity;
+          restoredCount++;
+        }
+      });
+
+      // Recalculate total selected for this item
+      item.totalSelectedForDischarge = item.availableLots.reduce(
+        (sum, lot) => sum + lot.selectedQuantity,
+        0
+      );
+    });
+
+    // Count selections that couldn't be restored (lots no longer in suggestions)
+    selectionsByItemAndLot.forEach((quantity, key) => {
+      const [itemId, lotNumber] = key.split('_');
+      const item = this.requestDetail?.items.find(i => i.itemId.toString() === itemId);
+      if (item) {
+        const lot = item.availableLots?.find(l => l.lotNumber.toString() === lotNumber);
+        if (!lot) {
+          notFoundCount++;
+        }
+      }
+    });
+
+    this.config.log('Restored existing selections', {
+      orderId: this.orderId,
+      totalSupplyDetails: supplyDetails.length,
+      restoredCount,
+      notFoundCount,
+      message: notFoundCount > 0 
+        ? `${notFoundCount} previously selected lots are no longer available in suggestions`
+        : 'All selections restored successfully'
+    });
+  }
+
+  /**
+   * Load lots for items that have existing selections but no suggestions
+   * This happens when draft supply fully satisfies the order, so backend skips those items
+   */
+  private loadLotsForExistingSelections(supplyDetails: any[]): void {
+    if (!this.requestDetail || !supplyDetails || supplyDetails.length === 0) {
+      return;
+    }
+
+    // Group supply details by itemId
+    const detailsByItem = new Map<number, any[]>();
+    supplyDetails.forEach(detail => {
+      if (detail.itemId) {
+        if (!detailsByItem.has(detail.itemId)) {
+          detailsByItem.set(detail.itemId, []);
+        }
+        detailsByItem.get(detail.itemId)!.push(detail);
+      }
+    });
+
+    // Load lots for each item that has selections
+    const loadPromises: Observable<any>[] = [];
+    
+    detailsByItem.forEach((details, itemId) => {
+      const item = this.requestDetail?.items.find(i => i.itemId === itemId);
+      if (item) {
+        // Calculate total quantity needed for this item
+        const totalQuantity = details.reduce((sum, d) => sum + (d.quantity || 0), 0);
+        
+        // Load available lots for this item
+        loadPromises.push(
+          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity).pipe(
+            map((lots) => ({ item, lots, details }))
+          )
+        );
+      }
+    });
+
+    if (loadPromises.length === 0) {
+      this.config.log('No items to load lots for');
+      return;
+    }
+
+    // Load all lots in parallel
+    forkJoin(loadPromises)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (results) => {
+          results.forEach(({ item, lots, details }) => {
+            if (!item || !lots || lots.length === 0) {
+              return;
+            }
+
+            // Map lots to UI format
+            item.availableLots = mapLotDetailsToLotItems(lots);
+
+            // Restore selections from supply details
+            const selectionsByLot = new Map<number, number>();
+            details.forEach((detail: any) => {
+              if (detail.lot && detail.quantity > 0) {
+                selectionsByLot.set(detail.lot, detail.quantity);
+              }
+            });
+
+            // Apply selections
+            item.availableLots.forEach((lot: any) => {
+              const selectedQty = selectionsByLot.get(lot.lotNumber);
+              if (selectedQty !== undefined) {
+                lot.selectedQuantity = selectedQty;
+              }
+            });
+
+            // Recalculate total
+            item.totalSelectedForDischarge = item.availableLots.reduce(
+              (sum: number, lot: any) => sum + lot.selectedQuantity,
+              0
+            );
+          });
+
+          this.config.log('Loaded lots for existing selections', {
+            itemsProcessed: results.length
+          });
+        },
+        error: (error) => {
+          this.config.logError('Failed to load lots for existing selections', error);
+        }
+      });
+  }
 
   goBack(): void {
     // Navigate back to workflow-approval-detail (main approval page)
@@ -288,7 +544,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     });
 
     if (!this.selectedItem || !this.manualLotNumber.trim()) {
-      this.toastService.warning('supplyRequestDetail.pleaseEnterLotNumber');
+      const message = this.translate.instant('supplyRequestDetail.pleaseEnterLotNumber');
+      const title = this.translate.instant('toast.warning');
+      this.toastService.warning(message, title);
       return;
     }
 
@@ -296,7 +554,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     console.log('Parsed lot number:', lotNum);
     
     if (isNaN(lotNum)) {
-      this.toastService.error('supplyRequestDetail.invalidLotNumber');
+      const message = this.translate.instant('supplyRequestDetail.invalidLotNumber');
+      const title = this.translate.instant('toast.error');
+      this.toastService.error(message, title);
       return;
     }
 
@@ -312,7 +572,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               lotNumber: lotNum,
               itemName: lot.itemName
             });
-            this.toastService.error(message);
+            const title = this.translate.instant('toast.error');
+            this.toastService.error(message, title);
             this.loadingManualLot = false;
             return;
           }
@@ -323,7 +584,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             const message = this.translate.instant('supplyRequestDetail.lotAlreadyInList', {
               lotNumber: lotNum
             });
-            this.toastService.warning(message);
+            const title = this.translate.instant('toast.warning');
+            this.toastService.warning(message, title);
             this.loadingManualLot = false;
             return;
           }
@@ -351,13 +613,16 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const message = this.translate.instant('supplyRequestDetail.lotAddedSuccessfully', {
             lotNumber: lotNum
           });
-          this.toastService.success(message);
+          const title = this.translate.instant('toast.success');
+          this.toastService.success(message, title);
           this.manualLotNumber = '';
           this.loadingManualLot = false;
         },
         error: (error) => {
           console.error('Failed to load lot details:', error);
-          this.toastService.error('supplyRequestDetail.lotNotFoundOrError');
+          const message = this.translate.instant('supplyRequestDetail.lotNotFoundOrError');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.loadingManualLot = false;
         }
       });
@@ -385,14 +650,19 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               count: item.availableLots.length,
               quantity: item.approvedQuantity
             });
-            this.toastService.success(message);
+            const title = this.translate.instant('toast.success');
+            this.toastService.success(message, title);
           } else {
-            this.toastService.warning('supplyRequestDetail.noAvailableLotsFound');
+            const message = this.translate.instant('supplyRequestDetail.noAvailableLotsFound');
+            const title = this.translate.instant('toast.warning');
+            this.toastService.warning(message, title);
           }
         },
         error: (error) => {
           console.error('Failed to load available lots:', error);
-          this.toastService.error('supplyRequestDetail.failedToLoadAvailableLots');
+          const message = this.translate.instant('supplyRequestDetail.failedToLoadAvailableLots');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.loadingAllLots = false;
         }
       });
@@ -435,7 +705,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       const message = this.translate.instant('supplyRequestDetail.lotRemovedFromList', {
         lotNumber: lotNumber
       });
-      this.toastService.success(message);
+      const title = this.translate.instant('toast.success');
+      this.toastService.success(message, title);
     }
   }
 
@@ -537,14 +808,20 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.loadingSuggestion = false;
           
           if (suggestion.canFulfillCompletely) {
-            this.toastService.success('supplyRequestDetail.suggestionsLoadedAllFulfilled');
+            const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
+            const title = this.translate.instant('toast.success');
+            this.toastService.success(message, title);
           } else {
-            this.toastService.warning('supplyRequestDetail.suggestionsLoadedInsufficient');
+            const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedInsufficient');
+            const title = this.translate.instant('toast.warning');
+            this.toastService.warning(message, title);
           }
         },
         error: (error) => {
           console.error('Failed to load suggestions:', error);
-          this.toastService.error('supplyRequestDetail.failedToLoadSuggestions');
+          const message = this.translate.instant('supplyRequestDetail.failedToLoadSuggestions');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.loadingSuggestion = false;
         }
       });
@@ -563,36 +840,122 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     // First check if draft supply already exists
     this.processingDischarge = true;
     this.supplyService.checkDraftSupplyExists(this.orderId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (existingSupply) => {
+      .pipe(
+        switchMap((existingSupply) => {
           if (existingSupply) {
-            // Draft supply already exists
-            this.processingDischarge = false;
-            const message = this.translate.instant('supplyRequestDetail.draftSupplyExists', {
-              supplyId: existingSupply.id
-            });
-            this.toastService.warning(message);
-            return;
+            // Draft supply already exists - update it instead of creating new
+            return this.supplyService.getById(existingSupply.id).pipe(
+              switchMap((supply) => this.updateExistingSupply(supply))
+            );
+          } else {
+            // No draft exists, proceed with creation
+            return this.createNewSupply();
           }
-
-          // No draft exists, proceed with creation
-          this.createNewSupply();
+        }),
+        catchError((error) => {
+          console.error('Failed to process discharge:', error);
+          // If update fails, try to create new (might be a different error)
+          const errorMessage = error?.error?.message || error?.message || '';
+          if (errorMessage.includes('Draft supply already exists') || errorMessage.includes('already exists for this order')) {
+            // Try to get the supply and update it
+            return this.supplyService.getByOrderId(this.orderId).pipe(
+              switchMap((supply) => this.updateExistingSupply(supply))
+            );
+          }
+          // For other errors, try creation
+          return this.createNewSupply();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
+          // Success handled in updateExistingSupply or createNewSupply
         },
         error: (error) => {
-          console.error('Failed to check existing supply:', error);
-          // Continue with creation attempt anyway
-          this.createNewSupply();
+          console.error('Failed to process discharge:', error);
+          const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(errorMessage, title);
+          this.processingDischarge = false;
         }
       });
+  }
+
+  /**
+   * Update existing draft supply with new selections
+   * Uses the backend ReplaceSupplyDetails endpoint for atomic replacement
+   */
+  private updateExistingSupply(supply: SupplyDto): Observable<void> {
+    if (!this.requestDetail) {
+      return of(undefined as void);
+    }
+
+    // Build new supply details array from current selections
+    const newSupplyDetails: CreateSupplyDetailDto[] = [];
+    
+    this.requestDetail.items.forEach(item => {
+      item.availableLots.forEach(lot => {
+        if (lot.selectedQuantity > 0) {
+          newSupplyDetails.push({
+            itemId: item.itemId,
+            lot: lot.lotNumber,
+            quantity: lot.selectedQuantity,
+            notes: undefined
+          });
+        }
+      });
+    });
+
+    // Validation
+    if (newSupplyDetails.length === 0) {
+      const message = this.translate.instant('supplyRequestDetail.noItemsSelectedForDischarge');
+      const title = this.translate.instant('toast.error');
+      this.toastService.error(message, title);
+      this.processingDischarge = false;
+      return of(undefined as void);
+    }
+
+    this.config.log('Replacing supply details', { 
+      supplyId: supply.id,
+      orderId: this.orderId, 
+      newDetailCount: newSupplyDetails.length
+    });
+
+    // Use atomic replace operation - handles all the complexity in the backend
+    return this.supplyService.replaceSupplyDetails(supply.id, newSupplyDetails).pipe(
+      tap(() => {
+        const message = this.translate.instant('supplyRequestDetail.draftUpdatedSuccessfully', {
+          supplyId: supply.id
+        });
+        const title = this.translate.instant('toast.success');
+        this.toastService.success(message, title);
+        this.processingDischarge = false;
+      }),
+      delay(1500),
+      tap(() => {
+        // Navigate to workflow-approval page after delay
+        this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      }),
+      switchMap(() => of(undefined as void)),
+      catchError((error) => {
+        this.config.logError('Failed to update existing supply', error);
+        const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToUpdateDraft');
+        const title = this.translate.instant('toast.error');
+        this.toastService.error(errorMessage, title);
+        this.processingDischarge = false;
+        return of(undefined as void);
+      })
+    );
   }
 
   /**
    * Create new supply record from selected lots
    * Converts UI selections to backend DTO format
    */
-  private createNewSupply(): void {
-    if (!this.requestDetail) return;
+  private createNewSupply(): Observable<void> {
+    if (!this.requestDetail) {
+      return of(undefined as void);
+    }
 
     // Build supply details array from all selected lots across all items
     const supplyDetails: CreateSupplyDetailDto[] = [];
@@ -612,9 +975,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     // Validation
     if (supplyDetails.length === 0) {
-      this.toastService.error('supplyRequestDetail.noItemsSelectedForDischarge');
+      const message = this.translate.instant('supplyRequestDetail.noItemsSelectedForDischarge');
+      const title = this.translate.instant('toast.error');
+      this.toastService.error(message, title);
       this.processingDischarge = false;
-      return;
+      return of(undefined as void);
     }
 
     const createSupplyDto: CreateSupplyDto = {
@@ -628,27 +993,30 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     });
 
     // Call backend to create supply
-    this.supplyService.create(createSupplyDto)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (supplyId: number) => {
-          const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
-            supplyId: supplyId
-          });
-          this.toastService.success(message);
-          this.processingDischarge = false;
-          
-          setTimeout(() => {
-            this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
-          }, 1500);
-        },
-        error: (error) => {
-          console.error('Failed to create supply:', error);
-          const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
-          this.toastService.error(errorMessage);
-          this.processingDischarge = false;
-        }
-      });
+    return this.supplyService.create(createSupplyDto).pipe(
+      tap((supplyId: number) => {
+        const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
+          supplyId: supplyId
+        });
+        const title = this.translate.instant('toast.success');
+        this.toastService.success(message, title);
+        this.processingDischarge = false;
+      }),
+      delay(1500),
+      tap(() => {
+        // Navigate to workflow-approval page after delay
+        this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      }),
+      switchMap(() => of(undefined as void)),
+      catchError((error) => {
+        this.config.logError('Failed to create supply', error);
+        const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
+        const title = this.translate.instant('toast.error');
+        this.toastService.error(errorMessage, title);
+        this.processingDischarge = false;
+        return of(undefined as void);
+      })
+    );
   }
 
   // ==================== UI HELPER METHODS ====================
@@ -807,7 +1175,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load items:', error);
-          this.toastService.error('supplyRequestDetail.failedToLoadItems');
+          const message = this.translate.instant('supplyRequestDetail.failedToLoadItems');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.loadingItems = false;
         }
       });
@@ -842,17 +1212,27 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<number>) => {
           if (response.succeeded) {
-            this.toastService.success('supplyRequestDetail.itemAddedSuccessfully');
+            const message = this.translate.instant('supplyRequestDetail.itemAddedSuccessfully');
+            const title = this.translate.instant('toast.success');
+            this.toastService.success(message, title);
             this.closeAddItemModal();
-            this.loadRequestDetail(); // Reload to refresh data
+            
+            // Small delay to ensure backend has processed the new item before reloading
+            setTimeout(() => {
+              this.loadRequestDetail(); // Reload to refresh data
+            }, 300);
           } else {
-            this.toastService.error(response.message || 'supplyRequestDetail.failedToAddItem');
+            const errorMessage = response.message || this.translate.instant('supplyRequestDetail.failedToAddItem');
+            const title = this.translate.instant('toast.error');
+            this.toastService.error(errorMessage, title);
           }
           this.savingItem = false;
         },
         error: (error: any) => {
           console.error('Failed to add item:', error);
-          this.toastService.error('supplyRequestDetail.failedToAddItem');
+          const message = this.translate.instant('supplyRequestDetail.failedToAddItem');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.savingItem = false;
         }
       });
@@ -876,17 +1256,23 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.toastService.success('supplyRequestDetail.itemQuantityUpdatedSuccessfully');
+            const message = this.translate.instant('supplyRequestDetail.itemQuantityUpdatedSuccessfully');
+            const title = this.translate.instant('toast.success');
+            this.toastService.success(message, title);
             this.closeEditItemModal();
             this.loadRequestDetail(); // Reload to refresh data
           } else {
-            this.toastService.error(response.message || 'supplyRequestDetail.failedToUpdateItemQuantity');
+            const errorMessage = response.message || this.translate.instant('supplyRequestDetail.failedToUpdateItemQuantity');
+            const title = this.translate.instant('toast.error');
+            this.toastService.error(errorMessage, title);
           }
           this.savingItem = false;
         },
         error: (error: any) => {
           console.error('Failed to update item quantity:', error);
-          this.toastService.error('supplyRequestDetail.failedToUpdateItemQuantity');
+          const message = this.translate.instant('supplyRequestDetail.failedToUpdateItemQuantity');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
           this.savingItem = false;
         }
       });
@@ -903,16 +1289,22 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.toastService.success('supplyRequestDetail.itemRemovedSuccessfully');
+            const message = this.translate.instant('supplyRequestDetail.itemRemovedSuccessfully');
+            const title = this.translate.instant('toast.success');
+            this.toastService.success(message, title);
             this.closeRemoveItemModal();
             this.loadRequestDetail(); // Reload to refresh data
           } else {
-            this.toastService.error(response.message || 'supplyRequestDetail.failedToRemoveItem');
+            const errorMessage = response.message || this.translate.instant('supplyRequestDetail.failedToRemoveItem');
+            const title = this.translate.instant('toast.error');
+            this.toastService.error(errorMessage, title);
           }
         },
         error: (error: any) => {
           console.error('Failed to remove item:', error);
-          this.toastService.error('supplyRequestDetail.failedToRemoveItem');
+          const message = this.translate.instant('supplyRequestDetail.failedToRemoveItem');
+          const title = this.translate.instant('toast.error');
+          this.toastService.error(message, title);
         }
       });
   }

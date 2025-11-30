@@ -39,7 +39,7 @@ export const routes: Routes = [
         path: 'inventory-dashboard',
         loadComponent: () => import('@pages/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['dashboard_view'] }
+        data: { permissions: ['InventoryDashboard'] }
       },
       {
         path: 'supply-request-management',
@@ -183,7 +183,7 @@ export const routes: Routes = [
         path: 'inventory-forecast',
         loadComponent: () => import('@pages/inventory-forecast/inventory-forecast.component').then(m => m.InventoryForecastComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view'] }
+        data: { permissions: ['inventorypage.page', 'inventorypage.view'] }
       },
       {
         path: 'add-asset',

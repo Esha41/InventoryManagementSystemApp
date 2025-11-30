@@ -40,4 +40,5 @@ export {
   getRequestStatusClass,
   getApprovalStatusClass
 } from './status-class.utils';
+export * from './notification.utils';
 

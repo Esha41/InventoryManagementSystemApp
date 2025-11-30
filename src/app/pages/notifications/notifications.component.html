@@ -403,14 +403,15 @@
           >
             <app-button
               *ngIf="!notification.isRead"
-              variant="ghost"
-              class="mark-read-button"
+              variant="primary"
+              size="sm"
+              class="action-button"
               (click)="markAsRead(notification)"
               [disabled]="isPending(notification)"
             >
-              <span class="mark-read-button__content">
-                <div class="mark-read-button__spinner" [class.spinner]="isPending(notification)"></div>
-                <span>{{ 'notifications.markAsRead' | translate }}</span>
+              <span class="action-button__content">
+                <div class="action-button__spinner" [class.spinner]="isPending(notification)"></div>
+                <span>{{ isPending(notification) ? ('common.pleaseWait' | translate) : ('notifications.markAsRead' | translate) }}</span>
               </span>
             </app-button>
 

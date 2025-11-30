@@ -68,20 +68,50 @@ function getItemTypeName(itemType?: number): string {
 
 /**
  * Apply suggestion results to all items in the request
+ * Preserves existing lots and selections for items not in suggestions
  */
 export function applySuggestionToItems(
   requestDetail: SupplyRequestDetail,
   suggestion: OrderSupplySuggestionDto
 ): void {
+  // Track which items have suggestions
+  const itemsWithSuggestions = new Set<number>();
+  
   suggestion.itemSuggestions.forEach(itemSuggestion => {
     const item = requestDetail.items.find(i => i.requestItemId === itemSuggestion.requestItemId);
     if (item) {
+      itemsWithSuggestions.add(item.requestItemId);
+      
+      // Preserve existing selections before applying new suggestions
+      const existingSelections = new Map<number, number>();
+      if (item.availableLots && item.availableLots.length > 0) {
+        item.availableLots.forEach(lot => {
+          if (lot.selectedQuantity > 0) {
+            existingSelections.set(lot.lotNumber, lot.selectedQuantity);
+          }
+        });
+      }
+      
       item.canFulfillCompletely = itemSuggestion.canFulfillCompletely;
-      item.availableLots = mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions);
+      item.availableLots = mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions, existingSelections);
       item.totalSelectedForDischarge = item.availableLots.reduce(
         (sum, lot) => sum + lot.selectedQuantity,
         0
       );
+    }
+  });
+  
+  // Items not in suggestions keep their existing lots (if any)
+  // This handles cases where a new item was just added and isn't in suggestions yet
+  requestDetail.items.forEach(item => {
+    if (!itemsWithSuggestions.has(item.requestItemId)) {
+      // If item has no lots at all, keep it empty (will be populated when suggestions include it)
+      // If item already has lots, preserve them
+      if (!item.availableLots || item.availableLots.length === 0) {
+        // New item - will get suggestions on next load or when backend includes it
+        item.availableLots = [];
+      }
+      // Otherwise, keep existing lots as-is
     }
   });
 }
