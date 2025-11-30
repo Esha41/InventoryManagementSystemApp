@@ -1,3 +1,10 @@
+import { OrderDto } from '@services/order.service';
+import { ReturnDto } from '@services/return.service';
+import { DiscardDto } from '@services/discard.service';
+
+/**
+ * Base notification interface
+ */
 export interface Notification {
   id: number;
   message: string;
@@ -10,5 +17,58 @@ export interface Notification {
   entityType?: string | null;
   entityId?: number | null;
   metadata?: Record<string, any> | null;
+}
+
+/**
+ * Notification filter type
+ */
+export type NotificationFilter = 'all' | 'unread';
+
+/**
+ * Notification detail type
+ */
+export type NotificationDetailType = 'order' | 'return' | 'discard' | null;
+
+/**
+ * Notification detail state
+ */
+export interface NotificationDetailState {
+  loading: boolean;
+  error: string | null;
+  type: NotificationDetailType;
+  orderDetail: OrderDto | null;
+  returnDetail: ReturnDto | null;
+  discardDetail: DiscardDto | null;
+}
+
+/**
+ * Metadata display item
+ */
+export interface MetadataDisplayItem {
+  key: string;
+  value: string;
+}
+
+/**
+ * Notification action keys configuration
+ */
+export interface NotificationActionKeys {
+  confirm: readonly string[];
+  reschedule: readonly string[];
+  hidden: ReadonlySet<string>;
+}
+
+/**
+ * Request detail union type
+ */
+export type RequestDetail = OrderDto | ReturnDto | DiscardDto;
+
+/**
+ * Notification detail result from service
+ */
+export interface NotificationDetailResult {
+  type: NotificationDetailType;
+  detail: RequestDetail | null;
+  error: string | null;
 }
 

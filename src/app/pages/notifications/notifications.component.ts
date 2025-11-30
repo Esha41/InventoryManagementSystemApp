@@ -14,17 +14,30 @@ import {
   Info,
   ArrowRight
 } from 'lucide-angular';
-import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@models/notification.model';
 import { NotificationService } from '@services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
-import { OrderService, OrderDto } from '@services/order.service';
-import { ReturnService, ReturnDto } from '@services/return.service';
-import { DiscardService, DiscardDto } from '@services/discard.service';
-
-type NotificationFilter = 'all' | 'unread';
+import { OrderDto } from '@services/order.service';
+import { ReturnDto } from '@services/return.service';
+import { DiscardDto } from '@services/discard.service';
+import { 
+  NotificationFilter, 
+  NotificationDetailType, 
+  MetadataDisplayItem 
+} from '@models/notification.model';
+import { NOTIFICATION_ACTION_KEYS } from '@constants/notification.constants';
+import {
+  formatMetadataKey,
+  getDisplayMetadata,
+  canConfirmPickup,
+  canProposeNewTime,
+  getPriorityLabelTranslation,
+  getStatusLabelTranslation
+} from '@utils/notification.utils';
+import { NotificationDetailService } from '@services/notification-detail.service';
 
 @Component({
   selector: 'app-notifications',
@@ -67,41 +80,25 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   selectedNotification: Notification | null = null;
 
   private readonly destroy$ = new Subject<void>();
-  private pendingActionIds = new Set<number>();
-  private detailSubscription: Subscription | null = null;
+  private readonly pendingActionIds = new Set<number>();
 
   detailLoading = false;
   detailError: string | null = null;
-  detailType: 'order' | 'return' | 'discard' | null = null;
+  detailType: NotificationDetailType = null;
   orderDetail: OrderDto | null = null;
   returnDetail: ReturnDto | null = null;
   discardDetail: DiscardDto | null = null;
 
-  private readonly confirmActionKeys = ['confirmPickupUrl', 'confirmUrl', 'confirmEndpoint', 'confirm'];
-  private readonly rescheduleActionKeys = ['proposeNewTimeUrl', 'rescheduleUrl', 'scheduleUrl', 'proposeUrl', 'updateScheduleUrl'];
-  private readonly hiddenMetadataKeys = new Set([
-    'actions',
-    'actionUrls',
-    'confirm',
-    'confirmUrl',
-    'confirmEndpoint',
-    'confirmPickupUrl',
-    'confirmPickupEndpoint',
-    'confirmPickup',
-    'proposeNewTimeUrl',
-    'proposeUrl',
-    'rescheduleUrl',
-    'scheduleUrl',
-    'updateScheduleUrl'
-  ]);
+  // Constants from separate file
+  private readonly confirmActionKeys = NOTIFICATION_ACTION_KEYS.confirm;
+  private readonly rescheduleActionKeys = NOTIFICATION_ACTION_KEYS.reschedule;
+  private readonly hiddenMetadataKeys = NOTIFICATION_ACTION_KEYS.hidden;
 
   constructor(
     private readonly notificationService: NotificationService,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly orderService: OrderService,
-    private readonly returnService: ReturnService,
-    private readonly discardService: DiscardService
+    private readonly detailService: NotificationDetailService
   ) {
     this.proposeForm = this.fb.group({
       pickupDate: ['', Validators.required],
@@ -157,7 +154,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.detailSubscription?.unsubscribe();
   }
 
   setFilter(filter: NotificationFilter): void {
@@ -280,68 +276,23 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   canConfirmPickup(notification: Notification | null): boolean {
-    if (!notification || !notification.metadata) {
-      return false;
-    }
-
-    const metadata = notification.metadata as Record<string, any>;
-
-    if (metadata['confirmed'] === true) {
-      return false;
-    }
-
-    return this.hasMetadataAction(notification, this.confirmActionKeys);
+    return canConfirmPickup(notification, this.confirmActionKeys, this.hiddenMetadataKeys);
   }
 
   canProposeNewTime(notification: Notification | null): boolean {
-    if (!notification || !notification.metadata) {
-      return false;
-    }
-
-    const metadata = notification.metadata as Record<string, any>;
-
-    if (metadata['allowReschedule'] === false) {
-      return false;
-    }
-
-    return this.hasMetadataAction(notification, this.rescheduleActionKeys);
+    return canProposeNewTime(notification, this.rescheduleActionKeys, this.hiddenMetadataKeys);
   }
 
   isPending(notification: Notification | null): boolean {
     return !!notification && this.pendingActionIds.has(notification.id);
   }
 
-  getDisplayMetadata(notification: Notification | null): Array<{ key: string; value: string }> {
-    if (!notification?.metadata) {
-      return [];
-    }
-
-    const iterable = Object.entries(notification.metadata)
-      .filter(([key]) => !this.hiddenMetadataKeys.has(key));
-
-    return iterable
-      .map(([key, value]) => ({
-        key,
-        value: this.formatMetadataValue(value)
-      }))
-      .filter(item => item.value.length > 0);
+  getDisplayMetadata(notification: Notification | null): MetadataDisplayItem[] {
+    return getDisplayMetadata(notification, this.hiddenMetadataKeys, this.translateService);
   }
 
   formatMetadataKey(key: string): string {
-    const translationKey = `notifications.${key}`;
-    const translated = this.translateService.instant(translationKey);
-    if (translated && translated !== translationKey) {
-      return translated;
-    }
-
-    return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/_/g, ' ')
-      .replace(/\s+/g, ' ')
-      .split(' ')
-      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ')
-      .trim();
+    return formatMetadataKey(key, this.translateService);
   }
 
   getStatusLabel(notification: Notification | null): string {
@@ -376,159 +327,37 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.loadNotificationDetail(this.selectedNotification);
   }
 
-  private hasMetadataAction(notification: Notification, keys: string[]): boolean {
-    if (!notification.metadata) {
-      return false;
-    }
-
-    const metadata = notification.metadata as Record<string, any>;
-    const actions = this.extractRecord(metadata['actions']) ?? this.extractRecord(metadata['actionUrls']);
-
-    for (const key of keys) {
-      const normalizedKey = key.replace(/Url$/i, '');
-      const candidates = [
-        metadata[key],
-        metadata[`${key}Endpoint`],
-        metadata[`${key}Url`],
-        metadata[normalizedKey]
-      ];
-
-      if (actions) {
-        candidates.push(
-          actions[key],
-          actions[`${key}Url`],
-          actions[`${key}Endpoint`],
-          actions[normalizedKey]
-        );
-      }
-
-      if (candidates.some(value => typeof value === 'string' && value.trim().length > 0)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private extractRecord(value: unknown): Record<string, any> | null {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return null;
-    }
-    return value as Record<string, any>;
-  }
-
-  private formatMetadataValue(value: unknown): string {
-    if (value == null) {
-      return '';
-    }
-
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return value.toString();
-    }
-
-    try {
-      return JSON.stringify(value, null, 2);
-    } catch {
-      return '';
-    }
-  }
-
   private loadNotificationDetail(notification: Notification | null): void {
-    this.detailSubscription?.unsubscribe();
     this.resetDetailState();
 
     if (!notification) {
       return;
     }
 
-    const entityId = notification.entityId ?? this.extractEntityIdFromMetadata(notification);
-    const entityType = (notification.entityType ?? notification.type ?? '').toLowerCase();
-
-    if (!entityType || entityId == null) {
-      this.detailError = this.translateService.instant('notifications.details.unknown');
-      return;
-    }
-
-    const numericId = Number(entityId);
-    if (Number.isNaN(numericId)) {
-      this.detailError = this.translateService.instant('notifications.details.unknown');
-      return;
-    }
-
     this.detailLoading = true;
-    this.detailSubscription?.unsubscribe();
+    this.detailService.loadDetail(notification)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: result => {
+          this.detailLoading = false;
+          this.detailError = result.error;
+          this.detailType = result.type;
 
-    switch (entityType) {
-      case 'order':
-        this.detailType = 'order';
-        this.detailSubscription = this.orderService.getOrderById(numericId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: detail => {
-              this.orderDetail = detail;
-              this.detailLoading = false;
-            },
-            error: error => this.handleDetailError(error)
-          });
-        break;
-      case 'return':
-        this.detailType = 'return';
-        this.detailSubscription = this.returnService.getReturnById(numericId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: detail => {
-              this.returnDetail = detail;
-              this.detailLoading = false;
-            },
-            error: error => this.handleDetailError(error)
-          });
-        break;
-      case 'discard':
-        this.detailType = 'discard';
-        this.detailSubscription = this.discardService.getDiscardById(numericId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: detail => {
-              this.discardDetail = detail;
-              this.detailLoading = false;
-            },
-            error: error => this.handleDetailError(error)
-          });
-        break;
-      default:
-        this.detailLoading = false;
-        this.detailError = this.translateService.instant('notifications.details.unknown');
-    }
-  }
-
-  private extractEntityIdFromMetadata(notification: Notification): number | null {
-    const metadata = notification.metadata as Record<string, unknown> | null;
-    if (!metadata) {
-      return null;
-    }
-
-    const possibleKeys = ['entityId', 'orderId', 'returnId', 'discardId', 'requestId', 'id'];
-    for (const key of possibleKeys) {
-      const value = metadata[key];
-      if (typeof value === 'number') {
-        return value;
-      }
-      if (typeof value === 'string' && !Number.isNaN(Number(value))) {
-        return Number(value);
-      }
-    }
-
-    return null;
-  }
-
-  private handleDetailError(error: unknown): void {
-    this.detailLoading = false;
-    const message = (error as any)?.message ?? this.translateService.instant('notifications.details.unknown');
-    this.detailError = message;
+          if (result.detail) {
+            if (result.type === 'order') {
+              this.orderDetail = result.detail as OrderDto;
+            } else if (result.type === 'return') {
+              this.returnDetail = result.detail as ReturnDto;
+            } else if (result.type === 'discard') {
+              this.discardDetail = result.detail as DiscardDto;
+            }
+          }
+        },
+        error: () => {
+          this.detailLoading = false;
+          this.detailError = this.translateService.instant('notifications.details.unknown');
+        }
+      });
   }
 
   private resetDetailState(): void {
@@ -538,33 +367,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.orderDetail = null;
     this.returnDetail = null;
     this.discardDetail = null;
-    this.detailSubscription = null;
   }
 
   getPriorityLabelTranslation(priority?: number | null): string {
-    switch (priority) {
-      case 2:
-        return 'dashboard.priorityLabels.medium';
-      case 3:
-        return 'dashboard.priorityLabels.low';
-      default:
-        return 'dashboard.priorityLabels.high';
-    }
+    return getPriorityLabelTranslation(priority);
   }
 
   getStatusLabelTranslation(status?: number | null): string {
-    switch (status) {
-      case 2:
-        return 'dashboard.statusLabels.underProcess';
-      case 3:
-        return 'dashboard.statusLabels.approved';
-      case 4:
-        return 'dashboard.statusLabels.rejected';
-      case 5:
-        return 'dashboard.statusLabels.cancelled';
-      default:
-        return 'dashboard.statusLabels.new';
-    }
+    return getStatusLabelTranslation(status);
   }
 
   hasNotificationActions(notification: Notification | null): boolean {
@@ -579,13 +389,9 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   private togglePending(id: number, isPending: boolean): void {
     if (isPending) {
-      const next = new Set(this.pendingActionIds);
-      next.add(id);
-      this.pendingActionIds = next;
-    } else if (this.pendingActionIds.has(id)) {
-      const next = new Set(this.pendingActionIds);
-      next.delete(id);
-      this.pendingActionIds = next;
+      this.pendingActionIds.add(id);
+    } else {
+      this.pendingActionIds.delete(id);
     }
   }
 }

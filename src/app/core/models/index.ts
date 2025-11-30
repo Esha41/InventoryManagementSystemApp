@@ -16,6 +16,8 @@ export * from './ammunition.model';
 export * from './workflow.model';
 export * from './inventory.model';
 export * from './notification.model';
+export type { NotificationFilter, NotificationDetailType, RequestDetail } from './notification.model';
+export type { NotificationDetailState, MetadataDisplayItem, NotificationActionKeys } from './notification.model';
 export * from './supply-order.model';
 export * from './supply-request.model';
 export * from './workflow-approval.model';
