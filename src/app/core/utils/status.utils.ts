@@ -66,17 +66,18 @@ const REQUEST_STATUS_APPROVED = 3;
 const REQUEST_STATUS_REJECTED = 4;
 const REQUEST_STATUS_CANCELLED = 5;
 
-export type CardStatus = 'new' | 'on-progress' | 'completed';
-export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED;
+export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined';
+export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED | typeof REQUEST_STATUS_REJECTED;
 
 /**
  * Check if a request status should be displayed on the dashboard
- * Only shows New, UnderProcess, and Approved statuses
+ * Shows New, UnderProcess, Approved, and Rejected statuses
  */
 export function isDisplayableRequestStatus(status: number): status is DisplayableStatus {
   return status === REQUEST_STATUS_NEW || 
          status === REQUEST_STATUS_UNDER_PROCESS || 
-         status === REQUEST_STATUS_APPROVED;
+         status === REQUEST_STATUS_APPROVED ||
+         status === REQUEST_STATUS_REJECTED;
 }
 
 /**
@@ -88,6 +89,8 @@ export function mapRequestStatusToCardStatus(status: number): CardStatus {
       return 'on-progress';
     case REQUEST_STATUS_APPROVED:
       return 'completed';
+    case REQUEST_STATUS_REJECTED:
+      return 'declined';
     case REQUEST_STATUS_NEW:
     default:
       return 'new';

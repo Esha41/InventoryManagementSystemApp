@@ -1,9 +1,9 @@
 <div class="space-y-8">
   <!-- Header -->
   <div class="text-center space-y-2">
-    <h2 class="text-2xl font-bold text-[var(--color-text)] tracking-tight">Sign In</h2>
+    <h2 class="text-2xl font-bold text-[var(--color-text)] tracking-tight">{{ 'auth.login.title' | translate }}</h2>
     <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
-      Enter your credentials to access your account
+      {{ 'auth.login.subtitle' | translate }}
     </p>
   </div>
 
@@ -21,7 +21,7 @@
             : 'bg-white text-[var(--color-brand)] shadow-sm')
         "
       >
-        Password Login
+        {{ 'auth.login.passwordLogin' | translate }}
       </button>
       <button
         type="button"
@@ -33,11 +33,11 @@
             : 'bg-white text-[var(--color-brand)] shadow-sm')
         "
       >
-        LDAP Login
+        {{ 'auth.login.ldapLogin' | translate }}
       </button>
     </div>
     <div *ngIf="isLdapMode" class="text-center text-xs font-medium text-[var(--color-text-muted)]">
-      Password not required for LDAP sign-in
+      {{ 'auth.login.ldapPasswordNotRequired' | translate }}
     </div>
 
     <!-- Username Field -->
@@ -46,7 +46,7 @@
         for="username" 
         class="block text-sm font-semibold text-[var(--color-text)]"
       >
-        Username
+        {{ 'auth.login.username' | translate }}
       </label>
       <div class="relative group">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
@@ -67,7 +67,7 @@
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200
                  disabled:bg-[var(--color-background-muted)] disabled:cursor-not-allowed"
-          placeholder="Enter your username"
+          [placeholder]="'auth.login.usernamePlaceholder' | translate"
           [class.border-red-500]="username?.invalid && username?.touched"
         />
       </div>
@@ -86,7 +86,7 @@
         for="password" 
         class="block text-sm font-semibold text-[var(--color-text)]"
       >
-        Password
+        {{ 'auth.login.password' | translate }}
       </label>
       <div class="relative group">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
@@ -107,7 +107,7 @@
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200
                  disabled:bg-[var(--color-background-muted)] disabled:cursor-not-allowed"
-          placeholder="Enter your password"
+          [placeholder]="'auth.login.passwordPlaceholder' | translate"
           [class.border-red-500]="password?.invalid && password?.touched"
         />
         <button
@@ -115,7 +115,7 @@
           (click)="togglePasswordVisibility()"
           tabindex="-1"
           class="absolute inset-y-0 right-0 pr-4 flex items-center z-10 group/toggle"
-          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          [attr.aria-label]="showPassword ? ('common.hidePassword' | translate) : ('common.showPassword' | translate)"
         >
           <lucide-angular 
             [img]="showPassword ? EyeOff : Eye" 
@@ -161,7 +161,7 @@
                shadow-sm hover:shadow-md"
       >
         <span *ngIf="!isLoading" class="inline-flex items-center justify-center gap-2">
-          <span>Sign In</span>
+          <span>{{ 'auth.login.signIn' | translate }}</span>
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
             class="h-5 w-5" 
@@ -192,7 +192,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span>Signing In...</span>
+          <span>{{ 'auth.login.signingIn' | translate }}</span>
         </span>
       </button>
     </div>

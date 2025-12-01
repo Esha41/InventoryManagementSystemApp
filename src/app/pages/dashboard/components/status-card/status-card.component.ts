@@ -20,7 +20,7 @@ export interface ReturnItem {
   notes?: string;
 }
 
-export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new';
+export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined';
 
 @Component({
   selector: 'app-status-card',
@@ -92,6 +92,8 @@ export class StatusCardComponent {
         return 'status-card__dot--progress';
       case 'completed':
         return 'status-card__dot--done';
+      case 'declined':
+        return 'status-card__dot--declined';
       default:
         return 'status-card__dot--muted';
     }
@@ -106,6 +108,8 @@ export class StatusCardComponent {
         return 'status-card__divider--progress';
       case 'completed':
         return 'status-card__divider--done';
+      case 'declined':
+        return 'status-card__divider--declined';
       default:
         return 'status-card__divider--muted';
     }
@@ -120,6 +124,8 @@ export class StatusCardComponent {
         return 'dashboard.onProgress';
       case 'completed':
         return 'dashboard.completed';
+      case 'declined':
+        return 'dashboard.statusLabels.rejected';
       default:
         return 'dashboard.statusLabels.new';
     }

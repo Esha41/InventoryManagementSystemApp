@@ -7,12 +7,12 @@
           <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
           <p class="text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
         </div>
-        <div *ngIf="allCards.length > 0" class="hidden md:flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)]">
+        <div *ngIf="allCards.length > 0" class="hidden md:flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] min-w-0">
           <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'dashboard.statusLabels.new' | translate }}:</span>
           <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredCardsCount }}</span>
           <div class="h-6 w-px bg-[var(--color-border)]"></div>
           <app-dropdown
-            class="w-40"
+            class="w-40 flex-shrink-0"
             [(ngModel)]="selectedStatusFilter"
             (ngModelChange)="onStatusFilterChange()"
             [options]="statusFilterOptions"

@@ -26,7 +26,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 
 export interface DashboardCard {
   title: string;
-  status: 'new-issue' | 'on-progress' | 'completed' | 'new';
+  status: 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined';
   orders: OrderItem[];
   permissions: string[]; 
   roles?: string[]; 
@@ -66,7 +66,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { label: 'dashboard.filters.all', value: 'all' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-    { label: 'dashboard.statusLabels.approved', value: 'completed' }
+    { label: 'dashboard.statusLabels.approved', value: 'completed' },
+    { label: 'dashboard.statusLabels.rejected', value: 'declined' }
   ];
 
   // Modal state

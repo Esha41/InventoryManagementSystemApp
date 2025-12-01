@@ -51,7 +51,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventoryDashboard',
       icon: LayoutDashboard,
       route: '/inventory-dashboard',
-      permissions: ['inventory.page', 'inventory.view']
+      permissions: ['InventoryDashboard']
     },
     {
       label: 'nav.supplyManagement',
@@ -154,7 +154,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventoryForecast',
       icon: TrendingUp,
       route: '/inventory-forecast',
-      permissions: ['inventory.page', 'inventory.view']
+      permissions: ['inventorypage.page', 'inventorypage.view']
     },
     {
       label: 'nav.depotManagement',

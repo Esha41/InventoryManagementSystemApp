@@ -6,7 +6,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -24,8 +23,12 @@ import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
-import { SUPPLY_ORDER_CONSTANTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
+import { BaseRequestDto } from '@models/workflow-approval.model';
+import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
+import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 
 @Component({
   selector: 'app-supply-order',
@@ -45,7 +48,6 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
   styleUrls: ['./supply-order.component.css']
 })
 export class SupplyOrderComponent implements OnInit, OnDestroy {
-  // ==================== LIFECYCLE & ICONS ====================
   private destroy$ = new Subject<void>();
   
   readonly ArrowLeft = ArrowLeft;
@@ -60,22 +62,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
 
-  // ==================== STATE ====================
-  // Core data
   orderId: number = 0;
   supplyId: number = 0;
   orderData: OrderDto | null = null;
   supplyData: SupplyDto | null = null;
   
-  // Loading states
   loading: boolean = true;
   updatingItem: boolean = false;
   deletingItem: boolean = false;
   
-  // Forms
   addLotForm!: FormGroup;
   
-  // Add lot modal state (grouped for better organization)
   isAddLotModalOpen: boolean = false;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
@@ -86,13 +83,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   loadingManualLot: boolean = false;
   loadingLotDetails: boolean = false;
   
-  // Confirmation modal state (grouped for better organization)
   isConfirmModalOpen: boolean = false;
   confirmModalTitle: string = '';
   confirmModalMessage: string = '';
   confirmModalAction: (() => void) | null = null;
   
-  // Item management modals
   isAddItemModalOpen: boolean = false;
   isEditItemModalOpen: boolean = false;
   isRemoveItemModalOpen: boolean = false;
@@ -104,12 +99,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   loadingItems: boolean = false;
   savingItem: boolean = false;
   
-  // Data collections
   orderItems: OrderRequestItemDto[] = [];
   approvalWorkflow: ApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
   
-  // Collapsible sections state
   isApprovalWorkflowExpanded: boolean = true;
 
   constructor(
@@ -120,17 +113,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private supplyService: SupplyService,
     private inventoryService: InventoryService,
     private ammunitionService: AmmunitionService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private apiService: ApiService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
-    // Get the ID from route params
     const idParam = this.route.snapshot.params['supplyId'];
     const receivedId = parseInt(idParam, 10);
-    
-    // Check if this is an orderId (coming from workflow-approval with byOrder=true)
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
     
     if (isNaN(receivedId)) {
@@ -142,11 +133,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.initializeAddItemForm();
     this.initializeEditItemForm({} as OrderRequestItemDto);
     
-    // If byOrder query param is true, fetch supply by orderId
     if (byOrder) {
       this.loadSupplyByOrderId(receivedId);
     } else {
-      // Normal case: we have a supplyId
       this.supplyId = receivedId;
       this.loadSupplyData();
     }
@@ -157,12 +146,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ==================== FORM INITIALIZATION ====================
-
   private initializeForm(): void {
     this.addLotForm = this.fb.group({
-      itemId: [null, Validators.required], // Required - set via dropdown
-      lot: [null, Validators.required], // Required - set via lot selection
+      itemId: [null, Validators.required],
+      lot: [null, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       notes: ['']
     });
@@ -189,16 +176,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== DATA LOADING ====================
-
-  /**
-   * Load supply by orderId (when coming from workflow-approval)
-   */
   private loadSupplyByOrderId(orderId: number): void {
     this.loading = true;
     this.orderId = orderId;
     
-    // Fetch supply by orderId
     this.supplyService.getByOrderId(orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -206,16 +187,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.supplyId = supply.id;
           this.supplyData = supply;
           this.orderData = supply.order;
-          
-          // Extract order items for dropdown
           this.orderItems = supply.order?.requestItems || [];
-          
-          // Map supply details to display items
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
           
-          // Set static approval workflow
-          this.approvalWorkflow = this.getStaticApprovalWorkflow();
+         
+          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
+            this.loadFullOrderDetails(orderId);
+          }
           
+          this.loadApprovalWorkflow();
           this.loading = false;
         },
         error: (error) => {
@@ -227,13 +207,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Load supply order data including order details and supply information
-   */
   private loadSupplyData(): void {
     this.loading = true;
     
-    // Get supply by ID
     this.supplyService.getById(this.supplyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -241,16 +217,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.supplyData = supply;
           this.orderId = supply.orderId;
           this.orderData = supply.order;
-          
-          // Extract order items for dropdown
           this.orderItems = supply.order?.requestItems || [];
-          
-          // Map supply details to display items
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
           
-          // Set static approval workflow
-          this.approvalWorkflow = this.getStaticApprovalWorkflow();
+         
+          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
+            this.loadFullOrderDetails(this.orderId);
+          }
           
+          this.loadApprovalWorkflow();
           this.loading = false;
         },
         error: (error) => {
@@ -262,83 +237,97 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
+  
+  private loadFullOrderDetails(orderId: number): void {
+    this.orderService.getOrderById(orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullOrder: OrderDto) => {
+          
+          if (this.orderData) {
+          
+            if (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr) {
+              this.orderData.departmentNameEn = fullOrder.departmentNameEn;
+              this.orderData.departmentNameAr = fullOrder.departmentNameAr;
+            }
+           
+            if (!this.orderData.requesterName) {
+              this.orderData.requesterName = fullOrder.requesterName;
+            }
+          }
+        },
+        error: (error) => {
+        
+          console.warn('Failed to load full order details for department/requester info:', error);
+        }
+      });
+  }
 
-  /**
-   * Gets static approval workflow steps
-   * NOTE: This is a placeholder implementation. 
-   * TODO: Replace with actual API call to fetch workflow steps from backend
-   */
-  private getStaticApprovalWorkflow(): ApprovalStep[] {
-    // TODO: Replace with API call: this.orderService.getApprovalWorkflow(this.orderId)
-    return [
-      {
-        id: '1',
-        approverName: 'Maj. Khalid Hassan',
-        approverId: 'MIL-32145',
-        militaryRank: 'Major',
-        status: 'Approved',
-        approvedDate: '11 Sept 2024',
-        comments: 'Approved for operational needs'
+  private loadApprovalWorkflow(): void {
+    if (!this.orderId) {
+      this.approvalWorkflow = [];
+      return;
+    }
+
+    this.apiService.getWithAuth<BaseRequestDto[]>(
+      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response: any) => {
+        const data: BaseRequestDto[] = Array.isArray(response) 
+          ? response 
+          : (response?.data || []);
+        
+        const baseRequest = data.find(r => r.id === this.orderId);
+        
+        if (baseRequest && baseRequest.approvalHistory) {
+          const requestStatus = mapRequestStatus(baseRequest.status);
+          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
+          this.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
+        } else {
+          this.approvalWorkflow = [];
+        }
       },
-      {
-        id: '2',
-        approverName: 'Lt. Col. Mohammed Al-Farsi',
-        approverId: 'MIL-21087',
-        militaryRank: 'Lieutenant Colonel',
-        status: 'Approved',
-        approvedDate: '11 Sept 2024',
-        comments: 'Verified inventory availability'
-      },
-      {
-        id: '3',
-        approverName: 'Col. Saeed Abdullah',
-        approverId: 'MIL-10234',
-        militaryRank: 'Colonel',
-        status: 'Pending',
-        comments: ''
+      error: () => {
+        this.approvalWorkflow = [];
       }
-    ];
+    });
   }
-
-  // ==================== ACTIONS ====================
-
-  /**
-   * Navigate back to the supply order list
-   */
   goBack(): void {
-    this.router.navigate(['/supply-order']);
+    const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
+    
+    if (byOrder && this.orderId) {
+      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+    } else {
+      this.router.navigate(['/supply-order']);
+    }
   }
 
-  // ==================== ITEM EDITING ====================
-
-  /**
-   * Enable editing for an item
-   */
   onEditItem(item: SupplyItemDisplay): void {
     item.isEditing = true;
+    item.originalQuantity = item.quantity; // Store original quantity for validation
+    item.quantityError = undefined; // Clear any previous errors
   }
 
-  /**
-   * Cancel editing for an item
-   */
   onCancelEdit(item: SupplyItemDisplay): void {
     item.isEditing = false;
-    // Reload to reset changes
+    item.originalQuantity = undefined;
+    item.quantityError = undefined;
     this.loadSupplyData();
   }
 
-  /**
-   * Update supply detail
-   * Endpoint: PUT /api/Supply/{supplyId}/details/{detailId}
-   */
   onUpdateItem(item: SupplyItemDisplay): void {
-    // Validation
     if (!this.supplyData) {
       this.toastService.error('Supply data not loaded');
       return;
     }
     
+    // Clear previous errors
+    item.quantityError = undefined;
+    
     if (!item.quantity || item.quantity <= 0) {
+      item.quantityError = 'Quantity must be greater than 0';
       this.toastService.error('Quantity must be greater than 0');
       return;
     }
@@ -353,6 +342,19 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validate that the new quantity doesn't exceed the requested quantity
+    // Calculate what the new total supplied quantity would be
+    const originalQuantity = item.originalQuantity || item.quantity;
+    const currentTotalSupplied = item.totalSuppliedQuantity;
+    const newTotalSupplied = currentTotalSupplied - originalQuantity + item.quantity;
+    
+    if (newTotalSupplied > item.requestedQuantity) {
+      const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
+      item.quantityError = `Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`;
+      this.toastService.error(`Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`);
+      return;
+    }
+
     this.updatingItem = true;
     this.supplyService.updateSupplyDetail(this.supplyId, item.supplyDetailId, {
       itemId: item.itemId,
@@ -364,15 +366,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         next: () => {
           this.toastService.success('Item updated successfully');
           item.isEditing = false;
+          item.originalQuantity = undefined;
+          item.quantityError = undefined;
           this.updatingItem = false;
-          // Reload to get updated calculations
           this.loadSupplyData();
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
           this.toastService.error(errorMessage);
           this.updatingItem = false;
-          // Reset to original value on error
           this.loadSupplyData();
         }
       });
@@ -405,10 +407,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.manualLotNumber = '';
   }
 
-  /**
-   * Handle item selection from dropdown
-   * Extracts item ID from dropdown selection (can be number, object, or array)
-   */
   onItemSelected(selectedValue: OrderRequestItemDto | OrderRequestItemDto[] | number | null): void {
     const itemId = this.extractItemId(selectedValue);
 
@@ -426,13 +424,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       this.addLotForm.patchValue({ itemId: null });
     }
     
-    // Reset lot selection when item changes
     this.resetLotSelection();
   }
 
-  /**
-   * Extracts item ID from dropdown selection value
-   */
   private extractItemId(selectedValue: OrderRequestItemDto | OrderRequestItemDto[] | number | null): number | null {
     if (selectedValue === null || selectedValue === undefined) {
       return null;
@@ -446,7 +440,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       return selectedValue.length > 0 ? (selectedValue[0].id || selectedValue[0].itemId) : null;
     }
     
-    // Handle DropdownOption wrapper or direct OrderRequestItemDto
     const wrappedValue = selectedValue as { value?: OrderRequestItemDto } | OrderRequestItemDto;
     const item = 'value' in wrappedValue && wrappedValue.value ? wrappedValue.value : (wrappedValue as OrderRequestItemDto);
     return item.id || item.itemId || null;
@@ -463,12 +456,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.manualLotNumber = '';
   }
 
-  /**
-   * Add new supply detail
-   * Endpoint: POST /api/Supply/{supplyId}/details
-   */
   onAddLot(): void {
-    // Validate form and selections
     if (!this.selectedItemForLot) {
       this.addLotForm.get('itemId')?.markAsTouched();
       this.toastService.error('Please select an item');
@@ -501,7 +489,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.toastService.success('Lot added successfully to supply');
           this.loadingLotDetails = false;
           this.closeAddLotModal();
-          // Reload to show new item
           this.loadSupplyData();
         },
         error: (error) => {
@@ -512,22 +499,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ==================== LOT SELECTION METHODS ====================
-
-  /**
-   * Show ALL lots for selected item
-   */
-  onShowAllLots(): void {
-    if (!this.selectedItemForLot) {
-      this.toastService.warning('Please select an item first');
-      return;
-    }
-    this.loadAllLotsForItem(this.selectedItemForLot);
-  }
-
-  /**
-   * Show AVAILABLE lots for selected item (FEFO logic)
-   */
   onShowAvailableLots(): void {
     if (!this.selectedItemForLot) {
       this.toastService.warning('Please select an item first');
@@ -536,9 +507,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.loadAvailableLotsForQuantity(this.selectedItemForLot);
   }
 
-  /**
-   * Toggle manual lot entry section
-   */
   onAddLotManually(): void {
     this.showManualLotEntry = !this.showManualLotEntry;
     if (this.showManualLotEntry) {
@@ -546,9 +514,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Get details for manually entered lot number
-   */
   onGetManualLotDetails(): void {
     if (!this.selectedItemForLot || !this.manualLotNumber.trim()) {
       this.toastService.warning('Please enter a lot number');
@@ -566,14 +531,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (lot: LotDetailDto) => {
-          // Check if lot is for the correct item
           if (lot.itemId !== this.selectedItemForLot!.itemId) {
             this.toastService.error(`Lot ${lotNum} belongs to a different item (${lot.itemName || 'Unknown'})`);
             this.loadingManualLot = false;
             return;
           }
 
-          // Check if lot already exists in the list
           const existingLot = this.availableLots.find(l => l.lotNumber === lot.lot);
           if (existingLot) {
             this.toastService.warning(`Lot ${lotNum} is already in the list`);
@@ -581,7 +544,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             return;
           }
 
-          // Add the lot to the list
           const newLot: LotItem = {
             inventoryDetailId: lot.inventoryDetailId,
             lotNumber: lot.lot,
@@ -611,35 +573,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Load ALL lots for an item by itemId
-   */
-  private loadAllLotsForItem(item: OrderRequestItemDto): void {
-    this.loadingAllLots = true;
-    this.inventoryService.getLotsByItemId(item.itemId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (lots: LotDetailDto[]) => {
-          this.availableLots = mapLotDetailsToLotItems(lots);
-          this.loadingAllLots = false;
-          
-          if (this.availableLots.length > 0) {
-            this.toastService.success(`Loaded ${this.availableLots.length} total lot(s) for item`);
-          } else {
-            this.toastService.warning('No lots found for this item');
-          }
-        },
-        error: (error) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lots');
-          this.toastService.error(errorMessage);
-          this.loadingAllLots = false;
-        }
-      });
-  }
-
-  /**
-   * Load AVAILABLE lots for an item and quantity (FEFO logic)
-   */
   private loadAvailableLotsForQuantity(item: OrderRequestItemDto): void {
     this.loadingAllLots = true;
     this.inventoryService.getAvailableLotsForQuantity(item.itemId, item.quantity)
@@ -662,29 +595,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-
-  /**
-   * Select a lot for adding
-   */
   onSelectLot(lotNumber: number): void {
     this.selectedLotNumber = lotNumber;
     this.addLotForm.patchValue({ lot: lotNumber });
   }
 
-  /**
-   * Get display name for selected item
-   */
   getSelectedItemDisplayName(): string {
     if (!this.selectedItemForLot) return '';
     const itemId = this.selectedItemForLot.itemId || this.selectedItemForLot.id;
     return this.selectedItemForLot.itemName || this.getItemDisplayName(itemId);
   }
 
-  /**
-   * Show confirmation modal before deleting item
-   * @param item - The supply item to delete
-   */
   onDeleteItem(item: SupplyItemDisplay): void {
     this.showConfirmationModal({
       title: 'Delete Item',
@@ -693,9 +614,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Actually delete the item after confirmation
-   */
   private confirmDeleteItem(item: SupplyItemDisplay): void {
     this.deletingItem = true;
     this.supplyService.deleteSupplyDetail(this.supplyId, item.supplyDetailId)
@@ -704,7 +622,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         next: () => {
           this.toastService.success(`Item "${item.itemName}" removed from supply`);
           this.deletingItem = false;
-          // Reload to refresh list
           this.loadSupplyData();
         },
         error: (error) => {
@@ -714,13 +631,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-
-
-  /**
-   * Show confirmation modal with specified configuration
-   * @param config - Configuration for the confirmation modal
-   */
   private showConfirmationModal(config: { title: string; message: string; action: () => void }): void {
     this.confirmModalTitle = config.title;
     this.confirmModalMessage = config.message;
@@ -728,9 +638,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.isConfirmModalOpen = true;
   }
 
-  /**
-   * Handle confirmation modal confirm action
-   */
   onConfirmAction(): void {
     this.isConfirmModalOpen = false;
     if (this.confirmModalAction) {
@@ -739,20 +646,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Handle confirmation modal cancel action
-   */
   onCancelConfirmation(): void {
     this.isConfirmModalOpen = false;
     this.confirmModalAction = null;
   }
 
-  // ==================== UI HELPER METHODS ====================
-
-  /**
-   * Get icon component for approval status
-   * Note: Kept in component as it depends on lucide-angular icons
-   */
   getApprovalStatusIcon(status: string): any {
     switch (status) {
       case 'Approved': return this.CheckCircle;
@@ -762,7 +660,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Use utility functions (exposed as component methods for template access)
   getApprovalStatusClass = getApprovalStatusClass;
   formatDate = formatDateUtil;
   formatNumber = formatNumberUtil;
@@ -774,17 +671,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return this.orderData.departmentNameEn || this.orderData.departmentNameAr || 'N/A';
   }
 
-  /**
-   * Get display label for item dropdown option
-   * Handles both DropdownOption wrapper and direct OrderRequestItemDto
-   */
   itemOptionLabel = (option: OrderRequestItemDto | { value?: OrderRequestItemDto } | null): string => {
     if (!option) return '';
     
-    // Handle DropdownOption wrapper or direct OrderRequestItemDto
     const item: OrderRequestItemDto | undefined = (option as { value?: OrderRequestItemDto }).value || (option as OrderRequestItemDto);
     
-    // Ensure we have a valid item with itemId
     if (!item || (item.itemId === undefined && item.id === undefined)) {
       return '';
     }
@@ -795,28 +686,24 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return itemName || this.getItemDisplayName(itemId);
   };
 
-  /**
-   * Get display name for item (fallback when name is not available)
-   */
   private getItemDisplayName(itemId: number): string {
     return `Item #${itemId}`;
   }
 
-  /**
-   * Calculate total quantity across all supply items
-   * @returns Sum of all item quantities
-   */
   getTotalQuantity(): number {
     return this.supplyItems.reduce((sum, item) => sum + item.quantity, 0);
   }
 
-
-
-  // ==================== ITEM MANAGEMENT (for Order Items) ====================
-
   /**
-   * Get product ID for an item
+   * Calculate the maximum allowed quantity for a supply item
+   * This considers the requested quantity and current total supplied quantity
    */
+  getMaxAllowedQuantity(item: SupplyItemDisplay): number {
+    const originalQuantity = item.originalQuantity || item.quantity;
+    const currentTotalSupplied = item.totalSuppliedQuantity;
+    const maxAllowed = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
+    return Math.max(0, maxAllowed);
+  }
   getItemProductId(item: OrderRequestItemDto): string {
     if (item.itemNo) {
       return item.itemNo;
@@ -875,38 +762,27 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.selectedItemForRemove = null;
   }
 
-  /**
-   * Load available items for dropdown (excluding items already in order)
-   */
   private loadAvailableItems(): void {
     this.loadingItems = true;
     this.ammunitionService.getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
-          // Filter out items that are already in the order
           const existingItemIds = this.orderItems.map(item => item.itemId);
           this.availableItems = (items || []).filter(item => !existingItemIds.includes(item.id));
           this.loadingItems = false;
         },
-        error: (error) => {
-          console.error('Failed to load items:', error);
+        error: () => {
           this.toastService.error('Failed to load items');
           this.loadingItems = false;
         }
       });
   }
 
-  /**
-   * Get item option label for dropdown
-   */
   itemManagementOptionLabel = (item: any): string => {
     return item?.name || item?.itemNo || `Item #${item?.id}`;
   };
 
-  /**
-   * Save new item
-   */
   onSaveAddOrderItem(): void {
     if (this.addItemForm.invalid) {
       this.addItemForm.markAllAsTouched();
@@ -914,8 +790,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.addItemForm.value;
-    
-    // Check if item already exists in order
     const existingItem = this.orderItems.find(item => item.itemId === formValue.itemId);
     if (existingItem) {
       this.toastService.error(`Item already exists in this order. Please use Edit to update the quantity instead.`);
@@ -936,14 +810,13 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           if (response.succeeded) {
             this.toastService.success('Item added successfully');
             this.closeAddOrderItemModal();
-            this.loadSupplyData(); // Reload to refresh data
+            this.loadSupplyData();
           } else {
             this.toastService.error(response.message || 'Failed to add item');
           }
           this.savingItem = false;
         },
         error: (error: any) => {
-          console.error('Failed to add item:', error);
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add item');
           this.toastService.error(errorMessage);
           this.savingItem = false;
@@ -951,9 +824,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Save edited item quantity
-   */
   onSaveEditOrderItem(): void {
     if (!this.selectedItemForEdit || this.editItemForm.invalid) {
       this.editItemForm.markAllAsTouched();
@@ -971,14 +841,13 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           if (response.succeeded) {
             this.toastService.success('Item quantity updated successfully');
             this.closeEditOrderItemModal();
-            this.loadSupplyData(); // Reload to refresh data
+            this.loadSupplyData();
           } else {
             this.toastService.error(response.message || 'Failed to update item quantity');
           }
           this.savingItem = false;
         },
         error: (error: any) => {
-          console.error('Failed to update item quantity:', error);
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item quantity');
           this.toastService.error(errorMessage);
           this.savingItem = false;
@@ -986,9 +855,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Confirm remove item
-   */
   onConfirmRemoveOrderItem(): void {
     if (!this.selectedItemForRemove) return;
 
@@ -996,17 +862,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
-          console.log('Delete response:', response);
           if (response.succeeded) {
             this.toastService.success('Item removed successfully');
             this.closeRemoveOrderItemModal();
-            this.loadSupplyData(); // Reload to refresh data
+            this.loadSupplyData();
           } else {
             this.toastService.error(response.message || 'Failed to remove item');
           }
         },
         error: (error: any) => {
-          console.error('Failed to remove item:', error);
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove item');
           this.toastService.error(errorMessage);
         }

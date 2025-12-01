@@ -14,12 +14,12 @@
             <lucide-angular [img]="RefreshCw" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
             <span class="text-sm font-medium text-[var(--color-text)]">{{ 'common.refresh' | translate }}</span>
           </button>
-          <div *ngIf="allCards.length > 0" class="hidden md:flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)]">
+          <div *ngIf="allCards.length > 0" class="hidden md:flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] min-w-0">
             <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'dashboard.statusLabels.new' | translate }}:</span>
             <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredCardsCount }}</span>
             <div class="h-6 w-px bg-[var(--color-border)]"></div>
             <app-dropdown
-              class="w-40"
+              class="w-40 flex-shrink-0"
               [(ngModel)]="selectedStatusFilter"
               (ngModelChange)="onStatusFilterChange()"
               [options]="statusFilterOptions"

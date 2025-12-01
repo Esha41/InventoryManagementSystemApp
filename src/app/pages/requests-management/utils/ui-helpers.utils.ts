@@ -4,6 +4,9 @@
  */
 
 import { formatDate } from '@utils/format.utils';
+import { CheckCircle, AlertTriangle, Clock, Package } from 'lucide-angular';
+import { OrderDto } from '@services/order.service';
+import { OrderItem } from '@models/supply-request.model';
 
 /**
  * Get lot condition CSS classes
@@ -23,5 +26,57 @@ export function getLotConditionClass(condition: string): string {
  */
 export function formatDateForDisplay(date: Date | string | undefined): string {
   return formatDate(date as string);
+}
+
+/**
+ * Get approval status icon
+ */
+export function getApprovalStatusIcon(status: string): any {
+  switch (status) {
+    case 'Approved': return CheckCircle;
+    case 'Rejected': return AlertTriangle;
+    case 'Pending': return Clock;
+    default: return Clock;
+  }
+}
+
+/**
+ * Get item type icon
+ */
+export function getItemTypeIcon(type: string): any {
+  return Package;
+}
+
+/**
+ * Get department name from order data
+ */
+export function getDepartmentName(orderData: OrderDto | null): string {
+  if (!orderData) return 'N/A';
+  return orderData.departmentNameEn || orderData.departmentNameAr || 'N/A';
+}
+
+/**
+ * Get item product ID from order data
+ */
+export function getItemProductId(item: OrderItem, orderData: OrderDto | null): string {
+  if (orderData?.requestItems) {
+    const orderItem = orderData.requestItems.find(ri => ri.id === item.requestItemId);
+    if (orderItem?.itemNo) {
+      return orderItem.itemNo;
+    }
+  }
+  return '-';
+}
+
+/**
+ * Get status CSS classes for request status badges
+ */
+export function getRequestStatusClass(status: string): string {
+  switch (status) {
+    case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
+    case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
+    case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
+    default: return 'bg-gray-100 text-gray-800';
+  }
 }
 

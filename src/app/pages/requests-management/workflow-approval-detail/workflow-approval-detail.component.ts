@@ -16,6 +16,7 @@ import { mapToRequestDetail, RequestTypeEnum, RequestStatusEnum } from '@utils/r
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -85,8 +86,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private toastService: ToastService,
     private supplyService: SupplyService,
-    private lookupService: LookupService
+    private lookupService: LookupService,
+    public translationService: TranslationService
   ) {}
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
 
   ngOnInit(): void {
     // Use route params observable instead of snapshot for better reactivity
@@ -95,7 +101,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const id = parseInt(params['id'], 10);
         if (isNaN(id)) {
-          this.error = 'Invalid request ID';
+          // Error will be translated in template
+          this.error = 'INVALID_REQUEST_ID';
           this.loading = false;
           return;
         }

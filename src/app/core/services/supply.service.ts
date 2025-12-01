@@ -365,6 +365,31 @@ export class SupplyService {
   }
 
   /**
+   * Replace all supply details with new ones in a single atomic operation
+   * This avoids the "cannot delete last detail" constraint
+   * @param supplyId Supply ID
+   * @param details List of new supply details
+   */
+  replaceSupplyDetails(supplyId: number, details: CreateSupplyDetailDto[]): Observable<boolean> {
+    this.config.log(`Replacing all details in supply ${supplyId}`, { detailCount: details.length });
+    return this.http.put<APIOperationResponse<boolean>>(
+      `${this.baseUrl}/${supplyId}/details`,
+      details
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to replace supply details');
+        }
+        return response.data ?? false;
+      }),
+      catchError(error => {
+        this.config.logError(`Failed to replace details in supply ${supplyId}`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Submit a supply (requires receiver information)
    * @param id Supply ID
    * @param dto Submission data

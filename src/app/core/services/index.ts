@@ -26,3 +26,4 @@ export * from './cartridge-data.service';
 export * from './order-submission.service';
 export * from './email.service';
 export * from './email-configuration.service';
+export * from './notification-detail.service';
