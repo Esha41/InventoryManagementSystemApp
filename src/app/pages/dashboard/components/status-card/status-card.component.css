@@ -7,6 +7,13 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  height: 100%;
+}
+
+/* Ensure the host element fills its grid cell */
+:host {
+  display: block;
+  height: 100%;
 }
 
 .status-card-empty {
@@ -28,6 +35,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0; /* Important for flex children */
 }
 
 .status-card__header {
@@ -119,6 +129,9 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0; /* Important for flex children */
+  overflow: hidden;
 }
 
 .status-card__info-grid {
@@ -165,6 +178,10 @@
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  flex: 1;
+  min-height: 150px; /* Increased minimum height */
+  max-height: 450px; /* Increased max height for more scrollable space */
+  overflow: hidden;
 }
 
 .status-card__item-list {
@@ -172,6 +189,32 @@
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  padding-right: 0.25rem;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.status-card__item-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.status-card__item-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.status-card__item-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.status-card__item-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 .status-card__item {
@@ -197,8 +240,9 @@
 }
 
 .status-card__action {
-  margin-top: 0.875rem;
+  margin-top: auto;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .status-card__button {

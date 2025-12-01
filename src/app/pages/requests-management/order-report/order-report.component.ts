@@ -11,6 +11,7 @@ import QRCode from 'qrcode';
 import { OrderService, OrderDto } from '@services/order.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
@@ -19,6 +20,7 @@ import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { mapApprovalHistory } from '@utils/request-mapper.utils';
+import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import {
   mapOrderToSummary,
   mapOrderItems,
@@ -79,7 +81,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private toastService: ToastService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private authService: BackendAuthService
   ) {}
 
   ngOnInit(): void {
@@ -98,10 +101,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders: OrderDto[]) => {
-          this.orders = orders;
+          const currentUser = this.authService.getCurrentUser();
+          // Filter orders by user's department
+          this.orders = filterRequestsByDepartment(orders, currentUser?.departmentId);
+          
           this.ordersLoading = false;
-          if (orders.length > 0) {
-            this.selectOrder(orders[0]);
+          if (this.orders.length > 0) {
+            this.selectOrder(this.orders[0]);
           } else {
             this.selectedOrderId = null;
             this.resetReportData();
@@ -563,4 +569,3 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }, 250);
   }
 }
-

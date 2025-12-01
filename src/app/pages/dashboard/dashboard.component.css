@@ -36,10 +36,26 @@
 /* Card hover effects */
 app-status-card {
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  height: 100%; /* Ensure cards fill their grid cells */
+  max-height: 750px; /* Increased card height for better scrolling */
 }
 
 app-status-card:hover {
   transform: translateY(-2px);
+}
+
+/* Ensure grid items stretch to same height */
+.grid > app-status-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Set max-height on grid container items */
+.grid.grid-cols-1 > app-status-card,
+.grid.md\\:grid-cols-2 > app-status-card,
+.grid.lg\\:grid-cols-3 > app-status-card,
+.grid.xl\\:grid-cols-4 > app-status-card {
+  max-height: 750px; /* Increased card height for better scrolling */
 }
 
 /* Responsive grid adjustments */

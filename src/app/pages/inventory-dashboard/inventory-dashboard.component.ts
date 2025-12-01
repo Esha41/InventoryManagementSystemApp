@@ -1,9 +1,11 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin } from 'rxjs';
-import { LucideAngularModule, X, ShieldAlert, RefreshCw } from 'lucide-angular';
+import { Subject, takeUntil, forkJoin, combineLatest, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from '@pages/dashboard/components/return-details-modal/return-details-modal.component';
 import { DiscardDetailsModalComponent } from '@pages/dashboard/components/discard-details-modal/discard-details-modal.component';
@@ -16,7 +18,11 @@ import { OverstockCardComponent, OverstockItemView } from '@pages/dashboard/comp
 import { AnnualActivityCardComponent } from '@pages/dashboard/components/annual-activity-card/annual-activity-card.component';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
+import { ErrorHandlingService } from '@services/error-handling.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { InventoryDashboardCard, StatisticsData } from '@models/inventory-dashboard.model';
 import {
   mapRequestStatusToCardStatus,
   getRequestStatusTranslationKey,
@@ -27,27 +33,6 @@ import {
   DisplayableRequest,
   CardStatus
 } from '@utils/dashboard.utils';
-
-interface DashboardCard {
-  title: string;
-  status: 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined';
-  orders: OrderItem[];
-  permissions: string[];
-  departmentIds?: number[];
-  orderRequestId?: number;
-  returnRequestId?: number;
-  discardRequestId?: number;
-}
-
-interface StatisticsData {
-  totalItems: number;
-  totalQuantity: number;
-  expiringSoon: number; // Items expiring in next 30 days
-  lowStock: number; // Items below threshold
-  overstockItems: OverstockItemView[];
-  monthlyActivity: number[]; // Orders per month (current year only)
-  monthlyActivityPercentages: number[]; // Percentage distribution
-}
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -62,22 +47,30 @@ interface StatisticsData {
     DiscardDetailsModalComponent,
     OverstockCardComponent,
     AnnualActivityCardComponent,
-    DropdownComponent
+    DropdownComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './inventory-dashboard.component.html',
-  styleUrls: ['./inventory-dashboard.component.css']
+  styleUrls: ['./inventory-dashboard.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryDashboardComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
   private refreshTimer: any = null;
 
+  // View state
+  viewMode: 'table' = 'table';
+  currentPage = 1;
+  rowsPerPage = 10;
+
   // Dashboard cards
-  allCards: DashboardCard[] = [];
-  visibleCards: DashboardCard[] = [];
+  allCards: InventoryDashboardCard[] = [];
+  visibleCards: InventoryDashboardCard[] = [];
 
   // Status filter
   selectedStatusFilter: CardStatus | 'all' = 'all';
-  statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+  readonly statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
     { label: 'dashboard.filters.all', value: 'all' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
@@ -92,9 +85,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   selectedOrderRequest: OrderDto | null = null;
   selectedReturnRequest: ReturnDto | null = null;
   selectedDiscardRequest: DiscardDto | null = null;
-  private orderRequestsMap = new Map<number, OrderDto>();
-  private returnRequestsMap = new Map<number, ReturnDto>();
-  private discardRequestsMap = new Map<number, DiscardDto>();
+  private readonly orderRequestsMap = new Map<number, OrderDto>();
+  private readonly returnRequestsMap = new Map<number, ReturnDto>();
+  private readonly discardRequestsMap = new Map<number, DiscardDto>();
 
   // Statistics
   statistics: StatisticsData = {
@@ -107,27 +100,38 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     monthlyActivityPercentages: Array(12).fill(0)
   };
 
+  // Icons
   readonly XIcon = X;
   readonly ShieldAlert = ShieldAlert;
   readonly RefreshCw = RefreshCw;
+  readonly Grid = Grid;
+  readonly List = List;
+  readonly Eye = Eye;
+  readonly Search = Search;
+  
   showContactAdminNotice = false;
 
+  // Search functionality
+  searchQuery: string = '';
+
   constructor(
-    private authService: BackendAuthService,
-    private orderService: OrderService,
-    private returnService: ReturnService,
-    private discardService: DiscardService,
-    private notificationService: NotificationService,
-    private inventoryService: InventoryService,
-    private userContext: UserContextService,
-    private translate: TranslateService
+    private readonly authService: BackendAuthService,
+    private readonly orderService: OrderService,
+    private readonly returnService: ReturnService,
+    private readonly discardService: DiscardService,
+    private readonly notificationService: NotificationService,
+    private readonly inventoryService: InventoryService,
+    private readonly userContext: UserContextService,
+    private readonly translate: TranslateService,
+    private readonly errorHandlingService: ErrorHandlingService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.filterCards();
         this.loadAll();
       });
     
@@ -150,13 +154,98 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.loadAll();
   }
 
+  toggleViewMode(mode: 'grid' | 'table'): void {
+    // Kept for compatibility if needed, but defaulting to table
+    this.rowsPerPage = 10;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  get paginatedCards(): InventoryDashboardCard[] {
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.visibleCards.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.visibleCards.length / this.rowsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.cdr.markForCheck();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+  }
+
   private loadAll(): void {
-    this.filterCards();
-    this.loadOrderRequests();
-    this.loadReturnRequests();
-    this.loadDiscardRequests();
-    this.loadStatistics();
+    this.loadDataParallel();
     this.notificationService.refresh();
+  }
+
+  private loadDataParallel(): void {
+    // Check permissions first
+    const canViewOrders = this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page']);
+    
+    // If user can't view orders, just load stats if they can view dashboard (implied by access)
+    // Or handle gracefully. For now assuming mixed permissions logic from original code.
+
+    const orders$ = canViewOrders ? this.orderService.getAllOrders().pipe(
+      catchError(err => {
+        console.error('Failed to load orders', err);
+        return of([] as OrderDto[]);
+      })
+    ) : of([] as OrderDto[]);
+
+    const returns$ = canViewOrders ? this.returnService.getAllReturns().pipe(
+      catchError(err => {
+        console.error('Failed to load returns', err);
+        return of([] as ReturnDto[]);
+      })
+    ) : of([] as ReturnDto[]);
+
+    const discards$ = canViewOrders ? this.discardService.getAllDiscards().pipe(
+      catchError(err => {
+        console.error('Failed to load discards', err);
+        return of([] as DiscardDto[]);
+      })
+    ) : of([] as DiscardDto[]);
+
+    const inventories$ = this.inventoryService.getAll().pipe(
+      catchError(err => {
+        console.error('Failed to load inventory', err);
+        return of([]);
+      })
+    );
+
+    combineLatest({
+      orders: orders$,
+      returns: returns$,
+      discards: discards$,
+      inventories: inventories$
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: ({ orders, returns, discards, inventories }) => {
+        // Process cards
+        this.allCards = []; // Reset cards before rebuilding
+        this.processRequestData(orders, returns, discards);
+        
+        // Process statistics
+        this.calculateStatistics(inventories, orders);
+        
+        this.filterCards();
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private filterCards(): void {
@@ -168,15 +257,20 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     if (!isAuthenticated) {
       this.visibleCards = [];
+      this.showContactAdminNotice = false;
       return;
     }
 
     let filtered = this.allCards.filter(card => {
+      // Admin sees all, unless limited by other logic (which we assume not for now)
       if (!isAdmin && card.departmentIds && card.departmentIds.length > 0) {
         if (userDeptId == null) return false;
         if (!card.departmentIds.includes(userDeptId)) return false;
       }
+      
+      // If no specific permissions required, allow
       if (!card.permissions || card.permissions.length === 0) return true;
+      
       if (!hasPermissionsLoaded) return false;
       return this.authService.hasAnyPermission(card.permissions);
     });
@@ -186,10 +280,22 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       filtered = filtered.filter(card => card.status === this.selectedStatusFilter);
     }
 
+    // Apply search filter
+    if (this.searchQuery && this.searchQuery.trim().length > 0) {
+      const query = this.searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(card => {
+        // Search in order IDs, department names, requester names
+        return card.orders.some(order => 
+          (order.orderId && order.orderId.toLowerCase().includes(query)) ||
+          (order.departmentName && order.departmentName.toLowerCase().includes(query)) ||
+          (order.requesterName && order.requesterName.toLowerCase().includes(query))
+        );
+      });
+    }
+
     // Sort by status priority
-    const rank = (c: DashboardCard): number => {
+    const rank = (c: InventoryDashboardCard): number => {
       switch (c.status) {
-        case 'new-issue': return 0;
         case 'new': return 0;
         case 'on-progress': return 1;
         case 'completed': return 2;
@@ -208,178 +314,201 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       })
       .map(x => x.c);
 
+    // Reset to first page when filters change
+    this.currentPage = 1;
+
     const permissionsArray = Array.isArray(user?.permissions) ? user?.permissions : [];
     this.showContactAdminNotice = isAuthenticated && permissionsArray.length === 0 && this.visibleCards.length === 0;
   }
 
   onStatusFilterChange(): void {
     this.filterCards();
+    this.cdr.markForCheck();
+  }
+
+  onSearchChange(): void {
+    this.filterCards();
+    this.currentPage = 1; // Reset to first page when searching
+    this.cdr.markForCheck();
+  }
+
+  navigateToApproval(orderRequestId: number): void {
+    this.router.navigate(['/requests-management', orderRequestId, 'workflow-approval']);
+  }
+
+  /**
+   * Check if user can approve this order
+   * Similar logic to WorkflowApprovalDetailComponent.canApproveOrReject()
+   * Only shows button for administrators or users with workflow approval access
+   */
+  canApproveOrder(order: OrderDto | null): boolean {
+    if (!order) {
+      return false;
+    }
+
+    // Only show button for pending orders (status 1 = New, 2 = Under Process)
+    // Status 3 = Approved, 4 = Rejected
+    if (order.status !== 1 && order.status !== 2) {
+      return false;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      return false;
+    }
+
+    // Check if user is administrator (multiple detection methods)
+    const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
+                              currentUser?.email?.toLowerCase().includes('administrator');
+    const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+    const isAdminUser = this.userContext.isAdminUser();
+    
+    const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isAdminUser;
+    
+    // Administrators can always approve
+    if (isAdministrator) {
+      return true;
+    }
+
+    // For non-administrators, check if they have permission to access the approval page
+    // The route requires: viewrequest.page, viewrequest.view, or order.view (any of these)
+    // The approval page itself will do the detailed role-based check for actual approval
+    const hasApprovalPageAccess = this.authService.hasAnyPermission([
+      'viewrequest.page',
+      'viewrequest.view',
+      'order.view'
+    ]);
+
+    return hasApprovalPageAccess;
   }
 
   get filteredCardsCount(): number {
     return this.visibleCards.length;
   }
 
-  statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }
     return '';
   };
 
-  // Generic method to process and add request cards
-  private processRequestCards<T extends DisplayableRequest>(
-    requests: T[],
-    cardConfig: {
-      status: CardStatus;
-      permissions: string[];
-      getCardId: (req: T) => number | undefined;
-      getCardPredicate: (card: DashboardCard) => boolean;
-      mapToCard: (req: T) => DashboardCard;
-      storeInMap: (req: T) => void;
+  shouldShowCard(card: InventoryDashboardCard): boolean {
+    return this.paginatedCards.includes(card);
+  }
+
+  // Helper methods for table view
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'new-issue':
+      case 'new': return 'bg-blue-100 text-blue-800';
+      case 'on-progress': return 'bg-yellow-100 text-yellow-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'declined': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  ): void {
-    const currentUser = this.authService.getCurrentUser();
-    const isAdmin = this.userContext.isAdminUser();
-    const filtered = filterRequestsByDepartment(
-      filterDisplayableRequests(requests),
-      isAdmin ? null : currentUser?.departmentId
-    );
-
-    // Store in appropriate map
-    filtered.forEach(req => cardConfig.storeInMap(req));
-
-    // Create cards
-    const cards = filtered.map(req => cardConfig.mapToCard(req));
-
-    // Remove old cards and add new ones
-    this.allCards = this.allCards.filter(card => !cardConfig.getCardPredicate(card));
-    this.allCards.push(...cards);
-
-    this.filterCards();
   }
 
-  private loadOrderRequests(): void {
-    if (!this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page'])) {
-      return;
-    }
-
-    forkJoin({
-      orders: this.orderService.getAllOrders(),
-      returns: this.returnService.getAllReturns(),
-      discards: this.discardService.getAllDiscards()
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ orders, returns, discards }) => {
-          const user = this.authService.getCurrentUser();
-          const isAdmin = this.userContext.isAdminUser();
-
-          // Process orders by status
-          [1, 2, 3, 4].forEach(status => {
-            let orderList = orders.filter(o => o.status === status);
-            let returnList = (returns || []).filter(r => r.status === status);
-            let discardList = (discards || []).filter(d => d.status === status);
-
-            if (!isAdmin && user?.departmentId) {
-              orderList = orderList.filter(o => o.departmentId === user.departmentId);
-              returnList = returnList.filter(r => r.departmentId === user.departmentId);
-              discardList = discardList.filter(d => d.departmentId === user.departmentId);
-            }
-
-            // Store in maps
-            orderList.forEach(o => this.orderRequestsMap.set(o.id, o));
-            returnList.forEach(r => this.returnRequestsMap.set(r.id, r));
-            discardList.forEach(d => this.discardRequestsMap.set(d.id, d));
-
-            // Map to OrderItem format
-            const ordersView: OrderItem[] = orderList.map(o => ({
-              orderId: getRequestTitle(o, o.orderNo),
-              requestDate: this.formatOrderDate(o),
-              departmentName: this.resolveOrderDepartmentName(o),
-              requesterName: o.requesterName || 'N/A',
-              items: mapRequestItems(o.requestItems),
-              requestId: o.id
-            }));
-
-            const returnsView: OrderItem[] = returnList.map(r => ({
-              orderId: getRequestTitle(r),
-              requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
-              departmentName: (r as any).departmentName || 'N/A',
-              requesterName: r.requesterName || 'N/A',
-              items: mapRequestItems(r.requestItems)
-            }));
-
-            const discardsView: OrderItem[] = discardList.map(d => ({
-              orderId: getRequestTitle(d),
-              requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
-              departmentName: (d as any).departmentName || 'N/A',
-              requesterName: d.requesterName || 'N/A',
-              items: mapRequestItems(d.requestItems)
-            }));
-
-            const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardsView];
-            
-            if (merged.length > 0) {
-              const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : status === 3 ? 'completed' : 'declined';
-              const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : status === 3 ? 'Done' : 'Declined';
-              
-              const card: DashboardCard = {
-                title,
-                status: cardStatus,
-                orders: merged,
-                permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-                departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-                orderRequestId: ordersView.length > 0 ? orderList[0].id : undefined,
-                returnRequestId: returnsView.length > 0 ? returnList[0]?.id : undefined,
-                discardRequestId: discardsView.length > 0 ? discardList[0]?.id : undefined
-              };
-
-              this.allCards = this.allCards.filter(c => 
-                !(c.status === cardStatus && c.title === title)
-              );
-              this.allCards.push(card);
-            }
-          });
-
-          this.filterCards();
-        },
-        error: () => {}
-      });
+  getStatusTranslationKey(status: string): string {
+    return getRequestStatusTranslationKey(status === 'new' || status === 'new-issue' ? 1 : status === 'on-progress' ? 2 : status === 'completed' ? 3 : 4);
   }
 
-  private loadReturnRequests(): void {
-    // Handled in loadOrderRequests via forkJoin
-  }
-
-  private loadDiscardRequests(): void {
-    // Handled in loadOrderRequests via forkJoin
-  }
-
-  private loadStatistics(): void {
-    forkJoin({
-      inventories: this.inventoryService.getAll(),
-      orders: this.orderService.getAllOrders()
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ inventories, orders }) => {
-          this.calculateStatistics(inventories, orders);
-        },
-        error: () => {
-          // Reset statistics on error
-          this.statistics = {
-            totalItems: 0,
-            totalQuantity: 0,
-            expiringSoon: 0,
-            lowStock: 0,
-            overstockItems: [],
-            monthlyActivity: Array(12).fill(0),
-            monthlyActivityPercentages: Array(12).fill(0)
-          };
+  onTableAction(card: InventoryDashboardCard): void {
+    // Find the first order/request in this card to open
+    // Logic: Try order first, then return, then discard
+    if (card.orderRequestId) {
+      this.onViewOrderDetails(card.orderRequestId);
+    } else if (card.returnRequestId) {
+      this.onViewReturnDetails(card.returnRequestId);
+    } else if (card.discardRequestId) {
+      this.onViewDiscardDetails(card.discardRequestId);
+    } else {
+      // Fallback: grab first item id
+      const firstItem = card.orders[0];
+      if (firstItem) {
+        // Determine type if possible, or default to order if we have an order ID
+        if (card.title.toLowerCase().includes('order') || firstItem.orderId) {
+           // Assuming we stored the ID in requestId on the OrderItem
+           if (firstItem.requestId) this.onViewOrderDetails(firstItem.requestId);
         }
-      });
+      }
+    }
   }
+
+  private processRequestData(orders: OrderDto[], returns: ReturnDto[], discards: DiscardDto[]): void {
+    const user = this.authService.getCurrentUser();
+    const isAdmin = this.userContext.isAdminUser();
+
+    // Process orders by status
+    [1, 2, 3, 4].forEach(status => {
+      let orderList = orders.filter(o => o.status === status);
+      let returnList = (returns || []).filter(r => r.status === status);
+      let discardList = (discards || []).filter(d => d.status === status);
+
+      if (!isAdmin && user?.departmentId) {
+        orderList = orderList.filter(o => o.departmentId === user.departmentId);
+        returnList = returnList.filter(r => r.departmentId === user.departmentId);
+        discardList = discardList.filter(d => d.departmentId === user.departmentId);
+      }
+
+      // Store in maps
+      orderList.forEach(o => this.orderRequestsMap.set(o.id, o));
+      returnList.forEach(r => this.returnRequestsMap.set(r.id, r));
+      discardList.forEach(d => this.discardRequestsMap.set(d.id, d));
+
+      // Map to OrderItem format
+      const ordersView: OrderItem[] = orderList.map(o => ({
+        orderId: getRequestTitle(o, o.orderNo),
+        requestDate: this.formatOrderDate(o),
+        departmentName: this.resolveOrderDepartmentName(o),
+        requesterName: o.requesterName || 'N/A',
+        items: mapRequestItems(o.requestItems),
+        requestId: o.id
+      }));
+
+      const returnsView: OrderItem[] = returnList.map(r => ({
+        orderId: getRequestTitle(r),
+        requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
+        departmentName: (r as any).departmentName || 'N/A',
+        requesterName: r.requesterName || 'N/A',
+        items: mapRequestItems(r.requestItems),
+        requestId: r.id
+      }));
+
+      const discardsView: OrderItem[] = discardList.map(d => ({
+        orderId: getRequestTitle(d),
+        requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
+        departmentName: (d as any).departmentName || 'N/A',
+        requesterName: d.requesterName || 'N/A',
+        items: mapRequestItems(d.requestItems),
+        requestId: d.id
+      }));
+
+      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardsView];
+      
+      if (merged.length > 0) {
+        const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : status === 3 ? 'completed' : 'declined';
+        const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : status === 3 ? 'Done' : 'Declined';
+        
+        const card: InventoryDashboardCard = {
+          title,
+          status: cardStatus,
+          orders: merged,
+          permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+          departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
+          orderRequestId: ordersView.length > 0 ? orderList[0].id : undefined,
+          returnRequestId: returnsView.length > 0 ? returnList[0]?.id : undefined,
+          discardRequestId: discardsView.length > 0 ? discardList[0]?.id : undefined
+        };
+
+        // No filtering of existing because we reset allCards at start of load
+        this.allCards.push(card);
+      }
+    });
+  }
+
+  // Legacy individual load methods are removed as we use parallel loading now
 
   private calculateStatistics(inventories: any[], orders: OrderDto[]): void {
     const stats: StatisticsData = {
@@ -494,71 +623,79 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // Modal handlers
   onViewOrderDetails(orderRequestId: number): void {
     const orderRequest = this.orderRequestsMap.get(orderRequestId);
-    if (orderRequest) {
-      this.orderService.getOrderById(orderRequestId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (order) => {
-            this.selectedOrderRequest = order;
-            this.isOrderModalOpen = true;
-          },
-          error: () => {
-            this.selectedOrderRequest = this.orderRequestsMap.get(orderRequestId) || null;
-            this.isOrderModalOpen = true;
-          }
-        });
-    }
+    
+    // Try to fetch fresh data
+    this.orderService.getOrderById(orderRequestId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (order) => {
+          this.selectedOrderRequest = order;
+          this.isOrderModalOpen = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          // Fallback to cached
+          this.selectedOrderRequest = orderRequest || null;
+          this.isOrderModalOpen = true;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onViewReturnDetails(returnRequestId: number): void {
     const returnRequest = this.returnRequestsMap.get(returnRequestId);
-    if (returnRequest) {
-      this.returnService.getReturnById(returnRequestId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (ret: ReturnDto) => {
-            this.selectedReturnRequest = ret;
-            this.isReturnModalOpen = true;
-          },
-          error: () => {
-            this.selectedReturnRequest = this.returnRequestsMap.get(returnRequestId) || null;
-            this.isReturnModalOpen = true;
-          }
-        });
-    }
+    
+    this.returnService.getReturnById(returnRequestId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ret: ReturnDto) => {
+          this.selectedReturnRequest = ret;
+          this.isReturnModalOpen = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.selectedReturnRequest = returnRequest || null;
+          this.isReturnModalOpen = true;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onViewDiscardDetails(discardRequestId: number): void {
     const discardRequest = this.discardRequestsMap.get(discardRequestId);
-    if (discardRequest) {
-      this.discardService.getDiscardById(discardRequestId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (res: DiscardDto) => {
-            this.selectedDiscardRequest = res;
-            this.isDiscardModalOpen = true;
-          },
-          error: () => {
-            this.selectedDiscardRequest = this.discardRequestsMap.get(discardRequestId) || null;
-            this.isDiscardModalOpen = true;
-          }
-        });
-    }
+    
+    this.discardService.getDiscardById(discardRequestId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: DiscardDto) => {
+          this.selectedDiscardRequest = res;
+          this.isDiscardModalOpen = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.selectedDiscardRequest = discardRequest || null;
+          this.isDiscardModalOpen = true;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   closeOrderModal(): void {
     this.isOrderModalOpen = false;
     this.selectedOrderRequest = null;
+    this.cdr.markForCheck();
   }
 
   closeReturnModal(): void {
     this.isReturnModalOpen = false;
     this.selectedReturnRequest = null;
+    this.cdr.markForCheck();
   }
 
   closeDiscardModal(): void {
     this.isDiscardModalOpen = false;
     this.selectedDiscardRequest = null;
+    this.cdr.markForCheck();
   }
 
   // Formatting helpers

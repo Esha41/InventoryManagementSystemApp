@@ -1,48 +1,154 @@
-<div class="min-h-screen bg-[var(--color-background-muted)] pb-8">
+<div class="page-wrapper">
   <!-- Enhanced Header Section -->
   <div class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="page-container py-8">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
           <p class="text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
         </div>
-        <div *ngIf="allCards.length > 0" class="hidden md:flex items-center gap-3 px-4 py-2 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] min-w-0">
-          <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'dashboard.statusLabels.new' | translate }}:</span>
-          <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredCardsCount }}</span>
-          <div class="h-6 w-px bg-[var(--color-border)]"></div>
-          <app-dropdown
-            class="w-40 flex-shrink-0"
-            [(ngModel)]="selectedStatusFilter"
-            (ngModelChange)="onStatusFilterChange()"
-            [options]="statusFilterOptions"
-            [optionLabelFn]="statusFilterLabelFn"
-            optionValue="value"
-            [placeholderSelectable]="false"
-            placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
-          </app-dropdown>
+        <div *ngIf="allCards.length > 0" class="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <!-- Search Bar -->
+          <div class="relative flex items-center flex-1 min-w-[250px] max-w-[400px]">
+            <div class="absolute left-3 pointer-events-none z-10">
+              <lucide-angular [img]="Search" class="w-5 h-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </div>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearchChange()"
+              [placeholder]="'dashboard.searchOrders' | translate"
+              class="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] transition-all">
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] min-w-0 flex-shrink-0">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'dashboard.statusLabels.new' | translate }}:</span>
+            <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredCardsCount }}</span>
+            <div class="h-6 w-px bg-[var(--color-border)]"></div>
+            <app-dropdown
+              class="w-40 flex-shrink-0"
+              [(ngModel)]="selectedStatusFilter"
+              (ngModelChange)="onStatusFilterChange()"
+              [options]="statusFilterOptions"
+              [optionLabelFn]="statusFilterLabelFn"
+              optionValue="value"
+              [placeholderSelectable]="false"
+              placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- View Toggle -->
+          <div class="flex items-center p-1 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0">
+            <button
+              (click)="toggleViewMode('grid')"
+              [class.bg-[var(--color-background-hover)]]="viewMode === 'grid'"
+              [class.text-[var(--color-brand)]]="viewMode === 'grid'"
+              [class.text-[var(--color-text-muted)]]="viewMode !== 'grid'"
+              class="p-2 rounded-md transition-all duration-200 hover:text-[var(--color-text)]"
+              [title]="'dashboard.gridView' | translate">
+              <lucide-angular [img]="Grid" class="w-5 h-5"></lucide-angular>
+            </button>
+            <button
+              (click)="toggleViewMode('table')"
+              [class.bg-[var(--color-background-hover)]]="viewMode === 'table'"
+              [class.text-[var(--color-brand)]]="viewMode === 'table'"
+              [class.text-[var(--color-text-muted)]]="viewMode !== 'table'"
+              class="p-2 rounded-md transition-all duration-200 hover:text-[var(--color-text)]"
+              [title]="'dashboard.listView' | translate">
+              <lucide-angular [img]="List" class="w-5 h-5"></lucide-angular>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Status Cards Grid - Show cards based on user permissions and roles -->
-    <div *ngIf="visibleCards.length > 0" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <app-status-card
-      *ngFor="let card of visibleCards"
-      [title]="card.title"
-      [status]="card.status"
-      [orders]="card.orders"
-      [orderRequestId]="card.orderRequestId || null"
-      [returnRequestId]="card.returnRequestId || null"
-      [discardRequestId]="card.discardRequestId || null"
-      (viewOrderDetails)="onViewOrderDetails($event)"
-      (viewDetails)="onViewDetails($event)"
-      (viewDiscardDetails)="onViewDiscardDetails($event)"
-    ></app-status-card>
-  </div>
+  <div class="page-container">
+    <!-- Status Cards Grid -->
+    <div *ngIf="viewMode === 'grid' && visibleCards.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+      <app-status-card
+        *ngFor="let card of paginatedCards"
+        [title]="card.title"
+        [status]="card.status"
+        [orders]="card.orders"
+        [orderRequestId]="card.orderRequestId || null"
+        [returnRequestId]="card.returnRequestId || null"
+        [discardRequestId]="card.discardRequestId || null"
+        (viewOrderDetails)="onViewOrderDetails($event)"
+        (viewDetails)="onViewDetails($event)"
+        (viewDiscardDetails)="onViewDiscardDetails($event)"
+      ></app-status-card>
+    </div>
+
+    <!-- Table View -->
+    <div *ngIf="viewMode === 'table' && visibleCards.length > 0" class="bg-white rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-[var(--color-border)]">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'dashboard.orderNumber' | translate }}</th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'dashboard.requestDate' | translate }}</th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'dashboard.department' | translate }}</th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'dashboard.requester' | translate }}</th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'dashboard.status' | translate }}</th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">{{ 'common.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let card of paginatedCards" class="hover:bg-[var(--color-background-hover)] transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+                {{ card.orders[0].orderId || card.title }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ card.orders[0].requestDate || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ card.orders[0].departmentName || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ card.orders[0].requesterName || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="getStatusBadgeClass(card.status)">
+                  {{ getStatusTranslationKey(card.status) | translate }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                <button
+                  (click)="onTableAction(card)"
+                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors">
+                  <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="visibleCards.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8">
+      <app-rows-per-page
+        [rowsPerPage]="rowsPerPage"
+        [totalItems]="visibleCards.length"
+        [visibleItems]="paginatedCards.length"
+        (rowsPerPageChange)="onRowsPerPageChange($event)">
+      </app-rows-per-page>
+
+      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+          {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+        </span>
+      </div>
+    </div>
 
     <!-- No Cards Message -->
     <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
@@ -271,6 +377,12 @@
             (click)="closeOrderModal()"
             class="px-6 py-2.5 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
             {{ 'common.close' | translate }}
+          </button>
+          <button
+            *ngIf="selectedOrderRequest?.id && canApproveOrder(selectedOrderRequest)"
+            (click)="navigateToApproval(selectedOrderRequest!.id)"
+            class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-hover)] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
+            {{ 'dashboard.goToApprovalPage' | translate }}
           </button>
         </div>
       </div>
