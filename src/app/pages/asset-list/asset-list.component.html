@@ -195,10 +195,12 @@
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="loading" class="text-center py-12">
-        <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--color-brand)] border-r-transparent"></div>
-        <p class="mt-4 text-[var(--color-text-muted)]">{{ 'assetList.loading' | translate }}</p>
-      </div>
+      <app-loading-state 
+        *ngIf="loading"
+        message="assetList.loading"
+        size="sm"
+        containerClass="text-center py-12">
+      </app-loading-state>
 
       <!-- Table -->
       <div *ngIf="!loading" class="border border-[var(--color-border)] rounded-lg overflow-hidden">

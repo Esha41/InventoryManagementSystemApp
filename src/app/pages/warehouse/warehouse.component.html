@@ -14,35 +14,22 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="loading" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
-    </div>
+    <app-loading-state 
+      *ngIf="loading"
+      size="lg"
+      [fullPage]="true">
+    </app-loading-state>
 
     <!-- Error State -->
-    <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-6 w-6 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-lg font-medium text-red-800">
-            {{ 'common.error' | translate }}
-          </h3>
-          <div class="mt-2 text-sm text-red-700">
-            {{ error }}
-          </div>
-          <div class="mt-4">
-            <button 
-              (click)="refreshWarehouses()"
-              class="bg-[var(--color-brand)] px-4 py-2 rounded-lg text-sm font-medium text-white hover:bg-[var(--color-brand-dark)] transition-colors">
-              {{ 'common.retry' | translate }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-error-state
+      *ngIf="error && !loading"
+      [error]="error || ''"
+      variant="inline"
+      title="common.error"
+      containerClass="mb-8"
+      actionText="common.retry"
+      (action)="refreshWarehouses()">
+    </app-error-state>
 
     <!-- Warehouse Cards -->
     <div *ngIf="!loading && !error" class="grid grid-cols-1 gap-6 max-w-4xl mx-auto">

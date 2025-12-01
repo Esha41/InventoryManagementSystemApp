@@ -10,11 +10,12 @@ import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-supply-request-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']
 })
@@ -146,6 +147,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/supply-request-management']);
+  }
+
+  get errorTitle(): string {
+    return 'supplyRequestManagement.detail.errorLoading';
   }
 }
 

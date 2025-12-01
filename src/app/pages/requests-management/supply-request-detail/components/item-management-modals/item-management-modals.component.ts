@@ -9,10 +9,11 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { OrderItem } from '@models/supply-request.model';
 import { CreateUpdateRequestItemDto } from '@services/order.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
+import { unwrapDropdownOption } from '@utils/dropdown.utils';
 
 @Component({
   selector: 'app-item-management-modals',
@@ -130,9 +131,13 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     }
   }
 
-  itemOptionLabel(item: AmmunitionReadDto): string {
-    return item?.name || item?.itemNo || `Item #${item?.id}`;
-  }
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null): string => {
+    const item = unwrapDropdownOption(option);
+    if (!item) {
+      return '';
+    }
+    return item.name || item.itemNo || `Item #${item.id}`;
+  };
 
   getItemProductId(item: OrderItem): string {
     if (this.getItemProductIdFn) {

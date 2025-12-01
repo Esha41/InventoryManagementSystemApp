@@ -122,9 +122,12 @@
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="text-center py-12">
-        <p class="text-[var(--color-text-muted)]">{{ 'adminRoles.loadingRoles' | translate }}</p>
-      </div>
+      <app-loading-state 
+        *ngIf="isLoading"
+        message="adminRoles.loadingRoles"
+        size="sm"
+        containerClass="text-center py-12">
+      </app-loading-state>
     </div>
 
     <!-- Pagination Footer -->
@@ -155,9 +158,12 @@
 
 
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-    {{ errorMessage }}
-  </div>
+  <app-error-state
+    *ngIf="errorMessage"
+    [error]="errorMessage"
+    variant="banner"
+    containerClass="mb-4">
+  </app-error-state>
 </div>
 
 <!-- Role Form Modal -->

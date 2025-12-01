@@ -15,11 +15,12 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './workflow.component.html',
   styleUrls: ['./workflow.component.css']
 })

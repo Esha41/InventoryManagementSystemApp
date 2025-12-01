@@ -13,6 +13,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { mapApiResponseToAuthenticatedUser } from '@utils/profile.mapper';
 import { getUserName, getRolesString, getRankName, getUserInitials } from '@utils/profile.utils';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-profile',
@@ -20,7 +21,9 @@ import { getUserName, getRolesString, getRankName, getUserInitials } from '@util
   imports: [
     CommonModule,
     TranslateModule,
-    LucideAngularModule
+    LucideAngularModule,
+    LoadingStateComponent,
+    ErrorStateComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']

@@ -7,13 +7,14 @@ import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto } from '@models/inventory.model';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 type TabType = 'overview' | 'stock';
 
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css']
 })

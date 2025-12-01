@@ -18,31 +18,22 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
     <!-- Loading State -->
-    <div *ngIf="loading" class="flex justify-center items-center min-h-[60vh]">
-      <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[var(--color-brand)] border-t-transparent"></div>
-        <p class="mt-4 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
-      </div>
-    </div>
+    <app-loading-state 
+      *ngIf="loading"
+      message="common.loading"
+      size="lg"
+      containerClass="flex justify-center items-center min-h-[60vh]">
+    </app-loading-state>
 
     <!-- Error State -->
-    <div *ngIf="error && !loading" class="max-w-2xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-custom-lg border border-red-200 p-8">
-        <div class="flex items-start gap-4">
-          <div class="flex-shrink-0">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
-              <svg class="h-6 w-6 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold text-red-800 mb-2">{{ 'common.error' | translate }}</h3>
-            <p class="text-base text-red-700">{{ error }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-error-state
+      *ngIf="error && !loading"
+      [error]="error || ''"
+      variant="inline"
+      title="common.error"
+      containerClass="max-w-2xl mx-auto"
+      contentClass="bg-white rounded-2xl shadow-custom-lg border border-red-200 p-8">
+    </app-error-state>
 
     <!-- Profile Content -->
     <div *ngIf="!loading && currentUser" class="space-y-6">

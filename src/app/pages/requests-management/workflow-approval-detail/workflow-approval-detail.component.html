@@ -1,29 +1,21 @@
 <div class="min-h-screen bg-[var(--color-background-muted)] p-6">
   <!-- Loading State -->
-  <div *ngIf="loading" class="flex justify-center items-center py-20">
-      <div class="flex flex-col items-center gap-4">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
-        <p class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.loadingRequestDetails' | translate }}</p>
-      </div>
-  </div>
+  <app-loading-state 
+    *ngIf="loading"
+    message="workflowApprovalDetail.loadingRequestDetails"
+    size="md"
+    [fullPage]="true">
+  </app-loading-state>
 
   <!-- Error State -->
-  <div *ngIf="!loading && error" class="flex flex-col items-center justify-center py-20">
-    <div class="bg-white rounded-xl shadow-custom-md p-8 max-w-md w-full border border-[var(--color-border)]">
-      <div class="flex flex-col items-center text-center">
-        <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
-          <lucide-angular [img]="AlertTriangle" class="h-8 w-8 text-[var(--color-error)]"></lucide-angular>
-        </div>
-        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'workflowApprovalDetail.errorLoadingRequest' | translate }}</h3>
-        <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ error === 'INVALID_REQUEST_ID' ? ('workflowApprovalDetail.invalidRequestId' | translate) : error }}</p>
-        <button
-          (click)="goBack()"
-          class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
-          {{ 'common.back' | translate }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-error-state
+    *ngIf="!loading && error"
+    [error]="errorMessage"
+    variant="centered"
+    [title]="errorTitle"
+    actionText="common.back"
+    (action)="goBack()">
+  </app-error-state>
 
   <!-- Content -->
   <div *ngIf="!loading && !error && requestDetail">

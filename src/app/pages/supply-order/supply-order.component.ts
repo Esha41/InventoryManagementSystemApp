@@ -29,6 +29,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-supply-order',
@@ -42,7 +43,8 @@ import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils'
     DropdownComponent,
     ModalComponent,
     ConfirmDialogComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent
   ],
   templateUrl: './supply-order.component.html',
   styleUrls: ['./supply-order.component.css']

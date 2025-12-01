@@ -9,11 +9,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { OrderService, OrderDto } from '@services/order.service';
 import { SupplyService } from '@services/supply.service';
 import { ToastService } from '@services/toast.service';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-supply-order-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent],
   templateUrl: './supply-order-list.component.html',
   styleUrls: ['./supply-order-list.component.css']
 })

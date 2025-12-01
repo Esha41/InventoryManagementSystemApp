@@ -17,7 +17,7 @@ import { BaseItemDto } from '@models/inventory.model';
 import { LookupItem } from '@models/lookup.model';
 import { forkJoin } from 'rxjs';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 interface Asset {
@@ -51,7 +51,8 @@ interface Asset {
     DropdownComponent,
     HasPermissionDirective,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    LoadingStateComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']

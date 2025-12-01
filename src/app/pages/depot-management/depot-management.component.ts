@@ -12,11 +12,12 @@ import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-depot-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent],
   templateUrl: './depot-management.component.html',
   styleUrls: ['./depot-management.component.css']
 })

@@ -15,7 +15,7 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
@@ -33,7 +33,9 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
     TranslateModule,
     PaginationComponent,
     RowsPerPageComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent,
+    ErrorStateComponent
   ],
   templateUrl: './manage-admins.component.html',
   styleUrls: ['./manage-admins.component.css']
