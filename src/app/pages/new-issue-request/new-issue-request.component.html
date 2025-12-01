@@ -1,7 +1,8 @@
-<div class="space-y-6">
-  <!-- Header -->
-  <div>
-    <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate }}</h1>
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate }}</h1>
   </div>
 
   <!-- Stepper -->
@@ -197,5 +198,6 @@
       [disabled]="orderSubmissionState.createdOrderId === null">
       {{ 'newIssueRequest.trackOrder' | translate }}
     </button>
+  </div>
   </div>
 </div>

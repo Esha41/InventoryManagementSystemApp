@@ -22,3 +22,5 @@ export * from './supply-order.model';
 export * from './supply-request.model';
 export * from './workflow-approval.model';
 export * from './order-report.model';
+export * from './dashboard.model';
+export * from './inventory-dashboard.model';

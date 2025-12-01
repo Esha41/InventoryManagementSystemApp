@@ -15,6 +15,16 @@ export type { CardStatus, DisplayableStatus } from './status.utils';
 export { mapRequestStatusToCardStatus, getRequestStatusTranslationKey };
 
 /**
+ * Common interface for request items
+ */
+export interface RequestItemBase {
+  itemName?: string;
+  itemNo?: string;
+  quantity: number;
+  notes?: string;
+}
+
+/**
  * Common interface for requests that can be displayed on dashboard
  */
 export interface DisplayableRequest {
@@ -23,7 +33,7 @@ export interface DisplayableRequest {
   departmentId?: number;
   requestNo?: string;
   requesterName?: string;
-  requestItems?: any[];
+  requestItems?: RequestItemBase[];
 }
 
 /**

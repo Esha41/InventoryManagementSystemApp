@@ -1,5 +1,6 @@
-<div class="space-y-6">
-  <!-- Header -->
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
   <div>
     <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'requestsManagement.title' | translate }}</h1>
   </div>
@@ -63,11 +64,11 @@
       </app-pagination>
     </div>
   </div>
+</div>
 
-  <!-- Order Details Modal -->
-  <app-order-details-modal
+<!-- Order Details Modal -->
+<app-order-details-modal
     [isOpen]="isModalOpen"
     [order]="selectedOrder"
     (close)="closeOrderDetails()">
   </app-order-details-modal>
-</div>

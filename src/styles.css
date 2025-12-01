@@ -5,6 +5,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .page-wrapper {
+    @apply min-h-screen bg-[var(--color-background-muted)] pb-8;
+  }
+  
+  .page-container {
+    /* 
+      Global content container
+      - Centers content
+      - Uses a readable max-width on large screens
+      - Still fills smaller screens with comfortable side padding
+    */
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px];
+  }
+}
+
 @layer base {
   :root {
     /* Brand Colors */
@@ -205,4 +221,3 @@ input::-moz-focus-inner,
 button::-moz-focus-inner {
   border: 0;
 }
-

@@ -120,6 +120,10 @@
       "all": "All",
       "filterByStatus": "Filter by Status"
     },
+    "searchOrders": "Search orders by number, department, or requester...",
+    "goToApprovalPage": "Go to Approval Page",
+    "gridView": "Grid View",
+    "listView": "List View",
     "viewAll": "View All",
     "noOrders": "No orders",
     "noAccess": "You don't have permission to view any dashboard sections",
