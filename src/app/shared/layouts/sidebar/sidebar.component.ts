@@ -51,13 +51,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventoryDashboard',
       icon: LayoutDashboard,
       route: '/inventory-dashboard',
-      permissions: ['dashboard_view']
+      permissions: ['inventory.page', 'inventory.view']
     },
     {
       label: 'nav.supplyManagement',
       icon: ClipboardList,
       route: '/supply-request-management',
-      permissions: ['request.page', 'request.view', 'order.view']
+      permissions: ['inventory.page', 'inventory.view']
     },
     {
       label: 'nav.supplyOrder',
@@ -92,22 +92,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.orderManagement',
       icon: ClipboardList,
-      permissions: ['newrequest.page', 'newrequest.create', 'returnrequest.page', 'returnrequest.create', 'discard.page', 'discard.create', 'order.create'],
+      permissions: [ 'order.create',  'return.create', 'discard.create'],
       children: [
         {
           label: 'nav.newIssueRequest',
           route: '/new-issue-request',
-          permissions: ['newrequest.page', 'newrequest.create', 'order.create']
+          permissions: ['order.create']
         },
         {
           label: 'nav.returnRequest',
           route: '/return-request',
-          permissions: ['returnrequest.page', 'returnrequest.create', 'order.create']
+          permissions: ['return.create']
         },
         {
           label: 'nav.discardRequest',
           route: '/discard-request',
-          permissions: ['discard.page', 'discard.create', 'order.create']
+          permissions: ['discard.create']
         }
       ]
     },
@@ -132,7 +132,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.forecast',
       icon: TrendingUp,
       route: '/forecast',
-      permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view']
+      permissions: ['Forecast_view']
     },
     {
       label: 'nav.inventory',
@@ -154,7 +154,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventoryForecast',
       icon: TrendingUp,
       route: '/inventory-forecast',
-      permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view']
+      permissions: ['inventory.page', 'inventory.view']
     },
     {
       label: 'nav.depotManagement',
