@@ -4,9 +4,11 @@
     <p class="text-sm text-gray-600 mt-1">Manage and fulfill supply orders</p>
   </div>
 
-  <div *ngIf="loading" class="flex justify-center items-center py-20">
-    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-[var(--color-brand)]"></div>
-  </div>
+  <app-loading-state 
+    *ngIf="loading"
+    size="lg"
+    [fullPage]="true">
+  </app-loading-state>
 
   <div *ngIf="!loading && orders.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
     <lucide-angular [img]="Package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></lucide-angular>

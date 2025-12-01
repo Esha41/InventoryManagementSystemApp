@@ -6,11 +6,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Eye, Map } from 'lucide-angular';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-warehouse',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './warehouse.component.html',
   styleUrls: ['./warehouse.component.css']
 })

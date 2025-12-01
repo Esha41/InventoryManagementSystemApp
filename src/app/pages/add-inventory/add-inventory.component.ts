@@ -15,6 +15,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-add-inventory',
@@ -26,7 +27,8 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
     TranslateModule,
     LucideAngularModule,
     DropdownComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent
   ],
   templateUrl: './add-inventory.component.html',
   styleUrls: ['./add-inventory.component.css']

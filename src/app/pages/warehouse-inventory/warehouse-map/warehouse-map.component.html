@@ -31,10 +31,12 @@
   <!-- Main Content -->
   <div class="p-6">
     <!-- Loading State -->
-    <div *ngIf="loading" class="flex flex-col justify-center items-center py-32">
-      <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[var(--color-brand)] mb-4"></div>
-      <p class="text-sm text-gray-500">{{ 'warehouseMap.loadingLocations' | translate }}</p>
-    </div>
+    <app-loading-state 
+      *ngIf="loading"
+      message="warehouseMap.loadingLocations"
+      size="lg"
+      containerClass="flex flex-col justify-center items-center py-32">
+    </app-loading-state>
 
     <!-- Content Grid -->
     <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">

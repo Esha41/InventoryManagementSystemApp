@@ -30,14 +30,20 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="bg-white rounded-lg shadow-md p-12 text-center">
-    <div class="text-gray-500">{{ 'common.loading' | translate }}...</div>
-  </div>
+  <app-loading-state 
+    *ngIf="loading"
+    message="common.loading"
+    size="sm"
+    containerClass="bg-white rounded-lg shadow-md p-12">
+  </app-loading-state>
 
   <!-- Error State -->
-  <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-    <p class="text-red-800 text-sm">{{ errorMessage }}</p>
-  </div>
+  <app-error-state
+    *ngIf="errorMessage && !loading"
+    [error]="errorMessage || ''"
+    variant="banner"
+    containerClass="mb-4">
+  </app-error-state>
 
   <!-- Table -->
   <div class="bg-white" *ngIf="!loading">

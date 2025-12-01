@@ -5,14 +5,20 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading" class="flex justify-center items-center py-12">
-    <div class="text-[var(--color-text)]">Loading form data...</div>
-  </div>
+  <app-loading-state 
+    *ngIf="loading"
+    message="Loading form data..."
+    size="sm"
+    containerClass="flex justify-center items-center py-12">
+  </app-loading-state>
 
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-    {{ errorMessage }}
-  </div>
+  <app-error-state
+    *ngIf="errorMessage"
+    [error]="errorMessage"
+    variant="banner"
+    containerClass="mb-4">
+  </app-error-state>
 
   <!-- Centered Form Container -->
   <div class="flex-1 flex items-center justify-center">

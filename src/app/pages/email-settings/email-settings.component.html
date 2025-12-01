@@ -6,9 +6,12 @@
   </div>
 
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-    {{ errorMessage }}
-  </div>
+  <app-error-state
+    *ngIf="errorMessage"
+    [error]="errorMessage"
+    variant="banner"
+    containerClass="mb-0">
+  </app-error-state>
 
   <!-- Email Settings Card -->
   <app-card>

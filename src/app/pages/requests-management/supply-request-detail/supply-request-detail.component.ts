@@ -35,6 +35,7 @@ import {
   getDepartmentName as getDepartmentNameUtil,
   getItemProductId as getItemProductIdUtil
 } from '../utils/ui-helpers.utils';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -47,7 +48,8 @@ import {
     HasPermissionDirective,
     LotSelectionModalComponent,
     DischargeSummaryCardComponent,
-    ItemManagementModalsComponent
+    ItemManagementModalsComponent,
+    LoadingStateComponent
   ],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']

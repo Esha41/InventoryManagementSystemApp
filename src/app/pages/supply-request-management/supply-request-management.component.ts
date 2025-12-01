@@ -13,11 +13,12 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapOrderToSupplyRequest } from './utils/supply-request-mapper.utils';
 import { getPriorityColor, getStatusButtonClass, getPageNumbers } from './utils/ui-helpers.utils';
 import { formatNumber } from '@utils/format.utils';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-supply-request-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './supply-request-management.component.html',
   styleUrls: ['./supply-request-management.component.css']
 })

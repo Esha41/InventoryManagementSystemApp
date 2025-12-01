@@ -6,7 +6,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { RoleFormModalComponent } from '@components/role-form-modal/role-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X, Search } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
@@ -28,7 +28,9 @@ import { ToastService } from '@services/toast.service';
     PaginationComponent,
     RowsPerPageComponent,
     TranslateModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent,
+    ErrorStateComponent
   ],
   templateUrl: './admin-roles.component.html',
   styleUrls: ['./admin-roles.component.css']

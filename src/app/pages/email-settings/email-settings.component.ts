@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
+import { ErrorStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmailConfigurationService, EmailConfigurationDto } from '@services/email-configuration.service';
@@ -16,7 +17,8 @@ import { ToastService } from '@services/toast.service';
     FormsModule,
     CardComponent,
     ButtonComponent,
-    TranslateModule
+    TranslateModule,
+    ErrorStateComponent
   ],
   templateUrl: './email-settings.component.html',
   styleUrls: ['./email-settings.component.css']

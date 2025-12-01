@@ -23,9 +23,12 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading && !showModal" class="flex justify-center items-center py-12">
-    <div class="text-[var(--color-text)]">{{ 'common.loading' | translate }}</div>
-  </div>
+  <app-loading-state 
+    *ngIf="loading && !showModal"
+    message="common.loading"
+    size="sm"
+    containerClass="flex justify-center items-center py-12">
+  </app-loading-state>
 
   <!-- Depots Table -->
   <div *ngIf="!loading || showModal" class="bg-white rounded-xl shadow-custom-md overflow-hidden">

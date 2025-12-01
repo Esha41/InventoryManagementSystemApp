@@ -18,7 +18,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
@@ -36,7 +36,9 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
     DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent,
+    ErrorStateComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css']

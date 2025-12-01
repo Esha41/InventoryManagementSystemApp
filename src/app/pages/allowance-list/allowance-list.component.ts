@@ -18,7 +18,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
 import { processAllowanceData } from '@utils/allowance.mapper';
 import { getLocalizedName, filterAllowances } from '@utils/allowance.utils';
@@ -38,7 +38,9 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
     ConfirmDialogComponent,
     RowsPerPageComponent,
     PaginationComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent,
+    ErrorStateComponent
   ],
   templateUrl: './allowance-list.component.html',
   styleUrls: ['./allowance-list.component.css']

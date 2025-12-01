@@ -9,11 +9,12 @@ import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
 import { OfflineMapService } from '@services/offline-map.service';
 import * as L from 'leaflet';
+import { LoadingStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-warehouse-map',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule, LoadingStateComponent],
   templateUrl: './warehouse-map.component.html',
   styleUrls: ['./warehouse-map.component.css']
 })

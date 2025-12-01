@@ -12,6 +12,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { LoadingStateComponent } from '@components/index';
 
 // ============================================================================
 // INTERFACES
@@ -50,7 +51,8 @@ interface PermissionInfo {
     TranslateModule,
     ButtonComponent,
     RowsPerPageComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    LoadingStateComponent
   ],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.css']

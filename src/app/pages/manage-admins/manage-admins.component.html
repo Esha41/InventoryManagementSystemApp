@@ -192,9 +192,12 @@
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="isLoading" class="text-center py-12">
-        <p class="text-[var(--color-text-muted)]">{{ 'manageAdmins.loadingUsers' | translate }}</p>
-      </div>
+      <app-loading-state 
+        *ngIf="isLoading"
+        message="manageAdmins.loadingUsers"
+        size="sm"
+        containerClass="text-center py-12">
+      </app-loading-state>
     </div>
 
     <!-- Pagination Footer - Outside table overflow container -->
@@ -224,9 +227,12 @@
   </app-card>
 
   <!-- Error Message -->
-  <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-    {{ errorMessage }}
-  </div>
+  <app-error-state
+    *ngIf="errorMessage"
+    [error]="errorMessage"
+    variant="banner"
+    containerClass="mb-4">
+  </app-error-state>
   </div>
 
   <!-- Lookup Tables Tab Content -->
@@ -385,16 +391,22 @@
         </div>
 
         <!-- Loading State -->
-        <div *ngIf="isLoadingLookups" class="text-center py-12">
-          <p class="text-[var(--color-text-muted)]">{{ 'lookupManagement.loading' | translate }}</p>
-        </div>
+        <app-loading-state 
+          *ngIf="isLoadingLookups"
+          message="lookupManagement.loading"
+          size="sm"
+          containerClass="text-center py-12">
+        </app-loading-state>
       </div>
     </app-card>
 
     <!-- Error Message -->
-    <div *ngIf="lookupErrorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-      {{ lookupErrorMessage }}
-    </div>
+    <app-error-state
+      *ngIf="lookupErrorMessage"
+      [error]="lookupErrorMessage"
+      variant="banner"
+      containerClass="mb-4">
+    </app-error-state>
   </div>
 </div>
 

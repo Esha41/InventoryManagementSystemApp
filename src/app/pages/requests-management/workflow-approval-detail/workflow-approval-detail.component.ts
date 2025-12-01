@@ -17,11 +17,20 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-workflow-approval-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, HasPermissionDirective],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    TranslateModule, 
+    LucideAngularModule, 
+    HasPermissionDirective,
+    LoadingStateComponent,
+    ErrorStateComponent
+  ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css']
 })
@@ -494,6 +503,24 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/requests-management']);
+  }
+
+  /**
+   * Get formatted error message for display
+   */
+  get errorMessage(): string {
+    if (!this.error) return '';
+    if (this.error === 'INVALID_REQUEST_ID') {
+      return 'workflowApprovalDetail.invalidRequestId';
+    }
+    return this.error;
+  }
+
+  /**
+   * Get error title for display
+   */
+  get errorTitle(): string {
+    return 'workflowApprovalDetail.errorLoadingRequest';
   }
 
   canReviewSupply(): boolean {

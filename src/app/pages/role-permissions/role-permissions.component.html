@@ -160,10 +160,11 @@
 
         <!-- Loading State -->
         <app-card *ngIf="isLoading" [shadow]="true">
-          <div class="p-12 text-center">
-            <lucide-angular [img]="RefreshCw" class="h-8 w-8 mx-auto text-[var(--color-brand)] mb-4 animate-spin"></lucide-angular>
-            <p class="text-[var(--color-text-muted)]">{{ 'rolePermissions.loadingPermissions' | translate }}</p>
-          </div>
+          <app-loading-state 
+            message="rolePermissions.loadingPermissions"
+            size="sm"
+            containerClass="p-12">
+          </app-loading-state>
         </app-card>
 
         <!-- No Results State -->

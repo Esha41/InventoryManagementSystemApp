@@ -27,11 +27,12 @@ import {
   generateQrCodeData,
   filterApprovalRecordsByOrderId
 } from '../utils/order-report.utils';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 
 @Component({
   selector: 'app-order-report',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './order-report.component.html',
   styleUrls: ['./order-report.component.css']
 })
