@@ -1,9 +1,9 @@
 /**
  * Lot Mapper Utilities
  * Functions for mapping lot data from various sources to LotItem format
+ * Note: mapLotDetailsToLotItems is available in @utils/lot.utils
  */
 
-import { LotDetailDto } from '@services/inventory.service';
 import { LotItem } from '@models/supply-order.model';
 import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 
@@ -29,32 +29,6 @@ export function mapSuggestedLotsToLotItems(
   }));
 
   // Sort by expiry date (FEFO)
-  return lots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
-}
-
-/**
- * Map LotDetailDto to LotItem format
- */
-export function mapLotDetailsToLotItems(
-  lotDetails: LotDetailDto[],
-  existingSelections?: Map<number, number>
-): LotItem[] {
-  const lots = lotDetails
-    .filter(lot => !lot.isEmptyLot)
-    .map(lot => ({
-      inventoryDetailId: lot.inventoryDetailId,
-      lotNumber: lot.lot,
-      quantity: lot.remainingQuantity,
-      expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
-      location: formatLocation(lot.depot),
-      condition: lot.isExpired ? 'Near Expiry' as const : determineCondition(lot.expiryDate),
-      daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
-      selectedQuantity: existingSelections?.get(lot.lot) ?? 0,
-      depotName: lot.depot?.nameEn || lot.depot?.nameAr,
-      supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
-      manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
-    }));
-
   return lots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 }
 

@@ -1,31 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
-import { ApiService } from '@services/api.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
+import { RequestsManagementService } from './services/requests-management.service';
+import { getRequestStatusClass } from './utils/ui-helpers.utils';
+import { Request } from './models/requests-management.model';
+import { Subject, takeUntil } from 'rxjs';
 
-export interface Request {
-  id: number;
-  orderId: string;
-  requestDate: string;
-  priority: 'High' | 'Medium' | 'Low' | 'Critical';
-  requestType: 'Order' | 'Return' | 'Discard';
-  status: 'Pending' | 'Confirmed' | 'Rejected';
-}
-
-interface BaseRequestDto {
-  id: number;
-  requestNo: string;
-  requestType: number; // RequestType enum: 1=Order, 2=Return, 3=Discard
-  reason: string;
-  priority: number; // RequestPriority enum: High = 1, Medium = 2, Low = 3
-  status: number; // RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
-  requestDate: string | Date;
-}
 
 @Component({
   selector: 'app-requests-management',
@@ -34,7 +18,9 @@ interface BaseRequestDto {
   templateUrl: './requests-management.component.html',
   styleUrls: ['./requests-management.component.css']
 })
-export class RequestsManagementComponent implements OnInit {
+export class RequestsManagementComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
   readonly ChevronDown = ChevronDown;
 
   requests: Request[] = [];
@@ -48,7 +34,7 @@ export class RequestsManagementComponent implements OnInit {
   selectedOrder: Request | null = null;
 
   constructor(
-    private apiService: ApiService,
+    private requestsManagementService: RequestsManagementService,
     private router: Router
   ) {}
 
@@ -56,80 +42,26 @@ export class RequestsManagementComponent implements OnInit {
     this.loadRequests();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadRequests(): void {
     this.loading = true;
-    this.apiService.getWithAuth<BaseRequestDto[]>(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
-    ).subscribe({
-      next: (response: any) => {
-        // Handle both direct array response and wrapped response
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
-          : (response?.data || []);
-        
-        this.requests = this.mapToRequests(data);
-        this.totalItems = this.requests.length;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Failed to load requests:', error);
-        this.loading = false;
-        this.requests = [];
-      }
-    });
-  }
-
-  private mapToRequests(data: BaseRequestDto[]): Request[] {
-    return data.map(item => ({
-      id: item.id,
-      orderId: `#${item.requestNo || item.id.toString().padStart(4, '0')}`,
-      requestDate: this.formatDate(item.requestDate),
-      priority: this.mapPriority(item.priority),
-      requestType: this.mapRequestType(item.requestType),
-      status: this.mapStatus(item.status)
-    }));
-  }
-
-  private formatDate(date: string | Date | undefined): string {
-    if (!date) return '';
-    const d = new Date(date);
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  }
-
-  private mapPriority(priority: number): 'High' | 'Medium' | 'Low' | 'Critical' {
-    // RequestPriority enum: High = 1, Medium = 2, Low = 3
-    switch (priority) {
-      case 1: return 'High';
-      case 2: return 'Medium';
-      case 3: return 'Low';
-      default: return 'Low';
-    }
-  }
-
-  /**
-   * Maps request type enum number to display string
-   * RequestType enum: 1=Order, 2=Return, 3=Discard
-   */
-  private mapRequestType(type: number): 'Order' | 'Return' | 'Discard' {
-    switch (type) {
-      case 1: return 'Order';
-      case 2: return 'Return';
-      case 3: return 'Discard';
-      default: return 'Order';
-    }
-  }
-
-  private mapStatus(status: number): 'Pending' | 'Confirmed' | 'Rejected' {
-    // RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
-    switch (status) {
-      case 1:
-      case 2: return 'Pending';
-      case 3: return 'Confirmed';
-      case 4: return 'Rejected';
-      default: return 'Pending';
-    }
+    this.requestsManagementService.loadRequests()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (requests) => {
+          this.requests = requests;
+          this.totalItems = requests.length;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.requests = [];
+        }
+      });
   }
 
   get paginatedRequests(): Request[] {
@@ -152,12 +84,7 @@ export class RequestsManagementComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
-      case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
-      case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    return getRequestStatusClass(status);
   }
 
   openOrderDetails(order: Request): void {

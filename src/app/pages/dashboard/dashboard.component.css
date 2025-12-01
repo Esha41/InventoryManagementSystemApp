@@ -74,3 +74,30 @@ app-status-card:hover {
   background: var(--color-text);
 }
 
+/* Fixed width dropdown in header */
+::ng-deep app-dropdown.w-40 {
+  width: 10rem !important;
+  min-width: 10rem !important;
+  max-width: 10rem !important;
+  flex-shrink: 0;
+  display: block;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown-trigger {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown-panel {
+  width: 100% !important;
+  max-width: 10rem !important;
+  min-width: 0;
+}
+

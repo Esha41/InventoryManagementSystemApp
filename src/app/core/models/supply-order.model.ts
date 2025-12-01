@@ -30,6 +30,8 @@ export interface SupplyItemDisplay {
   isFullyFulfilled: boolean;
   notes?: string;
   isEditing: boolean; // Track if item is being edited
+  originalQuantity?: number; // Track original quantity before editing for validation
+  quantityError?: string; // Track validation error message
 }
 
 /**

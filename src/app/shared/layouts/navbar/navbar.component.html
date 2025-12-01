@@ -2,7 +2,12 @@
   <div class="flex items-center justify-between w-full">
     <!-- Left side - Logo -->
     <div class="flex items-center">
-      <img src="assets/logo.png" alt="Logo" class="h-10" />
+      <img 
+        src="assets/logo.png" 
+        alt="Logo" 
+        class="h-10"
+        [class.scale-x-[-1]]="isRTL"
+      />
     </div>
 
     <!-- Center - Title -->

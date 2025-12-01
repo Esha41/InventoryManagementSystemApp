@@ -41,4 +41,5 @@ export {
   getApprovalStatusClass
 } from './status-class.utils';
 export * from './notification.utils';
+export * from './approval-workflow.utils';
 

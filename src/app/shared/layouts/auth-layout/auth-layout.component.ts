@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { TranslationService } from '@services/translation.service';
 
 /**
  * Authentication Layout Component
@@ -15,5 +16,9 @@ import { RouterOutlet } from '@angular/router';
   styleUrls: ['./auth-layout.component.css']
 })
 export class AuthLayoutComponent {
-  constructor() {}
+  constructor(public translationService: TranslationService) {}
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
 }

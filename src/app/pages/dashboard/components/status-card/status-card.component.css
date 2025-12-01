@@ -68,6 +68,10 @@
   background-color: #10b981;
 }
 
+.status-card__dot--declined {
+  background-color: #ef4444;
+}
+
 .status-card__dot--muted {
   background-color: #e9ebf0;
 }
@@ -97,6 +101,10 @@
 
 .status-card__divider--done {
   background: #10b981;
+}
+
+.status-card__divider--declined {
+  background: #ef4444;
 }
 
 .status-card__divider--muted {

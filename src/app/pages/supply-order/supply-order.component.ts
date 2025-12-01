@@ -6,7 +6,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -29,7 +28,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
-import { mapWorkflowStepsToApprovalSteps } from '../../pages/requests-management/utils/approval-workflow.utils';
+import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 
 @Component({
   selector: 'app-supply-order',
@@ -190,6 +189,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderData = supply.order;
           this.orderItems = supply.order?.requestItems || [];
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
+          
+         
+          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
+            this.loadFullOrderDetails(orderId);
+          }
+          
           this.loadApprovalWorkflow();
           this.loading = false;
         },
@@ -214,6 +219,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderData = supply.order;
           this.orderItems = supply.order?.requestItems || [];
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
+          
+         
+          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
+            this.loadFullOrderDetails(this.orderId);
+          }
+          
           this.loadApprovalWorkflow();
           this.loading = false;
         },
@@ -222,6 +233,32 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.toastService.error(errorMessage);
           this.loading = false;
           this.goBack();
+        }
+      });
+  }
+
+  
+  private loadFullOrderDetails(orderId: number): void {
+    this.orderService.getOrderById(orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullOrder: OrderDto) => {
+          
+          if (this.orderData) {
+          
+            if (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr) {
+              this.orderData.departmentNameEn = fullOrder.departmentNameEn;
+              this.orderData.departmentNameAr = fullOrder.departmentNameAr;
+            }
+           
+            if (!this.orderData.requesterName) {
+              this.orderData.requesterName = fullOrder.requesterName;
+            }
+          }
+        },
+        error: (error) => {
+        
+          console.warn('Failed to load full order details for department/requester info:', error);
         }
       });
   }
@@ -269,10 +306,14 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onEditItem(item: SupplyItemDisplay): void {
     item.isEditing = true;
+    item.originalQuantity = item.quantity; // Store original quantity for validation
+    item.quantityError = undefined; // Clear any previous errors
   }
 
   onCancelEdit(item: SupplyItemDisplay): void {
     item.isEditing = false;
+    item.originalQuantity = undefined;
+    item.quantityError = undefined;
     this.loadSupplyData();
   }
 
@@ -282,7 +323,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       return;
     }
     
+    // Clear previous errors
+    item.quantityError = undefined;
+    
     if (!item.quantity || item.quantity <= 0) {
+      item.quantityError = 'Quantity must be greater than 0';
       this.toastService.error('Quantity must be greater than 0');
       return;
     }
@@ -297,6 +342,19 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validate that the new quantity doesn't exceed the requested quantity
+    // Calculate what the new total supplied quantity would be
+    const originalQuantity = item.originalQuantity || item.quantity;
+    const currentTotalSupplied = item.totalSuppliedQuantity;
+    const newTotalSupplied = currentTotalSupplied - originalQuantity + item.quantity;
+    
+    if (newTotalSupplied > item.requestedQuantity) {
+      const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
+      item.quantityError = `Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`;
+      this.toastService.error(`Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`);
+      return;
+    }
+
     this.updatingItem = true;
     this.supplyService.updateSupplyDetail(this.supplyId, item.supplyDetailId, {
       itemId: item.itemId,
@@ -308,6 +366,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         next: () => {
           this.toastService.success('Item updated successfully');
           item.isEditing = false;
+          item.originalQuantity = undefined;
+          item.quantityError = undefined;
           this.updatingItem = false;
           this.loadSupplyData();
         },
@@ -439,14 +499,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  onShowAllLots(): void {
-    if (!this.selectedItemForLot) {
-      this.toastService.warning('Please select an item first');
-      return;
-    }
-    this.loadAllLotsForItem(this.selectedItemForLot);
-  }
-
   onShowAvailableLots(): void {
     if (!this.selectedItemForLot) {
       this.toastService.warning('Please select an item first');
@@ -517,29 +569,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Lot not found or error loading details');
           this.toastService.error(errorMessage);
           this.loadingManualLot = false;
-        }
-      });
-  }
-
-  private loadAllLotsForItem(item: OrderRequestItemDto): void {
-    this.loadingAllLots = true;
-    this.inventoryService.getLotsByItemId(item.itemId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (lots: LotDetailDto[]) => {
-          this.availableLots = mapLotDetailsToLotItems(lots);
-          this.loadingAllLots = false;
-          
-          if (this.availableLots.length > 0) {
-            this.toastService.success(`Loaded ${this.availableLots.length} total lot(s) for item`);
-          } else {
-            this.toastService.warning('No lots found for this item');
-          }
-        },
-        error: (error) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lots');
-          this.toastService.error(errorMessage);
-          this.loadingAllLots = false;
         }
       });
   }
@@ -663,6 +692,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   getTotalQuantity(): number {
     return this.supplyItems.reduce((sum, item) => sum + item.quantity, 0);
+  }
+
+  /**
+   * Calculate the maximum allowed quantity for a supply item
+   * This considers the requested quantity and current total supplied quantity
+   */
+  getMaxAllowedQuantity(item: SupplyItemDisplay): number {
+    const originalQuantity = item.originalQuantity || item.quantity;
+    const currentTotalSupplied = item.totalSuppliedQuantity;
+    const maxAllowed = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
+    return Math.max(0, maxAllowed);
   }
   getItemProductId(item: OrderRequestItemDto): string {
     if (item.itemNo) {
