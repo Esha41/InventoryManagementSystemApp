@@ -93,7 +93,7 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.loginError = this.getUserFriendlyErrorMessage(error);
+        this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
       }
     });
   }
@@ -166,88 +166,180 @@ export class LoginComponent implements OnInit {
 
   /**
    * Get user-friendly error message from error object
+   * @param error - The error object from the API
+   * @param username - The username that was attempted (to determine if it's likely a password issue)
    */
-  private getUserFriendlyErrorMessage(error: any): string {
+  private getUserFriendlyErrorMessage(error: any, username?: string): string {
     // Extract error message from various possible locations
     const errorMessage = error?.message || 
                         error?.error?.message || 
-                        error?.error?.error?.message || 
+                        error?.error?.error?.message ||
+                        error?.error?.data?.message ||
+                        error?.error?.data ||
                         '';
     
     // Extract error code from various possible locations
     const errorCode = error?.error?.errorCode || 
                      error?.errorCode || 
                      error?.error?.code ||
+                     error?.error?.data?.errorCode ||
                      '';
+    
+    // Extract status code
+    const statusCode = error?.status || error?.error?.status || 0;
     
     const lowerMessage = errorMessage.toLowerCase();
     
+    // Check if username looks valid (to determine if it's likely a password issue)
+    const hasValidUsername = username && username.trim().length >= 3;
+    
     // Check for specific error codes from backend
+    // If username looks valid, assume it's a password issue
     if (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || 
-        errorCode === '0008') {
+        errorCode === '0008' ||
+        errorCode === 'INVALID_CREDENTIALS' ||
+        errorCode === 'AUTH_FAILED') {
+      if (hasValidUsername) {
+        return this.translate.instant('auth.login.errors.wrongPassword');
+      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
     
     if (errorCode === 'INVALID_LDAP_SETTINGS' || 
-        errorCode === '0014') {
+        errorCode === '0014' ||
+        errorCode === 'LDAP_NOT_AVAILABLE' ||
+        errorCode === 'LDAP_ERROR') {
       return this.translate.instant('auth.login.errors.invalidLdapSettings');
+    }
+    
+    // Check for account locked/disabled
+    if (errorCode === 'ACCOUNT_LOCKED' ||
+        errorCode === 'ACCOUNT_DISABLED' ||
+        errorCode === 'USER_DISABLED' ||
+        lowerMessage.includes('account locked') ||
+        lowerMessage.includes('account disabled') ||
+        lowerMessage.includes('user is disabled')) {
+      return this.translate.instant('auth.login.errors.accountLocked');
+    }
+    
+    // Check for session conflicts
+    if (errorCode === 'SESSION_CONFLICT' ||
+        errorCode === 'MULTIPLE_SESSIONS' ||
+        lowerMessage.includes('session conflict') ||
+        lowerMessage.includes('multiple sessions')) {
+      return this.translate.instant('auth.login.errors.singleSession');
     }
     
     // Check for specific error message patterns
     if (lowerMessage.includes('server.invalidlogin') || 
         lowerMessage.includes('invalidlogin') ||
-        lowerMessage.includes('invalid login')) {
+        lowerMessage.includes('invalid login') ||
+        lowerMessage.includes('login failed')) {
       return this.translate.instant('auth.login.errors.invalidLogin');
     }
     
+    // Check for password-specific errors first
+    if (lowerMessage.includes('incorrect password') ||
+        lowerMessage.includes('wrong password') ||
+        lowerMessage.includes('invalid password') ||
+        lowerMessage.includes('password is incorrect') ||
+        lowerMessage.includes('password incorrect')) {
+      return this.translate.instant('auth.login.errors.wrongPassword');
+    }
+    
     // Check for invalid credentials patterns
+    // If username is provided and looks valid, assume it's a password issue
     if ((lowerMessage.includes('invalid') && 
-         (lowerMessage.includes('login') || lowerMessage.includes('password') || lowerMessage.includes('credential'))) ||
+         (lowerMessage.includes('login') || lowerMessage.includes('password') || lowerMessage.includes('credential') || lowerMessage.includes('username'))) ||
         lowerMessage.includes('unauthorized') ||
-        lowerMessage.includes('incorrect password') ||
-        lowerMessage.includes('wrong password')) {
+        lowerMessage.includes('bad credentials') ||
+        lowerMessage.includes('authentication failed') ||
+        lowerMessage.includes('access denied')) {
+      // If username looks valid, it's likely a password issue
+      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || statusCode === 401)) {
+        return this.translate.instant('auth.login.errors.wrongPassword');
+      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
     
     // Check for LDAP errors
     if (lowerMessage.includes('ldap') && 
-        (lowerMessage.includes('invalid') || lowerMessage.includes('not available') || lowerMessage.includes('inactive'))) {
+        (lowerMessage.includes('invalid') || 
+         lowerMessage.includes('not available') || 
+         lowerMessage.includes('inactive') ||
+         lowerMessage.includes('not configured') ||
+         lowerMessage.includes('connection failed'))) {
       return this.translate.instant('auth.login.errors.invalidLdapSettings');
     }
     
     // Network/connection errors
-    if (error?.status === 0 || 
+    if (statusCode === 0 || 
+        error?.name === 'HttpErrorResponse' && statusCode === 0 ||
         lowerMessage.includes('network') || 
         lowerMessage.includes('connection') ||
         lowerMessage.includes('failed to fetch') ||
         lowerMessage.includes('cannot connect') ||
-        lowerMessage.includes('connection refused')) {
+        lowerMessage.includes('connection refused') ||
+        lowerMessage.includes('timeout') ||
+        lowerMessage.includes('networkerror') ||
+        error?.message?.includes('ERR_INTERNET_DISCONNECTED') ||
+        error?.message?.includes('ERR_CONNECTION_REFUSED')) {
       return this.translate.instant('auth.login.errors.networkError');
     }
     
     // Server errors (5xx)
-    if (error?.status >= 500 || 
+    if (statusCode >= 500 || 
+        statusCode === 503 ||
+        statusCode === 502 ||
+        statusCode === 504 ||
         lowerMessage.includes('internal server error') ||
-        lowerMessage.includes('server error')) {
+        lowerMessage.includes('server error') ||
+        lowerMessage.includes('service unavailable') ||
+        lowerMessage.includes('bad gateway') ||
+        lowerMessage.includes('gateway timeout')) {
       return this.translate.instant('auth.login.errors.serverError');
     }
     
+    // Forbidden (403) - access denied
+    if (statusCode === 403) {
+      return this.translate.instant('auth.login.errors.accessDenied');
+    }
+    
     // Unauthorized (401) - typically invalid credentials
-    if (error?.status === 401) {
+    // If username looks valid, assume it's a password issue
+    if (statusCode === 401) {
+      const hasValidUsername = username && username.trim().length >= 3;
+      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || errorCode === 'INVALID_CREDENTIALS')) {
+        return this.translate.instant('auth.login.errors.wrongPassword');
+      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
     
+    // Bad Request (400) - check if it's a validation error
+    if (statusCode === 400) {
+      if (lowerMessage.includes('username') || lowerMessage.includes('password') || lowerMessage.includes('required')) {
+        return this.translate.instant('auth.login.errors.invalidCredentials');
+      }
+      return this.translate.instant('auth.login.errors.loginFailed');
+    }
+    
     // Default fallback
-    if (errorMessage) {
+    if (errorMessage && errorMessage.trim()) {
       // If it's a technical message (server.*, Error, Exception), use generic error
       if (errorMessage.includes('server.') || 
           errorMessage.includes('Error') || 
           errorMessage.includes('Exception') ||
-          errorMessage.includes('APIOperationResponse')) {
+          errorMessage.includes('APIOperationResponse') ||
+          errorMessage.includes('HttpErrorResponse') ||
+          errorMessage.startsWith('Http failure') ||
+          errorMessage.includes('TypeError') ||
+          errorMessage.includes('ReferenceError')) {
         return this.translate.instant('auth.login.errors.loginFailed');
       }
-      // Otherwise, try to use the message if it's user-friendly
-      return errorMessage;
+      // If message looks user-friendly (not too technical), use it
+      if (errorMessage.length < 100 && !errorMessage.includes('at ') && !errorMessage.includes('Stack')) {
+        return errorMessage;
+      }
     }
     
     return this.translate.instant('auth.login.errors.unknownError');

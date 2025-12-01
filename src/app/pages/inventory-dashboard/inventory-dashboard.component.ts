@@ -30,7 +30,7 @@ import {
 
 interface DashboardCard {
   title: string;
-  status: 'new-issue' | 'on-progress' | 'completed' | 'new';
+  status: 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined';
   orders: OrderItem[];
   permissions: string[];
   departmentIds?: number[];
@@ -81,7 +81,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     { label: 'dashboard.filters.all', value: 'all' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-    { label: 'dashboard.statusLabels.approved', value: 'completed' }
+    { label: 'dashboard.statusLabels.approved', value: 'completed' },
+    { label: 'dashboard.statusLabels.rejected', value: 'declined' }
   ];
 
   // Modal state
@@ -192,6 +193,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         case 'new': return 0;
         case 'on-progress': return 1;
         case 'completed': return 2;
+        case 'declined': return 3;
         default: return 99;
       }
     };
@@ -274,7 +276,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           const isAdmin = this.userContext.isAdminUser();
 
           // Process orders by status
-          [1, 2, 3].forEach(status => {
+          [1, 2, 3, 4].forEach(status => {
             let orderList = orders.filter(o => o.status === status);
             let returnList = (returns || []).filter(r => r.status === status);
             let discardList = (discards || []).filter(d => d.status === status);
@@ -319,8 +321,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
             const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardsView];
             
             if (merged.length > 0) {
-              const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : 'completed';
-              const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : 'Done';
+              const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : status === 3 ? 'completed' : 'declined';
+              const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : status === 3 ? 'Done' : 'Declined';
               
               const card: DashboardCard = {
                 title,
