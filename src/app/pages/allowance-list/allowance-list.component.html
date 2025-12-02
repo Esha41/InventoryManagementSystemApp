@@ -98,8 +98,17 @@
               <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {{ 'allowance.table.item' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {{ 'allowance.table.quantity' | translate }}
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.totalQuantity' | translate }}
+              </th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.usedQuantity' | translate }}
+              </th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.reservedQuantity' | translate }}
+              </th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ 'allowance.table.remainingQuantity' | translate }}
               </th>
               <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="text-align: center;">
                 {{ 'allowance.table.actions' | translate }}
@@ -124,8 +133,17 @@
                   <span *ngIf="allowance.batchNo">{{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo }}</span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-start">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                 {{ allowance.quantity | number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                {{ allowance.usedQuantityFromAllowance | number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                {{ allowance.reservedQuantityByDraftSupplies | number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                {{ allowance.remainingQuantityFromAllowance | number }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                 <div class="flex items-center justify-center gap-2 mx-auto w-fit">

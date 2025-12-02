@@ -10,7 +10,7 @@ export interface AllowanceItemDto {
   quantity: number;
   itemType?: number;
   usedQuantityFromAllowance: number;
-  reservedQuantityByOrdersOnProcessing: number;
+  reservedQuantityByOrdersOnProcessing: number; // Backend API field name
   remainingQuantityFromAllowance: number;
 }
 
@@ -24,7 +24,7 @@ export interface AllowanceItemDetailDto {
   itemNo?: string;
   batchNo?: string;
   usedQuantityFromAllowance: number;
-  reservedQuantityByOrdersOnProcessing: number;
+  reservedQuantityByDraftSupplies: number;
   remainingQuantityFromAllowance: number;
 }
 
@@ -48,6 +48,9 @@ export interface AllowanceTableRow {
   itemNo: string;
   batchNo: string;
   quantity: number;
+  usedQuantityFromAllowance: number;
+  reservedQuantityByDraftSupplies: number;
+  remainingQuantityFromAllowance: number;
   items: AllowanceItemDetailDto[];
 }
 
@@ -58,7 +61,7 @@ export interface AllowanceItemReserveDetailsDto {
   batchNo?: string;
   originalQuantity: number;
   remainingQuantity: number;
-  reservedQuantityByOrdersOnProcessing: number;
+  reservedQuantityByDraftSupplies: number;
   usedQuantity: number;
 }
 

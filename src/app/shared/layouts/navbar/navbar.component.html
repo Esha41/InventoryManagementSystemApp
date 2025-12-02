@@ -94,7 +94,7 @@
               class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors"
             >
               <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-accent)]"></lucide-angular>
-              <span class="font-medium">My Profile</span>
+              <span class="font-medium">{{ 'profile.menu.myProfile' | translate }}</span>
             </button>
 
             <button
@@ -106,7 +106,7 @@
                 <span *ngIf="notificationCount > 0" class="absolute h-3 w-3 bg-[var(--color-error)] rounded-full"
                       [class.-top-1]="true" [class.-right-1]="!isRTL" [class.-left-1]="isRTL"></span>
               </div>
-              <span class="font-medium">Notifications</span>
+              <span class="font-medium">{{ 'notifications.menu.title' | translate }}</span>
               <span *ngIf="notificationCount > 0" class="ml-auto text-xs font-semibold text-[var(--color-error)]">{{ notificationCount }}</span>
             </button>
           </div>
@@ -118,7 +118,7 @@
               class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--color-error)] hover:bg-[var(--color-error)]/5 transition-colors"
             >
               <lucide-angular [img]="LogOut" class="h-4 w-4"></lucide-angular>
-              <span class="font-medium">Sign Out</span>
+              <span class="font-medium">{{ 'accessDenied.logout' | translate }}</span>
             </button>
           </div>
         </div>

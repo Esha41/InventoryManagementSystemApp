@@ -275,6 +275,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       itemId: allowance.itemId,
       itemName: allowance.itemName || allowance.itemNo || `Item ${allowance.itemId}`,
       quantity: allowance.quantity,
+      usedQuantityFromAllowance: allowance.usedQuantityFromAllowance,
+      reservedQuantityByDraftSupplies: allowance.reservedQuantityByDraftSupplies,
+      remainingQuantityFromAllowance: allowance.remainingQuantityFromAllowance,
       isSingleItem: true 
     } as any;
     this.showDeleteDialog = true;

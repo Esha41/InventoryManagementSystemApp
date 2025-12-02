@@ -38,10 +38,10 @@
     "warehouse": "المستودعات",
     "warehouseList": "قائمة المستودعات",
     "workflow": "سير العمل",
-    "department": "منصة إدارة الطلبات",
-    "allowance": "البدل",
+    "department": "القسم",
+    "allowance": "مقرر",
     "orderManagement": "إدارة الطلبات",
-    "newIssueRequest": "انشاء طلب جديد",
+    "newIssueRequest": "طلب صرف",
     "returnRequest": "طلب إرجاع",
     "discardRequest": "طلب إتلاف",
     "requestsManagement": "إدارة الموافقات",
@@ -95,7 +95,7 @@
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
     "usageTime": "وقت الاستخدام",
-    "isFromAllowance": "من المخصص",
+    "isFromAllowance": "من المقرر",
     "numberOfOfficers": "عدد الضباط",
     "numberOfOtherRanks": "عدد الرتب الأخرى",
     "requestPurpose": "غرض الطلب",
@@ -140,6 +140,9 @@
   },
   "notifications": {
     "title": "الإشعارات",
+    "menu": {
+      "title": "الإشعارات"
+    },
     "subtitle": "{{count}} إشعار غير مقروء",
     "recent": "أحدث الإشعارات",
     "total": "الإجمالي:",
@@ -201,8 +204,8 @@
     }
   },
   "newIssueRequest": {
-    "title": "انشاء طلب جديد",
-    "newOrderIssue": "انشاء طلب جديد",
+    "title": "طلب صرف",
+    "newOrderIssue": "طلب صرف",
     "allowanceSelection": "مصدر الطلب",
     "selection": "الاختيار",
     "usage": "الاستخدام",
@@ -210,8 +213,8 @@
     "send": "إرسال",
     "selectOrderSource": "اختر مصدر الطلب",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مخصص قسمك أو من جميع الذخائر المتاحة",
-    "fromAllowance": "من المخصص",
-    "fromAllowanceDescription": "طلب العناصر من مخصص قسمك المحدد مسبقاً لهذا العام",
+    "fromAllowance": "من المقرر",
+    "fromAllowanceDescription": "طلب العناصر من مقرر قسمك المحدد مسبقاً لهذا العام",
     "fromAllAmmunition": "من جميع الذخائر",
     "fromAllAmmunitionDescription": "طلب أي عناصر من المخزون الكامل للذخائر",
     "cartridgeList": "قائمة الذخائر",
@@ -235,8 +238,8 @@
     "usageTimeFrom": "وقت الاستخدام من",
     "usageDateTo": "تاريخ الاستخدام إلى",
     "usageTimeTo": "وقت الاستخدام إلى",
-    "totalReserve": "البدل الكلي",
-    "availableReserve": "البدل المتاح",
+    "totalReserve": "المقرر الكلي",
+    "availableReserve": "المقرر المتاح",
     "orderedQuantity": "الكمية المطلوبة",
     "usedQuantity": "الكمية المستخدمة",
     "itemName": "اسم العنصر",
@@ -312,8 +315,8 @@
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
     },
     "errors": {
-      "allowanceExceeded": "الكمية المطلوبة ({{requestedQuantity}}) تتجاوز البدل المتاح. المتاح: {{availableQuantity}}",
-      "failedToVerifyAllowance": "فشل التحقق من البدل. يرجى المحاولة مرة أخرى."
+      "allowanceExceeded": "الكمية المطلوبة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
+      "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى."
     }
   },
   "inventoryForecast": {
@@ -1340,10 +1343,10 @@
     }
   },
   "allowance": {
-    "title": "البدل",
-    "subtitle": "إدارة وعرض عناصر البدل حسب القسم",
-    "addAllowance": "إضافة بدل",
-    "addSubtitle": "إنشاء طلب بدل جديد لقسم",
+    "title": "مقرر",
+    "subtitle": "إدارة وعرض عناصر المقرر حسب القسم",
+    "addAllowance": "إضافة مقرر",
+    "addSubtitle": "إنشاء طلب مقرر جديد لقسم",
     "backToList": "العودة إلى القائمة",
     "department": "القسم",
     "selectDepartment": "اختر القسم",
@@ -1365,8 +1368,8 @@
     "quantityPlaceholder": "أدخل الكمية",
     "send": "إرسال",
     "sending": "جاري الإرسال...",
-    "noAllowances": "لم يتم العثور على بدلات",
-    "noAllowancesDescription": "ابدأ بإنشاء طلب بدل جديد",
+    "noAllowances": "لم يتم العثور على مقررات",
+    "noAllowancesDescription": "ابدأ بإنشاء طلب مقرر جديد",
     "searchPlaceholder": "البحث حسب القسم...",
     "table": {
       "department": "القسم",
@@ -1374,16 +1377,20 @@
       "item": "العنصر",
       "items": "العناصر",
       "quantity": "الكمية",
+      "totalQuantity": "مجموع المقرر",
+      "usedQuantity": "المسحوب سابقا",
+      "reservedQuantity": "الكمية المحجوزة",
+      "remainingQuantity": "الرصيد المتبقي",
       "actions": "الإجراءات"
     },
     "edit": "تعديل",
     "delete": "حذف",
-    "deleteConfirmTitle": "حذف البدل",
-    "deleteConfirmMessage": "هل أنت متأكد أنك تريد حذف هذا البدل؟ لا يمكن التراجع عن هذا الإجراء.",
-    "deletedSuccessfully": "تم حذف البدل بنجاح",
-    "itemDeletedSuccessfully": "تم حذف عنصر البدل بنجاح",
-    "failedToDelete": "فشل حذف البدل",
-    "failedToDeleteItem": "فشل حذف عنصر البدل",
+    "deleteConfirmTitle": "حذف المقرر",
+    "deleteConfirmMessage": "هل أنت متأكد أنك تريد حذف هذا المقرر؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deletedSuccessfully": "تم حذف المقرر بنجاح",
+    "itemDeletedSuccessfully": "تم حذف عنصر المقرر بنجاح",
+    "failedToDelete": "فشل حذف المقرر",
+    "failedToDeleteItem": "فشل حذف عنصر المقرر",
     "alreadyDeleted": "تم الحذف مسبقاً",
     "failedToLoadForDeletion": "فشل تحميل العناصر للحذف",
     "errors": {
@@ -1395,15 +1402,18 @@
       "itemIdInvalid": "يرجى اختيار عنصر صحيح من القائمة",
       "quantityRequired": "الكمية مطلوبة",
       "quantityInvalid": "يجب أن تكون الكمية رقماً صحيحاً",
-      "failedToSend": "فشل إرسال طلب البدل",
-      "failedToLoad": "فشل تحميل البدلات"
+      "failedToSend": "فشل إرسال طلب المقرر",
+      "failedToLoad": "فشل تحميل المقررات"
     },
     "success": {
-      "sentSuccessfully": "تم إرسال طلب البدل بنجاح!"
+      "sentSuccessfully": "تم إرسال طلب المقرر بنجاح!"
     }
   },
   "profile": {
     "title": "ملفي الشخصي",
+    "menu": {
+      "myProfile": "ملفي الشخصي"
+    },
     "subtitle": "عرض معلومات حسابك والصلاحيات",
     "userInformation": "معلومات المستخدم",
     "username": "اسم المستخدم",

@@ -57,7 +57,7 @@ export function processAllowanceData(
       itemNo: ammunition?.itemNo,
       batchNo: ammunition?.batchNo,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
-      reservedQuantityByOrdersOnProcessing: item.reservedQuantityByOrdersOnProcessing || 0,
+      reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
       remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0
     });
   });
@@ -76,6 +76,9 @@ export function processAllowanceData(
       itemNo: ammunition?.itemNo || '',
       batchNo: ammunition?.batchNo || '',
       quantity: item.quantity,
+      usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
+      reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
+      remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0,
       items: groupedItems.get(key)! 
     };
   });

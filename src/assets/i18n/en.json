@@ -142,6 +142,9 @@
   },
   "notifications": {
     "title": "Notifications",
+    "menu": {
+      "title": "Notifications"
+    },
     "subtitle": "{{count}} unread notifications",
     "recent": "Recent Notifications",
     "total": "Total:",
@@ -1379,6 +1382,10 @@
       "item": "Item",
       "items": "Items",
       "quantity": "Quantity",
+      "totalQuantity": "Total Quantity",
+      "usedQuantity": "Used Quantity",
+      "reservedQuantity": "Reserved quantity",
+      "remainingQuantity": "Remaining Quantity",
       "actions": "Actions"
     },
     "edit": "Edit",
@@ -1409,6 +1416,9 @@
   },
   "profile": {
     "title": "My Profile",
+    "menu": {
+      "myProfile": "My Profile"
+    },
     "subtitle": "View your account information and permissions",
     "userInformation": "User Information",
     "username": "Username",
