@@ -44,8 +44,15 @@ export interface InventoryDetailDto {
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
-  itemQuantity: number;
+  originalQuantity: number;
   currentQuantity: number;
+  batchNo?: string;
+  expiryDate?: Date | string;
+  readyForIssue: boolean;
+  usedQuantity: number;
+  reservedQuantityByOrdersOnProcessing: number;
+  remainingQuantity: number;
+  isLotEmpty: boolean;
   
   // Navigation properties
   item?: BaseItemDto;
@@ -95,7 +102,10 @@ export interface CreateInventoryDetailDto {
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
-  itemQuantity: number;
+  originalQuantity: number;
+  batchNo?: string;
+  expiryDate?: Date | string;
+  readyForIssue?: boolean;
 }
 
 /**
@@ -117,6 +127,19 @@ export interface UpdateInventoryDetailDto {
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
-  itemQuantity: number;
+  originalQuantity: number;
+  batchNo?: string;
+  expiryDate?: Date | string;
+  readyForIssue?: boolean;
+}
+
+export interface ItemInventorySummaryDto {
+  itemId: number;
+  itemName: string;
+  totalQuantity: number;
+  usedQuantity: number;
+  reservedQuantityByOrdersOnProcessing: number;
+  remainingQuantity: number;
+  totalLots: number;
 }
 

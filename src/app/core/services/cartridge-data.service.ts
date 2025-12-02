@@ -11,7 +11,7 @@ export interface ReserveDetails {
   totalReserve: number;
   totalAvailableReserve: number;
   totalOrderedQuantity: number;
-  totalUtilizedQuantity: number;
+  totalUsedQuantity: number;
   items: any[];
 }
 
@@ -24,7 +24,7 @@ export interface ReserveDetailsResult {
   totalReserve: number;
   availableReserve: number;
   orderedQuantity: number;
-  utilizedQuantity: number;
+  usedQuantity: number;
   reserveDetailsByItem: any[];
 }
 
@@ -106,19 +106,28 @@ export class CartridgeDataService {
     return this.apiService.getWithAuth<any>(endpoint).pipe(
       map((response) => {
         if (response.succeeded && response.data) {
+          // Map the new API field names to the expected format
           return {
-            totalReserve: response.data.totalReserve || 0,
-            availableReserve: response.data.totalAvailableReserve || 0,
-            orderedQuantity: response.data.totalOrderedQuantity || 0,
-            utilizedQuantity: response.data.totalUtilizedQuantity || 0,
-            reserveDetailsByItem: response.data.items || []
+            totalReserve: response.data.totalOriginalQuantity || response.data.totalReserve || 0,
+            availableReserve: response.data.totalRemainingQuantity || response.data.totalAvailableReserve || 0,
+            orderedQuantity: response.data.totalReservedQuantityByOrdersOnProcessing || response.data.totalOrderedQuantity || 0,
+            usedQuantity: response.data.totalUsedQuantity || 0,
+            reserveDetailsByItem: (response.data.items || []).map((item: any) => ({
+              itemId: item.itemId,
+              itemName: item.itemName,
+              itemNo: item.itemNo,
+              totalReserve: item.originalQuantity || item.totalReserve || 0,
+              availableReserve: item.remainingQuantity || item.availableReserve || 0,
+              orderedQuantity: item.reservedQuantityByOrdersOnProcessing || item.orderedQuantity || 0,
+              usedQuantity: item.usedQuantity || 0
+            }))
           };
         }
         return {
           totalReserve: 0,
           availableReserve: 0,
           orderedQuantity: 0,
-          utilizedQuantity: 0,
+          usedQuantity: 0,
           reserveDetailsByItem: []
         };
       }),
@@ -128,7 +137,7 @@ export class CartridgeDataService {
           totalReserve: 0,
           availableReserve: 0,
           orderedQuantity: 0,
-          utilizedQuantity: 0,
+          usedQuantity: 0,
           reserveDetailsByItem: []
         }));
       })

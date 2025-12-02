@@ -533,7 +533,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     (inventories || []).forEach((inv: any) => {
       const details = inv.inventoryDetails || [];
       details.forEach((d: any) => {
-        const quantity = Number(d.itemQuantity ?? d.currentQuantity ?? 0);
+        const quantity = Number(d.originalQuantity ?? d.currentQuantity ?? 0);
         const itemId = d.itemId;
         const itemName = d.item?.name || d.item?.itemNo || 'Item';
         
@@ -593,8 +593,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     // This shows distribution of orders across months in the current year
     const monthlyCounts = Array(12).fill(0);
     orders.forEach((order: OrderDto) => {
-      if (order.usageDate) {
-        const orderDate = new Date(order.usageDate);
+      if (order.usageDateFrom) {
+        const orderDate = new Date(order.usageDateFrom);
         // Only count orders from current year
         if (orderDate.getFullYear() === currentYear && !isNaN(orderDate.getTime())) {
           const month = orderDate.getMonth();
@@ -700,7 +700,12 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   // Formatting helpers
   formatOrderDate(order: OrderDto): string {
-    return this.formatDate(order.usageDate);
+    if (!order.usageDateFrom) return 'N/A';
+    
+    const fromDate = this.formatDate(order.usageDateFrom);
+    const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : '';
+    
+    return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
 
   private formatDate(source?: string | Date): string {
@@ -753,8 +758,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   formatOrderUsageTime(order: OrderDto | null): string {
-    if (!order?.usageTime) return 'N/A';
-    return order.usageTime.length >= 5 ? order.usageTime.substring(0, 5) : order.usageTime;
+    if (!order) return 'N/A';
+    
+    const fromTime = order.usageTimeFrom ? (order.usageTimeFrom.length >= 5 ? order.usageTimeFrom.substring(0, 5) : order.usageTimeFrom) : '';
+    const toTime = order.usageTimeTo ? (order.usageTimeTo.length >= 5 ? order.usageTimeTo.substring(0, 5) : order.usageTimeTo) : '';
+    
+    if (!fromTime) return 'N/A';
+    return toTime ? `${fromTime} - ${toTime}` : fromTime;
   }
 
   // Statistics getters

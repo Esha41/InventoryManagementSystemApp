@@ -37,7 +37,7 @@ export function mapOrderToSupplyRequest(order: OrderDto): SupplyRequest {
     requestType: order.requestType === 1 ? 'Order' : 'Return',
     quantity: totalQuantity,
     priority: priorityMap[order.priority] || 'Low',
-    requestDate: formatDate(order.usageDate),
+    requestDate: formatDate(order.usageDateFrom),
     status: statusMap[order.status] || 'Pending'
   };
 }

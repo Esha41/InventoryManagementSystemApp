@@ -40,12 +40,13 @@ export interface CartridgeState {
 
 export interface UsageFormData {
   usePurpose: string;
-  annualDiscardSpecialOps: string;
   usageLocation: string;
   numberOfOfficers: number | null;
   numberOfOtherRanks: number | null;
-  usageDate: string;
-  usageTime: string;
+  usageDateFrom: string;
+  usageTimeFrom: string;
+  usageDateTo: string;
+  usageTimeTo: string;
   orderPriority: string;
 }
 
@@ -53,7 +54,7 @@ export interface ReserveDetailsState {
   totalReserve: number;
   availableReserve: number;
   orderedQuantity: number;
-  utilizedQuantity: number;
+  usedQuantity: number;
   loadingReserveDetails: boolean;
   reserveDetailsByItem: any[];
 }

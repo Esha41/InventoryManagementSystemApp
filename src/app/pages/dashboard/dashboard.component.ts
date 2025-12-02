@@ -483,7 +483,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(order.status),
         orders: [{
           orderId: getRequestTitle(order, order.orderNo),
-          requestDate: formatRequestDate(order.usageDate),
+          requestDate: this.formatOrderDate(order),
           departmentName: this.resolveOrderDepartmentName(order),
           requesterName: order.requesterName || 'N/A',
           items: mapRequestItems(order.requestItems)
@@ -648,7 +648,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Format order date for display
    */
   formatOrderDate(order: OrderDto): string {
-    return formatRequestDate(order.usageDate);
+    if (!order.usageDateFrom) return 'N/A';
+    
+    const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
+    const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+    
+    return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
 
   /**
@@ -717,10 +722,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Format order usage time (HH:MM format)
    */
   formatOrderUsageTime(order: OrderDto | null): string {
-    if (!order?.usageTime) {
-      return 'N/A';
-    }
-    return order.usageTime.length >= 5 ? order.usageTime.substring(0, 5) : order.usageTime;
+    if (!order) return 'N/A';
+    
+    const fromTime = order.usageTimeFrom ? (order.usageTimeFrom.length >= 5 ? order.usageTimeFrom.substring(0, 5) : order.usageTimeFrom) : '';
+    const toTime = order.usageTimeTo ? (order.usageTimeTo.length >= 5 ? order.usageTimeTo.substring(0, 5) : order.usageTimeTo) : '';
+    
+    if (!fromTime) return 'N/A';
+    return toTime ? `${fromTime} - ${toTime}` : fromTime;
   }
 }
 

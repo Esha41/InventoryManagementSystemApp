@@ -44,7 +44,7 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
     issueNo: order.requestNo || order.orderNo || `#${order.id}`,
     requestType: order.requestType === 1 ? 'Order' : 'Return',
     priority: priorityMap[order.priority] || 'Low',
-    requestDate: formatDate(order.usageDate),
+    requestDate: formatDate(order.usageDateFrom),
     requesterName: order.requesterName || 'N/A',
     requesterId: order.requesterId || 'N/A',
     requesterRank: 'N/A',

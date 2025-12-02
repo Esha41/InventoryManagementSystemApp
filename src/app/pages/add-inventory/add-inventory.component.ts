@@ -117,7 +117,10 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     return this.fb.group({
       itemId: [null, [Validators.required]],
       lot: [1, [Validators.required, Validators.min(1)]],
-      itemQuantity: [1000, [Validators.required, Validators.min(1)]],
+      originalQuantity: [1000, [Validators.required, Validators.min(1)]],
+      batchNo: [''],
+      expiryDate: [''],
+      readyForIssue: [true],
       supplierId: [null],
       manufacturerId: [null],
       countryId: [null]
@@ -342,14 +345,20 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         supplierId?: number;
         manufacturerId?: number;
         countryId?: number;
-        itemQuantity: number;
+        originalQuantity: number;
+        batchNo?: string;
+        expiryDate?: string;
+        readyForIssue?: boolean;
       }) => ({
         itemId: item.itemId,
         lot: item.lot,
         supplierId: item.supplierId || undefined,
         manufacturerId: item.manufacturerId || undefined,
         countryId: item.countryId || undefined,
-        itemQuantity: item.itemQuantity
+        originalQuantity: item.originalQuantity,
+        batchNo: item.batchNo?.trim() || undefined,
+        expiryDate: item.expiryDate || undefined,
+        readyForIssue: item.readyForIssue ?? true
       }))
     };
 

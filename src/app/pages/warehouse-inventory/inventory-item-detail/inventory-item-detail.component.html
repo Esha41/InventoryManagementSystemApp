@@ -154,7 +154,7 @@
             <div class="space-y-4">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Total Quantity</span>
-                <span class="text-lg font-bold text-gray-900">{{ formatNumber(inventoryDetail.itemQuantity) }}</span>
+                <span class="text-lg font-bold text-gray-900">{{ formatNumber(inventoryDetail.originalQuantity) }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Current Available</span>
@@ -215,7 +215,7 @@
                 Lot {{ inventoryDetail.lot }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatNumber(inventoryDetail.itemQuantity) }}
+                {{ formatNumber(inventoryDetail.originalQuantity) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {{ getUtilizationPercentage() }}%
@@ -246,7 +246,7 @@
           </div>
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="text-xs font-semibold text-gray-700">
-              {{ formatNumber(inventoryDetail.currentQuantity) }} / {{ formatNumber(inventoryDetail.itemQuantity) }}
+              {{ formatNumber(inventoryDetail.currentQuantity) }} / {{ formatNumber(inventoryDetail.originalQuantity) }}
             </span>
           </div>
         </div>

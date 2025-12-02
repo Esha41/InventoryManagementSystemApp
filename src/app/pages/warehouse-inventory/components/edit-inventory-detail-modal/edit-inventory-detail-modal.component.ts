@@ -63,7 +63,10 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   private initializeForm(): void {
     this.detailForm = this.fb.group({
       lot: [this.inventoryDetail?.lot || 1, [Validators.required, Validators.min(1)]],
-      itemQuantity: [this.inventoryDetail?.itemQuantity || 1000, [Validators.required, Validators.min(1)]],
+      originalQuantity: [this.inventoryDetail?.originalQuantity || 1000, [Validators.required, Validators.min(1)]],
+      batchNo: [this.inventoryDetail?.batchNo || ''],
+      expiryDate: [this.inventoryDetail?.expiryDate || ''],
+      readyForIssue: [this.inventoryDetail?.readyForIssue ?? true],
       supplierId: [this.inventoryDetail?.supplierId || null],
       manufacturerId: [this.inventoryDetail?.manufacturerId || null],
       countryId: [this.inventoryDetail?.countryId || null]
@@ -74,7 +77,10 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     if (this.inventoryDetail) {
       this.detailForm.patchValue({
         lot: this.inventoryDetail.lot,
-        itemQuantity: this.inventoryDetail.itemQuantity,
+        originalQuantity: this.inventoryDetail.originalQuantity,
+        batchNo: this.inventoryDetail.batchNo || '',
+        expiryDate: this.inventoryDetail.expiryDate || '',
+        readyForIssue: this.inventoryDetail.readyForIssue ?? true,
         supplierId: this.inventoryDetail.supplierId || null,
         manufacturerId: this.inventoryDetail.manufacturerId || null,
         countryId: this.inventoryDetail.countryId || null
@@ -117,7 +123,10 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       supplierId: this.detailForm.value.supplierId || undefined,
       manufacturerId: this.detailForm.value.manufacturerId || undefined,
       countryId: this.detailForm.value.countryId || undefined,
-      itemQuantity: this.detailForm.value.itemQuantity
+      originalQuantity: this.detailForm.value.originalQuantity,
+      batchNo: this.detailForm.value.batchNo?.trim() || undefined,
+      expiryDate: this.detailForm.value.expiryDate || undefined,
+      readyForIssue: this.detailForm.value.readyForIssue ?? true
     };
 
     this.saved.emit(updateDto);

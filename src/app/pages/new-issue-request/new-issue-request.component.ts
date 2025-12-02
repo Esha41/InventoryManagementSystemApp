@@ -107,12 +107,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   usageFormData: UsageFormData = {
     usePurpose: '',
-    annualDiscardSpecialOps: '',
     usageLocation: '',
     numberOfOfficers: null,
     numberOfOtherRanks: null,
-    usageDate: '',
-    usageTime: '',
+    usageDateFrom: '',
+    usageTimeFrom: '',
+    usageDateTo: '',
+    usageTimeTo: '',
     orderPriority: ''
   };
 
@@ -120,7 +121,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     totalReserve: 0,
     availableReserve: 0,
     orderedQuantity: 0,
-    utilizedQuantity: 0,
+    usedQuantity: 0,
     loadingReserveDetails: false,
     reserveDetailsByItem: []
   };
@@ -302,7 +303,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.reserveDetailsState.totalReserve = result.totalReserve;
         this.reserveDetailsState.availableReserve = result.availableReserve;
         this.reserveDetailsState.orderedQuantity = result.orderedQuantity;
-        this.reserveDetailsState.utilizedQuantity = result.utilizedQuantity;
+        this.reserveDetailsState.usedQuantity = result.usedQuantity;
         this.reserveDetailsState.reserveDetailsByItem = result.reserveDetailsByItem;
         this.reserveDetailsState.loadingReserveDetails = false;
       },
@@ -624,8 +625,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0);
   }
 
-  get selectedUtilizedQuantity(): number {
-    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.utilizedQuantity || 0), 0);
+  get selectedUsedQuantity(): number {
+    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.usedQuantity || 0), 0);
   }
 
   onSubmitOrder(): void {
@@ -637,11 +638,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       selectedEntries: this.cartridgeState.selectedEntries,
       selectedRequestPurposeId: this.requestPurposeState.selectedRequestPurposeId,
       usePurpose: this.usageFormData.usePurpose,
-      usageDate: this.usageFormData.usageDate,
-      usageTime: this.usageFormData.usageTime,
+      usageDateFrom: this.usageFormData.usageDateFrom,
+      usageTimeFrom: this.usageFormData.usageTimeFrom,
+      usageDateTo: this.usageFormData.usageDateTo,
+      usageTimeTo: this.usageFormData.usageTimeTo,
       usageLocation: this.usageFormData.usageLocation,
       orderPriority: this.usageFormData.orderPriority,
-      annualDiscardSpecialOps: this.usageFormData.annualDiscardSpecialOps,
       numberOfOfficers: this.usageFormData.numberOfOfficers,
       numberOfOtherRanks: this.usageFormData.numberOfOtherRanks,
       requesterComments: this.reviewFormData.requesterComments,
@@ -828,12 +830,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     // Reset usage form data
     this.usageFormData = {
       usePurpose: '',
-      annualDiscardSpecialOps: '',
       usageLocation: '',
       numberOfOfficers: null,
       numberOfOtherRanks: null,
-      usageDate: '',
-      usageTime: '',
+      usageDateFrom: '',
+      usageTimeFrom: '',
+      usageDateTo: '',
+      usageTimeTo: '',
       orderPriority: ''
     };
 
@@ -860,7 +863,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       totalReserve: 0,
       availableReserve: 0,
       orderedQuantity: 0,
-      utilizedQuantity: 0,
+      usedQuantity: 0,
       loadingReserveDetails: false,
       reserveDetailsByItem: []
     };

@@ -112,11 +112,16 @@
               <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usageLocation }}</p>
             </div>
 
-            <div *ngIf="orderData?.usageDate">
+            <div *ngIf="orderData?.usageDateFrom">
               <label class="text-xs font-semibold text-gray-500 uppercase">
                 {{ 'supplyRequestDetail.usageDate' | translate }}
               </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ formatDate(orderData?.usageDate) }}</p>
+              <p class="text-sm text-gray-900 mt-1 font-medium">
+                {{ formatDate(orderData?.usageDateFrom) }} 
+                <span *ngIf="orderData?.usageTimeFrom">{{ orderData?.usageTimeFrom | slice:0:5 }}</span>
+                <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
+                <span *ngIf="orderData?.usageTimeTo"> {{ orderData?.usageTimeTo | slice:0:5 }}</span>
+              </p>
             </div>
           </div>
           </div>

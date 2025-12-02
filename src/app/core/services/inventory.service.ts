@@ -9,7 +9,8 @@ import {
   InventoryDto,
   CreateInventoryDto,
   UpdateInventoryDto,
-  InventoryDetailDto
+  InventoryDetailDto,
+  ItemInventorySummaryDto
 } from '@models/inventory.model';
 
 /**
@@ -250,6 +251,28 @@ export class InventoryService {
       })
     );
   }
+  /**
+   * Get aggregated inventory summary for a specific item
+   * Endpoint: GET /api/Inventory/item/{itemId}/summary
+   */
+  getItemInventorySummary(itemId: number): Observable<ItemInventorySummaryDto> {
+    this.config.log(`Fetching inventory summary for item ${itemId}`);
+    
+    return this.http.get<APIOperationResponse<ItemInventorySummaryDto>>(
+      `${this.baseUrl}/item/${itemId}/summary`
+    ).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        throw new Error(response.message || 'Failed to fetch inventory summary');
+      }),
+      catchError(err => {
+        this.config.logError(`Failed to fetch inventory summary for item ${itemId}`, err);
+        throw err;
+      })
+    );
+  }
 }
 
 export interface LotDetailDto {
@@ -260,9 +283,12 @@ export interface LotDetailDto {
   originalQuantity: number;
   usedQuantity: number;
   remainingQuantity: number;
+  reservedQuantityByOrdersOnProcessing: number;
   isEmptyLot: boolean;
   isExpired: boolean;
   expiryDate?: string;
+  batchNo?: string;
+  readyForIssue: boolean;
   inventoryId: number;
   depot?: {
     id: number;

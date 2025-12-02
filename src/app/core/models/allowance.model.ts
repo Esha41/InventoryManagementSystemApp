@@ -9,6 +9,9 @@ export interface AllowanceItemDto {
   year: number;
   quantity: number;
   itemType?: number;
+  usedQuantityFromAllowance: number;
+  reservedQuantityByOrdersOnProcessing: number;
+  remainingQuantityFromAllowance: number;
 }
 
 export interface AllowanceItemDetailDto {
@@ -20,6 +23,9 @@ export interface AllowanceItemDetailDto {
   itemName?: string;
   itemNo?: string;
   batchNo?: string;
+  usedQuantityFromAllowance: number;
+  reservedQuantityByOrdersOnProcessing: number;
+  remainingQuantityFromAllowance: number;
 }
 
 export interface AllowanceItemByDepartmentDto {
@@ -43,5 +49,29 @@ export interface AllowanceTableRow {
   batchNo: string;
   quantity: number;
   items: AllowanceItemDetailDto[];
+}
+
+export interface AllowanceItemReserveDetailsDto {
+  itemId: number;
+  itemName: string;
+  itemNo: string;
+  batchNo?: string;
+  originalQuantity: number;
+  remainingQuantity: number;
+  reservedQuantityByOrdersOnProcessing: number;
+  usedQuantity: number;
+}
+
+export interface AllowanceReserveDetailsByItemDto {
+  departmentId: number;
+  departmentCode: string;
+  departmentNameAr: string;
+  departmentNameEn: string;
+  year: number;
+  totalOriginalQuantity: number;
+  totalRemainingQuantity: number;
+  totalReservedQuantityByOrdersOnProcessing: number;
+  totalUsedQuantity: number;
+  items: AllowanceItemReserveDetailsDto[];
 }
 

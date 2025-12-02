@@ -160,8 +160,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       supplierId: undefined,
       manufacturerId: undefined,
       countryId: undefined,
-      itemQuantity: 0,
+      originalQuantity: 0,
       currentQuantity: 0,
+      batchNo: undefined,
+      expiryDate: undefined,
+      readyForIssue: true,
+      usedQuantity: 0,
+      reservedQuantityByOrdersOnProcessing: 0,
+      remainingQuantity: 0,
+      isLotEmpty: false,
       item: {
         ...item,
         itemType: item.itemType || itemType // Preserve original itemType or use provided one
@@ -400,7 +407,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           supplierId: d.supplierId,
           manufacturerId: d.manufacturerId,
           countryId: d.countryId,
-          itemQuantity: d.itemQuantity
+          originalQuantity: d.originalQuantity,
+          batchNo: d.batchNo,
+          expiryDate: d.expiryDate,
+          readyForIssue: d.readyForIssue ?? true
         }
       )
     };
@@ -488,7 +498,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
                 supplierId: d.supplierId,
                 manufacturerId: d.manufacturerId,
                 countryId: d.countryId,
-                itemQuantity: d.itemQuantity
+                originalQuantity: d.originalQuantity,
+                batchNo: d.batchNo,
+                expiryDate: d.expiryDate,
+                readyForIssue: d.readyForIssue ?? true
               }))
             };
 
