@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
@@ -18,6 +18,7 @@ import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBad
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -29,7 +30,8 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
     LucideAngularModule, 
     HasPermissionDirective,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    DropdownComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css']
@@ -66,8 +68,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   
   // Approval/Rejection form
   comments: string = '';
-  sendToHigherApproval: boolean = false;
+  sendToHigherApproval: string = 'no'; // 'yes' = yes, 'no' = no (default is 'no')
   processing: boolean = false;
+  
+  // Higher approval dropdown options
+  higherApprovalOptions = [
+    { value: 'yes', label: 'Yes' },
+    { value: 'no', label: 'No' }
+  ];
 
   // Pickup date management
   pickupDate: string = '';
@@ -96,7 +104,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private supplyService: SupplyService,
     private lookupService: LookupService,
-    public translationService: TranslationService
+    public translationService: TranslationService,
+    private translateService: TranslateService
   ) {}
 
   get isRTL(): boolean {
@@ -130,6 +139,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.error = null;
     // Reset pickup date state when loading new request
     this.isPickupDateAlreadySet = false;
+    // Reset higher approval selection to default 'no'
+    this.sendToHigherApproval = 'no';
 
     this.apiService.getWithAuth<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
@@ -319,7 +330,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       baseRequestID: this.requestId,
       isApproved: true,
       comments: this.comments || undefined,
-      sendToHigherApproval: this.sendToHigherApproval || false,
+      sendToHigherApproval: this.sendToHigherApproval === 'yes',
       action: RequestStatusEnum.Approved
     };
 
@@ -331,7 +342,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     .subscribe({
       next: () => {
         this.comments = '';
-        this.sendToHigherApproval = false;
+        this.sendToHigherApproval = 'no';
         // Reload to get updated status and approval history
         this.loadRequestDetail();
       },
@@ -359,7 +370,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       baseRequestID: this.requestId,
       isApproved: false,
       comments: this.comments || undefined,
-      sendToHigherApproval: this.sendToHigherApproval || false,
+      sendToHigherApproval: this.sendToHigherApproval === 'yes',
       action: RequestStatusEnum.Rejected
     };
 
@@ -371,7 +382,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     .subscribe({
       next: () => {
         this.comments = '';
-        this.sendToHigherApproval = false;
+        this.sendToHigherApproval = 'no';
         // Reload to get updated status and approval history
         this.loadRequestDetail();
       },
@@ -385,6 +396,25 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
+  /**
+   * Get label for higher approval dropdown option
+   */
+  higherApprovalOptionLabel = (option: DropdownOption<{value: string, label: string}> | {value: string, label: string} | null): string => {
+    if (!option) return '';
+    let item: {value: string, label: string} | null = null;
+    
+    if (typeof option === 'object' && option !== null) {
+      if ('value' in option) {
+        item = option.value as {value: string, label: string};
+      } else if ('value' in option && 'label' in option) {
+        item = option as {value: string, label: string};
+      }
+    }
+    
+    if (!item || !item.value) return '';
+    return this.translateService.instant(item.value === 'yes' ? 'common.yes' : 'common.no');
+  };
 
   canApproveOrReject(): boolean {
     if (!this.requestDetail || this.processing) {

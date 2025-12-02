@@ -117,7 +117,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     return this.fb.group({
       itemId: [null, [Validators.required]],
       lot: [1, [Validators.required, Validators.min(1)]],
-      originalQuantity: [1000, [Validators.required, Validators.min(1)]],
+      originalQuantity: [0, [Validators.required, Validators.min(1)]],
       batchNo: [''],
       expiryDate: [''],
       readyForIssue: [true],
@@ -157,7 +157,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading data:', error);
-        this.errorMessage = 'Failed to load form data';
+        this.errorMessage = this.translateService.instant('addInventory.loadError');
         this.loading = false;
       }
     });
@@ -232,7 +232,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     }
     
     if (control.errors['required']) {
-      return 'This field is required';
+      return this.translateService.instant('addInventory.required');
     }
     if (control.errors['min']) {
       return `Value must be at least ${control.errors['min'].min}`;
@@ -241,7 +241,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       return `Maximum length is ${control.errors['maxlength'].requiredLength}`;
     }
     if (control.errors['futureDate']) {
-      return 'Date cannot be in the future';
+      return this.translateService.instant('addInventory.cannotBeFuture');
     }
     
     return null;
@@ -320,6 +320,18 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Show a clear message if any quantity is zero or below minimum
+    const hasInvalidQuantity = this.itemsFormArray.controls.some(itemGroup => {
+      const qtyControl = (itemGroup as FormGroup).get('originalQuantity');
+      return qtyControl && (qtyControl.value === 0 || qtyControl.hasError('min'));
+    });
+
+    if (hasInvalidQuantity) {
+      const title = this.translateService.instant('toast.error');
+      const message = this.translateService.instant('addInventory.quantityMustBeGreaterThanZero');
+      this.toastService.error(message, title);
+    }
+
     // Check if form is valid
     if (this.inventoryForm.invalid) {
       return;
@@ -384,7 +396,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         },
         error: (error: unknown) => {
           console.error('Error creating inventory:', error);
-          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create inventory');
+          const fallbackMessage = this.translateService.instant('addInventory.createError');
+          const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
           this.errorMessage = errorMsg;
           this.submitting = false;
           
