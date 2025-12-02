@@ -19,7 +19,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { mapApprovalHistory } from '@utils/request-mapper.utils';
+import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import {
   mapOrderToSummary,
@@ -198,7 +198,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           }
           
           // Use the same mapping function as other components
-          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory);
+          // Pass the request status to filter out pending steps if approved
+          // Convert numeric status to RequestStatus string type using mapRequestStatus
+          const requestStatus = mapRequestStatus(baseRequest.status);
+          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
           
           // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
           return workflowSteps.map((step, index) => ({

@@ -324,7 +324,7 @@
               </div>
 
               <div class="overflow-hidden rounded-xl border-2 border-slate-200 shadow-sm">
-                <div *ngIf="approvalWorkflow.length > 0" class="bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-4 grid grid-cols-5 gap-4">
+                <div *ngIf="approvalWorkflow.length > 0" class="bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-4 grid gap-4" style="grid-template-columns: 60px 1fr 1.5fr 140px 120px;">
                   <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.step' | translate }}</span>
                   <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.role' | translate }}</span>
                   <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.approver' | translate }}</span>
@@ -332,11 +332,11 @@
                   <span class="text-xs font-bold text-white uppercase tracking-wider">{{ 'requestsManagement.orderReport.table.status' | translate }}</span>
                 </div>
                 <div class="divide-y divide-slate-100">
-                  <div *ngFor="let step of approvalWorkflow" class="grid grid-cols-5 gap-4 px-5 py-4 text-sm hover:bg-slate-50 transition-colors">
+                  <div *ngFor="let step of approvalWorkflow" class="grid gap-4 px-5 py-4 text-sm hover:bg-slate-50 transition-colors" style="grid-template-columns: 60px 1fr 1.5fr 140px 120px;">
                     <div class="font-bold text-slate-900">{{ step.step }}</div>
-                    <div class="text-slate-600">{{ step.role }}</div>
-                    <div class="font-bold text-slate-900">{{ step.approver }}</div>
-                    <div class="text-slate-600">{{ step.date }}</div>
+                    <div class="text-slate-600 truncate" [title]="step.role">{{ step.role }}</div>
+                    <div class="font-bold text-slate-900 truncate" [title]="step.approver">{{ step.approver }}</div>
+                    <div class="text-slate-600 whitespace-nowrap text-xs">{{ step.date }}</div>
                     <div>
                       <span
                         class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold"
