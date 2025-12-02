@@ -11,11 +11,12 @@ export interface OrderSubmissionData {
   selectedEntries: Array<{ id: number; quantity: number }>;
   selectedRequestPurposeId: number | null;
   usePurpose: string;
-  usageDate: string;
-  usageTime: string;
+  usageDateFrom: string;
+  usageTimeFrom: string;
+  usageDateTo: string;
+  usageTimeTo: string;
   usageLocation: string;
   orderPriority: string;
-  annualDiscardSpecialOps: string;
   numberOfOfficers: number | null;
   numberOfOtherRanks: number | null;
   requesterComments: string;
@@ -86,17 +87,31 @@ export class OrderSubmissionService {
       };
     }
 
-    if (!data.usageDate) {
+    if (!data.usageDateFrom) {
       return {
         isValid: false,
-        error: 'Usage date is required.'
+        error: 'Usage date from is required.'
       };
     }
 
-    if (!data.usageTime) {
+    if (!data.usageTimeFrom) {
       return {
         isValid: false,
-        error: 'Usage time is required.'
+        error: 'Usage time from is required.'
+      };
+    }
+
+    if (!data.usageDateTo) {
+      return {
+        isValid: false,
+        error: 'Usage date to is required.'
+      };
+    }
+
+    if (!data.usageTimeTo) {
+      return {
+        isValid: false,
+        error: 'Usage time to is required.'
       };
     }
 
@@ -114,7 +129,9 @@ export class OrderSubmissionService {
    * Builds the order payload from submission data
    */
   buildOrderPayload(data: OrderSubmissionData): CreateOrderRequest {
-    const usageDateTime = this.combineDateAndTime(data.usageDate, data.usageTime);
+    const usageDateTimeFrom = this.combineDateAndTime(data.usageDateFrom, data.usageTimeFrom);
+    const usageDateTimeTo = this.combineDateAndTime(data.usageDateTo, data.usageTimeTo);
+    
     const requestItems = data.selectedEntries.map(entry => ({
       itemId: entry.id,
       quantity: entry.quantity,
@@ -135,10 +152,12 @@ export class OrderSubmissionService {
       depotId: null,
       requestPurposeId: data.selectedRequestPurposeId ?? data.defaultRequestPurposeId,
       isFromAllowance: data.fromReserve === 'Yes',
-      usageDate: usageDateTime.toISOString(),
-      usageTime: this.formatUsageTime(usageDateTime),
+      usageDateFrom: usageDateTimeFrom.toISOString(),
+      usageTimeFrom: this.formatTimeOnly(data.usageTimeFrom),
+      usageDateTo: usageDateTimeTo.toISOString(),
+      usageTimeTo: this.formatTimeOnly(data.usageTimeTo),
       usagePurpose: data.usePurpose || 'General usage',
-      annualDiscard: parseOptionalInteger(data.annualDiscardSpecialOps),
+      annualDiscard: null,
       usageLocation: data.usageLocation || 'N/A',
       numberOfOfficer: data.numberOfOfficers ?? null,
       numberOfOtherRank: data.numberOfOtherRanks ?? null,
@@ -219,6 +238,17 @@ export class OrderSubmissionService {
     const timePart = (timeStr && timeStr.length >= 5) ? timeStr : '00:00';
     const isoString = `${datePart}T${timePart.length === 5 ? `${timePart}:00` : timePart}`;
     return new Date(isoString);
+  }
+
+  /**
+   * Formats a time string to HH:mm:ss format
+   */
+  private formatTimeOnly(timeStr: string): string {
+    // Convert "HH:mm" to "HH:mm:ss" format if needed
+    if (timeStr && timeStr.length === 5) {
+      return `${timeStr}:00`;
+    }
+    return timeStr;
   }
 
   /**

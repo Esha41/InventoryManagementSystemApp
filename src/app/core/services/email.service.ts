@@ -271,8 +271,15 @@ export class EmailService {
     if (order.requestPurposeNameEn || order.requestPurposeNameAr) {
       html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(order.requestPurposeNameEn || order.requestPurposeNameAr)}</span></div>`;
     }
-    if (order.usageDate) {
-      html += `<div class="detail-row"><span class="detail-label">Usage Date:</span><span>${new Date(order.usageDate).toLocaleString()}</span></div>`;
+    if (order.usageDateFrom) {
+      const fromDate = new Date(order.usageDateFrom).toLocaleString();
+      const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleString() : '';
+      const fromTime = order.usageTimeFrom || '';
+      const toTime = order.usageTimeTo || '';
+      const dateRange = toDate 
+        ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+        : `${fromDate} ${fromTime}`;
+      html += `<div class="detail-row"><span class="detail-label">Usage Date:</span><span>${dateRange}</span></div>`;
     }
     if (order.usageLocation) {
       html += `<div class="detail-row"><span class="detail-label">Usage Location:</span><span>${this.escapeHtml(order.usageLocation)}</span></div>`;

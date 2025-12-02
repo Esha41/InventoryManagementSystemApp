@@ -237,15 +237,6 @@
                   </div>
                 </th>
                 <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('batchNo')">
-                  <div class="flex items-center gap-2">
-                    {{ 'assetList.table.batchNo' | translate }}
-                    <lucide-angular *ngIf="sortColumn !== 'batchNo'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'batchNo' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'batchNo' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  </div>
-                </th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
                     (click)="sortByColumn('hcc')">
                   <div class="flex items-center gap-2">
                     {{ 'assetList.table.hcc' | translate }}
@@ -281,24 +272,6 @@
                     <lucide-angular *ngIf="sortColumn === 'hazardDivision' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                   </div>
                 </th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('expiryDate')">
-                  <div class="flex items-center gap-2">
-                    {{ 'assetList.table.expiryDate' | translate }}
-                    <lucide-angular *ngIf="sortColumn !== 'expiryDate'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'expiryDate' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'expiryDate' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  </div>
-                </th>
-                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('readyForIssue')">
-                  <div class="flex items-center gap-2">
-                    {{ 'assetList.table.status' | translate }}
-                    <lucide-angular *ngIf="sortColumn !== 'readyForIssue'" [img]="ArrowUpDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'readyForIssue' && sortDirection === 'asc'" [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    <lucide-angular *ngIf="sortColumn === 'readyForIssue' && sortDirection === 'desc'" [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  </div>
-                </th>
                 <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{ 'assetList.table.actions' | translate }}</th>
               </tr>
             </thead>
@@ -310,18 +283,10 @@
                 </td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
-                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.batchNo }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hcc }}</td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
                 <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caseType }}</td>
                 <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.hazardDivision }}</td>
-                <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.expiryDate }}</td>
-                <td class="py-4 px-6">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
-                        [ngClass]="getReadyForIssueColor(asset.readyForIssue)">
-                    {{ getReadyForIssueText(asset.readyForIssue) }}
-                  </span>
-                </td>
                 <td class="py-4 px-6">
                   <div class="flex items-center justify-end gap-2">
                     <button
@@ -351,7 +316,7 @@
                 </td>
               </tr>
               <tr *ngIf="filteredAssets.length === 0 && !loading">
-                <td [attr.colspan]="activeTab === 'ammunition' ? 11 : 9" class="text-center py-12">
+                <td [attr.colspan]="activeTab === 'ammunition' ? 8 : 6" class="text-center py-12">
                   <div class="flex flex-col items-center justify-center">
                     <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
                     <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>
@@ -424,10 +389,6 @@
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.batchNo' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.batchNo || '-' }}</p>
-            </div>
-            <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.hcc' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.hcc?.nameEn || selectedAsset.hcc?.nameAr || '-' }}</p>
             </div>
@@ -470,19 +431,6 @@
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.isLinked' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ (selectedAsset.isLinked ? 'common.yes' : 'common.no') | translate }}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.readyForIssue' | translate }}</label>
-              <p class="mt-1">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white"
-                      [ngClass]="getReadyForIssueColor(selectedAsset.readyForIssue)">
-                  {{ getReadyForIssueText(selectedAsset.readyForIssue) }}
-                </span>
-              </p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.expiryDate' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.expiryDate ? (selectedAsset.expiryDate | date: 'mediumDate') : '-' }}</p>
             </div>
           </div>
         </div>

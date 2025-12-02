@@ -27,17 +27,27 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
   
+  // Format date/time range
+  const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
+  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+  const fromTime = order.usageTimeFrom || '';
+  const toTime = order.usageTimeTo || '';
+  
+  const formattedDateTime = toDate 
+    ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+    : `${fromDate} ${fromTime}`;
+
   return {
     orderId: orderId,
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
     priority: mapOrderPriorityToString(order.priority),
-    submittedOn: formatOrderDateTime(order.usageDate, order.usageTime),
+    submittedOn: formattedDateTime,
     department: order.departmentNameEn || order.departmentNameAr || 'N/A',
     requester: order.requesterName || 'N/A',
     usagePurpose: order.usagePurpose || 'N/A',
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    lastUpdated: formatOrderDateTime(order.usageDate, order.usageTime)
+    lastUpdated: formattedDateTime
   };
 }
 
@@ -133,13 +143,23 @@ export function generateApprovalWorkflowFallback(
   order: OrderDto,
   formatDateTime: (date?: string, time?: string) => string
 ): OrderReportApprovalStep[] {
+  // Format date/time range
+  const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
+  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+  const fromTime = order.usageTimeFrom || '';
+  const toTime = order.usageTimeTo || '';
+  
+  const formattedDateTime = toDate 
+    ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+    : `${fromDate} ${fromTime}`;
+
   const steps: OrderReportApprovalStep[] = [
     {
       step: 'Submission',
       role: 'Request Owner',
       approver: order.requesterName || 'N/A',
       status: 'approved',
-      date: formatDateTime(order.usageDate, order.usageTime),
+      date: formattedDateTime,
       notes: 'Initial request submitted.'
     }
   ];
@@ -150,7 +170,7 @@ export function generateApprovalWorkflowFallback(
       role: 'Reviewer',
       approver: 'System',
       status: 'approved',
-      date: formatDateTime(order.usageDate, order.usageTime),
+      date: formattedDateTime,
       notes: 'Order approved.'
     });
   } else if (order.status === 2) {
@@ -159,7 +179,7 @@ export function generateApprovalWorkflowFallback(
       role: 'Reviewer',
       approver: 'System',
       status: 'rejected',
-      date: formatDateTime(order.usageDate, order.usageTime),
+      date: formattedDateTime,
       notes: order.reason || 'Order rejected.'
     });
   } else {

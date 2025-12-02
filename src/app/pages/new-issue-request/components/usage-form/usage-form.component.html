@@ -84,16 +84,6 @@
           </p>
         </div>
 
-        <!-- Annual Discard/Special Ops -->
-        <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.annualDiscardSpecialOps' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="annualDiscardSpecialOps"
-            (ngModelChange)="onAnnualDiscardSpecialOpsChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent transition-all">
-        </div>
-
         <!-- Usage Location -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageLocation' | translate }} <span class="text-red-500">*</span></label>
@@ -135,39 +125,75 @@
 
       <!-- Right Column -->
       <div class="space-y-6">
-        <!-- Usage Date -->
+        <!-- Usage Date From -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDate' | translate }} <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateFrom' | translate }} <span class="text-red-500">*</span></label>
           <input
-            name="usageDate"
+            name="usageDateFrom"
             type="date"
-            [ngModel]="usageDate"
-            (ngModelChange)="onUsageDateChange($event)"
+            [ngModel]="usageDateFrom"
+            (ngModelChange)="onUsageDateFromChange($event)"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageDate'),
-              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDate')
+              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageDateFrom'),
+              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateFrom')
             }">
-          <p *ngIf="hasError('usageDate')" class="mt-1 text-xs text-red-600">
-            {{ formErrors.usageDate | translate }}
+          <p *ngIf="hasError('usageDateFrom')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.usageDateFrom | translate }}
           </p>
         </div>
 
-        <!-- Usage Time -->
+        <!-- Usage Date To -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTime' | translate }} <span class="text-red-500">*</span></label>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateTo' | translate }} <span class="text-red-500">*</span></label>
           <input
-            name="usageTime"
-            type="time"
-            [ngModel]="usageTime"
-            (ngModelChange)="onUsageTimeChange($event)"
+            name="usageDateTo"
+            type="date"
+            [ngModel]="usageDateTo"
+            (ngModelChange)="onUsageDateToChange($event)"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageTime'),
-              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageTime')
+              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageDateTo'),
+              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateTo')
             }">
-          <p *ngIf="hasError('usageTime')" class="mt-1 text-xs text-red-600">
-            {{ formErrors.usageTime | translate }}
+          <p *ngIf="hasError('usageDateTo')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.usageDateTo | translate }}
+          </p>
+        </div>
+
+        <!-- Usage Time From -->
+        <div>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeFrom' | translate }} <span class="text-red-500">*</span></label>
+          <input
+            name="usageTimeFrom"
+            type="time"
+            [ngModel]="usageTimeFrom"
+            (ngModelChange)="onUsageTimeFromChange($event)"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            [ngClass]="{
+              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageTimeFrom'),
+              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageTimeFrom')
+            }">
+          <p *ngIf="hasError('usageTimeFrom')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.usageTimeFrom | translate }}
+          </p>
+        </div>
+
+        <!-- Usage Time To -->
+        <div>
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeTo' | translate }} <span class="text-red-500">*</span></label>
+          <input
+            name="usageTimeTo"
+            type="time"
+            [ngModel]="usageTimeTo"
+            (ngModelChange)="onUsageTimeToChange($event)"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            [ngClass]="{
+              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageTimeTo'),
+              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageTimeTo')
+            }">
+          <p *ngIf="hasError('usageTimeTo')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.usageTimeTo | translate }}
           </p>
         </div>
 
@@ -199,29 +225,6 @@
         </span>
       </span>
     </div>
-    
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-      <div class="bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg p-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.totalReserve' | translate }}</label>
-        <div class="text-lg font-bold text-[var(--color-text)]">{{ totalReserve | number }}</div>
-      </div>
-      
-      <div class="bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg p-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.availableReserve' | translate }}</label>
-        <div class="text-lg font-bold text-[var(--color-text)]">{{ availableReserve | number }}</div>
-      </div>
-      
-      <div class="bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg p-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderedQuantity' | translate }}</label>
-        <div class="text-lg font-bold text-[var(--color-text)]">{{ orderedQuantity | number }}</div>
-      </div>
-      
-      <div class="bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg p-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.utilizedQuantity' | translate }}</label>
-        <div class="text-lg font-bold text-[var(--color-text)]">{{ utilizedQuantity | number }}</div>
-      </div>
-    </div>
 
     <!-- Per-Item Details Table -->
     <div *ngIf="reserveDetailsByItem.length > 0" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
@@ -233,7 +236,7 @@
             <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.totalReserve' | translate }}</th>
             <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.availableReserve' | translate }}</th>
             <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.orderedQuantity' | translate }}</th>
-            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.utilizedQuantity' | translate }}</th>
+            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.usedQuantity' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -250,7 +253,7 @@
             <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.totalReserve | number }}</td>
             <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.availableReserve | number }}</td>
             <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.orderedQuantity | number }}</td>
-            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.utilizedQuantity | number }}</td>
+            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.usedQuantity | number }}</td>
           </tr>
         </tbody>
       </table>

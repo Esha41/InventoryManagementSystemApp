@@ -123,13 +123,24 @@
 
       <!-- Right Column -->
       <div class="space-y-6">
-        <!-- Usage Date -->
+        <!-- Usage Date From -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDate' | translate }}</label>
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateFrom' | translate }}</label>
           <input
             type="text"
-            [ngModel]="usageDate"
-            placeholder="20/7/2025"
+            [ngModel]="getFormattedUsageDateFrom()"
+            placeholder="20/7/2025 10:00"
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        </div>
+        
+        <!-- Usage Date To -->
+        <div class="flex items-center gap-4" *ngIf="usageDateTo">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateTo' | translate }}</label>
+          <input
+            type="text"
+            [ngModel]="getFormattedUsageDateTo()"
+            placeholder="20/7/2025 18:00"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>

@@ -78,6 +78,22 @@
   flex-shrink: 0;
 }
 
+/* Search input styling to match dropdown */
+.inventory-dashboard-search-input {
+  --dashboard-accent-color: #d0b888;
+  --dashboard-accent-color-rgb: 208, 184, 136;
+}
+
+.inventory-dashboard-search-input:focus {
+  outline: none;
+  border-color: rgba(var(--dashboard-accent-color-rgb), 0.6);
+  box-shadow: 0 0 0 4px rgba(var(--dashboard-accent-color-rgb), 0.12);
+}
+
+.inventory-dashboard-search-input:hover:not(:disabled) {
+  border-color: rgba(var(--dashboard-accent-color-rgb), 0.6);
+}
+
 /* Fixed width dropdown in header */
 ::ng-deep app-dropdown.w-40 {
   width: 10rem !important;

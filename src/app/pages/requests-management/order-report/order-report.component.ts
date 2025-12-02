@@ -206,7 +206,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             role: step.applicationRoleName || 'N/A',
             approver: step.approverName || 'N/A',
             status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
-            date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString()),
+            date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
             notes: step.comments || ''
           }));
         }),
@@ -215,7 +215,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Fallback to mock data if API fails
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
-            return of(generateApprovalWorkflowFallback(order, formatOrderDateTime));
+            return of(generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t)));
           }
           return of([]);
         })
@@ -229,7 +229,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Only use fallback if API call fails completely
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
-            this.approvalWorkflow = generateApprovalWorkflowFallback(order, formatOrderDateTime);
+            this.approvalWorkflow = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
           } else {
             this.approvalWorkflow = [];
           }
@@ -239,13 +239,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
 
   private loadWorkflowDetails(order: OrderDto): void {
-    // Try to get workflow details from API response
-    // For now, set to empty array - only populate when API provides real data
-    // If the API response includes workflow details, we can extract them here
     this.workflowDetails = [];
-    
-    // TODO: Fetch workflow details from API endpoint when available
-    // Example: this.apiService.getWithAuth(...).subscribe(...)
   }
 
   goBack(): void {
@@ -307,7 +301,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   getOrderDateLabel(order: OrderDto): string {
-    return formatOrderDateTime(order.usageDate, order.usageTime);
+    if (!order.usageDateFrom) return '-';
+    const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
+    const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+    const fromTime = order.usageTimeFrom || '';
+    const toTime = order.usageTimeTo || '';
+    
+    return toDate 
+      ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+      : `${fromDate} ${fromTime}`;
   }
 
   trackByOrderId(_: number, order: OrderDto): number | undefined {

@@ -156,7 +156,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    */
   getUtilizationPercentage(): number {
     if (!this.inventoryDetail) return 0;
-    const total = this.inventoryDetail.itemQuantity;
+    const total = this.inventoryDetail.originalQuantity;
     const current = this.inventoryDetail.currentQuantity;
     if (total === 0) return 0;
     return Math.round(((total - current) / total) * 100);

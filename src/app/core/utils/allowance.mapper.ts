@@ -55,7 +55,10 @@ export function processAllowanceData(
       itemType: item.itemType,
       itemName: ammunition?.name,
       itemNo: ammunition?.itemNo,
-      batchNo: ammunition?.batchNo
+      batchNo: ammunition?.batchNo,
+      usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
+      reservedQuantityByOrdersOnProcessing: item.reservedQuantityByOrdersOnProcessing || 0,
+      remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0
     });
   });
 

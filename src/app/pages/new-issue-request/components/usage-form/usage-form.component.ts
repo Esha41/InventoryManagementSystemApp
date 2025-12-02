@@ -18,16 +18,17 @@ export class UsageFormComponent {
   @Input() usePurpose: string = '';
   @Input() selectedUsePurposeId: number | null = null;
   @Input() usePurposeOptions: DropdownOption<number>[] = [];
-  @Input() annualDiscardSpecialOps: string = '';
   @Input() usageLocation: string = '';
   @Input() numberOfOfficers: number | null = null;
   @Input() numberOfOtherRanks: number | null = null;
-  @Input() usageDate: string = '';
-  @Input() usageTime: string = '';
+  @Input() usageDateFrom: string = '';
+  @Input() usageTimeFrom: string = '';
+  @Input() usageDateTo: string = '';
+  @Input() usageTimeTo: string = '';
   @Input() totalReserve: number = 0;
   @Input() availableReserve: number = 0;
   @Input() orderedQuantity: number = 0;
-  @Input() utilizedQuantity: number = 0;
+  @Input() usedQuantity: number = 0;
   @Input() reserveDetailsByItem: any[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
@@ -40,12 +41,13 @@ export class UsageFormComponent {
 
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
-  @Output() annualDiscardSpecialOpsChange = new EventEmitter<string>();
   @Output() usageLocationChange = new EventEmitter<string>();
   @Output() numberOfOfficersChange = new EventEmitter<number | null>();
   @Output() numberOfOtherRanksChange = new EventEmitter<number | null>();
-  @Output() usageDateChange = new EventEmitter<string>();
-  @Output() usageTimeChange = new EventEmitter<string>();
+  @Output() usageDateFromChange = new EventEmitter<string>();
+  @Output() usageTimeFromChange = new EventEmitter<string>();
+  @Output() usageDateToChange = new EventEmitter<string>();
+  @Output() usageTimeToChange = new EventEmitter<string>();
   @Output() orderPriorityChange = new EventEmitter<string>();
   @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
@@ -54,8 +56,10 @@ export class UsageFormComponent {
   private readonly defaultErrors: UsageFormErrors = {
     usePurpose: null,
     usageLocation: null,
-    usageDate: null,
-    usageTime: null,
+    usageDateFrom: null,
+    usageTimeFrom: null,
+    usageDateTo: null,
+    usageTimeTo: null,
     orderPriority: null
   };
 
@@ -85,10 +89,6 @@ export class UsageFormComponent {
     }
   }
 
-  onAnnualDiscardSpecialOpsChange(value: string): void {
-    this.annualDiscardSpecialOpsChange.emit(value);
-  }
-
   onUsageLocationChange(value: string): void {
     this.usageLocationChange.emit(value);
     
@@ -111,30 +111,58 @@ export class UsageFormComponent {
     this.numberOfOtherRanksChange.emit(value);
   }
 
-  onUsageDateChange(value: string): void {
-    this.usageDateChange.emit(value);
+  onUsageDateFromChange(value: string): void {
+    this.usageDateFromChange.emit(value);
     
-    this.clearError('usageDate');
+    this.clearError('usageDateFrom');
     
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
-        this.formErrors.usageDate = 'newIssueRequest.validation.usageDateRequired';
+        this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateRequired';
       } else {
-        this.clearError('usageDate');
+        this.clearError('usageDateFrom');
       }
     }
   }
 
-  onUsageTimeChange(value: string): void {
-    this.usageTimeChange.emit(value);
+  onUsageTimeFromChange(value: string): void {
+    this.usageTimeFromChange.emit(value);
     
-    this.clearError('usageTime');
+    this.clearError('usageTimeFrom');
     
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
-        this.formErrors.usageTime = 'newIssueRequest.validation.usageTimeRequired';
+        this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
       } else {
-        this.clearError('usageTime');
+        this.clearError('usageTimeFrom');
+      }
+    }
+  }
+
+  onUsageDateToChange(value: string): void {
+    this.usageDateToChange.emit(value);
+    
+    this.clearError('usageDateTo');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
+      } else {
+        this.clearError('usageDateTo');
+      }
+    }
+  }
+
+  onUsageTimeToChange(value: string): void {
+    this.usageTimeToChange.emit(value);
+    
+    this.clearError('usageTimeTo');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
+      } else {
+        this.clearError('usageTimeTo');
       }
     }
   }
@@ -194,13 +222,23 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.usageDate || this.usageDate.trim().length === 0) {
-      this.formErrors.usageDate = 'newIssueRequest.validation.usageDateRequired';
+    if (!this.usageDateFrom || this.usageDateFrom.trim().length === 0) {
+      this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateRequired';
       isValid = false;
     }
 
-    if (!this.usageTime || this.usageTime.trim().length === 0) {
-      this.formErrors.usageTime = 'newIssueRequest.validation.usageTimeRequired';
+    if (!this.usageTimeFrom || this.usageTimeFrom.trim().length === 0) {
+      this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
+      isValid = false;
+    }
+
+    if (!this.usageDateTo || this.usageDateTo.trim().length === 0) {
+      this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
+      isValid = false;
+    }
+
+    if (!this.usageTimeTo || this.usageTimeTo.trim().length === 0) {
+      this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
       isValid = false;
     }
 
@@ -224,7 +262,9 @@ export class UsageFormComponent {
 type UsageFormErrors = {
   usePurpose: string | null;
   usageLocation: string | null;
-  usageDate: string | null;
-  usageTime: string | null;
+  usageDateFrom: string | null;
+  usageTimeFrom: string | null;
+  usageDateTo: string | null;
+  usageTimeTo: string | null;
   orderPriority: string | null;
 };

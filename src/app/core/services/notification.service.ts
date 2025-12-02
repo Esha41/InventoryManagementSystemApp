@@ -659,8 +659,14 @@ export class NotificationService implements OnDestroy {
         if (details.requestPurposeNameEn || details.requestPurposeNameAr) {
           emailDetails['Request Purpose'] = details.requestPurposeNameEn || details.requestPurposeNameAr;
         }
-        if (details.usageDate) {
-          emailDetails['Usage Date'] = new Date(details.usageDate).toLocaleString();
+        if (details.usageDateFrom) {
+          const fromDate = new Date(details.usageDateFrom).toLocaleString();
+          const toDate = details.usageDateTo ? new Date(details.usageDateTo).toLocaleString() : '';
+          const fromTime = details.usageTimeFrom || '';
+          const toTime = details.usageTimeTo || '';
+          emailDetails['Usage Date'] = toDate 
+            ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+            : `${fromDate} ${fromTime}`;
         }
         if (details.usageLocation) {
           emailDetails['Usage Location'] = details.usageLocation;

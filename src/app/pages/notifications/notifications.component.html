@@ -231,9 +231,14 @@
                 <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
                 <span class="detail-field__value">{{ orderDetail.requestNo || orderDetail.orderNo || ('#' + orderDetail.id) }}</span>
               </div>
-              <div class="detail-field" *ngIf="orderDetail.usageDate">
+              <div class="detail-field" *ngIf="orderDetail.usageDateFrom">
                 <span class="detail-field__label">{{ 'notifications.details.requestDate' | translate }}</span>
-                <span class="detail-field__value">{{ orderDetail.usageDate | date:'medium' }}</span>
+                <span class="detail-field__value">
+                  {{ orderDetail.usageDateFrom | date:'medium' }}
+                  <span *ngIf="orderDetail.usageTimeFrom"> {{ orderDetail.usageTimeFrom | slice:0:5 }}</span>
+                  <span *ngIf="orderDetail.usageDateTo"> - {{ orderDetail.usageDateTo | date:'medium' }}</span>
+                  <span *ngIf="orderDetail.usageTimeTo"> {{ orderDetail.usageTimeTo | slice:0:5 }}</span>
+                </span>
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>

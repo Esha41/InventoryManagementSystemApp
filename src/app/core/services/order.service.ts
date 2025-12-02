@@ -24,8 +24,10 @@ export interface CreateOrderRequest {
   depotId?: number | null;
   requestPurposeId: number;
   isFromAllowance: boolean;
-  usageDate: string;
-  usageTime: string;
+  usageDateFrom: string;
+  usageTimeFrom: string;
+  usageDateTo: string;
+  usageTimeTo: string;
   usagePurpose: string;
   annualDiscard?: number | null;
   usageLocation: string;
@@ -63,8 +65,10 @@ export interface OrderDto {
   depotId?: number | null;
   requestPurposeId: number;
   isFromAllowance: boolean;
-  usageDate?: string;
-  usageTime?: string;
+  usageDateFrom?: string;
+  usageTimeFrom?: string;
+  usageDateTo?: string;
+  usageTimeTo?: string;
   usagePurpose?: string;
   annualDiscard?: number | null;
   usageLocation?: string;
