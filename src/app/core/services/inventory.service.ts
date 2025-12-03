@@ -25,7 +25,7 @@ export class InventoryService {
   constructor(
     private http: HttpClient,
     private config: ConfigService
-  ) {}
+  ) { }
 
   private get baseUrl(): string {
     return `${this.config.apiUrl}${API_ENDPOINTS.INVENTORY.BASE}`;
@@ -182,7 +182,7 @@ export class InventoryService {
    */
   getLotsByItemId(itemId: number): Observable<LotDetailDto[]> {
     this.config.log(`Fetching all lots for item ${itemId}`);
-    
+
     return this.http.get<APIOperationResponse<LotDetailDto[]>>(
       `${this.baseUrl}/item/${itemId}/lots`
     ).pipe(
@@ -205,15 +205,15 @@ export class InventoryService {
    */
   getAvailableLotsForQuantity(itemId: number, requiredQuantity: number, depotIds?: number[]): Observable<LotDetailDto[]> {
     this.config.log(`Fetching available lots for item ${itemId}, quantity ${requiredQuantity}`);
-    
+
     let url = `${this.baseUrl}/item/${itemId}/available-lots?quantity=${requiredQuantity}`;
-    
+
     if (depotIds && depotIds.length > 0) {
       depotIds.forEach(depotId => {
         url += `&depotIds=${depotId}`;
       });
     }
-    
+
     return this.http.get<APIOperationResponse<LotDetailDto[]>>(url).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -237,7 +237,7 @@ export class InventoryService {
     const url = `${this.baseUrl}/lot/${lotNumber}`;
     console.log('getLotByNumber - Making API call to:', url);
     this.config.log(`Fetching lot details for lot ${lotNumber}`);
-    
+
     return this.http.get<APIOperationResponse<LotDetailDto>>(url).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -257,7 +257,7 @@ export class InventoryService {
    */
   getItemInventorySummary(itemId: number): Observable<ItemInventorySummaryDto> {
     this.config.log(`Fetching inventory summary for item ${itemId}`);
-    
+
     return this.http.get<APIOperationResponse<ItemInventorySummaryDto>>(
       `${this.baseUrl}/item/${itemId}/summary`
     ).pipe(
@@ -269,6 +269,30 @@ export class InventoryService {
       }),
       catchError(err => {
         this.config.logError(`Failed to fetch inventory summary for item ${itemId}`, err);
+        throw err;
+      })
+    );
+  }
+
+  /**
+   * Get aggregated inventory summary for all items
+   * Endpoint: GET /api/Inventory/items/summary
+   */
+  getAllItemsSummary(): Observable<ItemInventorySummaryDto[]> {
+    this.config.log('Fetching inventory summary for all items');
+
+    return this.http.get<APIOperationResponse<ItemInventorySummaryDto[]>>(
+      `${this.baseUrl}/items/summary`
+    ).pipe(
+      map(response => {
+        if (response.succeeded && response.data) {
+          return response.data;
+        }
+        console.warn('Failed to load items summary:', response.message);
+        return [];
+      }),
+      catchError(err => {
+        this.config.logError('Failed to fetch items summary', err);
         throw err;
       })
     );

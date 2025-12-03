@@ -186,6 +186,12 @@ export const routes: Routes = [
         data: { permissions: ['inventorypage.page', 'inventorypage.view'] }
       },
       {
+        path: 'inventory-summary',
+        loadComponent: () => import('@pages/inventory-summary/inventory-summary.component').then(m => m.InventorySummaryComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['inventorypage.page', 'inventorypage.view'] }
+      },
+      {
         path: 'add-asset',
         loadComponent: () => import('@pages/add-asset/add-asset.component').then(m => m.AddAssetComponent),
         canActivate: [permissionGuard],

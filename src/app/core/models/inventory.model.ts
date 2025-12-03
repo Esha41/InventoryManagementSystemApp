@@ -53,7 +53,7 @@ export interface InventoryDetailDto {
   reservedQuantityByOrdersOnProcessing: number;
   remainingQuantity: number;
   isLotEmpty: boolean;
-  
+
   // Navigation properties
   item?: BaseItemDto;
   supplier?: SupplierDto;
@@ -71,7 +71,7 @@ export interface InventoryDto {
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   notes?: string;
-  
+
   // Navigation properties
   depo?: {
     id: number;
@@ -136,6 +136,10 @@ export interface UpdateInventoryDetailDto {
 export interface ItemInventorySummaryDto {
   itemId: number;
   itemName: string;
+  itemNo: string;
+  itemType: number;
+  nsn: string;
+  partNo: string;
   totalQuantity: number;
   usedQuantity: number;
   reservedQuantityByOrdersOnProcessing: number;

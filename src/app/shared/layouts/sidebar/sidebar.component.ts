@@ -92,7 +92,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.orderManagement',
       icon: ClipboardList,
-      permissions: [ 'order.create',  'return.create', 'discard.create'],
+      permissions: ['order.create', 'return.create', 'discard.create'],
       children: [
         {
           label: 'nav.newIssueRequest',
@@ -157,6 +157,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['inventorypage.page', 'inventorypage.view']
     },
     {
+      label: 'nav.inventorySummary',
+      icon: Package,
+      route: '/inventory-summary',
+      permissions: ['inventorypage.page', 'inventorypage.view']
+    },
+    {
       label: 'nav.depotManagement',
       icon: Warehouse,
       route: '/depot-management',
@@ -199,7 +205,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private router: Router,
     private translationService: TranslationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscribe to user changes and filter menu items
@@ -208,7 +214,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.filterMenuItems();
       });
-    
+
     // Subscribe to route changes to auto-expand submenus
     this.router.events
       .pipe(
@@ -218,7 +224,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .subscribe((event: any) => {
         this.checkAndExpandMenus(event.url);
       });
-    
+
     // Initial filter and menu expansion check
     this.filterMenuItems();
     this.checkAndExpandMenus(this.router.url);
@@ -237,7 +243,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (url.startsWith('/allowance') || url.startsWith('/department')) {
       this.expandedMenus.add('nav.department');
     }
-   
+
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
       this.expandedMenus.add('nav.orderManagement');
     }
@@ -256,7 +262,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const user = this.authService.getCurrentUser();
     const isAuthenticated = this.authService.isAuthenticated();
     const hasPermissionsLoaded = user && user.permissions && user.permissions.length > 0;
-    
+
     // Filter menu items - sidebar always shows, but items are filtered by permissions
     this.menuItems = this.allMenuItems.map(item => {
       // If item has children, filter the children first
@@ -361,7 +367,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             willShow: shouldShow,
             allChildren: item.children.map(c => ({ label: c.label, route: c.route }))
           });
-          
+
           // Auto-expand warehouse menu if it has visible children
           if (shouldShow && item.children.length > 0) {
             this.expandedMenus.add(item.label);
@@ -376,7 +382,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Remove headers that have no children after them
     this.menuItems = this.menuItems.filter((item, index) => {
       if (!item.isHeader) return true;
-      
+
       // Check if there are any non-header items after this header
       const hasChildren = this.menuItems.slice(index + 1).some(nextItem => !nextItem.isHeader);
       return hasChildren;
@@ -387,7 +393,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const warehouseViewCheck = this.authService.hasPermission('warehouse.view');
     const warehousePageViewCheck = this.authService.hasPermission('warehousepage.view');
     const warehouseItem = this.menuItems.find(item => item.label === 'nav.warehouse');
-    
+
     console.log('Sidebar Filtering Summary:', {
       userName: user?.userName,
       totalPermissions: user?.permissions?.length || 0,
@@ -451,12 +457,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   showTooltip(event: MouseEvent): void {
     if (!this.isCollapsed) return;
-    
+
     const target = event.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
     const tooltip = target.querySelector('.menu-tooltip') as HTMLElement;
     const isRTL = this.translationService.isRTL();
-    
+
     if (tooltip) {
       // Position tooltip based on RTL/LTR
       if (isRTL) {

@@ -54,6 +54,7 @@
     "assetList": "Asset List",
     "searchInventory": "Search Inventory",
     "inventoryForecast": "Inventory Forecast",
+    "inventorySummary": "Inventory Summary",
     "depotManagement": "Depot Management",
     "admin": "ADMIN",
     "manageAdmins": "Manage Admins",
@@ -363,6 +364,34 @@
     "remaining": "Remaining",
     "consumed": "Consumed",
     "march2023": "March 2023"
+  },
+  "inventorySummary": {
+    "title": "Inventory Summary",
+    "subtitle": "Overview of all items with lot details",
+    "itemName": "Item Name",
+    "itemNo": "Item No",
+    "type": "Type",
+    "nsn": "NSN",
+    "partNo": "Part No",
+    "totalQty": "Total Qty",
+    "usedQty": "Used Qty",
+    "reservedQty": "Hold Quantity",
+    "remainingQty": "Remaining Qty",
+    "totalLots": "Total Lots",
+    "lotDetails": "Lot Details",
+    "lotNumber": "Lot Number",
+    "depot": "Depot",
+    "supplier": "Supplier",
+    "manufacturer": "Manufacturer",
+    "country": "Country",
+    "batchNo": "Batch No",
+    "expiryDate": "Expiry Date",
+    "originalQty": "Original Qty",
+    "status": "Status",
+    "noLots": "No lots available for this item",
+    "noItems": "No inventory items available",
+    "searchPlaceholder": "Search by item name, item number, NSN, or part number...",
+    "noResults": "No items match your search criteria"
   },
   "requestsManagement": {
     "title": "Requests Management",
@@ -1400,7 +1429,7 @@
       "quantity": "Quantity",
       "totalQuantity": "Total Quantity",
       "usedQuantity": "Used Quantity",
-      "reservedQuantity": "Reserved quantity",
+      "reservedQuantity": "Hold Quantity",
       "remainingQuantity": "Remaining Quantity",
       "actions": "Actions"
     },
@@ -1586,4 +1615,3 @@
     "approve": "Approve"
   }
 }
-
