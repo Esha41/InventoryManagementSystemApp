@@ -54,6 +54,7 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
 })
 export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private pendingSelections: Array<{ id: number; quantity: number }> | null = null;
   currentStep = 0;
   steps: Step[] = [
     { label: 'newIssueRequest.allowanceSelection', completed: false },
@@ -252,6 +253,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.cartridgeState.loadingCartridges = false;
         if (result.error) {
           this.cartridgeState.cartridgeError = result.error;
+        } else {
+          // Restore selections after cartridges are loaded
+          this.restoreSelections();
         }
       },
       error: (error) => {
@@ -282,6 +286,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         } else {
           // Load reserve details after loading allowance items
           this.loadReserveDetails();
+          // Restore selections after cartridges are loaded
+          this.restoreSelections();
         }
       },
       error: (error) => {
@@ -362,6 +368,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       target.selected = true;
       target.quantity = quantity;
     }
+
+    // Persist selections to query params
+    this.persistSelections();
   }
 
   private buildFilterOptions(): void {
@@ -384,6 +393,19 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
             this.fromReserve = params['fromReserve'];
           }
 
+          // Store pending selections from query params to restore after cartridges load
+          const selectionsParam = params['selections'];
+          if (selectionsParam) {
+            try {
+              this.pendingSelections = JSON.parse(selectionsParam);
+            } catch (error) {
+              console.error('Failed to parse selections from query params:', error);
+              this.pendingSelections = null;
+            }
+          } else {
+            this.pendingSelections = null;
+          }
+
           // If we're on step 1 or later, we need to load cartridges
           // (step 0 is allowance selection, step 1 is cartridge selection)
           if (step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
@@ -400,14 +422,65 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private updateQueryParams(step: number): void {
+    const queryParams: any = {
+      step: step,
+      fromReserve: this.fromReserve
+    };
+
+    // Persist selected entries if there are any
+    if (this.cartridgeState.selectedEntries.length > 0) {
+      queryParams.selections = JSON.stringify(this.cartridgeState.selectedEntries);
+    }
+
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {
-        step: step,
-        fromReserve: this.fromReserve
-      },
+      queryParams: queryParams,
       queryParamsHandling: 'merge'
     });
+  }
+
+  /**
+   * Persists selected entries to query params
+   */
+  private persistSelections(): void {
+    const queryParams: any = {};
+    if (this.cartridgeState.selectedEntries.length > 0) {
+      queryParams.selections = JSON.stringify(this.cartridgeState.selectedEntries);
+    } else {
+      // Remove selections param if no selections
+      queryParams.selections = null;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  /**
+   * Restores selected entries from pending selections and updates cartridge state
+   */
+  private restoreSelections(): void {
+    if (!this.pendingSelections || !Array.isArray(this.pendingSelections) || this.pendingSelections.length === 0) {
+      return;
+    }
+
+    // Restore selected entries
+    this.cartridgeState.selectedEntries = this.pendingSelections;
+
+    // Update cartridge state to reflect selections
+    this.pendingSelections.forEach(entry => {
+      const cartridge = this.cartridgeState.allCartridges.find(c => c.id === entry.id);
+      if (cartridge) {
+        cartridge.selected = true;
+        cartridge.added = true;
+        cartridge.quantity = entry.quantity;
+      }
+    });
+
+    // Clear pending selections after restoration
+    this.pendingSelections = null;
   }
 
   filterCartridges(): void {
@@ -509,6 +582,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       target.added = false;
       target.quantity = null;
     }
+
+    // Persist selections to query params
+    this.persistSelections();
   }
 
   onAllowanceError(errorMessage: string): void {

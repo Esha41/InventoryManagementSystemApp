@@ -95,7 +95,7 @@
   </div>
   
   <!-- Action Buttons -->
-  <div class="flex justify-center gap-4 mt-8">
+  <div class="flex justify-center gap-4 mt-8" *ngIf="showActions">
     <button 
       (click)="onCancel()"
       class="px-8 py-3 border-2 border-[var(--color-border)] text-[var(--color-text)] text-sm font-medium rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">

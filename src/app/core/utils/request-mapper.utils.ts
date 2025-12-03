@@ -110,7 +110,8 @@ export function mapRequestItems(items: any[]): RequestItem[] {
   return items
     .filter(item => item && (item.id || item.itemId))
     .map(item => ({
-      id: item.id || 0,
+      id: item.id || 0, // RequestItem ID
+      itemId: item.itemId || item.id || undefined, // Item/Ammunition ID (prefer itemId, fallback to id)
       itemName: item.itemName || item.name || 'Unknown Item',
       itemNo: item.itemNo || item.itemCode || item.code || '-',
       quantity: item.quantity || item.requestedQuantity || 0,
@@ -155,6 +156,7 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         approverName: approverName,
         status: status,
         approvedDate: h.changedAt && !isPending ? formatApprovalDate(h.changedAt) : undefined,
+        approvedDateTime: h.changedAt && !isPending ? formatApprovalDateTime(h.changedAt) : undefined,
         applicationRoleName: h.applicationRoleName,
         isPending: isPending,
         requireHigherApproval: h.requireHigherApproval || false,
@@ -187,15 +189,35 @@ export function getApproverName(changedBy?: string): string {
 }
 
 /**
- * Format date for approval display
+ * Format date for approval display assuming backend stores UTC
+ * and we want to show Qatar local time (UTC+3), independent of browser time zone.
  */
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
-  
-  const d = new Date(date);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                  'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+
+  const utc = new Date(date);
+  const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+
+  return qatarTime.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+export function formatApprovalDateTime(date: string | Date | undefined): string {
+  if (!date) return '';
+
+  const utc = new Date(date);
+  const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+
+  return qatarTime.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
 }
 
 /**

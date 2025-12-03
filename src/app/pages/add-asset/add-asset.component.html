@@ -108,21 +108,6 @@
           />
         </div>
 
-        <!-- Batch No (Required) -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Batch No *</label>
-          <input
-            type="text"
-            [(ngModel)]="assetForm.batchNo"
-            name="batchNo"
-            [class]="getInputClass(batchNoModel.invalid, batchNoModel.dirty, batchNoModel.touched)"
-            placeholder="Enter batch number"
-            required
-            maxlength="100"
-            #batchNoModel="ngModel"
-          />
-        </div>
-
         <!-- HCC (Required) -->
         <div class="flex items-center gap-6">
           <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">HCC *</label>
@@ -359,34 +344,6 @@
             [placeholderValue]="null"
             placeholder="Select linked option">
           </app-dropdown>
-        </div>
-
-        <!-- Ready For Issue -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Ready for Issue</label>
-          <app-dropdown
-            class="flex-1"
-            [(ngModel)]="assetForm.readyForIssue"
-            name="readyForIssue"
-            [options]="readyForIssueOptions"
-            optionLabel="label"
-            optionValue="value"
-            [translateLabels]="true"
-            [placeholderSelectable]="false"
-            [placeholderValue]="null"
-            placeholder="Select ready status">
-          </app-dropdown>
-        </div>
-
-        <!-- Expiry Date -->
-        <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Expiry Date</label>
-          <input
-            type="date"
-            [(ngModel)]="assetForm.expiryDate"
-            name="expiryDate"
-            class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          />
         </div>
 
         <!-- Nature Option -->

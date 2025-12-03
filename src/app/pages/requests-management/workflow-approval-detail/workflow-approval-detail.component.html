@@ -191,8 +191,13 @@
                                 [ngClass]="getApprovalStatusClass(approval.status)">
                             {{ approval.status }}
                           </span>
-                          <p *ngIf="approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
-                            {{ approval.approvedDate }}
+                          <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
+                            <span *ngIf="approval.status === 'Approved'">
+                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{ approval.approvedDateTime }}
+                            </span>
+                            <span *ngIf="approval.status === 'Rejected'">
+                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime }}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -249,7 +254,9 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--color-border)]">
-                <tr *ngFor="let item of requestDetail.requestItems" class="hover:bg-[var(--color-background-hover)] transition-colors">
+                <tr *ngFor="let item of requestDetail.requestItems" 
+                    (click)="navigateToItemDetails(item.itemId || item.id)"
+                    class="hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer">
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">{{ item.quantity }}</td>

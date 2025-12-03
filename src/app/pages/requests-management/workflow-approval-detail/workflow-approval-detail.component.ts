@@ -610,6 +610,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/supply-order', this.requestId], { queryParams: { byOrder: true } });
   }
 
+  /**
+   * Navigate to item detail page to view item details (same view as new issue request)
+   */
+  navigateToItemDetails(itemId: number): void {
+    if (itemId && itemId > 0) {
+      // Pass requestId as query parameter so we can navigate back
+      this.router.navigate(['/item-detail', itemId], { 
+        queryParams: { requestId: this.requestId } 
+      });
+    }
+  }
+
   canSetSupplyPickupDate(): boolean {
     if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
       return false;

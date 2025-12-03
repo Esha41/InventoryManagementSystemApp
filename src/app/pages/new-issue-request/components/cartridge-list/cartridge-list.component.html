@@ -24,19 +24,8 @@
         <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p class="text-[var(--color-text)] font-medium">{{ cartridge.name }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.itemNo || cartridge.productId">
-              {{ 'newIssueRequest.productId' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
-            </p>
-            <div class="text-xs text-[var(--color-text-muted)] space-x-2" *ngIf="cartridge.bulletDiameterLabel || cartridge.caseLengthLabel">
-              <span *ngIf="cartridge.bulletDiameterLabel">{{ cartridge.bulletDiameterLabel }}</span>
-              <span *ngIf="cartridge.bulletDiameterLabel && cartridge.caseLengthLabel">•</span>
-              <span *ngIf="cartridge.caseLengthLabel">{{ cartridge.caseLengthLabel }}</span>
-            </div>
-            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.natureLabel">
-              {{ cartridge.natureLabel }}
-            </p>
-            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.linkedLabel">
-              {{ cartridge.linkedLabel }}
+            <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
+              {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}
             </p>
             <div *ngIf="cartridge.added" class="mt-4 inline-flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
               <span class="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-background-muted)] rounded-full">

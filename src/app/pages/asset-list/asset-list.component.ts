@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
@@ -102,10 +102,6 @@ export class AssetListComponent implements OnInit {
     { label: 'assetList.editModal.notLinked', value: false },
     { label: 'assetList.editModal.linked', value: true }
   ];
-  readonly readyForIssueOptions = [
-    { label: 'common.yes', value: true },
-    { label: 'common.no', value: false }
-  ];
 
   // Modals
   showEditModal = false;
@@ -126,6 +122,7 @@ export class AssetListComponent implements OnInit {
     private lookupService: LookupService,
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService
@@ -135,7 +132,7 @@ export class AssetListComponent implements OnInit {
       name: ['', Validators.required],
       itemNo: ['', Validators.required],
       partNo: ['', Validators.required],
-      batchNo: ['', Validators.required],
+    
       hccId: [null as number | null, Validators.required],
       bulletDiameter: [null as number | null, [Validators.required, Validators.min(0.01)]],
       bulletDiameterUnitId: [null as number | null, Validators.required],
@@ -149,8 +146,6 @@ export class AssetListComponent implements OnInit {
       propellantId: [null as number | null, Validators.required],
       compatibilityId: [null as number | null, Validators.required],
       hazardDivisionId: [null as number | null, Validators.required],
-      readyForIssue: [true as boolean],
-      expiryDate: [''],
       natureOptionId: [null as number | null],
       primaryPurposId: [null as number | null],
       projectileColorId: [null as number | null],
@@ -162,6 +157,23 @@ export class AssetListComponent implements OnInit {
     try {
       this.loadAssets();
       this.loadDropdowns();
+      
+      // Check for viewItemId query parameter to auto-open view modal
+      this.route.queryParams.subscribe(params => {
+        const viewItemId = params['viewItemId'];
+        if (viewItemId) {
+          // Wait for assets to load, then open the view modal
+          setTimeout(() => {
+            this.onView(viewItemId.toString());
+            // Remove query param from URL after opening modal
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { viewItemId: null },
+              queryParamsHandling: 'merge'
+            });
+          }, 500);
+        }
+      });
     } catch (error) {
       console.error('Error initializing asset list component:', error);
       this.loading = false;
@@ -520,7 +532,7 @@ export class AssetListComponent implements OnInit {
           name: data.name,
           itemNo: data.itemNo,
           partNo: data.partNo,
-          batchNo: data.batchNo || '',
+       
           hccId: data.hccId,
           bulletDiameter: data.bulletDiameter || 0,
           bulletDiameterUnitId: data.bulletDiameterUnitId,
@@ -534,8 +546,6 @@ export class AssetListComponent implements OnInit {
           propellantId: data.propellantId,
           compatibilityId: data.compatibilityId,
           hazardDivisionId: data.hazardDivisionId,
-          readyForIssue: data.readyForIssue ?? true,
-          expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString().split('T')[0] : '',
           natureOptionId: data.natureOptionId ?? null,
           primaryPurposId: data.primaryPurposId ?? null,
           projectileColorId: data.projectileColorId ?? null,
@@ -654,12 +664,15 @@ export class AssetListComponent implements OnInit {
     const id = v.id;
 
     // Builder maps null/empty to undefined for optional fields
-    // Note: Backend uses CreateUpdateAmmunitionDto (same as create, without id/lot)
+    // Note: Backend uses CreateUpdateAmmunitionDto which does NOT include:
+    // - batchNo (not in DTO, managed separately)
+    // - readyForIssue (not in DTO, managed separately)
+    // - expiryDate (not in DTO, managed separately)
     const buildDto = (m: EditFormModel): AmmunitionCreateDto => ({
       name: m.name,
       itemNo: m.itemNo,
       partNo: m.partNo?.trim() || 'N/A',
-      batchNo: m.batchNo || '',
+      // batchNo removed - not in backend CreateUpdateAmmunitionDto
       hccId: m.hccId,
       bulletDiameter: m.bulletDiameter ?? 0,
       bulletDiameterUnitId: m.bulletDiameterUnitId,
@@ -673,8 +686,8 @@ export class AssetListComponent implements OnInit {
       propellantId: m.propellantId,
       compatibilityId: m.compatibilityId,
       hazardDivisionId: m.hazardDivisionId,
-      readyForIssue: m.readyForIssue ?? true,
-      expiryDate: m.expiryDate || undefined,
+      // readyForIssue removed - not in backend CreateUpdateAmmunitionDto
+      // expiryDate removed - not in backend CreateUpdateAmmunitionDto
       natureOptionId: m.natureOptionId ?? undefined,
       primaryPurposId: m.primaryPurposId ?? undefined,
       projectileColorId: m.projectileColorId ?? undefined,
