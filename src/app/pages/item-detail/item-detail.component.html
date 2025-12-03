@@ -1,0 +1,27 @@
+<div class="min-h-screen bg-[var(--color-background)] p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <button
+        (click)="goBack()"
+        class="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors mb-4">
+        <lucide-angular [img]="ArrowLeft" class="h-5 w-5"></lucide-angular>
+        <span>{{ 'common.back' | translate }}</span>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading"></app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="error && !loading" [error]="error" variant="centered"></app-error-state>
+
+    <!-- Cartridge Details -->
+    <app-cartridge-details
+      *ngIf="!loading && !error && cartridge"
+      [cartridge]="cartridge"
+      [showActions]="false">
+    </app-cartridge-details>
+  </div>
+</div>
+

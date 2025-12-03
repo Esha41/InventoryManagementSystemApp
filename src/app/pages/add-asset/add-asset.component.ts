@@ -25,7 +25,7 @@ interface AssetForm {
   name: string;
   itemNo: string;
   partNo: string;
-  batchNo: string;
+  // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
   hccId: string;
   bulletDiameter: string;
   bulletDiameterUnitId: string;
@@ -39,8 +39,6 @@ interface AssetForm {
   propellantId: string;
   compatibilityId: string;
   hazardDivisionId: string;
-  expiryDate: string;
-  readyForIssue: boolean;
   // Optional
   natureOptionId: string;
   primaryPurposId: string;
@@ -79,10 +77,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     { label: 'common.no', value: 'false' },
     { label: 'common.yes', value: 'true' }
   ];
-  readonly readyForIssueOptions = [
-    { label: 'common.yes', value: true },
-    { label: 'common.no', value: false }
-  ];
 
   loading = false;
   submitting = false;
@@ -101,7 +95,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     name: '',
     itemNo: '',
     partNo: '',
-    batchNo: '',
+    // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
     hccId: '',
     bulletDiameter: '',
     bulletDiameterUnitId: '',
@@ -115,8 +109,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     propellantId: '',
     compatibilityId: '',
     hazardDivisionId: '',
-    expiryDate: '',
-    readyForIssue: true,
     natureOptionId: '',
     primaryPurposId: '',
     projectileColorId: '',
@@ -218,11 +210,13 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     // Build DTO matching backend expectations
+    // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
+    // These fields are managed at the lot/inventory level, not the ammunition catalog level
     const ammunitionDto: AmmunitionCreateDto = {
       name: this.assetForm.name.trim(),
       itemNo: this.assetForm.itemNo.trim(),
       partNo: this.assetForm.partNo.trim(),
-      batchNo: this.assetForm.batchNo.trim(),
+      // batchNo removed - not in backend CreateUpdateAmmunitionDto
       hccId: parseInt(this.assetForm.hccId),
       bulletDiameter: parseFloat(this.assetForm.bulletDiameter),
       bulletDiameterUnitId: parseInt(this.assetForm.bulletDiameterUnitId),
@@ -234,8 +228,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       caseTypeId: parseInt(this.assetForm.caseTypeId),
       propellantId: parseInt(this.assetForm.propellantId),
       compatibilityId: parseInt(this.assetForm.compatibilityId),
-      hazardDivisionId: parseInt(this.assetForm.hazardDivisionId),
-      readyForIssue: this.assetForm.readyForIssue
+      hazardDivisionId: parseInt(this.assetForm.hazardDivisionId)
+      // readyForIssue removed - not in backend CreateUpdateAmmunitionDto
+      // expiryDate removed - not in backend CreateUpdateAmmunitionDto
     };
 
     // Add optional fields only if they have values
@@ -318,15 +313,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (!this.assetForm.batchNo || this.assetForm.batchNo.trim().length === 0) {
-      this.errorMessage = 'Batch number is required';
-      return false;
-    }
-    if (this.assetForm.batchNo.length > 100) {
-      this.errorMessage = 'Batch number cannot exceed 100 characters';
-      return false;
-    }
-
     if (!this.assetForm.hccId || parseInt(this.assetForm.hccId) <= 0) {
       this.errorMessage = 'HCC is required';
       return false;
@@ -399,16 +385,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (!this.assetForm.hazardDivisionId || parseInt(this.assetForm.hazardDivisionId) <= 0) {
       this.errorMessage = 'Hazard division is required';
       return false;
-    }
-
-    // Expiry date validation (must be in the future if provided)
-    if (this.assetForm.expiryDate) {
-      const expiryDate = new Date(this.assetForm.expiryDate);
-      const now = new Date();
-      if (expiryDate <= now) {
-        this.errorMessage = 'Expiry date must be in the future';
-        return false;
-      }
     }
 
     // Optional field validations (only validate if provided)
@@ -506,7 +482,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       name: '',
       itemNo: '',
       partNo: '',
-      batchNo: '',
+      // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
       hccId: '',
       bulletDiameter: '',
       bulletDiameterUnitId: '',
@@ -520,8 +496,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       propellantId: '',
       compatibilityId: '',
       hazardDivisionId: '',
-      expiryDate: '',
-      readyForIssue: true,
       natureOptionId: '',
       primaryPurposId: '',
       projectileColorId: '',

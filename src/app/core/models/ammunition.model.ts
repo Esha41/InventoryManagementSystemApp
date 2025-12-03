@@ -59,7 +59,8 @@ export interface AmmunitionCreateDto {
   name: string;
   partNo: string;
   itemNo: string;
-  batchNo: string;
+  // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
+  // These fields are managed at the lot/inventory level, not the ammunition catalog level
   hccId: number;
   supplierId?: number;
   countryId?: number;
@@ -80,8 +81,6 @@ export interface AmmunitionCreateDto {
   propellantId: number;
   compatibilityId: number;
   hazardDivisionId: number;
-  readyForIssue?: boolean;
-  expiryDate?: Date | string;
 }
 
 export interface AmmunitionUpdateDto {

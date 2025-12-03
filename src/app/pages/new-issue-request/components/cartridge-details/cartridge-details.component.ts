@@ -13,6 +13,7 @@ import { Cartridge } from '../cartridge-list/cartridge-list.component';
 })
 export class CartridgeDetailsComponent {
   @Input() cartridge: Cartridge | null = null;
+  @Input() showActions: boolean = true; // Control whether to show action buttons
   @Output() select = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 

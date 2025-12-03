@@ -20,6 +20,7 @@ export interface WorkflowApprovalStep {
   approverName?: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   approvedDate?: string;
+  approvedDateTime?: string;
   applicationRoleName?: string;
   isPending?: boolean;
   requireHigherApproval?: boolean;
@@ -45,7 +46,8 @@ export type RequestStatus = 'Pending' | 'Approved' | 'Rejected';
  * Request item in a request
  */
 export interface RequestItem {
-  id: number;
+  id: number; // RequestItem ID (the ID of the request item record)
+  itemId?: number; // Item/Ammunition ID (the actual item ID for navigation)
   itemName: string;
   itemNo?: string;
   quantity: number;
