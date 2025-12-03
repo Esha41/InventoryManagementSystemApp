@@ -1,0 +1,117 @@
+/* Inventory Summary - Matching existing app styles */
+
+.inventory-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.inventory-table th {
+    background-color: #f9fafb;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.inventory-table td {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.inventory-table tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Accordion row styles */
+.accordion-row {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.accordion-row:hover {
+    background-color: #f9fafb;
+}
+
+.accordion-row.expanded {
+    background-color: #f0f9ff;
+}
+
+.expand-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.expand-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Detail row animation */
+.detail-row {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e5e7eb;
+    border-top-color: var(--color-brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-ready {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-expired {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-empty {
+    background-color: #e5e7eb;
+    color: #6b7280;
+}
+
+.status-not-ready {
+    background-color: #fed7aa;
+    color: #92400e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .inventory-table {
+        font-size: 0.875rem;
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
