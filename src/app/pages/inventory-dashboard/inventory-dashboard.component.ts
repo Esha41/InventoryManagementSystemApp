@@ -760,8 +760,25 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   formatOrderUsageTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
     
-    const fromTime = order.usageTimeFrom ? (order.usageTimeFrom.length >= 5 ? order.usageTimeFrom.substring(0, 5) : order.usageTimeFrom) : '';
-    const toTime = order.usageTimeTo ? (order.usageTimeTo.length >= 5 ? order.usageTimeTo.substring(0, 5) : order.usageTimeTo) : '';
+    // Handle military format (HHMM) and legacy format (HH:mm)
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      // Military format (HHMM - 4 digits)
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return timeStr;
+      }
+      // Legacy format (HH:mm) - convert to military
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        const hours = parts[0].padStart(2, '0');
+        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+        return hours + minutes;
+      }
+      return timeStr;
+    };
+    
+    const fromTime = formatTime(order.usageTimeFrom);
+    const toTime = formatTime(order.usageTimeTo);
     
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;

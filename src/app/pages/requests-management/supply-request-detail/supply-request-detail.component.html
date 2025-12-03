@@ -118,9 +118,9 @@
               </label>
               <p class="text-sm text-gray-900 mt-1 font-medium">
                 {{ formatDate(orderData?.usageDateFrom) }} 
-                <span *ngIf="orderData?.usageTimeFrom">{{ orderData?.usageTimeFrom | slice:0:5 }}</span>
+                <span *ngIf="orderData?.usageTimeFrom">{{ orderData?.usageTimeFrom }}</span>
                 <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
-                <span *ngIf="orderData?.usageTimeTo"> {{ orderData?.usageTimeTo | slice:0:5 }}</span>
+                <span *ngIf="orderData?.usageTimeTo"> {{ orderData?.usageTimeTo }}</span>
               </p>
             </div>
           </div>

@@ -27,11 +27,27 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
   
-  // Format date/time range
+  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
+  const formatTime = (timeStr: string | null | undefined): string => {
+    if (!timeStr) return '';
+    // Military format (HHMM - 4 digits) - display as-is
+    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+      return timeStr;
+    }
+    // Legacy format (HH:mm) - convert to military
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      const hours = parts[0].padStart(2, '0');
+      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+      return hours + minutes;
+    }
+    return timeStr;
+  };
+  
   const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
   const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
-  const fromTime = order.usageTimeFrom || '';
-  const toTime = order.usageTimeTo || '';
+  const fromTime = formatTime(order.usageTimeFrom);
+  const toTime = formatTime(order.usageTimeTo);
   
   const formattedDateTime = toDate 
     ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
@@ -143,11 +159,27 @@ export function generateApprovalWorkflowFallback(
   order: OrderDto,
   formatDateTime: (date?: string, time?: string) => string
 ): OrderReportApprovalStep[] {
-  // Format date/time range
+  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
+  const formatTime = (timeStr: string | null | undefined): string => {
+    if (!timeStr) return '';
+    // Military format (HHMM - 4 digits) - display as-is
+    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+      return timeStr;
+    }
+    // Legacy format (HH:mm) - convert to military
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      const hours = parts[0].padStart(2, '0');
+      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+      return hours + minutes;
+    }
+    return timeStr;
+  };
+  
   const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
   const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
-  const fromTime = order.usageTimeFrom || '';
-  const toTime = order.usageTimeTo || '';
+  const fromTime = formatTime(order.usageTimeFrom);
+  const toTime = formatTime(order.usageTimeTo);
   
   const formattedDateTime = toDate 
     ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 

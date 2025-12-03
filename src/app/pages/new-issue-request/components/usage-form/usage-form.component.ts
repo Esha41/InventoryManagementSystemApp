@@ -66,6 +66,19 @@ export class UsageFormComponent {
   formErrors: UsageFormErrors = { ...this.defaultErrors };
   hasAttemptedSubmit = false;
 
+  // Generate military time options (every 15 minutes: 0000, 0015, 0030, ... 2345)
+  readonly timeOptions: string[] = (() => {
+    const options: string[] = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const hourStr = hour.toString().padStart(2, '0');
+        const minuteStr = minute.toString().padStart(2, '0');
+        options.push(hourStr + minuteStr);
+      }
+    }
+    return options;
+  })();
+
   clearError(field: keyof UsageFormErrors): void {
     if (this.formErrors[field]) {
       this.formErrors[field] = null;
@@ -126,8 +139,8 @@ export class UsageFormComponent {
   }
 
   onUsageTimeFromChange(value: string): void {
-    this.usageTimeFromChange.emit(value);
-    
+    // Dropdown will only return valid military time format (HHMM)
+    this.usageTimeFromChange.emit(value || '');
     this.clearError('usageTimeFrom');
     
     if (this.hasAttemptedSubmit) {
@@ -154,8 +167,8 @@ export class UsageFormComponent {
   }
 
   onUsageTimeToChange(value: string): void {
-    this.usageTimeToChange.emit(value);
-    
+    // Dropdown will only return valid military time format (HHMM)
+    this.usageTimeToChange.emit(value || '');
     this.clearError('usageTimeTo');
     
     if (this.hasAttemptedSubmit) {

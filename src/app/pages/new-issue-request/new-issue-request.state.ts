@@ -15,6 +15,7 @@ export interface FilterState {
   selectedCaseLength: string;
   selectedLinked: string;
   selectedNature: string;
+  selectedNSN: string;
   searchTerm: string;
 }
 

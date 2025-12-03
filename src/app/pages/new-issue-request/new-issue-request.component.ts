@@ -82,6 +82,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     selectedCaseLength: '',
     selectedLinked: '',
     selectedNature: '',
+    selectedNSN: '',
     searchTerm: ''
   };
 
@@ -420,11 +421,15 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       const caseLabel = cartridge.caseLengthLabel ?? '';
       const linkedLabel = cartridge.linkedLabel ?? '';
       const natureLabel = cartridge.natureLabel ?? '';
+      const nsn = cartridge.ncn ?? '';
 
       const byDiameter = !this.filterState.selectedBulletDiameter || this.filterState.selectedBulletDiameter === diameterLabel;
       const byCase = !this.filterState.selectedCaseLength || this.filterState.selectedCaseLength === caseLabel;
       const byLinked = !this.filterState.selectedLinked || this.filterState.selectedLinked === linkedLabel;
       const byNature = !this.filterState.selectedNature || this.filterState.selectedNature === natureLabel;
+      // NSN filter - search by text (case-insensitive)
+      const nsnFilterLower = this.filterState.selectedNSN?.toLowerCase() ?? '';
+      const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
 
       // Ammunition type filter (search by numeric ID: 1=Small, 2=Medium, 3=Large)
       const byAmmunitionType = !selectedAmmunitionTypeId ||
@@ -438,7 +443,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         (cartridge.productId?.toLowerCase().includes(searchLower)) ||
         (cartridge.ncn?.toLowerCase().includes(searchLower));
 
-      return byDiameter && byCase && byLinked && byNature && byAmmunitionType && bySearch;
+      return byDiameter && byCase && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
     });
   }
 
@@ -460,6 +465,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   onNatureChange(value: string): void {
     this.filterState.selectedNature = value;
+    this.filterCartridges();
+  }
+
+  onNSNChange(value: string): void {
+    this.filterState.selectedNSN = value;
     this.filterCartridges();
   }
 
@@ -516,6 +526,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.filterState.selectedCaseLength = '';
     this.filterState.selectedLinked = '';
     this.filterState.selectedNature = '';
+    this.filterState.selectedNSN = '';
     this.filterCartridges();
   }
 
@@ -820,6 +831,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.filterState.selectedCaseLength = '';
     this.filterState.selectedLinked = '';
     this.filterState.selectedNature = '';
+    this.filterState.selectedNSN = '';
     this.filterState.selectedItemType = 'Ammunition';
     this.filterState.selectedAmmunitionType = '';
     this.filterState.searchTerm = '';

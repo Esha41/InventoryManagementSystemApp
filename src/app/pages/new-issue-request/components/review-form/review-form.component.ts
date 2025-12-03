@@ -39,14 +39,16 @@ export class ReviewFormComponent {
     if (!this.usageDateFrom) return '';
     const date = new Date(this.usageDateFrom);
     const dateStr = date.toLocaleDateString('en-GB');
-    return this.usageTimeFrom ? `${dateStr} ${this.usageTimeFrom.substring(0, 5)}` : dateStr;
+    // Display time in military format (HHMM)
+    return this.usageTimeFrom ? `${dateStr} ${this.usageTimeFrom}` : dateStr;
   }
 
   getFormattedUsageDateTo(): string {
     if (!this.usageDateTo) return '';
     const date = new Date(this.usageDateTo);
     const dateStr = date.toLocaleDateString('en-GB');
-    return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo.substring(0, 5)}` : dateStr;
+    // Display time in military format (HHMM)
+    return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo}` : dateStr;
   }
 }
 
