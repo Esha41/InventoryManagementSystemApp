@@ -53,6 +53,7 @@ export class CartridgeListComponent {
   @Input() selectedCaseLength: string = '';
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
+  @Input() selectedNSN: string = '';
   @Input() canProceed: boolean = false;
   @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
 
@@ -69,6 +70,7 @@ export class CartridgeListComponent {
   @Output() caseLengthChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
+  @Output() nsnChange = new EventEmitter<string>();
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
   @Output() removeSelection = new EventEmitter<number>();
   @Output() searchChange = new EventEmitter<string>();
@@ -223,6 +225,11 @@ export class CartridgeListComponent {
 
   onNatureChange(value: string): void {
     this.natureChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onNSNChange(value: string): void {
+    this.nsnChange.emit(value);
     this.onFilterChange();
   }
 

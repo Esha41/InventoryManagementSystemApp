@@ -248,6 +248,56 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.isSubmittingProposal = false;
   }
 
+  /**
+   * Formats time for display - converts HH:mm:ss or HH:mm to military format (HHMM)
+   */
+  formatTimeForDisplay(timeStr: string | null | undefined): string {
+    if (!timeStr) return '';
+    
+    // Already in military format (HHMM - 4 digits)
+    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+      return timeStr;
+    }
+    
+    // Convert from HH:mm:ss or HH:mm format to military format (HHMM)
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      const hours = parts[0].padStart(2, '0');
+      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+      return hours + minutes;
+    }
+    
+    return timeStr;
+  }
+
+  formatMilitaryTime(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, ''); // Remove non-digits
+    
+    // Limit to 4 digits
+    if (value.length > 4) {
+      value = value.substring(0, 4);
+    }
+    
+    // Validate hours (00-23) and minutes (00-59)
+    if (value.length >= 2) {
+      const hours = parseInt(value.substring(0, 2), 10);
+      if (hours > 23) {
+        value = '23' + value.substring(2);
+      }
+    }
+    
+    if (value.length >= 4) {
+      const minutes = parseInt(value.substring(2, 4), 10);
+      if (minutes > 59) {
+        value = value.substring(0, 2) + '59';
+      }
+    }
+    
+    input.value = value;
+    this.proposeForm.patchValue({ pickupTime: value }, { emitEvent: false });
+  }
+
   submitProposedTime(): void {
     const notification = this.selectedNotification;
     if (!notification || !this.canProposeNewTime(notification)) {
@@ -260,9 +310,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmittingProposal = true;
+    // Convert military time format (HHMM) if needed
+    let pickupTime = this.proposeForm.value.pickupTime || '';
+    if (pickupTime && pickupTime.includes(':')) {
+      pickupTime = pickupTime.replace(':', '');
+    }
+    
     const payload = {
       pickupDate: this.proposeForm.value.pickupDate,
-      pickupTime: this.proposeForm.value.pickupTime
+      pickupTime: pickupTime
     };
 
     this.notificationService.proposeNewTime(notification.id, payload as { pickupDate: string; pickupTime: string })

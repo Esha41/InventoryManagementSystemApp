@@ -232,23 +232,56 @@ export class OrderSubmissionService {
 
   /**
    * Combines date and time strings into a Date object
+   * Handles military time format (HHMM) and legacy format (HH:mm)
    */
   private combineDateAndTime(dateStr: string, timeStr: string): Date {
     const datePart = dateStr || new Date().toISOString().substring(0, 10);
-    const timePart = (timeStr && timeStr.length >= 5) ? timeStr : '00:00';
-    const isoString = `${datePart}T${timePart.length === 5 ? `${timePart}:00` : timePart}`;
+    let timePart = '00:00';
+    
+    if (timeStr) {
+      // Handle military format (HHMM - 4 digits)
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        const hours = timeStr.substring(0, 2);
+        const minutes = timeStr.substring(2, 4);
+        timePart = `${hours}:${minutes}`;
+      }
+      // Handle legacy format (HH:mm - 5 characters)
+      else if (timeStr.length >= 5 && timeStr.includes(':')) {
+        timePart = timeStr.substring(0, 5);
+      }
+    }
+    
+    const isoString = `${datePart}T${timePart}:00`;
     return new Date(isoString);
   }
 
   /**
-   * Formats a time string to HH:mm:ss format
+   * Formats a time string to HH:mm:ss format for .NET TimeOnly parsing
+   * Handles both military format (HHMM) and legacy format (HH:mm)
    */
   private formatTimeOnly(timeStr: string): string {
-    // Convert "HH:mm" to "HH:mm:ss" format if needed
-    if (timeStr && timeStr.length === 5) {
-      return `${timeStr}:00`;
+    if (!timeStr) {
+      return '00:00:00';
     }
-    return timeStr;
+    
+    // Military format (HHMM - 4 digits) - convert to HH:mm:ss
+    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+      const hours = timeStr.substring(0, 2);
+      const minutes = timeStr.substring(2, 4);
+      return `${hours}:${minutes}:00`;
+    }
+    
+    // Legacy format (HH:mm) - convert to HH:mm:ss
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      const hours = parts[0].padStart(2, '0');
+      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+      const seconds = parts[2] ? parts[2].padStart(2, '0') : '00';
+      return `${hours}:${minutes}:${seconds}`;
+    }
+    
+    // Default fallback
+    return '00:00:00';
   }
 
   /**

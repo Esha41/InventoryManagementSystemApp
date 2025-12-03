@@ -92,6 +92,7 @@
         [selectedCaseLength]="filterState.selectedCaseLength"
         [selectedLinked]="filterState.selectedLinked"
         [selectedNature]="filterState.selectedNature"
+        [selectedNSN]="filterState.selectedNSN"
         [canProceed]="canProceedFromSelection"
         [fromReserve]="fromReserve"
         (cartridgeClick)="onCartridgeClick($event)"
@@ -108,6 +109,7 @@
         (caseLengthChange)="onCaseLengthChange($event)"
         (linkedChange)="onLinkedChange($event)"
         (natureChange)="onNatureChange($event)"
+        (nsnChange)="onNSNChange($event)"
         (removeSelection)="onRemoveSelectedCartridge($event)">
       </app-cartridge-list>
 

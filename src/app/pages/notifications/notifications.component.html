@@ -232,12 +232,12 @@
                 <span class="detail-field__value">{{ orderDetail.requestNo || orderDetail.orderNo || ('#' + orderDetail.id) }}</span>
               </div>
               <div class="detail-field" *ngIf="orderDetail.usageDateFrom">
-                <span class="detail-field__label">{{ 'notifications.details.requestDate' | translate }}</span>
+                <span class="detail-field__label">{{ 'notifications.details.usageDate' | translate }}</span>
                 <span class="detail-field__value">
                   {{ orderDetail.usageDateFrom | date:'medium' }}
-                  <span *ngIf="orderDetail.usageTimeFrom"> {{ orderDetail.usageTimeFrom | slice:0:5 }}</span>
+                  <span *ngIf="orderDetail.usageTimeFrom"> {{ formatTimeForDisplay(orderDetail.usageTimeFrom) }}</span>
                   <span *ngIf="orderDetail.usageDateTo"> - {{ orderDetail.usageDateTo | date:'medium' }}</span>
-                  <span *ngIf="orderDetail.usageTimeTo"> {{ orderDetail.usageTimeTo | slice:0:5 }}</span>
+                  <span *ngIf="orderDetail.usageTimeTo"> {{ formatTimeForDisplay(orderDetail.usageTimeTo) }}</span>
                 </span>
               </div>
               <div class="detail-field">
@@ -489,13 +489,18 @@
         {{ 'notifications.pickupTime' | translate }}
       </label>
       <input
-        type="time"
+        type="text"
         formControlName="pickupTime"
+        (input)="formatMilitaryTime($event)"
+        maxlength="4"
+        pattern="[0-9]{4}"
+        placeholder="HHMM (e.g., 1430)"
         class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]"
       />
       <p class="text-xs text-red-500" *ngIf="proposeForm.get('pickupTime')?.invalid && proposeForm.get('pickupTime')?.touched">
         {{ 'validation.required' | translate }}
       </p>
+      <p class="text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.militaryTimeFormat' | translate }}</p>
     </div>
 
     <div class="flex justify-end gap-3 pt-4">
