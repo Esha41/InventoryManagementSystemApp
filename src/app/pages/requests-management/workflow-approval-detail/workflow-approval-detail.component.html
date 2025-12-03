@@ -524,17 +524,22 @@
         </div>
         
         <div class="space-y-6">
-          <!-- Higher Approval Checkbox -->
-          <div *ngIf="hasHigherApproval()" class="flex items-center gap-3 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
-            <input
-              type="checkbox"
-              id="sendToHigherApproval"
-              [(ngModel)]="sendToHigherApproval"
-              [disabled]="processing"
-              class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <label for="sendToHigherApproval" class="text-sm font-medium text-[var(--color-text)] cursor-pointer flex-1">
+          <!-- Higher Approval Dropdown -->
+          <div *ngIf="hasHigherApproval()">
+            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
               {{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}
             </label>
+            <app-dropdown
+              class="w-full"
+              [(ngModel)]="sendToHigherApproval"
+              [options]="higherApprovalOptions"
+              optionValue="value"
+              [optionLabelFn]="higherApprovalOptionLabel"
+              [placeholderSelectable]="false"
+              [placeholderValue]="null"
+              [disabled]="processing"
+              placeholder="{{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}">
+            </app-dropdown>
           </div>
 
           <!-- Comments Textarea -->

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { Subject, takeUntil, forkJoin, switchMap, timer } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
@@ -415,20 +415,87 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       )
     };
 
+    // Store the detail ID before we clear it
+    const detailIdToUpdate = this.selectedDetail?.id;
+    
     this.inventoryService.update(this.currentInventory.id, updateInventoryDto)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
+      .pipe(
+        takeUntil(this.destroy$),
+        // Use the update response to optimistically update the UI
+        switchMap((updatedInventory: InventoryDto) => {
+          // Close modal immediately for better UX
+          this.showEditModal = false;
+          const tempSelectedDetail = this.selectedDetail;
+          this.selectedDetail = undefined;
+          this.currentInventory = undefined;
+          
+          // Show success message
           this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
             this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
           });
-          this.showEditModal = false;
-          this.selectedDetail = undefined;
-          this.currentInventory = undefined;
-          this.loadInventoryData(); // Refresh data
+          
+          // Update the specific detail in the local array optimistically
+          if (updatedInventory.inventoryDetails && detailIdToUpdate) {
+            const updatedDetail = updatedInventory.inventoryDetails.find(
+              d => d.id === detailIdToUpdate
+            );
+            if (updatedDetail && tempSelectedDetail) {
+              const index = this.inventoryDetails.findIndex(d => d.id === detailIdToUpdate);
+              if (index !== -1) {
+                // Merge the updated detail with existing data to preserve computed fields
+                this.inventoryDetails[index] = { 
+                  ...this.inventoryDetails[index], 
+                  ...updatedDetail,
+                  // Preserve computed fields that might not be in the update response
+                  currentQuantity: this.inventoryDetails[index].currentQuantity,
+                  usedQuantity: this.inventoryDetails[index].usedQuantity,
+                  reservedQuantityByOrdersOnProcessing: this.inventoryDetails[index].reservedQuantityByOrdersOnProcessing,
+                  remainingQuantity: this.inventoryDetails[index].remainingQuantity
+                };
+                this.filterInventoryByTab();
+              }
+            }
+          }
+          
+          // Wait a bit to ensure backend transaction is committed, then reload fresh data
+          return timer(500).pipe(
+            switchMap(() => {
+              this.loading = true;
+              return forkJoin({
+                depot: this.lookupService.getDepots(),
+                inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
+                weapons: this.weaponService.getAll<BaseItemDto>(),
+                explosives: this.explosiveService.getAll<BaseItemDto>()
+              });
+            })
+          );
+        })
+      )
+      .subscribe({
+        next: ({ depot, inventoryDetails, weapons, explosives }) => {
+          // Find the specific depot
+          const currentDepot = depot.find((d: LookupItem) => d.id === this.depoId);
+          this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
+          
+          const weaponDetails: InventoryDetailDto[] = (weapons || [])
+            .filter(weapon => !weapon.isDeleted)
+            .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
+          
+          const explosiveDetails: InventoryDetailDto[] = (explosives || [])
+            .filter(explosive => !explosive.isDeleted)
+            .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
+          
+          const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
+          const uniqueDetails = this.removeDuplicateItems(allDetails);
+          
+          // Update inventory details with fresh data
+          this.inventoryDetails = uniqueDetails;
+          this.filterInventoryByTab();
+          this.loading = false;
         },
         error: (error) => {
           console.error('Error updating inventory:', error);
+          this.loading = false;
           this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
             const errorMsg = error.error?.message || translations['toast.failedToUpdate'];
             this.toastService.error(errorMsg, translations['toast.error']);
