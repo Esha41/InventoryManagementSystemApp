@@ -209,6 +209,9 @@
           <table class="w-full">
             <thead class="bg-[var(--color-background)]">
               <tr class="border-b border-[var(--color-border)]">
+                <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                  {{ 'assetList.table.image' | translate }}
+                </th>
                 <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
                     (click)="sortByColumn('name')">
                   <div class="flex items-center gap-2">
@@ -279,6 +282,20 @@
               <tr *ngFor="let asset of paginatedAssets" 
                   class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
                 <td class="py-4 px-6">
+                  <div class="flex items-center justify-center w-16 h-16">
+                    <img *ngIf="asset.imageUrl" 
+                         [src]="asset.imageUrl" 
+                         [alt]="asset.name"
+                         (error)="onImageError(asset, $event)"
+                         (load)="onImageLoad(asset, $event)"
+                         class="max-w-full max-h-full object-contain rounded border border-[var(--color-border)]">
+                    <div *ngIf="!asset.imageUrl" 
+                         class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
+                      {{ 'common.noImage' | translate }}
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-6">
                   <div class="font-medium text-[var(--color-text)]">{{ asset.name }}</div>
                 </td>
                 <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
@@ -316,7 +333,7 @@
                 </td>
               </tr>
               <tr *ngIf="filteredAssets.length === 0 && !loading">
-                <td [attr.colspan]="activeTab === 'ammunition' ? 8 : 6" class="text-center py-12">
+                <td [attr.colspan]="activeTab === 'ammunition' ? 10 : 8" class="text-center py-12">
                   <div class="flex flex-col items-center justify-center">
                     <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}</div>
                     <p class="text-[var(--color-text-muted)] text-sm">{{ 'assetList.noItemsDescription' | translate }}</p>
@@ -465,6 +482,40 @@
         <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
           <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
             <div class="space-y-6">
+              <!-- Image Upload Section -->
+              <div class="flex items-center justify-center gap-4 mb-6">
+                <div class="w-[81px] h-[81px] border border-dashed border-[var(--color-brand)]/50 rounded-md bg-white overflow-hidden cursor-pointer relative"
+                     (click)="triggerEditFileInput(); $event.stopPropagation()"
+                     (dragover)="onEditDragOver($event)"
+                     (drop)="onEditDrop($event)">
+                  <img *ngIf="editImagePreview || editImageUrl; else placeholderIcon" 
+                       [src]="editImagePreview || editImageUrl" 
+                       alt="Preview" 
+                       class="w-full h-full object-cover rounded-md" />
+                  <ng-template #placeholderIcon>
+                    <div class="w-full h-full flex items-center justify-center">
+                      <div class="w-12 h-12 bg-[#F3F4F6] rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[#6B7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </ng-template>
+                </div>
+                <div class="text-left">
+                  <p class="text-sm text-[#6B7280]">Drag image here or <span class="text-[var(--color-brand)] cursor-pointer" (click)="triggerEditFileInput(); $event.stopPropagation()">browse</span></p>
+                  <p class="text-xs text-[#6B7280] mt-1">Only JPG, JPEG, and PNG files are allowed</p>
+                </div>
+                <input
+                  type="file"
+                  id="editFileInput"
+                  #editFileInput
+                  (change)="onEditFileSelect($event)"
+                  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                  class="hidden"
+                />
+              </div>
+
               <!-- Required Fields Section -->
               <div class="grid grid-cols-2 gap-6">
                 <!-- Name -->

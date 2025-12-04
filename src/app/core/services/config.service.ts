@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 interface RuntimeConfig {
   apiUrl?: string;
   notificationHubUrl?: string;
+  fileBaseUrl?: string;
 }
 
 @Injectable({
@@ -77,6 +78,14 @@ export class ConfigService {
     return (
       this.runtimeConfig?.notificationHubUrl ??
       (environment as any).notificationHubUrl ??
+      ''
+    );
+  }
+
+  get fileBaseUrl(): string {
+    return (
+      this.runtimeConfig?.fileBaseUrl ??
+      (environment as any).fileBaseUrl ??
       ''
     );
   }

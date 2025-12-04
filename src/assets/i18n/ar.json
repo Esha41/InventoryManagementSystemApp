@@ -29,7 +29,8 @@
     "remove": "إزالة",
     "update": "تحديث",
     "pleaseWait": "يرجى الانتظار...",
-    "processing": "جاري المعالجة"
+    "processing": "جاري المعالجة",
+    "noImage": "لا توجد صورة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -1280,6 +1281,7 @@
     "loadingWeapons": "جاري تحميل بيانات الأسلحة...",
     "loadingExplosives": "جاري تحميل بيانات المتفجرات...",
     "table": {
+      "image": "الصورة",
       "name": "الاسم",
       "itemNo": "رقم العنصر",
       "partNo": "رقم القطعة",
