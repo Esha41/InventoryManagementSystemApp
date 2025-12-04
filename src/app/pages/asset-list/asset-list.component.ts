@@ -931,7 +931,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     formData.append('file', this.editImageFile);
     
-    const uploadUrl = `${this.configService.apiUrl}/FileUpload/upload?entityId=1&primaryId=${ammunitionId}&isMain=true`;
+    const uploadUrl = `${this.configService.apiUrl}/FileUpload/upload?entity=1&entityId=${ammunitionId}&isMain=true`;
     
     this.http.post(uploadUrl, formData).subscribe({
       next: (response: any) => {
