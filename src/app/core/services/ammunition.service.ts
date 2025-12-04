@@ -77,7 +77,7 @@ export class AmmunitionService {
 
   // Get image URL for an ammunition item
   getImageUrl(ammunitionId: number): Observable<string | null> {
-    const fileUploadUrl = `${this.config.apiUrl}/FileUpload?entityId=1&primaryId=${ammunitionId}`;
+    const fileUploadUrl = `${this.config.apiUrl}/FileUpload?entity=1&entityId=${ammunitionId}`;
     return this.http.get<APIOperationResponse<any[]>>(fileUploadUrl).pipe(
       map((response) => {
         if (response?.succeeded && response?.data && response.data.length > 0) {
