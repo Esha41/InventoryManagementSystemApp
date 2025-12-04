@@ -1,4 +1,20 @@
 <div class="min-h-screen bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F8] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+  <!-- Language Switcher Button - Fixed Top Right -->
+  <div class="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+    <button
+      (click)="toggleLanguage()"
+      class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow-md hover:shadow-lg border border-[var(--color-border)] hover:border-[var(--color-brand)]/30 transition-all duration-200 group"
+      aria-label="Change language"
+    >
+      <lucide-angular 
+        [img]="Globe" 
+        class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-all duration-200"
+        [style.transform]="isRTL ? 'scaleX(-1)' : 'none'"
+      ></lucide-angular>
+      <span class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200">{{ getCurrentLanguage() }}</span>
+    </button>
+  </div>
+
   <div class="w-full max-w-[480px]">
     <!-- Logo and Header Section -->
     <div class="text-center mb-8">

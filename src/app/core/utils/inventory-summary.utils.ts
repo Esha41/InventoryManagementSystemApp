@@ -1,4 +1,5 @@
 import { BaseItemDto, ItemInventorySummaryDto } from '@models/inventory.model';
+import { getLocalizedName } from './localization.utils';
 
 /**
  * Utility class for transforming inventory data
@@ -8,10 +9,10 @@ export class InventorySummaryUtils {
      * Transform BaseItemDto to ItemInventorySummaryDto format
      * Used for weapons and explosives that don't have the summary endpoint
      */
-    static transformBaseItemToSummary(item: BaseItemDto, itemType: number): ItemInventorySummaryDto {
+    static transformBaseItemToSummary(item: BaseItemDto, itemType: number, currentLang: string = 'en'): ItemInventorySummaryDto {
         return {
             itemId: item.id,
-            itemName: item.name || '',
+            itemName: getLocalizedName(item, currentLang) || '',
             itemNo: item.itemNo || '',
             itemType: itemType,
             nsn: item.nsn || '',

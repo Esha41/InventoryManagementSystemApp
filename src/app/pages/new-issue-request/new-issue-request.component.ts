@@ -33,6 +33,7 @@ import {
 } from './new-issue-request.state';
 import { toNumber, normalizeArrayResponse, getLocalizedNameFromItem, resolveUserDisplayName, getAmmunitionTypeId } from '@utils/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-new-issue-request',
@@ -864,17 +865,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private getPreferredRequesterName(): string {
-    const name =
-      this.userContextState.currentUserDetails?.nameEn ||
-      this.userContextState.currentUserDetails?.nameAr ||
-      this.userContextState.currentUserDetails?.userName ||
-      this.userContextState.fallbackRequesterName;
-
-    if (name && name.trim().length > 0) {
-      return name;
+    const user = this.userContextState.currentUserDetails;
+    if (user) {
+      const name = getLocalizedName(user, getCurrentLang(this.translate));
+      if (name && name.trim().length > 0) {
+        return name;
+      }
     }
 
-    return 'Name';
+    return this.userContextState.currentUserDetails?.userName ||
+      this.userContextState.fallbackRequesterName ||
+      'Name';
   }
 
   private getDepartmentIdForRequest(): number {

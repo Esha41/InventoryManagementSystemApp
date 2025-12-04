@@ -204,7 +204,7 @@
   [isOpen]="showDeleteDialog"
   [title]="'depot.deleteConfirmation.title' | translate"
   [message]="'depot.deleteConfirmation.message' | translate"
-  [description]="('depot.deleteConfirmation.depot' | translate) + ': ' + (depotToDelete?.nameEn || '')"
+  [description]="('depot.deleteConfirmation.depot' | translate) + ': ' + getDepotDisplayName(depotToDelete)"
   [confirmText]="'depot.deleteConfirmation.confirmDelete' | translate"
   [cancelText]="'depot.deleteConfirmation.cancel' | translate"
   confirmVariant="danger"

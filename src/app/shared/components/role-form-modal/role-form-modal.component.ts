@@ -7,6 +7,7 @@ import { RoleDto, CreateRoleDto, UpdateRoleDto } from '@models/backend-user.mode
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 export interface ApplicationEntity {
   id: number;
@@ -122,9 +123,8 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   }
 
   getEntityName(entity: ApplicationEntity): string {
-    const currentLang = this.translateService.currentLang || 'en';
-    const name = currentLang === 'ar' ? entity.nameAr : entity.nameEn;
-    return name || entity.code || entity.id.toString();
+    const localizedName = getLocalizedName(entity, getCurrentLang(this.translateService));
+    return localizedName || entity.code || entity.id.toString();
   }
 
   get title(): string {

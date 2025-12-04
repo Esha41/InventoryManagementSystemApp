@@ -13,6 +13,7 @@ import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@u
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfigService } from '@services/config.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 export interface LoadLotsResult {
   lots: LotItem[];
@@ -100,9 +101,9 @@ export class LotSelectionService {
       condition: lot.isExpired ? 'Near Expiry' : determineCondition(lot.expiryDate),
       daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
       selectedQuantity: 0,
-      depotName: lot.depot?.nameEn || lot.depot?.nameAr,
-      supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
-      manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
+      depotName: getLocalizedName(lot.depot, getCurrentLang(this.translate)),
+      supplierName: getLocalizedName(lot.supplier, getCurrentLang(this.translate)),
+      manufacturerName: getLocalizedName(lot.manufacturer, getCurrentLang(this.translate))
     };
   }
 

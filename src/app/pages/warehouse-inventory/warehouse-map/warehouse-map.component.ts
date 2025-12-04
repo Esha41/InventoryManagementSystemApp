@@ -10,6 +10,8 @@ import { WarehouseLocationDto } from '@models/warehouse.model';
 import { OfflineMapService } from '@services/offline-map.service';
 import * as L from 'leaflet';
 import { LoadingStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-warehouse-map',
@@ -22,16 +24,16 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   warehouseId: string = '';
   itemId: string = '';
   loading = true;
-  
+
   readonly ArrowLeft = ArrowLeft;
   readonly Trash2 = Trash2;
 
   @ViewChild('mapContainer', { static: false }) mapContainerRef!: ElementRef<HTMLElement>;
-  
+
   // Leaflet map instance
   private map: L.Map | null = null;
   private markers: Map<string, L.Marker> = new Map();
-  
+
   // Cache status
   cacheStatus = {
     isCached: false,
@@ -55,8 +57,9 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private lookupService: LookupService,
-    private offlineMapService: OfflineMapService
-  ) {}
+    private offlineMapService: OfflineMapService,
+    private translateService: TranslateService
+  ) { }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -64,10 +67,18 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.itemId = params['itemId'];
       this.loadWarehouseLocations();
     });
-    
+
+    // Subscribe to language changes to update markers
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Reload warehouse locations to get fresh localized names
+        this.loadWarehouseLocations();
+      });
+
     // Check cache status
     this.checkCacheStatus();
-    
+
     // Start auto-caching tiles in background if online
     if (navigator.onLine) {
       this.startAutoCaching();
@@ -123,7 +134,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       const z = coords.z;
       const x = coords.x;
       const y = coords.y;
-      
+
       // Load from local assets directory (bundled with app)
       return `/assets/map-tiles/${z}/${x}/${y}.png`;
     };
@@ -146,7 +157,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
             if (navigator.onLine) {
               imgElement.src = url;
               imgElement.addEventListener('load', () => {
-                cacheTileInBackground(url).catch(() => {});
+                cacheTileInBackground(url).catch(() => { });
               }, { once: true });
               return null; // No blob to return
             } else {
@@ -180,7 +191,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
         // Local tile exists and loaded successfully!
         imgElement.src = localUrl;
       };
-      
+
       // Try to load local tile
       localImg.src = localUrl;
     };
@@ -197,7 +208,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (existing) {
           return; // Already cached
         }
-        
+
         const response = await fetch(url, { mode: 'cors' });
         if (response.ok) {
           await cache.put(url, response.clone());
@@ -209,29 +220,29 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Create custom tile layer that loads from local assets first (completely offline capable)
     const OfflineTileLayer = L.TileLayer.extend({
-      createTile: function(coords: L.Coords, done: L.DoneCallback): HTMLElement {
+      createTile: function (coords: L.Coords, done: L.DoneCallback): HTMLElement {
         const tile = document.createElement('img');
-        
+
         L.DomEvent.on(tile, 'load', () => {
           (this as any)._tileOnLoad(done, tile);
         });
-        
+
         L.DomEvent.on(tile, 'error', () => {
           (this as any)._tileOnError(done, tile);
         });
 
         // Get the online tile URL (for fallback only)
         const onlineUrl = this.getTileUrl(coords);
-        
+
         // Get local assets URL (bundled with app - works offline)
         const localUrl = loadTileFromLocalAssets(coords);
-        
+
         // Try local assets first, then cache, then online
         loadTileFromCacheWithFallback(onlineUrl, localUrl, tile as HTMLImageElement);
-        
+
         tile.alt = '';
         tile.setAttribute('role', 'presentation');
-        
+
         return tile;
       }
     });
@@ -248,7 +259,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     customTileLayer.addTo(this.map);
-    
+
     // Auto-cache tiles in the background when online
     this.startAutoCaching();
 
@@ -282,11 +293,11 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.map) throw new Error('Map not initialized');
 
     // Determine marker color based on warehouse status
-    const markerColor = warehouse.color === 'green' ? '#10B981' : 
-                       warehouse.color === 'orange' ? '#F59E0B' : '#EF4444';
-    
-    const markerColorDark = warehouse.color === 'green' ? '#059669' : 
-                           warehouse.color === 'orange' ? '#D97706' : '#DC2626';
+    const markerColor = warehouse.color === 'green' ? '#10B981' :
+      warehouse.color === 'orange' ? '#F59E0B' : '#EF4444';
+
+    const markerColorDark = warehouse.color === 'green' ? '#059669' :
+      warehouse.color === 'orange' ? '#D97706' : '#DC2626';
 
     // Create custom icon with modern SVG design
     const customIcon = L.divIcon({
@@ -402,9 +413,9 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.warehouses = depots
             .filter(depot => !depot.isDeleted)
             .map(depot => this.mapDepotToWarehouseLocation(depot));
-          
+
           this.loading = false;
-          
+
           // Add markers to map if it's already initialized
           if (this.map) {
             this.addWarehouseMarkers();
@@ -434,16 +445,18 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Determine color based on NEQ or other criteria (default to green)
     let color: 'green' | 'orange' | 'red' = 'green';
-    
+
     // Use actual coordinates or default to Doha center if not available
     const latitude = depot.latitude ? Number(depot.latitude) : 25.2854;
     const longitude = depot.longitude ? Number(depot.longitude) : 51.5310;
 
+    const localizedName = getLocalizedName(depot, getCurrentLang(this.translateService));
+
     return {
       id: depot.id.toString(),
-      name: depot.nameEn,
+      name: localizedName,
       code: code,
-      location: depot.location || depot.nameEn,
+      location: depot.location || localizedName,
       latitude: latitude,
       longitude: longitude,
       color: color,
@@ -479,7 +492,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.cacheStatus.autoCaching = true;
-    
+
     // Pre-cache tiles in the background (silently, without user interaction)
     this.offlineMapService.preCacheTiles([8, 9, 10, 11, 12])
       .then(() => {
@@ -515,20 +528,20 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectWarehouse(warehouseId: string): void {
     this.selectedWarehouse = warehouseId;
-    
+
     const marker = this.markers.get(warehouseId);
     if (marker && this.map) {
       const markerLatLng = marker.getLatLng();
-      
+
       const currentBounds = this.map.options.maxBounds;
       this.map.setMaxBounds(undefined);
-      
+
       this.map.flyTo(markerLatLng, 12, {
         animate: true,
         duration: 1.0,
         easeLinearity: 0.25
       });
-      
+
       setTimeout(() => {
         if (this.map && currentBounds) {
           this.map.setMaxBounds(currentBounds);
@@ -552,7 +565,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map.remove();
       this.map = null;
     }
-    
+
     this.destroy$.next();
     this.destroy$.complete();
   }

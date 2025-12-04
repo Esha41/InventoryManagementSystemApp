@@ -85,7 +85,7 @@
                   <lucide-angular [img]="Shield" class="h-5 w-5 text-[var(--color-accent)]"></lucide-angular>
                 </div>
                 <div>
-                  <h3 class="font-semibold text-[var(--color-text)]">{{ role.name }}</h3>
+                  <h3 class="font-semibold text-[var(--color-text)]">{{ getRoleDisplayName(role) }}</h3>
                 </div>
               </div>
             </td>
@@ -182,7 +182,7 @@
 <app-confirm-dialog
   [isOpen]="showDeleteConfirm"
   [title]="'adminRoles.deleteRole' | translate"
-  [message]="('adminRoles.deleteRoleConfirm' | translate) + ' ' + (selectedRole?.name || ('adminRoles.thisRole' | translate)) + '?'"
+  [message]="('adminRoles.deleteRoleConfirm' | translate) + ' ' + (getRoleDisplayName(selectedRole) || ('adminRoles.thisRole' | translate)) + '?'"
   [confirmText]="'common.delete' | translate"
   confirmColor="error"
   (confirmed)="confirmDelete()"

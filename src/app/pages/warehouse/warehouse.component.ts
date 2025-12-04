@@ -7,6 +7,7 @@ import { LucideAngularModule, Eye, Map } from 'lucide-angular';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-warehouse',
@@ -29,10 +30,21 @@ export class WarehouseComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private router: Router,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadWarehouses();
+
+    // Subscribe to language changes to update warehouse names
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Re-map warehouses to update localized names
+        this.warehouses = this.warehouses.map(warehouse => ({
+          ...warehouse,
+          name: getLocalizedName(warehouse.depot, getCurrentLang(this.translateService))
+        }));
+      });
   }
 
   ngOnDestroy(): void {
@@ -72,9 +84,9 @@ export class WarehouseComponent implements OnInit, OnDestroy {
       throw new Error('Depot ID is required');
     }
 
-    // Extract code from nameEn (e.g., "Warehouse DOH-01" -> "DOH-01")
+    // Extract code from nameEn if available (e.g., "Warehouse DOH-01" -> "DOH-01")
     // If nameEn doesn't contain a code, use a default format
-    const codeFromName = depot.nameEn.match(/([A-Z]{3}-\d{2})/);
+    const codeFromName = depot.nameEn?.match(/([A-Z]{3}-\d{2})/);
     const code =
       depot.code ||
       depot.depotCode ||
@@ -86,12 +98,13 @@ export class WarehouseComponent implements OnInit, OnDestroy {
 
     return {
       id: depot.id.toString(),
-      name: depot.nameEn,
+      name: getLocalizedName(depot, getCurrentLang(this.translateService)), // Use localized name
       code: code,
       neqPercentage: dummyStats.neqPercentage,
       consumedPercentage: dummyStats.consumedPercentage,
       totalCapacity: dummyStats.totalCapacity,
-      currentStock: dummyStats.currentStock
+      currentStock: dummyStats.currentStock,
+      depot: depot // Store the full depot object for dynamic localization
     };
   }
 
@@ -108,13 +121,13 @@ export class WarehouseComponent implements OnInit, OnDestroy {
     // Use warehouse ID to generate consistent dummy data
     // This ensures the same warehouse always shows the same stats
     const seed = warehouseId % 10;
-    
+
     // Generate NEQ percentage (30-95% range)
     const neqPercentage = 30 + (seed * 7) + (warehouseId % 3) * 5;
-    
+
     // Generate Consumed percentage (50-95% range)
     const consumedPercentage = 50 + (seed * 5) + (warehouseId % 4) * 3;
-    
+
     // Generate capacity and stock values
     const totalCapacity = 10000 + (warehouseId * 500);
     const currentStock = Math.round(totalCapacity * (consumedPercentage / 100));
@@ -137,7 +150,7 @@ export class WarehouseComponent implements OnInit, OnDestroy {
   }
 
   onViewOnMap(): void {
- 
+
     if (this.warehouses.length > 0) {
       const firstWarehouseId = this.warehouses[0].id;
       this.router.navigate(['/warehouse', firstWarehouseId, 'inventory', '0', 'map']);

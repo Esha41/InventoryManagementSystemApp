@@ -14,6 +14,7 @@ import { OrderItem } from '@models/supply-request.model';
 import { CreateUpdateRequestItemDto } from '@services/order.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-item-management-modals',
@@ -136,7 +137,8 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     if (!item) {
       return '';
     }
-    return item.name || item.itemNo || `Item #${item.id}`;
+    const localizedName = getLocalizedName(item, getCurrentLang(this.translate));
+    return localizedName || item.itemNo || `Item #${item.id}`;
   };
 
   getItemProductId(item: OrderItem): string {

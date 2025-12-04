@@ -10,6 +10,7 @@ import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.servi
 import { ToastService } from '@services/toast.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { Subscription } from 'rxjs';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -48,8 +49,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     this.getLocalizedName(this.unwrapOption(option));
   readonly rankOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     this.getLocalizedName(this.unwrapOption(option));
-  readonly roleOptionLabel = (option: DropdownOption<RoleDto> | RoleDto | null) =>
-    this.unwrapOption(option)?.name ?? '';
+  readonly roleOptionLabel = (option: DropdownOption<RoleDto> | RoleDto | null) => {
+    const role = this.unwrapOption(option);
+    return role ? getLocalizedName(role, getCurrentLang(this.translate)) || role.name || '' : '';
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -214,11 +217,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     if (!entity) {
       return '';
     }
-    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEn || '';
-    }
-    return entity.nameEn || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translate));
   }
 
   private loadUserRoles(): void {

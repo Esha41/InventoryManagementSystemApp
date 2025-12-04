@@ -20,6 +20,8 @@ import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 interface AssetForm {
   name: string;
@@ -88,7 +90,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private apiService: ApiService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private translateService: TranslateService
   ) {}
 
   assetForm: AssetForm = {
@@ -177,11 +180,11 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       return String(entity);
     }
 
-    const currentLang = this.translationService.getCurrentLanguage ? this.translationService.getCurrentLanguage() : 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || (entity as { nameEN?: string }).nameEN || (entity as { nameEn?: string }).nameEn || (entity as { label?: string }).label || '';
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
     }
-    return (entity as { nameEn?: string }).nameEn || (entity as { nameEN?: string }).nameEN || entity.nameAr || (entity as { label?: string }).label || '';
+
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T): T {

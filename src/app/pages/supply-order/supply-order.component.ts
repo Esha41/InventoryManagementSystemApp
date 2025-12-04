@@ -30,6 +30,8 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 import { LoadingStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-supply-order',
@@ -51,7 +53,7 @@ import { LoadingStateComponent } from '@components/index';
 })
 export class SupplyOrderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   readonly ArrowLeft = ArrowLeft;
   readonly CheckCircle = CheckCircle;
   readonly Clock = Clock;
@@ -68,13 +70,13 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   supplyId: number = 0;
   orderData: OrderDto | null = null;
   supplyData: SupplyDto | null = null;
-  
+
   loading: boolean = true;
   updatingItem: boolean = false;
   deletingItem: boolean = false;
-  
+
   addLotForm!: FormGroup;
-  
+
   isAddLotModalOpen: boolean = false;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
@@ -84,12 +86,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   loadingAllLots: boolean = false;
   loadingManualLot: boolean = false;
   loadingLotDetails: boolean = false;
-  
+
   isConfirmModalOpen: boolean = false;
   confirmModalTitle: string = '';
   confirmModalMessage: string = '';
   confirmModalAction: (() => void) | null = null;
-  
+
   isAddItemModalOpen: boolean = false;
   isEditItemModalOpen: boolean = false;
   isRemoveItemModalOpen: boolean = false;
@@ -100,11 +102,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   availableItems: any[] = [];
   loadingItems: boolean = false;
   savingItem: boolean = false;
-  
+
   orderItems: OrderRequestItemDto[] = [];
   approvalWorkflow: ApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
-  
+
   isApprovalWorkflowExpanded: boolean = true;
 
   constructor(
@@ -116,7 +118,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private inventoryService: InventoryService,
     private ammunitionService: AmmunitionService,
     private toastService: ToastService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private translateService: TranslateService
   ) {
     this.initializeForm();
   }
@@ -125,16 +128,21 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const idParam = this.route.snapshot.params['supplyId'];
     const receivedId = parseInt(idParam, 10);
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
-    
+
     if (isNaN(receivedId)) {
-      this.toastService.error('Invalid ID');
+      this.translateService.get(['toast.error', 'supplyOrder.errors.invalidId']).subscribe(translations => {
+        this.toastService.error(
+          translations['supplyOrder.errors.invalidId'] || 'Invalid ID',
+          translations['toast.error']
+        );
+      });
       this.router.navigate(['/supply-order']);
       return;
     }
-    
+
     this.initializeAddItemForm();
     this.initializeEditItemForm({} as OrderRequestItemDto);
-    
+
     if (byOrder) {
       this.loadSupplyByOrderId(receivedId);
     } else {
@@ -181,7 +189,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   private loadSupplyByOrderId(orderId: number): void {
     this.loading = true;
     this.orderId = orderId;
-    
+
     this.supplyService.getByOrderId(orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -191,12 +199,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderData = supply.order;
           this.orderItems = supply.order?.requestItems || [];
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
-          
-         
+
+
           if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
             this.loadFullOrderDetails(orderId);
           }
-          
+
           this.loadApprovalWorkflow();
           this.loading = false;
         },
@@ -211,7 +219,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   private loadSupplyData(): void {
     this.loading = true;
-    
+
     this.supplyService.getById(this.supplyId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -221,12 +229,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderData = supply.order;
           this.orderItems = supply.order?.requestItems || [];
           this.supplyItems = mapSupplyDetailsToDisplay(supply);
-          
-         
+
+
           if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
             this.loadFullOrderDetails(this.orderId);
           }
-          
+
           this.loadApprovalWorkflow();
           this.loading = false;
         },
@@ -239,27 +247,27 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       });
   }
 
-  
+
   private loadFullOrderDetails(orderId: number): void {
     this.orderService.getOrderById(orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (fullOrder: OrderDto) => {
-          
+
           if (this.orderData) {
-          
+
             if (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr) {
               this.orderData.departmentNameEn = fullOrder.departmentNameEn;
               this.orderData.departmentNameAr = fullOrder.departmentNameAr;
             }
-           
+
             if (!this.orderData.requesterName) {
               this.orderData.requesterName = fullOrder.requesterName;
             }
           }
         },
         error: (error) => {
-        
+
           console.warn('Failed to load full order details for department/requester info:', error);
         }
       });
@@ -274,31 +282,31 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.apiService.getWithAuth<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
-          : (response?.data || []);
-        
-        const baseRequest = data.find(r => r.id === this.orderId);
-        
-        if (baseRequest && baseRequest.approvalHistory) {
-          const requestStatus = mapRequestStatus(baseRequest.status);
-          const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
-          this.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
-        } else {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const data: BaseRequestDto[] = Array.isArray(response)
+            ? response
+            : (response?.data || []);
+
+          const baseRequest = data.find(r => r.id === this.orderId);
+
+          if (baseRequest && baseRequest.approvalHistory) {
+            const requestStatus = mapRequestStatus(baseRequest.status);
+            const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
+            this.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
+          } else {
+            this.approvalWorkflow = [];
+          }
+        },
+        error: () => {
           this.approvalWorkflow = [];
         }
-      },
-      error: () => {
-        this.approvalWorkflow = [];
-      }
-    });
+      });
   }
   goBack(): void {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
-    
+
     if (byOrder && this.orderId) {
       this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
     } else {
@@ -324,21 +332,21 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       this.toastService.error('Supply data not loaded');
       return;
     }
-    
+
     // Clear previous errors
     item.quantityError = undefined;
-    
+
     if (!item.quantity || item.quantity <= 0) {
       item.quantityError = 'Quantity must be greater than 0';
       this.toastService.error('Quantity must be greater than 0');
       return;
     }
-    
+
     if (!item.lot || item.lot <= 0) {
       this.toastService.error('Invalid lot number');
       return;
     }
-    
+
     if (!item.itemId || item.itemId <= 0) {
       this.toastService.error('Invalid item');
       return;
@@ -349,7 +357,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const originalQuantity = item.originalQuantity || item.quantity;
     const currentTotalSupplied = item.totalSuppliedQuantity;
     const newTotalSupplied = currentTotalSupplied - originalQuantity + item.quantity;
-    
+
     if (newTotalSupplied > item.requestedQuantity) {
       const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
       item.quantityError = `Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`;
@@ -425,7 +433,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       this.selectedItemForLot = null;
       this.addLotForm.patchValue({ itemId: null });
     }
-    
+
     this.resetLotSelection();
   }
 
@@ -433,15 +441,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     if (selectedValue === null || selectedValue === undefined) {
       return null;
     }
-    
+
     if (typeof selectedValue === 'number') {
       return selectedValue;
     }
-    
+
     if (Array.isArray(selectedValue)) {
       return selectedValue.length > 0 ? (selectedValue[0].id || selectedValue[0].itemId) : null;
     }
-    
+
     const wrappedValue = selectedValue as { value?: OrderRequestItemDto } | OrderRequestItemDto;
     const item = 'value' in wrappedValue && wrappedValue.value ? wrappedValue.value : (wrappedValue as OrderRequestItemDto);
     return item.id || item.itemId || null;
@@ -555,9 +563,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             condition: lot.isExpired ? 'Near Expiry' : determineCondition(lot.expiryDate),
             daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
             selectedQuantity: 0,
-            depotName: lot.depot?.nameEn || lot.depot?.nameAr,
-            supplierName: lot.supplier?.nameEn || lot.supplier?.nameAr,
-            manufacturerName: lot.manufacturer?.nameEn || lot.manufacturer?.nameAr
+            depotName: getLocalizedName(lot.depot, getCurrentLang(this.translateService)),
+            supplierName: getLocalizedName(lot.supplier, getCurrentLang(this.translateService)),
+            manufacturerName: getLocalizedName(lot.manufacturer, getCurrentLang(this.translateService))
           };
 
           this.availableLots.push(newLot);
@@ -583,7 +591,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         next: (lots: LotDetailDto[]) => {
           this.availableLots = mapLotDetailsToLotItems(lots);
           this.loadingAllLots = false;
-          
+
           if (this.availableLots.length > 0) {
             this.toastService.success(`Loaded ${this.availableLots.length} available lot(s) optimized for quantity ${item.quantity}`);
           } else {
@@ -604,14 +612,13 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   getSelectedItemDisplayName(): string {
     if (!this.selectedItemForLot) return '';
-    const itemId = this.selectedItemForLot.itemId || this.selectedItemForLot.id;
-    return this.selectedItemForLot.itemName || this.getItemDisplayName(itemId);
+    return this.getLocalizedOrderItemName(this.selectedItemForLot);
   }
 
   onDeleteItem(item: SupplyItemDisplay): void {
     this.showConfirmationModal({
       title: 'Delete Item',
-      message: `Are you sure you want to delete "${item.itemName}" (LOT-${item.lot}, Qty: ${item.quantity}) from this supply?`,
+      message: `Are you sure you want to delete "${this.getSupplyItemDisplayName(item)}" (LOT-${item.lot}, Qty: ${item.quantity}) from this supply?`,
       action: () => this.confirmDeleteItem(item)
     });
   }
@@ -670,22 +677,27 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   getDepartmentName(): string {
     if (!this.orderData) return 'N/A';
-    return this.orderData.departmentNameEn || this.orderData.departmentNameAr || 'N/A';
+    const lang = getCurrentLang(this.translateService);
+    const nameEn = this.orderData.departmentNameEn;
+    const nameAr = this.orderData.departmentNameAr;
+
+    if (lang === 'ar') {
+      return nameAr || nameEn || 'N/A';
+    }
+
+    return nameEn || nameAr || 'N/A';
   }
 
   itemOptionLabel = (option: OrderRequestItemDto | { value?: OrderRequestItemDto } | null): string => {
     if (!option) return '';
-    
+
     const item: OrderRequestItemDto | undefined = (option as { value?: OrderRequestItemDto }).value || (option as OrderRequestItemDto);
-    
+
     if (!item || (item.itemId === undefined && item.id === undefined)) {
       return '';
     }
-    
-    const itemId = item.itemId || item.id || 0;
-    const itemName = item.itemName;
-    
-    return itemName || this.getItemDisplayName(itemId);
+
+    return this.getLocalizedOrderItemName(item);
   };
 
   private getItemDisplayName(itemId: number): string {
@@ -782,7 +794,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   itemManagementOptionLabel = (item: any): string => {
-    return item?.name || item?.itemNo || `Item #${item?.id}`;
+    if (!item) return '';
+
+    const lang = getCurrentLang(this.translateService);
+    const localizedName = getLocalizedName(item, lang);
+
+    return localizedName || item?.itemNo || `Item #${item?.id}`;
   };
 
   onSaveAddOrderItem(): void {
@@ -877,6 +894,41 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.toastService.error(errorMessage);
         }
       });
+  }
+
+  /**
+   * Get localized display name for an order item (request item)
+   */
+  private getLocalizedOrderItemName(item: OrderRequestItemDto | null | undefined): string {
+    if (!item) return '';
+
+    const lang = getCurrentLang(this.translateService);
+    const anyItem: any = item as any;
+
+    // Prefer localizing the nested item object if available
+    const localized =
+      getLocalizedName(anyItem.item ?? anyItem, lang) ||
+      anyItem.itemName;
+
+    const id = anyItem.itemId || anyItem.id || 0;
+
+    return localized || this.getItemDisplayName(id);
+  }
+
+  /**
+   * Get localized name for a supply item display row
+   */
+  private getSupplyItemDisplayName(item: SupplyItemDisplay): string {
+    const lang = getCurrentLang(this.translateService);
+    const anyItem: any = item as any;
+
+    const localized =
+      getLocalizedName(anyItem.item ?? anyItem, lang) ||
+      anyItem.itemName;
+
+    const id = anyItem.itemId || anyItem.id || 0;
+
+    return localized || this.getItemDisplayName(id);
   }
 }
 

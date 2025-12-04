@@ -6,6 +6,8 @@ import { ApiService } from './api.service';
 import { CartridgeMapperService } from './cartridge-mapper.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
+import { TranslateService } from '@ngx-translate/core';
+import { getCurrentLang } from '@utils/localization.utils';
 
 export interface ReserveDetails {
   totalReserve: number;
@@ -35,13 +37,15 @@ export class CartridgeDataService {
   constructor(
     private ammunitionService: AmmunitionService,
     private apiService: ApiService,
-    private mapperService: CartridgeMapperService
+    private mapperService: CartridgeMapperService,
+    private translateService: TranslateService
   ) {}
 
   loadAllAmmunition(): Observable<CartridgeLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
     return this.ammunitionService.getAll<any>().pipe(
       map((items) => ({
-        cartridges: this.mapperService.mapAmmunitionArrayToCartridges(items || [])
+        cartridges: this.mapperService.mapAmmunitionArrayToCartridges(items || [], currentLang)
       })),
       catchError(() => {
         return throwError(() => ({
@@ -86,8 +90,9 @@ export class CartridgeDataService {
         const allowanceAmmunition = allAmmunition.filter((ammo: any) =>
           itemIds.includes(ammo.id)
         );
+        const currentLang = getCurrentLang(this.translateService);
         return {
-          cartridges: this.mapperService.mapAmmunitionArrayToCartridges(allowanceAmmunition)
+          cartridges: this.mapperService.mapAmmunitionArrayToCartridges(allowanceAmmunition, currentLang)
         };
       }),
       catchError(() => {

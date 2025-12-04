@@ -13,6 +13,8 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
 import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -66,7 +68,8 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
     constructor(
         private dataService: InventorySummaryDataService,
-        private inventoryService: InventoryService
+        private inventoryService: InventoryService,
+        private translateService: TranslateService
     ) { }
 
     ngOnInit(): void {
@@ -252,18 +255,18 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
     // Lot detail getters
     getDepotName(lot: LotDetailDto): string {
-        return lot.depot?.nameEn || lot.depot?.nameAr || '-';
+        return lot.depot ? getLocalizedName(lot.depot, getCurrentLang(this.translateService)) || '-' : '-';
     }
 
     getSupplierName(lot: LotDetailDto): string {
-        return lot.supplier?.nameEn || lot.supplier?.nameAr || '-';
+        return lot.supplier ? getLocalizedName(lot.supplier, getCurrentLang(this.translateService)) || '-' : '-';
     }
 
     getManufacturerName(lot: LotDetailDto): string {
-        return lot.manufacturer?.nameEn || lot.manufacturer?.nameAr || '-';
+        return lot.manufacturer ? getLocalizedName(lot.manufacturer, getCurrentLang(this.translateService)) || '-' : '-';
     }
 
     getCountryName(lot: LotDetailDto): string {
-        return lot.country?.nameEn || lot.country?.nameAr || '-';
+        return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
     }
 }

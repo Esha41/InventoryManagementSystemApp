@@ -33,6 +33,7 @@ import {
   DisplayableRequest,
   CardStatus
 } from '@utils/dashboard.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -535,7 +536,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       details.forEach((d: any) => {
         const quantity = Number(d.originalQuantity ?? d.currentQuantity ?? 0);
         const itemId = d.itemId;
-        const itemName = d.item?.name || d.item?.itemNo || 'Item';
+        const itemName = d.item ? (getLocalizedName(d.item, getCurrentLang(this.translate)) || d.item.itemNo || 'Item') : 'Item';
         
         if (quantity > 0) {
           stats.totalQuantity += quantity;

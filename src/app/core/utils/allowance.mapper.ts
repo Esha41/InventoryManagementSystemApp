@@ -6,6 +6,7 @@ import { AllowanceItemDto, AllowanceItemDetailDto, AllowanceTableRow } from '@mo
 import { DepartmentDto } from '@services/lookup.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { LookupItem } from '@models/lookup.model';
+import { getLocalizedName } from './localization.utils';
 
 export interface ProcessedAllowanceData {
   departments: LookupItem[];
@@ -16,7 +17,8 @@ export interface ProcessedAllowanceData {
 export function processAllowanceData(
   items: AllowanceItemDto[],
   departments: DepartmentDto[],
-  ammunitionItems: AmmunitionReadDto[]
+  ammunitionItems: AmmunitionReadDto[],
+  currentLang: string = 'en'
 ): ProcessedAllowanceData {
   const departmentsList: LookupItem[] = departments.map(dept => ({
     id: dept.id,
@@ -28,7 +30,7 @@ export function processAllowanceData(
   const departmentMap = new Map<number, string>();
   departments.forEach(dept => {
     if (dept.id !== undefined) {
-      departmentMap.set(dept.id, dept.nameEn || dept.nameAr || `Department ${dept.id}`);
+      departmentMap.set(dept.id, getLocalizedName(dept, currentLang) || `Department ${dept.id}`);
     }
   });
 
@@ -72,7 +74,7 @@ export function processAllowanceData(
       departmentName: departmentMap.get(item.departmentId) || `Department ${item.departmentId}`,
       year: item.year,
       itemId: item.itemId,
-      itemName: ammunition?.name || '',
+      itemName: ammunition ? getLocalizedName(ammunition, currentLang) || ammunition.name || '' : '',
       itemNo: ammunition?.itemNo || '',
       batchNo: ammunition?.batchNo || '',
       quantity: item.quantity,

@@ -20,6 +20,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -182,7 +183,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.applyLockedDepartment();
         },
         error: () => {
-          this.toastService.error('Failed to load departments');
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['returnRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
+              translations['toast.error']
+            );
+          });
           this.isLoadingDepartments = false;
         }
       });
@@ -232,7 +238,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingRequestPurposes = false;
         },
         error: () => {
-          this.toastService.error('Failed to load request purposes');
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['returnRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
+              translations['toast.error']
+            );
+          });
           this.isLoadingRequestPurposes = false;
         }
       });
@@ -248,7 +259,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingItems = false;
         },
         error: () => {
-          this.toastService.error('Failed to load items');
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['returnRequest.errors.failedToLoadItems'] || 'Failed to load items',
+              translations['toast.error']
+            );
+          });
           this.isLoadingItems = false;
         }
       });
@@ -288,7 +304,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   getRequestPurposeName(purposeId: number): string {
     const purpose = this.requestPurposes.find(p => p.id === purposeId);
-    return purpose ? (purpose.nameEn || purpose.nameAr || 'Unknown') : 'Unknown';
+    return purpose ? getLocalizedName(purpose, getCurrentLang(this.translate)) : 'Unknown';
   }
 
   private getLocalizedName(entity: any): string {
@@ -308,11 +324,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       return entity.label;
     }
 
-    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEn || '';
-    }
-    return entity.nameEn || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translate));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -448,7 +460,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returnId) => {
-          this.toastService.success('Return request created successfully');
+          this.translate.get(['toast.success', 'returnRequest.success.created']).subscribe((translations: any) => {
+            this.toastService.success(
+              translations['returnRequest.success.created'] || 'Return request created successfully',
+              translations['toast.success']
+            );
+          });
           this.resetForm();
           this.isLoading = false;
 

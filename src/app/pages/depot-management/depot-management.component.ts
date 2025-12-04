@@ -13,6 +13,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-depot-management',
@@ -52,6 +53,17 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDepots();
+
+    // Subscribe to language changes to update depot names
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Re-map depots to update localized names
+        this.depots = this.depots.map(depot => ({
+          ...depot,
+          displayName: getLocalizedName(depot, getCurrentLang(this.translateService))
+        }));
+      });
   }
 
   ngOnDestroy(): void {
@@ -113,7 +125,9 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
   saveDepot(): void {
     if (!this.validateDepot()) {
-      this.errorMessage = 'Please fill in all required fields';
+      this.translateService.get('depotManagement.errors.fillRequiredFields').subscribe(translation => {
+        this.errorMessage = translation || 'Please fill in all required fields';
+      });
       return;
     }
 
@@ -247,6 +261,14 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       longitude: 0,
       isDeleted: false
     };
+  }
+
+  /**
+   * Get localized depot name for display
+   */
+  getDepotDisplayName(depot: DepotDto | null | undefined): string {
+    if (!depot) return '';
+    return getLocalizedName(depot, getCurrentLang(this.translateService)) || depot.code || '';
   }
 }
 

@@ -13,6 +13,7 @@ import { RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-admin-roles',
@@ -97,7 +98,9 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         this.isLoading = false;
         const errorMsg = error.message || 'Unknown error';
-        this.errorMessage = 'Failed to load roles: ' + errorMsg;
+        this.translateService.get('adminRoles.errors.failedToLoadRoles').subscribe(translation => {
+          this.errorMessage = `${translation || 'Failed to load roles'}: ${errorMsg}`;
+        });
         this.translateService.get(['toast.error', 'toast.failedToLoadRoles']).subscribe(translations => {
           this.toastService.error(
             translations['toast.failedToLoadRoles'] || `Failed to load roles: ${errorMsg}`,
@@ -127,7 +130,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   confirmDelete(): void {
     if (this.selectedRole) {
-      const roleName = this.selectedRole.name;
+      const roleName = getLocalizedName(this.selectedRole, getCurrentLang(this.translateService)) || this.selectedRole.name || '';
       this.backendUserService.deleteRole(this.selectedRole.id).subscribe({
         next: (success: boolean) => {
           if (success) {
@@ -141,10 +144,16 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
           }
         },
         error: (error: any) => {
-          const errorMsg = error.message || 'Failed to delete role';
-          this.errorMessage = errorMsg;
-          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe(translations => {
-            const message = (translations['toast.failedToDeleteRole'] || `Failed to delete role: ${errorMsg}`).replace('{roleName}', roleName);
+          const errorMsg = error.message || '';
+          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe((translations: any) => {
+            let message = translations['toast.failedToDeleteRole'] || 'Failed to delete role';
+            if (roleName && message.includes('{roleName}')) {
+              message = message.replace('{roleName}', roleName);
+            }
+            if (errorMsg && !message.includes(errorMsg)) {
+              message += `: ${errorMsg}`;
+            }
+            this.errorMessage = message;
             this.toastService.error(message, translations['toast.error']);
           });
         }
@@ -152,10 +161,17 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Helper method for template
+  getRoleDisplayName(role: RoleDto | null | undefined): string {
+    if (!role) return '';
+    return getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '';
+  }
+
   onRoleSaved(role: RoleDto): void {
     // Role was saved successfully (create or update)
     const isCreate = this.roleModalMode === 'create';
-    const roleName = role?.name || this.selectedRole?.name || '';
+    const roleName = role ? (getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '') : 
+      (this.selectedRole ? (getLocalizedName(this.selectedRole, getCurrentLang(this.translateService)) || this.selectedRole.name || '') : '');
     
     this.translateService.get([
       'toast.success',
@@ -175,7 +191,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   onRoleError(errorMessage: string): void {
     // Role save failed (create or update)
     const isCreate = this.roleModalMode === 'create';
-    const roleName = this.selectedRole?.name || '';
+    const roleName = this.selectedRole ? (getLocalizedName(this.selectedRole, getCurrentLang(this.translateService)) || this.selectedRole.name || '') : '';
     
     this.translateService.get([
       'toast.error',
@@ -194,7 +210,10 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: Date | undefined): string {
-    if (!date) return 'Never';
+    if (!date) {
+      const translation = this.translateService.instant('common.never');
+      return translation !== 'common.never' ? translation : 'Never';
+    }
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -222,7 +241,8 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     }
 
     return this.roles.filter(role => {
-      const name = (role.name || '').toLowerCase();
+      const localizedName = getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '';
+      const name = localizedName.toLowerCase();
       return name.includes(term);
     });
   }

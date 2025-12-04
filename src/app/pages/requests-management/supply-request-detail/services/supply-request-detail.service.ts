@@ -21,6 +21,7 @@ import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.util
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { getCurrentLang } from '@utils/localization.utils';
 
 export interface LoadRequestDetailResult {
   orderData: OrderDto;
@@ -114,7 +115,8 @@ export class SupplyRequestDetailService {
    * Apply suggestions to request detail
    */
   applySuggestions(requestDetail: SupplyRequestDetail, suggestion: OrderSupplySuggestionDto): void {
-    applySuggestionToItems(requestDetail, suggestion);
+    const currentLang = getCurrentLang(this.translate);
+    applySuggestionToItems(requestDetail, suggestion, currentLang);
   }
 
   /**

@@ -21,7 +21,8 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
 import { processAllowanceData } from '@utils/allowance.mapper';
-import { getLocalizedName, filterAllowances } from '@utils/allowance.utils';
+import { filterAllowances } from '@utils/allowance.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
@@ -67,11 +68,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
-    getLocalizedName(this.unwrapOption(option), this.translateService);
+    getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translateService));
   readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
-    return item.name || item.itemNo || `Item ${item.id}`;
+    const localizedName = getLocalizedName(item as any, getCurrentLang(this.translateService));
+    return localizedName || item.itemNo || `Item ${item.id}`;
   };
 
   // Pagination
@@ -137,7 +139,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   private processAllowanceData(items: AllowanceItemDto[], departments: DepartmentDto[], ammunitionItems: AmmunitionReadDto[]): void {
-    const processed = processAllowanceData(items, departments, ammunitionItems);
+    const currentLang = getCurrentLang(this.translateService);
+    const processed = processAllowanceData(items, departments, ammunitionItems, currentLang);
     
     this.departments = processed.departments;
     this.allItems = processed.allItems;

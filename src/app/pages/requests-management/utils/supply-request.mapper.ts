@@ -72,7 +72,8 @@ function getItemTypeName(itemType?: number): string {
  */
 export function applySuggestionToItems(
   requestDetail: SupplyRequestDetail,
-  suggestion: OrderSupplySuggestionDto
+  suggestion: OrderSupplySuggestionDto,
+  currentLang: string = 'en'
 ): void {
   // Track which items have suggestions
   const itemsWithSuggestions = new Set<number>();
@@ -93,7 +94,7 @@ export function applySuggestionToItems(
       }
       
       item.canFulfillCompletely = itemSuggestion.canFulfillCompletely;
-      item.availableLots = mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions, existingSelections);
+      item.availableLots = mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions, existingSelections, currentLang);
       item.totalSelectedForDischarge = item.availableLots.reduce(
         (sum, lot) => sum + lot.selectedQuantity,
         0

@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -36,7 +37,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private backendAuth: BackendAuthService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private translationService: TranslationService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -62,6 +64,7 @@ export class LoginComponent implements OnInit {
 
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
+  get isRTL(): boolean { return this.translationService.isRTL(); }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;

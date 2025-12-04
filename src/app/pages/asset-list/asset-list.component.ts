@@ -23,6 +23,7 @@ import { HttpClient } from '@angular/common/http';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface Asset {
   id: string;
@@ -240,18 +241,19 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
       next: (items) => {
         try {
+          const currentLang = getCurrentLang(this.translateService);
           this.assets = (items || []).map((x: AmmunitionReadDto) => ({
             id: x.id?.toString() || '-',
             name: x.name || 'Unknown',
             itemNo: x.itemNo || '-',
             partNo: x.partNo || '-',
             batchNo: x.batchNo || '-',
-            hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+            hcc: getLocalizedName(x.hcc, currentLang) || '-',
             nsn: x.nsn || '-',
-            caseType: x.caseType?.nameEn || x.caseType?.nameAr || '-',
-            hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr || '-',
-            compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
-            propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
+            caseType: getLocalizedName(x.caseType, currentLang) || '-',
+            hazardDivision: getLocalizedName(x.hazardDivision, currentLang) || '-',
+            compatibility: getLocalizedName(x.compatibility, currentLang) || '-',
+            propellant: getLocalizedName(x.propellant, currentLang) || '-',
             expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
             expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
             readyForIssue: x.readyForIssue ?? true,
@@ -325,13 +327,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
   private loadWeapons(): void {
     this.weaponService.getAll<BaseItemDto>().subscribe({
       next: (items) => {
+        const currentLang = getCurrentLang(this.translateService);
         this.assets = (items || []).map((x: BaseItemDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
           partNo: x.partNo || '-',
           batchNo: x.batchNo || '-',
-          hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+          hcc: getLocalizedName(x.hcc, currentLang) || '-',
           nsn: x.nsn || '-',
           caseType: '-',
           hazardDivision: '-',
@@ -357,13 +360,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
   private loadExplosives(): void {
     this.explosiveService.getAll<BaseItemDto>().subscribe({
       next: (items) => {
+        const currentLang = getCurrentLang(this.translateService);
         this.assets = (items || []).map((x: BaseItemDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
           partNo: x.partNo || '-',
           batchNo: x.batchNo || '-',
-          hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+          hcc: getLocalizedName(x.hcc, currentLang) || '-',
           nsn: x.nsn || '-',
           caseType: '-',
           hazardDivision: '-',
@@ -587,18 +591,19 @@ export class AssetListComponent implements OnInit, OnDestroy {
         }
         
         // Map to Asset interface for selectedAsset
+        const currentLang = getCurrentLang(this.translateService);
         this.selectedAsset = {
           id: data.id.toString(),
           name: data.name || 'Unknown',
           itemNo: data.itemNo || '-',
           partNo: data.partNo || '-',
           batchNo: data.batchNo || '-',
-          hcc: data.hcc?.nameEn || data.hcc?.nameAr || '-',
+          hcc: getLocalizedName(data.hcc, currentLang) || '-',
           nsn: data.nsn || '-',
-          caseType: data.caseType?.nameEn || data.caseType?.nameAr || '-',
-          hazardDivision: data.hazardDivision?.nameEn || data.hazardDivision?.nameAr || '-',
-          compatibility: data.compatibility?.nameEn || data.compatibility?.nameAr || '-',
-          propellant: data.propellant?.nameEn || data.propellant?.nameAr || '-',
+          caseType: getLocalizedName(data.caseType, currentLang) || '-',
+          hazardDivision: getLocalizedName(data.hazardDivision, currentLang) || '-',
+          compatibility: getLocalizedName(data.compatibility, currentLang) || '-',
+          propellant: getLocalizedName(data.propellant, currentLang) || '-',
           expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
           readyForIssue: data.readyForIssue ?? true
         };
@@ -1040,11 +1045,20 @@ export class AssetListComponent implements OnInit, OnDestroy {
       return entity.label;
     }
 
-    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEN || entity.nameEn || '';
-    }
-    return entity.nameEn || entity.nameEN || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
+  }
+
+  // Helper methods for template
+  getAssetName(asset: any): string {
+    return getLocalizedName(asset, getCurrentLang(this.translateService)) || asset?.name || '';
+  }
+
+  getLookupName(lookup: any): string {
+    return getLocalizedName(lookup, getCurrentLang(this.translateService)) || '-';
+  }
+
+  getUnitName(unit: any): string {
+    return getLocalizedName(unit, getCurrentLang(this.translateService)) || '';
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T): T {

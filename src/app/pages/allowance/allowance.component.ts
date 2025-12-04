@@ -15,6 +15,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 export interface AllowanceItem {
   itemId: string;
@@ -205,11 +206,7 @@ export class AllowanceComponent implements OnInit {
       return entity.label;
     }
 
-    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEn || '';
-    }
-    return entity.nameEn || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {

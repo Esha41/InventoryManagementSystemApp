@@ -64,13 +64,13 @@
       <div class="space-y-4">
         <!-- Name (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Name *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.name' | translate }} *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.name"
             name="name"
             [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
-            placeholder="Enter ammunition name"
+            [placeholder]="'addAsset.enterAmmunitionName' | translate"
             required
             maxlength="200"
             #nameModel="ngModel"
@@ -79,29 +79,29 @@
 
         <!-- Item No (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Item No *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.itemNo' | translate }} *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.itemNo"
             name="itemNo"
             [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
-            placeholder="Enter unique item number (e.g., AMM-001)"
+            [placeholder]="'addAsset.enterItemNumber' | translate"
             required
             maxlength="100"
             #itemNoModel="ngModel"
           />
         </div>
-        <p class="text-xs text-[#6B7280] -mt-2 ml-40">Item No must be unique across all ammunition records</p>
+        <p class="text-xs text-[#6B7280] -mt-2 ml-40">{{ 'addAsset.itemNoMustBeUnique' | translate }}</p>
 
         <!-- Part No (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Part No *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.partNo' | translate }} *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.partNo"
             name="partNo"
             [class]="getInputClass(partNoModel.invalid, partNoModel.dirty, partNoModel.touched)"
-            placeholder="Enter part number"
+            [placeholder]="'addAsset.enterPartNumber' | translate"
             required
             maxlength="100"
             #partNoModel="ngModel"
@@ -110,7 +110,7 @@
 
         <!-- HCC (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">HCC *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.hcc' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.hccId"
@@ -123,31 +123,31 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(hccModel.invalid && (hccModel.dirty || hccModel.touched))"
-            placeholder="Select HCC">
+            [placeholder]="'addAsset.selectHcc' | translate">
           </app-dropdown>
-          <span *ngIf="hccModel.invalid && (hccModel.dirty || hccModel.touched)" class="text-sm text-red-600">HCC is required</span>
+          <span *ngIf="hccModel.invalid && (hccModel.dirty || hccModel.touched)" class="text-sm text-red-600">{{ 'addAsset.hccRequired' | translate }}</span>
         </div>
 
         <!-- Bullet Diameter (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Bullet Diameter *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.bulletDiameter' | translate }} *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.bulletDiameter"
             name="bulletDiameter"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter diameter (e.g., 5.56)"
+            [placeholder]="'addAsset.enterBulletDiameter' | translate"
             step="0.01"
             min="0.01"
             required
             #bulletDiameterModel="ngModel"
           />
-          <span *ngIf="bulletDiameterModel.invalid && (bulletDiameterModel.dirty || bulletDiameterModel.touched)" class="text-sm text-red-600">Bullet diameter is required</span>
+          <span *ngIf="bulletDiameterModel.invalid && (bulletDiameterModel.dirty || bulletDiameterModel.touched)" class="text-sm text-red-600">{{ 'addAsset.bulletDiameterRequired' | translate }}</span>
         </div>
 
         <!-- Bullet Diameter Unit (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Diameter Unit *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.diameterUnit' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.bulletDiameterUnitId"
@@ -160,31 +160,31 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched))"
-            placeholder="Select bullet diameter unit">
+            [placeholder]="'addAsset.selectBulletDiameterUnit' | translate">
           </app-dropdown>
-          <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">Diameter unit is required</span>
+          <span *ngIf="diamUnitModel.invalid && (diamUnitModel.dirty || diamUnitModel.touched)" class="text-sm text-red-600">{{ 'addAsset.diameterUnitRequired' | translate }}</span>
         </div>
 
         <!-- Case Length (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.caseLength' | translate }} *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.caseLength"
             name="caseLength"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter case length (e.g., 45)"
+            [placeholder]="'addAsset.enterCaseLength' | translate"
             step="0.01"
             min="0.01"
             required
             #caseLengthModel="ngModel"
           />
-          <span *ngIf="caseLengthModel.invalid && (caseLengthModel.dirty || caseLengthModel.touched)" class="text-sm text-red-600">Case length is required</span>
+          <span *ngIf="caseLengthModel.invalid && (caseLengthModel.dirty || caseLengthModel.touched)" class="text-sm text-red-600">{{ 'addAsset.caseLengthRequired' | translate }}</span>
         </div>
 
         <!-- Case Length Unit (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Length Unit *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.caseLengthUnit' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.caseLengthUnitId"
@@ -197,14 +197,14 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched))"
-            placeholder="Select case length unit">
+            [placeholder]="'addAsset.selectCaseLengthUnit' | translate">
           </app-dropdown>
-          <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">Case length unit is required</span>
+          <span *ngIf="caseUnitModel.invalid && (caseUnitModel.dirty || caseUnitModel.touched)" class="text-sm text-red-600">{{ 'addAsset.caseLengthUnitRequired' | translate }}</span>
         </div>
 
         <!-- Case Type (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Case Type *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.caseType' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.caseTypeId"
@@ -217,14 +217,14 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched))"
-            placeholder="Select case type">
+            [placeholder]="'addAsset.selectCaseType' | translate">
           </app-dropdown>
-          <span *ngIf="caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched)" class="text-sm text-red-600">Case type is required</span>
+          <span *ngIf="caseTypeModel.invalid && (caseTypeModel.dirty || caseTypeModel.touched)" class="text-sm text-red-600">{{ 'addAsset.caseTypeRequired' | translate }}</span>
         </div>
 
         <!-- Propellant (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Propellant *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.propellant' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.propellantId"
@@ -237,14 +237,14 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(propellantModel.invalid && (propellantModel.dirty || propellantModel.touched))"
-            placeholder="Select propellant">
+            [placeholder]="'addAsset.selectPropellant' | translate">
           </app-dropdown>
-          <span *ngIf="propellantModel.invalid && (propellantModel.dirty || propellantModel.touched)" class="text-sm text-red-600">Propellant is required</span>
+          <span *ngIf="propellantModel.invalid && (propellantModel.dirty || propellantModel.touched)" class="text-sm text-red-600">{{ 'addAsset.propellantRequired' | translate }}</span>
         </div>
 
         <!-- Compatibility (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Compatibility *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.compatibility' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.compatibilityId"
@@ -257,14 +257,14 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(compatModel.invalid && (compatModel.dirty || compatModel.touched))"
-            placeholder="Select compatibility">
+            [placeholder]="'addAsset.selectCompatibility' | translate">
           </app-dropdown>
-          <span *ngIf="compatModel.invalid && (compatModel.dirty || compatModel.touched)" class="text-sm text-red-600">Compatibility is required</span>
+          <span *ngIf="compatModel.invalid && (compatModel.dirty || compatModel.touched)" class="text-sm text-red-600">{{ 'addAsset.compatibilityRequired' | translate }}</span>
         </div>
 
         <!-- Hazard Division (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Hazard Division *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.hazardDivision' | translate }} *</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.hazardDivisionId"
@@ -277,20 +277,20 @@
             [placeholderSelectable]="false"
             [placeholderValue]="null"
             [error]="!!(hazardModel.invalid && (hazardModel.dirty || hazardModel.touched))"
-            placeholder="Select hazard division">
+            [placeholder]="'addAsset.selectHazardDivision' | translate">
           </app-dropdown>
-          <span *ngIf="hazardModel.invalid && (hazardModel.dirty || hazardModel.touched)" class="text-sm text-red-600">Hazard division is required</span>
+          <span *ngIf="hazardModel.invalid && (hazardModel.dirty || hazardModel.touched)" class="text-sm text-red-600">{{ 'addAsset.hazardDivisionRequired' | translate }}</span>
         </div>
 
         <!-- Primer (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primer *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.primer' | translate }} *</label>
           <input
             type="text"
             [(ngModel)]="assetForm.primer"
             name="primer"
             [class]="getInputClass(primerModel.invalid, primerModel.dirty, primerModel.touched)"
-            placeholder="Enter primer type (e.g., Boxer)"
+            [placeholder]="'addAsset.enterPrimerType' | translate"
             required
             maxlength="100"
             #primerModel="ngModel"
@@ -299,39 +299,39 @@
 
         <!-- Total Weight (Required) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Total Weight (g) *</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.totalWeight' | translate }} *</label>
           <input
             type="number"
             [(ngModel)]="assetForm.totalWeight"
             name="totalWeight"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter weight in grams"
+            [placeholder]="'addAsset.enterWeightInGrams' | translate"
             step="0.01"
             min="0.01"
             required
             #totalWeightModel="ngModel"
           />
-          <span *ngIf="totalWeightModel.invalid && (totalWeightModel.dirty || totalWeightModel.touched)" class="text-sm text-red-600">Total weight is required</span>
+          <span *ngIf="totalWeightModel.invalid && (totalWeightModel.dirty || totalWeightModel.touched)" class="text-sm text-red-600">{{ 'addAsset.totalWeightRequired' | translate }}</span>
         </div>
 
         <hr class="my-6 border-[var(--color-border)]" />
-        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">Optional Fields</h3>
+        <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addAsset.optionalFields' | translate }}</h3>
 
         <!-- NSN (Optional) -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">NSN</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.nsn' | translate }}</label>
           <input
             type="text"
             [(ngModel)]="assetForm.nsn"
             name="nsn"
             class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-            placeholder="Enter NSN (optional)"
+            [placeholder]="'addAsset.enterNsn' | translate"
           />
         </div>
 
         <!-- Is Linked -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Linked</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.linked' | translate }}</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.isLinked"
@@ -342,13 +342,13 @@
             [translateLabels]="true"
             [placeholderSelectable]="false"
             [placeholderValue]="null"
-            placeholder="Select linked option">
+            [placeholder]="'addAsset.selectLinkedOption' | translate">
           </app-dropdown>
         </div>
 
         <!-- Nature Option -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Nature</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.nature' | translate }}</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.natureOptionId"
@@ -358,13 +358,13 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="false"
             [placeholderValue]="null"
-            placeholder="Select nature option">
+            [placeholder]="'addAsset.selectNatureOption' | translate">
           </app-dropdown>
         </div>
 
         <!-- Primary Purpose -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Primary Purpose</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.primaryPurpose' | translate }}</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.primaryPurposId"
@@ -374,13 +374,13 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="false"
             [placeholderValue]="null"
-            placeholder="Select primary purpose">
+            [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
           </app-dropdown>
         </div>
 
         <!-- Projectile Color -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Color</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.projectileColor' | translate }}</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.projectileColorId"
@@ -390,13 +390,13 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="false"
             [placeholderValue]="null"
-            placeholder="Select projectile color">
+            [placeholder]="'addAsset.selectProjectileColor' | translate">
           </app-dropdown>
         </div>
 
         <!-- Projectile Material -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">Projectile Material</label>
+          <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.projectileMaterial' | translate }}</label>
           <app-dropdown
             class="flex-1"
             [(ngModel)]="assetForm.projectailMaterialId"
@@ -406,7 +406,7 @@
             [optionLabelFn]="lookupOptionLabel"
             [placeholderSelectable]="false"
             [placeholderValue]="null"
-            placeholder="Select projectile material">
+            [placeholder]="'addAsset.selectProjectileMaterial' | translate">
           </app-dropdown>
         </div>
       </div>
