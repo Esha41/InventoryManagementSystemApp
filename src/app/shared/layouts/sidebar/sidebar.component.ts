@@ -459,8 +459,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return !!(item.children && item.children.length > 0);
   }
 
-  get isRTL(): boolean { return this.translationService.isRTL(); }
-
   showTooltip(event: MouseEvent): void {
     if (!this.isCollapsed) return;
 

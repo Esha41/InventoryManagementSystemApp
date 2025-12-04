@@ -6,7 +6,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
-import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -347,9 +346,5 @@ export class LoginComponent implements OnInit {
     }
     
     return this.translate.instant('auth.login.errors.unknownError');
-  }
-
-  get isRTL(): boolean {
-    return this.translationService.isRTL();
   }
 }
