@@ -9,6 +9,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
+import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
@@ -103,7 +104,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private supplyService: SupplyService,
     private lookupService: LookupService,
     public translationService: TranslationService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private requestStatusUpdateService: RequestStatusUpdateService
   ) {}
 
   get isRTL(): boolean {
@@ -172,14 +174,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
         this.loadRequestItems(baseRequest).then(() => {
           this.requestDetail = mapToRequestDetail(baseRequest);
-          // Load supply data if this is an order request
           if (this.requestDetail.requestType === 'Order') {
             this.loadSupplyData();
           }
           this.loading = false;
         }).catch(() => {
           this.requestDetail = mapToRequestDetail(baseRequest);
-          // Load supply data if this is an order request
           if (this.requestDetail.requestType === 'Order') {
             this.loadSupplyData();
           }
@@ -197,19 +197,42 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return new Promise((resolve) => {
       let endpoint = '';
       
-      switch (baseRequest.requestType) {
-        case RequestTypeEnum.Order:
-          endpoint = `/order/${this.requestId}`;
-          break;
-        case RequestTypeEnum.Return:
-          endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
-          break;
-        case RequestTypeEnum.Discard:
-          endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
-          break;
-        default:
-          resolve();
-          return;
+      const requestTypeValue: any = baseRequest.requestType;
+      
+      if (typeof requestTypeValue === 'number') {
+        switch (requestTypeValue) {
+          case RequestTypeEnum.Order:
+            endpoint = API_ENDPOINTS.ORDERS.BY_ID(this.requestId);
+            break;
+          case RequestTypeEnum.Return:
+            endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
+            break;
+          case RequestTypeEnum.Discard:
+            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
+            break;
+          default:
+            resolve();
+            return;
+        }
+      } else if (typeof requestTypeValue === 'string') {
+        const requestTypeLower = requestTypeValue.toLowerCase();
+        switch (requestTypeLower) {
+          case 'order':
+            endpoint = API_ENDPOINTS.ORDERS.BY_ID(this.requestId);
+            break;
+          case 'return':
+            endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
+            break;
+          case 'discard':
+            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
+            break;
+          default:
+            resolve();
+            return;
+        }
+      } else {
+        resolve();
+        return;
       }
 
       this.apiService.getWithAuth<any>(endpoint)
@@ -218,14 +241,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             const detailData = response?.data || response;
             
-            if (detailData && detailData.requestItems) {
+            if (detailData?.requestItems && Array.isArray(detailData.requestItems)) {
               baseRequest.requestItems = detailData.requestItems;
             }
             
             resolve();
           },
           error: () => {
-            // Don't reject - just continue without items
             resolve();
           }
         });
@@ -279,9 +301,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.loadRanks();
         }
       },
-      error: (error) => {
-        // Silently handle error - supply might not exist yet, which is fine
-        console.log('No supply data found for this order');
+      error: () => {
+        // Supply might not exist yet, which is fine
       }
     });
   }
@@ -358,6 +379,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.comments = '';
         this.sendToHigherApproval = 'no';
+        // Notify other components about the status update
+        this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
         // Reload to get updated status and approval history
         this.loadRequestDetail();
       },
@@ -398,6 +421,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.comments = '';
         this.sendToHigherApproval = 'no';
+        // Notify other components about the status update
+        this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
         // Reload to get updated status and approval history
         this.loadRequestDetail();
       },

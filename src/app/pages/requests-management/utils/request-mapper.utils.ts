@@ -45,9 +45,37 @@ function mapPriority(priority: number): 'High' | 'Medium' | 'Low' | 'Critical' {
 /**
  * Map request type enum to display string
  * RequestType enum: 1=Order, 2=Return, 3=Discard
+ * Handles both number and string request types for robustness
  */
-function mapRequestType(type: number): 'Order' | 'Return' | 'Discard' {
-  switch (type) {
+function mapRequestType(type: number | string | null | undefined): 'Order' | 'Return' | 'Discard' {
+  // Handle null/undefined
+  if (type === null || type === undefined) {
+    return 'Order';
+  }
+  
+  // Convert to number if it's a string
+  let typeNum: number;
+  if (typeof type === 'string') {
+    // Try to parse string request type values
+    const lowerType = type.toLowerCase().trim();
+    if (lowerType === 'order') {
+      typeNum = 1;
+    } else if (lowerType === 'return') {
+      typeNum = 2;
+    } else if (lowerType === 'discard') {
+      typeNum = 3;
+    } else {
+      // Try to parse as number
+      typeNum = parseInt(type, 10);
+      if (isNaN(typeNum)) {
+        return 'Order'; // Default to 'Order' if can't parse
+      }
+    }
+  } else {
+    typeNum = type;
+  }
+  
+  switch (typeNum) {
     case 1: return 'Order';
     case 2: return 'Return';
     case 3: return 'Discard';
@@ -58,9 +86,39 @@ function mapRequestType(type: number): 'Order' | 'Return' | 'Discard' {
 /**
  * Map status enum to display string
  * RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
+ * Handles both number and string status values for robustness
  */
-function mapStatus(status: number): 'Pending' | 'Confirmed' | 'Rejected' {
-  switch (status) {
+function mapStatus(status: number | string | null | undefined): 'Pending' | 'Confirmed' | 'Rejected' {
+  // Handle null/undefined
+  if (status === null || status === undefined) {
+    return 'Pending';
+  }
+  
+  // Convert to number if it's a string
+  let statusNum: number;
+  if (typeof status === 'string') {
+    // Try to parse string status values
+    const lowerStatus = status.toLowerCase().trim();
+    if (lowerStatus === 'new' || lowerStatus === 'pending') {
+      statusNum = 1;
+    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
+      statusNum = 2;
+    } else if (lowerStatus === 'approved' || lowerStatus === 'completed' || lowerStatus === 'confirmed') {
+      statusNum = 3;
+    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
+      statusNum = 4;
+    } else {
+      // Try to parse as number
+      statusNum = parseInt(status, 10);
+      if (isNaN(statusNum)) {
+        return 'Pending'; // Default to 'Pending' if can't parse
+      }
+    }
+  } else {
+    statusNum = status;
+  }
+  
+  switch (statusNum) {
     case 1:
     case 2: return 'Pending';
     case 3: return 'Confirmed';

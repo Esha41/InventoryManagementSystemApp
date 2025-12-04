@@ -72,19 +72,79 @@ export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATU
 /**
  * Check if a request status should be displayed on the dashboard
  * Shows New, UnderProcess, Approved, and Rejected statuses
+ * Handles both number and string status values for robustness
  */
-export function isDisplayableRequestStatus(status: number): status is DisplayableStatus {
-  return status === REQUEST_STATUS_NEW || 
-         status === REQUEST_STATUS_UNDER_PROCESS || 
-         status === REQUEST_STATUS_APPROVED ||
-         status === REQUEST_STATUS_REJECTED;
+export function isDisplayableRequestStatus(status: number | string | null | undefined): boolean {
+  // Handle null/undefined
+  if (status === null || status === undefined) {
+    return false;
+  }
+  
+  // Convert to number if it's a string
+  let statusNum: number;
+  if (typeof status === 'string') {
+    // Try to parse string status values
+    const lowerStatus = status.toLowerCase().trim();
+    if (lowerStatus === 'new' || lowerStatus === 'pending') {
+      statusNum = REQUEST_STATUS_NEW;
+    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
+      statusNum = REQUEST_STATUS_UNDER_PROCESS;
+    } else if (lowerStatus === 'approved' || lowerStatus === 'completed') {
+      statusNum = REQUEST_STATUS_APPROVED;
+    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
+      statusNum = REQUEST_STATUS_REJECTED;
+    } else {
+      // Try to parse as number
+      statusNum = parseInt(status, 10);
+      if (isNaN(statusNum)) {
+        return false;
+      }
+    }
+  } else {
+    statusNum = status;
+  }
+  
+  return statusNum === REQUEST_STATUS_NEW || 
+         statusNum === REQUEST_STATUS_UNDER_PROCESS || 
+         statusNum === REQUEST_STATUS_APPROVED ||
+         statusNum === REQUEST_STATUS_REJECTED;
 }
 
 /**
  * Map request status to dashboard card status
+ * Handles both number and string status values for robustness
  */
-export function mapRequestStatusToCardStatus(status: number): CardStatus {
-  switch (status) {
+export function mapRequestStatusToCardStatus(status: number | string | null | undefined): CardStatus {
+  // Handle null/undefined
+  if (status === null || status === undefined) {
+    return 'new';
+  }
+  
+  // Convert to number if it's a string
+  let statusNum: number;
+  if (typeof status === 'string') {
+    // Try to parse string status values
+    const lowerStatus = status.toLowerCase().trim();
+    if (lowerStatus === 'new' || lowerStatus === 'pending') {
+      statusNum = REQUEST_STATUS_NEW;
+    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
+      statusNum = REQUEST_STATUS_UNDER_PROCESS;
+    } else if (lowerStatus === 'approved' || lowerStatus === 'completed') {
+      statusNum = REQUEST_STATUS_APPROVED;
+    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
+      statusNum = REQUEST_STATUS_REJECTED;
+    } else {
+      // Try to parse as number
+      statusNum = parseInt(status, 10);
+      if (isNaN(statusNum)) {
+        return 'new'; // Default to 'new' if can't parse
+      }
+    }
+  } else {
+    statusNum = status;
+  }
+  
+  switch (statusNum) {
     case REQUEST_STATUS_UNDER_PROCESS:
       return 'on-progress';
     case REQUEST_STATUS_APPROVED:

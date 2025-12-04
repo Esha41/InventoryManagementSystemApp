@@ -54,6 +54,7 @@ export interface RequestItem {
   unit?: string;
 }
 
+
 /**
  * Request detail view model
  */

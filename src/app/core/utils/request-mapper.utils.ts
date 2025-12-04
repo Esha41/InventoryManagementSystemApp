@@ -132,35 +132,67 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
   const mappedHistory = history
     .filter(h => h && (h.id || h.workflowApprovalstepId || h.workflowStepId || h.workflowstepId))
     .map((h, index) => {
-      const isPending = h.isPending === true || (!h.changedBy && (h.oldRequestStatus === RequestStatusEnum.New || h.oldRequestStatus === RequestStatusEnum.UnderProcess));
+      // Backend now properly sets IsPending flag - trust it first
+      // Fallback to checking changedBy and status if IsPending is not explicitly set
+      const backendIsPending = h.isPending === true || h.IsPending === true;
+      const hasChangedBy = !!h.changedBy || !!h.ChangedBy;
       
+      // Handle both string and number status values (backend might return either)
+      const normalizeStatus = (status: any): number => {
+        if (typeof status === 'number') return status;
+        if (typeof status === 'string') {
+          const lower = status.toLowerCase();
+          if (lower === 'new' || lower === 'pending') return RequestStatusEnum.New;
+          if (lower === 'underprocess' || lower === 'under process' || lower === 'inprogress' || lower === 'in progress') return RequestStatusEnum.UnderProcess;
+          if (lower === 'approved' || lower === 'completed') return RequestStatusEnum.Approved;
+          if (lower === 'rejected' || lower === 'declined') return RequestStatusEnum.Rejected;
+        }
+        return 0;
+      };
+      
+      const oldStatusNum = normalizeStatus(h.oldRequestStatus || h.OldRequestStatus);
+      const newStatusNum = normalizeStatus(h.newRequestStatus || h.NewRequestStatus);
+      
+      const isNewOrUnderProcess = oldStatusNum === RequestStatusEnum.New || 
+                                   oldStatusNum === RequestStatusEnum.UnderProcess ||
+                                   newStatusNum === RequestStatusEnum.New ||
+                                   newStatusNum === RequestStatusEnum.UnderProcess;
+      
+      // Step is pending if:
+      // 1. Backend explicitly says it's pending (IsPending = true), OR
+      // 2. No one has changed it yet (no changedBy) AND status is New/UnderProcess
+      const isPending = backendIsPending || (!hasChangedBy && isNewOrUnderProcess);
+      
+      // Determine status: if pending, show "Pending", otherwise map the actual status
+      // Use the normalized status number for mapping
       const status = isPending 
         ? 'Pending' 
-        : mapApprovalStatus(h.newRequestStatus ?? h.oldRequestStatus ?? 0);
+        : mapApprovalStatus(newStatusNum || oldStatusNum || 0);
       
+      // Get approver name: if pending, show role name, otherwise show who approved it
       const approverName = isPending 
-        ? (h.applicationRoleName || h.applicationRoleId || 'Pending Approval')
+        ? (h.applicationRoleName || h.ApplicationRoleName || h.applicationRoleId || 'Pending Approval')
         : getApproverName(h.changedBy);
       
       return {
         id: h.id || index,
-        workflowApprovalstepId: h.workflowApprovalstepId,
-        workflowStepId: h.workflowStepId || h.workflowstepId,
-        oldRequestStatus: h.oldRequestStatus,
-        newRequestStatus: h.newRequestStatus,
-        comments: h.comments,
-        changedBy: h.changedBy,
-        changedAt: h.changedAt,
-        steporder: h.steporder || h.stepOrder || index + 1,
-        applicationRoleId: h.applicationRoleId,
+        workflowApprovalstepId: h.workflowApprovalstepId || h.WorkflowApprovalStepId,
+        workflowStepId: h.workflowStepId || h.workflowstepId || h.WorkflowStepId,
+        oldRequestStatus: h.oldRequestStatus || h.OldRequestStatus,
+        newRequestStatus: h.newRequestStatus || h.NewRequestStatus,
+        comments: h.comments || h.Comments,
+        changedBy: h.changedBy || h.ChangedBy,
+        changedAt: h.changedAt || h.ChangedAt,
+        steporder: h.steporder || h.stepOrder || h.StepOrder || index + 1,
+        applicationRoleId: h.applicationRoleId || h.ApplicationRoleId,
         approverName: approverName,
         status: status,
         approvedDate: h.changedAt && !isPending ? formatApprovalDate(h.changedAt) : undefined,
         approvedDateTime: h.changedAt && !isPending ? formatApprovalDateTime(h.changedAt) : undefined,
-        applicationRoleName: h.applicationRoleName,
+        applicationRoleName: h.applicationRoleName || h.ApplicationRoleName,
         isPending: isPending,
-        requireHigherApproval: h.requireHigherApproval || false,
-        higherApprovalRoleId: h.higherApprovalRoleId
+        requireHigherApproval: h.requireHigherApproval || h.RequireHigherApproval || false,
+        higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId
       };
     })
     .sort((a, b) => (a.steporder || 0) - (b.steporder || 0));

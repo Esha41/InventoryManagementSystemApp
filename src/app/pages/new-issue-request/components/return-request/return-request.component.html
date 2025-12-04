@@ -177,7 +177,7 @@
                   class="bg-white rounded-lg p-4 border border-[var(--color-border)]"
                 >
                   <div class="flex items-start justify-between mb-4">
-                    <h4 class="text-sm font-medium text-[var(--color-text)]">Item {{ i + 1 }}</h4>
+                    <h4 class="text-sm font-medium text-[var(--color-text)]">{{ 'returnRequest.item' | translate }} {{ i + 1 }}</h4>
                     <button
                       *ngIf="returnItems.length > 1"
                       type="button"
@@ -192,7 +192,7 @@
                     <!-- Item -->
                     <div>
                       <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
-                        Item <span class="text-red-500">*</span>
+                        {{ 'returnRequest.item' | translate }} <span class="text-red-500">*</span>
                       </label>
                       <div class="relative" #itemDropdown>
                         <input
@@ -272,7 +272,7 @@
                     <!-- Quantity -->
                     <div>
                       <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
-                        Quantity <span class="text-red-500">*</span>
+                        {{ 'returnRequest.quantity' | translate }} <span class="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
@@ -292,7 +292,7 @@
                     <!-- Notes -->
                     <div>
                       <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
-                        Notes
+                        {{ 'returnRequest.itemNotes' | translate }}
                       </label>
                       <input
                         type="text"

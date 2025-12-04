@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, EMPTY } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, debounceTime, filter } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from './components/return-details-modal/return-details-modal.component';
@@ -15,6 +15,7 @@ import { DiscardService, DiscardDto } from '@services/discard.service';
 import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
 import { ErrorHandlingService } from '@services/error-handling.service';
 import { UserContextService } from '@services/user-context.service';
+import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { DashboardCard } from '@models/dashboard.model';
 import {
   mapRequestStatusToCardStatus,
@@ -26,6 +27,7 @@ import {
   DisplayableRequest,
   CardStatus
 } from '@utils/dashboard.utils';
+import { isDisplayableRequestStatus } from '@utils/status.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -152,7 +154,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly userContext: UserContextService
+    private readonly userContext: UserContextService,
+    private readonly requestStatusUpdateService: RequestStatusUpdateService
   ) {}
 
   get paginatedCards(): DashboardCard[] {
@@ -192,6 +195,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loadAllRequests();
       });
 
+    // Subscribe to request status updates to refresh data
+    this.requestStatusUpdateService.onRequestStatusUpdated$
+      .pipe(
+        debounceTime(300),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadAllRequests();
+      });
+
+    // Refresh data when navigating back to dashboard
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        filter(() => this.router.url === '/dashboard' || this.router.url.startsWith('/dashboard')),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadAllRequests();
+      });
+
     // Initial load
     this.loadAllRequests();
   }
@@ -208,6 +232,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ orders, returns, discards }) => {
+          this.allCards = [];
           this.processOrderRequests(orders);
           this.processReturnRequests(returns);
           this.processDiscardRequests(discards);
@@ -233,16 +258,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const hasPermissionsLoaded = user?.permissions && user.permissions.length > 0;
     const userRoles = user?.roles || [];
 
-    // If not authenticated, show no cards
     if (!isAuthenticated) {
       this.visibleCards = [];
       this.showContactAdminNotice = false;
       return;
     }
 
-    // Filter cards based on permissions and roles
     let filteredCards = this.allCards.filter(card => {
-      // Check role-based access first
       if (card.roles && card.roles.length > 0) {
         const hasRequiredRole = card.roles.some(requiredRole =>
           userRoles.some(userRole => 
@@ -254,12 +276,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       }
 
-      // If card has no permissions or roles, show it only if user has no restrictions
       if (!card.permissions || card.permissions.length === 0) {
         return !card.roles || card.roles.length === 0;
       }
 
-      // Require permissions to be loaded if card needs permissions
       if (!hasPermissionsLoaded) {
         return false;
       }
@@ -286,8 +306,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.visibleCards = filteredCards;
-    
-    // Reset to first page when filters change
     this.currentPage = 1;
 
     const permissionsArray = Array.isArray(user?.permissions) ? user.permissions : [];
@@ -395,18 +413,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   ): void {
     const currentUser = this.authService.getCurrentUser();
+    const displayableRequests = filterDisplayableRequests(requests);
     const filtered = filterRequestsByDepartment(
-      filterDisplayableRequests(requests),
+      displayableRequests,
       currentUser?.departmentId
     );
 
-    // Store in appropriate map
     filtered.forEach(req => cardConfig.storeInMap(req));
-
-    // Create cards
     const cards = filtered.map(req => cardConfig.mapToCard(req));
-
-    // Remove old cards and add new ones
     this.removeCardsByType(cardConfig.getCardPredicate);
     this.allCards.push(...cards);
   }

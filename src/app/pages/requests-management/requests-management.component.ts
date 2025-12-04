@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
@@ -9,6 +9,8 @@ import { RequestsManagementService } from './services/requests-management.servic
 import { getRequestStatusClass } from './utils/ui-helpers.utils';
 import { Request } from './models/requests-management.model';
 import { Subject, takeUntil } from 'rxjs';
+import { debounceTime, filter } from 'rxjs/operators';
+import { RequestStatusUpdateService } from '@services/request-status-update.service';
 
 
 @Component({
@@ -35,11 +37,32 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private requestsManagementService: RequestsManagementService,
-    private router: Router
+    private router: Router,
+    private requestStatusUpdateService: RequestStatusUpdateService
   ) {}
 
   ngOnInit(): void {
+    // Initial load
     this.loadRequests();
+
+    this.requestStatusUpdateService.onRequestStatusUpdated$
+      .pipe(
+        debounceTime(300),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadRequests();
+      });
+
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        filter(() => this.router.url === '/requests-management' || this.router.url.startsWith('/requests-management')),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadRequests();
+      });
   }
 
   ngOnDestroy(): void {

@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, combineLatest, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, debounceTime, filter } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from '@pages/dashboard/components/return-details-modal/return-details-modal.component';
@@ -19,6 +19,7 @@ import { AnnualActivityCardComponent } from '@pages/dashboard/components/annual-
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
 import { ErrorHandlingService } from '@services/error-handling.service';
+import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -126,12 +127,32 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly translate: TranslateService,
     private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly requestStatusUpdateService: RequestStatusUpdateService
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadAll();
+      });
+
+    this.requestStatusUpdateService.onRequestStatusUpdated$
+      .pipe(
+        debounceTime(300),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadAll();
+      });
+
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        filter(() => this.router.url === '/inventory-dashboard' || this.router.url.startsWith('/inventory-dashboard')),
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => {
         this.loadAll();
       });
@@ -196,29 +217,29 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     // Or handle gracefully. For now assuming mixed permissions logic from original code.
 
     const orders$ = canViewOrders ? this.orderService.getAllOrders().pipe(
-      catchError(err => {
-        console.error('Failed to load orders', err);
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
         return of([] as OrderDto[]);
       })
     ) : of([] as OrderDto[]);
 
     const returns$ = canViewOrders ? this.returnService.getAllReturns().pipe(
-      catchError(err => {
-        console.error('Failed to load returns', err);
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
         return of([] as ReturnDto[]);
       })
     ) : of([] as ReturnDto[]);
 
     const discards$ = canViewOrders ? this.discardService.getAllDiscards().pipe(
-      catchError(err => {
-        console.error('Failed to load discards', err);
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
         return of([] as DiscardDto[]);
       })
     ) : of([] as DiscardDto[]);
 
     const inventories$ = this.inventoryService.getAll().pipe(
-      catchError(err => {
-        console.error('Failed to load inventory', err);
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
         return of([]);
       })
     );
@@ -441,72 +462,130 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const user = this.authService.getCurrentUser();
     const isAdmin = this.userContext.isAdminUser();
 
-    // Process orders by status
-    [1, 2, 3, 4].forEach(status => {
-      let orderList = orders.filter(o => o.status === status);
-      let returnList = (returns || []).filter(r => r.status === status);
-      let discardList = (discards || []).filter(d => d.status === status);
+    // Filter displayable requests first (handles both string and number statuses)
+    const displayableOrders = filterDisplayableRequests(orders);
+    const displayableReturns = filterDisplayableRequests(returns || []);
+    const displayableDiscards = filterDisplayableRequests(discards || []);
 
-      if (!isAdmin && user?.departmentId) {
-        orderList = orderList.filter(o => o.departmentId === user.departmentId);
-        returnList = returnList.filter(r => r.departmentId === user.departmentId);
-        discardList = discardList.filter(d => d.departmentId === user.departmentId);
-      }
+    // Filter by department
+    const filteredOrders = filterRequestsByDepartment(displayableOrders, user?.departmentId);
+    const filteredReturns = filterRequestsByDepartment(displayableReturns, user?.departmentId);
+    const filteredDiscards = filterRequestsByDepartment(displayableDiscards, user?.departmentId);
 
-      // Store in maps
-      orderList.forEach(o => this.orderRequestsMap.set(o.id, o));
-      returnList.forEach(r => this.returnRequestsMap.set(r.id, r));
-      discardList.forEach(d => this.discardRequestsMap.set(d.id, d));
+    // Store in maps
+    filteredOrders.forEach(o => this.orderRequestsMap.set(o.id, o));
+    filteredReturns.forEach(r => this.returnRequestsMap.set(r.id, r));
+    filteredDiscards.forEach(d => this.discardRequestsMap.set(d.id, d));
 
-      // Map to OrderItem format
-      const ordersView: OrderItem[] = orderList.map(o => ({
-        orderId: getRequestTitle(o, o.orderNo),
-        requestDate: this.formatOrderDate(o),
-        departmentName: this.resolveOrderDepartmentName(o),
-        requesterName: o.requesterName || 'N/A',
-        items: mapRequestItems(o.requestItems),
-        requestId: o.id
-      }));
+    // Process each request type using helper methods
+    this.processOrderRequests(filteredOrders, isAdmin, user?.departmentId);
+    this.processReturnRequests(filteredReturns, isAdmin, user?.departmentId);
+    this.processDiscardRequests(filteredDiscards, isAdmin, user?.departmentId);
+  }
 
-      const returnsView: OrderItem[] = returnList.map(r => ({
-        orderId: getRequestTitle(r),
-        requestDate: this.formatDate((r as any).creationDate || (r as any).createdOn),
-        departmentName: (r as any).departmentName || 'N/A',
-        requesterName: r.requesterName || 'N/A',
-        items: mapRequestItems(r.requestItems),
-        requestId: r.id
-      }));
-
-      const discardsView: OrderItem[] = discardList.map(d => ({
-        orderId: getRequestTitle(d),
-        requestDate: this.formatDate((d as any).creationDate || (d as any).createdOn),
-        departmentName: (d as any).departmentName || 'N/A',
-        requesterName: d.requesterName || 'N/A',
-        items: mapRequestItems(d.requestItems),
-        requestId: d.id
-      }));
-
-      const merged: OrderItem[] = [...ordersView, ...returnsView, ...discardsView];
-      
-      if (merged.length > 0) {
-        const cardStatus: CardStatus = status === 1 ? 'new' : status === 2 ? 'on-progress' : status === 3 ? 'completed' : 'declined';
-        const title = status === 1 ? 'New' : status === 2 ? 'Requests On Progress' : status === 3 ? 'Done' : 'Declined';
-        
-        const card: InventoryDashboardCard = {
-          title,
-          status: cardStatus,
-          orders: merged,
-          permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-          departmentIds: (!isAdmin && user?.departmentId != null) ? [user.departmentId] : undefined,
-          orderRequestId: ordersView.length > 0 ? orderList[0].id : undefined,
-          returnRequestId: returnsView.length > 0 ? returnList[0]?.id : undefined,
-          discardRequestId: discardsView.length > 0 ? discardList[0]?.id : undefined
-        };
-
-        // No filtering of existing because we reset allCards at start of load
-        this.allCards.push(card);
-      }
+  /**
+   * Process and create cards for order requests
+   */
+  private processOrderRequests(orders: OrderDto[], isAdmin: boolean, userDepartmentId?: number | null): void {
+    orders.forEach(order => {
+      const cardStatus = mapRequestStatusToCardStatus(order.status);
+      const card: InventoryDashboardCard = {
+        title: getRequestTitle(order, order.orderNo),
+        status: cardStatus,
+        orders: [{
+          orderId: getRequestTitle(order, order.orderNo),
+          requestDate: this.formatOrderDate(order),
+          departmentName: this.resolveOrderDepartmentName(order),
+          requesterName: order.requesterName || 'N/A',
+          items: mapRequestItems(order.requestItems),
+          requestId: order.id
+        }],
+        permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+        departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
+        orderRequestId: order.id
+      };
+      this.allCards.push(card);
     });
+  }
+
+  /**
+   * Process and create cards for return requests
+   */
+  private processReturnRequests(returns: ReturnDto[], isAdmin: boolean, userDepartmentId?: number | null): void {
+    returns.forEach(ret => {
+      const cardStatus = mapRequestStatusToCardStatus(ret.status);
+      const card: InventoryDashboardCard = {
+        title: getRequestTitle(ret),
+        status: cardStatus,
+        orders: [{
+          orderId: getRequestTitle(ret),
+          requestDate: this.formatReturnDate(ret),
+          departmentName: this.resolveReturnDepartmentName(ret),
+          requesterName: ret.requesterName || 'N/A',
+          items: mapRequestItems(ret.requestItems),
+          requestId: ret.id
+        }],
+        permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+        departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
+        returnRequestId: ret.id
+      };
+      this.allCards.push(card);
+    });
+  }
+
+  /**
+   * Process and create cards for discard requests
+   */
+  private processDiscardRequests(discards: DiscardDto[], isAdmin: boolean, userDepartmentId?: number | null): void {
+    discards.forEach(discard => {
+      const cardStatus = mapRequestStatusToCardStatus(discard.status);
+      const card: InventoryDashboardCard = {
+        title: getRequestTitle(discard),
+        status: cardStatus,
+        orders: [{
+          orderId: getRequestTitle(discard),
+          requestDate: this.formatDiscardDate(discard),
+          departmentName: this.resolveDiscardDepartmentName(discard),
+          requesterName: discard.requesterName || 'N/A',
+          items: mapRequestItems(discard.requestItems),
+          requestId: discard.id
+        }],
+        permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+        departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
+        discardRequestId: discard.id
+      };
+      this.allCards.push(card);
+    });
+  }
+
+  /**
+   * Format return request date
+   */
+  private formatReturnDate(ret: ReturnDto): string {
+    const date = (ret as any).creationDate || (ret as any).createdOn;
+    return date ? this.formatDate(date) : 'N/A';
+  }
+
+  /**
+   * Format discard request date
+   */
+  private formatDiscardDate(discard: DiscardDto): string {
+    const date = (discard as any).creationDate || (discard as any).createdOn;
+    return date ? this.formatDate(date) : 'N/A';
+  }
+
+  /**
+   * Resolve return department name
+   */
+  private resolveReturnDepartmentName(ret: ReturnDto): string {
+    return (ret as any).departmentName || 'N/A';
+  }
+
+  /**
+   * Resolve discard department name
+   */
+  private resolveDiscardDepartmentName(discard: DiscardDto): string {
+    return (discard as any).departmentName || 'N/A';
   }
 
   // Legacy individual load methods are removed as we use parallel loading now
