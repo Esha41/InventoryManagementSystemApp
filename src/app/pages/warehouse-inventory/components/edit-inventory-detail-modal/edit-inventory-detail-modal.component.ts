@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto } from '@models/inventory.model';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -152,11 +153,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     if (!item) {
       return '';
     }
-    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return item.nameAr || item.nameEn || '';
-    }
-    return item.nameEn || item.nameAr || '';
+    return getLocalizedName(item, getCurrentLang(this.translateService));
   }
 
   getFieldError(fieldName: string): string {

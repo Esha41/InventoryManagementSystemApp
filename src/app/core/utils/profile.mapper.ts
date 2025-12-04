@@ -6,6 +6,7 @@
 import { AuthenticatedUser, ClaimDto } from '@models/auth.model';
 import { UserMeResponse } from '@models/profile.model';
 import { TranslateService } from '@ngx-translate/core';
+import { getLocalizedName, getCurrentLang } from './localization.utils';
 
 /**
  * Map API response to AuthenticatedUser
@@ -26,9 +27,7 @@ export function mapApiResponseToAuthenticatedUser(
 
   // Extract department name from nested department object
   const departmentName = apiUser.department
-    ? (translateService.currentLang === 'ar' && apiUser.department.nameAr
-        ? apiUser.department.nameAr
-        : apiUser.department.nameEn) || apiUser.department.nameEn || apiUser.department.nameAr
+    ? getLocalizedName(apiUser.department, getCurrentLang(translateService))
     : undefined;
 
   // Get department ID from nested object or from deparmentId field (handle API typo)

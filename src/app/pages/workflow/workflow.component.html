@@ -73,7 +73,7 @@
         <tbody class="bg-white">
           <tr *ngFor="let workflow of paginatedWorkflows; let i = index" [class.bg-gray-50]="i % 2 === 1">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-              {{ workflow.name }}
+              {{ getWorkflowName(workflow) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{  getWorkflowType(workflow.workflowType) }}
@@ -267,7 +267,7 @@
                       [options]="roles"
                       optionLabel="name"
                       optionValue="id"
-                      placeholder="Select role">
+                      [placeholder]="'workflow.selectRole' | translate">
                     </app-dropdown>
                   </td>
                   <td class="px-2 py-2">
@@ -278,7 +278,7 @@
                       [options]="allApplicationEntities"
                       optionLabel="name"
                       optionValue="id"
-                      placeholder="Select entity">
+                      [placeholder]="'workflow.selectEntity' | translate">
                     </app-dropdown>
                   </td>
                   <td class="px-2 py-2">

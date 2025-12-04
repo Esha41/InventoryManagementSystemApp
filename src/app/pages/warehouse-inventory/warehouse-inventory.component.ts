@@ -20,15 +20,16 @@ import { EditInventoryDetailModalComponent } from './components/edit-inventory-d
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-warehouse-inventory',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
-    LucideAngularModule, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    LucideAngularModule,
     TranslateModule,
     CardComponent,
     ConfirmDialogComponent,
@@ -46,6 +47,7 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
 export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depoId: number = 0;
   depoName: string = '';
+  currentDepot: LookupItem | null = null;
   inventoryDetails: InventoryDetailDto[] = [];
   filteredInventoryDetails: InventoryDetailDto[] = [];
   loading = true;
@@ -86,7 +88,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -96,6 +98,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         this.loadInventoryData();
       }
     });
+
+    // Subscribe to language changes to update depot name
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.currentDepot) {
+          this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -113,39 +124,39 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       weapons: this.weaponService.getAll<BaseItemDto>(),
       explosives: this.explosiveService.getAll<BaseItemDto>()
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ depot, inventoryDetails, weapons, explosives }) => {
-        // Find the specific depot
-        const currentDepot = depot.find((d: LookupItem) => d.id === this.depoId);
-        this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
-        
-        const weaponDetails: InventoryDetailDto[] = (weapons || [])
-          .filter(weapon => !weapon.isDeleted)
-          .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
-        
-     
-        const explosiveDetails: InventoryDetailDto[] = (explosives || [])
-          .filter(explosive => !explosive.isDeleted)
-          .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
-        
-  
-        const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
-        
-        
-        const uniqueDetails = this.removeDuplicateItems(allDetails);
-        
-        // Set inventory details
-        this.inventoryDetails = uniqueDetails;
-        this.filterInventoryByTab();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading inventory data:', error);
-        this.error = 'Failed to load inventory data';
-        this.loading = false;
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ depot, inventoryDetails, weapons, explosives }) => {
+          // Find the specific depot
+          this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
+          this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
+
+          const weaponDetails: InventoryDetailDto[] = (weapons || [])
+            .filter(weapon => !weapon.isDeleted)
+            .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
+
+
+          const explosiveDetails: InventoryDetailDto[] = (explosives || [])
+            .filter(explosive => !explosive.isDeleted)
+            .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
+
+
+          const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
+
+
+          const uniqueDetails = this.removeDuplicateItems(allDetails);
+
+          // Set inventory details
+          this.inventoryDetails = uniqueDetails;
+          this.filterInventoryByTab();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading inventory data:', error);
+          this.error = 'Failed to load inventory data';
+          this.loading = false;
+        }
+      });
   }
 
   /**
@@ -181,21 +192,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    */
   private removeDuplicateItems(details: InventoryDetailDto[]): InventoryDetailDto[] {
     const itemIdMap = new Map<number, InventoryDetailDto>();
-    
+
     // First, add all inventory items (positive IDs)
     details.forEach(detail => {
       if (detail.id > 0) {
         itemIdMap.set(detail.itemId, detail);
       }
     });
-    
+
     // Then, add static items only if they don't exist in inventory
     details.forEach(detail => {
       if (detail.id < 0 && !itemIdMap.has(detail.itemId)) {
         itemIdMap.set(detail.itemId, detail);
       }
     });
-    
+
     return Array.from(itemIdMap.values());
   }
 
@@ -207,15 +218,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   private filterInventoryByTab(): void {
     if (this.activeTab === 'ammunition') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
         d.item?.itemType === 1 || d.item?.itemType === undefined
       );
     } else if (this.activeTab === 'weapon') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
         d.item?.itemType === 2
       );
     } else if (this.activeTab === 'explosive') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => 
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
         d.item?.itemType === 3
       );
     } else {
@@ -295,8 +306,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Get item name from inventory detail
    */
-  getItemName(detail: InventoryDetailDto): string {
-    return detail.item?.name || detail.item?.itemNo || 'Unknown Item';
+  getItemName(detail: InventoryDetailDto | null | undefined): string {
+    if (!detail) return 'Unknown Item';
+    const lang = getCurrentLang(this.translateService);
+    const localized = getLocalizedName(detail.item, lang);
+    return localized || detail.item?.itemNo || 'Unknown Item';
   }
 
   /**
@@ -310,14 +324,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Get supplier name
    */
   getSupplierName(detail: InventoryDetailDto): string {
-    return detail.supplier?.nameEn || detail.supplier?.nameAr || '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(detail.supplier, lang) || '-';
   }
 
   /**
    * Get HCC name
    */
   getHccName(detail: InventoryDetailDto): string {
-    return detail.item?.hcc?.nameEn || detail.item?.hcc?.nameAr || '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(detail.item?.hcc, lang) || '-';
   }
 
   /**
@@ -360,7 +376,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    */
   onEditItem(detail: InventoryDetailDto): void {
     this.selectedDetail = detail;
-    
+
     // Load the full inventory record for this detail
     this.inventoryService.getById(detail.inventoryId)
       .pipe(takeUntil(this.destroy$))
@@ -399,7 +415,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       invoiceDate: this.currentInventory.invoiceDate,
       recievedDate: this.currentInventory.recievedDate,
       notes: this.currentInventory.notes,
-      inventoryDetails: (this.currentInventory.inventoryDetails || []).map((d: InventoryDetailDto) => 
+      inventoryDetails: (this.currentInventory.inventoryDetails || []).map((d: InventoryDetailDto) =>
         d.id === this.selectedDetail!.id ? updateDetailDto : {
           id: d.id,
           itemId: d.itemId,
@@ -417,7 +433,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     // Store the detail ID before we clear it
     const detailIdToUpdate = this.selectedDetail?.id;
-    
+
     this.inventoryService.update(this.currentInventory.id, updateInventoryDto)
       .pipe(
         takeUntil(this.destroy$),
@@ -428,12 +444,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           const tempSelectedDetail = this.selectedDetail;
           this.selectedDetail = undefined;
           this.currentInventory = undefined;
-          
+
           // Show success message
           this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
             this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
           });
-          
+
           // Update the specific detail in the local array optimistically
           if (updatedInventory.inventoryDetails && detailIdToUpdate) {
             const updatedDetail = updatedInventory.inventoryDetails.find(
@@ -443,8 +459,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               const index = this.inventoryDetails.findIndex(d => d.id === detailIdToUpdate);
               if (index !== -1) {
                 // Merge the updated detail with existing data to preserve computed fields
-                this.inventoryDetails[index] = { 
-                  ...this.inventoryDetails[index], 
+                this.inventoryDetails[index] = {
+                  ...this.inventoryDetails[index],
                   ...updatedDetail,
                   // Preserve computed fields that might not be in the update response
                   currentQuantity: this.inventoryDetails[index].currentQuantity,
@@ -456,7 +472,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               }
             }
           }
-          
+
           // Wait a bit to ensure backend transaction is committed, then reload fresh data
           return timer(500).pipe(
             switchMap(() => {
@@ -474,20 +490,22 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ depot, inventoryDetails, weapons, explosives }) => {
           // Find the specific depot
-          const currentDepot = depot.find((d: LookupItem) => d.id === this.depoId);
-          this.depoName = currentDepot?.nameEn || `Depot ${this.depoId}`;
-          
+          this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
+          this.depoName = this.currentDepot
+            ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
+            : `Depot ${this.depoId}`;
+
           const weaponDetails: InventoryDetailDto[] = (weapons || [])
             .filter(weapon => !weapon.isDeleted)
             .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
-          
+
           const explosiveDetails: InventoryDetailDto[] = (explosives || [])
             .filter(explosive => !explosive.isDeleted)
             .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
-          
+
           const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
           const uniqueDetails = this.removeDuplicateItems(allDetails);
-          
+
           // Update inventory details with fresh data
           this.inventoryDetails = uniqueDetails;
           this.filterInventoryByTab();
@@ -513,7 +531,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     // For simplicity, we'll remove the item from the inventory
     // In a real scenario, you might want to delete the entire inventory if it's the last item
     // or just mark the detail as deleted
-    
+
     this.inventoryService.getById(this.selectedDetail.inventoryId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -528,7 +546,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
           // Filter out the detail to delete
           const remainingDetails = inventory.inventoryDetails?.filter(d => d.id !== this.selectedDetail!.id) || [];
-          
+
           if (remainingDetails.length === 0) {
             // If no details left, delete the entire inventory
             this.inventoryService.delete(inventory.id)

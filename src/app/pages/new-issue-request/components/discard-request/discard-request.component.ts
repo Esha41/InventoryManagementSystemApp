@@ -20,6 +20,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -183,7 +184,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.applyLockedDepartment();
         },
         error: () => {
-          this.toastService.error('Failed to load departments');
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['discardRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
+              translations['toast.error']
+            );
+          });
           this.isLoadingDepartments = false;
         }
       });
@@ -231,7 +237,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.isLoadingRequestPurposes = false;
         },
         error: () => {
-          this.toastService.error('Failed to load request purposes');
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['discardRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
+              translations['toast.error']
+            );
+          });
           this.isLoadingRequestPurposes = false;
         }
       });
@@ -247,7 +258,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.isLoadingItems = false;
         },
         error: () => {
-          this.toastService.error('Failed to load items');
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
+              translations['toast.error']
+            );
+          });
           this.isLoadingItems = false;
         }
       });
@@ -354,14 +370,11 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   private getLocalizedName(entity: any): string {
     if (!entity) return '';
 
-
     if (typeof entity === 'string') return entity;
     if (typeof entity === 'number') return String(entity);
     if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') return entity.label;
 
-    const currentLang = this.translate.currentLang || this.translate.defaultLang || 'en';
-    if (currentLang === 'ar') return entity.nameAr || entity.nameEn || '';
-    return entity.nameEn || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translate));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -376,7 +389,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.validateForm();
 
     if (Object.keys(this.errors).length > 0) {
-      this.toastService.error('Please correct the form errors.');
+      this.translate.get(['toast.error', 'discardRequest.errors.correctFormErrors']).subscribe((translations: any) => {
+        this.toastService.error(
+          translations['discardRequest.errors.correctFormErrors'] || 'Please correct the form errors',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
@@ -401,7 +419,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discardId) => {
-          this.toastService.success('Discard request created successfully');
+          this.translate.get(['toast.success', 'discardRequest.success.created']).subscribe((translations: any) => {
+            this.toastService.success(
+              translations['discardRequest.success.created'] || 'Discard request created successfully',
+              translations['toast.success']
+            );
+          });
           this.resetForm();
           this.isLoading = false;
 
@@ -585,7 +608,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   getRequesterName(requesterId: string): string {
     // requesterId is now a string (user ID), find in requesters list by converting id to string
     const requester = this.requesters.find(r => String(r.id) === requesterId);
-    return requester ? (requester.nameEn || requester.nameAr || 'Unknown') : 'Unknown';
+    return requester ? getLocalizedName(requester, getCurrentLang(this.translate)) || 'Unknown' : 'Unknown';
   }
 
   private updateLockedDepartmentName(): void {
@@ -595,7 +618,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   private buildLockedDepartmentName(): string {
     if (this.preferredDepartmentId != null) {
       const match = this.departments.find(d => this.toNumber(d.id) === this.preferredDepartmentId);
-      if (match) return match.nameEn || match.nameAr || `Department ${match.id}`;
+      if (match) return getLocalizedName(match, getCurrentLang(this.translate)) || `Department ${match.id}`;
     }
     return this.currentUserDetails?.departmentName || this.fallbackDepartmentName || '';
   }

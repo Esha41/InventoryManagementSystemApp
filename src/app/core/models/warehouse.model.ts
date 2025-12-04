@@ -25,6 +25,7 @@ export interface WarehouseSummaryDto {
   consumedPercentage: number;
   totalCapacity: number;
   currentStock: number;
+  depot?: any; // Store the full depot object for dynamic localization
 }
 
 export interface CreateWarehouseDto {

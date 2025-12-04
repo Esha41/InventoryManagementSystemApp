@@ -115,11 +115,11 @@
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
             <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.user' | translate }}</th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">Name</th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">Rank</th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">Military ID</th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.name' | translate }}</th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.rank' | translate }}</th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.militaryId' | translate }}</th>
             <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.roles' | translate }}</th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">Department</th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.department' | translate }}</th>
             <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.ldapUser' | translate }}</th>
             <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">{{ 'manageAdmins.actions' | translate }}</th>
           </tr>
@@ -156,7 +156,7 @@
               </div>
             </td>
             <td class="px-6 py-4">
-              <div class="text-sm text-[var(--color-text)]">{{ user.departmentName || '-' }}</div>
+              <div class="text-sm text-[var(--color-text)]">{{ getDepartmentName(user) }}</div>
             </td>
             <td class="px-6 py-4 text-start">
               <span [class]="user.isLdapUser ? 'text-green-600' : 'text-gray-400'">
@@ -447,7 +447,7 @@
 <app-confirm-dialog
   [isOpen]="showLookupDeleteConfirm"
   [title]="'lookupManagement.deleteItem' | translate"
-  [message]="('lookupManagement.deleteConfirm' | translate) + ' ' + (selectedLookupItem?.nameEn || '') + '?'"
+  [message]="('lookupManagement.deleteConfirm' | translate) + ' ' + getLookupItemName(selectedLookupItem) + '?'"
   [confirmText]="'common.delete' | translate"
   confirmColor="error"
   (confirmed)="confirmLookupDelete()"

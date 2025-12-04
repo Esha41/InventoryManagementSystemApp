@@ -13,8 +13,8 @@
 
   <div *ngIf="!loading && orders.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
     <lucide-angular [img]="Package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></lucide-angular>
-    <h3 class="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
-    <p class="text-sm text-gray-600">There are no orders available at the moment.</p>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ 'supplyOrder.noOrdersFound' | translate }}</h3>
+    <p class="text-sm text-gray-600">{{ 'supplyOrder.noOrdersDescription' | translate }}</p>
   </div>
 
   <div *ngIf="!loading && orders.length > 0" class="bg-white rounded-lg shadow-sm">
@@ -51,7 +51,7 @@
               <button
                 (click)="viewOrder(order)"
                 class="px-4 py-2 text-sm font-medium text-white bg-[var(--color-brand)] rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
-                View Details
+                {{ 'common.viewDetails' | translate }}
               </button>
             </td>
           </tr>

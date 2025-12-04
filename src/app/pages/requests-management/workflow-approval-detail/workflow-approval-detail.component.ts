@@ -19,6 +19,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -72,10 +73,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   processing: boolean = false;
   
   // Higher approval dropdown options
-  higherApprovalOptions = [
-    { value: 'yes', label: 'Yes' },
-    { value: 'no', label: 'No' }
-  ];
+  higherApprovalOptions: { value: string; label: string }[] = [];
 
   // Pickup date management
   pickupDate: string = '';
@@ -141,6 +139,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.isPickupDateAlreadySet = false;
     // Reset higher approval selection to default 'no'
     this.sendToHigherApproval = 'no';
+    
+    // Initialize higher approval options with translations if not already set
+    if (this.higherApprovalOptions.length === 0) {
+      this.translateService.get(['common.yes', 'common.no']).subscribe(translations => {
+        this.higherApprovalOptions = [
+          { value: 'yes', label: translations['common.yes'] || 'Yes' },
+          { value: 'no', label: translations['common.no'] || 'No' }
+        ];
+      });
+    }
 
     this.apiService.getWithAuth<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
@@ -155,7 +163,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         const baseRequest = data.find(r => r.id === this.requestId);
         
         if (!baseRequest) {
-          this.error = 'Request not found';
+          this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
+            this.error = translation || 'Request not found';
+          });
           this.loading = false;
           return;
         }
@@ -291,7 +301,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         error: () => {
           this.ranks = [];
           this.isLoadingRanks = false;
-          this.toastService.error('Failed to load ranks');
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToLoadRanks']).subscribe(translations => {
+            this.toastService.error(
+              translations['workflowApprovalDetail.errors.failedToLoadRanks'] || 'Failed to load ranks',
+              translations['toast.error']
+            );
+          });
         }
       });
   }
@@ -602,7 +617,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   navigateToSupplyOrder(): void {
     if (!this.requestDetail || !this.requestId) {
-      this.toastService.error('Invalid request data');
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.invalidRequestData']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.invalidRequestData'] || 'Invalid request data',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
@@ -675,14 +695,24 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   setSupplyPickupDate(): void {
     if (this.pickupDateProcessing || !this.requestDetail || !this.pickupDate) {
       if (!this.pickupDate) {
-        this.toastService.error('Please select a pickup date');
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectPickupDate']).subscribe(translations => {
+          this.toastService.error(
+            translations['workflowApprovalDetail.errors.selectPickupDate'] || 'Please select a pickup date',
+            translations['toast.error']
+          );
+        });
       }
       return;
     }
 
     // Prevent changes if date already set
     if (this.isPickupDateAlreadySet) {
-      this.toastService.error('Pickup date has already been set and cannot be modified');
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateAlreadySet']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.pickupDateAlreadySet'] || 'Pickup date has already been set and cannot be modified',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
@@ -701,7 +731,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     .pipe(takeUntil(this.destroy$))
     .subscribe({
       next: () => {
-        this.toastService.success('Pickup date set successfully and locked for confirmation');
+        this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateSet']).subscribe(translations => {
+          this.toastService.success(
+            translations['workflowApprovalDetail.success.pickupDateSet'] || 'Pickup date set successfully and locked for confirmation',
+            translations['toast.success']
+          );
+        });
         // Mark the date as set and lock the input
         this.isPickupDateAlreadySet = true;
         this.pickupDateProcessing = false;
@@ -709,8 +744,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         this.loadRequestDetail();
       },
       error: (error) => {
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to set pickup date');
-        this.toastService.error(errorMessage);
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToSetPickupDate']).subscribe(translations => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToSetPickupDate'] || 'Failed to set pickup date');
+          this.toastService.error(errorMessage, translations['toast.error']);
+        });
         this.pickupDateProcessing = false;
       }
     });
@@ -719,7 +756,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   confirmSupplyPickupDate(): void {
     if (this.confirmPickupDateProcessing || !this.requestDetail || !this.pickupDate) {
       if (!this.pickupDate) {
-        this.toastService.error('Please select a pickup date');
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectPickupDate']).subscribe(translations => {
+          this.toastService.error(
+            translations['workflowApprovalDetail.errors.selectPickupDate'] || 'Please select a pickup date',
+            translations['toast.error']
+          );
+        });
       }
       return;
     }
@@ -738,8 +780,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     )
     .pipe(takeUntil(this.destroy$))
     .subscribe({
-      next: () => {
-        this.toastService.success('Pickup date confirmed successfully');
+        next: () => {
+          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateConfirmed']).subscribe(translations => {
+            this.toastService.success(
+              translations['workflowApprovalDetail.success.pickupDateConfirmed'] || 'Pickup date confirmed successfully',
+              translations['toast.success']
+            );
+          });
         // Mark as set so the Set section shows the updated date as locked
         this.isPickupDateAlreadySet = true;
         this.confirmPickupDateProcessing = false;
@@ -796,17 +843,32 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     // Validate required fields
     if (!this.receiverInfo.recieverName || !this.receiverInfo.recieverName.trim()) {
-      this.toastService.error('Receiver name is required');
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverNameRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.receiverNameRequired'] || 'Receiver name is required',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
     if (!this.receiverInfo.receiverRankId || this.receiverInfo.receiverRankId <= 0) {
-      this.toastService.error('Receiver rank is required');
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverRankRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.receiverRankRequired'] || 'Receiver rank is required',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
     if (!this.receiverInfo.recieverMilitaryId || !this.receiverInfo.recieverMilitaryId.trim()) {
-      this.toastService.error('Military ID is required');
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.militaryIdRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.militaryIdRequired'] || 'Military ID is required',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
@@ -823,7 +885,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.toastService.success('Supply submitted successfully');
+          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.supplySubmitted']).subscribe(translations => {
+            this.toastService.success(
+              translations['workflowApprovalDetail.success.supplySubmitted'] || 'Supply submitted successfully',
+              translations['toast.success']
+            );
+          });
           this.isSubmittingSupply = false;
           // Reload to refresh supply status
           this.loadRequestDetail();
@@ -839,8 +906,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Get rank name by ID
    */
-  getRankName(rankId: number): string {
+  // Helper method for template - get rank name from rank object
+  getRankDisplayName(rank: any): string {
+    if (!rank) return '';
+    return getLocalizedName(rank, getCurrentLang(this.translateService)) || rank.nameEn || '';
+  }
+
+  getRankName(rankId: number | null | undefined): string {
+    if (rankId === null || rankId === undefined) return '';
     const rank = this.ranks.find(r => r.id === rankId);
-    return rank ? rank.nameEn : `Rank #${rankId}`;
+    return rank ? getLocalizedName(rank, getCurrentLang(this.translateService)) : `Rank #${rankId}`;
   }
 }

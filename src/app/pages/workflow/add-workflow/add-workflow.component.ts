@@ -14,6 +14,7 @@ import { ToastService } from '@services/toast.service';
 import { WorkflowType } from '@models/workflow.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-add-workflow',
@@ -192,25 +193,33 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       error: () => this.roles = []
     });
     // Load all application entities once, used to render names
+    this.loadApplicationEntities();
+
+    // Subscribe to language changes to update entity names
+    this.translate.onLangChange.subscribe(() => {
+      this.loadApplicationEntities();
+    });
+    const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
+    this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
+
+    if (this.workflowTypes.length > 0) {
+      this.selectedWorkflowType = this.workflowTypes[0].id;
+    }
+  }
+
+  private loadApplicationEntities(): void {
     this.backendUserService.getApplicationEntities().subscribe({
       next: (entities: any[]) => {
-        const lang = this.translationService.getCurrentLanguage();
+        const currentLang = getCurrentLang(this.translate);
         this.allApplicationEntities = (entities || []).map((e: any) => {
           const id = e?.id ?? e?.applicationEntityId ?? e;
-          const nameLocalized = lang === 'ar' ? (e?.nameAr || e?.nameAR) : (e?.nameEn || e?.nameEN);
+          const localizedName = getLocalizedName(e, currentLang);
           const fallback = e?.name || e?.displayName || e?.entityName || e?.applicationEntityName || e?.title || e?.label;
-          return { id, name: nameLocalized || fallback || String(id) };
+          return { id, name: localizedName || fallback || String(id), entity: e }; // Store entity for dynamic updates
         });
       },
       error: () => { this.allApplicationEntities = []; }
     });
-const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
-
-this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
-
-if (this.workflowTypes.length > 0) {
-  this.selectedWorkflowType = this.workflowTypes[0].id;
-}
   }
 
 
@@ -268,7 +277,8 @@ if (this.workflowTypes.length > 0) {
         console.error('Error creating workflow:', error);
         
         this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: any) => {
-          const errorMsg = error.message || translations['toast.failedToCreateWorkflow'];
+          const errorMsg = error.message || translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
+          this.errorMessage = errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }

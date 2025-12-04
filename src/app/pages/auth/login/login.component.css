@@ -1,1 +1,12 @@
 /* Login component specific styles if needed */
+
+/* Fix for password input placeholder overlap issue in LTR */
+.relative.group input#password {
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+}
+
+/* Ensure placeholder doesn't overlap icon */
+.relative.group input#password::placeholder {
+  padding-left: 0;
+}

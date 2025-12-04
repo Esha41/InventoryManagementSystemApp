@@ -6,13 +6,15 @@
 
 import { LotItem } from '@models/supply-order.model';
 import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
+import { getLocalizedName } from '@utils/localization.utils';
 
 /**
  * Map suggested lots to LotItem format
  */
 export function mapSuggestedLotsToLotItems(
   suggestions: any[],
-  existingSelections?: Map<number, number>
+  existingSelections?: Map<number, number>,
+  currentLang: string = 'en'
 ): LotItem[] {
   const lots = suggestions.map(lotSuggestion => ({
     inventoryDetailId: lotSuggestion.inventoryDetailId,
@@ -23,9 +25,9 @@ export function mapSuggestedLotsToLotItems(
     condition: determineCondition(lotSuggestion.expiryDate),
     daysUntilExpiry: calculateDaysUntilExpiry(lotSuggestion.expiryDate),
     selectedQuantity: existingSelections?.get(lotSuggestion.lot) ?? lotSuggestion.suggestedQuantity,
-    depotName: lotSuggestion.depot?.nameEn || lotSuggestion.depot?.nameAr,
-    supplierName: lotSuggestion.supplier?.nameEn || lotSuggestion.supplier?.nameAr,
-    manufacturerName: lotSuggestion.manufacturer?.nameEn || lotSuggestion.manufacturer?.nameAr
+    depotName: lotSuggestion.depot ? getLocalizedName(lotSuggestion.depot, currentLang) : undefined,
+    supplierName: lotSuggestion.supplier ? getLocalizedName(lotSuggestion.supplier, currentLang) : undefined,
+    manufacturerName: lotSuggestion.manufacturer ? getLocalizedName(lotSuggestion.manufacturer, currentLang) : undefined
   }));
 
   // Sort by expiry date (FEFO)

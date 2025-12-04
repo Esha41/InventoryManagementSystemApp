@@ -22,10 +22,10 @@
         </thead>
         <tbody class="divide-y divide-[var(--color-border)]">
           <tr *ngIf="loading" class="hover:bg-[var(--color-background-muted)] transition-colors">
-            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">Loading...</td>
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{ 'common.loadingWithDots' | translate }}</td>
           </tr>
           <tr *ngIf="!loading && paginatedRequests.length === 0" class="hover:bg-[var(--color-background-muted)] transition-colors">
-            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">No requests found</td>
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{ 'requestsManagement.noRequestsFound' | translate }}</td>
           </tr>
           <tr *ngFor="let request of paginatedRequests" class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>

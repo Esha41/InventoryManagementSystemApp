@@ -17,6 +17,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-manage-admins',
@@ -61,6 +62,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   users: BackendUserDto[] = [];
   roles: RoleDto[] = [];
   ranks: LookupItem[] = [];
+  departments: LookupItem[] = [];
   userRolesMap: Map<string, string[]> = new Map(); // Cache user roles
   isLoading = false;
   errorMessage = '';
@@ -121,6 +123,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.loadUsers();
     this.loadRoles();
     this.loadRanks();
+    this.loadDepartments();
     
     this.backendUserService.users$
       .pipe(takeUntil(this.destroy$))
@@ -173,16 +176,27 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Helper method for template
+  getLookupItemName(item: LookupItem | null | undefined): string {
+    if (!item) return '';
+    return getLocalizedName(item, getCurrentLang(this.translateService)) || item.nameEn || '';
+  }
+
   private extractRoleNames(user: BackendUserDto): string[] {
+    const currentLang = getCurrentLang(this.translateService);
+    
     if (user.roles && user.roles.length > 0) {
       return user.roles
-        .map(role => role.name)
+        .map(role => getLocalizedName(role, currentLang) || role.name)
         .filter((name): name is string => !!name && name.trim().length > 0);
     }
 
     if (user.roleIds && user.roleIds.length > 0) {
       return user.roleIds
-        .map(roleId => this.roles.find(r => r.id === roleId)?.name)
+        .map(roleId => {
+          const role = this.roles.find(r => r.id === roleId);
+          return role ? (getLocalizedName(role, currentLang) || role.name) : null;
+        })
         .filter((name): name is string => !!name && name.trim().length > 0);
     }
 
@@ -231,6 +245,18 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Failed to load ranks:', error);
         this.ranks = [];
+      }
+    });
+  }
+
+  loadDepartments(): void {
+    this.lookupService.getDepartments().subscribe({
+      next: (departments: LookupItem[]) => {
+        this.departments = departments || [];
+      },
+      error: (error: any) => {
+        console.error('Failed to load departments:', error);
+        this.departments = [];
       }
     });
   }
@@ -375,13 +401,8 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   }
 
   getFullName(user: BackendUserDto): string {
-    // Get name from nameEn, nameAr, fullNameEN, or fullNameAR
-    const nameEn = user.nameEn || (user as any)?.fullNameEN;
-    const nameAr = user.nameAr || (user as any)?.fullNameAR;
-    
-    if (nameEn) return nameEn;
-    if (nameAr) return nameAr;
-    return user.userName || user.email;
+    const localizedName = getLocalizedName(user, getCurrentLang(this.translateService));
+    return localizedName || user.userName || user.email || '';
   }
 
   getMilitaryId(user: BackendUserDto): string {
@@ -391,14 +412,31 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   getRankName(user: BackendUserDto): string {
     if (user.rankNameEn || user.rankNameAr) {
-      return user.rankNameEn || user.rankNameAr || '-';
+      // Use rankNameEn/rankNameAr directly if available
+      const rankNameObj = { nameEn: user.rankNameEn, nameAr: user.rankNameAr };
+      return getLocalizedName(rankNameObj, getCurrentLang(this.translateService)) || '-';
     }
 
     if (!user.rankId) return '-';
     const rank = this.ranks.find(r => r.id === user.rankId);
     if (!rank) return '-';
-    // Return English name if available, otherwise Arabic name
-    return rank.nameEn || rank.nameAr || '-';
+    return getLocalizedName(rank, getCurrentLang(this.translateService)) || '-';
+  }
+
+  getDepartmentName(user: BackendUserDto): string {
+    if (!user.departmentId) {
+      // Fallback to departmentName if no departmentId
+      return user.departmentName || '-';
+    }
+
+    // Find department by ID and get localized name
+    const department = this.departments.find(d => d.id === user.departmentId);
+    if (department) {
+      return getLocalizedName(department, getCurrentLang(this.translateService)) || '-';
+    }
+
+    // Fallback to departmentName if department not found in lookup
+    return user.departmentName || '-';
   }
 
   getStatusColor(): string {
@@ -546,7 +584,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (success) => {
         if (success) {
-          const itemName = this.selectedLookupItem?.nameEn || this.selectedLookupItem?.nameAr || '';
+          const itemName = getLocalizedName(this.selectedLookupItem, getCurrentLang(this.translateService)) || '';
           this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
             this.toastService.success(
               `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
@@ -588,7 +626,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     operation.subscribe({
       next: (item) => {
         const isCreate = this.lookupModalMode === 'create';
-        const itemName = dto.nameEn || dto.nameAr || '';
+        const itemName = getLocalizedName(dto, getCurrentLang(this.translateService)) || '';
         
         this.translateService.get([
           'toast.success',

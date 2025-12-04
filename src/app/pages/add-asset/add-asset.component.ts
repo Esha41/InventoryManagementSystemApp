@@ -20,6 +20,8 @@ import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 interface AssetForm {
   name: string;
@@ -90,7 +92,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private apiService: ApiService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private translateService: TranslateService
   ) {}
 
   assetForm: AssetForm = {
@@ -181,11 +184,11 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       return String(entity);
     }
 
-    const currentLang = this.translationService.getCurrentLanguage ? this.translationService.getCurrentLanguage() : 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || (entity as { nameEN?: string }).nameEN || (entity as { nameEn?: string }).nameEn || (entity as { label?: string }).label || '';
+    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
+      return entity.label;
     }
-    return (entity as { nameEn?: string }).nameEn || (entity as { nameEN?: string }).nameEN || entity.nameAr || (entity as { label?: string }).label || '';
+
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T): T {
@@ -266,8 +269,57 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       ammunitionDto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     }
 
-    this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', ammunitionDto)
-      .pipe(takeUntil(this.destroy$))
+    // Create FormData to match backend [FromForm] binding
+    const formData = new FormData();
+    
+    // Append all DTO properties as form fields (matching CreateUpdateAmmunitionDto property names)
+    formData.append('Name', ammunitionDto.name);
+    formData.append('ItemNo', ammunitionDto.itemNo);
+    formData.append('PartNo', ammunitionDto.partNo || '');
+    formData.append('HccId', ammunitionDto.hccId.toString());
+    formData.append('BulletDiameter', ammunitionDto.bulletDiameter.toString());
+    formData.append('BulletDiameterUnitId', ammunitionDto.bulletDiameterUnitId.toString());
+    formData.append('CaseLength', ammunitionDto.caseLength.toString());
+    formData.append('CaseLengthUnitId', ammunitionDto.caseLengthUnitId.toString());
+    formData.append('IsLinked', ammunitionDto.isLinked.toString());
+    formData.append('Primer', ammunitionDto.primer);
+    formData.append('TotalWeight', ammunitionDto.totalWeight.toString());
+    formData.append('CaseTypeId', ammunitionDto.caseTypeId.toString());
+    formData.append('PropellantId', ammunitionDto.propellantId.toString());
+    formData.append('CompatibilityId', ammunitionDto.compatibilityId.toString());
+    formData.append('HazardDivisionId', ammunitionDto.hazardDivisionId.toString());
+    
+    // Optional fields
+    if (ammunitionDto.nsn) {
+      formData.append('Nsn', ammunitionDto.nsn);
+    }
+    if (ammunitionDto.natureOptionId) {
+      formData.append('NatureOptionId', ammunitionDto.natureOptionId.toString());
+    }
+    if (ammunitionDto.primaryPurposId) {
+      formData.append('PrimaryPurposId', ammunitionDto.primaryPurposId.toString());
+    }
+    if (ammunitionDto.projectileColorId) {
+      formData.append('ProjectileColorId', ammunitionDto.projectileColorId.toString());
+    }
+    if (ammunitionDto.projectailMaterialId) {
+      formData.append('ProjectailMaterialId', ammunitionDto.projectailMaterialId.toString());
+    }
+    if (ammunitionDto.price) {
+      formData.append('Price', ammunitionDto.price.toString());
+    }
+    if (ammunitionDto.minimumQuantity) {
+      formData.append('MinimumQuantity', ammunitionDto.minimumQuantity.toString());
+    }
+    
+    // Append file(s) if present
+    if (this.assetForm.image) {
+      formData.append('files', this.assetForm.image);
+    }
+    
+    const request = this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', formData);
+
+    request.pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           if (response.succeeded) {
@@ -436,6 +488,15 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
+      if (!this.isValidImageType(file)) {
+        const errorTitle = this.translationService.getTranslation('toast.error');
+        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle || 'Invalid File Type');
+        // Clear the file input
+        input.value = '';
+        this.assetForm.image = undefined;
+        this.previewUrl = null;
+        return;
+      }
       this.assetForm.image = file;
       this.generatePreview(file);
     }
@@ -450,13 +511,30 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       const file = files[0];
+      if (!this.isValidImageType(file)) {
+        const errorTitle = this.translationService.getTranslation('toast.error');
+        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle || 'Invalid File Type');
+        this.assetForm.image = undefined;
+        this.previewUrl = null;
+        return;
+      }
       this.assetForm.image = file;
       this.generatePreview(file);
     }
   }
 
+  private isValidImageType(file: File): boolean {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const validExtensions = ['.jpg', '.jpeg', '.png'];
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+    
+    return validTypes.includes(file.type.toLowerCase()) || 
+           validExtensions.includes(fileExtension);
+  }
+
   private generatePreview(file: File): void {
-    if (!file.type.startsWith('image/')) {
+    if (!this.isValidImageType(file)) {
       this.previewUrl = null;
       return;
     }

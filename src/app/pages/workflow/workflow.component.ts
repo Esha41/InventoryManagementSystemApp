@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
@@ -16,6 +17,7 @@ import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-workflow',
@@ -72,6 +74,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   private positioningInterval?: any;
   private boundRepositionDropdowns?: () => void;
   private boundHandleDocumentClick?: () => void;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
@@ -87,16 +90,31 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.loadWorkflows();
     // Preload roles and application entities for edit modal
     this.backendUserService.getAllRolesSimple().subscribe({ next: r => this.roles = r, error: () => this.roles = [] });
+    this.loadApplicationEntities();
+    
+    const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
+    this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
+
+    // Subscribe to language changes to update entity names
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadApplicationEntities();
+      });
+  }
+
+  private loadApplicationEntities(): void {
     this.backendUserService.getApplicationEntities().subscribe({
       next: (entities: any[]) => {
-        this.allApplicationEntities = (entities || []).map((e: any) => ({ id: e?.id ?? e?.applicationEntityId ?? e, name: e?.nameEn || e?.name || String(e?.id ?? e) }));
+        const currentLang = getCurrentLang(this.translate);
+        this.allApplicationEntities = (entities || []).map((e: any) => {
+          const id = e?.id ?? e?.applicationEntityId ?? e;
+          const localizedName = getLocalizedName(e, currentLang);
+          return { id, name: localizedName || String(id), entity: e }; // Store entity for dynamic updates
+        });
       },
       error: () => { this.allApplicationEntities = []; }
     });
-const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
-
- this.workflowTypes =  this.workflowService.getWorkflowTypeItems(lang);
-
   }
 
   get totalPages(): number {
@@ -154,10 +172,12 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     let filtered = [...this.workflows];
 
     if (this.searchTerm) {
-      filtered = filtered.filter(workflow =>
-        workflow.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        workflow.id.toString().includes(this.searchTerm)
-      );
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(workflow => {
+        const workflowName = getLocalizedName(workflow, getCurrentLang(this.translate));
+        return workflowName.toLowerCase().includes(searchLower) ||
+               workflow.id.toString().includes(this.searchTerm);
+      });
     }
 
     this.filteredWorkflows = filtered;
@@ -276,13 +296,14 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     const workflow = this.workflows.find(w => w.id === id);
     if (!workflow) return;
     
-    this.workflowToDelete = { id: workflow.id, name: workflow.name };
+    const workflowName = getLocalizedName(workflow, getCurrentLang(this.translate));
+    this.workflowToDelete = { id: workflow.id, name: workflowName };
     
     // Load translations synchronously using instant()
     this.deleteDialogTitle = this.translate.instant('workflow.deleteConfirmation.title');
     this.deleteDialogMessage = this.translate.instant('workflow.deleteConfirmation.message');
     const workflowLabel = this.translate.instant('workflow.deleteConfirmation.workflow');
-    this.deleteDialogDescription = `${workflowLabel}: ${this.workflowToDelete.name}`;
+    this.deleteDialogDescription = `${workflowLabel}: ${workflowName}`;
     
     this.showDeleteDialog = true;
   }
@@ -350,13 +371,26 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   getRoleNameById(roleId?: string | null): string {
     if (!roleId) return '';
     const r = this._findRole(roleId);
-    return r ? r.name : String(roleId);
+    return r ? getLocalizedName(r, getCurrentLang(this.translate)) || r.name : String(roleId);
   }
 
   getEntityNameById(entityId?: number | null): string {
     if (entityId === undefined || entityId === null) return '';
     const e = this.allApplicationEntities.find(x => x.id === entityId);
-    return e ? (e.name || String(e.id)) : String(entityId);
+    if (e) {
+      // Use stored entity if available, otherwise use cached name
+      const entity = (e as any).entity;
+      if (entity) {
+        return getLocalizedName(entity, getCurrentLang(this.translate)) || e.name || String(e.id);
+      }
+      return e.name || String(e.id);
+    }
+    return String(entityId);
+  }
+
+  // Helper method for template
+  getWorkflowName(workflow: any): string {
+    return getLocalizedName(workflow, getCurrentLang(this.translate)) || workflow?.name || '';
   }
 
   // Resolve varying backend field names for higher approval entity/role
@@ -451,6 +485,8 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.cleanupDropdownPositioning();
   }
 

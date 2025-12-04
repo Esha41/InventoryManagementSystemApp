@@ -19,7 +19,8 @@ import {
   Validator
 } from '@angular/forms';
 import { LucideAngularModule, ChevronDown, Search } from 'lucide-angular';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 type Primitive = string | number | boolean | null | undefined;
 
@@ -33,7 +34,7 @@ export interface DropdownOption<T = Primitive> {
 @Component({
   selector: 'app-dropdown',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './dropdown.component.html',
   styleUrls: ['./dropdown.component.css'],
   providers: [
@@ -175,8 +176,13 @@ export class  DropdownComponent<T = Primitive>
 
   constructor(
     private host: ElementRef<HTMLElement>,
-    @Optional() private translate?: TranslateService
+    @Optional() private translate?: TranslateService,
+    @Optional() private translationService?: TranslationService
   ) {}
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
 
   /**
    * Computed list of options optionally prepending the placeholder option.

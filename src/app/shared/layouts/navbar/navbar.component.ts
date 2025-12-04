@@ -8,8 +8,9 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-navbar',
@@ -37,7 +38,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     public translationService: TranslationService,
     private authService: BackendAuthService,
     private userContextService: UserContextService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -76,18 +78,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   getUserFullName(): string {
-    // Prefer nameEn or nameAr from user details, fallback to userName
-    if (this.userDetails?.nameEn) {
-      return this.userDetails.nameEn;
-    }
-    if (this.userDetails?.nameAr) {
-      return this.userDetails.nameAr;
-    }
-    if (this.currentUser?.nameEn) {
-      return this.currentUser.nameEn;
-    }
-    if (this.currentUser?.nameAr) {
-      return this.currentUser.nameAr;
+    // Prefer userDetails, fallback to currentUser
+    const user = this.userDetails || this.currentUser;
+    if (user) {
+      const localizedName = getLocalizedName(user, getCurrentLang(this.translateService));
+      if (localizedName) {
+        return localizedName;
+      }
     }
     return this.currentUser?.userName || this.userDetails?.userName || 'User';
   }
@@ -120,7 +117,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   getUserRole(): string {
     // Try to get role from user details first
     if (this.userDetails?.roles && this.userDetails.roles.length > 0) {
-      return this.userDetails.roles[0].name || 'User';
+      const role = this.userDetails.roles[0];
+      return getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || 'User';
     }
     return this.currentUser?.roles?.[0] || 'User';
   }

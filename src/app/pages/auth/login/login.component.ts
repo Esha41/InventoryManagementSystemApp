@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -64,6 +65,7 @@ export class LoginComponent implements OnInit {
 
   get username() { return this.loginForm.get('username'); }
   get password() { return this.loginForm.get('password'); }
+  get isRTL(): boolean { return this.translationService.isRTL(); }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;

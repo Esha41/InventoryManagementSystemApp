@@ -274,7 +274,7 @@
   [isOpen]="showDeleteDialog"
   [title]="'deleteConfirmation.title' | translate"
   [message]="'deleteConfirmation.message' | translate"
-  [description]="('deleteConfirmation.item' | translate) + ': ' + (selectedDetail?.item?.name || selectedDetail?.item?.itemNo || 'Unknown')"
+  [description]="('deleteConfirmation.item' | translate) + ': ' + getItemName(selectedDetail)"
   [confirmText]="'deleteConfirmation.confirmDelete' | translate"
   [cancelText]="'deleteConfirmation.cancel' | translate"
   confirmVariant="danger"

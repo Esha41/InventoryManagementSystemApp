@@ -8,6 +8,8 @@ import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 type TabType = 'overview' | 'stock';
 
@@ -33,14 +35,15 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private inventoryService: InventoryService,
-    private lookupService: LookupService
-  ) {}
+    private lookupService: LookupService,
+    private translateService: TranslateService
+  ) { }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.warehouseId = parseInt(params['warehouseId'], 10);
       this.inventoryDetailId = parseInt(params['itemId'], 10);
-      
+
       if (this.warehouseId && this.inventoryDetailId) {
         this.loadItemDetails();
       }
@@ -62,16 +65,20 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (details) => {
           this.inventoryDetail = details.find(d => d.id === this.inventoryDetailId) || null;
-          
+
           if (!this.inventoryDetail) {
-            this.error = 'Inventory item not found';
+            this.translateService.get('warehouseInventory.itemNotFound').subscribe(text => {
+              this.error = text;
+            });
           }
-          
+
           this.loading = false;
         },
         error: (error) => {
           console.error('Error loading inventory item:', error);
-          this.error = 'Failed to load inventory item details';
+          this.translateService.get('warehouseInventory.failedToLoadItem').subscribe(text => {
+            this.error = text;
+          });
           this.loading = false;
         }
       });
@@ -93,7 +100,9 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    * Get item name
    */
   getItemName(): string {
-    return this.inventoryDetail?.item?.name || this.inventoryDetail?.item?.itemNo || 'Unknown Item';
+    const lang = getCurrentLang(this.translateService);
+    const localized = getLocalizedName(this.inventoryDetail?.item, lang);
+    return localized || this.inventoryDetail?.item?.itemNo || 'Unknown Item';
   }
 
   /**
@@ -107,28 +116,28 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    * Get HCC name
    */
   getHccName(): string {
-    return this.inventoryDetail?.item?.hcc?.nameEn || this.inventoryDetail?.item?.hcc?.nameAr || '-';
+    return getLocalizedName(this.inventoryDetail?.item?.hcc, getCurrentLang(this.translateService)) || '-';
   }
 
   /**
    * Get supplier name
    */
   getSupplierName(): string {
-    return this.inventoryDetail?.supplier?.nameEn || this.inventoryDetail?.supplier?.nameAr || '-';
+    return getLocalizedName(this.inventoryDetail?.supplier, getCurrentLang(this.translateService)) || '-';
   }
 
   /**
    * Get manufacturer name
    */
   getManufacturerName(): string {
-    return this.inventoryDetail?.manufacturer?.nameEn || this.inventoryDetail?.manufacturer?.nameAr || '-';
+    return getLocalizedName(this.inventoryDetail?.manufacturer, getCurrentLang(this.translateService)) || '-';
   }
 
   /**
    * Get country name
    */
   getCountryName(): string {
-    return this.inventoryDetail?.country?.nameEn || this.inventoryDetail?.country?.nameAr || '-';
+    return getLocalizedName(this.inventoryDetail?.country, getCurrentLang(this.translateService)) || '-';
   }
 
   /**
@@ -167,9 +176,9 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    */
   getStockStatus(): string {
     const utilization = this.getUtilizationPercentage();
-    if (utilization === 0) return 'New';
-    if (utilization < 50) return 'Good';
-    return 'Used';
+    if (utilization === 0) return this.translateService.instant('warehouseInventory.new');
+    if (utilization < 50) return this.translateService.instant('warehouseInventory.good');
+    return this.translateService.instant('warehouseInventory.used');
   }
 
   /**

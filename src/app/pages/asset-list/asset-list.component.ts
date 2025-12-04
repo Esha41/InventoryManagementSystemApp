@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { switchMap, map, catchError, of } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, ChevronLeft, ChevronRight } from 'lucide-angular';
@@ -12,13 +13,17 @@ import { ExplosiveService } from '@services/explosive.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
+import { ApiService } from '@services/api.service';
+import { ConfigService } from '@services/config.service';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { BaseItemDto } from '@models/inventory.model';
 import { LookupItem } from '@models/lookup.model';
 import { forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface Asset {
   id: string;
@@ -37,6 +42,7 @@ interface Asset {
   readyForIssue: boolean;
   price?: number;
   minimumQuantity?: number;
+  imageUrl?: string;
 }
 
 @Component({
@@ -59,7 +65,7 @@ interface Asset {
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css']
 })
-export class AssetListComponent implements OnInit {
+export class AssetListComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly Filter = Filter;
   readonly Edit = Edit;
@@ -112,6 +118,14 @@ export class AssetListComponent implements OnInit {
   selectedAsset: any = null;
   editForm: FormGroup;
 
+  // Image editing properties
+  editImageUrl: string | null = null; // Blob URL for existing image
+  editImageFile: File | null = null; // New file selected for upload
+  editImagePreview: string | null = null; // Preview URL for new file
+  private blobUrls: Set<string> = new Set(); // Track blob URLs for cleanup
+  
+  @ViewChild('editFileInput') editFileInputRef!: ElementRef<HTMLInputElement>;
+
 
   // Pagination
   currentPage = 1;
@@ -127,7 +141,10 @@ export class AssetListComponent implements OnInit {
     private route: ActivatedRoute,
     private translateService: TranslateService,
     private translationService: TranslationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private apiService: ApiService,
+    private configService: ConfigService,
+    private http: HttpClient
   ) {
     this.editForm = this.fb.group({
       id: [0 as number],
@@ -155,6 +172,18 @@ export class AssetListComponent implements OnInit {
       price: [null as number | null],
       minimumQuantity: [null as number | null]
     });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all blob URLs to prevent memory leaks
+    this.blobUrls.forEach(url => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.warn('Error revoking blob URL:', e);
+      }
+    });
+    this.blobUrls.clear();
   }
 
   ngOnInit(): void {
@@ -216,25 +245,32 @@ export class AssetListComponent implements OnInit {
     this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
       next: (items) => {
         try {
+          const currentLang = getCurrentLang(this.translateService);
           this.assets = (items || []).map((x: AmmunitionReadDto) => ({
             id: x.id?.toString() || '-',
             name: x.name || 'Unknown',
             itemNo: x.itemNo || '-',
             partNo: x.partNo || '-',
             batchNo: x.batchNo || '-',
-            hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+            hcc: getLocalizedName(x.hcc, currentLang) || '-',
             nsn: x.nsn || '-',
-            caseType: x.caseType?.nameEn || x.caseType?.nameAr || '-',
-            hazardDivision: x.hazardDivision?.nameEn || x.hazardDivision?.nameAr || '-',
-            compatibility: x.compatibility?.nameEn || x.compatibility?.nameAr || '-',
-            propellant: x.propellant?.nameEn || x.propellant?.nameAr || '-',
+            caseType: getLocalizedName(x.caseType, currentLang) || '-',
+            hazardDivision: getLocalizedName(x.hazardDivision, currentLang) || '-',
+            compatibility: getLocalizedName(x.compatibility, currentLang) || '-',
+            propellant: getLocalizedName(x.propellant, currentLang) || '-',
             expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
             expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
             readyForIssue: x.readyForIssue ?? true,
             price: x.price,
-            minimumQuantity: x.minimumQuantity
+            minimumQuantity: x.minimumQuantity,
+            imageUrl: undefined // Will be loaded separately
           }));
+          
           this.currentPage = 1;
+          
+          // Load images for each asset
+          this.loadAssetImages();
+          
           this.loading = false;
           this.validateCurrentPage();
         } catch (error) {
@@ -252,16 +288,59 @@ export class AssetListComponent implements OnInit {
     });
   }
 
+  private loadAssetImages(): void {
+    // Load images for ammunition items
+    if (this.activeTab === 'ammunition' && this.assets.length > 0) {
+      const ammunitionIds = this.assets
+        .map(asset => parseInt(asset.id))
+        .filter(id => !isNaN(id) && id > 0);
+
+      if (ammunitionIds.length > 0) {
+        console.log('Loading images for ammunition IDs:', ammunitionIds);
+        this.ammunitionService.loadAssetImages(ammunitionIds).subscribe({
+          next: (imageMap) => {
+            console.log('Image map received, size:', imageMap.size);
+            console.log('Image map entries:', Array.from(imageMap.entries()));
+            // Update assets with image URLs
+            this.assets.forEach(asset => {
+              const assetId = parseInt(asset.id);
+              if (imageMap.has(assetId)) {
+                const imageUrl = imageMap.get(assetId);
+                // Convert null to undefined for consistent handling in template
+                asset.imageUrl = imageUrl && imageUrl !== null ? imageUrl : undefined;
+                if (imageUrl) {
+                  console.log(`✓ Asset ${assetId} (${asset.name}): imageUrl set to`, imageUrl.substring(0, 100) + (imageUrl.length > 100 ? '...' : ''));
+                } else {
+                  console.log(`✗ Asset ${assetId} (${asset.name}): No image available (null in map)`);
+                }
+              } else {
+                // Asset not in map, explicitly set to undefined
+                asset.imageUrl = undefined;
+                console.log(`✗ Asset ${assetId} (${asset.name}): No image found in map`);
+              }
+            });
+            console.log('Total assets after image update:', this.assets.length);
+            console.log('Assets with images:', this.assets.filter(a => a.imageUrl).length);
+          },
+          error: (err) => {
+            console.error('Failed to load images:', err);
+          }
+        });
+      }
+    }
+  }
+
   private loadWeapons(): void {
     this.weaponService.getAll<BaseItemDto>().subscribe({
       next: (items) => {
+        const currentLang = getCurrentLang(this.translateService);
         this.assets = (items || []).map((x: BaseItemDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
           partNo: x.partNo || '-',
           batchNo: x.batchNo || '-',
-          hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+          hcc: getLocalizedName(x.hcc, currentLang) || '-',
           nsn: x.nsn || '-',
           caseType: '-',
           hazardDivision: '-',
@@ -289,13 +368,14 @@ export class AssetListComponent implements OnInit {
   private loadExplosives(): void {
     this.explosiveService.getAll<BaseItemDto>().subscribe({
       next: (items) => {
+        const currentLang = getCurrentLang(this.translateService);
         this.assets = (items || []).map((x: BaseItemDto) => ({
           id: x.id?.toString() || '-',
           name: x.name || 'Unknown',
           itemNo: x.itemNo || '-',
           partNo: x.partNo || '-',
           batchNo: x.batchNo || '-',
-          hcc: x.hcc?.nameEn || x.hcc?.nameAr || '-',
+          hcc: getLocalizedName(x.hcc, currentLang) || '-',
           nsn: x.nsn || '-',
           caseType: '-',
           hazardDivision: '-',
@@ -521,18 +601,19 @@ export class AssetListComponent implements OnInit {
         }
         
         // Map to Asset interface for selectedAsset
+        const currentLang = getCurrentLang(this.translateService);
         this.selectedAsset = {
           id: data.id.toString(),
           name: data.name || 'Unknown',
           itemNo: data.itemNo || '-',
           partNo: data.partNo || '-',
           batchNo: data.batchNo || '-',
-          hcc: data.hcc?.nameEn || data.hcc?.nameAr || '-',
+          hcc: getLocalizedName(data.hcc, currentLang) || '-',
           nsn: data.nsn || '-',
-          caseType: data.caseType?.nameEn || data.caseType?.nameAr || '-',
-          hazardDivision: data.hazardDivision?.nameEn || data.hazardDivision?.nameAr || '-',
-          compatibility: data.compatibility?.nameEn || data.compatibility?.nameAr || '-',
-          propellant: data.propellant?.nameEn || data.propellant?.nameAr || '-',
+          caseType: getLocalizedName(data.caseType, currentLang) || '-',
+          hazardDivision: getLocalizedName(data.hazardDivision, currentLang) || '-',
+          compatibility: getLocalizedName(data.compatibility, currentLang) || '-',
+          propellant: getLocalizedName(data.propellant, currentLang) || '-',
           expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
           readyForIssue: data.readyForIssue ?? true
         };
@@ -563,6 +644,10 @@ export class AssetListComponent implements OnInit {
           price: data.price ?? null,
           minimumQuantity: data.minimumQuantity ?? null
         });
+        
+        // Load existing image
+        this.loadEditImage(data.id);
+        
         this.showEditModal = true;
         this.loading = false;
       },
@@ -709,13 +794,16 @@ export class AssetListComponent implements OnInit {
       minimumQuantity: m.minimumQuantity ?? undefined
     });
 
+    // Update the ammunition data
     this.ammunitionService.update(id, buildDto(v)).subscribe({
       next: (response) => {
         if (response.succeeded) {
-          this.showEditModal = false;
-          this.selectedAsset = null;
-          this.showSuccessToast(this.translateService.instant('assetList.success.updated'));
-          this.loadAssets();
+          // Upload new image if one was selected
+          if (this.editImageFile) {
+            this.uploadEditImage(id);
+          } else {
+            this.completeEdit();
+          }
         } else {
           this.showErrorToast(response.message || this.translateService.instant('assetList.errors.failedToUpdate'));
           this.loading = false;
@@ -729,10 +817,211 @@ export class AssetListComponent implements OnInit {
     });
   }
 
-  cancelEdit(): void {
+  // Image handling methods for edit form
+  loadEditImage(ammunitionId: number): void {
+    // Clean up previous image URL
+    if (this.editImageUrl) {
+      try {
+        URL.revokeObjectURL(this.editImageUrl);
+        this.blobUrls.delete(this.editImageUrl);
+      } catch (e) {
+        console.warn('Error revoking previous edit image blob URL:', e);
+      }
+    }
+    this.editImageUrl = null;
+
+    // Fetch image URL
+    this.ammunitionService.getImageUrl(ammunitionId).subscribe({
+      next: (imageUrl) => {
+        if (imageUrl) {
+          // Fetch image as blob with authentication
+          this.http.get(imageUrl, { responseType: 'blob' }).subscribe({
+            next: (blob) => {
+              if (blob.type && blob.type.startsWith('image/')) {
+                const blobUrl = URL.createObjectURL(blob);
+                this.blobUrls.add(blobUrl);
+                this.editImageUrl = blobUrl;
+              }
+            },
+            error: (err) => {
+              console.warn('Failed to load edit image:', err);
+              // Silently fail - image is optional
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to get edit image URL:', err);
+        // Silently fail - image is optional
+      }
+    });
+  }
+
+  onEditFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      if (!this.isValidImageType(file)) {
+        const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
+        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle);
+        input.value = '';
+        this.editImageFile = null;
+        this.editImagePreview = null;
+        return;
+      }
+      this.editImageFile = file;
+      this.generateEditPreview(file);
+    }
+  }
+
+  onEditDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onEditDrop(event: DragEvent): void {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (!this.isValidImageType(file)) {
+        const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
+        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle);
+        this.editImageFile = null;
+        this.editImagePreview = null;
+        return;
+      }
+      this.editImageFile = file;
+      this.generateEditPreview(file);
+    }
+  }
+
+  private isValidImageType(file: File): boolean {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const validExtensions = ['.jpg', '.jpeg', '.png'];
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+    
+    return validTypes.includes(file.type.toLowerCase()) || 
+           validExtensions.includes(fileExtension);
+  }
+
+  private generateEditPreview(file: File): void {
+    // Clean up previous preview
+    if (this.editImagePreview) {
+      try {
+        URL.revokeObjectURL(this.editImagePreview);
+        this.blobUrls.delete(this.editImagePreview);
+      } catch (e) {
+        console.warn('Error revoking previous preview blob URL:', e);
+      }
+    }
+
+    if (!this.isValidImageType(file)) {
+      this.editImagePreview = null;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.editImagePreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  triggerEditFileInput(): void {
+    // Use ViewChild reference if available, otherwise fallback to querySelector
+    if (this.editFileInputRef?.nativeElement) {
+      this.editFileInputRef.nativeElement.click();
+    } else {
+      // Fallback: try to find by ID
+      const fileInput = document.querySelector('#editFileInput') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      } else {
+        console.warn('Could not find edit file input element');
+      }
+    }
+  }
+
+  private uploadEditImage(ammunitionId: number): void {
+    if (!this.editImageFile) {
+      this.completeEdit();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', this.editImageFile);
+    
+    const uploadUrl = `${this.configService.apiUrl}/FileUpload/upload?entityId=1&primaryId=${ammunitionId}&isMain=true`;
+    
+    this.http.post(uploadUrl, formData).subscribe({
+      next: (response: any) => {
+        console.log('Image uploaded successfully:', response);
+        this.completeEdit();
+      },
+      error: (err) => {
+        console.error('Failed to upload image:', err);
+        // Still complete the edit even if image upload fails
+        this.completeEdit();
+        const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
+        this.toastService.error('Ammunition updated but image upload failed. Please try uploading the image again.', errorTitle);
+      }
+    });
+  }
+
+  private completeEdit(): void {
+    // Clean up image blob URLs
+    if (this.editImageUrl) {
+      try {
+        URL.revokeObjectURL(this.editImageUrl);
+        this.blobUrls.delete(this.editImageUrl);
+      } catch (e) {
+        console.warn('Error revoking edit image blob URL:', e);
+      }
+    }
+    if (this.editImagePreview) {
+      try {
+        URL.revokeObjectURL(this.editImagePreview);
+        this.blobUrls.delete(this.editImagePreview);
+      } catch (e) {
+        console.warn('Error revoking edit preview blob URL:', e);
+      }
+    }
+
     this.showEditModal = false;
     this.selectedAsset = null;
     this.editForm.reset();
+    this.editImageUrl = null;
+    this.editImageFile = null;
+    this.editImagePreview = null;
+    this.showSuccessToast(this.translateService.instant('assetList.success.updated'));
+    this.loadAssets();
+  }
+
+  cancelEdit(): void {
+    // Clean up image blob URLs
+    if (this.editImageUrl) {
+      try {
+        URL.revokeObjectURL(this.editImageUrl);
+        this.blobUrls.delete(this.editImageUrl);
+      } catch (e) {
+        console.warn('Error revoking edit image blob URL:', e);
+      }
+    }
+    if (this.editImagePreview) {
+      try {
+        URL.revokeObjectURL(this.editImagePreview);
+        this.blobUrls.delete(this.editImagePreview);
+      } catch (e) {
+        console.warn('Error revoking edit preview blob URL:', e);
+      }
+    }
+    
+    this.showEditModal = false;
+    this.selectedAsset = null;
+    this.editForm.reset();
+    this.editImageUrl = null;
+    this.editImageFile = null;
+    this.editImagePreview = null;
   }
 
   closeViewModal(): void {
@@ -771,11 +1060,20 @@ export class AssetListComponent implements OnInit {
       return entity.label;
     }
 
-    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    if (currentLang === 'ar') {
-      return entity.nameAr || entity.nameEN || entity.nameEn || '';
-    }
-    return entity.nameEn || entity.nameEN || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
+  }
+
+  // Helper methods for template
+  getAssetName(asset: any): string {
+    return getLocalizedName(asset, getCurrentLang(this.translateService)) || asset?.name || '';
+  }
+
+  getLookupName(lookup: any): string {
+    return getLocalizedName(lookup, getCurrentLang(this.translateService)) || '-';
+  }
+
+  getUnitName(unit: any): string {
+    return getLocalizedName(unit, getCurrentLang(this.translateService)) || '';
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T): T {
@@ -815,5 +1113,32 @@ export class AssetListComponent implements OnInit {
     this.selectedCompatibility = null;
     this.selectedPropellant = null;
     this.currentPage = 1;
+  }
+
+  onImageError(asset: Asset, event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.error(`❌ Image failed to load for asset ${asset.id} (${asset.name})`);
+    console.error(`   Image URL was:`, asset.imageUrl);
+    console.error(`   Image src attribute:`, img.src);
+    console.error(`   Image error details:`, {
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+      complete: img.complete,
+      src: asset.imageUrl,
+      currentSrc: img.currentSrc
+    });
+    // Don't set to undefined immediately - let user see there was an attempt
+    // The template will show "No Image" if imageUrl becomes undefined
+  }
+
+  onImageLoad(asset: Asset, event: Event): void {
+    const img = event.target as HTMLImageElement;
+    console.log(`✅ Image loaded successfully for asset ${asset.id} (${asset.name})`);
+    console.log(`   Image details:`, {
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+      src: asset.imageUrl,
+      currentSrc: img.currentSrc.substring(0, 100) + (img.currentSrc.length > 100 ? '...' : '')
+    });
   }
 }

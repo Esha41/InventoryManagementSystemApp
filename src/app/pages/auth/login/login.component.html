@@ -49,8 +49,7 @@
         {{ 'auth.login.username' | translate }}
       </label>
       <div class="relative group">
-        <div class="absolute inset-y-0 flex items-center pointer-events-none z-10" 
-             [ngClass]="{'left-0 pl-4': !isRTL, 'right-0 pr-4': isRTL}">
+        <div class="absolute inset-y-0 flex items-center pointer-events-none z-10" [ngClass]="{'left-0 pl-4': !isRTL, 'right-0 pr-4': isRTL}">
           <lucide-angular 
             [img]="User" 
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" 
@@ -69,9 +68,9 @@
                  transition-all duration-200
                  disabled:bg-[var(--color-background-muted)] disabled:cursor-not-allowed"
           [ngClass]="{'pl-12 pr-4': !isRTL, 'pr-12 pl-4': isRTL}"
-          style="text-align: start;"
           [placeholder]="'auth.login.usernamePlaceholder' | translate"
           [class.border-red-500]="username?.invalid && username?.touched"
+          style="text-align: start;"
         />
       </div>
       <p 
@@ -92,8 +91,7 @@
         {{ 'auth.login.password' | translate }}
       </label>
       <div class="relative group">
-        <div class="absolute inset-y-0 flex items-center pointer-events-none z-10" 
-             [ngClass]="{'left-0 pl-4': !isRTL, 'right-0 pr-4': isRTL}">
+        <div class="absolute inset-y-0 flex items-center pointer-events-none z-10" [ngClass]="{'left-0 pl-4': !isRTL, 'right-0 pr-4': isRTL}">
           <lucide-angular 
             [img]="Lock" 
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" 
@@ -111,17 +109,16 @@
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200
                  disabled:bg-[var(--color-background-muted)] disabled:cursor-not-allowed"
-          [ngClass]="{'pl-12 pr-12': !isRTL, 'pr-12 pl-4': isRTL}"
-          style="text-align: start;"
+          [ngClass]="{'pl-12 pr-12': !isRTL, 'pr-12 pl-12': isRTL}"
           [placeholder]="'auth.login.passwordPlaceholder' | translate"
           [class.border-red-500]="password?.invalid && password?.touched"
+          style="text-align: start;"
         />
         <button
           type="button"
           (click)="togglePasswordVisibility()"
           tabindex="-1"
-          class="absolute inset-y-0 flex items-center z-10 group/toggle"
-          [ngClass]="{'right-0 pr-4': !isRTL, 'left-0 pl-4': isRTL}"
+          class="absolute inset-y-0 flex items-center z-10 group/toggle" [ngClass]="{'right-0 pr-4': !isRTL, 'left-0 pl-4': isRTL}"
           [attr.aria-label]="showPassword ? ('common.hidePassword' | translate) : ('common.showPassword' | translate)"
         >
           <lucide-angular 

@@ -16,6 +16,7 @@ import { AmmunitionReadDto } from '@models/ammunition.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-add-inventory',
@@ -62,7 +63,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (!item) {
       return '';
     }
-    const name = item.name || '';
+    const name = getLocalizedName(item, getCurrentLang(this.translateService)) || '';
     const itemNo = item.itemNo ? ` (${item.itemNo})` : '';
     return `${name}${itemNo}`.trim();
   };
@@ -146,7 +147,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     .subscribe({
       next: ({ depot, items, suppliers, manufacturers, countries }) => {
         const currentDepot = depot.find(d => d.id === this.warehouseId);
-        this.warehouseName = currentDepot?.nameEn || `Warehouse ${this.warehouseId}`;
+        this.warehouseName = getLocalizedName(currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
         
         this.availableItems = items;
         this.suppliers = suppliers;
@@ -177,7 +178,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (!entity) {
       return '';
     }
-    return entity.nameEn || entity.nameAr || '';
+    return getLocalizedName(entity, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
