@@ -18,6 +18,8 @@ export interface BaseItemDto {
   nsn?: string;
   readyForIssue: boolean;
   expiryDate?: Date | string;
+  price?: number;
+  minimumQuantity?: number;
   isDeleted: boolean;
   hcc?: {
     id: number;

@@ -46,6 +46,8 @@ interface AssetForm {
   primaryPurposId: string;
   projectileColorId: string;
   projectailMaterialId: string;
+  price: string;
+  minimumQuantity: string;
   image?: File;
 }
 
@@ -116,6 +118,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     primaryPurposId: '',
     projectileColorId: '',
     projectailMaterialId: '',
+    price: '',
+    minimumQuantity: '',
     image: undefined
   };
 
@@ -257,6 +261,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       ammunitionDto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
     }
 
+    if (this.assetForm.price && this.assetForm.price.trim() && parseFloat(this.assetForm.price) > 0) {
+      ammunitionDto.price = parseFloat(this.assetForm.price);
+    }
+
+    if (this.assetForm.minimumQuantity && this.assetForm.minimumQuantity.trim() && parseInt(this.assetForm.minimumQuantity) > 0) {
+      ammunitionDto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    }
+
     // Create FormData to match backend [FromForm] binding
     const formData = new FormData();
     
@@ -292,6 +304,12 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     }
     if (ammunitionDto.projectailMaterialId) {
       formData.append('ProjectailMaterialId', ammunitionDto.projectailMaterialId.toString());
+    }
+    if (ammunitionDto.price) {
+      formData.append('Price', ammunitionDto.price.toString());
+    }
+    if (ammunitionDto.minimumQuantity) {
+      formData.append('MinimumQuantity', ammunitionDto.minimumQuantity.toString());
     }
     
     // Append file(s) if present
@@ -572,6 +590,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       primaryPurposId: '',
       projectileColorId: '',
       projectailMaterialId: '',
+      price: '',
+      minimumQuantity: '',
       image: undefined
     };
     this.previewUrl = null;

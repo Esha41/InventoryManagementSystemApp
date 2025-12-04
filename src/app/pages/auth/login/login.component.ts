@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     private backendAuth: BackendAuthService,
     private translate: TranslateService,
-    private translationService: TranslationService
+    public translationService: TranslationService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],

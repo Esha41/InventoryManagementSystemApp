@@ -39,6 +39,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
   // All menu items with permission requirements
   private allMenuItems: MenuItem[] = [
     {
@@ -454,8 +458,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   hasChildren(item: MenuItem): boolean {
     return !!(item.children && item.children.length > 0);
   }
-
-  get isRTL(): boolean { return this.translationService.isRTL(); }
 
   showTooltip(event: MouseEvent): void {
     if (!this.isCollapsed) return;

@@ -40,6 +40,8 @@ interface Asset {
   expiryDate?: string;
   expiryDateRaw?: string;
   readyForIssue: boolean;
+  price?: number;
+  minimumQuantity?: number;
   imageUrl?: string;
 }
 
@@ -166,7 +168,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
       natureOptionId: [null as number | null],
       primaryPurposId: [null as number | null],
       projectileColorId: [null as number | null],
-      projectailMaterialId: [null as number | null]
+      projectailMaterialId: [null as number | null],
+      price: [null as number | null],
+      minimumQuantity: [null as number | null]
     });
   }
 
@@ -257,6 +261,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
             expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
             expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
             readyForIssue: x.readyForIssue ?? true,
+            price: x.price,
+            minimumQuantity: x.minimumQuantity,
             imageUrl: undefined // Will be loaded separately
           }));
           
@@ -342,7 +348,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           propellant: '-',
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
           expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
-          readyForIssue: x.readyForIssue ?? true
+          readyForIssue: x.readyForIssue ?? true,
+          price: x.price,
+          minimumQuantity: x.minimumQuantity
         }));
         this.currentPage = 1;
         this.loading = false;
@@ -375,7 +383,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           propellant: '-',
           expiryDate: x.expiryDate ? new Date(x.expiryDate).toLocaleDateString() : '-',
           expiryDateRaw: x.expiryDate ? (typeof x.expiryDate === 'string' ? x.expiryDate : new Date(x.expiryDate).toISOString()) : undefined,
-          readyForIssue: x.readyForIssue ?? true
+          readyForIssue: x.readyForIssue ?? true,
+          price: x.price,
+          minimumQuantity: x.minimumQuantity
         }));
         this.currentPage = 1;
         this.loading = false;
@@ -630,7 +640,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           natureOptionId: data.natureOptionId ?? null,
           primaryPurposId: data.primaryPurposId ?? null,
           projectileColorId: data.projectileColorId ?? null,
-          projectailMaterialId: data.projectailMaterialId ?? null
+          projectailMaterialId: data.projectailMaterialId ?? null,
+          price: data.price ?? null,
+          minimumQuantity: data.minimumQuantity ?? null
         });
         
         // Load existing image
@@ -743,6 +755,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       readyForIssue: boolean; expiryDate?: string;
       natureOptionId: number | null; primaryPurposId: number | null;
       projectileColorId: number | null; projectailMaterialId: number | null;
+      price: number | null; minimumQuantity: number | null;
     };
 
     const v = this.editForm.value as EditFormModel;
@@ -776,7 +789,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
       natureOptionId: m.natureOptionId ?? undefined,
       primaryPurposId: m.primaryPurposId ?? undefined,
       projectileColorId: m.projectileColorId ?? undefined,
-      projectailMaterialId: m.projectailMaterialId ?? undefined
+      projectailMaterialId: m.projectailMaterialId ?? undefined,
+      price: m.price ?? undefined,
+      minimumQuantity: m.minimumQuantity ?? undefined
     });
 
     // Update the ammunition data
