@@ -39,6 +39,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
   // All menu items with permission requirements
   private allMenuItems: MenuItem[] = [
     {

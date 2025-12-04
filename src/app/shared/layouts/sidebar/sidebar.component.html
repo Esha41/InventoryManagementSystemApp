@@ -44,7 +44,7 @@
               class="h-5 w-5 flex-shrink-0"
             ></lucide-angular>
             <span
-              class="font-medium flex-1 text-left transition-opacity duration-300"
+              class="font-medium flex-1 transition-opacity duration-300"
               [class.opacity-0]="isCollapsed"
               [class.opacity-100]="!isCollapsed"
               [class.hidden]="isCollapsed"
@@ -64,7 +64,9 @@
           <!-- Submenu Items -->
           <ul
             *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children"
-            class="ml-8 mt-1 space-y-1"
+            class="mt-1 space-y-1"
+            [class.ml-8]="!isRTL"
+            [class.mr-8]="isRTL"
           >
             <li *ngFor="let child of item.children">
               <a
@@ -92,7 +94,7 @@
             class="h-5 w-5 flex-shrink-0"
           ></lucide-angular>
           <span
-            class="font-medium transition-opacity duration-300"
+            class="font-medium flex-1 transition-opacity duration-300"
             [class.opacity-0]="isCollapsed"
             [class.opacity-100]="!isCollapsed"
             [class.hidden]="isCollapsed"

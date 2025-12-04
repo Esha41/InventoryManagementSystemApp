@@ -35,6 +35,8 @@ export interface AmmunitionReadDto {
   hazardDivisionId: number;
   readyForIssue: boolean;
   expiryDate?: Date | string;
+  price?: number;
+  minimumQuantity?: number;
   createdDate: Date;
   modifiedDate?: Date;
   
@@ -81,6 +83,8 @@ export interface AmmunitionCreateDto {
   propellantId: number;
   compatibilityId: number;
   hazardDivisionId: number;
+  price?: number;
+  minimumQuantity?: number;
 }
 
 export interface AmmunitionUpdateDto {

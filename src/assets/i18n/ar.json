@@ -527,7 +527,7 @@
     "low": "منخفضة"
   },
   "footer": {
-    "copyright": "حقوق النشر © برزان القابضة 2025"
+    "copyright": "حقوق النشر © برزان القابضة {{year}}"
   },
   "warehouse": {
     "title": "المستودعات",
@@ -621,7 +621,11 @@
     "manufacturer": "الشركة المصنعة",
     "discard": "تجاهل",
     "addAsset": "إضافة مادة",
-    "saving": "جاري الحفظ..."
+    "saving": "جاري الحفظ...",
+    "price": "السعر",
+    "pricePlaceholder": "أدخل السعر (اختياري)",
+    "minimumQuantity": "الحد الأدنى للكمية",
+    "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)"
   },
   "depot": {
     "title": "إدارة المستودعات",
@@ -1290,6 +1294,8 @@
       "hazardDivision": "قسم المخاطر",
       "expiryDate": "تاريخ الانتهاء",
       "status": "الحالة",
+      "price": "السعر",
+      "minimumQuantity": "الحد الأدنى للكمية",
       "actions": "الإجراءات"
     },
     "actions": {
@@ -1368,6 +1374,10 @@
       "linked": "مرتبط",
       "readyForIssue": "جاهز للإصدار",
       "expiryDate": "تاريخ الانتهاء",
+      "price": "السعر",
+      "pricePlaceholder": "أدخل السعر (اختياري)",
+      "minimumQuantity": "الحد الأدنى للكمية",
+      "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
       "saveChanges": "حفظ التغييرات"
     },
     "deleteModal": {

@@ -1,4 +1,21 @@
-<div class="min-h-screen bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F8] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F8] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 relative">
+  <!-- Language Switcher - Fixed Top Right -->
+  <div class="fixed top-6 right-6 z-50" [style.direction]="isRTL ? 'rtl' : 'ltr'">
+    <button
+      (click)="toggleLanguage()"
+      class="group flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
+      aria-label="Change language"
+    >
+      <lucide-angular 
+        [img]="Globe" 
+        class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200 flex-shrink-0"
+      ></lucide-angular>
+      <span class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200 min-w-[2rem] text-center">
+        {{ getCurrentLanguage() }}
+      </span>
+    </button>
+  </div>
+
   <div class="w-full max-w-[480px]">
     <!-- Logo and Header Section -->
     <div class="text-center mb-8">
@@ -7,7 +24,7 @@
           src="assets/logo.png" 
           alt="Barzan Holdings" 
           class="h-16 w-auto drop-shadow-sm"
-          [class.scale-x-[-1]]="isRTL"
+          style="transform: scaleX(1); direction: ltr;"
         />
       </div>
       <h1 class="text-3xl font-bold text-[var(--color-text)] mb-3 tracking-tight">
@@ -28,7 +45,7 @@
     <!-- Footer -->
     <div class="text-center mt-8">
       <p class="text-sm text-[var(--color-text-light)] font-medium">
-        © 2025 Barzan Holdings. All rights reserved.
+        {{ 'footer.copyright' | translate:{ year: currentYear } }}
       </p>
     </div>
   </div>

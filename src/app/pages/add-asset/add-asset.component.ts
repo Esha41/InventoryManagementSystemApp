@@ -44,6 +44,8 @@ interface AssetForm {
   primaryPurposId: string;
   projectileColorId: string;
   projectailMaterialId: string;
+  price: string;
+  minimumQuantity: string;
   image?: File;
 }
 
@@ -113,6 +115,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     primaryPurposId: '',
     projectileColorId: '',
     projectailMaterialId: '',
+    price: '',
+    minimumQuantity: '',
     image: undefined
   };
 
@@ -252,6 +256,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     if (this.assetForm.projectailMaterialId && parseInt(this.assetForm.projectailMaterialId) > 0) {
       ammunitionDto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
+    }
+
+    if (this.assetForm.price && this.assetForm.price.trim() && parseFloat(this.assetForm.price) > 0) {
+      ammunitionDto.price = parseFloat(this.assetForm.price);
+    }
+
+    if (this.assetForm.minimumQuantity && this.assetForm.minimumQuantity.trim() && parseInt(this.assetForm.minimumQuantity) > 0) {
+      ammunitionDto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     }
 
     this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', ammunitionDto)
@@ -500,6 +512,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       primaryPurposId: '',
       projectileColorId: '',
       projectailMaterialId: '',
+      price: '',
+      minimumQuantity: '',
       image: undefined
     };
     this.previewUrl = null;

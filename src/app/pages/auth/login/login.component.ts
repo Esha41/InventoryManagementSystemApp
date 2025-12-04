@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -36,7 +37,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private backendAuth: BackendAuthService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    public translationService: TranslationService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -343,5 +345,9 @@ export class LoginComponent implements OnInit {
     }
     
     return this.translate.instant('auth.login.errors.unknownError');
+  }
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
   }
 }

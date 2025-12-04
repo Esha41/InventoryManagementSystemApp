@@ -528,7 +528,7 @@
     "low": "Low"
   },
   "footer": {
-    "copyright": "Copyright © Barzan Holdings 2025"
+    "copyright": "Copyright © Barzan Holdings {{year}}"
   },
   "warehouse": {
     "title": "Depots",
@@ -622,7 +622,11 @@
     "manufacturer": "Manufacturer",
     "discard": "Discard",
     "addAsset": "Add Asset",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "price": "Price",
+    "pricePlaceholder": "Enter price (optional)",
+    "minimumQuantity": "Minimum Quantity",
+    "minimumQuantityPlaceholder": "Enter minimum quantity (optional)"
   },
   "depot": {
     "title": "Depot Management",
@@ -1295,6 +1299,8 @@
       "hazardDivision": "Hazard Division",
       "expiryDate": "Expiry Date",
       "status": "Status",
+      "price": "Price",
+      "minimumQuantity": "Minimum Quantity",
       "actions": "Actions"
     },
     "actions": {
@@ -1373,6 +1379,10 @@
       "linked": "Linked",
       "readyForIssue": "Ready For Issue",
       "expiryDate": "Expiry Date",
+      "price": "Price",
+      "pricePlaceholder": "Enter price (optional)",
+      "minimumQuantity": "Minimum Quantity",
+      "minimumQuantityPlaceholder": "Enter minimum quantity (optional)",
       "saveChanges": "Save Changes"
     },
     "deleteModal": {
