@@ -75,7 +75,13 @@ export class ApiService {
    * POST request with authentication headers
    */
   postWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    const headers = this.getAuthHeaders();
+    let headers = this.getAuthHeaders();
+    
+    // If data is FormData, don't set Content-Type header (browser will set it with boundary)
+    if (data instanceof FormData) {
+      headers = headers.delete('Content-Type');
+    }
+    
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, { headers })
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -150,9 +156,20 @@ export class ApiService {
         } else if (error.status === 500) {
           errorMessage = 'Internal server error. Please try again later.';
         } else {
-          const errorData = error.error as { message?: string } | null;
-          if (errorData?.message) {
-            errorMessage = errorData.message;
+          // Try to extract error message from various possible response formats
+          const errorData = error.error;
+          if (errorData) {
+            if (typeof errorData === 'string') {
+              errorMessage = errorData;
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.error?.message) {
+              errorMessage = errorData.error.message;
+            } else if (errorData.title) {
+              errorMessage = errorData.title;
+            } else {
+              errorMessage = `Server Error: ${error.status} - ${error.statusText || 'Unknown error'}`;
+            }
           } else {
             errorMessage = `Server Error: ${error.status} - ${error.statusText || 'Unknown error'}`;
           }

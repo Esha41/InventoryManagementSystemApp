@@ -30,7 +30,8 @@
     "remove": "Remove",
     "update": "Update",
     "pleaseWait": "Please wait...",
-    "processing": "Processing"
+    "processing": "Processing",
+    "noImage": "No Image"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1285,6 +1286,7 @@
     "loadingWeapons": "Loading weapons data...",
     "loadingExplosives": "Loading explosives data...",
     "table": {
+      "image": "Image",
       "name": "Name",
       "itemNo": "Item No",
       "partNo": "Part No",
