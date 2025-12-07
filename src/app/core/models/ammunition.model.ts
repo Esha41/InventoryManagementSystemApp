@@ -18,21 +18,20 @@ export interface AmmunitionReadDto {
   countryId?: number;
   manufacturerId?: number;
   natureOptionId?: number;
-  bulletDiameter: number;
-  bulletDiameterUnitId: number;
-  caseLength: number;
-  caseLengthUnitId: number;
+  bulletDiameter?: number;
+  bulletDiameterUnitId?: number;
+  armNumber?: string;
   isLinked: boolean;
-  primer: string;
-  totalWeight: number;
+  primer?: string;
+  totalWeight?: number;
   nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;
-  caseTypeId: number;
-  propellantId: number;
-  compatibilityId: number;
-  hazardDivisionId: number;
+  caseTypeId?: number;
+  propellantId?: number;
+  compatibilityId?: number;
+  hazardDivisionId?: number;
   readyForIssue: boolean;
   expiryDate?: Date | string;
   price?: number;
@@ -47,7 +46,6 @@ export interface AmmunitionReadDto {
   manufacturer?: LookupDto;
   natureOption?: LookupDto;
   bulletDiameterUnit?: LookupDto;
-  caseLengthUnit?: LookupDto;
   primaryPurpos?: LookupDto;
   projectileColor?: LookupDto;
   projectailMaterial?: LookupDto;
@@ -59,30 +57,30 @@ export interface AmmunitionReadDto {
 
 export interface AmmunitionCreateDto {
   name: string;
-  partNo: string;
   itemNo: string;
+  // All other fields are optional - only Name and ItemNo are required
+  partNo?: string;
+  armNumber?: string;
   // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
   // These fields are managed at the lot/inventory level, not the ammunition catalog level
-  hccId: number;
+  hccId?: number;
   supplierId?: number;
   countryId?: number;
   manufacturerId?: number;
   natureOptionId?: number;
-  bulletDiameter: number;
-  bulletDiameterUnitId: number;
-  caseLength: number;
-  caseLengthUnitId: number;
-  isLinked: boolean;
-  primer: string;
-  totalWeight: number;
+  bulletDiameter?: number;
+  bulletDiameterUnitId?: number;
+  isLinked?: boolean;
+  primer?: string;
+  totalWeight?: number;
   nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;
-  caseTypeId: number;
-  propellantId: number;
-  compatibilityId: number;
-  hazardDivisionId: number;
+  caseTypeId?: number;
+  propellantId?: number;
+  compatibilityId?: number;
+  hazardDivisionId?: number;
   price?: number;
   minimumQuantity?: number;
 }
@@ -99,21 +97,20 @@ export interface AmmunitionUpdateDto {
   countryId?: number;
   manufacturerId?: number;
   natureOptionId?: number;
-  bulletDiameter: number;
-  bulletDiameterUnitId: number;
-  caseLength: number;
-  caseLengthUnitId: number;
+  bulletDiameter?: number;
+  bulletDiameterUnitId?: number;
+  armNumber?: string;
   isLinked: boolean;
-  primer: string;
-  totalWeight: number;
+  primer?: string;
+  totalWeight?: number;
   nsn?: string;
   primaryPurposId?: number;
   projectileColorId?: number;
   projectailMaterialId?: number;
-  caseTypeId: number;
-  propellantId: number;
-  compatibilityId: number;
-  hazardDivisionId: number;
+  caseTypeId?: number;
+  propellantId?: number;
+  compatibilityId?: number;
+  hazardDivisionId?: number;
   readyForIssue: boolean;
 }
 

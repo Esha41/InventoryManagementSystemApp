@@ -27,12 +27,11 @@ interface AssetForm {
   name: string;
   itemNo: string;
   partNo: string;
+  armNumber: string;
   // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
   hccId: string;
   bulletDiameter: string;
   bulletDiameterUnitId: string;
-  caseLength: string;
-  caseLengthUnitId: string;
   isLinked: string;
   primer: string;
   totalWeight: string;
@@ -100,12 +99,11 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     name: '',
     itemNo: '',
     partNo: '',
+    armNumber: '',
     // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
     hccId: '',
     bulletDiameter: '',
     bulletDiameterUnitId: '',
-    caseLength: '',
-    caseLengthUnitId: '',
     isLinked: 'false',
     primer: '',
     totalWeight: '',
@@ -217,28 +215,60 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     // Build DTO matching backend expectations
-    // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
-    // These fields are managed at the lot/inventory level, not the ammunition catalog level
-    const ammunitionDto: AmmunitionCreateDto = {
+    // Only Name and Item No are required, all other fields are optional
+    const ammunitionDto = {
       name: this.assetForm.name.trim(),
-      itemNo: this.assetForm.itemNo.trim(),
-      partNo: this.assetForm.partNo.trim(),
-      // batchNo removed - not in backend CreateUpdateAmmunitionDto
-      hccId: parseInt(this.assetForm.hccId),
-      bulletDiameter: parseFloat(this.assetForm.bulletDiameter),
-      bulletDiameterUnitId: parseInt(this.assetForm.bulletDiameterUnitId),
-      caseLength: parseFloat(this.assetForm.caseLength),
-      caseLengthUnitId: parseInt(this.assetForm.caseLengthUnitId),
-      isLinked: this.assetForm.isLinked === 'true',
-      primer: this.assetForm.primer.trim(),
-      totalWeight: parseFloat(this.assetForm.totalWeight),
-      caseTypeId: parseInt(this.assetForm.caseTypeId),
-      propellantId: parseInt(this.assetForm.propellantId),
-      compatibilityId: parseInt(this.assetForm.compatibilityId),
-      hazardDivisionId: parseInt(this.assetForm.hazardDivisionId)
-      // readyForIssue removed - not in backend CreateUpdateAmmunitionDto
-      // expiryDate removed - not in backend CreateUpdateAmmunitionDto
-    };
+      itemNo: this.assetForm.itemNo.trim()
+    } as AmmunitionCreateDto;
+
+    // Add optional fields only if they have values
+    if (this.assetForm.partNo && this.assetForm.partNo.trim()) {
+      ammunitionDto.partNo = this.assetForm.partNo.trim();
+    }
+
+    if (this.assetForm.hccId && parseInt(this.assetForm.hccId) > 0) {
+      ammunitionDto.hccId = parseInt(this.assetForm.hccId);
+    }
+
+    if (this.assetForm.bulletDiameter && !isNaN(parseFloat(this.assetForm.bulletDiameter)) && parseFloat(this.assetForm.bulletDiameter) > 0) {
+      ammunitionDto.bulletDiameter = parseFloat(this.assetForm.bulletDiameter);
+    }
+
+    if (this.assetForm.bulletDiameterUnitId && parseInt(this.assetForm.bulletDiameterUnitId) > 0) {
+      ammunitionDto.bulletDiameterUnitId = parseInt(this.assetForm.bulletDiameterUnitId);
+    }
+
+    if (this.assetForm.armNumber && this.assetForm.armNumber.trim()) {
+      ammunitionDto.armNumber = this.assetForm.armNumber.trim();
+    }
+
+    if (this.assetForm.isLinked) {
+      ammunitionDto.isLinked = this.assetForm.isLinked === 'true';
+    }
+
+    if (this.assetForm.primer && this.assetForm.primer.trim()) {
+      ammunitionDto.primer = this.assetForm.primer.trim();
+    }
+
+    if (this.assetForm.totalWeight && !isNaN(parseFloat(this.assetForm.totalWeight)) && parseFloat(this.assetForm.totalWeight) > 0) {
+      ammunitionDto.totalWeight = parseFloat(this.assetForm.totalWeight);
+    }
+
+    if (this.assetForm.caseTypeId && parseInt(this.assetForm.caseTypeId) > 0) {
+      ammunitionDto.caseTypeId = parseInt(this.assetForm.caseTypeId);
+    }
+
+    if (this.assetForm.propellantId && parseInt(this.assetForm.propellantId) > 0) {
+      ammunitionDto.propellantId = parseInt(this.assetForm.propellantId);
+    }
+
+    if (this.assetForm.compatibilityId && parseInt(this.assetForm.compatibilityId) > 0) {
+      ammunitionDto.compatibilityId = parseInt(this.assetForm.compatibilityId);
+    }
+
+    if (this.assetForm.hazardDivisionId && parseInt(this.assetForm.hazardDivisionId) > 0) {
+      ammunitionDto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
+    }
 
     // Add optional fields only if they have values
     if (this.assetForm.nsn && this.assetForm.nsn.trim()) {
@@ -272,22 +302,47 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     // Create FormData to match backend [FromForm] binding
     const formData = new FormData();
     
-    // Append all DTO properties as form fields (matching CreateUpdateAmmunitionDto property names)
+    // Append required fields
     formData.append('Name', ammunitionDto.name);
     formData.append('ItemNo', ammunitionDto.itemNo);
-    formData.append('PartNo', ammunitionDto.partNo || '');
-    formData.append('HccId', ammunitionDto.hccId.toString());
-    formData.append('BulletDiameter', ammunitionDto.bulletDiameter.toString());
-    formData.append('BulletDiameterUnitId', ammunitionDto.bulletDiameterUnitId.toString());
-    formData.append('CaseLength', ammunitionDto.caseLength.toString());
-    formData.append('CaseLengthUnitId', ammunitionDto.caseLengthUnitId.toString());
-    formData.append('IsLinked', ammunitionDto.isLinked.toString());
-    formData.append('Primer', ammunitionDto.primer);
-    formData.append('TotalWeight', ammunitionDto.totalWeight.toString());
-    formData.append('CaseTypeId', ammunitionDto.caseTypeId.toString());
-    formData.append('PropellantId', ammunitionDto.propellantId.toString());
-    formData.append('CompatibilityId', ammunitionDto.compatibilityId.toString());
-    formData.append('HazardDivisionId', ammunitionDto.hazardDivisionId.toString());
+    
+    // Append optional fields only if they exist
+    if (ammunitionDto.partNo) {
+      formData.append('PartNo', ammunitionDto.partNo);
+    }
+    if (ammunitionDto.hccId) {
+      formData.append('HccId', ammunitionDto.hccId.toString());
+    }
+    if (ammunitionDto.bulletDiameter) {
+      formData.append('BulletDiameter', ammunitionDto.bulletDiameter.toString());
+    }
+    if (ammunitionDto.bulletDiameterUnitId) {
+      formData.append('BulletDiameterUnitId', ammunitionDto.bulletDiameterUnitId.toString());
+    }
+    if (ammunitionDto.armNumber) {
+      formData.append('ArmNumber', ammunitionDto.armNumber);
+    }
+    if (ammunitionDto.isLinked !== undefined) {
+      formData.append('IsLinked', ammunitionDto.isLinked.toString());
+    }
+    if (ammunitionDto.primer) {
+      formData.append('Primer', ammunitionDto.primer);
+    }
+    if (ammunitionDto.totalWeight) {
+      formData.append('TotalWeight', ammunitionDto.totalWeight.toString());
+    }
+    if (ammunitionDto.caseTypeId) {
+      formData.append('CaseTypeId', ammunitionDto.caseTypeId.toString());
+    }
+    if (ammunitionDto.propellantId) {
+      formData.append('PropellantId', ammunitionDto.propellantId.toString());
+    }
+    if (ammunitionDto.compatibilityId) {
+      formData.append('CompatibilityId', ammunitionDto.compatibilityId.toString());
+    }
+    if (ammunitionDto.hazardDivisionId) {
+      formData.append('HazardDivisionId', ammunitionDto.hazardDivisionId.toString());
+    }
     
     // Optional fields
     if (ammunitionDto.nsn) {
@@ -358,7 +413,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     // Clear previous error
     this.errorMessage = null;
 
-    // Required field validations matching backend
+    // Only Name and Item No are required
     if (!this.assetForm.name || this.assetForm.name.trim().length === 0) {
       this.errorMessage = 'Name is required';
       return false;
@@ -374,101 +429,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     }
     if (this.assetForm.itemNo.length > 100) {
       this.errorMessage = 'Item number cannot exceed 100 characters';
-      return false;
-    }
-
-    if (!this.assetForm.hccId || parseInt(this.assetForm.hccId) <= 0) {
-      this.errorMessage = 'HCC is required';
-      return false;
-    }
-
-    if (!this.assetForm.partNo || this.assetForm.partNo.trim().length === 0) {
-      this.errorMessage = 'Part number is required';
-      return false;
-    }
-
-    if (this.assetForm.partNo.length > 100) {
-      this.errorMessage = 'Part number cannot exceed 100 characters';
-      return false;
-    }
-
-    if (!this.assetForm.primer || this.assetForm.primer.trim().length === 0) {
-      this.errorMessage = 'Primer is required';
-      return false;
-    }
-
-    if (this.assetForm.primer.length > 100) {
-      this.errorMessage = 'Primer cannot exceed 100 characters';
-      return false;
-    }
-
-    // Numeric validations
-    const bulletDiameter = parseFloat(this.assetForm.bulletDiameter);
-    if (!this.assetForm.bulletDiameter || isNaN(bulletDiameter) || bulletDiameter <= 0) {
-      this.errorMessage = 'Bullet diameter must be greater than 0';
-      return false;
-    }
-
-    if (!this.assetForm.bulletDiameterUnitId || parseInt(this.assetForm.bulletDiameterUnitId) <= 0) {
-      this.errorMessage = 'Bullet diameter unit is required';
-      return false;
-    }
-
-    const caseLength = parseFloat(this.assetForm.caseLength);
-    if (!this.assetForm.caseLength || isNaN(caseLength) || caseLength <= 0) {
-      this.errorMessage = 'Case length must be greater than 0';
-      return false;
-    }
-
-    if (!this.assetForm.caseLengthUnitId || parseInt(this.assetForm.caseLengthUnitId) <= 0) {
-      this.errorMessage = 'Case length unit is required';
-      return false;
-    }
-
-    const totalWeight = parseFloat(this.assetForm.totalWeight);
-    if (!this.assetForm.totalWeight || isNaN(totalWeight) || totalWeight <= 0) {
-      this.errorMessage = 'Total weight must be greater than 0';
-      return false;
-    }
-
-    if (!this.assetForm.caseTypeId || parseInt(this.assetForm.caseTypeId) <= 0) {
-      this.errorMessage = 'Case type is required';
-      return false;
-    }
-
-    if (!this.assetForm.propellantId || parseInt(this.assetForm.propellantId) <= 0) {
-      this.errorMessage = 'Propellant is required';
-      return false;
-    }
-
-    if (!this.assetForm.compatibilityId || parseInt(this.assetForm.compatibilityId) <= 0) {
-      this.errorMessage = 'Compatibility is required';
-      return false;
-    }
-
-    if (!this.assetForm.hazardDivisionId || parseInt(this.assetForm.hazardDivisionId) <= 0) {
-      this.errorMessage = 'Hazard division is required';
-      return false;
-    }
-
-    // Optional field validations (only validate if provided)
-    if (this.assetForm.natureOptionId && parseInt(this.assetForm.natureOptionId) <= 0) {
-      this.errorMessage = 'Nature option ID must be greater than 0 when provided';
-      return false;
-    }
-
-    if (this.assetForm.primaryPurposId && parseInt(this.assetForm.primaryPurposId) <= 0) {
-      this.errorMessage = 'Primary purpose ID must be greater than 0 when provided';
-      return false;
-    }
-
-    if (this.assetForm.projectileColorId && parseInt(this.assetForm.projectileColorId) <= 0) {
-      this.errorMessage = 'Projectile color ID must be greater than 0 when provided';
-      return false;
-    }
-
-    if (this.assetForm.projectailMaterialId && parseInt(this.assetForm.projectailMaterialId) <= 0) {
-      this.errorMessage = 'Projectile material ID must be greater than 0 when provided';
       return false;
     }
 
@@ -572,12 +532,11 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       name: '',
       itemNo: '',
       partNo: '',
+      armNumber: '',
       // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
       hccId: '',
       bulletDiameter: '',
       bulletDiameterUnitId: '',
-      caseLength: '',
-      caseLengthUnitId: '',
       isLinked: 'false',
       primer: '',
       totalWeight: '',

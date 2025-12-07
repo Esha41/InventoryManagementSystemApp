@@ -154,19 +154,18 @@ export class AssetListComponent implements OnInit, OnDestroy {
       itemNo: ['', Validators.required],
       partNo: ['', Validators.required],
     
-      hccId: [null as number | null, Validators.required],
-      bulletDiameter: [null as number | null, [Validators.required, Validators.min(0.01)]],
-      bulletDiameterUnitId: [null as number | null, Validators.required],
-      caseLength: [null as number | null, [Validators.required, Validators.min(0.01)]],
-      caseLengthUnitId: [null as number | null, Validators.required],
+      hccId: [null as number | null],
+      bulletDiameter: [null as number | null],
+      bulletDiameterUnitId: [null as number | null],
+      armNumber: [''],
       isLinked: [false as boolean],
-      primer: ['', Validators.required],
-      totalWeight: [null as number | null, [Validators.required, Validators.min(0.01)]],
+      primer: [''],
+      totalWeight: [null as number | null],
       nsn: [''],
-      caseTypeId: [null as number | null, Validators.required],
-      propellantId: [null as number | null, Validators.required],
-      compatibilityId: [null as number | null, Validators.required],
-      hazardDivisionId: [null as number | null, Validators.required],
+      caseTypeId: [null as number | null],
+      propellantId: [null as number | null],
+      compatibilityId: [null as number | null],
+      hazardDivisionId: [null as number | null],
       natureOptionId: [null as number | null],
       primaryPurposId: [null as number | null],
       projectileColorId: [null as number | null],
@@ -627,10 +626,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           partNo: data.partNo,
        
           hccId: data.hccId,
-          bulletDiameter: data.bulletDiameter || 0,
-          bulletDiameterUnitId: data.bulletDiameterUnitId,
-          caseLength: data.caseLength || 0,
-          caseLengthUnitId: data.caseLengthUnitId,
+          bulletDiameter: data.bulletDiameter ?? null,
+          bulletDiameterUnitId: data.bulletDiameterUnitId ?? null,
+          armNumber: data.armNumber || '',
           isLinked: data.isLinked || false,
           primer: data.primer || '',
           totalWeight: data.totalWeight || 0,
@@ -688,8 +686,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
             propellant: data.propellant, 
             bulletDiameter: data.bulletDiameter,
             bulletDiameterUnit: data.bulletDiameterUnit,
-            caseLength: data.caseLength,
-            caseLengthUnit: data.caseLengthUnit, 
+            armNumber: data.armNumber || '-',
             primer: data.primer || '-',
             totalWeight: data.totalWeight,
             isLinked: data.isLinked ?? false,
@@ -750,10 +747,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
     type EditFormModel = {
       id: number;
       name: string; itemNo: string; partNo?: string; batchNo?: string;
-      hccId: number; bulletDiameter: number | null; bulletDiameterUnitId: number;
-      caseLength: number | null; caseLengthUnitId: number; isLinked: boolean;
-      primer?: string; totalWeight: number | null; nsn?: string; caseTypeId: number;
-      propellantId: number; compatibilityId: number; hazardDivisionId: number;
+      hccId: number | null; bulletDiameter: number | null; bulletDiameterUnitId: number | null;
+      armNumber: string; isLinked: boolean;
+      primer?: string; totalWeight: number | null; nsn?: string; caseTypeId: number | null;
+      propellantId: number | null; compatibilityId: number | null; hazardDivisionId: number | null;
       readyForIssue: boolean; expiryDate?: string;
       natureOptionId: number | null; primaryPurposId: number | null;
       projectileColorId: number | null; projectailMaterialId: number | null;
@@ -771,21 +768,20 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const buildDto = (m: EditFormModel): AmmunitionCreateDto => ({
       name: m.name,
       itemNo: m.itemNo,
-      partNo: m.partNo?.trim() || 'N/A',
+      partNo: m.partNo?.trim() || undefined,
+      armNumber: m.armNumber?.trim() || undefined,
       // batchNo removed - not in backend CreateUpdateAmmunitionDto
-      hccId: m.hccId,
-      bulletDiameter: m.bulletDiameter ?? 0,
-      bulletDiameterUnitId: m.bulletDiameterUnitId,
-      caseLength: m.caseLength ?? 0,
-      caseLengthUnitId: m.caseLengthUnitId,
+      hccId: m.hccId ?? undefined,
+      bulletDiameter: m.bulletDiameter ?? undefined,
+      bulletDiameterUnitId: m.bulletDiameterUnitId ?? undefined,
       isLinked: m.isLinked,
-      primer: m.primer?.trim() || '',
-      totalWeight: m.totalWeight ?? 0,
+      primer: m.primer?.trim() || undefined,
+      totalWeight: m.totalWeight ?? undefined,
       nsn: m.nsn?.trim() || undefined,
-      caseTypeId: m.caseTypeId,
-      propellantId: m.propellantId,
-      compatibilityId: m.compatibilityId,
-      hazardDivisionId: m.hazardDivisionId,
+      caseTypeId: m.caseTypeId ?? undefined,
+      propellantId: m.propellantId ?? undefined,
+      compatibilityId: m.compatibilityId ?? undefined,
+      hazardDivisionId: m.hazardDivisionId ?? undefined,
       // readyForIssue removed - not in backend CreateUpdateAmmunitionDto
       // expiryDate removed - not in backend CreateUpdateAmmunitionDto
       natureOptionId: m.natureOptionId ?? undefined,

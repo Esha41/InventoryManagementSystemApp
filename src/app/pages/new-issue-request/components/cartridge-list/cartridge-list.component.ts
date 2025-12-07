@@ -24,12 +24,12 @@ export interface Cartridge {
   hazardDivision?: string;
   capabilityGroup?: string;
   bulletDiameterLabel?: string;
-  caseLengthLabel?: string;
   linkedLabel?: string;
   natureLabel?: string;
   quantity?: number | null;
   added?: boolean;
   ammunitionType?: number; // 1 = Small, 2 = Medium, 3 = Large
+  armNumber?: string;
 }
 
 @Component({
@@ -44,13 +44,11 @@ export class CartridgeListComponent {
   @Input() itemTypeOptions: string[] = [];
   @Input() ammunitionTypeOptions: string[] = [];
   @Input() bulletDiameters: string[] = [];
-  @Input() caseLengths: string[] = [];
   @Input() linkedOptions: string[] = [];
   @Input() natureOptions: string[] = [];
   @Input() selectedItemType: string = '';
   @Input() selectedAmmunitionType: string = '';
   @Input() selectedBulletDiameter: string = '';
-  @Input() selectedCaseLength: string = '';
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
   @Input() selectedNSN: string = '';
@@ -67,7 +65,6 @@ export class CartridgeListComponent {
   @Output() itemTypeChange = new EventEmitter<string>();
   @Output() ammunitionTypeChange = new EventEmitter<string>();
   @Output() bulletDiameterChange = new EventEmitter<string>();
-  @Output() caseLengthChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
   @Output() nsnChange = new EventEmitter<string>();
@@ -210,11 +207,6 @@ export class CartridgeListComponent {
 
   onBulletDiameterChange(value: string): void {
     this.bulletDiameterChange.emit(value);
-    this.onFilterChange();
-  }
-
-  onCaseLengthChange(value: string): void {
-    this.caseLengthChange.emit(value);
     this.onFilterChange();
   }
 

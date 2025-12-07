@@ -9,7 +9,6 @@ export class CartridgeMapperService {
 
   mapAmmunitionToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
     const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit, currentLang);
-    const caseLengthLabel = this.buildMeasurementLabel(dto.caseLength, dto.caseLengthUnit, currentLang);
     const linkedLabel = dto.isLinked ? 'Linked' : 'Not Linked';
     const natureLabel = getLocalizedName(dto.natureOption, currentLang);
 
@@ -32,10 +31,10 @@ export class CartridgeMapperService {
       hazardDivision: getLocalizedName(dto.hazardDivision, currentLang),
       capabilityGroup: getLocalizedName(dto.compatibility, currentLang),
       bulletDiameterLabel,
-      caseLengthLabel,
       linkedLabel,
       natureLabel,
-      ammunitionType: dto.ammunitionType ? Number(dto.ammunitionType) : undefined
+      ammunitionType: dto.ammunitionType ? Number(dto.ammunitionType) : undefined,
+      armNumber: dto.armNumber || undefined
     };
   }
 

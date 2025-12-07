@@ -12,7 +12,6 @@ export interface FilterState {
   selectedItemType: string;
   selectedAmmunitionType: string;
   selectedBulletDiameter: string;
-  selectedCaseLength: string;
   selectedLinked: string;
   selectedNature: string;
   selectedNSN: string;
@@ -23,7 +22,6 @@ export interface FilterOptions {
   itemTypeOptions: string[];
   ammunitionTypeOptions: string[];
   bulletDiameters: string[];
-  caseLengths: string[];
   linkedOptions: string[];
   natureOptions: string[];
   orderPriorities: string[];

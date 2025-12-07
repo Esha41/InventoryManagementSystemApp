@@ -167,22 +167,6 @@
       </app-dropdown>
     </div>
 
-    <!-- Select Case Length -->
-    <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'newIssueRequest.selectCaseLength' | translate }}
-      </label>
-      <app-dropdown
-        class="w-full"
-        [ngModel]="selectedCaseLength"
-        (ngModelChange)="onCaseLengthChange($event)"
-        [options]="caseLengths"
-        [placeholderSelectable]="false"
-        [placeholderValue]="''"
-        placeholder="{{ 'newIssueRequest.selectCaseLength' | translate }}">
-      </app-dropdown>
-    </div>
-
     <!-- Linked/Not Linked -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">

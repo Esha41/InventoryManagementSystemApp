@@ -60,7 +60,8 @@ export class UsageFormComponent {
     usageTimeFrom: null,
     usageDateTo: null,
     usageTimeTo: null,
-    orderPriority: null
+    orderPriority: null,
+    requesterComments: null
   };
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
@@ -196,6 +197,16 @@ export class UsageFormComponent {
 
   onRequesterCommentsChange(value: string): void {
     this.requesterCommentsChange.emit(value);
+    
+    this.clearError('requesterComments');
+    
+    if (this.hasAttemptedSubmit) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
+      } else {
+        this.clearError('requesterComments');
+      }
+    }
   }
 
   onPrevious(): void {
@@ -260,6 +271,11 @@ export class UsageFormComponent {
       isValid = false;
     }
 
+    if (!this.requesterComments || this.requesterComments.trim().length === 0) {
+      this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
+      isValid = false;
+    }
+
     return isValid;
   }
 
@@ -280,4 +296,5 @@ type UsageFormErrors = {
   usageDateTo: string | null;
   usageTimeTo: string | null;
   orderPriority: string | null;
+  requesterComments: string | null;
 };

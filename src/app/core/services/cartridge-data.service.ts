@@ -151,19 +151,14 @@ export class CartridgeDataService {
 
   buildFilterOptions(cartridges: Cartridge[]): {
     bulletDiameters: string[];
-    caseLengths: string[];
     natureOptions: string[];
   } {
     const diameters = new Set<string>();
-    const caseLens = new Set<string>();
     const natures = new Set<string>();
 
     for (const cartridge of cartridges) {
       if (cartridge.bulletDiameterLabel) {
         diameters.add(cartridge.bulletDiameterLabel);
-      }
-      if (cartridge.caseLengthLabel) {
-        caseLens.add(cartridge.caseLengthLabel);
       }
       if (cartridge.natureLabel) {
         natures.add(cartridge.natureLabel);
@@ -172,7 +167,6 @@ export class CartridgeDataService {
 
     return {
       bulletDiameters: Array.from(diameters),
-      caseLengths: Array.from(caseLens),
       natureOptions: Array.from(natures)
     };
   }

@@ -122,6 +122,13 @@ export class OrderSubmissionService {
       };
     }
 
+    if (!data.requesterComments || data.requesterComments.trim().length === 0) {
+      return {
+        isValid: false,
+        error: 'Comments are required.'
+      };
+    }
+
     return { isValid: true };
   }
 
