@@ -159,9 +159,40 @@ export function mapRequestStatusToCardStatus(status: number | string | null | un
 
 /**
  * Get translation key for request status
+ * Handles both number and string status values for robustness
  */
-export function getRequestStatusTranslationKey(status?: number | null): string {
-  switch (status) {
+export function getRequestStatusTranslationKey(status?: number | string | null): string {
+  // Handle null/undefined
+  if (status === null || status === undefined) {
+    return 'dashboard.statusLabels.new';
+  }
+  
+  // Convert to number if it's a string
+  let statusNum: number;
+  if (typeof status === 'string') {
+    const lowerStatus = status.toLowerCase().trim();
+    if (lowerStatus === 'new' || lowerStatus === 'pending' || lowerStatus === '1') {
+      statusNum = REQUEST_STATUS_NEW;
+    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress' || lowerStatus === '2') {
+      statusNum = REQUEST_STATUS_UNDER_PROCESS;
+    } else if (lowerStatus === 'approved' || lowerStatus === 'completed' || lowerStatus === 'confirmed' || lowerStatus === '3') {
+      statusNum = REQUEST_STATUS_APPROVED;
+    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined' || lowerStatus === '4') {
+      statusNum = REQUEST_STATUS_REJECTED;
+    } else if (lowerStatus === 'cancelled' || lowerStatus === '5') {
+      statusNum = REQUEST_STATUS_CANCELLED;
+    } else {
+      // Try to parse as number
+      statusNum = parseInt(status, 10);
+      if (isNaN(statusNum)) {
+        return 'dashboard.statusLabels.new'; // Default if can't parse
+      }
+    }
+  } else {
+    statusNum = status;
+  }
+  
+  switch (statusNum) {
     case REQUEST_STATUS_UNDER_PROCESS:
       return 'dashboard.statusLabels.underProcess';
     case REQUEST_STATUS_APPROVED:

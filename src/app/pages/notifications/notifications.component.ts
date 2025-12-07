@@ -425,11 +425,19 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.discardDetail = null;
   }
 
-  getPriorityLabelTranslation(priority?: number | null): string {
+  /**
+   * Get priority label translation key
+   * Wrapper method for template type safety
+   */
+  getPriorityLabelTranslation(priority: number | string | null | undefined): string {
     return getPriorityLabelTranslation(priority);
   }
 
-  getStatusLabelTranslation(status?: number | null): string {
+  /**
+   * Get status label translation key
+   * Wrapper method for template type safety
+   */
+  getStatusLabelTranslation(status: number | string | null | undefined): string {
     return getStatusLabelTranslation(status);
   }
 

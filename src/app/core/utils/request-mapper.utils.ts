@@ -35,52 +35,115 @@ export enum RequestStatusEnum {
 }
 
 /**
- * Map numeric request type to string
+ * Map numeric or string request type to string
  */
-export function mapRequestType(type: number): RequestType {
-  switch (type) {
-    case RequestTypeEnum.Order:
-      return 'Order';
-    case RequestTypeEnum.Return:
-      return 'Return';
-    case RequestTypeEnum.Discard:
-      return 'Discard';
-    default:
-      return 'Order';
+export function mapRequestType(type: number | string): RequestType {
+  // Handle numeric type
+  if (typeof type === 'number') {
+    switch (type) {
+      case RequestTypeEnum.Order:
+        return 'Order';
+      case RequestTypeEnum.Return:
+        return 'Return';
+      case RequestTypeEnum.Discard:
+        return 'Discard';
+      default:
+        return 'Order';
+    }
   }
+  
+  // Handle string type (case-insensitive)
+  if (typeof type === 'string') {
+    const typeLower = type.toLowerCase().trim();
+    if (typeLower === 'order' || typeLower === '1') {
+      return 'Order';
+    }
+    if (typeLower === 'return' || typeLower === '2') {
+      return 'Return';
+    }
+    if (typeLower === 'discard' || typeLower === '3') {
+      return 'Discard';
+    }
+  }
+  
+  // Default fallback
+  return 'Order';
 }
 
 /**
- * Map numeric priority to string
+ * Map numeric or string priority to string
  * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
  */
-export function mapPriority(priority: number): Priority {
-  switch (priority) {
-    case PriorityEnum.High:
-      return 'High';
-    case PriorityEnum.Medium:
-      return 'Medium';
-    case PriorityEnum.Low:
-      return 'Low';
-    default:
-      return 'Low';
+export function mapPriority(priority: number | string): Priority {
+  // Handle numeric type
+  if (typeof priority === 'number') {
+    switch (priority) {
+      case PriorityEnum.High:
+        return 'High';
+      case PriorityEnum.Medium:
+        return 'Medium';
+      case PriorityEnum.Low:
+        return 'Low';
+      default:
+        return 'Low';
+    }
   }
+  
+  // Handle string type (case-insensitive)
+  if (typeof priority === 'string') {
+    const priorityLower = priority.toLowerCase().trim();
+    if (priorityLower === 'high' || priorityLower === '1') {
+      return 'High';
+    }
+    if (priorityLower === 'medium' || priorityLower === '2') {
+      return 'Medium';
+    }
+    if (priorityLower === 'low' || priorityLower === '3') {
+      return 'Low';
+    }
+  }
+  
+  // Default fallback
+  return 'Low';
 }
 
 /**
- * Map numeric request status to string
+ * Map numeric or string request status to string
  */
-export function mapRequestStatus(status: number): RequestStatus {
-  switch (status) {
-    case RequestStatusEnum.Approved:
-      return 'Approved';
-    case RequestStatusEnum.Rejected:
-      return 'Rejected';
-    case RequestStatusEnum.New:
-    case RequestStatusEnum.UnderProcess:
-    default:
-      return 'Pending';
+export function mapRequestStatus(status: number | string): RequestStatus {
+  // Handle numeric type
+  if (typeof status === 'number') {
+    switch (status) {
+      case RequestStatusEnum.Approved:
+        return 'Approved';
+      case RequestStatusEnum.Rejected:
+        return 'Rejected';
+      case RequestStatusEnum.New:
+      case RequestStatusEnum.UnderProcess:
+      default:
+        return 'Pending';
+    }
   }
+  
+  // Handle string type (case-insensitive)
+  if (typeof status === 'string') {
+    const statusLower = status.toLowerCase().trim();
+    if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+      return 'Approved';
+    }
+    if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+      return 'Rejected';
+    }
+    if (statusLower === 'new' || statusLower === '1') {
+      return 'Pending'; // New maps to Pending in RequestStatus type
+    }
+    if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === 'pending' || statusLower === '2') {
+      return 'Pending';
+    }
+  }
+  
+  // Default fallback
+  return 'Pending';
 }
 
 /**

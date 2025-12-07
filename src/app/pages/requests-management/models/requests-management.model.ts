@@ -5,6 +5,6 @@ export interface Request {
   requestDate: string;
   priority: 'High' | 'Medium' | 'Low' | 'Critical';
   requestType: 'Order' | 'Return' | 'Discard';
-  status: 'Pending' | 'Confirmed' | 'Rejected';
+  status: 'New' | 'Pending' | 'Confirmed' | 'Rejected';
 }
 

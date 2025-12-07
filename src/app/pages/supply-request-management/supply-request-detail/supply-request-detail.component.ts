@@ -102,19 +102,45 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     return new Promise((resolve) => {
       let endpoint = '';
       
-      switch (baseRequest.requestType) {
-        case RequestTypeEnum.Order:
-          endpoint = `/order/${this.requestId}`;
-          break;
-        case RequestTypeEnum.Return:
-          endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
-          break;
-        case RequestTypeEnum.Discard:
-          endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
-          break;
-        default:
-          resolve();
-          return;
+      const requestTypeValue: any = baseRequest.requestType;
+      
+      if (typeof requestTypeValue === 'number') {
+        switch (requestTypeValue) {
+          case RequestTypeEnum.Order:
+            endpoint = `/order/${this.requestId}`;
+            break;
+          case RequestTypeEnum.Return:
+            endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
+            break;
+          case RequestTypeEnum.Discard:
+            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
+            break;
+          default:
+            resolve();
+            return;
+        }
+      } else if (typeof requestTypeValue === 'string') {
+        const requestTypeLower = requestTypeValue.toLowerCase().trim();
+        switch (requestTypeLower) {
+          case 'order':
+          case '1':
+            endpoint = `/order/${this.requestId}`;
+            break;
+          case 'return':
+          case '2':
+            endpoint = API_ENDPOINTS.RETURNS.BY_ID(this.requestId);
+            break;
+          case 'discard':
+          case '3':
+            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(this.requestId);
+            break;
+          default:
+            resolve();
+            return;
+        }
+      } else {
+        resolve();
+        return;
       }
 
       this.apiService.getWithAuth<any>(endpoint)
