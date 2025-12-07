@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
+import { Observable, map, forkJoin, catchError, of, switchMap, tap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto, AmmunitionUpdateDto } from '@models/ammunition.model';
@@ -75,8 +75,8 @@ export class AmmunitionService {
     return this.http.post<APIOperationResponse<T>>(this.baseUrl, data);
   }
 
-  // Get image URL for an ammunition item
-  getImageUrl(ammunitionId: number): Observable<string | null> {
+  // Get file info for an ammunition item (returns file ID and URL)
+  getFileInfo(ammunitionId: number): Observable<{ id: number; url: string } | null> {
     const fileUploadUrl = `${this.config.apiUrl}/FileUpload?entity=1&entityId=${ammunitionId}`;
     return this.http.get<APIOperationResponse<any[]>>(fileUploadUrl).pipe(
       map((response) => {
@@ -84,8 +84,10 @@ export class AmmunitionService {
           // Get the main file or first file
           const mainFile = response.data.find((f: any) => f.isMain) || response.data[0];
           if (mainFile?.id) {
-            // Use the file serving endpoint instead of direct file path
-            return `${this.config.apiUrl}/FileUpload/serve/${mainFile.id}`;
+            return {
+              id: mainFile.id,
+              url: `${this.config.apiUrl}/FileUpload/serve/${mainFile.id}`
+            };
           }
         }
         return null;
@@ -95,6 +97,53 @@ export class AmmunitionService {
         return of(null);
       })
     );
+  }
+
+  // Get image URL for an ammunition item (backward compatibility)
+  getImageUrl(ammunitionId: number): Observable<string | null> {
+    return this.getFileInfo(ammunitionId).pipe(
+      map((fileInfo) => fileInfo?.url || null)
+    );
+  }
+
+  // Get file as blob
+  getFileBlob(fileId: number): Observable<Blob> {
+    const imageUrl = `${this.config.apiUrl}/FileUpload/serve/${fileId}`;
+    return this.http.get(imageUrl, { responseType: 'blob' });
+  }
+
+  // Delete a file
+  deleteFile(fileId: number): Observable<APIOperationResponse<boolean>> {
+    const deleteUrl = `${this.config.apiUrl}/FileUpload/${fileId}`;
+    return this.http.delete<APIOperationResponse<boolean>>(deleteUrl);
+  }
+
+  // Upload a new file
+  uploadFile(ammunitionId: number, file: File, isMain: boolean = true): Observable<APIOperationResponse<number>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadUrl = `${this.config.apiUrl}/FileUpload/upload?entity=1&entityId=${ammunitionId}&isMain=${isMain}`;
+    return this.http.post<APIOperationResponse<number>>(uploadUrl, formData);
+  }
+
+  // Update image: delete old file and upload new one
+  updateImage(ammunitionId: number, file: File, existingFileId: number | null): Observable<APIOperationResponse<number>> {
+    const upload$ = this.uploadFile(ammunitionId, file, true);
+    
+    if (existingFileId) {
+      // Delete old file first, then upload new one
+      return this.deleteFile(existingFileId).pipe(
+        switchMap(() => upload$),
+        catchError((deleteErr) => {
+          // If deletion fails, log it but still try to upload (maybe file doesn't exist)
+          console.warn('Failed to delete old image, proceeding with upload anyway:', deleteErr);
+          return upload$;
+        })
+      );
+    } else {
+      // No existing file, just upload new one
+      return upload$;
+    }
   }
 
   // Get image as blob URL (for authenticated requests)
