@@ -15,6 +15,7 @@ import { getRequestTitle } from '@utils/dashboard.utils';
  * Map OrderDto to OrderSummary for report display
  */
 export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | string | null): OrderSummary {
+  // Use requestNo/orderNo if available, otherwise fallback to #${id}
   const requestNo = order.requestNo?.trim() || '';
   const orderNo = order.orderNo?.trim() || '';
   const orderId = requestNo || orderNo || (order.id ? `#${order.id}` : 'N/A');
