@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin, of, Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
@@ -109,15 +109,24 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadRoles();
-    this.loadOrders();
+    // Load roles first, then load orders to ensure roleMap is populated before use
+    this.loadRoles().subscribe({
+      next: () => {
+        // Roles loaded successfully, now load orders
+        this.loadOrders();
+      },
+      error: () => {
+        // Even if roles fail to load, continue with orders (will show IDs if needed)
+        this.loadOrders();
+      }
+    });
   }
 
-  private loadRoles(): void {
-    this.backendUserService.getRoles()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (roles: RoleDto[]) => {
+  private loadRoles(): Observable<void> {
+    return this.backendUserService.getRoles()
+      .pipe(
+        takeUntil(this.destroy$),
+        tap((roles: RoleDto[]) => {
           this.roles = roles;
           // Create a map of role ID to localized role name for quick lookup
           const currentLang = getCurrentLang(this.translate);
@@ -127,12 +136,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               getLocalizedName(role, currentLang) || role.name || role.id
             ])
           );
-        },
-        error: (error) => {
+        }),
+        map(() => void 0), // Convert to Observable<void>
+        catchError((error) => {
           console.error('Failed to load roles', error);
           // Continue without roles - will show IDs if names not available
-        }
-      });
+          return of(void 0);
+        })
+      );
   }
 
   private getRoleName(roleId?: string | null): string {
