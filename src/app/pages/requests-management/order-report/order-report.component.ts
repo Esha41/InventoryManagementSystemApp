@@ -14,6 +14,8 @@ import { DiscardService, DiscardDto } from '@services/discard.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { BackendUserService } from '@services/backend-user.service';
+import { RoleDto } from '@models/backend-user.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
@@ -21,8 +23,10 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum } from '@utils/request-mapper.utils';
+import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 import {
   mapOrderToSummary,
   mapOrderItems,
@@ -67,6 +71,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     status: '',
     priority: '',
     submittedOn: '',
+    requestDate: '',
     department: '',
     requester: '',
     usagePurpose: '',
@@ -79,6 +84,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   approvalWorkflow: OrderReportApprovalStep[] = [];
   workflowDetails: WorkflowDetail[] = [];
   approvalWorkflowStatus: string = '';
+  roles: RoleDto[] = [];
+  roleMap: Map<string, string> = new Map();
 
   constructor(
     private router: Router,
@@ -88,7 +95,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private apiService: ApiService,
     private authService: BackendAuthService,
-    private translationService: TranslationService
+    private backendUserService: BackendUserService,
+    private translationService: TranslationService,
+    private translate: TranslateService
   ) {}
 
   get isRTL(): boolean {
@@ -100,7 +109,35 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadRoles();
     this.loadOrders();
+  }
+
+  private loadRoles(): void {
+    this.backendUserService.getRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (roles: RoleDto[]) => {
+          this.roles = roles;
+          // Create a map of role ID to localized role name for quick lookup
+          const currentLang = getCurrentLang(this.translate);
+          this.roleMap = new Map(
+            roles.map(role => [
+              role.id, 
+              getLocalizedName(role, currentLang) || role.name || role.id
+            ])
+          );
+        },
+        error: (error) => {
+          console.error('Failed to load roles', error);
+          // Continue without roles - will show IDs if names not available
+        }
+      });
+  }
+
+  private getRoleName(roleId?: string | null): string {
+    if (!roleId) return 'N/A';
+    return this.roleMap.get(roleId) || roleId;
   }
 
   ngOnDestroy(): void {
@@ -239,11 +276,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Find the base request that matches the order ID
           const baseRequest = data.find(r => r.id === orderId);
           
-          // Update order summary status with baseRequest.status if available (authoritative source)
-          if (baseRequest && baseRequest.status !== undefined && baseRequest.status !== null) {
+          // Update order summary status and requestDate with baseRequest data if available (authoritative source)
+          if (baseRequest) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
               const updatedSummary = mapOrderToSummary(order, baseRequest.status);
+              
+              // Set requestDate from baseRequest (with time)
+              if (baseRequest.requestDate) {
+                updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
+              }
               
               if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
                 this.orderSummary = updatedSummary;
@@ -252,8 +294,19 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             }
           }
           
+          // Get requester info - always show requester as first step
+          const requesterStep: OrderReportApprovalStep = {
+            step: '1',
+            role: 'Requester',
+            approver: baseRequest?.requesterName || this.orderSummary.requester || 'N/A',
+            status: 'approved',
+            date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (this.orderSummary.requestDate || 'N/A'),
+            notes: 'Request submitted'
+          };
+          
           if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
-            return [];
+            // Return only requester step if no approval history
+            return [requesterStep];
           }
           
           // Use the same mapping function as other components
@@ -263,21 +316,40 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
           
           // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
-          return workflowSteps.map((step, index) => ({
-            step: step.steporder?.toString() || `Step ${index + 1}`,
-            role: step.applicationRoleName || 'N/A',
+          // Start numbering from 2 since requester is step 1
+          const approvalSteps = workflowSteps.map((step, index) => ({
+            step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
+            role: step.applicationRoleName || this.getRoleName(step.applicationRoleId) || 'N/A',
             approver: step.approverName || 'N/A',
             status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
             date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
             notes: step.comments || ''
           }));
+          
+          // Prepend requester step as the first step
+          return [requesterStep, ...approvalSteps];
         }),
         catchError(error => {
           console.error('Failed to load approval workflow', error);
           // Fallback to mock data if API fails
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
-            return of(generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t)));
+            const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
+            // Add requester step as first step (step 1)
+            // Adjust fallback steps to start from step 2
+            const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
+              ...step,
+              step: (index + 2).toString()
+            }));
+            const requesterStep: OrderReportApprovalStep = {
+              step: '1',
+              role: 'Requester',
+              approver: order.requesterName || this.orderSummary.requester || 'N/A',
+              status: 'approved',
+              date: this.orderSummary.requestDate || this.orderSummary.submittedOn || 'N/A',
+              notes: 'Request submitted'
+            };
+            return of([requesterStep, ...adjustedFallbackSteps]);
           }
           return of([]);
         })
@@ -291,7 +363,22 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Only use fallback if API call fails completely
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
-            this.approvalWorkflow = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
+            const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
+            // Add requester step as first step (step 1)
+            // Adjust fallback steps to start from step 2
+            const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
+              ...step,
+              step: (index + 2).toString()
+            }));
+            const requesterStep: OrderReportApprovalStep = {
+              step: '1',
+              role: 'Requester',
+              approver: order.requesterName || this.orderSummary.requester || 'N/A',
+              status: 'approved',
+              date: this.orderSummary.requestDate || this.orderSummary.submittedOn || 'N/A',
+              notes: 'Request submitted'
+            };
+            this.approvalWorkflow = [requesterStep, ...adjustedFallbackSteps];
           } else {
             this.approvalWorkflow = [];
           }
@@ -403,6 +490,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       status: '',
       priority: '',
       submittedOn: '',
+      requestDate: '',
       department: '',
       requester: '',
       usagePurpose: '',

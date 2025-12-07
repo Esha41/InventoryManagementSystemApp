@@ -10,6 +10,7 @@ import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
+import { formatRequestDate } from '@utils/request-mapper.utils';
 
 /**
  * Map OrderDto to OrderSummary for report display
@@ -97,6 +98,7 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
     priority: mapOrderPriorityToString(order.priority),
     submittedOn: formattedDateTime,
+    requestDate: '', // Will be set from BaseRequestDto
     department: order.departmentNameEn || order.departmentNameAr || 'N/A',
     requester: order.requesterName || 'N/A',
     usagePurpose: order.usagePurpose || 'N/A',

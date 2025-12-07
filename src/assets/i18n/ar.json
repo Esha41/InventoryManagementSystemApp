@@ -450,6 +450,7 @@
         "submitted": "تم التقديم",
         "status": "الحالة",
         "statusLabel": "الحالة",
+        "requestDate": "تاريخ الطلب",
         "noItemsFound": "لم يتم العثور على عناصر في هذا الطلب.",
         "item": "عنصر",
         "items": "عناصر"
