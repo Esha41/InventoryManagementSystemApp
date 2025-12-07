@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, Clock, User, Package, Check, X as XIcon, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
@@ -32,6 +32,7 @@ import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils'
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-supply-order',
@@ -55,6 +56,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly CheckCircle = CheckCircle;
   readonly Clock = Clock;
   readonly User = User;
@@ -65,6 +67,14 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   readonly AlertTriangle = AlertTriangle;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   orderId: number = 0;
   supplyId: number = 0;
@@ -119,7 +129,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private ammunitionService: AmmunitionService,
     private toastService: ToastService,
     private apiService: ApiService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private translationService: TranslationService
   ) {
     this.initializeForm();
   }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Save, X, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto } from '@models/backend-user.model';
@@ -27,6 +27,15 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   workflowForm: CreateWorkflowDto = {
     name: '',

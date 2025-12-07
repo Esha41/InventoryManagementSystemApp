@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, AlertTriangle, User, Package, FileText } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, User, Package, FileText } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -11,6 +11,7 @@ import { mapToRequestDetail, RequestTypeEnum } from '@utils/request-mapper.utils
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -21,10 +22,19 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly AlertTriangle = AlertTriangle;
   readonly User = User;
   readonly Package = Package;
   readonly FileText = FileText;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   private readonly destroy$ = new Subject<void>();
 
@@ -36,7 +46,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {

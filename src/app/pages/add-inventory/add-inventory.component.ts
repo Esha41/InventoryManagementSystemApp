@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, Abs
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
-import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
@@ -17,6 +17,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-add-inventory',
@@ -40,6 +41,15 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly Trash2 = Trash2;
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   warehouseId!: number;
   warehouseName: string = '';
@@ -82,7 +92,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private translationService: TranslationService
   ) {
     this.initializeForm();
   }

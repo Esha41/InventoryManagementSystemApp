@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, switchMap, timer } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { WeaponService } from '@services/weapon.service';
@@ -21,6 +21,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -61,6 +62,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   rowsPerPage = 10;
 
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
@@ -68,6 +70,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Eye = Eye;
   readonly X = X;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   // Modal states
   showEditModal = false;
@@ -87,7 +97,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) { }
 
   ngOnInit(): void {
@@ -143,10 +154,24 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
           const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
 
+          const normalizedDetails = allDetails.map(detail => {
+            if (detail.item) {
+              const normalizedType = this.normalizeItemType(detail.item.itemType);
+              if (normalizedType !== undefined) {
+                return {
+                  ...detail,
+                  item: {
+                    ...detail.item,
+                    itemType: normalizedType as ItemType
+                  }
+                };
+              }
+            }
+            return detail;
+          });
 
-          const uniqueDetails = this.removeDuplicateItems(allDetails);
+          const uniqueDetails = this.removeDuplicateItems(normalizedDetails);
 
-          // Set inventory details
           this.inventoryDetails = uniqueDetails;
           this.filterInventoryByTab();
           this.loading = false;
@@ -163,8 +188,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Convert BaseItemDto to InventoryDetailDto format for static display
    */
   private convertBaseItemToInventoryDetail(item: BaseItemDto, itemType: ItemType): InventoryDetailDto {
+    const normalizedItemType = this.normalizeItemType(item.itemType);
+    const finalItemType = normalizedItemType !== undefined ? normalizedItemType : itemType;
+    
     return {
-      id: item.id * -1, // Use negative ID to distinguish static items from inventory items
+      id: item.id * -1,
       itemId: item.id,
       lot: 0,
       inventoryId: 0,
@@ -182,7 +210,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       isLotEmpty: false,
       item: {
         ...item,
-        itemType: item.itemType || itemType // Preserve original itemType or use provided one
+        itemType: finalItemType as ItemType
       }
     };
   }
@@ -216,19 +244,38 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.filterInventoryByTab();
   }
 
+  private normalizeItemType(itemType: ItemType | string | number | undefined): number | undefined {
+    if (itemType === undefined || itemType === null) {
+      return undefined;
+    }
+    if (typeof itemType === 'number') {
+      return itemType;
+    }
+    if (typeof itemType === 'string') {
+      const parsed = parseInt(itemType, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return Number(itemType);
+  }
+
   private filterInventoryByTab(): void {
     if (this.activeTab === 'ammunition') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
-        d.item?.itemType === 1 || d.item?.itemType === undefined
-      );
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        const isAmmunition = itemType === 1;
+        const isUndefinedAndNotStatic = itemType === undefined && !this.isStaticItem(d);
+        return isAmmunition || isUndefinedAndNotStatic;
+      });
     } else if (this.activeTab === 'weapon') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
-        d.item?.itemType === 2
-      );
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        return itemType === 2;
+      });
     } else if (this.activeTab === 'explosive') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d =>
-        d.item?.itemType === 3
-      );
+      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        return itemType === 3;
+      });
     } else {
       this.filteredInventoryDetails = this.inventoryDetails;
     }
@@ -504,7 +551,25 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
 
           const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
-          const uniqueDetails = this.removeDuplicateItems(allDetails);
+          
+          // Normalize itemType for all details to ensure consistent comparison
+          const normalizedDetails = allDetails.map(detail => {
+            if (detail.item?.itemType !== undefined) {
+              const normalizedType = this.normalizeItemType(detail.item.itemType);
+              if (normalizedType !== undefined && detail.item) {
+                return {
+                  ...detail,
+                  item: {
+                    ...detail.item,
+                    itemType: normalizedType as ItemType
+                  }
+                };
+              }
+            }
+            return detail;
+          });
+          
+          const uniqueDetails = this.removeDuplicateItems(normalizedDetails);
 
           // Update inventory details with fresh data
           this.inventoryDetails = uniqueDetails;

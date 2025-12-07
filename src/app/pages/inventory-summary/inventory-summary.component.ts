@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, Package, AlertCircle, Search } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { CardComponent } from '@components/card/card.component';
@@ -15,6 +15,7 @@ import { InventorySummaryDataService } from '@services/inventory-summary-data.se
 import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -60,6 +61,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     // Icons
     readonly ChevronDown = ChevronDown;
     readonly ChevronRight = ChevronRight;
+    readonly ChevronLeft = ChevronLeft;
     readonly Package = Package;
     readonly AlertCircle = AlertCircle;
     readonly Search = Search;
@@ -69,8 +71,20 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     constructor(
         private dataService: InventorySummaryDataService,
         private inventoryService: InventoryService,
-        private translateService: TranslateService
+        private translateService: TranslateService,
+        private translationService: TranslationService
     ) { }
+
+    get isRTL(): boolean {
+        return this.translationService?.isRTL() ?? false;
+    }
+
+    getExpandIcon(isExpanded: boolean): any {
+        if (isExpanded) {
+            return ChevronDown;
+        }
+        return this.isRTL ? ChevronLeft : ChevronRight;
+    }
 
     ngOnInit(): void {
         this.loadInventorySummary();

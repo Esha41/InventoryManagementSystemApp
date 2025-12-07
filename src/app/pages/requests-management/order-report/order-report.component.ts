@@ -32,6 +32,7 @@ import {
   filterApprovalRecordsByOrderId
 } from '../utils/order-report.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-order-report',
@@ -86,8 +87,17 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private discardService: DiscardService,
     private toastService: ToastService,
     private apiService: ApiService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private translationService: TranslationService
   ) {}
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   ngOnInit(): void {
     this.loadOrders();

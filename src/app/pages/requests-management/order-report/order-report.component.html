@@ -7,7 +7,7 @@
           <button
             (click)="goBack()"
             class="group inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all duration-200">
-            <lucide-angular [img]="ArrowLeft" class="h-4 w-4 group-hover:-translate-x-0.5 transition-transform"></lucide-angular>
+            <lucide-angular [img]="backIcon" class="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" [class.group-hover:translate-x-0.5]="isRTL"></lucide-angular>
             {{ 'common.back' | translate }}
           </button>
           <div class="h-8 w-px bg-slate-200"></div>

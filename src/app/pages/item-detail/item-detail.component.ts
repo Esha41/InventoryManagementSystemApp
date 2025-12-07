@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { AmmunitionService } from '@services/ammunition.service';
 import { CartridgeMapperService } from '@services/cartridge-mapper.service';
@@ -10,6 +10,7 @@ import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/ca
 import { CartridgeDetailsComponent } from '@pages/new-issue-request/components/cartridge-details/cartridge-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-item-detail',
@@ -27,6 +28,7 @@ import { ToastService } from '@services/toast.service';
 })
 export class ItemDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   
   private readonly destroy$ = new Subject<void>();
   
@@ -36,12 +38,21 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   error: string | null = null;
 
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private ammunitionService: AmmunitionService,
     private cartridgeMapper: CartridgeMapperService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {

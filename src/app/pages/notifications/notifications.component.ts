@@ -12,7 +12,8 @@ import {
   Calendar,
   Search,
   Info,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-angular';
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
@@ -38,6 +39,7 @@ import {
   getStatusLabelTranslation
 } from '@utils/notification.utils';
 import { NotificationDetailService } from '@services/notification-detail.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-notifications',
@@ -63,6 +65,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly Info = Info;
   readonly ArrowRight = ArrowRight;
+  readonly ArrowLeft = ArrowLeft;
 
   readonly notifications$: Observable<Notification[]> = this.notificationService.notifications$;
   readonly unreadCount$ = this.notificationService.unreadCount$;
@@ -94,11 +97,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   private readonly rescheduleActionKeys = NOTIFICATION_ACTION_KEYS.reschedule;
   private readonly hiddenMetadataKeys = NOTIFICATION_ACTION_KEYS.hidden;
 
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get arrowIcon() {
+    return this.isRTL ? ArrowLeft : ArrowRight;
+  }
+
   constructor(
     private readonly notificationService: NotificationService,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly detailService: NotificationDetailService
+    private readonly detailService: NotificationDetailService,
+    private readonly translationService: TranslationService
   ) {
     this.proposeForm = this.fb.group({
       pickupDate: ['', Validators.required],

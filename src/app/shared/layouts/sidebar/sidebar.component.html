@@ -11,7 +11,7 @@
       [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
     >
       <lucide-angular
-        [img]="isCollapsed ? ChevronRight : ChevronLeft"
+        [img]="isCollapsed ? (isRTL ? ChevronLeft : ChevronRight) : (isRTL ? ChevronRight : ChevronLeft)"
         class="h-5 w-5 text-[var(--color-text-muted)]"
       ></lucide-angular>
     </button>

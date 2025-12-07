@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
@@ -16,6 +16,7 @@ import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationService } from '@services/translation.service';
 
 export interface AllowanceItem {
   itemId: string;
@@ -40,6 +41,15 @@ export interface AllowanceItem {
 })
 export class AllowanceComponent implements OnInit {
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   selectedDepartment: number | string | null = null;
   selectedYear: string = ''; // Changed from selectedDate to selectedYear (string input for year only)
@@ -67,6 +77,7 @@ export class AllowanceComponent implements OnInit {
     private ammunitionService: AmmunitionService,
     private apiService: ApiService,
     private translateService: TranslateService,
+    private translationService: TranslationService,
     private router: Router,
     private toastService: ToastService,
     private route: ActivatedRoute

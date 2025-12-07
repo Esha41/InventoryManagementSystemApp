@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle, Package, Clock } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle, Package, Clock } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -36,6 +36,7 @@ import {
   getItemProductId as getItemProductIdUtil
 } from '../utils/ui-helpers.utils';
 import { LoadingStateComponent } from '@components/index';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -59,6 +60,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   
   // Icons
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
   readonly Plus = Plus;
@@ -66,6 +68,14 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly AlertTriangle = AlertTriangle;
   readonly Package = Package;
   readonly Clock = Clock;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   // State
   orderId: number = 0;
@@ -107,6 +117,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private supplyRequestDetailService: SupplyRequestDetailService,
     private orderItemManagementService: OrderItemManagementService,
+    private translationService: TranslationService,
     private lotSelectionService: LotSelectionService,
     private ammunitionService: AmmunitionService,
     private toastService: ToastService,

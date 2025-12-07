@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, Trash2 } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
@@ -12,6 +12,7 @@ import * as L from 'leaflet';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-warehouse-map',
@@ -26,7 +27,16 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
 
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly Trash2 = Trash2;
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   @ViewChild('mapContainer', { static: false }) mapContainerRef!: ElementRef<HTMLElement>;
 
@@ -58,7 +68,8 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private lookupService: LookupService,
     private offlineMapService: OfflineMapService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private translationService: TranslationService
   ) { }
 
   ngOnInit(): void {

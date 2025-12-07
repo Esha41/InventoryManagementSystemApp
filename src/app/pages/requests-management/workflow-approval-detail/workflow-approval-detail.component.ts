@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -40,6 +40,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 })
 export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly AlertTriangle = AlertTriangle;
   readonly CheckCircle = CheckCircle;
   readonly Clock = Clock;
@@ -49,6 +50,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   private readonly destroy$ = new Subject<void>();
 
@@ -107,10 +116,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private requestStatusUpdateService: RequestStatusUpdateService
   ) {}
-
-  get isRTL(): boolean {
-    return this.translationService.isRTL();
-  }
 
   ngOnInit(): void {
     // Use route params observable instead of snapshot for better reactivity

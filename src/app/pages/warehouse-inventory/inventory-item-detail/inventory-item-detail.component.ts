@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 
 type TabType = 'overview' | 'stock';
 
@@ -29,14 +30,24 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   private destroy$ = new Subject<void>();
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private inventoryService: InventoryService,
     private lookupService: LookupService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private translationService: TranslationService
   ) { }
 
   ngOnInit(): void {

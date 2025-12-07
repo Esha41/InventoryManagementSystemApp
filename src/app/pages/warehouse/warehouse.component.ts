@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Eye, Map } from 'lucide-angular';
+import { LucideAngularModule, Map } from 'lucide-angular';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -21,7 +21,6 @@ export class WarehouseComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
 
-  readonly Eye = Eye;
   readonly Map = Map;
 
   private destroy$ = new Subject<void>();

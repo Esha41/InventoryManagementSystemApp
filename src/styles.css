@@ -216,6 +216,15 @@ html, body {
   text-align: left;
 }
 
+/* RTL-aware dropdown chevron icons */
+[dir="rtl"] .app-dropdown-icon {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .app-dropdown-icon-rotated {
+  transform: scaleX(-1) rotate(180deg);
+}
+
 /* Firefox specific focus ring removal */
 input::-moz-focus-inner,
 button::-moz-focus-inner {
