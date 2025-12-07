@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { switchMap, map, catchError, of } from 'rxjs';
+import { switchMap, map, catchError, of, tap } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, ChevronLeft, ChevronRight } from 'lucide-angular';
@@ -24,6 +24,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { APIOperationResponse } from '@models/api-response.model';
 
 interface Asset {
   id: string;
@@ -122,6 +123,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   editImageUrl: string | null = null; // Blob URL for existing image
   editImageFile: File | null = null; // New file selected for upload
   editImagePreview: string | null = null; // Preview URL for new file
+  editImageFileId: number | null = null; // ID of existing file (for update)
   private blobUrls: Set<string> = new Set(); // Track blob URLs for cleanup
   
   @ViewChild('editFileInput') editFileInputRef!: ElementRef<HTMLInputElement>;
@@ -829,13 +831,17 @@ export class AssetListComponent implements OnInit, OnDestroy {
       }
     }
     this.editImageUrl = null;
+    this.editImageFileId = null;
 
-    // Fetch image URL
-    this.ammunitionService.getImageUrl(ammunitionId).subscribe({
-      next: (imageUrl) => {
-        if (imageUrl) {
-          // Fetch image as blob with authentication
-          this.http.get(imageUrl, { responseType: 'blob' }).subscribe({
+    // Fetch file info (including ID) for the ammunition
+    this.ammunitionService.getFileInfo(ammunitionId).subscribe({
+      next: (fileInfo) => {
+        if (fileInfo?.id) {
+          // Store the file ID for potential update
+          this.editImageFileId = fileInfo.id;
+          
+          // Fetch image as blob
+          this.ammunitionService.getFileBlob(fileInfo.id).subscribe({
             next: (blob) => {
               if (blob.type && blob.type.startsWith('image/')) {
                 const blobUrl = URL.createObjectURL(blob);
@@ -851,7 +857,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.warn('Failed to get edit image URL:', err);
+        console.warn('Failed to get file info:', err);
         // Silently fail - image is optional
       }
     });
@@ -948,22 +954,26 @@ export class AssetListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', this.editImageFile);
-    
-    const uploadUrl = `${this.configService.apiUrl}/FileUpload/upload?entity=1&entityId=${ammunitionId}&isMain=true`;
-    
-    this.http.post(uploadUrl, formData).subscribe({
-      next: (response: any) => {
-        console.log('Image uploaded successfully:', response);
-        this.completeEdit();
+    // Use the service method to update image (deletes old and uploads new)
+    this.ammunitionService.updateImage(ammunitionId, this.editImageFile, this.editImageFileId).subscribe({
+      next: (response) => {
+        if (response?.succeeded) {
+          console.log('Image updated successfully:', response);
+          this.completeEdit();
+        } else {
+          console.error('Image update failed:', response?.message);
+          this.completeEdit();
+          const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
+          this.toastService.error(response?.message || 'Image update failed. Please try uploading the image again.', errorTitle);
+        }
       },
       error: (err) => {
-        console.error('Failed to upload image:', err);
-        // Still complete the edit even if image upload fails
+        console.error('Failed to update image:', err);
+        // Still complete the edit even if image update fails
         this.completeEdit();
         const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
-        this.toastService.error('Ammunition updated but image upload failed. Please try uploading the image again.', errorTitle);
+        const errorMessage = err?.error?.message || err?.message || 'Image update failed. Please try uploading the image again.';
+        this.toastService.error(errorMessage, errorTitle);
       }
     });
   }
@@ -993,6 +1003,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.editImageUrl = null;
     this.editImageFile = null;
     this.editImagePreview = null;
+    this.editImageFileId = null;
     this.showSuccessToast(this.translateService.instant('assetList.success.updated'));
     this.loadAssets();
   }
@@ -1022,6 +1033,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.editImageUrl = null;
     this.editImageFile = null;
     this.editImagePreview = null;
+    this.editImageFileId = null;
   }
 
   closeViewModal(): void {
