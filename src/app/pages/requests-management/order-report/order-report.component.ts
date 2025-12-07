@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft } from 'lucide-angular';
-import { Subject, takeUntil, forkJoin, of } from 'rxjs';
+import { Subject, takeUntil, forkJoin, of, Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { OrderService, OrderDto } from '@services/order.service';
+import { ReturnService, ReturnDto } from '@services/return.service';
+import { DiscardService, DiscardDto } from '@services/discard.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -19,7 +21,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
+import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import {
   mapOrderToSummary,
@@ -80,6 +82,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private orderService: OrderService,
+    private returnService: ReturnService,
+    private discardService: DiscardService,
     private toastService: ToastService,
     private apiService: ApiService,
     private authService: BackendAuthService
@@ -97,13 +101,30 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   loadOrders(): void {
     this.ordersLoading = true;
     this.ordersError = null;
-    this.orderService.getAllOrders()
+    
+    // Load all request types: Order, Return, and Discard
+    forkJoin({
+      orders: this.orderService.getAllOrders().pipe(catchError(() => of([] as OrderDto[]))),
+      returns: this.returnService.getAllReturns().pipe(catchError(() => of([] as ReturnDto[]))),
+      discards: this.discardService.getAllDiscards().pipe(catchError(() => of([] as DiscardDto[])))
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (orders: OrderDto[]) => {
+        next: ({ orders, returns, discards }) => {
           const currentUser = this.authService.getCurrentUser();
-          // Filter orders by user's department
-          this.orders = filterRequestsByDepartment(orders, currentUser?.departmentId);
+          
+          // Convert ReturnDto and DiscardDto to OrderDto format
+          const convertedReturns = returns.map(ret => this.convertReturnToOrderDto(ret));
+          const convertedDiscards = discards.map(disc => this.convertDiscardToOrderDto(disc));
+          
+          // Combine all requests
+          const allRequests = [...orders, ...convertedReturns, ...convertedDiscards];
+          
+          // Filter by user's department
+          const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
+          
+          // Sort by ID in ascending order (#1, #2, #3, etc.)
+          this.orders = filteredRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
           
           this.ordersLoading = false;
           if (this.orders.length > 0) {
@@ -114,8 +135,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Failed to load orders', error);
-          this.ordersError = 'Failed to load order list. Please try again.';
+          console.error('Failed to load requests', error);
+          this.ordersError = 'Failed to load request list. Please try again.';
           this.toastService.error(this.ordersError);
           this.ordersLoading = false;
         }
@@ -137,7 +158,37 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
-    this.orderService.getOrderById(id)
+    
+    // Find the request in the loaded list to determine its type
+    const request = this.orders.find(r => r.id === id);
+    if (!request) {
+      this.errorMessage = 'Request not found.';
+      this.toastService.error(this.errorMessage);
+      this.detailsLoading = false;
+      return;
+    }
+    
+    // Determine request type and load accordingly
+    const requestType = typeof request.requestType === 'number' 
+      ? request.requestType 
+      : (request.requestType === 'Return' ? RequestTypeEnum.Return : 
+         request.requestType === 'Discard' ? RequestTypeEnum.Discard : RequestTypeEnum.Order);
+    
+    let request$: Observable<OrderDto>;
+    
+    if (requestType === RequestTypeEnum.Return) {
+      request$ = this.returnService.getReturnById(id).pipe(
+        map(ret => this.convertReturnToOrderDto(ret))
+      );
+    } else if (requestType === RequestTypeEnum.Discard) {
+      request$ = this.discardService.getDiscardById(id).pipe(
+        map(disc => this.convertDiscardToOrderDto(disc))
+      );
+    } else {
+      request$ = this.orderService.getOrderById(id);
+    }
+    
+    request$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order: OrderDto) => {
@@ -146,8 +197,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           this.detailsLoading = false;
         },
         error: (error) => {
-          console.error('Failed to load order', error);
-          this.errorMessage = 'Failed to load order details. Please try again.';
+          console.error('Failed to load request', error);
+          this.errorMessage = 'Failed to load request details. Please try again.';
           this.toastService.error(this.errorMessage);
           this.detailsLoading = false;
         }
@@ -354,6 +405,84 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
     this.qrCodeDataUrl = null;
+  }
+
+  /**
+   * Convert ReturnDto to OrderDto format for unified handling
+   */
+  private convertReturnToOrderDto(returnDto: ReturnDto): OrderDto {
+    return {
+      id: returnDto.id,
+      requestNo: returnDto.requestNo,
+      orderNo: returnDto.requestNo || `#${returnDto.id}`,
+      requestType: RequestTypeEnum.Return,
+      reason: returnDto.reason,
+      priority: returnDto.priority,
+      status: returnDto.status,
+      notes: returnDto.notes,
+      departmentId: returnDto.departmentId,
+      requesterId: returnDto.requesterId?.toString() || null,
+      recieverId: returnDto.recieverId?.toString() || null,
+      depotId: returnDto.depotId || null,
+      requestPurposeId: returnDto.requestPurposeId,
+      isFromAllowance: false,
+      usagePurpose: returnDto.requestPurposeName || undefined,
+      departmentNameAr: returnDto.departmentName,
+      departmentNameEn: returnDto.departmentName,
+      requesterName: returnDto.requesterName,
+      recieverName: returnDto.recieverName,
+      depotNameAr: returnDto.depotName,
+      depotNameEn: returnDto.depotName,
+      requestPurposeNameAr: returnDto.requestPurposeName,
+      requestPurposeNameEn: returnDto.requestPurposeName,
+      requestItems: returnDto.requestItems?.map(item => ({
+        id: item.id,
+        itemId: item.itemId,
+        quantity: item.quantity,
+        notes: item.notes,
+        itemName: item.itemName,
+        itemNo: item.itemNo
+      })) || []
+    };
+  }
+
+  /**
+   * Convert DiscardDto to OrderDto format for unified handling
+   */
+  private convertDiscardToOrderDto(discardDto: DiscardDto): OrderDto {
+    return {
+      id: discardDto.id,
+      requestNo: discardDto.requestNo,
+      orderNo: discardDto.requestNo || `#${discardDto.id}`,
+      requestType: RequestTypeEnum.Discard,
+      reason: discardDto.reason,
+      priority: discardDto.priority,
+      status: discardDto.status,
+      notes: discardDto.notes,
+      departmentId: discardDto.departmentId,
+      requesterId: discardDto.requesterId?.toString() || null,
+      recieverId: discardDto.recieverId?.toString() || null,
+      depotId: discardDto.depotId || null,
+      requestPurposeId: discardDto.requestPurposeId,
+      isFromAllowance: false,
+      usagePurpose: discardDto.requestPurposeName || undefined,
+      departmentNameAr: discardDto.departmentName,
+      departmentNameEn: discardDto.departmentName,
+      requesterName: discardDto.requesterName,
+      recieverName: discardDto.recieverName,
+      depotNameAr: discardDto.depotName,
+      depotNameEn: discardDto.depotName,
+      requestPurposeNameAr: discardDto.requestPurposeName,
+      requestPurposeNameEn: discardDto.requestPurposeName,
+      requestItems: discardDto.requestItems?.map(item => ({
+        id: item.id,
+        itemId: item.itemId,
+        quantity: item.quantity,
+        notes: item.notes,
+        itemName: item.itemName,
+        itemNo: item.itemNo
+      })) || []
+    };
   }
 
   printReport(): void {

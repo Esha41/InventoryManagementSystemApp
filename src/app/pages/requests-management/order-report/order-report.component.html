@@ -67,7 +67,7 @@
               >
                 <div class="flex items-start justify-between gap-3 mb-2">
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-slate-900 truncate mb-0.5">{{ order.orderNo || ('#' + order.id) }}</p>
+                    <p class="text-sm font-bold text-slate-900 truncate mb-0.5">{{ order.requestNo || order.orderNo || ('#' + order.id) }}</p>
                     <p class="text-xs text-slate-500 truncate">
                       {{ order.departmentNameEn || order.departmentNameAr || ('requestsManagement.orderReport.list.unknown' | translate) }}
                     </p>
@@ -113,7 +113,7 @@
               <div>
                 <h2 class="text-2xl font-bold mb-1.5">{{ orderSummary.orderId }}</h2>
                 <p class="text-sm text-slate-300">
-                  {{ 'requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department } }}
+                  {{ orderSummary.usagePurpose || ('requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department }) }}
                 </p>
               </div>
               <div class="flex flex-col gap-2 sm:flex-row">
