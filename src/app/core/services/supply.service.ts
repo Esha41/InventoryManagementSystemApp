@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 
 // ==================== Supply DTOs ====================
@@ -105,6 +106,16 @@ export interface SupplyDetailDto {
   };
 }
 
+export interface FileUploadDto {
+  id: number;
+  fileUrl: string;
+  fileName: string;
+  originalName: string;
+  isMain: boolean;
+  entity: number;
+  entityId: number;
+}
+
 export interface SupplyDto {
   id: number;
   orderId: number;
@@ -122,6 +133,7 @@ export interface SupplyDto {
     nameEn?: string;
   };
   supplyDetails: SupplyDetailDto[];
+  files?: FileUploadDto[];
 }
 
 // ==================== Service ====================
@@ -130,7 +142,8 @@ export interface SupplyDto {
 export class SupplyService {
   constructor(
     private http: HttpClient,
-    private config: ConfigService
+    private config: ConfigService,
+    private apiService: ApiService
   ) {}
 
   private get baseUrl(): string {
@@ -390,15 +403,33 @@ export class SupplyService {
   }
 
   /**
-   * Submit a supply (requires receiver information)
+   * Submit a supply (requires receiver information and files)
    * @param id Supply ID
    * @param dto Submission data
+   * @param files File attachments (at least one required)
    */
-  submit(id: number, dto: SubmitSupplyDto): Observable<boolean> {
+  submit(id: number, dto: SubmitSupplyDto, files: File[]): Observable<boolean> {
     this.config.log(`Submitting supply ${id}`, dto);
-    return this.http.post<APIOperationResponse<boolean>>(
-      `${this.baseUrl}/${id}/submit`,
-      dto
+    
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Append DTO fields
+    formData.append('RecieverName', dto.recieverName);
+    formData.append('ReceiverRankId', dto.receiverRankId.toString());
+    formData.append('RecieverMilitaryId', dto.recieverMilitaryId);
+    if (dto.notes) {
+      formData.append('Notes', dto.notes);
+    }
+    
+    // Append files
+    files.forEach((file, index) => {
+      formData.append('files', file);
+    });
+    
+    return this.apiService.postWithAuth<APIOperationResponse<boolean>>(
+      `/Supply/${id}/submit`,
+      formData
     ).pipe(
       map(response => {
         if (!response.succeeded) {

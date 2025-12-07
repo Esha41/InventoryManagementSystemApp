@@ -2,9 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -18,9 +20,11 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
+import { ConfigService } from '@services/config.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { APIOperationResponse } from '@models/api-response.model';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -103,11 +107,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   ranks: LookupItem[] = [];
   isLoadingRanks: boolean = false;
   isSubmittingSupply: boolean = false;
+  
+  // File upload for supply submission
+  selectedFiles: File[] = [];
+  fileInputElement: HTMLInputElement | null = null;
+  existingFiles: Array<{id: number; fileName: string; originalName: string}> = [];
+  
+  // Additional file upload after submission
+  additionalFiles: File[] = [];
+  additionalFileInputElement: HTMLInputElement | null = null;
+  isUploadingAdditionalFiles: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
+    private http: HttpClient,
+    private config: ConfigService,
     private authService: BackendAuthService,
     private toastService: ToastService,
     private supplyService: SupplyService,
@@ -299,6 +315,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
         if (supply.notes) {
           this.receiverInfo.notes = supply.notes;
+        }
+
+        // Load existing files if available
+        if (supply.files && supply.files.length > 0) {
+          this.existingFiles = supply.files.map(f => ({
+            id: f.id,
+            fileName: f.fileName,
+            originalName: f.originalName
+          }));
+        } else {
+          this.existingFiles = [];
         }
 
         // Load ranks for dropdown if user can submit supply
@@ -864,10 +891,28 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if supply exists and is already submitted
+   */
+  isSupplySubmitted(): boolean {
+    return !!(this.supplyId && this.supplyData && this.supplyData.submissionStatus === 2);
+  }
+
+  /**
    * Submit supply with receiver information
    */
   submitSupply(): void {
     if (this.isSubmittingSupply || !this.supplyId) {
+      return;
+    }
+
+    // Prevent submission if already submitted
+    if (this.supplyData?.submissionStatus === 2) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.alreadySubmitted']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.alreadySubmittedMessage'] || 'Supply is already submitted',
+          translations['toast.error']
+        );
+      });
       return;
     }
 
@@ -902,6 +947,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validate that at least one file is selected
+    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.filesRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.filesRequired'] || 'At least one file attachment is required',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
+
     this.isSubmittingSupply = true;
 
     const submitDto: SubmitSupplyDto = {
@@ -911,7 +967,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       notes: this.receiverInfo.notes?.trim() || undefined
     };
 
-    this.supplyService.submit(this.supplyId, submitDto)
+    this.supplyService.submit(this.supplyId, submitDto, this.selectedFiles)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -922,15 +978,299 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             );
           });
           this.isSubmittingSupply = false;
-          // Reload to refresh supply status
+          // Clear selected files after successful submission
+          this.selectedFiles = [];
+          if (this.fileInputElement) {
+            this.fileInputElement.value = '';
+          }
+          // Reload to refresh supply status and show newly uploaded files
           this.loadRequestDetail();
         },
         error: (error) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
-          this.toastService.error(errorMessage);
+          // Extract error message from API response
+          let errorMessage = 'Failed to submit supply';
+          
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          } else {
+            errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
+          }
+          
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(
+              errorMessage,
+              translations['toast.error'] || 'Error'
+            );
+          });
           this.isSubmittingSupply = false;
         }
       });
+  }
+
+  /**
+   * Handle file selection - adds files to existing selection
+   */
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      
+      // Add new files to existing selection (avoid duplicates by name)
+      newFiles.forEach(newFile => {
+        const isDuplicate = this.selectedFiles.some(existingFile => 
+          existingFile.name === newFile.name && existingFile.size === newFile.size
+        );
+        if (!isDuplicate) {
+          this.selectedFiles.push(newFile);
+        }
+      });
+      
+      this.fileInputElement = input;
+      // Reset input to allow selecting the same files again if needed
+      input.value = '';
+    }
+  }
+
+  /**
+   * Remove a file from the selection
+   */
+  removeFile(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    // Update the file input if needed
+    if (this.fileInputElement && this.selectedFiles.length === 0) {
+      this.fileInputElement.value = '';
+    }
+  }
+
+  /**
+   * Get file size in readable format
+   */
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  /**
+   * Handle additional file selection after submission
+   */
+  onAdditionalFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      
+      // Add new files to existing selection (avoid duplicates by name)
+      newFiles.forEach(newFile => {
+        const isDuplicate = this.additionalFiles.some(existingFile => 
+          existingFile.name === newFile.name && existingFile.size === newFile.size
+        );
+        if (!isDuplicate) {
+          this.additionalFiles.push(newFile);
+        }
+      });
+      
+      this.additionalFileInputElement = input;
+      // Reset input to allow selecting the same files again if needed
+      input.value = '';
+    }
+  }
+
+  /**
+   * Remove an additional file from the selection
+   */
+  removeAdditionalFile(index: number): void {
+    this.additionalFiles.splice(index, 1);
+    // Update the file input if needed
+    if (this.additionalFileInputElement && this.additionalFiles.length === 0) {
+      this.additionalFileInputElement.value = '';
+    }
+  }
+
+  /**
+   * Upload additional files to an already-submitted supply
+   */
+  uploadAdditionalFiles(): void {
+    if (this.isUploadingAdditionalFiles || !this.supplyId || this.additionalFiles.length === 0) {
+      return;
+    }
+
+    this.isUploadingAdditionalFiles = true;
+
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Append files
+    this.additionalFiles.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Remove Content-Type header for FormData
+    headers = headers.delete('Content-Type');
+
+    this.http.post<APIOperationResponse<number[]>>(
+      `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${this.supplyId}`,
+      formData,
+      { headers }
+    )
+    .pipe(
+      takeUntil(this.destroy$),
+      catchError((error: any) => {
+        console.error('Failed to upload additional files:', error);
+        this.isUploadingAdditionalFiles = false;
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
+          this.toastService.error(
+            ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
+            translations['toast.error']
+          );
+        });
+        return throwError(() => error);
+      })
+    )
+    .subscribe((response: APIOperationResponse<number[]>) => {
+      if (response.succeeded) {
+        // Clear selected files
+        this.additionalFiles = [];
+        if (this.additionalFileInputElement) {
+          this.additionalFileInputElement.value = '';
+        }
+        
+        // Reload supply data to refresh the file list
+        this.loadSupplyData();
+        
+        this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
+          this.toastService.success(
+            translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
+            translations['toast.success']
+          );
+        });
+      } else {
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
+          this.toastService.error(
+            response.message || translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files',
+            translations['toast.error']
+          );
+        });
+      }
+      this.isUploadingAdditionalFiles = false;
+    });
+  }
+
+  /**
+   * Download an existing file
+   */
+  downloadFile(fileId: number, fileName: string): void {
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    
+    this.http.get(`${this.config.apiUrl}/FileUpload/serve/${fileId}`, {
+      headers: headers,
+      responseType: 'blob'
+    })
+    .pipe(
+      takeUntil(this.destroy$),
+      catchError((error: any) => {
+        console.error('Failed to download file:', error);
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
+          this.toastService.error(
+            ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
+            translations['toast.error']
+          );
+        });
+        return throwError(() => error);
+      })
+    )
+    .subscribe((blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  /**
+   * Delete an existing file
+   */
+  deleteFile(fileId: number, fileName: string, index: number): void {
+    // Confirm deletion
+    this.translateService.get([
+      'workflowApprovalDetail.confirmDeleteFile',
+      'workflowApprovalDetail.confirmDeleteFileMessage',
+      'common.delete',
+      'common.cancel'
+    ]).subscribe(translations => {
+      const confirmed = confirm(
+        `${translations['workflowApprovalDetail.confirmDeleteFileMessage'] || 'Are you sure you want to delete'} "${fileName}"?`
+      );
+      
+      if (!confirmed) {
+        return;
+      }
+
+      const token = localStorage.getItem('auth_token');
+      let headers = new HttpHeaders();
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+      
+      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
+        headers: headers
+      })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error: any) => {
+          console.error('Failed to delete file:', error);
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
+            this.toastService.error(
+              ErrorHandler.extractErrorMessage(error, errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),
+              errTranslations['toast.error']
+            );
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe((response: APIOperationResponse<boolean>) => {
+        if (response.succeeded) {
+          // Remove file from the list
+          this.existingFiles.splice(index, 1);
+          
+          // Reload supply data to refresh the file list
+          if (this.supplyId) {
+            this.loadSupplyData();
+          }
+          
+          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(successTranslations => {
+            this.toastService.success(
+              successTranslations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
+              successTranslations['toast.success']
+            );
+          });
+        } else {
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
+            this.toastService.error(
+              response.message || errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
+              errTranslations['toast.error']
+            );
+          });
+        }
+      });
+    });
   }
 
   /**
