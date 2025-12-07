@@ -286,7 +286,13 @@ export class InventoryService {
     ).pipe(
       map(response => {
         if (response.succeeded && response.data) {
-          return response.data;
+          // Transform itemType from string to number if needed
+          return response.data.map(item => ({
+            ...item,
+            itemType: typeof item.itemType === 'string' 
+              ? this.convertItemTypeStringToNumber(item.itemType)
+              : item.itemType
+          }));
         }
         console.warn('Failed to load items summary:', response.message);
         return [];
@@ -296,6 +302,19 @@ export class InventoryService {
         throw err;
       })
     );
+  }
+
+  /**
+   * Convert itemType string to number
+   */
+  private convertItemTypeStringToNumber(itemType: string): number {
+    const itemTypeMap: { [key: string]: number } = {
+      'Ammunition': 1,
+      'Weapon': 2,
+      'Explosive': 3,
+      'Accessory': 4
+    };
+    return itemTypeMap[itemType] || 0;
   }
 }
 
