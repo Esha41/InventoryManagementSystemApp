@@ -817,15 +817,47 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return (order as any).depotNameEn || (order as any).depotNameAr || 'N/A';
   }
 
-  getOrderPriorityKey(priority?: number | null): string {
-    switch (priority) {
+  /**
+   * Get translation key for order priority
+   * Handles both number and string priority values
+   */
+  getOrderPriorityKey(priority?: number | string | null): string {
+    if (priority === null || priority === undefined) {
+      return 'dashboard.priorityLabels.high';
+    }
+    
+    // Normalize to number
+    let priorityNum: number;
+    if (typeof priority === 'string') {
+      const priorityLower = priority.toLowerCase().trim();
+      if (priorityLower === 'high' || priorityLower === '1') {
+        priorityNum = 1;
+      } else if (priorityLower === 'medium' || priorityLower === '2') {
+        priorityNum = 2;
+      } else if (priorityLower === 'low' || priorityLower === '3') {
+        priorityNum = 3;
+      } else if (priorityLower === 'critical' || priorityLower === '4') {
+        priorityNum = 4;
+      } else {
+        const parsed = parseInt(priority, 10);
+        priorityNum = isNaN(parsed) ? 1 : parsed;
+      }
+    } else {
+      priorityNum = priority;
+    }
+    
+    switch (priorityNum) {
       case 2: return 'dashboard.priorityLabels.medium';
       case 3: return 'dashboard.priorityLabels.low';
       default: return 'dashboard.priorityLabels.high';
     }
   }
 
-  getOrderStatusKey(status?: number | null): string {
+  /**
+   * Get translation key for order status
+   * Handles both number and string status values
+   */
+  getOrderStatusKey(status?: number | string | null): string {
     return getRequestStatusTranslationKey(status);
   }
 

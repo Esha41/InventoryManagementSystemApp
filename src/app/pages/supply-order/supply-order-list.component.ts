@@ -87,8 +87,31 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
 
   /**
    * Get status display text
+   * Handles both number and string status values
    */
-  getStatusText(status: number): string {
+  getStatusText(status: number | string): string {
+    // Normalize status to number
+    let statusNum: number;
+    if (typeof status === 'string') {
+      const statusLower = status.toLowerCase().trim();
+      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
+        statusNum = 1;
+      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
+        statusNum = 2;
+      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+        statusNum = 3;
+      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+        statusNum = 4;
+      } else if (statusLower === 'cancelled' || statusLower === '5') {
+        statusNum = 5;
+      } else {
+        const parsed = parseInt(status, 10);
+        statusNum = isNaN(parsed) ? 1 : parsed;
+      }
+    } else {
+      statusNum = status;
+    }
+
     const statusMap: { [key: number]: string } = {
       1: 'New',
       2: 'Under Process',
@@ -96,13 +119,36 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
       4: 'Rejected',
       5: 'Completed'
     };
-    return statusMap[status] || 'Unknown';
+    return statusMap[statusNum] || 'Unknown';
   }
 
   /**
    * Get status badge CSS classes
+   * Handles both number and string status values
    */
-  getStatusClass(status: number): string {
+  getStatusClass(status: number | string): string {
+    // Normalize status to number
+    let statusNum: number;
+    if (typeof status === 'string') {
+      const statusLower = status.toLowerCase().trim();
+      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
+        statusNum = 1;
+      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
+        statusNum = 2;
+      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+        statusNum = 3;
+      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+        statusNum = 4;
+      } else if (statusLower === 'cancelled' || statusLower === '5') {
+        statusNum = 5;
+      } else {
+        const parsed = parseInt(status, 10);
+        statusNum = isNaN(parsed) ? 1 : parsed;
+      }
+    } else {
+      statusNum = status;
+    }
+
     const classMap: { [key: number]: string } = {
       1: 'bg-blue-100 text-blue-800',
       2: 'bg-yellow-100 text-yellow-800',
@@ -110,19 +156,41 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
       4: 'bg-red-100 text-red-800',
       5: 'bg-gray-100 text-gray-800'
     };
-    return classMap[status] || 'bg-gray-100 text-gray-800';
+    return classMap[statusNum] || 'bg-gray-100 text-gray-800';
   }
 
   /**
    * Get priority display text
+   * Handles both number and string priority values
    */
-  getPriorityText(priority: number): string {
+  getPriorityText(priority: number | string): string {
+    // Normalize priority to number
+    let priorityNum: number;
+    if (typeof priority === 'string') {
+      const priorityLower = priority.toLowerCase().trim();
+      if (priorityLower === 'high' || priorityLower === '1') {
+        priorityNum = 1;
+      } else if (priorityLower === 'medium' || priorityLower === '2') {
+        priorityNum = 2;
+      } else if (priorityLower === 'low' || priorityLower === '3') {
+        priorityNum = 3;
+      } else if (priorityLower === 'critical' || priorityLower === '4') {
+        priorityNum = 4;
+      } else {
+        const parsed = parseInt(priority, 10);
+        priorityNum = isNaN(parsed) ? 2 : parsed; // Default to Medium
+      }
+    } else {
+      priorityNum = priority;
+    }
+
     const priorityMap: { [key: number]: string } = {
       1: 'High',
       2: 'Medium',
-      3: 'Low'
+      3: 'Low',
+      4: 'Critical'
     };
-    return priorityMap[priority] || 'Medium';
+    return priorityMap[priorityNum] || 'Medium';
   }
 }
 

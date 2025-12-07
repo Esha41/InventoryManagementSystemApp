@@ -132,9 +132,34 @@ export function determineDetailType(detail: RequestDetail): NotificationDetailTy
 
 /**
  * Get priority label translation key
+ * Handles both number and string priority values
  */
-export function getPriorityLabelTranslation(priority?: number | null): string {
-  switch (priority) {
+export function getPriorityLabelTranslation(priority?: number | string | null): string {
+  if (priority === null || priority === undefined) {
+    return 'dashboard.priorityLabels.high';
+  }
+  
+  // Normalize to number
+  let priorityNum: number;
+  if (typeof priority === 'string') {
+    const priorityLower = priority.toLowerCase().trim();
+    if (priorityLower === 'high' || priorityLower === '1') {
+      priorityNum = 1;
+    } else if (priorityLower === 'medium' || priorityLower === '2') {
+      priorityNum = 2;
+    } else if (priorityLower === 'low' || priorityLower === '3') {
+      priorityNum = 3;
+    } else if (priorityLower === 'critical' || priorityLower === '4') {
+      priorityNum = 4;
+    } else {
+      const parsed = parseInt(priority, 10);
+      priorityNum = isNaN(parsed) ? 1 : parsed;
+    }
+  } else {
+    priorityNum = priority;
+  }
+  
+  switch (priorityNum) {
     case 2:
       return 'dashboard.priorityLabels.medium';
     case 3:
@@ -146,9 +171,36 @@ export function getPriorityLabelTranslation(priority?: number | null): string {
 
 /**
  * Get status label translation key
+ * Handles both number and string status values
  */
-export function getStatusLabelTranslation(status?: number | null): string {
-  switch (status) {
+export function getStatusLabelTranslation(status?: number | string | null): string {
+  if (status === null || status === undefined) {
+    return 'dashboard.statusLabels.new';
+  }
+  
+  // Normalize to number
+  let statusNum: number;
+  if (typeof status === 'string') {
+    const statusLower = status.toLowerCase().trim();
+    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
+      statusNum = 1;
+    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
+      statusNum = 2;
+    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+      statusNum = 3;
+    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+      statusNum = 4;
+    } else if (statusLower === 'cancelled' || statusLower === '5') {
+      statusNum = 5;
+    } else {
+      const parsed = parseInt(status, 10);
+      statusNum = isNaN(parsed) ? 1 : parsed;
+    }
+  } else {
+    statusNum = status;
+  }
+  
+  switch (statusNum) {
     case 2:
       return 'dashboard.statusLabels.underProcess';
     case 3:

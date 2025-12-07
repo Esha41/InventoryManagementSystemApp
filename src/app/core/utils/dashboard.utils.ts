@@ -29,7 +29,7 @@ export interface RequestItemBase {
  */
 export interface DisplayableRequest {
   id: number;
-  status: number;
+  status: number | string;
   departmentId?: number;
   requestNo?: string;
   requesterName?: string;
@@ -58,9 +58,15 @@ export function filterDisplayableRequests<T extends DisplayableRequest>(requests
 
 /**
  * Get request title/identifier with fallback
+ * Accepts DisplayableRequest or any object with id, requestNo, and optionally orderNo
  */
-export function getRequestTitle(request: DisplayableRequest, fallbackNo?: string): string {
-  return request.requestNo || fallbackNo || `#${request.id}`;
+export function getRequestTitle(
+  request: DisplayableRequest | { id: number; requestNo?: string; orderNo?: string },
+  fallbackNo?: string
+): string {
+  const requestNo = 'requestNo' in request ? request.requestNo : undefined;
+  const orderNo = 'orderNo' in request ? request.orderNo : undefined;
+  return requestNo || orderNo || fallbackNo || `#${request.id}`;
 }
 
 /**

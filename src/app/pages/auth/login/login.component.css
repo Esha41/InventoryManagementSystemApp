@@ -1,12 +1,8 @@
 /* Login component specific styles if needed */
 
-/* Fix for password input placeholder overlap issue in LTR */
+/* Ensure password input has proper padding to avoid placeholder overlap with icons */
+/* Both LTR and RTL need 3rem (48px) padding on both sides for the lock and eye icons */
 .relative.group input#password {
-  padding-left: 3rem !important;
-  padding-right: 3rem !important;
-}
-
-/* Ensure placeholder doesn't overlap icon */
-.relative.group input#password::placeholder {
-  padding-left: 0;
+  padding-left: 3rem !important; /* 48px - space for left icon */
+  padding-right: 3rem !important; /* 48px - space for right icon */
 }

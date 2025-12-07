@@ -54,10 +54,10 @@ export interface OrderDto {
   id: number;
   requestNo?: string;
   orderNo: string;
-  requestType: number;
+  requestType: number | string; // Can be number (1, 2, 3) or string ('Order', 'Return', 'Discard')
   reason?: string;
-  priority: number;
-  status: number;
+  priority: number | string; // Can be number (1, 2, 3) or string ('High', 'Medium', 'Low')
+  status: number | string; // Can be number (1, 2, 3, 4) or string ('New', 'UnderProcess', 'Approved', 'Rejected')
   notes?: string;
   departmentId: number;
   requesterId?: string | null;

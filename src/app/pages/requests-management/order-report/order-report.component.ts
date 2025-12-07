@@ -155,13 +155,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private mapOrderToReport(order: OrderDto): void {
-    // Map order summary using utility function - this uses the actual order.status
     this.orderSummary = mapOrderToSummary(order);
-    
-    // Map order items using utility function
     this.orderItems = mapOrderItems(order);
 
-    // Load approval workflow and workflow details from API
     this.loadApprovalWorkflow(order.id);
     this.loadWorkflowDetails(order);
   }
@@ -186,10 +182,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           if (baseRequest && baseRequest.status !== undefined && baseRequest.status !== null) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
-              // Re-map order summary with the correct status from baseRequest
-              this.orderSummary = mapOrderToSummary(order, baseRequest.status);
-              // Regenerate QR code with updated status
-              this.generateQrCode();
+              const updatedSummary = mapOrderToSummary(order, baseRequest.status);
+              
+              if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
+                this.orderSummary = updatedSummary;
+                this.generateQrCode();
+              }
             }
           }
           
@@ -295,11 +293,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusLabel(status: number): string {
+  getStatusLabel(status: number | string): string {
+    // mapOrderStatusFromApi already handles both number and string types
     return mapOrderStatusFromApi(status);
   }
 
-  getPriorityLabel(priority: number): string {
+  getPriorityLabel(priority: number | string): string {
     return mapOrderPriorityToString(priority);
   }
 

@@ -791,37 +791,84 @@ export class NotificationService implements OnDestroy {
 
   /**
    * Get priority label
+   * Handles both number and string priority values
    */
-  private getPriorityLabel(priority: number): string {
-    switch (priority) {
+  private getPriorityLabel(priority: number | string): string {
+    // Normalize to number
+    let priorityNum: number;
+    if (typeof priority === 'string') {
+      const priorityLower = priority.toLowerCase().trim();
+      if (priorityLower === 'high' || priorityLower === '1') {
+        priorityNum = 1;
+      } else if (priorityLower === 'medium' || priorityLower === '2') {
+        priorityNum = 2;
+      } else if (priorityLower === 'low' || priorityLower === '3') {
+        priorityNum = 3;
+      } else if (priorityLower === 'critical' || priorityLower === '4') {
+        priorityNum = 4;
+      } else {
+        const parsed = parseInt(priority, 10);
+        priorityNum = isNaN(parsed) ? 1 : parsed;
+      }
+    } else {
+      priorityNum = priority;
+    }
+    
+    switch (priorityNum) {
       case 1:
         return 'High';
       case 2:
         return 'Medium';
       case 3:
         return 'Low';
+      case 4:
+        return 'Critical';
       default:
-        return `Priority ${priority}`;
+        return `Priority ${priorityNum}`;
     }
   }
 
   /**
    * Get status label
+   * Handles both number and string status values
    */
-  private getStatusLabel(status: number): string {
-    switch (status) {
+  private getStatusLabel(status: number | string): string {
+    // Normalize to number
+    let statusNum: number;
+    if (typeof status === 'string') {
+      const statusLower = status.toLowerCase().trim();
+      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '0' || statusLower === '1') {
+        statusNum = 1;
+      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
+        statusNum = 2;
+      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+        statusNum = 3;
+      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+        statusNum = 4;
+      } else if (statusLower === 'cancelled' || statusLower === '5') {
+        statusNum = 5;
+      } else {
+        const parsed = parseInt(status, 10);
+        statusNum = isNaN(parsed) ? 1 : parsed;
+      }
+    } else {
+      statusNum = status;
+    }
+    
+    switch (statusNum) {
       case 0:
-        return 'New';
       case 1:
-        return 'Under Process';
+        return 'New';
       case 2:
-        return 'Approved';
+        return 'Under Process';
       case 3:
-        return 'Rejected';
+        return 'Approved';
       case 4:
+        return 'Rejected';
+      case 5:
         return 'Cancelled';
       default:
-        return `Status ${status}`;
+        return `Status ${statusNum}`;
     }
   }
 

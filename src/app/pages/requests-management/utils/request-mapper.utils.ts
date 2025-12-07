@@ -32,9 +32,36 @@ function formatRequestDate(date: string | Date | undefined): string {
 /**
  * Map priority enum to display string
  * RequestPriority enum: High = 1, Medium = 2, Low = 3
+ * Handles both number and string priority values for robustness
  */
-function mapPriority(priority: number): 'High' | 'Medium' | 'Low' | 'Critical' {
-  switch (priority) {
+function mapPriority(priority: number | string | null | undefined): 'High' | 'Medium' | 'Low' | 'Critical' {
+  // Handle null/undefined
+  if (priority === null || priority === undefined) {
+    return 'Low';
+  }
+  
+  // Convert to number if it's a string
+  let priorityNum: number;
+  if (typeof priority === 'string') {
+    const lowerPriority = priority.toLowerCase().trim();
+    if (lowerPriority === 'high' || lowerPriority === '1') {
+      priorityNum = 1;
+    } else if (lowerPriority === 'medium' || lowerPriority === '2') {
+      priorityNum = 2;
+    } else if (lowerPriority === 'low' || lowerPriority === '3') {
+      priorityNum = 3;
+    } else {
+      // Try to parse as number
+      priorityNum = parseInt(priority, 10);
+      if (isNaN(priorityNum)) {
+        return 'Low'; // Default to 'Low' if can't parse
+      }
+    }
+  } else {
+    priorityNum = priority;
+  }
+  
+  switch (priorityNum) {
     case 1: return 'High';
     case 2: return 'Medium';
     case 3: return 'Low';
@@ -88,10 +115,10 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
  * RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
  * Handles both number and string status values for robustness
  */
-function mapStatus(status: number | string | null | undefined): 'Pending' | 'Confirmed' | 'Rejected' {
+function mapStatus(status: number | string | null | undefined): 'New' | 'Pending' | 'Confirmed' | 'Rejected' {
   // Handle null/undefined
   if (status === null || status === undefined) {
-    return 'Pending';
+    return 'New';
   }
   
   // Convert to number if it's a string
@@ -99,9 +126,9 @@ function mapStatus(status: number | string | null | undefined): 'Pending' | 'Con
   if (typeof status === 'string') {
     // Try to parse string status values
     const lowerStatus = status.toLowerCase().trim();
-    if (lowerStatus === 'new' || lowerStatus === 'pending') {
+    if (lowerStatus === 'new') {
       statusNum = 1;
-    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
+    } else if (lowerStatus === 'pending' || lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
       statusNum = 2;
     } else if (lowerStatus === 'approved' || lowerStatus === 'completed' || lowerStatus === 'confirmed') {
       statusNum = 3;
@@ -111,7 +138,7 @@ function mapStatus(status: number | string | null | undefined): 'Pending' | 'Con
       // Try to parse as number
       statusNum = parseInt(status, 10);
       if (isNaN(statusNum)) {
-        return 'Pending'; // Default to 'Pending' if can't parse
+        return 'New'; // Default to 'New' if can't parse
       }
     }
   } else {
@@ -119,11 +146,11 @@ function mapStatus(status: number | string | null | undefined): 'Pending' | 'Con
   }
   
   switch (statusNum) {
-    case 1:
+    case 1: return 'New';
     case 2: return 'Pending';
     case 3: return 'Confirmed';
     case 4: return 'Rejected';
-    default: return 'Pending';
+    default: return 'New';
   }
 }
 
