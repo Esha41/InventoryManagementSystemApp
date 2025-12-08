@@ -146,6 +146,7 @@
     [orderPriority]="usageFormData.orderPriority"
     [orderPriorities]="filterOptions.orderPriorities"
     [requesterComments]="reviewFormData.requesterComments"
+    [selectedFiles]="usageFormFiles"
     [totalReserve]="selectedTotalReserve"
     [availableReserve]="selectedAvailableReserve"
     [orderedQuantity]="selectedOrderedQuantity"
@@ -164,6 +165,7 @@
     (usageTimeToChange)="usageFormData.usageTimeTo = $event"
     (orderPriorityChange)="usageFormData.orderPriority = $event"
     (requesterCommentsChange)="reviewFormData.requesterComments = $event"
+    (filesChange)="usageFormFiles = $event"
     (previous)="onPrevious()"
     (next)="onNext()">
   </app-usage-form>

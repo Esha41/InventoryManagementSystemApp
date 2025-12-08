@@ -25,6 +25,7 @@ export interface OrderSubmissionData {
   defaultRequestPurposeId: number;
   defaultRequestTypeId: number;
   orderType: string;
+  files?: File[];
 }
 
 export interface OrderValidationResult {
@@ -37,6 +38,7 @@ export interface OrderSubmissionResult {
   orderId?: number | null;
   orderNumber?: string;
   error?: string;
+  workflowStepId?: number | null;
 }
 
 /**
@@ -181,8 +183,8 @@ export class OrderSubmissionService {
    * Submits an order
    * Uses RxJS operators to chain observables properly (no nested subscribes)
    */
-  submitOrder(payload: CreateOrderRequest): Observable<OrderSubmissionResult> {
-    return this.orderService.createOrder(payload).pipe(
+  submitOrder(payload: CreateOrderRequest, files?: File[]): Observable<OrderSubmissionResult> {
+    return this.orderService.createOrder(payload, files).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {
           const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(

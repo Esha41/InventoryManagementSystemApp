@@ -50,7 +50,8 @@
     "usagePurpose": "Usage Purpose",
     "requester": "Requester",
     "reason": "Reason",
-    "comments": "Comments"
+    "comments": "Comments",
+    "optional": "Optional"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1695,6 +1696,8 @@
     "requestPurpose": "Request Purpose",
     "requester": "Requester",
     "notes": "Notes",
+    "orderAttachments": "Order Attachments",
+    "attachedFile": "Attached file",
     "approvalWorkflow": "Approval Workflow",
     "unknownApprover": "Unknown Approver",
     "approvedAt": "Approved at",
@@ -1765,6 +1768,8 @@
     "higherApprovalRequired": "Please select whether to send to higher approval",
     "comments": "Comments",
     "enterComments": "Enter your comments here...",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach",
     "reject": "Reject",
     "approve": "Approve"
   }

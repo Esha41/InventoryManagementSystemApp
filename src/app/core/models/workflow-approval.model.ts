@@ -4,6 +4,19 @@
  */
 
 /**
+ * File upload DTO matching backend structure
+ */
+export interface FileUploadDto {
+  id: number;
+  fileUrl: string;
+  fileName: string;
+  originalName: string;
+  isMain: boolean;
+  entity: number;
+  entityId: number;
+}
+
+/**
  * Approval step in the workflow (for workflow approval detail view)
  */
 export interface WorkflowApprovalStep {
@@ -25,6 +38,7 @@ export interface WorkflowApprovalStep {
   isPending?: boolean;
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string;
+  files?: FileUploadDto[];
 }
 
 /**
@@ -110,6 +124,7 @@ export interface BaseRequestDto {
   requestPurposeName?: string;
   requestItems?: any[];
   approvalHistory?: any[];
+  files?: FileUploadDto[];
   [key: string]: any;
 }
 

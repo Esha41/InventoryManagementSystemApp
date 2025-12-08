@@ -43,11 +43,13 @@ export class UsageFormComponent {
   @Input() orderPriority: string = '';
   @Input() orderPriorities: string[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
   @Input() requesterComments: string = '';
+  @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
     this.removeCartridge.emit(id);
   }
 
+  @Output() filesChange = new EventEmitter<File[]>();
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
   @Output() usageLocationChange = new EventEmitter<string>();
@@ -216,6 +218,33 @@ export class UsageFormComponent {
         this.clearError('requesterComments');
       }
     }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      this.filesChange.emit(this.selectedFiles);
+      // Reset input to allow selecting the same files again if needed
+      input.value = '';
+    }
+  }
+
+  removeFile(index: number): void {
+    if (index >= 0 && index < this.selectedFiles.length) {
+      this.selectedFiles.splice(index, 1);
+      this.filesChange.emit(this.selectedFiles);
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
   onPrevious(): void {

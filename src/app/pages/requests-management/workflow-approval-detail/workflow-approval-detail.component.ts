@@ -14,7 +14,7 @@ import { ToastService } from '@services/toast.service';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
-import { RequestDetail, BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
+import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum, RequestStatusEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
@@ -78,6 +78,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   requestDetail: RequestDetail | null = null;
   loading: boolean = true;
   error: string | null = null;
+  orderFiles: FileUploadDto[] = []; // Files attached to the order
 
   // Collapsible sections state
   isApprovalWorkflowExpanded: boolean = true;
@@ -86,6 +87,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   comments: string = '';
   sendToHigherApproval: string = 'no'; // 'yes' = yes, 'no' = no (default is 'no')
   processing: boolean = false;
+  
+  // File upload for approval/rejection
+  approvalFiles: File[] = [];
+  approvalFileInput: HTMLInputElement | null = null;
 
   // Higher approval dropdown options
   higherApprovalOptions: { value: string; label: string }[] = [];
@@ -194,6 +199,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             this.loading = false;
             return;
           }
+
+          // Store order files if available
+          this.orderFiles = baseRequest.files || [];
 
           this.loadRequestItems(baseRequest).then(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
@@ -418,23 +426,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.processing = true;
 
-    const payload = {
-      baseRequestID: this.requestId,
-      isApproved: true,
-      comments: this.comments || undefined,
-      sendToHigherApproval: this.sendToHigherApproval === 'yes',
-      action: RequestStatusEnum.Approved
-    };
-
+    const formData = this.createApprovalFormData(true);
+    
     this.apiService.postWithAuth(
       API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
-      payload
+      formData
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.comments = '';
           this.sendToHigherApproval = 'no';
+        this.approvalFiles = [];
           // Notify other components about the status update
           this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
           // Reload to get updated status and approval history
@@ -456,23 +459,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.processing = true;
 
-    const payload = {
-      baseRequestID: this.requestId,
-      isApproved: false,
-      comments: this.comments || undefined,
-      sendToHigherApproval: this.sendToHigherApproval === 'yes',
-      action: RequestStatusEnum.Rejected
-    };
-
+    const formData = this.createApprovalFormData(false);
+    
     this.apiService.postWithAuth(
       API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
-      payload
+      formData
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.comments = '';
           this.sendToHigherApproval = 'no';
+        this.approvalFiles = [];
           // Notify other components about the status update
           this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
           // Reload to get updated status and approval history
@@ -487,6 +485,111 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           }
         }
       });
+  }
+
+  /**
+   * Create FormData for approval/rejection request with optional files
+   */
+  private createApprovalFormData(isApproved: boolean): FormData {
+    const formData = new FormData();
+    
+    // Add DTO fields (using PascalCase to match backend DTO)
+    formData.append('BaseRequestID', this.requestId.toString());
+    formData.append('IsApproved', isApproved.toString());
+    formData.append('Action', isApproved ? RequestStatusEnum.Approved.toString() : RequestStatusEnum.Rejected.toString());
+    
+    if (this.comments) {
+      formData.append('Comments', this.comments);
+    }
+    
+    if (this.sendToHigherApproval === 'yes') {
+      formData.append('SendToHigherApproval', 'true');
+    }
+    
+    // Add files if any (backend expects 'files' parameter)
+    if (this.approvalFiles && this.approvalFiles.length > 0) {
+      this.approvalFiles.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+    
+    return formData;
+  }
+
+  /**
+   * Handle file selection for approval/rejection
+   */
+  onApprovalFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.approvalFiles = [...this.approvalFiles, ...newFiles];
+      // Reset input to allow selecting the same file again
+      if (input) {
+        input.value = '';
+      }
+    }
+  }
+
+  /**
+   * Remove a file from the approval files list
+   */
+  removeApprovalFile(index: number): void {
+    if (index >= 0 && index < this.approvalFiles.length) {
+      this.approvalFiles.splice(index, 1);
+    }
+  }
+
+  /**
+   * Download a file from approval history
+   */
+  downloadApprovalFile(file: any): void {
+    if (!file || !file.id) {
+      return;
+    }
+    console.log(file);
+    const downloadUrl = this.fileUploadService.getFileDownloadUrl(file.id);
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    
+    const fileName = file.originalName || file.fileName || 'download';
+    
+    this.http.get(downloadUrl, {
+      headers: headers,
+      responseType: 'blob'
+    })
+    .pipe(
+      takeUntil(this.destroy$),
+      catchError((error: any) => {
+        console.error('Failed to download file:', error);
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
+          this.toastService.error(
+            ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
+            translations['toast.error']
+          );
+        });
+        return throwError(() => error);
+      })
+    )
+    .subscribe({
+      next: (blob: Blob) => {
+        // Create blob URL and trigger download
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      },
+      error: () => {
+        // Error already handled in catchError
+      }
+    });
   }
 
   /**

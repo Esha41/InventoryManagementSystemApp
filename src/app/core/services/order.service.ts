@@ -101,15 +101,76 @@ export class OrderService {
     return `${this.config.apiUrl}/Order`;
   }
 
-  createOrder(payload: CreateOrderRequest): Observable<APIOperationResponse<number>> {
+  createOrder(payload: CreateOrderRequest, files?: File[]): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
+    
+    // If files are provided, send as FormData (multipart/form-data)
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      
+      // Append DTO fields matching backend CreateOrderDto structure
+      // Backend sets: RequestType, Status, CreationDate, CreatedBy, DepartmentId, RequesterId, RequestNo
+      if (payload.reason) formData.append('Reason', payload.reason);
+      formData.append('Priority', payload.priority.toString());
+      if (payload.notes) formData.append('Notes', payload.notes);
+      formData.append('RequestPurposeId', payload.requestPurposeId.toString());
+      formData.append('IsFromAllowance', payload.isFromAllowance.toString());
+      formData.append('UsageDateFrom', payload.usageDateFrom);
+      formData.append('UsageTimeFrom', payload.usageTimeFrom);
+      formData.append('UsageDateTo', payload.usageDateTo);
+      formData.append('UsageTimeTo', payload.usageTimeTo);
+      if (payload.usagePurpose) formData.append('UsagePurpose', payload.usagePurpose);
+      if (payload.annualDiscard !== null && payload.annualDiscard !== undefined) {
+        formData.append('AnnualDiscard', payload.annualDiscard.toString());
+      }
+      if (payload.usageLocation) formData.append('UsageLocation', payload.usageLocation);
+      if (payload.numberOfOfficer !== null && payload.numberOfOfficer !== undefined) {
+        formData.append('NumberOfOfficer', payload.numberOfOfficer.toString());
+      }
+      if (payload.numberOfOtherRank !== null && payload.numberOfOtherRank !== undefined) {
+        formData.append('NumberOfOtherRank', payload.numberOfOtherRank.toString());
+      }
+      
+      // Append RequestItems array - ASP.NET Core expects indexed notation for arrays
+      if (payload.requestItems && payload.requestItems.length > 0) {
+        payload.requestItems.forEach((item, index) => {
+          formData.append(`RequestItems[${index}].ItemId`, item.itemId.toString());
+          formData.append(`RequestItems[${index}].Quantity`, item.quantity.toString());
+          if (item.notes) {
+            formData.append(`RequestItems[${index}].Notes`, item.notes);
+          }
+        });
+      }
+      
+      // Append files
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+      
+      // Get auth token and set headers
+      const token = localStorage.getItem('auth_token');
+      const headers: { [key: string]: string } = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      // Don't set Content-Type - browser will set it with boundary for FormData
+      
+      return this.http.post<APIOperationResponse<number>>(this.baseUrl, formData, { headers }).pipe(
+        catchError(error => {
+          this.config.logError('Failed to create order with files', error);
+          return throwError(() => error);
+        })
+      );
+    }
+    
+    // No files - send as JSON (application/json)
     return this.http.post<APIOperationResponse<number>>(this.baseUrl, payload).pipe(
       catchError(error => {
         this.config.logError('Failed to create order', error);
         return throwError(() => error);
       })
     );
-}
+  }
 
   getAllOrders(): Observable<OrderDto[]> {
     this.config.log('Fetching all orders');
