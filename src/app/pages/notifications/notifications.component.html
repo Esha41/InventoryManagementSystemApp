@@ -113,15 +113,15 @@
                   <div class="min-w-0 flex-1 space-y-1">
                     <div class="flex items-center justify-between gap-2">
                       <h3 class="truncate text-sm font-semibold text-[var(--color-text)]">
-                        {{ notification.title || ('notifications.genericType' | translate) }}
+                        {{ translateNotificationTitle(notification.title) }}
                       </h3>
                       <span class="text-xs text-[var(--color-text-muted)]">
-                        {{ notification.createdAt | date:'MMM d, y, HH:mm' }}
+                        {{ notification.createdAt | date:'medium' }}
                       </span>
                     </div>
 
                     <p class="notification-item__message">
-                      {{ notification.message }}
+                      {{ translateNotificationMessage(notification.message) }}
                     </p>
 
                     <div class="flex items-center gap-2">
@@ -134,7 +134,7 @@
                       </span>
 
                       <span *ngIf="notification.type" class="badge badge--muted">
-                        {{ notification.type }}
+                        {{ translateEntityType(notification.type) }}
                       </span>
                     </div>
                   </div>
@@ -156,11 +156,11 @@
                 <div class="flex items-center gap-3">
                   <lucide-angular [img]="notification.isRead ? MailOpen : Mail" class="h-6 w-6 text-[var(--color-brand)]"></lucide-angular>
                   <h2 class="text-2xl font-semibold text-[var(--color-text)] break-words">
-                    {{ notification.title || ('notifications.genericType' | translate) }}
+                    {{ translateNotificationTitle(notification.title) }}
                   </h2>
                 </div>
                 <p class="text-sm text-[var(--color-text-muted)] break-words">
-                  {{ notification.message }}
+                  {{ translateNotificationMessage(notification.message) }}
                 </p>
               </div>
 
@@ -199,7 +199,7 @@
                 </div>
                 <div>
                   <p class="info-pill__label">{{ 'notifications.notificationType' | translate }}</p>
-                  <p class="info-pill__value">{{ notification.type }}</p>
+                  <p class="info-pill__value">{{ translateEntityType(notification.type) }}</p>
                 </div>
               </div>
               <div class="info-pill">
@@ -216,12 +216,12 @@
           <div class="detail-section" *ngIf="detailLoading">
             <div class="detail-loader">
               <div class="detail-loader__spinner spinner"></div>
-              <span>{{ 'common.loading' | translate }}...</span>
+              <span>{{ 'common.loadingWithDots' | translate }}</span>
             </div>
           </div>
 
           <div class="detail-section detail-section--error" *ngIf="!detailLoading && detailError">
-            <span>{{ detailError }}</span>
+            <span>{{ detailError | translate }}</span>
           </div>
 
           <div class="detail-section" *ngIf="!detailLoading && !detailError && detailType === 'order' && orderDetail">
@@ -242,11 +242,11 @@
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                <span class="detail-field__value">{{ orderDetail.departmentNameEn || orderDetail.departmentNameAr || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedDepartmentName(orderDetail.departmentNameEn, orderDetail.departmentNameAr) }}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                <span class="detail-field__value">{{ orderDetail.requesterName || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedRequesterName(orderDetail.requesterName) }}</span>
               </div>
               <div class="detail-field" *ngIf="orderDetail.priority">
                 <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
@@ -259,7 +259,7 @@
             </div>
             <div class="detail-field" *ngIf="orderDetail.requestPurposeNameEn || orderDetail.requestPurposeNameAr">
               <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-              <span class="detail-field__value">{{ orderDetail.requestPurposeNameEn || orderDetail.requestPurposeNameAr }}</span>
+              <span class="detail-field__value">{{ getLocalizedPurposeName(orderDetail.requestPurposeNameEn, orderDetail.requestPurposeNameAr) }}</span>
             </div>
             <div class="detail-field" *ngIf="orderDetail.notes">
               <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
@@ -289,11 +289,11 @@
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                <span class="detail-field__value">{{ returnDetail.departmentName || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.departmentName) }}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                <span class="detail-field__value">{{ returnDetail.requesterName || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requesterName) }}</span>
               </div>
               <div class="detail-field" *ngIf="returnDetail.priority">
                 <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
@@ -306,7 +306,7 @@
             </div>
             <div class="detail-field" *ngIf="returnDetail.requestPurposeName">
               <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-              <span class="detail-field__value">{{ returnDetail.requestPurposeName }}</span>
+              <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requestPurposeName) }}</span>
             </div>
             <div class="detail-field" *ngIf="returnDetail.reason">
               <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
@@ -340,11 +340,11 @@
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                <span class="detail-field__value">{{ discardDetail.departmentName || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.departmentName) }}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                <span class="detail-field__value">{{ discardDetail.requesterName || '—' }}</span>
+                <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requesterName) }}</span>
               </div>
               <div class="detail-field" *ngIf="discardDetail.priority">
                 <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
@@ -357,7 +357,7 @@
             </div>
             <div class="detail-field" *ngIf="discardDetail.requestPurposeName">
               <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-              <span class="detail-field__value">{{ discardDetail.requestPurposeName }}</span>
+              <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requestPurposeName) }}</span>
             </div>
             <div class="detail-field" *ngIf="discardDetail.reason">
               <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
@@ -494,7 +494,7 @@
         (input)="formatMilitaryTime($event)"
         maxlength="4"
         pattern="[0-9]{4}"
-        placeholder="HHMM (e.g., 1430)"
+        [placeholder]="'newIssueRequest.selectTimePlaceholder' | translate"
         class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]"
       />
       <p class="text-xs text-red-500" *ngIf="proposeForm.get('pickupTime')?.invalid && proposeForm.get('pickupTime')?.touched">

@@ -42,14 +42,13 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     status: 'Active'
   };
   
-  selectedWorkflowType: number = 1; // Default workflow type
+  selectedWorkflowType: number = 1;
   
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  // Steps UI state (client-side only for now)
   steps: Array<{ 
     roleId: string | null; 
     applicationEntityId: number | null; 
@@ -61,7 +60,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   }>=[];
 
   roles: RoleDto[] = [];
-  // Full application entities cache loaded once
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
   readonly workflowStatusOptions = [
@@ -106,7 +104,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     
     if (this.hasOpenDropdown) {
       this.repositionDropdowns();
-      // Reposition on scroll
       if (!this.positioningInterval) {
         document.addEventListener('scroll', this.repositionDropdowns.bind(this), true);
         this.positioningInterval = setInterval(() => {
@@ -125,7 +122,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         this.positioningInterval = undefined;
         document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
       }
-      // Reset all dropdown panels
       document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
         panel.style.position = '';
         panel.style.top = '';
@@ -148,16 +144,13 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       const panel = dropdown.querySelector('.app-dropdown-panel') as HTMLElement;
       if (!panel) return;
 
-      // Check if dropdown is inside scroll container
       if (scrollContainer.contains(dropdown)) {
         const triggerRect = trigger.getBoundingClientRect();
         
-        // Calculate position relative to viewport
-        const top = triggerRect.bottom + 8; // 0.5rem = 8px
+        const top = triggerRect.bottom + 8;
         const left = triggerRect.left;
         const width = triggerRect.width;
 
-        // Apply fixed positioning to escape overflow clipping
         panel.style.position = 'fixed';
         panel.style.top = `${top}px`;
         panel.style.left = `${left}px`;
@@ -171,10 +164,8 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Initialize with Active status
     this.workflowForm.status = 'Active';
     
-    // Set up mutation observer to watch for dropdown state changes
     setTimeout(() => {
       this.mutationObserver = new MutationObserver(() => {
         this.checkAndPositionDropdowns();
@@ -190,25 +181,20 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         });
       }
 
-      // Also listen for clicks to detect dropdown toggles
       document.addEventListener('click', this.handleDocumentClick.bind(this));
       
-      // Initial check
       this.checkAndPositionDropdowns();
     }, 0);
-    // Load roles for steps dropdown
     this.backendUserService.getAllRolesSimple().subscribe({
       next: roles => this.roles = roles,
       error: () => this.roles = []
     });
-    // Load all application entities once, used to render names
     this.loadApplicationEntities();
 
-    // Subscribe to language changes to update entity names
     this.translate.onLangChange.subscribe(() => {
       this.loadApplicationEntities();
     });
-    const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
+    const lang = this.translationService.getCurrentLanguage();
     this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
 
     if (this.workflowTypes.length > 0) {
@@ -224,7 +210,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
           const id = e?.id ?? e?.applicationEntityId ?? e;
           const localizedName = getLocalizedName(e, currentLang);
           const fallback = e?.name || e?.displayName || e?.entityName || e?.applicationEntityName || e?.title || e?.label;
-          return { id, name: localizedName || fallback || String(id), entity: e }; // Store entity for dynamic updates
+          return { id, name: localizedName || fallback || String(id), entity: e };
         });
       },
       error: () => { this.allApplicationEntities = []; }
@@ -247,12 +233,11 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Build backend payload
     const payload = {
       workflowName: this.workflowForm.name.trim(),
       workflowType: this.selectedWorkflowType,
       isActive: this.workflowForm.status === 'Active',
-      isSpecialOrReserved: false, // default - can add UI control later
+      isSpecialOrReserved: false,
       workflowSteps: (this.steps || []).map((s, idx) => ({
         stepOrder: idx + 1,
         applicationRoleId: s.roleId as string,
@@ -264,9 +249,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         reserveQty: false
       }))
     };
-
-    // Log payload being sent to backend
-    console.log('Create Workflow payload:', JSON.stringify(payload, null, 2));
 
     this.submitting = true;
     this.errorMessage = null;
@@ -283,7 +265,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.submitting = false;
         this.errorMessage = error.message || 'Failed to create workflow';
-        console.error('Error creating workflow:', error);
         
         this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: any) => {
           const errorMsg = error.message || translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
@@ -306,7 +287,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.successMessage = null;
   }
 
-  // Steps handlers
   addStep(): void {
     if (this.steps.length > 0) {
       const lastIndex = this.steps.length - 1;
@@ -330,7 +310,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       errors: { role: true, entity: true, higherRole: false, higherEntity: false }
     });
 
-    // Scroll to the newly added row after Angular updates the view
     setTimeout(() => {
       const scrollContainer = document.querySelector('.steps-table-scroll-container');
       if (scrollContainer) {
@@ -348,9 +327,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     if (!step || !step.roleId) { step.entities = []; step.applicationEntityId = null; return; }
     this.backendUserService.getApplicationEntitiesByRole(step.roleId).subscribe({
       next: ids => {
-        console.log('ids', ids);
         step.entities = ids;
-        // reset selection if not in list
         if (!ids.includes(step.applicationEntityId || -1)) {
           step.applicationEntityId = null;
         }
@@ -361,7 +338,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.updateStepErrors(index);
   }
 
-  // Returns the list of entity objects allowed for this step (filtered by IDs)
   getEntitiesForStep(index: number): Array<{ id: number; name?: string }> {
     const step = this.steps[index];
     if (!step || !Array.isArray(step.entities) || step.entities.length === 0) {
@@ -373,7 +349,6 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       .map(e => ({ id: e.id, name: e.name }));
   }
 
-  // Human‑readable order label supporting up to 100 steps
   orderLabel(n: number): string {
     if (n <= 0) {
       return String(n);

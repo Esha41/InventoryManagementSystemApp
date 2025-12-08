@@ -51,7 +51,7 @@
     "requester": "Requester",
     "reason": "Reason",
     "comments": "Comments",
-    "optional": "Optional"
+    "notAvailable": "Not Available"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -226,6 +226,37 @@
       "noItems": "No items in this request",
       "quantity": "Quantity",
       "unknown": "Details are not available for this notification."
+    },
+    "titles": {
+      "orderCreated": "Order Created",
+      "returnCreated": "Return Created",
+      "discardCreated": "Discard Created",
+      "orderApproved": "Order Approved",
+      "orderRejected": "Order Rejected",
+      "returnApproved": "Return Approved",
+      "returnRejected": "Return Rejected",
+      "discardApproved": "Discard Approved",
+      "discardRejected": "Discard Rejected"
+    },
+    "messages": {
+      "orderCreated": "Order request {{requestNo}} has been created{{fromAllowance}}.",
+      "orderCreatedFromAllowance": " from allowance",
+      "returnCreated": "Return request {{requestNo}} has been created.",
+      "discardCreated": "Discard request {{requestNo}} has been created.",
+      "orderApproved": "Order request {{requestNo}} has been approved.",
+      "orderRejected": "Order request {{requestNo}} has been rejected.",
+      "returnApproved": "Return request {{requestNo}} has been approved.",
+      "returnRejected": "Return request {{requestNo}} has been rejected.",
+      "discardApproved": "Discard request {{requestNo}} has been approved.",
+      "discardRejected": "Discard request {{requestNo}} has been rejected."
+    },
+    "entityTypes": {
+      "order": "Order",
+      "return": "Return",
+      "discard": "Discard",
+      "Order": "Order",
+      "Return": "Return",
+      "Discard": "Discard"
     }
   },
   "newIssueRequest": {
@@ -609,6 +640,7 @@
     "backToWarehouses": "Back to Warehouses",
     "totalItems": "Total Items",
     "addInventory": "Add Inventory",
+    "searchPlaceholder": "Search by item name, item number, supplier, lot...",
     "itemName": "Item Name",
     "itemNo": "Item No / Caliber",
     "hcc": "HCC",
@@ -619,6 +651,7 @@
     "quantity": "QUANTITY",
     "currentQty": "Current Qty",
     "expiryDate": "EXPIRY DATE",
+    "readyForIssue": "Ready for Issue",
     "actions": "ACTIONS",
     "showing": "Showing",
     "of": "of",

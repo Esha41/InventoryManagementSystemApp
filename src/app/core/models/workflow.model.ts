@@ -34,7 +34,7 @@ export interface WorkflowDto {
 export interface BackendWorkflowDto {
   id: number;
   workflowName: string;
-  workflowType: number;
+  workflowType: number | string; // Can be string enum from backend or numeric
   workflowTypeName?: string;
   isActive: boolean;
   isDeleted?: boolean;

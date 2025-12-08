@@ -38,8 +38,32 @@ export class WorkflowService {
       name: WORKFLOW_TYPE_NAMES[id as WorkflowType][lang]
     }));
 }
- getWorkflowTypeNameById(id: number, lang: 'en' | 'ar'): string {
-  const workflow = WORKFLOW_TYPE_NAMES[id as WorkflowType];
+
+ /**
+  * Convert string enum value (from backend) to numeric ID
+  */
+ private convertWorkflowTypeToId(workflowType: any): number {
+  if (typeof workflowType === 'number') {
+    return workflowType;
+  }
+  
+  // Handle string enum values from backend
+  const stringValue = String(workflowType);
+  switch (stringValue) {
+    case 'NoramlOrder': return WorkflowType.NoramlOrder;
+    case 'OrderFromAllowance': return WorkflowType.OrderFromAllowance;
+    case 'Return': return WorkflowType.Return;
+    case 'Discard': return WorkflowType.Discard;
+    default:
+      console.warn('Unknown workflow type:', workflowType);
+      return 0;
+  }
+}
+
+ getWorkflowTypeNameById(id: number | string, lang: 'en' | 'ar'): string {
+  // Convert to numeric ID if string
+  const numericId = this.convertWorkflowTypeToId(id);
+  const workflow = WORKFLOW_TYPE_NAMES[numericId as WorkflowType];
   return workflow ? workflow[lang] : 'Unknown';
 }
   
@@ -63,13 +87,14 @@ export class WorkflowService {
         // Map backend fields to UI model expected by components
         const mapped: WorkflowDto[] = rawItems.map(w => {
           const status = w.isActive ? 'Active' : 'Inactive';
-          console.log(`Workflow ${w.id} (${w.workflowName}): isActive=${w.isActive}, status=${status}`);
+          const numericWorkflowType = this.convertWorkflowTypeToId(w.workflowType);
+          console.log(`Workflow ${w.id} (${w.workflowName}): isActive=${w.isActive}, status=${status}, workflowType=${w.workflowType} -> ${numericWorkflowType}`);
           return {
             id: w.id,
             name: w.workflowName,
             approvalStages: Array.isArray(w.workflowSteps) ? w.workflowSteps.length : 0,
             status: status,
-            workflowType: w.workflowType,
+            workflowType: numericWorkflowType,
             workflowTypeName: (w as any).workflowTypeName || undefined
           };
         });

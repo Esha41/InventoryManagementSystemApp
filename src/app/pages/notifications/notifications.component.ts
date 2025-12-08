@@ -40,6 +40,7 @@ import {
 } from '@utils/notification.utils';
 import { NotificationDetailService } from '@services/notification-detail.service';
 import { TranslationService } from '@services/translation.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-notifications',
@@ -423,7 +424,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.detailLoading = false;
-          this.detailError = this.translateService.instant('notifications.details.unknown');
+          this.detailError = 'notifications.details.unknown';
         }
       });
   }
@@ -451,6 +452,181 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    */
   getStatusLabelTranslation(status: number | string | null | undefined): string {
     return getStatusLabelTranslation(status);
+  }
+
+  /**
+   * Get localized department name (prefers Arabic when language is Arabic)
+   */
+  getLocalizedDepartmentName(departmentNameEn?: string | null, departmentNameAr?: string | null): string {
+    const lang = getCurrentLang(this.translateService);
+    if (lang === 'ar') {
+      return departmentNameAr || departmentNameEn || this.translateService.instant('common.notAvailable');
+    }
+    return departmentNameEn || departmentNameAr || this.translateService.instant('common.notAvailable');
+  }
+
+  /**
+   * Get localized requester name
+   */
+  getLocalizedRequesterName(requesterName?: string | null): string {
+    return requesterName || this.translateService.instant('common.notAvailable');
+  }
+
+  /**
+   * Get localized request purpose name (prefers Arabic when language is Arabic)
+   */
+  getLocalizedPurposeName(purposeNameEn?: string | null, purposeNameAr?: string | null, purposeName?: string | null): string {
+    const lang = getCurrentLang(this.translateService);
+    if (lang === 'ar') {
+      return purposeNameAr || purposeNameEn || purposeName || this.translateService.instant('common.notAvailable');
+    }
+    return purposeNameEn || purposeNameAr || purposeName || this.translateService.instant('common.notAvailable');
+  }
+
+  /**
+   * Get localized value helper (for ReturnDto and DiscardDto which may have single name field)
+   */
+  getLocalizedValue(en: string | undefined | null, ar: string | undefined | null): string {
+    const lang = getCurrentLang(this.translateService);
+    if (lang === 'ar') {
+      return ar || en || this.translateService.instant('common.notAvailable');
+    }
+    return en || ar || this.translateService.instant('common.notAvailable');
+  }
+
+  /**
+   * Translate notification title from backend English to current language
+   */
+  translateNotificationTitle(title: string | null | undefined): string {
+    if (!title) {
+      return this.translateService.instant('notifications.genericType');
+    }
+
+    const titleLower = title.trim();
+    
+    // Map common title patterns to translation keys
+    const titleMap: Record<string, string> = {
+      'order created': 'notifications.titles.orderCreated',
+      'return created': 'notifications.titles.returnCreated',
+      'discard created': 'notifications.titles.discardCreated',
+      'order approved': 'notifications.titles.orderApproved',
+      'order rejected': 'notifications.titles.orderRejected',
+      'return approved': 'notifications.titles.returnApproved',
+      'return rejected': 'notifications.titles.returnRejected',
+      'discard approved': 'notifications.titles.discardApproved',
+      'discard rejected': 'notifications.titles.discardRejected'
+    };
+
+    const translationKey = titleMap[titleLower.toLowerCase()];
+    if (translationKey) {
+      return this.translateService.instant(translationKey);
+    }
+
+    // If no match, return original (might be already translated or custom)
+    return title;
+  }
+
+  /**
+   * Translate notification message from backend English to current language
+   */
+  translateNotificationMessage(message: string | null | undefined): string {
+    if (!message) {
+      return '';
+    }
+
+    const messageTrimmed = message.trim();
+    const messageLower = messageTrimmed.toLowerCase();
+    
+    // Extract request number (handles patterns like ORD-2025-000003-MP, RET-2025-000001, etc.)
+    const requestNoMatch = messageTrimmed.match(/(ORD|RET|DIS)-[\d\-A-Z]+/i);
+    const requestNo = requestNoMatch ? requestNoMatch[0] : '';
+    
+    // Check for "from allowance" pattern
+    const fromAllowance = messageLower.includes('from allowance') 
+      ? this.translateService.instant('notifications.messages.orderCreatedFromAllowance')
+      : '';
+
+    // Map common message patterns to translation keys
+    // Handle "Order request {RequestNo} has been created" pattern
+    if (messageLower.includes('order request') && messageLower.includes('has been created')) {
+      return this.translateService.instant('notifications.messages.orderCreated', {
+        requestNo: requestNo,
+        fromAllowance: fromAllowance
+      });
+    }
+    // Handle "Return request {RequestNo} has been created" pattern
+    if (messageLower.includes('return request') && messageLower.includes('has been created')) {
+      return this.translateService.instant('notifications.messages.returnCreated', {
+        requestNo: requestNo
+      });
+    }
+    // Handle "Discard request {RequestNo} has been created" pattern
+    if (messageLower.includes('discard request') && messageLower.includes('has been created')) {
+      return this.translateService.instant('notifications.messages.discardCreated', {
+        requestNo: requestNo
+      });
+    }
+    // Handle approval patterns
+    if (messageLower.includes('order request') && messageLower.includes('has been approved')) {
+      return this.translateService.instant('notifications.messages.orderApproved', {
+        requestNo: requestNo
+      });
+    }
+    if (messageLower.includes('order request') && messageLower.includes('has been rejected')) {
+      return this.translateService.instant('notifications.messages.orderRejected', {
+        requestNo: requestNo
+      });
+    }
+    if (messageLower.includes('return request') && messageLower.includes('has been approved')) {
+      return this.translateService.instant('notifications.messages.returnApproved', {
+        requestNo: requestNo
+      });
+    }
+    if (messageLower.includes('return request') && messageLower.includes('has been rejected')) {
+      return this.translateService.instant('notifications.messages.returnRejected', {
+        requestNo: requestNo
+      });
+    }
+    if (messageLower.includes('discard request') && messageLower.includes('has been approved')) {
+      return this.translateService.instant('notifications.messages.discardApproved', {
+        requestNo: requestNo
+      });
+    }
+    if (messageLower.includes('discard request') && messageLower.includes('has been rejected')) {
+      return this.translateService.instant('notifications.messages.discardRejected', {
+        requestNo: requestNo
+      });
+    }
+
+    // If no match, return original (might be already translated or custom)
+    return messageTrimmed;
+  }
+
+  /**
+   * Translate notification entity type
+   */
+  translateEntityType(type: string | null | undefined): string {
+    if (!type) {
+      return '';
+    }
+
+    const typeKey = `notifications.entityTypes.${type}`;
+    const translated = this.translateService.instant(typeKey);
+    
+    // If translation key doesn't exist, it returns the key itself, so check if it's different
+    if (translated !== typeKey) {
+      return translated;
+    }
+
+    // Fallback: try with lowercase
+    const typeKeyLower = `notifications.entityTypes.${type.toLowerCase()}`;
+    const translatedLower = this.translateService.instant(typeKeyLower);
+    if (translatedLower !== typeKeyLower) {
+      return translatedLower;
+    }
+
+    // If still no match, return original
+    return type;
   }
 
   hasNotificationActions(notification: Notification | null): boolean {

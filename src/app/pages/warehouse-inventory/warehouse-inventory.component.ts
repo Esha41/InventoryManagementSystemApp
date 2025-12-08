@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, switchMap, timer } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X } from 'lucide-angular';
+import { debounceTime, startWith, map, combineLatest } from 'rxjs/operators';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X, Search } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { WeaponService } from '@services/weapon.service';
@@ -29,6 +30,7 @@ import { TranslationService } from '@services/translation.service';
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     LucideAngularModule,
     TranslateModule,
@@ -70,6 +72,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Eye = Eye;
   readonly X = X;
+  readonly Search = Search;
+
+  // Search
+  searchControl = new FormControl<string>('', { nonNullable: true });
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -117,6 +123,17 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         if (this.currentDepot) {
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
         }
+      });
+
+    // Subscribe to search changes
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        startWith(this.searchControl.value),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.applyFilters();
       });
   }
 
@@ -173,7 +190,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           const uniqueDetails = this.removeDuplicateItems(normalizedDetails);
 
           this.inventoryDetails = uniqueDetails;
-          this.filterInventoryByTab();
+          this.applyFilters();
           this.loading = false;
         },
         error: (error) => {
@@ -241,7 +258,63 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
     this.activeTab = tab;
     this.currentPage = 1;
-    this.filterInventoryByTab();
+    this.applyFilters();
+  }
+
+  /**
+   * Apply both tab filter and search filter
+   */
+  private applyFilters(): void {
+    let filtered = this.inventoryDetails;
+
+    // Apply tab filter
+    filtered = this.filterByTab(filtered);
+
+    // Apply search filter
+    const searchTerm = this.searchControl.value.trim().toLowerCase();
+    if (searchTerm) {
+      filtered = filtered.filter(detail => {
+        const itemName = this.getItemName(detail).toLowerCase();
+        const itemNo = this.getItemNo(detail).toLowerCase();
+        const supplierName = this.getSupplierName(detail).toLowerCase();
+        const lot = detail.lot?.toString().toLowerCase() || '';
+        const batchNo = detail.batchNo?.toLowerCase() || '';
+        
+        return itemName.includes(searchTerm) ||
+               itemNo.includes(searchTerm) ||
+               supplierName.includes(searchTerm) ||
+               lot.includes(searchTerm) ||
+               batchNo.includes(searchTerm);
+      });
+    }
+
+    this.filteredInventoryDetails = filtered;
+    this.validateCurrentPage();
+  }
+
+  /**
+   * Filter inventory by active tab
+   */
+  private filterByTab(details: InventoryDetailDto[]): InventoryDetailDto[] {
+    if (this.activeTab === 'ammunition') {
+      return details.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        const isAmmunition = itemType === 1;
+        const isUndefinedAndNotStatic = itemType === undefined && !this.isStaticItem(d);
+        return isAmmunition || isUndefinedAndNotStatic;
+      });
+    } else if (this.activeTab === 'weapon') {
+      return details.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        return itemType === 2;
+      });
+    } else if (this.activeTab === 'explosive') {
+      return details.filter(d => {
+        const itemType = this.normalizeItemType(d.item?.itemType);
+        return itemType === 3;
+      });
+    }
+    return details;
   }
 
   private normalizeItemType(itemType: ItemType | string | number | undefined): number | undefined {
@@ -258,30 +331,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     return Number(itemType);
   }
 
-  private filterInventoryByTab(): void {
-    if (this.activeTab === 'ammunition') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        const isAmmunition = itemType === 1;
-        const isUndefinedAndNotStatic = itemType === undefined && !this.isStaticItem(d);
-        return isAmmunition || isUndefinedAndNotStatic;
-      });
-    } else if (this.activeTab === 'weapon') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        return itemType === 2;
-      });
-    } else if (this.activeTab === 'explosive') {
-      this.filteredInventoryDetails = this.inventoryDetails.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        return itemType === 3;
-      });
-    } else {
-      this.filteredInventoryDetails = this.inventoryDetails;
-    }
-
-    this.validateCurrentPage();
-  }
 
   get totalPages(): number {
     const totalItems = this.filteredInventoryDetails.length;
@@ -515,7 +564,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
                   reservedQuantityByOrdersOnProcessing: this.inventoryDetails[index].reservedQuantityByOrdersOnProcessing,
                   remainingQuantity: this.inventoryDetails[index].remainingQuantity
                 };
-                this.filterInventoryByTab();
+                this.applyFilters();
               }
             }
           }
@@ -573,7 +622,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
           // Update inventory details with fresh data
           this.inventoryDetails = uniqueDetails;
-          this.filterInventoryByTab();
+          this.applyFilters();
           this.loading = false;
         },
         error: (error) => {

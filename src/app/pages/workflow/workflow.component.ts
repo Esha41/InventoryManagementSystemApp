@@ -41,19 +41,16 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   loading = false;
   errorMessage: string | null = null;
   
-  // Pagination
   currentPage: number = 1;
   rowsPerPage: number = 10;
   readonly rowsPerPageOptions = [5, 10, 20, 50];
 
-  // Modal state
   showViewModal = false;
   showEditModal = false;
   showDeleteDialog = false;
   workflowToDelete: { id: number; name: string } | null = null;
   selectedWorkflow: any = null;
   
-  // Delete dialog translations
   deleteDialogTitle = '';
   deleteDialogMessage = '';
   deleteDialogDescription = '';
@@ -68,7 +65,6 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     { label: 'Inactive', value: 'Inactive' as const }
   ];
 
-  // Dropdown positioning state for edit modal
   hasOpenDropdown = false;
   private mutationObserver?: MutationObserver;
   private positioningInterval?: any;
@@ -88,14 +84,12 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadWorkflows();
-    // Preload roles and application entities for edit modal
     this.backendUserService.getAllRolesSimple().subscribe({ next: r => this.roles = r, error: () => this.roles = [] });
     this.loadApplicationEntities();
     
-    const lang = this.translationService.getCurrentLanguage(); // 'ar' or 'en'
+    const lang = this.translationService.getCurrentLanguage();
     this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
 
-    // Subscribe to language changes to update entity names
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -110,7 +104,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.allApplicationEntities = (entities || []).map((e: any) => {
           const id = e?.id ?? e?.applicationEntityId ?? e;
           const localizedName = getLocalizedName(e, currentLang);
-          return { id, name: localizedName || String(id), entity: e }; // Store entity for dynamic updates
+          return { id, name: localizedName || String(id), entity: e };
         });
       },
       error: () => { this.allApplicationEntities = []; }
@@ -141,17 +135,20 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.validateCurrentPage();
   }
 
-getWorkflowType (id: number)
-{
-  console.log("dd");
- return this.workflowService. getWorkflowTypeNameById(id, this.translationService.getCurrentLanguage());
-console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationService.getCurrentLanguage()));
+getWorkflowType(id: number | string): string {
+  if (id === null || id === undefined) {
+    return 'Unknown';
+  }
+  
+  const lang = this.translationService.getCurrentLanguage();
+  const typeName = this.workflowService.getWorkflowTypeNameById(id, lang);
+  
+  return typeName;
 }
   loadWorkflows(): void {
     this.loading = true;
     this.errorMessage = null;
     
-    console.log('Loading workflows...');
     this.workflowService.getWorkflows().subscribe({
       next: (workflows) => {
         this.workflows = workflows;
@@ -163,7 +160,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
       error: (error) => {
         this.errorMessage = error.message || 'Failed to load workflows';
         this.loading = false;
-        console.error('Error loading workflows:', error);
       }
     });
   }
@@ -221,10 +217,8 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   onEdit(id: number): void {
     const target = this.workflows.find(w => w.id === id);
     if (!target) return;
-    // Load workflow detail to get accurate status and steps
     this.workflowService.getWorkflowDetailById(id).subscribe({
       next: wf => {
-        // Get status from the detail API (isActive boolean)
         const status = wf?.isActive ? 'Active' : 'Inactive';
         this.editForm = { 
           id: wf?.id || target.id, 
@@ -243,18 +237,15 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
           higherApplicationEntityId: (s as any).higherApplicationEntityId || null
         }));
         this.showEditModal = true;
-        // Initialize dropdown positioning after modal opens
         setTimeout(() => {
           this.initializeEditModalDropdowns();
         }, 0);
       },
       error: () => {
-        // Fallback to list data if detail fails
         this.editForm = { id: target.id, name: target.name, status: (target.status as any), workflowType: target.workflowType };
         this.editWorkflowType = target.workflowType || 1;
         this.editSteps = [];
         this.showEditModal = true;
-        // Initialize dropdown positioning after modal opens
         setTimeout(() => {
           this.initializeEditModalDropdowns();
         }, 0);
@@ -286,7 +277,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
   }
 
   onAddWorkflow(): void {
-    // Navigate to add workflow page
     this.router.navigate(['/workflow/add']);
   }
   addEditStep(): void { this.editSteps.push({ order: this.editSteps.length + 1, roleId: null, applicationEntityId: null, requireHigherApproval: false, higherApprovalRoleId: null, higherApplicationEntityId: null }); }
@@ -299,7 +289,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     const workflowName = getLocalizedName(workflow, getCurrentLang(this.translate));
     this.workflowToDelete = { id: workflow.id, name: workflowName };
     
-    // Load translations synchronously using instant()
     this.deleteDialogTitle = this.translate.instant('workflow.deleteConfirmation.title');
     this.deleteDialogMessage = this.translate.instant('workflow.deleteConfirmation.message');
     const workflowLabel = this.translate.instant('workflow.deleteConfirmation.workflow');
@@ -327,7 +316,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
         this.workflowToDelete = null;
       },
       error: (error) => {
-        console.error('Failed to delete workflow:', error);
         this.errorMessage = error.message || 'Failed to delete workflow';
         
         this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: any) => {
@@ -356,7 +344,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
 
   getWorkflowTypeName(type?: number): string {
     if (type === undefined || type === null) return '-';
-    // Map workflow type numbers to names
     const workflowTypes: { [key: number]: string } = {
       1: 'Type 1',
       2: 'Type 2',
@@ -367,7 +354,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     return workflowTypes[type] || `Type ${type}`;
   }
 
-  // Helpers to display names in View modal
   getRoleNameById(roleId?: string | null): string {
     if (!roleId) return '';
     const r = this._findRole(roleId);
@@ -378,7 +364,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     if (entityId === undefined || entityId === null) return '';
     const e = this.allApplicationEntities.find(x => x.id === entityId);
     if (e) {
-      // Use stored entity if available, otherwise use cached name
       const entity = (e as any).entity;
       if (entity) {
         return getLocalizedName(entity, getCurrentLang(this.translate)) || e.name || String(e.id);
@@ -388,12 +373,10 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     return String(entityId);
   }
 
-  // Helper method for template
   getWorkflowName(workflow: any): string {
     return getLocalizedName(workflow, getCurrentLang(this.translate)) || workflow?.name || '';
   }
 
-  // Resolve varying backend field names for higher approval entity/role
   resolveHigherApplicationEntityId(step: any): number | null {
     if (!step) return null;
     return step.higherApplicationEntityId ?? step.higherApprovalApplicationEntityId ?? step.higherApprovalEntityId ?? null;
@@ -408,7 +391,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     return this.roles.find(r => r.id === id);
   }
 
-  // Human‑readable order label supporting up to 100 steps
   orderLabel(n: number): string {
     if (n <= 0) {
       return String(n);
@@ -591,17 +573,12 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
     if (!this.editForm) return;
     const editId = this.editForm.id;
     
-    // Log the status being saved
-    console.log('Saving workflow with status:', this.editForm.status);
-    console.log('isActive will be:', this.editForm.status === 'Active');
-    
-    // Build backend update payload including steps
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,
       workflowType: this.editWorkflowType,
       isActive: this.editForm.status === 'Active',
-      isSpecialOrReserved: false, // default - can add UI control later
+      isSpecialOrReserved: false,
       workflowSteps: (this.editSteps || []).map((s, idx) => ({
         stepOrder: idx + 1,
         applicationRoleId: s.roleId as any,
@@ -614,12 +591,8 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
       }))
     } as any;
 
-    console.log('Payload being sent:', JSON.stringify(backendPayload, null, 2));
-
     this.workflowService.updateBackendWorkflow(backendPayload).subscribe({
       next: (response) => {
-        console.log('Workflow update successful, reloading list...');
-        
         this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
           this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
         });
@@ -630,8 +603,6 @@ console.log( this.workflowService. getWorkflowTypeNameById(id, this.translationS
         }, 500);
       },
       error: err => {
-        console.error('Error updating workflow:', err);
-        console.error('Error details:', JSON.stringify(err, null, 2));
         this.errorMessage = err.message || 'Failed to update workflow';
         
         this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
