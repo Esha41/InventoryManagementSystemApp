@@ -11,6 +11,7 @@
           <tr>
             <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
             <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
             <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
             <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
             <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
@@ -21,6 +22,7 @@
           <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.name }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.natureLabel || '-' }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.linkedLabel || '-' }}</td>
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
@@ -56,6 +58,7 @@
             [placeholderSelectable]="false"
             [placeholderValue]="''"
             [error]="hasError('orderPriority')"
+            [translateLabels]="true"
             placeholder="{{ 'newIssueRequest.selectPriorityPlaceholder' | translate }}">
           </app-dropdown>
           <p *ngIf="hasError('orderPriority')" class="mt-1 text-xs text-red-600">

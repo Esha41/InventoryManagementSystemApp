@@ -33,7 +33,8 @@ export class CartridgeMapperService {
       bulletDiameterLabel,
       linkedLabel,
       natureLabel,
-      ammunitionType: dto.ammunitionType ? Number(dto.ammunitionType) : undefined,
+      // Backend returns enum as string: "Small", "Medium", "Large"
+      ammunitionType: dto.ammunitionType ? String(dto.ammunitionType) : undefined,
       armNumber: dto.armNumber || undefined
     };
   }
