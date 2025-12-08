@@ -21,6 +21,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -659,23 +660,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   removeFile(index: number): void {
-    if (index >= 0 && index < this.selectedFiles.length) {
-      this.selectedFiles.splice(index, 1);
-      // Update the file input if needed
-      if (this.fileInputElement && this.selectedFiles.length === 0) {
-        this.fileInputElement.value = '';
-      }
-    }
+    removeFile(this.selectedFiles, index, this.fileInputElement);
   }
 
-  getFileSize(file: File): string {
-    const bytes = file.size;
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
+  getFileSize = getFileSizeFromFile;
 
   private toNumber(value: any): number | null {
     if (value === null || value === undefined || value === '') return null;

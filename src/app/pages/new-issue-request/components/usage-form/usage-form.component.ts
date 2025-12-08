@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 @Component({
   selector: 'app-usage-form',
@@ -232,20 +233,11 @@ export class UsageFormComponent {
   }
 
   removeFile(index: number): void {
-    if (index >= 0 && index < this.selectedFiles.length) {
-      this.selectedFiles.splice(index, 1);
-      this.filesChange.emit(this.selectedFiles);
-    }
+    removeFile(this.selectedFiles, index);
+    this.filesChange.emit(this.selectedFiles);
   }
 
-  getFileSize(file: File): string {
-    const bytes = file.size;
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
+  getFileSize = getFileSizeFromFile;
 
   onPrevious(): void {
     this.previous.emit();

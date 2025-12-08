@@ -26,6 +26,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -1181,24 +1182,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Remove a file from the selection
    */
   removeFile(index: number): void {
-    this.selectedFiles.splice(index, 1);
-    // Update the file input if needed
-    if (this.fileInputElement && this.selectedFiles.length === 0) {
-      this.fileInputElement.value = '';
-    }
+    removeFile(this.selectedFiles, index, this.fileInputElement);
   }
 
   /**
    * Get file size in readable format
    */
-  getFileSize(file: File): string {
-    const bytes = file.size;
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
+  getFileSize = getFileSizeFromFile;
 
   /**
    * Handle additional file selection after submission

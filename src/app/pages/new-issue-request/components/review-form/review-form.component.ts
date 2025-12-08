@@ -6,6 +6,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { LucideAngularModule, Eye } from 'lucide-angular';
+import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -85,25 +86,7 @@ export class ReviewFormComponent {
     return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo}` : dateStr;
   }
 
-  getFileSize(file: File): string {
-    const bytes = file.size;
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  }
-
-  viewFile(file: File): void {
-    if (!file) return;
-    
-    const blobUrl = URL.createObjectURL(file);
-    window.open(blobUrl, '_blank');
-    
-    // Clean up the blob URL after a delay to free memory
-    setTimeout(() => {
-      URL.revokeObjectURL(blobUrl);
-    }, 100);
-  }
+  getFileSize = getFileSizeFromFile;
+  viewFile = viewFileUtil;
 }
 
