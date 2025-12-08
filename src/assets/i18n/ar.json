@@ -435,6 +435,7 @@
         "totalItems": "إجمالي العناصر",
         "totalQuantity": "إجمالي الكمية",
         "lastUpdated": "آخر تحديث",
+        "usageDate": "تاريخ الاستخدام",
         "itemsIncluded": "العناصر ضمن الطلب",
         "rounds": "طلقة",
         "currentStatus": "الحالة الحالية",

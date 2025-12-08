@@ -11,6 +11,7 @@ import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
+import { formatDate } from '@utils/format.utils';
 
 /**
  * Map OrderDto to OrderSummary for report display
@@ -84,27 +85,33 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     return timeStr;
   };
   
-  const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
-  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+  // Format submitted date with time (for submittedOn field)
+  const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : '';
+  const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
   
-  const formattedDateTime = toDate 
-    ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
-    : `${fromDate} ${fromTime}`;
+  const submittedDateTime = toDate 
+    ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
+    : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
+  
+  // Format usage date without time (for lastUpdated/usageDate field)
+  const usageDateOnly = fromDate 
+    ? (toDate ? `${fromDate} - ${toDate}` : fromDate)
+    : '';
 
   return {
     orderId: orderId,
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
     priority: mapOrderPriorityToString(order.priority),
-    submittedOn: formattedDateTime,
+    submittedOn: submittedDateTime,
     requestDate: '', // Will be set from BaseRequestDto
     department: order.departmentNameEn || order.departmentNameAr || 'N/A',
     requester: order.requesterName || 'N/A',
     usagePurpose: order.usagePurpose || 'N/A',
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    lastUpdated: formattedDateTime
+    lastUpdated: usageDateOnly // Usage date without time
   };
 }
 
@@ -238,14 +245,14 @@ export function generateApprovalWorkflowFallback(
     return timeStr;
   };
   
-  const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : 'N/A';
-  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+  const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : 'N/A';
+  const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
   
   const formattedDateTime = toDate 
-    ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
-    : `${fromDate} ${fromTime}`;
+    ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()
+    : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
 
   const steps: OrderReportApprovalStep[] = [
     {
@@ -386,7 +393,7 @@ export function generateQrCodeData(orderSummary: OrderSummary): string {
     `Submitted: ${orderSummary.submittedOn}`,
     `Total Items: ${orderSummary.totalItems}`,
     `Total Quantity: ${orderSummary.totalQuantity}`,
-    `Last Updated: ${orderSummary.lastUpdated}`,
+    `Usage Date: ${orderSummary.lastUpdated}`,
     '==================='
   ];
   

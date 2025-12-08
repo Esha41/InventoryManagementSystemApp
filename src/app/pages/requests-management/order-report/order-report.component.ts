@@ -23,7 +23,8 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime } from '@utils/request-mapper.utils';
+import { formatDate } from '@utils/format.utils';
+import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime, formatRequestDate } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -98,7 +99,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -132,7 +133,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           const currentLang = getCurrentLang(this.translate);
           this.roleMap = new Map(
             roles.map(role => [
-              role.id, 
+              role.id,
               getLocalizedName(role, currentLang) || role.name || role.id
             ])
           );
@@ -159,7 +160,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   loadOrders(): void {
     this.ordersLoading = true;
     this.ordersError = null;
-    
+
     // Load all request types: Order, Return, and Discard
     forkJoin({
       orders: this.orderService.getAllOrders().pipe(catchError(() => of([] as OrderDto[]))),
@@ -170,20 +171,20 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ orders, returns, discards }) => {
           const currentUser = this.authService.getCurrentUser();
-          
+
           // Convert ReturnDto and DiscardDto to OrderDto format
           const convertedReturns = returns.map(ret => this.convertReturnToOrderDto(ret));
           const convertedDiscards = discards.map(disc => this.convertDiscardToOrderDto(disc));
-          
+
           // Combine all requests
           const allRequests = [...orders, ...convertedReturns, ...convertedDiscards];
-          
+
           // Filter by user's department
           const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
-          
+
           // Sort by ID in ascending order (#1, #2, #3, etc.)
           this.orders = filteredRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
-          
+
           this.ordersLoading = false;
           if (this.orders.length > 0) {
             this.selectOrder(this.orders[0]);
@@ -216,7 +217,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
-    
+
     // Find the request in the loaded list to determine its type
     const request = this.orders.find(r => r.id === id);
     if (!request) {
@@ -225,15 +226,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       this.detailsLoading = false;
       return;
     }
-    
+
     // Determine request type and load accordingly
-    const requestType = typeof request.requestType === 'number' 
-      ? request.requestType 
-      : (request.requestType === 'Return' ? RequestTypeEnum.Return : 
-         request.requestType === 'Discard' ? RequestTypeEnum.Discard : RequestTypeEnum.Order);
-    
+    const requestType = typeof request.requestType === 'number'
+      ? request.requestType
+      : (request.requestType === 'Return' ? RequestTypeEnum.Return :
+        request.requestType === 'Discard' ? RequestTypeEnum.Discard : RequestTypeEnum.Order);
+
     let request$: Observable<OrderDto>;
-    
+
     if (requestType === RequestTypeEnum.Return) {
       request$ = this.returnService.getReturnById(id).pipe(
         map(ret => this.convertReturnToOrderDto(ret))
@@ -245,7 +246,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     } else {
       request$ = this.orderService.getOrderById(id);
     }
-    
+
     request$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -280,31 +281,36 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         map((response: any) => {
           // Handle both wrapped response and direct array response
-          const data: BaseRequestDto[] = Array.isArray(response) 
-            ? response 
+          const data: BaseRequestDto[] = Array.isArray(response)
+            ? response
             : (response?.data || []);
-          
+
           // Find the base request that matches the order ID
           const baseRequest = data.find(r => r.id === orderId);
-          
+
           // Update order summary status and requestDate with baseRequest data if available (authoritative source)
           if (baseRequest) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
               const updatedSummary = mapOrderToSummary(order, baseRequest.status);
-              
+
               // Set requestDate from baseRequest (with time)
               if (baseRequest.requestDate) {
                 updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
               }
-              
+
+              // If usage date (lastUpdated) is empty, use requestDate as fallback (date only, no time)
+              if (!updatedSummary.lastUpdated || updatedSummary.lastUpdated.trim() === '') {
+                updatedSummary.lastUpdated = formatRequestDate(baseRequest.requestDate) || 'N/A';
+              }
+
               if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
                 this.orderSummary = updatedSummary;
                 this.generateQrCode();
               }
             }
           }
-          
+
           // Get requester info - always show requester as first step
           const requesterStep: OrderReportApprovalStep = {
             step: '1',
@@ -314,18 +320,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (this.orderSummary.requestDate || 'N/A'),
             notes: 'Request submitted'
           };
-          
+
           if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
             // Return only requester step if no approval history
             return [requesterStep];
           }
-          
+
           // Use the same mapping function as other components
           // Pass the request status to filter out pending steps if approved
           // Convert numeric status to RequestStatus string type using mapRequestStatus
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
-          
+
           // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
           // Start numbering from 2 since requester is step 1
           const approvalSteps = workflowSteps.map((step, index) => ({
@@ -336,7 +342,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
             notes: step.comments || ''
           }));
-          
+
           // Prepend requester step as the first step
           return [requesterStep, ...approvalSteps];
         }),
@@ -368,6 +374,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (steps) => {
           this.approvalWorkflow = steps;
+          // If lastUpdated is still empty after loading workflow, try to use requestDate (date only, no time)
+          if (!this.orderSummary.lastUpdated || this.orderSummary.lastUpdated.trim() === '') {
+            // Extract date only from requestDate (remove time if present)
+            const requestDateOnly = this.orderSummary.requestDate
+              ? this.orderSummary.requestDate.split(' ').slice(0, 3).join(' ') // Take only first 3 parts (day month year)
+              : 'N/A';
+            this.orderSummary.lastUpdated = requestDateOnly;
+          }
         },
         error: (error) => {
           console.error('Error loading approval workflow', error);
@@ -414,9 +428,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       const qrData = generateQrCodeData(this.orderSummary);
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
-        { 
-          width: 320, 
-          margin: 2, 
+        {
+          width: 320,
+          margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
           errorCorrectionLevel: 'M'
         }
@@ -463,7 +477,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
   getOrderDateLabel(order: OrderDto): string {
     if (!order.usageDateFrom) return '-';
-    
+
     // Format time - handle military format (HHMM) and legacy format (HH:mm)
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
@@ -480,15 +494,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       }
       return timeStr;
     };
-    
-    const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
-    const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+
+    const fromDate = formatDate(order.usageDateFrom);
+    const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
     const fromTime = formatTime(order.usageTimeFrom);
     const toTime = formatTime(order.usageTimeTo);
-    
-    return toDate 
-      ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
-      : `${fromDate} ${fromTime}`;
+
+    return toDate
+      ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()
+      : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
   }
 
   trackByOrderId(_: number, order: OrderDto): number | undefined {

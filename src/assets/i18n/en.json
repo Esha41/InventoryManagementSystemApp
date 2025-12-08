@@ -436,6 +436,7 @@
         "totalItems": "Total Items",
         "totalQuantity": "Total Quantity",
         "lastUpdated": "Last Updated",
+        "usageDate": "Usage Date",
         "itemsIncluded": "Items Included in Request",
         "rounds": "rounds",
         "currentStatus": "Current status",

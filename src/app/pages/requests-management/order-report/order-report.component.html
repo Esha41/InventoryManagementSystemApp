@@ -189,9 +189,9 @@
                     </div>
                     <div class="group rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 hover:border-blue-300 hover:shadow-md transition-all">
                       <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                        {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
+                        {{ 'requestsManagement.orderReport.labels.usageDate' | translate }}
                       </p>
-                      <p class="text-base font-bold text-slate-900">{{ orderSummary.lastUpdated }}</p>
+                      <p class="text-base font-bold text-slate-900">{{ orderSummary.lastUpdated || orderSummary.requestDate || 'N/A' }}</p>
                     </div>
                   </div>
                 </div>
@@ -281,9 +281,9 @@
                   </div>
                   <div class="rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      {{ 'requestsManagement.orderReport.labels.lastUpdated' | translate }}
+                      {{ 'requestsManagement.orderReport.labels.usageDate' | translate }}
                     </p>
-                    <p class="text-base font-bold text-slate-900">{{ orderSummary.lastUpdated }}</p>
+                    <p class="text-base font-bold text-slate-900">{{ orderSummary.lastUpdated || orderSummary.requestDate || 'N/A' }}</p>
                   </div>
                 </div>
               </div>
