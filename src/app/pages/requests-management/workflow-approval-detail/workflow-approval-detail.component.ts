@@ -131,7 +131,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     public translationService: TranslationService,
     private translateService: TranslateService,
-    private requestStatusUpdateService: RequestStatusUpdateService
+    private requestStatusUpdateService: RequestStatusUpdateService,
+    private fileUploadService: FileUploadService
   ) { }
 
   ngOnInit(): void {
