@@ -510,7 +510,7 @@ export class BackendAuthService {
    * Converts formats like "role.view" or "Permissions.Roles.View" to a common format
    * Examples:
    * - "Permissions.Roles.View" -> "roleview"
-   * - "Permissions.Roles.Page" -> "roleview" (Page is equivalent to View)
+   * - "Permissions.Roles.Page" -> "rolepage"
    * - "role.view" -> "roleview"
    * - "Roles.View" -> "roleview"
    */
@@ -523,22 +523,18 @@ export class BackendAuthService {
     normalized = normalized.replace(/^permissions\./, '');
     
     // Handle formats like "Roles.View" or "Roles.Edit"
-    // Extract the entity name (Roles, Warehouse, etc.) and action (View, Edit, Create, Delete)
+    // Extract the entity name (Roles, Warehouse, etc.) and action (View, Edit, Create, Delete, Page)
     const parts = normalized.split('.');
     if (parts.length >= 2) {
       // Get last part (action) and second-to-last or last entity name
-      let action = parts[parts.length - 1]; // View, Edit, Create, Delete, Page, etc.
+      const action = parts[parts.length - 1]; // View, Edit, Create, Delete, Page, etc.
       const entity = parts.length > 2 ? parts[parts.length - 2] : parts[0]; // Roles, Warehouse, etc.
       
       // Convert "Roles" -> "role", "Warehouse" -> "warehouse"
       const entityNormalized = entity.replace(/s$/, '').toLowerCase(); // Remove plural 's'
       
-      // Normalize action: "page" is equivalent to "view" for access control
-      if (action === 'page') {
-        action = 'view';
-      }
-      
-      // Combine: "role" + "view" = "roleview"
+      // Combine: "role" + "view" = "roleview" OR "role" + "page" = "rolepage"
+      // Note: page and view are now treated as different permissions
       normalized = entityNormalized + action;
     } else {
       // Handle simple formats like "role.view"
