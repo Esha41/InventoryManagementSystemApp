@@ -174,6 +174,17 @@ export const API_ENDPOINTS = {
     CONFIRM_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/confirm-pickup-date`,
     SUBMIT: (id: number) => `/Supply/${id}/submit`,
   },
+
+  // File Upload Management
+  FILE_UPLOAD: {
+    BASE: '/FileUpload',
+    BY_ID: (id: number) => `/FileUpload/${id}`,
+    UPLOAD: '/FileUpload/upload',
+    UPLOAD_FOR_ENTITY: '/FileUpload/upload-for-entity',
+    SERVE: (id: number) => `/FileUpload/serve/${id}`,
+    SERVE_BY_PATH: '/FileUpload/serve',
+    SET_MAIN: (id: number) => `/FileUpload/${id}/set-main`,
+  },
 } as const;
 
 export const STORAGE_KEYS = {

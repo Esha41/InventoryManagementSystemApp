@@ -939,16 +939,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
     // Use the service method to update image (deletes old and uploads new)
     this.ammunitionService.updateImage(ammunitionId, this.editImageFile, this.editImageFileId).subscribe({
-      next: (response) => {
-        if (response?.succeeded) {
-          console.log('Image updated successfully:', response);
-          this.completeEdit();
-        } else {
-          console.error('Image update failed:', response?.message);
-          this.completeEdit();
-          const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
-          this.toastService.error(response?.message || 'Image update failed. Please try uploading the image again.', errorTitle);
-        }
+      next: (fileId) => {
+        console.log('Image updated successfully, file ID:', fileId);
+        this.completeEdit();
+        const successTitle = this.translationService.getTranslation('toast.success') || 'Success';
+        this.toastService.success('Image updated successfully', successTitle);
       },
       error: (err) => {
         console.error('Failed to update image:', err);

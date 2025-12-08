@@ -25,6 +25,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -1208,6 +1209,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Download an existing file
    */
   downloadFile(fileId: number, fileName: string): void {
+    const downloadUrl = this.fileUploadService.getFileDownloadUrl(fileId);
     const token = localStorage.getItem('auth_token');
     let headers = new HttpHeaders();
     if (token) {

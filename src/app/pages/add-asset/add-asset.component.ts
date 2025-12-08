@@ -282,12 +282,18 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       ammunitionDto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
     }
 
-    if (this.assetForm.price && this.assetForm.price.trim() && parseFloat(this.assetForm.price) > 0) {
-      ammunitionDto.price = parseFloat(this.assetForm.price);
+    if (this.assetForm.price) {
+      const priceStr = String(this.assetForm.price).trim();
+      if (priceStr && parseFloat(priceStr) > 0) {
+        ammunitionDto.price = parseFloat(priceStr);
+      }
     }
 
-    if (this.assetForm.minimumQuantity && this.assetForm.minimumQuantity.trim() && parseInt(this.assetForm.minimumQuantity) > 0) {
-      ammunitionDto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.minimumQuantity) {
+      const minQtyStr = String(this.assetForm.minimumQuantity).trim();
+      if (minQtyStr && parseInt(minQtyStr) > 0) {
+        ammunitionDto.minimumQuantity = parseInt(minQtyStr);
+      }
     }
 
     // Create FormData to match backend [FromForm] binding
