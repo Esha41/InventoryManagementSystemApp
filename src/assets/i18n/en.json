@@ -35,7 +35,22 @@
     "update": "Update",
     "pleaseWait": "Please wait...",
     "processing": "Processing",
-    "noImage": "No Image"
+    "noImage": "No Image",
+    "requestType": "Request Type",
+    "priority": "Priority",
+    "status": "Status",
+    "requestDate": "Request Date",
+    "department": "Department",
+    "requestPurpose": "Request Purpose",
+    "usageLocation": "Usage Location",
+    "numberOfOfficers": "Number of Officers",
+    "numberOfOtherRanks": "Number of Other Ranks",
+    "usageDateFrom": "Usage Date From",
+    "usageDateTo": "Usage Date To",
+    "usagePurpose": "Usage Purpose",
+    "requester": "Requester",
+    "reason": "Reason",
+    "comments": "Comments"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -508,7 +523,16 @@
     "itemNotesPlaceholder": "Item notes (optional)",
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "errors": {
+      "failedToLoadDepartments": "Failed to load departments",
+      "failedToLoadRequestPurposes": "Failed to load request purposes",
+      "failedToLoadItems": "Failed to load items",
+      "failedToLoadUsers": "Failed to load users"
+    },
+    "success": {
+      "created": "Return request created successfully"
+    }
   },
   "discardRequest": {
     "title": "Discard Request",
@@ -535,7 +559,17 @@
     "itemNotesPlaceholder": "Item notes (optional)",
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "errors": {
+      "failedToLoadDepartments": "Failed to load departments",
+      "failedToLoadRequestPurposes": "Failed to load request purposes",
+      "failedToLoadItems": "Failed to load items",
+      "failedToLoadUsers": "Failed to load users",
+      "correctFormErrors": "Please correct the form errors"
+    },
+    "success": {
+      "created": "Discard request created successfully"
+    }
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
@@ -650,10 +684,8 @@
     "selectWarehouse": "Select warehouse",
     "selectNature": "Select nature",
     "selectSupplier": "Select supplier",
-    "selectHcc": "Select HCC",
     "selectCountry": "Select country",
     "selectManufacturer": "Select manufacturer",
-    "hcc": "HCC",
     "country": "Country",
     "manufacturer": "Manufacturer",
     "discard": "Discard",

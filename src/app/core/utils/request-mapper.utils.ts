@@ -51,7 +51,7 @@ export function mapRequestType(type: number | string): RequestType {
         return 'Order';
     }
   }
-  
+
   // Handle string type (case-insensitive)
   if (typeof type === 'string') {
     const typeLower = type.toLowerCase().trim();
@@ -65,7 +65,7 @@ export function mapRequestType(type: number | string): RequestType {
       return 'Discard';
     }
   }
-  
+
   // Default fallback
   return 'Order';
 }
@@ -88,7 +88,7 @@ export function mapPriority(priority: number | string): Priority {
         return 'Low';
     }
   }
-  
+
   // Handle string type (case-insensitive)
   if (typeof priority === 'string') {
     const priorityLower = priority.toLowerCase().trim();
@@ -102,7 +102,7 @@ export function mapPriority(priority: number | string): Priority {
       return 'Low';
     }
   }
-  
+
   // Default fallback
   return 'Low';
 }
@@ -124,7 +124,7 @@ export function mapRequestStatus(status: number | string): RequestStatus {
         return 'Pending';
     }
   }
-  
+
   // Handle string type (case-insensitive)
   if (typeof status === 'string') {
     const statusLower = status.toLowerCase().trim();
@@ -141,7 +141,7 @@ export function mapRequestStatus(status: number | string): RequestStatus {
       return 'Pending';
     }
   }
-  
+
   // Default fallback
   return 'Pending';
 }
@@ -199,7 +199,7 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
       // Fallback to checking changedBy and status if IsPending is not explicitly set
       const backendIsPending = h.isPending === true || h.IsPending === true;
       const hasChangedBy = !!h.changedBy || !!h.ChangedBy;
-      
+
       // Handle both string and number status values (backend might return either)
       const normalizeStatus = (status: any): number => {
         if (typeof status === 'number') return status;
@@ -212,31 +212,31 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         }
         return 0;
       };
-      
+
       const oldStatusNum = normalizeStatus(h.oldRequestStatus || h.OldRequestStatus);
       const newStatusNum = normalizeStatus(h.newRequestStatus || h.NewRequestStatus);
-      
-      const isNewOrUnderProcess = oldStatusNum === RequestStatusEnum.New || 
-                                   oldStatusNum === RequestStatusEnum.UnderProcess ||
-                                   newStatusNum === RequestStatusEnum.New ||
-                                   newStatusNum === RequestStatusEnum.UnderProcess;
-      
+
+      const isNewOrUnderProcess = oldStatusNum === RequestStatusEnum.New ||
+        oldStatusNum === RequestStatusEnum.UnderProcess ||
+        newStatusNum === RequestStatusEnum.New ||
+        newStatusNum === RequestStatusEnum.UnderProcess;
+
       // Step is pending if:
       // 1. Backend explicitly says it's pending (IsPending = true), OR
       // 2. No one has changed it yet (no changedBy) AND status is New/UnderProcess
       const isPending = backendIsPending || (!hasChangedBy && isNewOrUnderProcess);
-      
+
       // Determine status: if pending, show "Pending", otherwise map the actual status
       // Use the normalized status number for mapping
-      const status = isPending 
-        ? 'Pending' 
+      const status = isPending
+        ? 'Pending'
         : mapApprovalStatus(newStatusNum || oldStatusNum || 0);
-      
+
       // Get approver name: if pending, show role name, otherwise show who approved it
-      const approverName = isPending 
+      const approverName = isPending
         ? (h.applicationRoleName || h.ApplicationRoleName || h.applicationRoleId || 'Pending Approval')
         : getApproverName(h.changedBy);
-      
+
       return {
         id: h.id || index,
         workflowApprovalstepId: h.workflowApprovalstepId || h.WorkflowApprovalStepId,
@@ -273,13 +273,13 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
  */
 export function getApproverName(changedBy?: string): string {
   if (!changedBy) return 'Unknown Approver';
-  
+
   const parts = changedBy.split('@');
   if (parts.length > 0) {
     const name = parts[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
-  
+
   return changedBy;
 }
 
@@ -320,11 +320,9 @@ export function formatApprovalDateTime(date: string | Date | undefined): string 
  */
 export function formatRequestDate(date: string | Date | undefined): string {
   if (!date) return '';
-  
+
   const d = new Date(date);
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                  'July', 'August', 'September', 'October', 'November', 'December'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /**
@@ -332,7 +330,7 @@ export function formatRequestDate(date: string | Date | undefined): string {
  */
 export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
   const requestStatus = mapRequestStatus(data.status);
-  
+
   return {
     id: data.id,
     requestNo: data.requestNo,
@@ -343,12 +341,25 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     reason: data.reason,
     notes: data.notes,
     departmentName: data.departmentName,
+    departmentNameAr: data['departmentNameAr'],
+    departmentNameEn: data['departmentNameEn'],
     requesterName: data.requesterName,
     requesterId: data.requesterId,
     requesterUserName: data.requesterUserName,
     requestPurposeName: data.requestPurposeName,
+    requestPurposeNameAr: data['requestPurposeNameAr'],
+    requestPurposeNameEn: data['requestPurposeNameEn'],
     requestItems: mapRequestItems(data.requestItems || []),
-    approvalHistory: mapApprovalHistory(data.approvalHistory || [], requestStatus)
+    approvalHistory: mapApprovalHistory(data.approvalHistory || [], requestStatus),
+    // Usage-related fields
+    usageLocation: data['usageLocation'],
+    usagePurpose: data['usagePurpose'],
+    usageDateFrom: data['usageDateFrom'] ? formatRequestDate(data['usageDateFrom']) : undefined,
+    usageTimeFrom: data['usageTimeFrom'],
+    usageDateTo: data['usageDateTo'] ? formatRequestDate(data['usageDateTo']) : undefined,
+    usageTimeTo: data['usageTimeTo'],
+    numberOfOfficer: data['numberOfOfficer'],
+    numberOfOtherRank: data['numberOfOtherRank']
   };
 }
 

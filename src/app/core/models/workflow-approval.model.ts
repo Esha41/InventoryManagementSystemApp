@@ -68,12 +68,25 @@ export interface RequestDetail {
   reason?: string;
   notes?: string;
   departmentName?: string;
+  departmentNameAr?: string;
+  departmentNameEn?: string;
   requesterName?: string;
   requesterId?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
+  requestPurposeNameAr?: string;
+  requestPurposeNameEn?: string;
   requestItems?: RequestItem[];
   approvalHistory?: WorkflowApprovalStep[];
+  // Usage-related fields
+  usageLocation?: string;
+  usagePurpose?: string;
+  usageDateFrom?: string;
+  usageTimeFrom?: string;
+  usageDateTo?: string;
+  usageTimeTo?: string;
+  numberOfOfficer?: number;
+  numberOfOtherRank?: number;
 }
 
 /**

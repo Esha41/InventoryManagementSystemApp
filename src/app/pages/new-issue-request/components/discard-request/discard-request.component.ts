@@ -116,7 +116,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService,
     private backendUserService: BackendUserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeUserContext();
@@ -216,7 +216,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           this.isLoadingRequesters = false;
         },
         error: () => {
-          this.toastService.error('Failed to load users.');
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).subscribe((translations: any) => {
+            this.toastService.error(
+              translations['discardRequest.errors.failedToLoadUsers'] || 'Failed to load users',
+              translations['toast.error']
+            );
+          });
           this.requesters = [];
           this.isLoadingRequesters = false;
         }
@@ -453,7 +458,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             errorMessage = error.message;
           }
 
-          this.toastService.error(errorMessage);
+          this.translate.get(['toast.error']).subscribe((translations: any) => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.isLoading = false;
         }
       });

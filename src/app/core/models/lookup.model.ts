@@ -36,7 +36,6 @@ export interface LookupTableConfig {
 export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Department', displayName: 'Departments', apiEndpoint: 'Department', hasCode: true },
   { name: 'CaseType', displayName: 'Case Types', apiEndpoint: 'CaseType', hasCode: false },
-  { name: 'Hcc', displayName: 'HCC', apiEndpoint: 'Hcc', hasCode: false },
   { name: 'Color', displayName: 'Colors', apiEndpoint: 'Color', hasCode: false },
   { name: 'Compatibility', displayName: 'Compatibilities', apiEndpoint: 'Compatibility', hasCode: false },
   { name: 'Country', displayName: 'Countries', apiEndpoint: 'Country', hasCode: true },
