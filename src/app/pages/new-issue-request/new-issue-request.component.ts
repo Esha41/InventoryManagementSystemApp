@@ -93,7 +93,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     bulletDiameters: [],
     linkedOptions: ['Linked', 'Not Linked'],
     natureOptions: [],
-    orderPriorities: ['High Priority', 'Medium Priority', 'Low Priority']
+    orderPriorities: []
   };
 
   cartridgeState: CartridgeState = {
@@ -201,10 +201,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.initializeUserContext();
     this.initializeStepFromQueryParams();
     this.loadRequestPurposes();
+    this.rebuildOrderPriorities();
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.rebuildRequestPurposeOptions();
+        this.rebuildOrderPriorities();
         this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
       });
     // Don't load cartridges yet - wait for allowance selection
@@ -482,11 +484,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   filterCartridges(): void {
-    // Get numeric ID for ammunition type filter
-    const selectedAmmunitionTypeId = this.filterState.selectedAmmunitionType
-      ? getAmmunitionTypeId(this.filterState.selectedAmmunitionType)
-      : null;
-
     this.cartridgeState.filteredCartridges = this.cartridgeState.allCartridges.filter(cartridge => {
       const diameterLabel = cartridge.bulletDiameterLabel ?? '';
       const linkedLabel = cartridge.linkedLabel ?? '';
@@ -500,9 +497,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       const nsnFilterLower = this.filterState.selectedNSN?.toLowerCase() ?? '';
       const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
 
-      // Ammunition type filter (search by numeric ID: 1=Small, 2=Medium, 3=Large)
-      const byAmmunitionType = !selectedAmmunitionTypeId ||
-        (cartridge.ammunitionType !== undefined && cartridge.ammunitionType === selectedAmmunitionTypeId);
+      // Ammunition type filter - compare strings directly (case-insensitive)
+      // Backend returns enum as string: "Small", "Medium", "Large"
+      const byAmmunitionType = !this.filterState.selectedAmmunitionType ||
+        (cartridge.ammunitionType !== undefined && 
+         String(cartridge.ammunitionType).toLowerCase() === this.filterState.selectedAmmunitionType.toLowerCase());
 
       // Search filter
       const searchLower = this.filterState.searchTerm.toLowerCase();
@@ -974,5 +973,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
     this.requestPurposeState.selectedRequestPurposeId = null;
     this.usageFormData.usePurpose = '';
+  }
+
+  private rebuildOrderPriorities(): void {
+    this.filterOptions.orderPriorities = [
+      'newIssueRequest.highPriority',
+      'newIssueRequest.mediumPriority',
+      'newIssueRequest.lowPriority'
+    ];
   }
 }

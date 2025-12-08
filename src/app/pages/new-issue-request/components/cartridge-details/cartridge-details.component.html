@@ -22,7 +22,7 @@
           </div>
           
           <div>
-            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.ncn' | translate }}</p>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.ncn }}</p>
           </div>
           
@@ -113,12 +113,7 @@
     <button 
       (click)="onCancel()"
       class="px-8 py-3 border-2 border-[var(--color-border)] text-[var(--color-text)] text-sm font-medium rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
-      {{ 'common.cancel' | translate }}
-    </button>
-    <button 
-      (click)="onSelect()"
-      class="px-8 py-3 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors">
-      {{ 'newIssueRequest.sendRequest' | translate }}
+      {{ 'common.goBack' | translate }}
     </button>
   </div>
 </div>
