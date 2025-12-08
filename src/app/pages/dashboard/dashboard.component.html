@@ -372,16 +372,16 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="sticky bottom-0 bg-white border-t border-[var(--color-border)] rounded-b-2xl px-6 py-4 flex justify-end gap-3 z-10">
+        <div class="sticky bottom-0 bg-white border-t border-[var(--color-border)] rounded-b-2xl px-6 py-4 flex justify-between gap-3 z-10">
           <button
             (click)="closeOrderModal()"
             class="px-6 py-2.5 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
             {{ 'common.close' | translate }}
           </button>
           <button
-            *ngIf="selectedOrderRequest?.id && canApproveOrder(selectedOrderRequest)"
+            *ngIf="selectedOrderRequest?.id"
             (click)="navigateToApproval(selectedOrderRequest!.id)"
-            class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-hover)] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
+            class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand)] hover:brightness-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 font-medium shadow-custom-sm hover:shadow-custom-md">
             {{ 'dashboard.goToApprovalPage' | translate }}
           </button>
         </div>

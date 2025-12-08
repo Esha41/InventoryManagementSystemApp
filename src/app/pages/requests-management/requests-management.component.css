@@ -1,1 +1,41 @@
-/* Requests Management specific styles if needed */
+/* Requests Management specific styles */
+
+/* Fixed width dropdown in header - prevent overflow */
+::ng-deep app-dropdown.w-40 {
+  width: 10rem !important;
+  min-width: 10rem !important;
+  max-width: 10rem !important;
+  flex-shrink: 0;
+  display: block;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  position: relative;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown-trigger {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+::ng-deep app-dropdown.w-40 .app-dropdown-panel {
+  width: 10rem !important;
+  max-width: 10rem !important;
+  min-width: 10rem !important;
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* Ensure dropdown container allows overflow for dropdown panel */
+.page-wrapper {
+  overflow-x: visible;
+}
+
+.page-container {
+  position: relative;
+  overflow-x: visible;
+}

@@ -143,5 +143,9 @@ export class StatusCardComponent {
     // Default to order number
     return 'dashboard.orderNumber';
   }
+
+  isOrderCard(): boolean {
+    return !!this.orderRequestId && !this.returnRequestId && !this.discardRequestId;
+  }
 }
 

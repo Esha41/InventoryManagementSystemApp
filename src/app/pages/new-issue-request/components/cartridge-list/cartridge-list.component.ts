@@ -10,6 +10,8 @@ import { ConfigService } from '@services/config.service';
 export interface Cartridge {
   id: number;
   name: string;
+  nameAr?: string; // Arabic name
+  nameEn?: string; // English name
   selected: boolean;
   itemNo?: string;
   productId?: string;
@@ -25,7 +27,11 @@ export interface Cartridge {
   capabilityGroup?: string;
   bulletDiameterLabel?: string;
   linkedLabel?: string;
+  linkedLabelAr?: string; // Arabic linked label
+  linkedLabelEn?: string; // English linked label
   natureLabel?: string;
+  natureLabelAr?: string; // Arabic nature label
+  natureLabelEn?: string; // English nature label
   quantity?: number | null;
   added?: boolean;
   ammunitionType?: string | number; // Backend returns as string: "Small", "Medium", "Large"

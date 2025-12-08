@@ -424,12 +424,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discardId) => {
-          this.translate.get(['toast.success', 'discardRequest.success.created']).subscribe((translations: any) => {
-            this.toastService.success(
-              translations['discardRequest.success.created'] || 'Discard request created successfully',
-              translations['toast.success']
-            );
-          });
+          // Toast notification is handled by backend SignalR notification
           this.resetForm();
           this.isLoading = false;
 

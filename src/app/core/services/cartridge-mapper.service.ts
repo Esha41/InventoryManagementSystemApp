@@ -9,12 +9,27 @@ export class CartridgeMapperService {
 
   mapAmmunitionToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
     const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit, currentLang);
-    const linkedLabel = dto.isLinked ? 'Linked' : 'Not Linked';
+    
+    // Linked labels - Arabic and English
+    const linkedLabelAr = dto.isLinked ? 'مرتبط' : 'غير مرتبط';
+    const linkedLabelEn = dto.isLinked ? 'Linked' : 'Not Linked';
+    const linkedLabel = currentLang === 'ar' ? linkedLabelAr : linkedLabelEn;
+    
+    // Nature labels - extract Arabic and English from natureOption
+    const natureOption = dto.natureOption || {};
+    const natureLabelAr = natureOption.nameAr || natureOption.nameAR || null;
+    const natureLabelEn = natureOption.nameEn || natureOption.nameEN || null;
     const natureLabel = getLocalizedName(dto.natureOption, currentLang);
+
+    // Extract Arabic and English names from DTO
+    const nameAr = dto.nameAr || dto.nameAR || null;
+    const nameEn = dto.nameEn || dto.nameEN || null;
 
     return {
       id: Number(dto.id) || 0,
       name: getLocalizedName(dto, currentLang) || dto.itemNo || 'Ammunition',
+      nameAr: nameAr || undefined,
+      nameEn: nameEn || undefined,
       selected: false,
       added: false,
       quantity: null,
@@ -32,7 +47,11 @@ export class CartridgeMapperService {
       capabilityGroup: getLocalizedName(dto.compatibility, currentLang),
       bulletDiameterLabel,
       linkedLabel,
+      linkedLabelAr: linkedLabelAr || undefined,
+      linkedLabelEn: linkedLabelEn || undefined,
       natureLabel,
+      natureLabelAr: natureLabelAr || undefined,
+      natureLabelEn: natureLabelEn || undefined,
       // Backend returns enum as string: "Small", "Medium", "Large"
       ammunitionType: dto.ammunitionType ? String(dto.ammunitionType) : undefined,
       armNumber: dto.armNumber || undefined

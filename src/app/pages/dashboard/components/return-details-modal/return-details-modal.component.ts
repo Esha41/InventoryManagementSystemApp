@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { ReturnDto } from '@services/return.service';
@@ -19,6 +20,8 @@ export class ReturnDetailsModalComponent {
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
+
+  constructor(private readonly router: Router) {}
   
   onClose(): void {
     this.close.emit();
@@ -100,6 +103,10 @@ export class ReturnDetailsModalComponent {
 
   hasItems(items?: any[] | null): boolean {
     return !!items && items.length > 0;
+  }
+
+  navigateToApproval(returnRequestId: number): void {
+    this.router.navigate(['/requests-management', returnRequestId, 'workflow-approval']);
   }
 }
 

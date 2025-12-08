@@ -32,7 +32,15 @@ export class ReviewFormComponent {
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
 
-  constructor(private translate: TranslateService) {}
+  constructor(public translateService: TranslateService) {}
+  
+  get currentLang(): string {
+    return this.translateService.currentLang || 'en';
+  }
+  
+  get isArabic(): boolean {
+    return this.currentLang === 'ar';
+  }
 
   onNext(): void {
     this.next.emit();
@@ -46,7 +54,7 @@ export class ReviewFormComponent {
     if (!this.orderPriority) return '';
     // If it's already a translation key, translate it
     if (this.orderPriority.startsWith('newIssueRequest.')) {
-      return this.translate.instant(this.orderPriority);
+      return this.translateService.instant(this.orderPriority);
     }
     // Otherwise, try to map the old English values to translation keys
     const priorityMap: { [key: string]: string } = {
@@ -55,7 +63,7 @@ export class ReviewFormComponent {
       'Low Priority': 'newIssueRequest.lowPriority'
     };
     const translationKey = priorityMap[this.orderPriority];
-    return translationKey ? this.translate.instant(translationKey) : this.orderPriority;
+    return translationKey ? this.translateService.instant(translationKey) : this.orderPriority;
   }
 
   getFormattedUsageDateFrom(): string {

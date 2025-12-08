@@ -10,7 +10,6 @@
     <div class="status-card__header">
       <div class="status-card__headline">
         <span class="status-card__dot {{ getDotColor() }}"></span>
-        <span class="status-card__title">{{ order.orderId }}</span>
       </div>
       <span class="status-card__badge">{{ getStatusTranslationKey() | translate }}</span>
     </div>
@@ -26,7 +25,7 @@
           <span class="status-card__label">{{ getNumberLabelKey() | translate }}</span>
           <span class="status-card__value status-card__value--strong">{{ order.orderId }}</span>
         </div>
-        <div class="status-card__info">
+        <div class="status-card__info" *ngIf="isOrderCard()">
           <span class="status-card__label">{{ 'dashboard.usageDate' | translate }}</span>
           <span class="status-card__value">{{ order.requestDate }}</span>
         </div>
@@ -44,28 +43,11 @@
         </div>
       </div>
 
-      <!-- Items Section -->
-      <div class="status-card__items">
-        <span class="status-card__label">{{ 'dashboard.items' | translate }}</span>
-        <div *ngIf="!order.items || order.items.length === 0" class="status-card__value status-card__value--muted">
-          {{ 'dashboard.noItems' | translate }}
-        </div>
-        <div *ngIf="order.items && order.items.length > 0" class="status-card__item-list">
-          <div *ngFor="let item of order.items" class="status-card__item">
-            <div class="status-card__item-name">{{ item.itemName || item.itemNo || 'N/A' }}</div>
-            <div class="status-card__item-qty">
-              {{ 'dashboard.quantity' | translate }}: {{ item.quantity }}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- View Details Button -->
       <div class="status-card__action" *ngIf="hasDetailsButton()">
         <button
           (click)="emitOrderDetails(order.requestId); $event.stopPropagation()"
           class="status-card__button">
-          <lucide-angular [img]="Eye" class="status-card__button-icon"></lucide-angular>
           {{ 'dashboard.viewDetails' | translate }}
         </button>
       </div>

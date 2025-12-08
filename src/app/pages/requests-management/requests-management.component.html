@@ -1,11 +1,44 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
-    <!-- Header -->
-  <div>
-    <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'requestsManagement.title' | translate }}</h1>
-  </div>
+    <!-- Header with Search and Filter -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <h1 class="text-3xl font-bold text-[var(--color-text)] flex-shrink-0">{{ 'requestsManagement.title' | translate }}</h1>
+      
+      <!-- Search and Filter Section -->
+      <div *ngIf="requests.length > 0" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto sm:flex-shrink-0">
+        <!-- Search Bar -->
+        <div class="relative flex items-center flex-1 sm:flex-initial min-w-[250px] sm:max-w-[400px]">
+          <div class="absolute left-3 pointer-events-none z-10">
+            <lucide-angular [img]="Search" class="w-5 h-5 text-[var(--color-text-muted)]"></lucide-angular>
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange()"
+            [placeholder]="'dashboard.searchOrders' | translate"
+            class="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
+        </div>
 
-  <!-- Table Container -->
+        <!-- Status Filter -->
+        <div class="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
+          <span class="text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'dashboard.statusLabels.new' | translate }}:</span>
+          <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredRequestsCount }}</span>
+          <div class="h-6 w-px bg-[var(--color-border)]"></div>
+          <app-dropdown
+            class="w-40 flex-shrink-0"
+            [(ngModel)]="selectedStatusFilter"
+            (ngModelChange)="onStatusFilterChange()"
+            [options]="statusFilterOptions"
+            [optionLabelFn]="statusFilterLabelFn"
+            optionValue="value"
+            [placeholderSelectable]="false"
+            placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
+          </app-dropdown>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Container -->
   <div class="bg-white rounded-lg shadow-sm">
     <div class="overflow-hidden rounded-t-lg">
       <!-- Table -->
@@ -24,8 +57,11 @@
           <tr *ngIf="loading" class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{ 'common.loadingWithDots' | translate }}</td>
           </tr>
-          <tr *ngIf="!loading && paginatedRequests.length === 0" class="hover:bg-[var(--color-background-muted)] transition-colors">
+          <tr *ngIf="!loading && requests.length === 0" class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{ 'requestsManagement.noRequestsFound' | translate }}</td>
+          </tr>
+          <tr *ngIf="!loading && requests.length > 0 && filteredRequests.length === 0" class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{ 'dashboard.noOrders' | translate }}</td>
           </tr>
           <tr *ngFor="let request of paginatedRequests" class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
