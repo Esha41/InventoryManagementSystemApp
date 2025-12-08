@@ -32,7 +32,6 @@ interface Asset {
   itemNo: string;
   partNo: string;
   batchNo: string;
-  hcc?: string;
   nsn?: string;
   caseType?: string;
   hazardDivision?: string;
@@ -88,7 +87,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
 
   searchTerm = '';
-  selectedHcc: string | null = null;
   selectedCaseType: string | null = null;
   selectedHazardDivision: string | null = null;
   selectedCompatibility: string | null = null;
@@ -96,7 +94,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  hccList: LookupItem[] = [];
   caseTypeList: LookupItem[] = [];
   hazardDivisionList: LookupItem[] = [];
   compatibilityList: LookupItem[] = [];
@@ -125,7 +122,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   editImagePreview: string | null = null; // Preview URL for new file
   editImageFileId: number | null = null; // ID of existing file (for update)
   private blobUrls: Set<string> = new Set(); // Track blob URLs for cleanup
-  
+
   @ViewChild('editFileInput') editFileInputRef!: ElementRef<HTMLInputElement>;
 
 
@@ -153,7 +150,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       name: ['', Validators.required],
       itemNo: ['', Validators.required],
       partNo: ['', Validators.required],
-    
+
       hccId: [null as number | null],
       bulletDiameter: [null as number | null],
       bulletDiameterUnitId: [null as number | null],
@@ -191,7 +188,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     try {
       this.loadAssets();
       this.loadDropdowns();
-      
+
       // Check for viewItemId query parameter to auto-open view modal
       this.route.queryParams.subscribe(params => {
         const viewItemId = params['viewItemId'];
@@ -222,7 +219,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   private loadAssets(): void {
     this.loading = true;
-    
+
     try {
       if (this.activeTab === 'ammunition') {
         this.loadAmmunition();
@@ -253,7 +250,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
             itemNo: x.itemNo || '-',
             partNo: x.partNo || '-',
             batchNo: x.batchNo || '-',
-            hcc: getLocalizedName(x.hcc, currentLang) || '-',
             nsn: x.nsn || '-',
             caseType: getLocalizedName(x.caseType, currentLang) || '-',
             hazardDivision: getLocalizedName(x.hazardDivision, currentLang) || '-',
@@ -266,12 +262,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
             minimumQuantity: x.minimumQuantity,
             imageUrl: undefined // Will be loaded separately
           }));
-          
+
           this.currentPage = 1;
-          
+
           // Load images for each asset
           this.loadAssetImages();
-          
+
           this.loading = false;
           this.validateCurrentPage();
         } catch (error) {
@@ -407,7 +403,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   private loadDropdowns(): void {
     forkJoin({
-      hccs: this.lookupService.getHccs(),
       caseTypes: this.lookupService.getCaseTypes(),
       hazardDivisions: this.lookupService.getHazardDivisions(),
       compatibilities: this.lookupService.getCompatibilities(),
@@ -419,7 +414,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
       projectailMaterials: this.lookupService.getProjectailMaterials()
     }).subscribe({
       next: (data) => {
-        this.hccList = data.hccs || [];
         this.caseTypeList = data.caseTypes || [];
         this.hazardDivisionList = data.hazardDivisions || [];
         this.compatibilityList = data.compatibilities || [];
@@ -459,9 +453,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     }
   }
 
-  get hccFilterOptions(): Array<{ label: string; value: string }> {
-    return this.mapToFilterOptions(this.hccList);
-  }
+
 
   get caseTypeFilterOptions(): Array<{ label: string; value: string }> {
     return this.mapToFilterOptions(this.caseTypeList);
@@ -477,20 +469,19 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   get filteredAssets(): Asset[] {
     let filtered = this.assets.filter(asset => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         asset.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.itemNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.partNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         asset.batchNo.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-      const matchesHcc = !this.selectedHcc || this.selectedHcc === null || asset.hcc === this.selectedHcc;
       const matchesCaseType = !this.selectedCaseType || this.selectedCaseType === null || asset.caseType === this.selectedCaseType;
       const matchesHazardDivision = !this.selectedHazardDivision || this.selectedHazardDivision === null || asset.hazardDivision === this.selectedHazardDivision;
       const matchesCompatibility = !this.selectedCompatibility || this.selectedCompatibility === null || asset.compatibility === this.selectedCompatibility;
       const matchesPropellant = !this.selectedPropellant || this.selectedPropellant === null || asset.propellant === this.selectedPropellant;
 
-      return matchesSearch && matchesHcc && matchesCaseType && matchesHazardDivision && 
-             matchesCompatibility && matchesPropellant;
+      return matchesSearch && matchesCaseType && matchesHazardDivision &&
+        matchesCompatibility && matchesPropellant;
     });
 
     // Apply sorting
@@ -553,8 +544,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
         case 'batchNo':
           compareResult = a.batchNo.localeCompare(b.batchNo);
           break;
-        case 'hcc':
-          compareResult = (a.hcc || '').localeCompare(b.hcc || '');
           break;
         case 'nsn':
           compareResult = (a.nsn || '').localeCompare(b.nsn || '');
@@ -600,7 +589,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           this.loading = false;
           return;
         }
-        
+
         // Map to Asset interface for selectedAsset
         const currentLang = getCurrentLang(this.translateService);
         this.selectedAsset = {
@@ -609,7 +598,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
           itemNo: data.itemNo || '-',
           partNo: data.partNo || '-',
           batchNo: data.batchNo || '-',
-          hcc: getLocalizedName(data.hcc, currentLang) || '-',
           nsn: data.nsn || '-',
           caseType: getLocalizedName(data.caseType, currentLang) || '-',
           hazardDivision: getLocalizedName(data.hazardDivision, currentLang) || '-',
@@ -618,13 +606,13 @@ export class AssetListComponent implements OnInit, OnDestroy {
           expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : '-',
           readyForIssue: data.readyForIssue ?? true
         };
-        
+
         this.editForm.patchValue({
           id: data.id,
           name: data.name,
           itemNo: data.itemNo,
           partNo: data.partNo,
-       
+
           hccId: data.hccId,
           bulletDiameter: data.bulletDiameter ?? null,
           bulletDiameterUnitId: data.bulletDiameterUnitId ?? null,
@@ -644,10 +632,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
           price: data.price ?? null,
           minimumQuantity: data.minimumQuantity ?? null
         });
-        
+
         // Load existing image
         this.loadEditImage(data.id);
-        
+
         this.showEditModal = true;
         this.loading = false;
       },
@@ -669,40 +657,40 @@ export class AssetListComponent implements OnInit, OnDestroy {
     if (this.activeTab === 'ammunition') {
       this.loading = true;
       this.ammunitionService.getById<AmmunitionReadDto>(parseInt(assetId)).subscribe({
-      next: (data) => {
-        if (data) {
-        
-          this.selectedAsset = {
-            id: data.id.toString(),
-            name: data.name || 'Unknown',
-            itemNo: data.itemNo || '-',
-            partNo: data.partNo || '-',
-            batchNo: data.batchNo || '-',
-            hcc: data.hcc, 
-            nsn: data.nsn || '-',
-            caseType: data.caseType, 
-            hazardDivision: data.hazardDivision, 
-            compatibility: data.compatibility,
-            propellant: data.propellant, 
-            bulletDiameter: data.bulletDiameter,
-            bulletDiameterUnit: data.bulletDiameterUnit,
-            armNumber: data.armNumber || '-',
-            primer: data.primer || '-',
-            totalWeight: data.totalWeight,
-            isLinked: data.isLinked ?? false,
-            expiryDate: data.expiryDate ? (typeof data.expiryDate === 'string' ? data.expiryDate : new Date(data.expiryDate).toISOString()) : undefined,
-            readyForIssue: data.readyForIssue ?? true
-          };
+        next: (data) => {
+          if (data) {
+
+            this.selectedAsset = {
+              id: data.id.toString(),
+              name: data.name || 'Unknown',
+              itemNo: data.itemNo || '-',
+              partNo: data.partNo || '-',
+              batchNo: data.batchNo || '-',
+              hcc: data.hcc,
+              nsn: data.nsn || '-',
+              caseType: data.caseType,
+              hazardDivision: data.hazardDivision,
+              compatibility: data.compatibility,
+              propellant: data.propellant,
+              bulletDiameter: data.bulletDiameter,
+              bulletDiameterUnit: data.bulletDiameterUnit,
+              armNumber: data.armNumber || '-',
+              primer: data.primer || '-',
+              totalWeight: data.totalWeight,
+              isLinked: data.isLinked ?? false,
+              expiryDate: data.expiryDate ? (typeof data.expiryDate === 'string' ? data.expiryDate : new Date(data.expiryDate).toISOString()) : undefined,
+              readyForIssue: data.readyForIssue ?? true
+            };
+          }
+          this.showViewModal = true;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load ammunition:', err);
+          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoadDetails'));
+          this.loading = false;
         }
-        this.showViewModal = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load ammunition:', err);
-        this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoadDetails'));
-        this.loading = false;
-      }
-    });
+      });
     } else {
       // For weapons and explosives, just show basic info
       const asset = this.assets.find(a => a.id === assetId);
@@ -747,7 +735,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     type EditFormModel = {
       id: number;
       name: string; itemNo: string; partNo?: string; batchNo?: string;
-      hccId: number | null; bulletDiameter: number | null; bulletDiameterUnitId: number | null;
+      bulletDiameter: number | null; bulletDiameterUnitId: number | null;
       armNumber: string; isLinked: boolean;
       primer?: string; totalWeight: number | null; nsn?: string; caseTypeId: number | null;
       propellantId: number | null; compatibilityId: number | null; hazardDivisionId: number | null;
@@ -771,7 +759,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
       partNo: m.partNo?.trim() || undefined,
       armNumber: m.armNumber?.trim() || undefined,
       // batchNo removed - not in backend CreateUpdateAmmunitionDto
-      hccId: m.hccId ?? undefined,
       bulletDiameter: m.bulletDiameter ?? undefined,
       bulletDiameterUnitId: m.bulletDiameterUnitId ?? undefined,
       isLinked: m.isLinked,
@@ -835,7 +822,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         if (fileInfo?.id) {
           // Store the file ID for potential update
           this.editImageFileId = fileInfo.id;
-          
+
           // Fetch image as blob
           this.ammunitionService.getFileBlob(fileInfo.id).subscribe({
             next: (blob) => {
@@ -902,9 +889,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const validExtensions = ['.jpg', '.jpeg', '.png'];
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
-    
-    return validTypes.includes(file.type.toLowerCase()) || 
-           validExtensions.includes(fileExtension);
+
+    return validTypes.includes(file.type.toLowerCase()) ||
+      validExtensions.includes(fileExtension);
   }
 
   private generateEditPreview(file: File): void {
@@ -1017,7 +1004,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         console.warn('Error revoking edit preview blob URL:', e);
       }
     }
-    
+
     this.showEditModal = false;
     this.selectedAsset = null;
     this.editForm.reset();
@@ -1110,7 +1097,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.selectedHcc = null;
     this.selectedCaseType = null;
     this.selectedHazardDivision = null;
     this.selectedCompatibility = null;

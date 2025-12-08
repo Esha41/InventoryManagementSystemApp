@@ -9,6 +9,7 @@
     "search": "بحث",
     "filter": "تصفية",
     "back": "رجوع",
+    "goBack": "العودة",
     "next": "التالي",
     "previous": "السابق",
     "submit": "إرسال",
@@ -33,7 +34,22 @@
     "update": "تحديث",
     "pleaseWait": "يرجى الانتظار...",
     "processing": "جاري المعالجة",
-    "noImage": "لا توجد صورة"
+    "noImage": "لا توجد صورة",
+    "requestType": "نوع الطلب",
+    "priority": "الأولوية",
+    "status": "الحالة",
+    "requestDate": "تاريخ الطلب",
+    "department": "القسم",
+    "requestPurpose": "الغرض من الطلب",
+    "usageLocation": "موقع الاستخدام",
+    "numberOfOfficers": "عدد الضباط",
+    "numberOfOtherRanks": "عدد الرتب الأخرى",
+    "usageDateFrom": "تاريخ الاستخدام (من)",
+    "usageDateTo": "تاريخ الاستخدام (إلى)",
+    "usagePurpose": "غرض الاستخدام",
+    "requester": "مقدم الطلب",
+    "reason": "السبب",
+    "comments": "التعليقات"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -259,6 +275,9 @@
     "linked": "مرتبط",
     "nature": "الطبيعة",
     "orderPriority": "أولوية الطلب",
+    "highPriority": "أولوية عالية",
+    "mediumPriority": "أولوية متوسطة",
+    "lowPriority": "أولوية منخفضة",
     "confirmSelection": "تأكيد الاختيار",
     "fromReserve": "من الاحتياطي",
     "usePurpose": "الغرض من الاستخدام",
@@ -503,7 +522,16 @@
     "itemNotesPlaceholder": "ملاحظات العنصر (اختياري)",
     "high": "عالية",
     "medium": "متوسطة",
-    "low": "منخفضة"
+    "low": "منخفضة",
+    "errors": {
+      "failedToLoadDepartments": "فشل تحميل الأقسام",
+      "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
+      "failedToLoadItems": "فشل تحميل العناصر",
+      "failedToLoadUsers": "فشل تحميل المستخدمين"
+    },
+    "success": {
+      "created": "تم إنشاء طلب الإرجاع بنجاح"
+    }
   },
   "discardRequest": {
     "title": "طلب إتلاف",
@@ -530,7 +558,17 @@
     "itemNotesPlaceholder": "ملاحظات العنصر (اختياري)",
     "high": "عالية",
     "medium": "متوسطة",
-    "low": "منخفضة"
+    "low": "منخفضة",
+    "errors": {
+      "failedToLoadDepartments": "فشل تحميل الأقسام",
+      "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
+      "failedToLoadItems": "فشل تحميل العناصر",
+      "failedToLoadUsers": "فشل تحميل المستخدمين",
+      "correctFormErrors": "يرجى تصحيح أخطاء النموذج"
+    },
+    "success": {
+      "created": "تم إنشاء طلب الإتلاف بنجاح"
+    }
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"
@@ -1584,6 +1622,7 @@
     "login": {
       "title": "تسجيل الدخول",
       "subtitle": "أدخل بيانات الاعتماد الخاصة بك للوصول إلى حسابك",
+      "continueMessage": "سجل الدخول إلى حسابك للمتابعة",
       "username": "اسم المستخدم",
       "password": "كلمة المرور",
       "usernamePlaceholder": "أدخل اسم المستخدم",

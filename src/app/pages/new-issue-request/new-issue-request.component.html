@@ -177,10 +177,14 @@
     [orderPriority]="usageFormData.orderPriority"
     [fromReserve]="fromReserve"
     [usePurpose]="usageFormData.usePurpose"
+    [usageLocation]="usageFormData.usageLocation"
+    [numberOfOfficers]="usageFormData.numberOfOfficers"
+    [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
     [usageDateFrom]="usageFormData.usageDateFrom"
     [usageTimeFrom]="usageFormData.usageTimeFrom"
     [usageDateTo]="usageFormData.usageDateTo"
     [usageTimeTo]="usageFormData.usageTimeTo"
+    [selectedCartridges]="selectedCartridges"
     (previous)="onPrevious()"
     (next)="onNext()">
   </app-review-form>

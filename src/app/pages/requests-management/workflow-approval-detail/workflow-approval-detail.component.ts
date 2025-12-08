@@ -14,7 +14,7 @@ import { ToastService } from '@services/toast.service';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
-import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
+import { RequestDetail, BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum, RequestStatusEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
@@ -31,10 +31,10 @@ import { FileUploadService, FileEntityType } from '@services/file-upload.service
   selector: 'app-workflow-approval-detail',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    TranslateModule, 
-    LucideAngularModule, 
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    LucideAngularModule,
     HasPermissionDirective,
     LoadingStateComponent,
     ErrorStateComponent,
@@ -66,27 +66,27 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  
+
   private readonly SUPPLY_REVIEW_PERMISSION = 'UpdateRequestAndSuggestLots';
   private readonly UPDATE_REQUEST_AND_SUPPLY_PERMISSION = 'UpdateRequestAndSupply';
   private readonly CANNOT_REJECT_PERMISSION = 'CannotRejectRequest';
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
-  private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply'; 
+  private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
   loading: boolean = true;
   error: string | null = null;
-  
+
   // Collapsible sections state
   isApprovalWorkflowExpanded: boolean = true;
-  
+
   // Approval/Rejection form
   comments: string = '';
   sendToHigherApproval: string = 'no'; // 'yes' = yes, 'no' = no (default is 'no')
   processing: boolean = false;
-  
+
   // Higher approval dropdown options
   higherApprovalOptions: { value: string; label: string }[] = [];
 
@@ -108,12 +108,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   ranks: LookupItem[] = [];
   isLoadingRanks: boolean = false;
   isSubmittingSupply: boolean = false;
-  
+
   // File upload for supply submission
   selectedFiles: File[] = [];
   fileInputElement: HTMLInputElement | null = null;
-  existingFiles: Array<{id: number; fileName: string; originalName: string}> = [];
-  
+  existingFiles: Array<{ id: number; fileName: string; originalName: string }> = [];
+
   // Additional file upload after submission
   additionalFiles: File[] = [];
   additionalFileInputElement: HTMLInputElement | null = null;
@@ -131,9 +131,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     public translationService: TranslationService,
     private translateService: TranslateService,
-    private requestStatusUpdateService: RequestStatusUpdateService,
-    private fileUploadService: FileUploadService
-  ) {}
+    private requestStatusUpdateService: RequestStatusUpdateService
+  ) { }
 
   ngOnInit(): void {
     // Use route params observable instead of snapshot for better reactivity
@@ -164,7 +163,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.isPickupDateAlreadySet = false;
     // Reset higher approval selection to default 'no'
     this.sendToHigherApproval = 'no';
-    
+
     // Initialize higher approval options with translations if not already set
     if (this.higherApprovalOptions.length === 0) {
       this.translateService.get(['common.yes', 'common.no']).subscribe(translations => {
@@ -178,50 +177,50 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.apiService.getWithAuth<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
-          : (response?.data || []);
-        
-        const baseRequest = data.find(r => r.id === this.requestId);
-        
-        if (!baseRequest) {
-          this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
-            this.error = translation || 'Request not found';
-          });
-          this.loading = false;
-          return;
-        }
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          const data: BaseRequestDto[] = Array.isArray(response)
+            ? response
+            : (response?.data || []);
 
-        this.loadRequestItems(baseRequest).then(() => {
-          this.requestDetail = mapToRequestDetail(baseRequest);
-          if (this.requestDetail.requestType === 'Order') {
-            this.loadSupplyData();
+          const baseRequest = data.find(r => r.id === this.requestId);
+
+          if (!baseRequest) {
+            this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
+              this.error = translation || 'Request not found';
+            });
+            this.loading = false;
+            return;
           }
+
+          this.loadRequestItems(baseRequest).then(() => {
+            this.requestDetail = mapToRequestDetail(baseRequest);
+            if (this.requestDetail.requestType === 'Order') {
+              this.loadSupplyData();
+            }
+            this.loading = false;
+          }).catch(() => {
+            this.requestDetail = mapToRequestDetail(baseRequest);
+            if (this.requestDetail.requestType === 'Order') {
+              this.loadSupplyData();
+            }
+            this.loading = false;
+          });
+        },
+        error: (error) => {
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
           this.loading = false;
-        }).catch(() => {
-          this.requestDetail = mapToRequestDetail(baseRequest);
-          if (this.requestDetail.requestType === 'Order') {
-            this.loadSupplyData();
-          }
-          this.loading = false;
-        });
-      },
-      error: (error) => {
-        this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
-        this.loading = false;
-      }
-    });
+        }
+      });
   }
 
   private async loadRequestItems(baseRequest: BaseRequestDto): Promise<void> {
     return new Promise((resolve) => {
       let endpoint = '';
-      
+
       const requestTypeValue: any = baseRequest.requestType;
-      
+
       if (typeof requestTypeValue === 'number') {
         switch (requestTypeValue) {
           case RequestTypeEnum.Order:
@@ -263,11 +262,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response: any) => {
             const detailData = response?.data || response;
-            
+
+            // Merge full details (including usage info) into baseRequest
+            if (detailData) {
+              Object.assign(baseRequest, detailData);
+            }
+
             if (detailData?.requestItems && Array.isArray(detailData.requestItems)) {
               baseRequest.requestItems = detailData.requestItems;
             }
-            
+
             resolve();
           },
           error: () => {
@@ -282,63 +286,63 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   private loadSupplyData(): void {
     this.supplyService.getByOrderId(this.requestId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (supply: SupplyDto) => {
-        this.supplyData = supply;
-        this.supplyId = supply.id;
-        
-        // If supply exists and has a supply date, populate the pickup date field
-        if (supply.supplyDate) {
-          const supplyDate = new Date(supply.supplyDate);
-          if (!isNaN(supplyDate.getTime())) {
-            // Format to datetime-local input format
-            const year = supplyDate.getFullYear();
-            const month = String(supplyDate.getMonth() + 1).padStart(2, '0');
-            const day = String(supplyDate.getDate()).padStart(2, '0');
-            const hours = String(supplyDate.getHours()).padStart(2, '0');
-            const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
-            
-            this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-            // Mark that the date has already been set
-            this.isPickupDateAlreadySet = true;
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (supply: SupplyDto) => {
+          this.supplyData = supply;
+          this.supplyId = supply.id;
+
+          // If supply exists and has a supply date, populate the pickup date field
+          if (supply.supplyDate) {
+            const supplyDate = new Date(supply.supplyDate);
+            if (!isNaN(supplyDate.getTime())) {
+              // Format to datetime-local input format
+              const year = supplyDate.getFullYear();
+              const month = String(supplyDate.getMonth() + 1).padStart(2, '0');
+              const day = String(supplyDate.getDate()).padStart(2, '0');
+              const hours = String(supplyDate.getHours()).padStart(2, '0');
+              const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
+
+              this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+              // Mark that the date has already been set
+              this.isPickupDateAlreadySet = true;
+            }
           }
-        }
 
-        // Populate receiver information if already exists
-        if (supply.recieverName) {
-          this.receiverInfo.recieverName = supply.recieverName;
-        }
-        if (supply.receiverRankId) {
-          this.receiverInfo.receiverRankId = supply.receiverRankId;
-        }
-        if (supply.recieverMilitaryId) {
-          this.receiverInfo.recieverMilitaryId = supply.recieverMilitaryId;
-        }
-        if (supply.notes) {
-          this.receiverInfo.notes = supply.notes;
-        }
+          // Populate receiver information if already exists
+          if (supply.recieverName) {
+            this.receiverInfo.recieverName = supply.recieverName;
+          }
+          if (supply.receiverRankId) {
+            this.receiverInfo.receiverRankId = supply.receiverRankId;
+          }
+          if (supply.recieverMilitaryId) {
+            this.receiverInfo.recieverMilitaryId = supply.recieverMilitaryId;
+          }
+          if (supply.notes) {
+            this.receiverInfo.notes = supply.notes;
+          }
 
-        // Load existing files if available
-        if (supply.files && supply.files.length > 0) {
-          this.existingFiles = supply.files.map(f => ({
-            id: f.id,
-            fileName: f.fileName,
-            originalName: f.originalName
-          }));
-        } else {
-          this.existingFiles = [];
-        }
+          // Load existing files if available
+          if (supply.files && supply.files.length > 0) {
+            this.existingFiles = supply.files.map(f => ({
+              id: f.id,
+              fileName: f.fileName,
+              originalName: f.originalName
+            }));
+          } else {
+            this.existingFiles = [];
+          }
 
-        // Load ranks for dropdown if user can submit supply
-        if (this.canSubmitSupply()) {
-          this.loadRanks();
+          // Load ranks for dropdown if user can submit supply
+          if (this.canSubmitSupply()) {
+            this.loadRanks();
+          }
+        },
+        error: () => {
+          // Supply might not exist yet, which is fine
         }
-      },
-      error: () => {
-        // Supply might not exist yet, which is fine
-      }
-    });
+      });
   }
 
   /**
@@ -366,6 +370,27 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Get approval history with requester as the first step
+   */
+  get displayApprovalHistory(): WorkflowApprovalStep[] {
+    if (!this.requestDetail) {
+      return [];
+    }
+
+    const requesterStep: WorkflowApprovalStep = {
+      id: 0,
+      approverName: this.requestDetail.requesterName || 'Unknown Requester',
+      status: 'Approved',
+      applicationRoleName: 'Requester (Order Requesting Entity)',
+      approvedDateTime: this.requestDetail.requestDate,
+      isPending: false,
+      comments: this.requestDetail.notes
+    };
+
+    return [requesterStep, ...(this.requestDetail.approvalHistory || [])];
+  }
+
   getStatusClass(status: string): string {
     return getRequestStatusBadgeClass(status);
   }
@@ -389,13 +414,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   approveRequest(): void {
     if (this.processing || !this.requestDetail) return;
-    
+
     this.processing = true;
-    // Immediately update status to prevent buttons from showing
-    if (this.requestDetail) {
-      this.requestDetail.status = 'Approved';
-    }
-    
+
     const payload = {
       baseRequestID: this.requestId,
       isApproved: true,
@@ -408,36 +429,32 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
       payload
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: () => {
-        this.comments = '';
-        this.sendToHigherApproval = 'no';
-        // Notify other components about the status update
-        this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
-        // Reload to get updated status and approval history
-        this.loadRequestDetail();
-      },
-      error: (error) => {
-        this.error = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
-        this.processing = false;
-        // Revert status on error by reloading
-        if (this.requestDetail) {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.comments = '';
+          this.sendToHigherApproval = 'no';
+          // Notify other components about the status update
+          this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
+          // Reload to get updated status and approval history
           this.loadRequestDetail();
+        },
+        error: (error) => {
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
+          this.processing = false;
+          // Revert status on error by reloading
+          if (this.requestDetail) {
+            this.loadRequestDetail();
+          }
         }
-      }
-    });
+      });
   }
 
   rejectRequest(): void {
     if (this.processing || !this.requestDetail) return;
-    
+
     this.processing = true;
-    // Immediately update status to prevent buttons from showing
-    if (this.requestDetail) {
-      this.requestDetail.status = 'Rejected';
-    }
-    
+
     const payload = {
       baseRequestID: this.requestId,
       isApproved: false,
@@ -450,42 +467,42 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
       payload
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: () => {
-        this.comments = '';
-        this.sendToHigherApproval = 'no';
-        // Notify other components about the status update
-        this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
-        // Reload to get updated status and approval history
-        this.loadRequestDetail();
-      },
-      error: (error) => {
-        this.error = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
-        this.processing = false;
-        // Revert status on error
-        if (this.requestDetail) {
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.comments = '';
+          this.sendToHigherApproval = 'no';
+          // Notify other components about the status update
+          this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
+          // Reload to get updated status and approval history
           this.loadRequestDetail();
+        },
+        error: (error) => {
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
+          this.processing = false;
+          // Revert status on error
+          if (this.requestDetail) {
+            this.loadRequestDetail();
+          }
         }
-      }
-    });
+      });
   }
-  
+
   /**
    * Get label for higher approval dropdown option
    */
-  higherApprovalOptionLabel = (option: DropdownOption<{value: string, label: string}> | {value: string, label: string} | null): string => {
+  higherApprovalOptionLabel = (option: DropdownOption<{ value: string, label: string }> | { value: string, label: string } | null): string => {
     if (!option) return '';
-    let item: {value: string, label: string} | null = null;
-    
+    let item: { value: string, label: string } | null = null;
+
     if (typeof option === 'object' && option !== null) {
       if ('value' in option) {
-        item = option.value as {value: string, label: string};
+        item = option.value as { value: string, label: string };
       } else if ('value' in option && 'label' in option) {
-        item = option as {value: string, label: string};
+        item = option as { value: string, label: string };
       }
     }
-    
+
     if (!item || !item.value) return '';
     return this.translateService.instant(item.value === 'yes' ? 'common.yes' : 'common.no');
   };
@@ -494,51 +511,52 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (!this.requestDetail || this.processing) {
       return false;
     }
-    
+
     if (this.requestDetail.status !== 'Pending') {
       return false;
     }
-    
+
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       return false;
     }
-    
+
     // Check if user is administrator (multiple detection methods)
     const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                              currentUser?.email?.toLowerCase().includes('administrator');
+    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+      currentUser?.email?.toLowerCase().includes('administrator');
     const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-    
+
     const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-    
+
     if (isAdministrator) {
       return true;
     }
-    
+
     const currentUserId = currentUser.id?.toLowerCase() || '';
     const currentUserName = currentUser.userName?.toLowerCase() || '';
     const currentUserEmail = currentUser.email?.toLowerCase() || '';
-    
+
     const currentPendingStep = this.requestDetail.approvalHistory?.find(
       step => step.status === 'Pending' && step.isPending
     );
-    
+
     if (!currentPendingStep) {
       return false;
     }
- 
+
+    // Check if user has already acted in the current workflow step
     if (this.requestDetail.approvalHistory && this.requestDetail.approvalHistory.length > 0) {
       const hasUserAlreadyActedInCurrentStep = this.requestDetail.approvalHistory.some(step => {
         if (step.workflowStepId === currentPendingStep.workflowStepId) {
           if (step.status === 'Approved' || step.status === 'Rejected') {
             const changedBy = step.changedBy?.toLowerCase() || '';
             const approverName = step.approverName?.toLowerCase() || '';
-            
+
             const matchesUserId = currentUserId && changedBy.includes(currentUserId);
             const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
             const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
-            
+
             if (matchesUserId || matchesUserName || matchesUserEmail) {
               return true;
             }
@@ -546,12 +564,32 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
         return false;
       });
-      
+
       if (hasUserAlreadyActedInCurrentStep) {
         return false;
       }
     }
-    
+
+    // Additional check: if this is not a pending step for the current user, don't show buttons
+    // This prevents buttons from showing after the request has been approved/rejected by this user
+    const hasAnyApprovedOrRejectedByCurrentUser = this.requestDetail.approvalHistory?.some(step => {
+      if (step.status === 'Approved' || step.status === 'Rejected') {
+        const changedBy = step.changedBy?.toLowerCase() || '';
+        const approverName = step.approverName?.toLowerCase() || '';
+
+        const matchesUserId = currentUserId && changedBy.includes(currentUserId);
+        const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
+        const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
+
+        return matchesUserId || matchesUserName || matchesUserEmail;
+      }
+      return false;
+    });
+
+    if (hasAnyApprovedOrRejectedByCurrentUser) {
+      return false;
+    }
+
     return true;
   }
 
@@ -561,23 +599,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   canRejectRequest(): boolean {
     const currentUser = this.authService.getCurrentUser();
-    
+
     try {
       // Check if user is administrator (multiple detection methods)
       const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                                currentUser?.email?.toLowerCase().includes('administrator');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
       const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-      
+
       const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-      
+
       if (isAdministrator) {
         return true;
       }
-      
+
       // For non-administrators, check CannotRejectRequest permission
       const hasCannotRejectPermission = this.authService.hasPermission(this.CANNOT_REJECT_PERMISSION);
-      
+
       return !hasCannotRejectPermission;
     } catch (error) {
       return true;
@@ -591,17 +629,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     // Find the current pending step
     const pendingStep = this.requestDetail.approvalHistory.find(step => step.status === 'Pending' && step.isPending);
-    
+
     if (!pendingStep || !pendingStep.requireHigherApproval) {
       return false;
     }
 
-    const hasApprovedStepWithSameWorkflowStepId = this.requestDetail.approvalHistory.some(step => 
-      step.workflowStepId === pendingStep.workflowStepId && 
+    const hasApprovedStepWithSameWorkflowStepId = this.requestDetail.approvalHistory.some(step =>
+      step.workflowStepId === pendingStep.workflowStepId &&
       step.status === 'Approved'
     );
 
-   
+
     return !hasApprovedStepWithSameWorkflowStepId;
   }
 
@@ -695,8 +733,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   navigateToItemDetails(itemId: number): void {
     if (itemId && itemId > 0) {
       // Pass requestId as query parameter so we can navigate back
-      this.router.navigate(['/item-detail', itemId], { 
-        queryParams: { requestId: this.requestId } 
+      this.router.navigate(['/item-detail', itemId], {
+        queryParams: { requestId: this.requestId }
       });
     }
   }
@@ -707,19 +745,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     const currentUser = this.authService.getCurrentUser();
-    
+
     try {
       const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                                currentUser?.email?.toLowerCase().includes('administrator');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
       const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-      
+
       const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-      
+
       if (isAdministrator) {
         return true;
       }
-      
+
       return this.authService.hasPermission(this.SET_SUPPLY_PICKUP_DATE_PERMISSION);
     } catch (error) {
       return false;
@@ -732,19 +770,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     const currentUser = this.authService.getCurrentUser();
-    
+
     try {
       const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                                currentUser?.email?.toLowerCase().includes('administrator');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
       const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-      
+
       const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-      
+
       if (isAdministrator) {
         return true;
       }
-      
+
       return this.authService.hasPermission(this.CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION);
     } catch (error) {
       return false;
@@ -787,29 +825,29 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(this.requestId),
       payload
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: () => {
-        this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateSet']).subscribe(translations => {
-          this.toastService.success(
-            translations['workflowApprovalDetail.success.pickupDateSet'] || 'Pickup date set successfully and locked for confirmation',
-            translations['toast.success']
-          );
-        });
-        // Mark the date as set and lock the input
-        this.isPickupDateAlreadySet = true;
-        this.pickupDateProcessing = false;
-        // Don't clear pickupDate - keep it to show in both sections
-        this.loadRequestDetail();
-      },
-      error: (error) => {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToSetPickupDate']).subscribe(translations => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToSetPickupDate'] || 'Failed to set pickup date');
-          this.toastService.error(errorMessage, translations['toast.error']);
-        });
-        this.pickupDateProcessing = false;
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateSet']).subscribe(translations => {
+            this.toastService.success(
+              translations['workflowApprovalDetail.success.pickupDateSet'] || 'Pickup date set successfully and locked for confirmation',
+              translations['toast.success']
+            );
+          });
+          // Mark the date as set and lock the input
+          this.isPickupDateAlreadySet = true;
+          this.pickupDateProcessing = false;
+          // Don't clear pickupDate - keep it to show in both sections
+          this.loadRequestDetail();
+        },
+        error: (error) => {
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToSetPickupDate']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToSetPickupDate'] || 'Failed to set pickup date');
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
+          this.pickupDateProcessing = false;
+        }
+      });
   }
 
   confirmSupplyPickupDate(): void {
@@ -837,8 +875,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(this.requestId),
       payload
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: () => {
           this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateConfirmed']).subscribe(translations => {
             this.toastService.success(
@@ -846,18 +884,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
-        // Mark as set so the Set section shows the updated date as locked
-        this.isPickupDateAlreadySet = true;
-        this.confirmPickupDateProcessing = false;
-        // Reload to sync everything
-        this.loadRequestDetail();
-      },
-      error: (error) => {
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to confirm pickup date');
-        this.toastService.error(errorMessage);
-        this.confirmPickupDateProcessing = false;
-      }
-    });
+          // Mark as set so the Set section shows the updated date as locked
+          this.isPickupDateAlreadySet = true;
+          this.confirmPickupDateProcessing = false;
+          // Reload to sync everything
+          this.loadRequestDetail();
+        },
+        error: (error) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to confirm pickup date');
+          this.toastService.error(errorMessage);
+          this.confirmPickupDateProcessing = false;
+        }
+      });
   }
 
   /**
@@ -991,7 +1029,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         error: (error) => {
           // Extract error message from API response
           let errorMessage = 'Failed to submit supply';
-          
+
           if (error?.error?.message) {
             errorMessage = error.error.message;
           } else if (error?.message) {
@@ -999,7 +1037,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           } else {
             errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
           }
-          
+
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(
               errorMessage,
@@ -1018,17 +1056,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
-      
+
       // Add new files to existing selection (avoid duplicates by name)
       newFiles.forEach(newFile => {
-        const isDuplicate = this.selectedFiles.some(existingFile => 
+        const isDuplicate = this.selectedFiles.some(existingFile =>
           existingFile.name === newFile.name && existingFile.size === newFile.size
         );
         if (!isDuplicate) {
           this.selectedFiles.push(newFile);
         }
       });
-      
+
       this.fileInputElement = input;
       // Reset input to allow selecting the same files again if needed
       input.value = '';
@@ -1065,17 +1103,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
-      
+
       // Add new files to existing selection (avoid duplicates by name)
       newFiles.forEach(newFile => {
-        const isDuplicate = this.additionalFiles.some(existingFile => 
+        const isDuplicate = this.additionalFiles.some(existingFile =>
           existingFile.name === newFile.name && existingFile.size === newFile.size
         );
         if (!isDuplicate) {
           this.additionalFiles.push(newFile);
         }
       });
-      
+
       this.additionalFileInputElement = input;
       // Reset input to allow selecting the same files again if needed
       input.value = '';
@@ -1103,44 +1141,68 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.isUploadingAdditionalFiles = true;
 
-    this.fileUploadService.uploadFilesForEntity(
-      this.additionalFiles,
-      FileEntityType.Supply,
-      this.supplyId
-    )
-    .pipe(
-      takeUntil(this.destroy$),
-      catchError((error: any) => {
-        console.error('Failed to upload additional files:', error);
-        this.isUploadingAdditionalFiles = false;
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
-          this.toastService.error(
-            ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
-            translations['toast.error']
-          );
-        });
-        return throwError(() => error);
-      })
-    )
-    .subscribe((fileIds: number[]) => {
-      // Clear selected files
-      this.additionalFiles = [];
-      if (this.additionalFileInputElement) {
-        this.additionalFileInputElement.value = '';
-      }
-      
-      // Reload supply data to refresh the file list
-      this.loadSupplyData();
-      
-      this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
-        this.toastService.success(
-          translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
-          translations['toast.success']
-        );
-      });
-      
-      this.isUploadingAdditionalFiles = false;
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+
+    // Append files
+    this.additionalFiles.forEach((file) => {
+      formData.append('files', file);
     });
+
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Remove Content-Type header for FormData
+    headers = headers.delete('Content-Type');
+
+    this.http.post<APIOperationResponse<number[]>>(
+      `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${this.supplyId}`,
+      formData,
+      { headers }
+    )
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error: any) => {
+          console.error('Failed to upload additional files:', error);
+          this.isUploadingAdditionalFiles = false;
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
+            this.toastService.error(
+              ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
+              translations['toast.error']
+            );
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe((response: APIOperationResponse<number[]>) => {
+        if (response.succeeded) {
+          // Clear selected files
+          this.additionalFiles = [];
+          if (this.additionalFileInputElement) {
+            this.additionalFileInputElement.value = '';
+          }
+
+          // Reload supply data to refresh the file list
+          this.loadSupplyData();
+
+          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
+            this.toastService.success(
+              translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
+              translations['toast.success']
+            );
+          });
+        } else {
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
+            this.toastService.error(
+              response.message || translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files',
+              translations['toast.error']
+            );
+          });
+        }
+        this.isUploadingAdditionalFiles = false;
+      });
   }
 
   /**
@@ -1153,34 +1215,34 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    
-    this.http.get(downloadUrl, {
+
+    this.http.get(`${this.config.apiUrl}/FileUpload/serve/${fileId}`, {
       headers: headers,
       responseType: 'blob'
     })
-    .pipe(
-      takeUntil(this.destroy$),
-      catchError((error: any) => {
-        console.error('Failed to download file:', error);
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
-          this.toastService.error(
-            ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
-            translations['toast.error']
-          );
-        });
-        return throwError(() => error);
-      })
-    )
-    .subscribe((blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    });
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error: any) => {
+          console.error('Failed to download file:', error);
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
+            this.toastService.error(
+              ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
+              translations['toast.error']
+            );
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe((blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      });
   }
 
   /**
@@ -1197,50 +1259,58 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       const confirmed = confirm(
         `${translations['workflowApprovalDetail.confirmDeleteFileMessage'] || 'Are you sure you want to delete'} "${fileName}"?`
       );
-      
+
       if (!confirmed) {
         return;
       }
 
-      this.fileUploadService.deleteFile(fileId)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError((error: any) => {
-          console.error('Failed to delete file:', error);
-          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
-            this.toastService.error(
-              ErrorHandler.extractErrorMessage(error, errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),
-              errTranslations['toast.error']
-            );
-          });
-          return throwError(() => error);
-        })
-      )
-      .subscribe((success: boolean) => {
-        if (success) {
-          // Remove file from the list
-          this.existingFiles.splice(index, 1);
-          
-          // Reload supply data to refresh the file list
-          if (this.supplyId) {
-            this.loadSupplyData();
+      const token = localStorage.getItem('auth_token');
+      let headers = new HttpHeaders();
+      if (token) {
+        headers = headers.set('Authorization', `Bearer ${token}`);
+      }
+
+      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
+        headers: headers
+      })
+        .pipe(
+          takeUntil(this.destroy$),
+          catchError((error: any) => {
+            console.error('Failed to delete file:', error);
+            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
+              this.toastService.error(
+                ErrorHandler.extractErrorMessage(error, errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),
+                errTranslations['toast.error']
+              );
+            });
+            return throwError(() => error);
+          })
+        )
+        .subscribe((response: APIOperationResponse<boolean>) => {
+          if (response.succeeded) {
+            // Remove file from the list
+            this.existingFiles.splice(index, 1);
+
+            // Reload supply data to refresh the file list
+            if (this.supplyId) {
+              this.loadSupplyData();
+            }
+
+            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(successTranslations => {
+              this.toastService.success(
+                successTranslations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
+                successTranslations['toast.success']
+              );
+            });
+          } else {
+            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
+              this.toastService.error(
+                response.message || errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
+                errTranslations['toast.error']
+              );
+            });
           }
-          
-          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(successTranslations => {
-            this.toastService.success(
-              successTranslations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
-              successTranslations['toast.success']
-            );
-          });
-        } else {
-          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
-            this.toastService.error(
-              errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
-              errTranslations['toast.error']
-            );
-          });
-        }
-      });
+        });
     });
   }
 
@@ -1257,5 +1327,21 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (rankId === null || rankId === undefined) return '';
     const rank = this.ranks.find(r => r.id === rankId);
     return rank ? getLocalizedName(rank, getCurrentLang(this.translateService)) : `Rank #${rankId}`;
+  }
+
+  getLocalizedValue(en: string | undefined, ar: string | undefined): string {
+    const lang = this.translateService.currentLang;
+    if (lang === 'ar') {
+      return ar || en || '';
+    }
+    return en || ar || '';
+  }
+
+  formatTime(time: string | undefined): string {
+    if (!time) return '';
+    if (time.length === 4 && !time.includes(':')) {
+      return `${time.substring(0, 2)}:${time.substring(2, 4)}`;
+    }
+    return time;
   }
 }

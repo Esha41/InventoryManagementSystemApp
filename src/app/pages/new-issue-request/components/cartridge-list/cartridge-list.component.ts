@@ -28,7 +28,7 @@ export interface Cartridge {
   natureLabel?: string;
   quantity?: number | null;
   added?: boolean;
-  ammunitionType?: number; // 1 = Small, 2 = Medium, 3 = Large
+  ammunitionType?: string | number; // Backend returns as string: "Small", "Medium", "Large"
   armNumber?: string;
 }
 

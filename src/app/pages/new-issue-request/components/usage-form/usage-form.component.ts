@@ -32,7 +32,7 @@ export class UsageFormComponent {
   @Input() reserveDetailsByItem: any[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
-  @Input() orderPriorities: string[] = ['High Priority', 'Medium Priority', 'Low Priority'];
+  @Input() orderPriorities: string[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
   @Input() requesterComments: string = '';
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {

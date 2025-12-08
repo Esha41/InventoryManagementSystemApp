@@ -8,7 +8,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { LookupService, SupplierDto, NatureOptionDto, HccDto, CountryDto, ManufacturerDto } from '@services/lookup.service';
+import { LookupService, SupplierDto, NatureOptionDto, CountryDto, ManufacturerDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { DepotDto } from '@models/depot.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
@@ -29,7 +29,6 @@ interface AssetForm {
   partNo: string;
   armNumber: string;
   // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
-  hccId: string;
   bulletDiameter: string;
   bulletDiameterUnitId: string;
   isLinked: string;
@@ -65,7 +64,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Lookup data
-  hccs: HccDto[] = [];
   units: LookupItem[] = [];
   caseTypes: LookupItem[] = [];
   propellants: LookupItem[] = [];
@@ -93,7 +91,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   assetForm: AssetForm = {
     name: '',
@@ -101,7 +99,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     partNo: '',
     armNumber: '',
     // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
-    hccId: '',
     bulletDiameter: '',
     bulletDiameterUnitId: '',
     isLinked: 'false',
@@ -135,7 +132,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     forkJoin({
-      hccs: this.lookupService.getHccs(),
       units: this.lookupService.getUnits(),
       caseTypes: this.lookupService.getCaseTypes(),
       propellants: this.lookupService.getPropellants(),
@@ -149,7 +145,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.hccs = data.hccs;
           this.units = data.units;
           this.caseTypes = data.caseTypes;
           this.propellants = data.propellants;
@@ -224,10 +219,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     // Add optional fields only if they have values
     if (this.assetForm.partNo && this.assetForm.partNo.trim()) {
       ammunitionDto.partNo = this.assetForm.partNo.trim();
-    }
-
-    if (this.assetForm.hccId && parseInt(this.assetForm.hccId) > 0) {
-      ammunitionDto.hccId = parseInt(this.assetForm.hccId);
     }
 
     if (this.assetForm.bulletDiameter && !isNaN(parseFloat(this.assetForm.bulletDiameter)) && parseFloat(this.assetForm.bulletDiameter) > 0) {
@@ -307,17 +298,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     // Create FormData to match backend [FromForm] binding
     const formData = new FormData();
-    
+
     // Append required fields
     formData.append('Name', ammunitionDto.name);
     formData.append('ItemNo', ammunitionDto.itemNo);
-    
+
     // Append optional fields only if they exist
     if (ammunitionDto.partNo) {
       formData.append('PartNo', ammunitionDto.partNo);
-    }
-    if (ammunitionDto.hccId) {
-      formData.append('HccId', ammunitionDto.hccId.toString());
     }
     if (ammunitionDto.bulletDiameter) {
       formData.append('BulletDiameter', ammunitionDto.bulletDiameter.toString());
@@ -349,7 +337,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (ammunitionDto.hazardDivisionId) {
       formData.append('HazardDivisionId', ammunitionDto.hazardDivisionId.toString());
     }
-    
+
     // Optional fields
     if (ammunitionDto.nsn) {
       formData.append('Nsn', ammunitionDto.nsn);
@@ -372,12 +360,12 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (ammunitionDto.minimumQuantity) {
       formData.append('MinimumQuantity', ammunitionDto.minimumQuantity.toString());
     }
-    
+
     // Append file(s) if present
     if (this.assetForm.image) {
       formData.append('files', this.assetForm.image);
     }
-    
+
     const request = this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', formData);
 
     request.pipe(takeUntil(this.destroy$))
@@ -406,7 +394,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           console.error('Error creating asset:', error);
           let errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create asset. Please try again.');
           errorMsg = ErrorHandler.handleDuplicateError(errorMsg, 'Item No');
-          
+
           this.errorMessage = errorMsg;
           const errorTitle = this.translationService.getTranslation('toast.error');
           this.toastService.error(errorMsg, errorTitle);
@@ -494,9 +482,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     const validExtensions = ['.jpg', '.jpeg', '.png'];
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
-    
-    return validTypes.includes(file.type.toLowerCase()) || 
-           validExtensions.includes(fileExtension);
+
+    return validTypes.includes(file.type.toLowerCase()) ||
+      validExtensions.includes(fileExtension);
   }
 
   private generatePreview(file: File): void {
@@ -516,13 +504,13 @@ export class AddAssetComponent implements OnInit, OnDestroy {
    */
   getInputClass(isInvalid: boolean | null | undefined, isDirty: boolean | null | undefined, isTouched: boolean | null | undefined): string {
     const baseClasses = 'flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2';
-    
+
     const showError = !!isInvalid && (!!isDirty || !!isTouched || this.formSubmitted);
 
     if (showError) {
       return `${baseClasses} border-red-500 focus:ring-red-500`;
     }
-    
+
     return `${baseClasses} focus:ring-[var(--color-brand)]`;
   }
 
@@ -540,7 +528,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       partNo: '',
       armNumber: '',
       // batchNo, readyForIssue, and expiryDate removed - not in backend CreateUpdateAmmunitionDto
-      hccId: '',
       bulletDiameter: '',
       bulletDiameterUnitId: '',
       isLinked: 'false',

@@ -49,7 +49,7 @@
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderPriority' | translate }}</label>
         <input
           type="text"
-          [ngModel]="orderPriority"
+          [ngModel]="getTranslatedPriority()"
           placeholder="High Priority"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
@@ -62,6 +62,36 @@
           {{ 'newIssueRequest.view' | translate }}
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Selected Cartridges Summary -->
+  <div *ngIf="selectedCartridges.length > 0" class="bg-[#F5F5F5] rounded-lg p-6 mb-6">
+    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectedCartridges' | translate }}</h2>
+    
+    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-white">
+      <table class="min-w-full text-sm">
+        <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
+            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
+            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.name }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.natureLabel || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.linkedLabel || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -116,6 +146,37 @@
             type="text"
             [ngModel]="usePurpose"
             placeholder="Training"
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        </div>
+
+        <!-- Usage Location -->
+        <div class="flex items-center gap-4">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageLocation' | translate }}</label>
+          <input
+            type="text"
+            [ngModel]="usageLocation"
+            placeholder="Location"
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        </div>
+
+        <!-- Number of Officers -->
+        <div class="flex items-center gap-4" *ngIf="numberOfOfficers !== null && numberOfOfficers !== undefined">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOfficers' | translate }}</label>
+          <input
+            type="text"
+            [ngModel]="numberOfOfficers"
+            readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        </div>
+
+        <!-- Number of Other Ranks -->
+        <div class="flex items-center gap-4" *ngIf="numberOfOtherRanks !== null && numberOfOtherRanks !== undefined">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOtherRanks' | translate }}</label>
+          <input
+            type="text"
+            [ngModel]="numberOfOtherRanks"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
