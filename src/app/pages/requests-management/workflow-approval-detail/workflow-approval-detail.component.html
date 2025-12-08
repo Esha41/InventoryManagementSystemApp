@@ -187,7 +187,7 @@
             <!-- Request Attachments (Order, Return, Discard) -->
             <div *ngIf="(requestDetail.requestType === 'Order' || requestDetail.requestType === 'Return' || requestDetail.requestType === 'Discard') && orderFiles && orderFiles.length > 0" class="md:col-span-2 space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'workflowApprovalDetail.attachments' | translate }}
+                {{ 'newIssueRequest.attachments' | translate }}
               </label>
               <div class="mt-1 space-y-2">
                 <div *ngFor="let file of orderFiles" class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
@@ -552,7 +552,7 @@
               <!-- Notes (Full Width) -->
               <div>
                 <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                  {{ 'workflowApprovalDetail.notes' | translate }}
+                  {{ 'workflowApprovalDetail.notes' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
                 </label>
                 <textarea [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply" rows="3"
                   [placeholder]="'workflowApprovalDetail.enterAdditionalNotes' | translate"
@@ -734,7 +734,7 @@
           <!-- File Upload for Approval/Rejection -->
           <div>
             <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-              {{ 'workflowApprovalDetail.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+              {{ 'newIssueRequest.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
             </label>
             <div class="space-y-3">
               <!-- File Input -->
@@ -771,7 +771,7 @@
               
               <!-- Helper Text -->
               <p class="text-xs text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.attachmentsHint' | translate }}
+                {{ 'newIssueRequest.attachmentsHint' | translate }}
               </p>
             </div>
           </div>
@@ -779,7 +779,7 @@
           <!-- Comments Textarea -->
           <div>
             <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-              {{ 'workflowApprovalDetail.comments' | translate }}
+              {{ 'workflowApprovalDetail.comments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
             </label>
             <textarea
               [(ngModel)]="comments"

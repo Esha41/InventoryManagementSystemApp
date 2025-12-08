@@ -50,7 +50,8 @@
     "requester": "مقدم الطلب",
     "reason": "السبب",
     "comments": "التعليقات",
-    "notAvailable": "غير متوفر"
+    "notAvailable": "غير متوفر",
+    "optional": "اختياري"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -383,6 +384,8 @@
     "usageDetails": "تفاصيل الاستخدام",
     "selectedCartridges": "الذخائر المحددة",
     "orderDocument": "وثيقة الطلب",
+    "attachments": "المرفقات",
+    "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق. الملفات اختيارية.",
     "view": "عرض",
     "reserveDetails": "تفاصيل الاحتياطي",
     "showingForSelectedItems": "عرض للمواد المحددة",

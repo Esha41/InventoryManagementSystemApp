@@ -51,7 +51,8 @@
     "requester": "Requester",
     "reason": "Reason",
     "comments": "Comments",
-    "notAvailable": "Not Available"
+    "notAvailable": "Not Available",
+    "optional": "Optional"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -312,6 +313,8 @@
     "orderType": "Order Type",
     "orderDocument": "Order Document",
     "noFilesAttached": "No files attached",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach. Files are optional.",
     "view": "View",
     "priority": "Priority",
     "usageDetails": "Usage Details",
