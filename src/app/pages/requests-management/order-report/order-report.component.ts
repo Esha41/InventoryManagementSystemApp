@@ -763,6 +763,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     workflow: OrderReportApprovalStep[];
     qrCode: string | null;
   }): string {
+    const isRTL = this.isRTL;
+    const direction = isRTL ? 'rtl' : 'ltr';
+    const textAlign = isRTL ? 'right' : 'left';
+    const flexDirection = isRTL ? 'row-reverse' : 'row';
+    
     const qrCodeImg = data.qrCode
       ? `<img src="${data.qrCode}" alt="Order QR Code" style="width: 100px; height: 100px; display: block; margin: 0 auto;" />`
       : '<div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">QR Code</div>';
@@ -770,30 +775,30 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const statusLabel = this.getStatusLabel(data.order.status);
 
     return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; display: flex; flex-direction: column;">
+      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; display: flex; flex-direction: column; direction: ${direction};">
         <!-- QR Code Section -->
         <section style="border: 1px solid #000; border-radius: 0; padding: 1rem; flex: 1; display: flex; flex-direction: column;">
-          <div style="display: flex; gap: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+          <div style="display: flex; flex-direction: ${flexDirection}; gap: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
             <div style="flex: 1;">
-              <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem;">Order Report - QR Code</h3>
+              <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Order Report - QR Code</h3>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem;">
+                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
                   <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Order ID</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.orderId}</p>
                 </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem;">
+                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
                   <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Department</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
                 </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem;">
+                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
                   <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Requester</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.requester}</p>
                 </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem;">
+                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
                   <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Status</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${statusLabel}</p>
                 </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem;">
+                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
                   <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Usage Date</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.lastUpdated || data.summary.requestDate || 'N/A'}</p>
                 </div>
@@ -815,25 +820,31 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     workflow: OrderReportApprovalStep[];
     qrCode: string | null;
   }): string {
+    const isRTL = this.isRTL;
+    const direction = isRTL ? 'rtl' : 'ltr';
+    const textAlign = isRTL ? 'right' : 'left';
+    const textAlignReverse = isRTL ? 'left' : 'right';
+    const flexDirection = isRTL ? 'row-reverse' : 'row';
+    
     const statusLabel = this.getStatusLabel(data.order.status);
     const priorityLabel = this.getPriorityLabel(data.order.priority);
 
     const itemsHtml = data.items.length > 0
       ? data.items.map(item => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
-            <div style="font-weight: bold; color: #111827; font-size: 0.7rem;">${item.name}</div>
-            <div style="color: #4b5563; font-weight: 500; font-size: 0.7rem;">${item.caliber}</div>
-            <div style="color: #374151; font-weight: 600; text-align: right; font-size: 0.7rem;">${item.quantity}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; direction: ${direction};">
+            <div style="font-weight: bold; color: #111827; font-size: 0.7rem; text-align: ${textAlign};">${item.name}</div>
+            <div style="color: #4b5563; font-weight: 500; font-size: 0.7rem; text-align: ${textAlign};">${item.caliber}</div>
+            <div style="color: #374151; font-weight: 600; text-align: ${textAlignReverse}; font-size: 0.7rem;">${item.quantity}</div>
           </div>
         `).join('')
-      : '<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.7rem;">No items found</div>';
+      : `<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.7rem;">No items found</div>`;
 
     return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh;">
+      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; direction: ${direction};">
         <!-- Order Details Section -->
         <section style="border: 1px solid #000; border-radius: 0; padding: 1rem;">
-          <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem;">Order Details - ${data.summary.usagePurpose}</h3>
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Order Details - ${data.summary.usagePurpose}</h3>
+          <div style="display: flex; flex-direction: ${flexDirection}; gap: 0.5rem; margin-bottom: 0.75rem;">
             <span style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.65rem; font-weight: bold; color: #374151;">
               Status: ${statusLabel}
             </span>
@@ -842,33 +853,33 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             </span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem;">
+            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
               <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Department</p>
               <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
             </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem;">
+            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
               <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Total Items</p>
               <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.totalItems}</p>
             </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem;">
+            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
               <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Total Quantity</p>
               <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.totalQuantity}</p>
             </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem;">
+            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
               <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Request Date</p>
               <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.requestDate || 'N/A'}</p>
             </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem;">
+            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
               <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Usage Date</p>
               <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.lastUpdated || data.summary.requestDate || 'N/A'}</p>
             </div>
           </div>
-          <h4 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem;">Items Included (${data.items.length})</h4>
+          <h4 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Items Included (${data.items.length})</h4>
           <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
-            <div style="background: linear-gradient(to right, #1e293b, #334155); padding: 0.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase;">Item Name</span>
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase;">Item No</span>
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: right;">Quantity</span>
+            <div style="background: linear-gradient(${isRTL ? 'to left' : 'to right'}, #1e293b, #334155); padding: 0.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; direction: ${direction};">
+              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Item Name</span>
+              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Item No</span>
+              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">Quantity</span>
             </div>
             <div>
               ${itemsHtml}
@@ -886,6 +897,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     workflow: OrderReportApprovalStep[];
     qrCode: string | null;
   }): string {
+    const isRTL = this.isRTL;
+    const direction = isRTL ? 'rtl' : 'ltr';
+    const textAlign = isRTL ? 'right' : 'left';
+    const textAlignReverse = isRTL ? 'left' : 'right';
+    // Invert column order for RTL
+    const gridColumns = isRTL ? '100px 140px 2fr 2fr 50px' : '50px 2fr 2fr 140px 100px';
+    
     const workflowHtml = data.workflow.length > 0
       ? data.workflow.map(step => {
           const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -894,12 +912,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
                              step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                              'bg-slate-100 text-slate-700';
           return `
-            <div style="display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem;">${step.step}</div>
-              <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal;">${step.role}</div>
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; word-wrap: break-word; white-space: normal;">${step.approver}</div>
-              <div style="color: #4b5563; font-size: 0.6rem; white-space: normal;">${step.date}</div>
-              <div>
+            <div style="display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; direction: ${direction};">
+              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; text-align: ${textAlign};">${step.step}</div>
+              <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal; text-align: ${textAlign};">${step.role}</div>
+              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; word-wrap: break-word; white-space: normal; text-align: ${textAlign};">${step.approver}</div>
+              <div style="color: #4b5563; font-size: 0.6rem; white-space: normal; text-align: ${textAlign};">${step.date}</div>
+              <div style="text-align: ${textAlignReverse};">
                 <span style="display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.6rem; font-weight: bold; ${statusClass}">
                   ${step.status}
                 </span>
@@ -907,20 +925,20 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             </div>
           `;
         }).join('')
-      : '<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>';
+      : `<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>`;
 
     return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh;">
+      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; direction: ${direction};">
         <!-- Approval Workflow Section -->
         <section style="border: 1px solid #000; border-radius: 0; padding: 1rem;">
-          <h3 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem;">Approval Workflow</h3>
+          <h3 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem; text-align: ${textAlign};">Approval Workflow</h3>
           <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
-            <div style="background: linear-gradient(to right, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem;">
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Step</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Role</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Approver</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Date</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Status</span>
+            <div style="background: linear-gradient(${isRTL ? 'to left' : 'to right'}, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; direction: ${direction};">
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Step</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Role</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Approver</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Date</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">Status</span>
             </div>
             <div>
               ${workflowHtml}
@@ -1272,6 +1290,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               background: #ffffff;
               font-size: 11pt;
               line-height: 1.4;
+              direction: ${this.isRTL ? 'rtl' : 'ltr'};
             }
             
             /* Hide non-printable elements */
