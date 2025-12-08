@@ -43,4 +43,5 @@ export {
 export * from './notification.utils';
 export * from './approval-workflow.utils';
 export * from './dropdown.utils';
+export * from './file.utils';
 

@@ -21,6 +21,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -63,6 +64,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   requestPurposeId: number | null = null;
 
   returnItems: ReturnItemForm[] = [];
+
+  // File upload
+  selectedFiles: File[] = [];
+  fileInputElement: HTMLInputElement | null = null;
 
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
@@ -461,7 +466,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     };
 
     this.isLoading = true;
-    this.returnService.createReturn(createReturnDto)
+    const filesToUpload = this.selectedFiles.length > 0 ? this.selectedFiles : undefined;
+    this.returnService.createReturn(createReturnDto, filesToUpload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returnId) => {
@@ -634,9 +640,30 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.itemDropdownSearchTerms = [];
     this.itemDropdownOpen = [];
     this.addReturnItem();
+    this.selectedFiles = [];
+    if (this.fileInputElement) {
+      this.fileInputElement.value = '';
+    }
     this.isSubmitted = false;
     this.errors = {};
   }
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      this.fileInputElement = input;
+      // Clear the input so the same file can be selected again
+      input.value = '';
+    }
+  }
+
+  removeFile(index: number): void {
+    removeFile(this.selectedFiles, index, this.fileInputElement);
+  }
+
+  getFileSize = getFileSizeFromFile;
 
   private toNumber(value: any): number | null {
     if (value === null || value === undefined || value === '') return null;

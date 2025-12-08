@@ -21,6 +21,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -64,6 +65,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
 
   // Discard items array
   discardItems: DiscardItemForm[] = [];
+
+  // File upload
+  selectedFiles: File[] = [];
+  fileInputElement: HTMLInputElement | null = null;
 
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
@@ -420,7 +425,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     };
 
     this.isLoading = true;
-    this.discardService.createDiscard(createDiscardDto)
+    const filesToUpload = this.selectedFiles.length > 0 ? this.selectedFiles : undefined;
+    this.discardService.createDiscard(createDiscardDto, filesToUpload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discardId) => {
@@ -553,9 +559,30 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.itemDropdownOpen = [];
     this.itemDropdownSearchTerms = [];
     this.addDiscardItem();
+    this.selectedFiles = [];
+    if (this.fileInputElement) {
+      this.fileInputElement.value = '';
+    }
     this.isSubmitted = false;
     this.errors = {};
   }
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      this.fileInputElement = input;
+      // Clear the input so the same file can be selected again
+      input.value = '';
+    }
+  }
+
+  removeFile(index: number): void {
+    removeFile(this.selectedFiles, index, this.fileInputElement);
+  }
+
+  getFileSize = getFileSizeFromFile;
 
   hasError(fieldName: string): boolean {
     return this.isSubmitted && !!this.errors[fieldName];

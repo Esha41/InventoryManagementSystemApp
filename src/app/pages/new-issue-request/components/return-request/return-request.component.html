@@ -151,6 +151,50 @@
               </div>
             </div>
 
+            <!-- File Upload -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'returnRequest.attachments' | translate }}
+                <span class="text-xs text-[#9CA3AF]">({{ 'common.optional' | translate }})</span>
+              </label>
+              <div class="flex-1">
+                <!-- File Input -->
+                <div class="space-y-3">
+                  <input
+                    type="file"
+                    #fileInput
+                    (change)="onFilesSelected($event)"
+                    multiple
+                    accept="*/*"
+                    class="block w-full text-sm text-[#23272E] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--color-brand)] file:text-white hover:file:bg-[var(--color-brand)]/90 file:cursor-pointer"
+                  />
+
+                  <!-- Selected Files List -->
+                  <div *ngIf="selectedFiles.length > 0" class="space-y-2">
+                    <div *ngFor="let file of selectedFiles; let i = index" 
+                         class="flex items-center justify-between p-2 bg-[#F5F5F5] rounded-lg border border-[#E5E7EB]">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-[#23272E] truncate">{{ file.name }}</p>
+                        <p class="text-xs text-[#6B7280]">{{ getFileSize(file) }}</p>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="removeFile(i)"
+                        [disabled]="isLoading"
+                        class="ml-3 p-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Helper Text -->
+                  <p class="text-xs text-[#6B7280]">
+                    {{ 'returnRequest.attachmentsHint' | translate }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Return Items Section -->
             <div class="border-t border-[var(--color-border)] pt-6">
               <div class="flex items-center justify-between mb-4">

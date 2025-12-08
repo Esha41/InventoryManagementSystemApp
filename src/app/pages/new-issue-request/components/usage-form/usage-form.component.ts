@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
 
 @Component({
   selector: 'app-usage-form',
@@ -43,11 +44,13 @@ export class UsageFormComponent {
   @Input() orderPriority: string = '';
   @Input() orderPriorities: string[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
   @Input() requesterComments: string = '';
+  @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
     this.removeCartridge.emit(id);
   }
 
+  @Output() filesChange = new EventEmitter<File[]>();
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
   @Output() usageLocationChange = new EventEmitter<string>();
@@ -217,6 +220,24 @@ export class UsageFormComponent {
       }
     }
   }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      this.filesChange.emit(this.selectedFiles);
+      // Reset input to allow selecting the same files again if needed
+      input.value = '';
+    }
+  }
+
+  removeFile(index: number): void {
+    removeFile(this.selectedFiles, index);
+    this.filesChange.emit(this.selectedFiles);
+  }
+
+  getFileSize = getFileSizeFromFile;
 
   onPrevious(): void {
     this.previous.emit();

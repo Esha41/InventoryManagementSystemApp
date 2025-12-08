@@ -50,7 +50,8 @@
     "usagePurpose": "Usage Purpose",
     "requester": "Requester",
     "reason": "Reason",
-    "comments": "Comments"
+    "comments": "Comments",
+    "optional": "Optional"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -278,6 +279,9 @@
     "commentsPlaceholder": "Add any additional notes for the reviewer",
     "orderDetails": "Order Details",
     "orderType": "Order Type",
+    "orderDocument": "Order Document",
+    "noFilesAttached": "No files attached",
+    "view": "View",
     "priority": "Priority",
     "usageDetails": "Usage Details",
     "selectedCartridges": "Selected Cartridges",
@@ -523,6 +527,8 @@
     "enterReason": "Enter reason for return",
     "enterNotes": "Enter additional notes (optional)",
     "itemNotesPlaceholder": "Item notes (optional)",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach. Files are optional.",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
@@ -559,6 +565,8 @@
     "notesPlaceholder": "Enter additional notes (optional)",
     "quantityPlaceholder": "Enter quantity",
     "itemNotesPlaceholder": "Item notes (optional)",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach. Files are optional.",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
@@ -1704,6 +1712,8 @@
     "requestPurpose": "Request Purpose",
     "requester": "Requester",
     "notes": "Notes",
+    "orderAttachments": "Order Attachments",
+    "attachedFile": "Attached file",
     "approvalWorkflow": "Approval Workflow",
     "unknownApprover": "Unknown Approver",
     "approvedAt": "Approved at",
@@ -1774,6 +1784,8 @@
     "higherApprovalRequired": "Please select whether to send to higher approval",
     "comments": "Comments",
     "enterComments": "Enter your comments here...",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach",
     "reject": "Reject",
     "approve": "Approve"
   }

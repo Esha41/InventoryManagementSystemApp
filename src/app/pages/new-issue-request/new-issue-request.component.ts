@@ -118,6 +118,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     orderPriority: ''
   };
 
+  usageFormFiles: File[] = [];
+
   reserveDetailsState: ReserveDetailsState = {
     totalReserve: 0,
     availableReserve: 0,
@@ -743,7 +745,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.orderSubmissionState.submittingOrder = true;
     this.orderSubmissionState.orderSubmitError = null;
 
-    this.orderSubmissionService.submitOrder(payload).subscribe({
+    // Pass files to submitOrder
+    const filesToUpload = this.usageFormFiles && this.usageFormFiles.length > 0 
+      ? this.usageFormFiles 
+      : undefined;
+
+    this.orderSubmissionService.submitOrder(payload, filesToUpload).subscribe({
       next: (result) => {
         this.orderSubmissionState.submittingOrder = false;
         if (result.success) {

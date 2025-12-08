@@ -58,9 +58,23 @@
       <!-- Order Document -->
       <div class="flex items-center gap-4">
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' | translate }}</label>
-        <button class="px-6 py-2 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors">
-          {{ 'newIssueRequest.view' | translate }}
-        </button>
+        <div class="flex-1 max-w-xs">
+          <div *ngIf="files && files.length > 0" class="space-y-2">
+            <div *ngFor="let file of files" class="flex items-center gap-2 px-4 py-2.5 bg-[#EBEBEB] rounded-lg border border-[var(--color-border)]">
+              <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+              <button 
+                type="button" 
+                (click)="viewFile(file)"
+                class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
+                [title]="'newIssueRequest.view' | translate">
+                <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="!files || files.length === 0" class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed">
+            {{ 'newIssueRequest.noFilesAttached' | translate }}
+          </div>
+        </div>
       </div>
     </div>
   </div>

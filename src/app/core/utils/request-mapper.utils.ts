@@ -255,7 +255,8 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         applicationRoleName: h.applicationRoleName || h.ApplicationRoleName,
         isPending: isPending,
         requireHigherApproval: h.requireHigherApproval || h.RequireHigherApproval || false,
-        higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId
+        higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId,
+        files: h.files || h.Files || []
       };
     })
     .sort((a, b) => (a.steporder || 0) - (b.steporder || 0));
