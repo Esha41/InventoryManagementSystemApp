@@ -25,6 +25,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -130,7 +131,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     public translationService: TranslationService,
     private translateService: TranslateService,
-    private requestStatusUpdateService: RequestStatusUpdateService
+    private requestStatusUpdateService: RequestStatusUpdateService,
+    private fileUploadService: FileUploadService
   ) {}
 
   ngOnInit(): void {
@@ -1101,26 +1103,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.isUploadingAdditionalFiles = true;
 
-    // Create FormData for multipart/form-data request
-    const formData = new FormData();
-    
-    // Append files
-    this.additionalFiles.forEach((file) => {
-      formData.append('files', file);
-    });
-
-    const token = localStorage.getItem('auth_token');
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    // Remove Content-Type header for FormData
-    headers = headers.delete('Content-Type');
-
-    this.http.post<APIOperationResponse<number[]>>(
-      `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${this.supplyId}`,
-      formData,
-      { headers }
+    this.fileUploadService.uploadFilesForEntity(
+      this.additionalFiles,
+      FileEntityType.Supply,
+      this.supplyId
     )
     .pipe(
       takeUntil(this.destroy$),
@@ -1136,31 +1122,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         return throwError(() => error);
       })
     )
-    .subscribe((response: APIOperationResponse<number[]>) => {
-      if (response.succeeded) {
-        // Clear selected files
-        this.additionalFiles = [];
-        if (this.additionalFileInputElement) {
-          this.additionalFileInputElement.value = '';
-        }
-        
-        // Reload supply data to refresh the file list
-        this.loadSupplyData();
-        
-        this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
-          this.toastService.success(
-            translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
-            translations['toast.success']
-          );
-        });
-      } else {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
-          this.toastService.error(
-            response.message || translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files',
-            translations['toast.error']
-          );
-        });
+    .subscribe((fileIds: number[]) => {
+      // Clear selected files
+      this.additionalFiles = [];
+      if (this.additionalFileInputElement) {
+        this.additionalFileInputElement.value = '';
       }
+      
+      // Reload supply data to refresh the file list
+      this.loadSupplyData();
+      
+      this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
+        this.toastService.success(
+          translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
+          translations['toast.success']
+        );
+      });
+      
       this.isUploadingAdditionalFiles = false;
     });
   }
@@ -1169,13 +1147,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Download an existing file
    */
   downloadFile(fileId: number, fileName: string): void {
+    const downloadUrl = this.fileUploadService.getFileDownloadUrl(fileId);
     const token = localStorage.getItem('auth_token');
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     
-    this.http.get(`${this.config.apiUrl}/FileUpload/serve/${fileId}`, {
+    this.http.get(downloadUrl, {
       headers: headers,
       responseType: 'blob'
     })
@@ -1223,15 +1202,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-      
-      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
-        headers: headers
-      })
+      this.fileUploadService.deleteFile(fileId)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error: any) => {
@@ -1245,8 +1216,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           return throwError(() => error);
         })
       )
-      .subscribe((response: APIOperationResponse<boolean>) => {
-        if (response.succeeded) {
+      .subscribe((success: boolean) => {
+        if (success) {
           // Remove file from the list
           this.existingFiles.splice(index, 1);
           
@@ -1264,7 +1235,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         } else {
           this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(errTranslations => {
             this.toastService.error(
-              response.message || errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
+              errTranslations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
               errTranslations['toast.error']
             );
           });

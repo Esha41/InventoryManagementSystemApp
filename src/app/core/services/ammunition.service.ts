@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap, tap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto, AmmunitionUpdateDto } from '@models/ammunition.model';
+import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
 
 interface ApiListResponse<T> {
   succeeded?: boolean;
@@ -15,7 +16,8 @@ interface ApiListResponse<T> {
 export class AmmunitionService {
   constructor(
     private http: HttpClient,
-    private config: ConfigService
+    private config: ConfigService,
+    private fileUploadService: FileUploadService
   ) {}
 
   private get baseUrl(): string {
@@ -77,16 +79,15 @@ export class AmmunitionService {
 
   // Get file info for an ammunition item (returns file ID and URL)
   getFileInfo(ammunitionId: number): Observable<{ id: number; url: string } | null> {
-    const fileUploadUrl = `${this.config.apiUrl}/FileUpload?entity=1&entityId=${ammunitionId}`;
-    return this.http.get<APIOperationResponse<any[]>>(fileUploadUrl).pipe(
-      map((response) => {
-        if (response?.succeeded && response?.data && response.data.length > 0) {
+    return this.fileUploadService.getFilesByEntity(FileEntityType.Ammunition, ammunitionId).pipe(
+      map((files: FileUploadDto[]) => {
+        if (files && files.length > 0) {
           // Get the main file or first file
-          const mainFile = response.data.find((f: any) => f.isMain) || response.data[0];
+          const mainFile = files.find((f) => f.isMain) || files[0];
           if (mainFile?.id) {
             return {
               id: mainFile.id,
-              url: `${this.config.apiUrl}/FileUpload/serve/${mainFile.id}`
+              url: this.fileUploadService.getFileDownloadUrl(mainFile.id)
             };
           }
         }
@@ -108,26 +109,27 @@ export class AmmunitionService {
 
   // Get file as blob
   getFileBlob(fileId: number): Observable<Blob> {
-    const imageUrl = `${this.config.apiUrl}/FileUpload/serve/${fileId}`;
-    return this.http.get(imageUrl, { responseType: 'blob' });
+    const imageUrl = this.fileUploadService.getFileDownloadUrl(fileId);
+    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(imageUrl, { headers, responseType: 'blob' });
   }
 
   // Delete a file
-  deleteFile(fileId: number): Observable<APIOperationResponse<boolean>> {
-    const deleteUrl = `${this.config.apiUrl}/FileUpload/${fileId}`;
-    return this.http.delete<APIOperationResponse<boolean>>(deleteUrl);
+  deleteFile(fileId: number): Observable<boolean> {
+    return this.fileUploadService.deleteFile(fileId);
   }
 
   // Upload a new file
-  uploadFile(ammunitionId: number, file: File, isMain: boolean = true): Observable<APIOperationResponse<number>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const uploadUrl = `${this.config.apiUrl}/FileUpload/upload?entity=1&entityId=${ammunitionId}&isMain=${isMain}`;
-    return this.http.post<APIOperationResponse<number>>(uploadUrl, formData);
+  uploadFile(ammunitionId: number, file: File, isMain: boolean = true): Observable<number> {
+    return this.fileUploadService.uploadFile(file, FileEntityType.Ammunition, ammunitionId, isMain);
   }
 
   // Update image: delete old file and upload new one
-  updateImage(ammunitionId: number, file: File, existingFileId: number | null): Observable<APIOperationResponse<number>> {
+  updateImage(ammunitionId: number, file: File, existingFileId: number | null): Observable<number> {
     const upload$ = this.uploadFile(ammunitionId, file, true);
     
     if (existingFileId) {
