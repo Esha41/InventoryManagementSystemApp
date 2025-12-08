@@ -455,6 +455,7 @@
         "totalItems": "Total Items",
         "totalQuantity": "Total Quantity",
         "lastUpdated": "Last Updated",
+        "usageDate": "Usage Date",
         "itemsIncluded": "Items Included in Request",
         "rounds": "rounds",
         "currentStatus": "Current status",
@@ -470,6 +471,7 @@
         "submitted": "Submitted",
         "status": "Status",
         "statusLabel": "Status",
+        "requestDate": "Request Date",
         "noItemsFound": "No items found in this order.",
         "item": "item",
         "items": "items"

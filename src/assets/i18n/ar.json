@@ -454,6 +454,7 @@
         "totalItems": "إجمالي العناصر",
         "totalQuantity": "إجمالي الكمية",
         "lastUpdated": "آخر تحديث",
+        "usageDate": "تاريخ الاستخدام",
         "itemsIncluded": "العناصر ضمن الطلب",
         "rounds": "طلقة",
         "currentStatus": "الحالة الحالية",
@@ -469,6 +470,7 @@
         "submitted": "تم التقديم",
         "status": "الحالة",
         "statusLabel": "الحالة",
+        "requestDate": "تاريخ الطلب",
         "noItemsFound": "لم يتم العثور على عناصر في هذا الطلب.",
         "item": "عنصر",
         "items": "عناصر"

@@ -326,6 +326,28 @@ export function formatRequestDate(date: string | Date | undefined): string {
 }
 
 /**
+ * Format date and time for request display
+ * Format: "DD Month YYYY HH:MM" (e.g., "7 December 2025 14:30")
+ * Handles UTC dates and converts to local time
+ */
+export function formatRequestDateTime(date: string | Date | undefined): string {
+  if (!date) return '';
+  
+  const d = new Date(date);
+  // Check if date is valid
+  if (isNaN(d.getTime())) return '';
+  
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  const hours = d.getHours().toString().padStart(2, '0');
+  const minutes = d.getMinutes().toString().padStart(2, '0');
+  return `${day} ${month} ${year} ${hours}:${minutes}`;
+}
+
+/**
  * Map base request DTO to request detail
  */
 export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {

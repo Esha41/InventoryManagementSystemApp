@@ -11,6 +11,7 @@ export interface OrderSummary {
   status: string;
   priority: string;
   submittedOn: string;
+  requestDate: string;
   department: string;
   requester: string;
   usagePurpose: string;
