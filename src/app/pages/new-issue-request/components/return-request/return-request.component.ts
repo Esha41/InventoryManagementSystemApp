@@ -465,12 +465,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returnId) => {
-          this.translate.get(['toast.success', 'returnRequest.success.created']).subscribe((translations: any) => {
-            this.toastService.success(
-              translations['returnRequest.success.created'] || 'Return request created successfully',
-              translations['toast.success']
-            );
-          });
+          // Toast notification is handled by backend SignalR notification
           this.resetForm();
           this.isLoading = false;
 

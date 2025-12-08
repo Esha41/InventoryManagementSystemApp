@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { DiscardDto } from '@services/discard.service';
@@ -19,6 +20,8 @@ export class DiscardDetailsModalComponent {
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
+
+  constructor(private readonly router: Router) {}
   
   onClose(): void {
     this.close.emit();
@@ -100,6 +103,10 @@ export class DiscardDetailsModalComponent {
 
   hasItems(items?: any[] | null): boolean {
     return !!items && items.length > 0;
+  }
+
+  navigateToApproval(discardRequestId: number): void {
+    this.router.navigate(['/requests-management', discardRequestId, 'workflow-approval']);
   }
 }
 

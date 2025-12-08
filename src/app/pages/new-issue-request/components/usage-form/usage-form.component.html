@@ -20,11 +20,20 @@
         </thead>
         <tbody>
           <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
-            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.name }}</td>
+            <td class="px-4 py-2 text-[var(--color-text)]">
+              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
+              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+            </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.natureLabel || '-' }}</td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.linkedLabel || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">
+              <span *ngIf="isArabic">{{ cartridge.natureLabelAr || cartridge.natureLabelEn || cartridge.natureLabel || '-' }}</span>
+              <span *ngIf="!isArabic">{{ cartridge.natureLabelEn || cartridge.natureLabel || '-' }}</span>
+            </td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">
+              <span *ngIf="isArabic">{{ cartridge.linkedLabelAr || cartridge.linkedLabelEn || cartridge.linkedLabel || '-' }}</span>
+              <span *ngIf="!isArabic">{{ cartridge.linkedLabelEn || cartridge.linkedLabel || '-' }}</span>
+            </td>
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
             <td class="px-4 py-2 text-[var(--color-text)]">
               <button

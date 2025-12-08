@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -14,6 +14,15 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
   styleUrls: ['./usage-form.component.css']
 })
 export class UsageFormComponent {
+  constructor(public translateService: TranslateService) {}
+  
+  get currentLang(): string {
+    return this.translateService.currentLang || 'en';
+  }
+  
+  get isArabic(): boolean {
+    return this.currentLang === 'ar';
+  }
   @Input() fromReserve: string = 'Yes';
   @Input() usePurpose: string = '';
   @Input() selectedUsePurposeId: number | null = null;
@@ -145,7 +154,7 @@ export class UsageFormComponent {
     this.clearError('usageTimeFrom');
     
     if (this.hasAttemptedSubmit) {
-      if (!value || value.trim().length === 0) {
+      if (value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)) {
         this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
       } else {
         this.clearError('usageTimeFrom');
@@ -173,7 +182,7 @@ export class UsageFormComponent {
     this.clearError('usageTimeTo');
     
     if (this.hasAttemptedSubmit) {
-      if (!value || value.trim().length === 0) {
+      if (value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)) {
         this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
       } else {
         this.clearError('usageTimeTo');
@@ -251,7 +260,10 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.usageTimeFrom || this.usageTimeFrom.trim().length === 0) {
+    // Validate usageTimeFrom - explicitly check for null/undefined/empty string (not falsy values)
+    // "0000" is a valid military time and should pass validation
+    if (this.usageTimeFrom === null || this.usageTimeFrom === undefined || 
+        (typeof this.usageTimeFrom === 'string' && this.usageTimeFrom.trim().length === 0)) {
       this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
       isValid = false;
     }
@@ -261,7 +273,10 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.usageTimeTo || this.usageTimeTo.trim().length === 0) {
+    // Validate usageTimeTo - explicitly check for null/undefined/empty string (not falsy values)
+    // "0000" is a valid military time and should pass validation
+    if (this.usageTimeTo === null || this.usageTimeTo === undefined || 
+        (typeof this.usageTimeTo === 'string' && this.usageTimeTo.trim().length === 0)) {
       this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
       isValid = false;
     }

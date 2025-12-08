@@ -94,7 +94,9 @@ export class OrderSubmissionService {
       };
     }
 
-    if (!data.usageTimeFrom) {
+    
+    if (data.usageTimeFrom === null || data.usageTimeFrom === undefined || 
+        (typeof data.usageTimeFrom === 'string' && data.usageTimeFrom.trim().length === 0)) {
       return {
         isValid: false,
         error: 'Usage time from is required.'
@@ -108,7 +110,9 @@ export class OrderSubmissionService {
       };
     }
 
-    if (!data.usageTimeTo) {
+    // Validate usageTimeTo - "0000" is a valid military time
+    if (data.usageTimeTo === null || data.usageTimeTo === undefined || 
+        (typeof data.usageTimeTo === 'string' && data.usageTimeTo.trim().length === 0)) {
       return {
         isValid: false,
         error: 'Usage time to is required.'
