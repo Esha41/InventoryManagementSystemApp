@@ -265,16 +265,26 @@
           </button>
 
           <div *ngIf="isApprovalWorkflowExpanded" class="px-6 pb-6">
-            <div *ngIf="displayApprovalHistory && displayApprovalHistory.length > 0" class="space-y-6">
+            <div *ngIf="displayApprovalHistory && displayApprovalHistory.length > 0" class="relative approval-workflow-container">
               <div *ngFor="let approval of displayApprovalHistory; let i = index; let isLast = last" class="relative">
-                <!-- Connection Line -->
-                <div *ngIf="!isLast" class="absolute left-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
+                <!-- Connection Line - connects from bottom of current circle to top of next circle -->
+                <div *ngIf="!isLast" 
+                  class="approval-connector-line"
+                  style="top: 3rem; height: calc(100% - 1.5rem);">
+                </div>
 
-                <div class="flex gap-4 relative z-10">
+                <div class="flex gap-4 relative z-10 mb-6">
                   <!-- Status Icon -->
                   <div class="flex-shrink-0">
-                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm"
-                      [ngClass]="getApprovalStatusClass(approval.status)">
+                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-md bg-white approval-circle"
+                      [ngClass]="{
+                        'approved': approval.status === 'Approved',
+                        'pending': approval.status === 'Pending',
+                        'rejected': approval.status === 'Rejected',
+                        'border-green-300': approval.status === 'Approved',
+                        'border-amber-300': approval.status === 'Pending',
+                        'border-red-300': approval.status === 'Rejected'
+                      }">
                       <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
                       </lucide-angular>
                     </div>

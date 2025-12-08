@@ -1,2 +1,60 @@
 /* Supply Order Component Styles */
 
+/* Approval workflow timeline enhancement */
+.approval-workflow-container {
+  position: relative;
+}
+
+/* Circle styling for approval status */
+.approval-circle {
+  position: relative;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+.approval-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Approved status circle */
+.approval-circle.approved {
+  border-color: #10b981 !important;
+  background-color: #ffffff;
+}
+
+.approval-circle.approved .lucide-angular {
+  color: #10b981;
+}
+
+/* Pending status circle */
+.approval-circle.pending {
+  border-color: #f59e0b !important;
+  background-color: #ffffff;
+}
+
+.approval-circle.pending .lucide-angular {
+  color: #f59e0b;
+}
+
+/* Rejected status circle */
+.approval-circle.rejected {
+  border-color: #ef4444 !important;
+  background-color: #ffffff;
+}
+
+.approval-circle.rejected .lucide-angular {
+  color: #ef4444;
+}
+
+/* Connection line styling */
+.approval-connector-line {
+  position: absolute;
+  left: 1.5rem; /* 24px - aligns with circle center (w-12 = 48px, center = 24px) */
+  width: 2px;
+  background: linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%);
+  z-index: 1;
+  border-radius: 1px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+}
+

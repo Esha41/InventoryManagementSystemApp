@@ -35,7 +35,7 @@ import {
   getDepartmentName as getDepartmentNameUtil,
   getItemProductId as getItemProductIdUtil
 } from '../utils/ui-helpers.utils';
-import { LoadingStateComponent } from '@components/index';
+import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 
 @Component({
@@ -50,7 +50,9 @@ import { TranslationService } from '@services/translation.service';
     LotSelectionModalComponent,
     DischargeSummaryCardComponent,
     ItemManagementModalsComponent,
-    LoadingStateComponent
+    LoadingStateComponent,
+    ModalComponent,
+    ButtonComponent
   ],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']
@@ -396,7 +398,48 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   // ==================== DISCHARGE PROCESSING ====================
 
+  // Partial fulfillment confirmation modal state
+  showPartialFulfillmentConfirm: boolean = false;
+  partiallyFulfilledItems: OrderItem[] = [];
+
+  /**
+   * Check if there are any items with partial fulfillment
+   */
+  hasPartialFulfillment(): boolean {
+    if (!this.requestDetail?.items) return false;
+    
+    this.partiallyFulfilledItems = this.requestDetail.items.filter(item => 
+      item.totalSelectedForDischarge > 0 && 
+      item.totalSelectedForDischarge < item.approvedQuantity
+    );
+    
+    return this.partiallyFulfilledItems.length > 0;
+  }
+
   onProcessDischarge(): void {
+    if (!this.requestDetail) return;
+
+    // Check for partial fulfillment
+    if (this.hasPartialFulfillment()) {
+      this.showPartialFulfillmentConfirm = true;
+      return;
+    }
+
+    // No partial fulfillment, proceed directly
+    this.proceedWithDischarge();
+  }
+
+  onConfirmPartialFulfillment(): void {
+    this.showPartialFulfillmentConfirm = false;
+    this.proceedWithDischarge();
+  }
+
+  onCancelPartialFulfillment(): void {
+    this.showPartialFulfillmentConfirm = false;
+    this.partiallyFulfilledItems = [];
+  }
+
+  private proceedWithDischarge(): void {
     if (!this.requestDetail) return;
 
     this.processingDischarge = true;

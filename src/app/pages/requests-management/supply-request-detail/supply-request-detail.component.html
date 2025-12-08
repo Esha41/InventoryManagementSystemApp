@@ -376,3 +376,76 @@
   (saveEditItem)="onSaveEditItem($event)"
   (confirmRemoveItem)="onConfirmRemoveItem($event)">
 </app-item-management-modals>
+
+<!-- Partial Fulfillment Confirmation Modal -->
+<app-modal
+  [isOpen]="showPartialFulfillmentConfirm"
+  [title]="'supplyRequestDetail.partialFulfillmentConfirm.title' | translate"
+  size="md"
+  (closed)="onCancelPartialFulfillment()">
+  
+  <div class="space-y-6">
+    <!-- Warning Icon and Message -->
+    <div class="flex items-start gap-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+      <div class="flex-shrink-0">
+        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+          <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-yellow-600"></lucide-angular>
+        </div>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-base font-semibold text-yellow-900 mb-1">
+          {{ 'supplyRequestDetail.partialFulfillmentConfirm.message' | translate }}
+        </h3>
+        <p class="text-sm text-yellow-800">
+          {{ 'supplyRequestDetail.partialFulfillmentConfirm.description' | translate }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Partially Fulfilled Items List -->
+    <div *ngIf="partiallyFulfilledItems.length > 0" class="space-y-3">
+      <h4 class="text-sm font-semibold text-gray-900">
+        {{ 'supplyRequestDetail.partialFulfillmentConfirm.itemsList' | translate }}:
+      </h4>
+      <div class="space-y-2 max-h-60 overflow-y-auto">
+        <div *ngFor="let item of partiallyFulfilledItems" 
+             class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900">{{ item.itemName }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ item.itemType }}</p>
+            </div>
+            <div class="text-right ml-4">
+              <p class="text-sm font-semibold text-gray-900">
+                {{ formatNumber(item.totalSelectedForDischarge) }} / {{ formatNumber(item.approvedQuantity) }}
+              </p>
+              <p class="text-xs text-yellow-600 font-medium mt-1">
+                {{ 'supplyRequestDetail.partialFulfillmentConfirm.partial' | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Question -->
+    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <p class="text-sm font-medium text-blue-900">
+        {{ 'supplyRequestDetail.partialFulfillmentConfirm.confirmQuestion' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <div modal-footer class="flex gap-3">
+    <app-button
+      variant="outline"
+      (clicked)="onCancelPartialFulfillment()">
+      {{ 'common.cancel' | translate }}
+    </app-button>
+    <app-button
+      variant="primary"
+      (clicked)="onConfirmPartialFulfillment()">
+      {{ 'supplyRequestDetail.partialFulfillmentConfirm.confirmButton' | translate }}
+    </app-button>
+  </div>
+</app-modal>

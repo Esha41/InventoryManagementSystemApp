@@ -987,7 +987,7 @@
     "noExpiry": "لا يوجد تاريخ انتهاء",
     "invalidOrderId": "رقم الطلب غير صالح",
     "failedToLoadOrderDetails": "فشل تحميل تفاصيل الطلب",
-    "insufficientInventoryNote": "ملاحظة: المخزون غير كافٍ للوفاء الكامل.",
+    "insufficientInventoryNote": "ملاحظة: المخزون غير كافٍ للصرف الكامل.",
     "pleaseEnterLotNumber": "يرجى إدخال رقم اللوت",
     "invalidLotNumber": "رقم اللوت غير صالح",
     "lotBelongsToDifferentItem": "اللوت {{lotNumber}} ينتمي إلى صنف مختلف ({{itemName}})",
@@ -998,13 +998,22 @@
     "noAvailableLotsFound": "لم يتم العثور على لوتات متاحة للكمية المطلوبة",
     "failedToLoadAvailableLots": "فشل تحميل اللوتات المتاحة",
     "lotRemovedFromList": "تمت إزالة اللوت {{lotNumber}} من القائمة",
-    "suggestionsLoadedAllFulfilled": "تم تحميل الاقتراحات! يمكن الوفاء بجميع الأصناف من المخزون.",
-    "suggestionsLoadedInsufficient": "تم تحميل الاقتراحات. ملاحظة: المخزون غير كافٍ للوفاء الكامل.",
+    "suggestionsLoadedAllFulfilled": "تم تحميل الاقتراحات! يمكن صرف جميع الأصناف من المخزون.",
+    "suggestionsLoadedInsufficient": "تم تحميل الاقتراحات. ملاحظة: المخزون غير كافٍ للصرف الكامل.",
     "failedToLoadSuggestions": "فشل تحميل اقتراحات الإمداد",
     "draftSupplyExists": "يوجد بالفعل توريد مسود (ID: {{supplyId}}) لهذا الطلب. يرجى تحديثه بدلاً من ذلك.",
     "noItemsSelectedForDischarge": "لم يتم اختيار أصناف للصرف",
     "dischargeProcessedSuccessfully": "تمت معالجة الصرف بنجاح! رقم التوريد: {{supplyId}}",
-    "failedToProcessDischarge": "فشل معالجة الصرف"
+    "failedToProcessDischarge": "فشل معالجة الصرف",
+    "partialFulfillmentConfirm": {
+      "title": "تأكيد الصرف الجزئي",
+      "message": "أنت على وشك صرف هذا الطلب بشكل جزئي",
+      "description": "تم اختيار بعض الأصناف بكميات أقل من الكميات المعتمدة. سيؤدي هذا إلى الصرف الجزئي للطلب.",
+      "itemsList": "الأصناف المصروفة جزئياً",
+      "partial": "جزئي",
+      "confirmQuestion": "هل أنت متأكد أنك تريد المتابعة مع الصرف الجزئي؟",
+      "confirmButton": "تأكيد الاختيار"
+    }
   },
   "supplyOrder": {
     "title": "طلب التوريد",
@@ -1039,7 +1048,7 @@
     "quantity": "الكمية",
     "requested": "مطلوب",
     "totalSupplied": "إجمالي الموردة",
-    "fullyFulfilled": "تم الوفاء بالكامل",
+    "fullyFulfilled": "تم الصرف بالكامل",
     "totalItems": "إجمالي الأصناف",
     "actions": "الإجراءات",
     "accept": "قبول",

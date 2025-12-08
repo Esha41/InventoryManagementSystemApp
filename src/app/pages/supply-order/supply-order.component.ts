@@ -16,9 +16,9 @@ import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ToastService } from '@services/toast.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { ApprovalStep, SupplyItemDisplay, LotItem } from '@models/supply-order.model';
+import { SupplyItemDisplay, LotItem } from '@models/supply-order.model';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
-import { getApprovalStatusClass } from '@utils/status-class.utils';
+import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
@@ -26,9 +26,8 @@ import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { BaseRequestDto } from '@models/workflow-approval.model';
+import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
-import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -114,8 +113,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   savingItem: boolean = false;
 
   orderItems: OrderRequestItemDto[] = [];
-  approvalWorkflow: ApprovalStep[] = [];
+  approvalWorkflow: WorkflowApprovalStep[] = [];
   supplyItems: SupplyItemDisplay[] = [];
+  baseRequestData: BaseRequestDto | null = null;
 
   isApprovalWorkflowExpanded: boolean = true;
 
@@ -301,19 +301,41 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             : (response?.data || []);
 
           const baseRequest = data.find(r => r.id === this.orderId);
+          this.baseRequestData = baseRequest || null;
 
           if (baseRequest && baseRequest.approvalHistory) {
             const requestStatus = mapRequestStatus(baseRequest.status);
-            const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
-            this.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
+            this.approvalWorkflow = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
           } else {
             this.approvalWorkflow = [];
           }
         },
         error: () => {
           this.approvalWorkflow = [];
+          this.baseRequestData = null;
         }
       });
+  }
+
+  get displayApprovalHistory(): WorkflowApprovalStep[] {
+    if (!this.orderData) {
+      return [];
+    }
+
+    const requestDate = this.baseRequestData?.requestDate || this.orderData.usageDateFrom || '';
+    const requestDateString = typeof requestDate === 'string' ? requestDate : (requestDate instanceof Date ? requestDate.toISOString() : '');
+
+    const requesterStep: WorkflowApprovalStep = {
+      id: 0,
+      approverName: this.orderData.requesterName || 'Unknown Requester',
+      status: 'Approved',
+      applicationRoleName: 'Requester (Order Requesting Entity)',
+      approvedDateTime: requestDateString,
+      isPending: false,
+      comments: this.orderData.notes
+    };
+
+    return [requesterStep, ...this.approvalWorkflow];
   }
   goBack(): void {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
@@ -671,16 +693,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.confirmModalAction = null;
   }
 
-  getApprovalStatusIcon(status: string): any {
-    switch (status) {
-      case 'Approved': return this.CheckCircle;
-      case 'Rejected': return this.XIcon;
-      case 'Pending': return this.Clock;
-      default: return this.Clock;
-    }
-  }
-
-  getApprovalStatusClass = getApprovalStatusClass;
   formatDate = formatDateUtil;
   formatNumber = formatNumberUtil;
   getPriorityText = getPriorityText;
@@ -940,6 +952,19 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const id = anyItem.itemId || anyItem.id || 0;
 
     return localized || this.getItemDisplayName(id);
+  }
+
+  getApprovalStatusIcon(status: string): any {
+    switch (status) {
+      case 'Approved': return this.CheckCircle;
+      case 'Rejected': return this.AlertTriangle;
+      case 'Pending': return this.Clock;
+      default: return this.Clock;
+    }
+  }
+
+  getApprovalStatusClass(status: string): string {
+    return getApprovalStatusBadgeClass(status);
   }
 }
 

@@ -1003,7 +1003,16 @@
     "draftSupplyExists": "A draft supply (ID: {{supplyId}}) already exists for this order. Please update it instead.",
     "noItemsSelectedForDischarge": "No items selected for discharge",
     "dischargeProcessedSuccessfully": "Discharge processed successfully! Supply ID: {{supplyId}}",
-    "failedToProcessDischarge": "Failed to process discharge"
+    "failedToProcessDischarge": "Failed to process discharge",
+    "partialFulfillmentConfirm": {
+      "title": "Partial Fulfillment Confirmation",
+      "message": "You are about to fulfill this order partially",
+      "description": "Some items have been selected with quantities less than the approved amounts. This will result in partial fulfillment of the order.",
+      "itemsList": "Partially Fulfilled Items",
+      "partial": "Partial",
+      "confirmQuestion": "Are you sure you want to proceed with partial fulfillment?",
+      "confirmButton": "Confirm Selection"
+    }
   },
   "supplyOrder": {
     "title": "Supply Order",
