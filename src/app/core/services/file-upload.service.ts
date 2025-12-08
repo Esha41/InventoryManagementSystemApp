@@ -16,7 +16,8 @@ export enum FileEntityType {
   Order = 2,
   Workflow = 3,
   WorkflowApproval = 4,
-  Supply = 5
+  Supply = 5,
+  
 }
 
 /**

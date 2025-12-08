@@ -5,15 +5,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
+import { LucideAngularModule, Eye } from 'lucide-angular';
 
 @Component({
   selector: 'app-review-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, HasPermissionDirective, LucideAngularModule],
   templateUrl: './review-form.component.html',
   styleUrls: ['./review-form.component.css']
 })
 export class ReviewFormComponent {
+  readonly Eye = Eye;
   @Input() requesterName: string = '';
   @Input() requesterComments: string = '';
   @Input() orderType: string = '';
@@ -28,6 +30,7 @@ export class ReviewFormComponent {
   @Input() usageDateTo: string = '';
   @Input() usageTimeTo: string = '';
   @Input() selectedCartridges: Cartridge[] = [];
+  @Input() files: File[] = [];
 
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
@@ -80,6 +83,27 @@ export class ReviewFormComponent {
     const dateStr = date.toLocaleDateString('en-GB');
     // Display time in military format (HHMM)
     return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo}` : dateStr;
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  viewFile(file: File): void {
+    if (!file) return;
+    
+    const blobUrl = URL.createObjectURL(file);
+    window.open(blobUrl, '_blank');
+    
+    // Clean up the blob URL after a delay to free memory
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+    }, 100);
   }
 }
 

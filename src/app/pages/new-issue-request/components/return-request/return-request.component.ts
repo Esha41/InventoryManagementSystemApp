@@ -64,6 +64,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   returnItems: ReturnItemForm[] = [];
 
+  // File upload
+  selectedFiles: File[] = [];
+  fileInputElement: HTMLInputElement | null = null;
+
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
@@ -461,7 +465,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     };
 
     this.isLoading = true;
-    this.returnService.createReturn(createReturnDto)
+    const filesToUpload = this.selectedFiles.length > 0 ? this.selectedFiles : undefined;
+    this.returnService.createReturn(createReturnDto, filesToUpload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returnId) => {
@@ -634,8 +639,42 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.itemDropdownSearchTerms = [];
     this.itemDropdownOpen = [];
     this.addReturnItem();
+    this.selectedFiles = [];
+    if (this.fileInputElement) {
+      this.fileInputElement.value = '';
+    }
     this.isSubmitted = false;
     this.errors = {};
+  }
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      this.fileInputElement = input;
+      // Clear the input so the same file can be selected again
+      input.value = '';
+    }
+  }
+
+  removeFile(index: number): void {
+    if (index >= 0 && index < this.selectedFiles.length) {
+      this.selectedFiles.splice(index, 1);
+      // Update the file input if needed
+      if (this.fileInputElement && this.selectedFiles.length === 0) {
+        this.fileInputElement.value = '';
+      }
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
   private toNumber(value: any): number | null {

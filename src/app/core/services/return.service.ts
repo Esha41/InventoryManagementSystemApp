@@ -72,9 +72,57 @@ export class ReturnService {
   /**
    * Create a new return request
    */
-  createReturn(dto: CreateReturnDto): Observable<number> {
+  createReturn(dto: CreateReturnDto, files?: File[]): Observable<number> {
     this.configService.log('Creating return request', dto);
 
+    // If files are provided, use FormData
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      
+      // Append DTO properties
+      if (dto.reason) formData.append('Reason', dto.reason);
+      formData.append('Priority', dto.priority.toString());
+      if (dto.notes) formData.append('Notes', dto.notes);
+      formData.append('DepartmentId', dto.departmentId.toString());
+      if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
+      formData.append('RequestPurposeId', dto.requestPurposeId.toString());
+      
+      // Append ReturnItems array
+      if (dto.returnItems && dto.returnItems.length > 0) {
+        dto.returnItems.forEach((item, index) => {
+          formData.append(`ReturnItems[${index}].ItemId`, item.itemId.toString());
+          formData.append(`ReturnItems[${index}].Quantity`, item.quantity.toString());
+          if (item.notes) {
+            formData.append(`ReturnItems[${index}].Notes`, item.notes);
+          }
+        });
+      }
+      
+      // Append files
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      return this.apiService.postWithAuth<APIOperationResponse<number>>(
+        API_ENDPOINTS.RETURNS.BASE,
+        formData
+      ).pipe(
+        map(response => {
+          if (!response.succeeded) {
+            throw new Error(response.message || 'Failed to create return request');
+          }
+          return response.data;
+        }),
+        catchError(error => {
+          this.configService.logError('Failed to create return request', error);
+          return throwError(() => new Error(
+            error.message || 'Failed to create return request'
+          ));
+        })
+      );
+    }
+
+    // No files - send as JSON
     return this.apiService.postWithAuth<APIOperationResponse<number>>(
       API_ENDPOINTS.RETURNS.BASE,
       dto

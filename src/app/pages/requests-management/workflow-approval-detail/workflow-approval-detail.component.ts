@@ -78,7 +78,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   requestDetail: RequestDetail | null = null;
   loading: boolean = true;
   error: string | null = null;
-  orderFiles: FileUploadDto[] = []; // Files attached to the order
+  orderFiles: FileUploadDto[] = []; // Files attached to the request (Order, Return, Discard)
 
   // Collapsible sections state
   isApprovalWorkflowExpanded: boolean = true;
@@ -200,7 +200,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             return;
           }
 
-          // Store order files if available
+          // Store request files if available (for Order, Return, Discard)
           this.orderFiles = baseRequest.files || [];
 
           this.loadRequestItems(baseRequest).then(() => {

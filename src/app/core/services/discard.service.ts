@@ -72,9 +72,57 @@ export class DiscardService {
   /**
    * Create a new discard request
    */
-  createDiscard(dto: CreateDiscardDto): Observable<number> {
+  createDiscard(dto: CreateDiscardDto, files?: File[]): Observable<number> {
     this.configService.log('Creating discard request', dto);
 
+    // If files are provided, use FormData
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      
+      // Append DTO properties
+      if (dto.reason) formData.append('Reason', dto.reason);
+      formData.append('Priority', dto.priority.toString());
+      if (dto.notes) formData.append('Notes', dto.notes);
+      formData.append('DepartmentId', dto.departmentId.toString());
+      if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
+      formData.append('RequestPurposeId', dto.requestPurposeId.toString());
+      
+      // Append DiscardItems array
+      if (dto.discardItems && dto.discardItems.length > 0) {
+        dto.discardItems.forEach((item, index) => {
+          formData.append(`DiscardItems[${index}].ItemId`, item.itemId.toString());
+          formData.append(`DiscardItems[${index}].Quantity`, item.quantity.toString());
+          if (item.notes) {
+            formData.append(`DiscardItems[${index}].Notes`, item.notes);
+          }
+        });
+      }
+      
+      // Append files
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      return this.apiService.postWithAuth<APIOperationResponse<number>>(
+        API_ENDPOINTS.DISCARDS.BASE,
+        formData
+      ).pipe(
+        map(response => {
+          if (!response.succeeded) {
+            throw new Error(response.message || 'Failed to create discard request');
+          }
+          return response.data;
+        }),
+        catchError(error => {
+          this.configService.logError('Failed to create discard request', error);
+          return throwError(() => new Error(
+            error.message || 'Failed to create discard request'
+          ));
+        })
+      );
+    }
+
+    // No files - send as JSON
     return this.apiService.postWithAuth<APIOperationResponse<number>>(
       API_ENDPOINTS.DISCARDS.BASE,
       dto
