@@ -442,65 +442,46 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   async exportToPdf(): Promise<void> {
-    if (this.isExportingPdf || this.orders.length === 0) {
+    if (this.isExportingPdf || !this.selectedOrderId) {
       return;
     }
 
     this.isExportingPdf = true;
-    this.toastService.info(`Exporting ${this.orders.length} order(s) to PDF...`);
+    this.toastService.info('Exporting order to PDF...');
 
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      let isFirstPage = true;
 
-      // Export all orders
-      for (let i = 0; i < this.orders.length; i++) {
-        const order = this.orders[i];
-        if (!order || !order.id) continue;
-
-        try {
-          // Load order details
-          const orderData = await this.loadOrderDataForExport(order.id);
-          if (!orderData) continue;
-
-          // Generate separate HTML sections
-          const qrSectionHtml = this.generateQrCodeSectionHtml(orderData);
-          const orderDetailsHtml = this.generateOrderDetailsSectionHtml(orderData);
-          const approvalWorkflowHtml = this.generateApprovalWorkflowSectionHtml(orderData);
-
-          // Add new page if not first order
-          if (!isFirstPage) {
-            pdf.addPage();
-          }
-          isFirstPage = false;
-
-          // Page 1: QR Code Section
-          await this.addSectionToPdf(pdf, qrSectionHtml, pdfWidth);
-
-          // Page 2: Order Details Section
-          pdf.addPage();
-          await this.addSectionToPdf(pdf, orderDetailsHtml, pdfWidth);
-
-          // Page 3: Approval Workflow Section
-          pdf.addPage();
-          await this.addSectionToPdf(pdf, approvalWorkflowHtml, pdfWidth);
-
-        } catch (error) {
-          console.error(`Failed to export order ${order.id}`, error);
-          // Continue with next order
-        }
+      // Load order details for selected order
+      const orderData = await this.loadOrderDataForExport(this.selectedOrderId);
+      if (!orderData) {
+        this.toastService.error('Failed to load order data. Please try again.');
+        this.isExportingPdf = false;
+        return;
       }
 
+      // Generate separate HTML sections
+      const qrSectionHtml = this.generateQrCodeSectionHtml(orderData);
+      const orderDetailsHtml = this.generateOrderDetailsSectionHtml(orderData);
+      const approvalWorkflowHtml = this.generateApprovalWorkflowSectionHtml(orderData);
+
+      // Page 1: QR Code Section
+      await this.addSectionToPdf(pdf, qrSectionHtml, pdfWidth);
+
+      // Page 2: Order Details Section
+      pdf.addPage();
+      await this.addSectionToPdf(pdf, orderDetailsHtml, pdfWidth);
+
+      // Page 3: Approval Workflow Section
+      pdf.addPage();
+      await this.addSectionToPdf(pdf, approvalWorkflowHtml, pdfWidth);
+
       // Save PDF
-      const firstOrderId = this.orders.length > 0 && this.orders[0]?.id
-        ? (this.orders[0].requestNo || this.orders[0].orderNo || `#${this.orders[0].id}`).replace('#', '')
-        : this.orderSummary.orderId.replace('#', '');
-      const fileName = this.orders.length === 1
-        ? `order-report-${firstOrderId}.pdf`
-        : `order-reports-all-${new Date().toISOString().split('T')[0]}.pdf`;
+      const orderId = orderData.summary.orderId.replace('#', '');
+      const fileName = `order-report-${orderId}.pdf`;
       pdf.save(fileName);
-      this.toastService.success(`Successfully exported ${this.orders.length} order(s) to PDF`);
+      this.toastService.success('Successfully exported order to PDF');
     } catch (error) {
       console.error('Failed to export PDF', error);
       this.toastService.error('Failed to export PDF. Please try again.');
