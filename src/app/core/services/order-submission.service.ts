@@ -153,11 +153,16 @@ export class OrderSubmissionService {
 
     const orderNumber = this.generateOrderNumber();
 
+    // Helper to handle empty strings and fallback to default values
+    const getValueOrDefault = (value: any, defaultValue: string): string => {
+      return (value && value.trim()) ? value.trim() : defaultValue;
+    };
+
     return {
       orderNo: orderNumber,
       requestNo: orderNumber,
-      reason: data.usePurpose || data.orderType || 'New Order Issue',
-      notes: data.requesterComments || '',
+      reason: getValueOrDefault(data.usePurpose, data.orderType || 'New Order Issue'),
+      notes: getValueOrDefault(data.requesterComments, ''),
       departmentId: data.departmentId,
       requestTypeId: data.defaultRequestTypeId,
       requesterId: null,
@@ -169,9 +174,9 @@ export class OrderSubmissionService {
       usageTimeFrom: this.formatTimeOnly(data.usageTimeFrom),
       usageDateTo: usageDateTimeTo.toISOString(),
       usageTimeTo: this.formatTimeOnly(data.usageTimeTo),
-      usagePurpose: data.usePurpose || 'General usage',
+      usagePurpose: getValueOrDefault(data.usePurpose, 'General usage'),
       annualDiscard: null,
-      usageLocation: data.usageLocation || 'N/A',
+      usageLocation: getValueOrDefault(data.usageLocation, 'N/A'),
       numberOfOfficer: data.numberOfOfficers ?? null,
       numberOfOtherRank: data.numberOfOtherRanks ?? null,
       priority: this.mapPriorityToEnum(data.orderPriority),

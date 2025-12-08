@@ -95,17 +95,26 @@ export class SupplyRequestDetailService {
    * Load supply suggestions and check for existing draft supply
    */
   loadSuggestionsWithDraftCheck(orderId: number): Observable<LoadSuggestionsResult> {
-    return this.supplyService.getSupplySuggestion(orderId).pipe(
-      switchMap((suggestion) => {
-        return this.supplyService.checkDraftSupplyExists(orderId).pipe(
-          switchMap((existingSupply) => {
-            if (existingSupply) {
-              return this.supplyService.getById(existingSupply.id).pipe(
-                map((supply) => ({ suggestion, existingSupply: supply }))
-              );
-            }
-            return of({ suggestion, existingSupply: null });
-          })
+    return this.supplyService.checkDraftSupplyExists(orderId).pipe(
+      switchMap((existingSupply) => {
+        if (existingSupply) {
+          return this.supplyService.getById(existingSupply.id).pipe(
+            map((supply) => ({
+              suggestion: {
+                orderId,
+                orderNo: '',
+                departmentId: 0,
+                canFulfillCompletely: false,
+                itemSuggestions: [],
+                message: 'Draft loaded'
+              },
+              existingSupply: supply
+            }))
+          );
+        }
+
+        return this.supplyService.getSupplySuggestion(orderId).pipe(
+          map((suggestion) => ({ suggestion, existingSupply: null }))
         );
       })
     );
@@ -364,6 +373,7 @@ export class SupplyRequestDetailService {
 
   /**
    * Build supply details array from request detail selections
+   * Consolidates duplicate item+lot combinations by summing quantities
    */
   private buildSupplyDetails(requestDetail: SupplyRequestDetail): CreateSupplyDetailDto[] {
     const supplyDetails: CreateSupplyDetailDto[] = [];
@@ -381,7 +391,29 @@ export class SupplyRequestDetailService {
       });
     });
 
-    return supplyDetails;
+    // Consolidate duplicates by grouping on itemId+lot and summing quantities
+    const consolidatedMap = new Map<string, CreateSupplyDetailDto>();
+    
+    supplyDetails.forEach(detail => {
+      const key = `${detail.itemId}_${detail.lot}`;
+      const existing = consolidatedMap.get(key);
+      
+      if (existing) {
+        // Sum quantities for duplicate item+lot combinations
+        existing.quantity += detail.quantity;
+        this.config.log(`Consolidated duplicate lot ${detail.lot} for item ${detail.itemId}: ${existing.quantity}`);
+      } else {
+        consolidatedMap.set(key, { ...detail });
+      }
+    });
+
+    const consolidated = Array.from(consolidatedMap.values());
+    
+    if (consolidated.length < supplyDetails.length) {
+      this.config.log(`Consolidated ${supplyDetails.length} supply details into ${consolidated.length} unique combinations`);
+    }
+
+    return consolidated;
   }
 
   /**

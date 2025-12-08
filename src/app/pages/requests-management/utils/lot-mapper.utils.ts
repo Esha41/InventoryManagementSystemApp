@@ -10,13 +10,25 @@ import { getLocalizedName } from '@utils/localization.utils';
 
 /**
  * Map suggested lots to LotItem format
+ * Removes duplicates by lot number, keeping the first occurrence
  */
 export function mapSuggestedLotsToLotItems(
   suggestions: any[],
   existingSelections?: Map<number, number>,
   currentLang: string = 'en'
 ): LotItem[] {
-  const lots = suggestions.map(lotSuggestion => ({
+  // Remove duplicate suggestions by lot number (keep first occurrence)
+  const uniqueSuggestions: any[] = [];
+  const seenLots = new Set<number>();
+  
+  suggestions.forEach(suggestion => {
+    if (!seenLots.has(suggestion.lot)) {
+      seenLots.add(suggestion.lot);
+      uniqueSuggestions.push(suggestion);
+    }
+  });
+
+  const lots = uniqueSuggestions.map(lotSuggestion => ({
     inventoryDetailId: lotSuggestion.inventoryDetailId,
     lotNumber: lotSuggestion.lot,
     quantity: lotSuggestion.availableQuantity,

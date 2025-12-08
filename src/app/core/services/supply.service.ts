@@ -244,22 +244,33 @@ export class SupplyService {
   }
 
   /**
+   * Get draft supply by Order ID
+   * @param orderId Order ID
+   */
+  getDraftByOrderId(orderId: number): Observable<SupplyDto | null> {
+    this.config.log(`Fetching draft supply for order ${orderId}`);
+    return this.http.get<APIOperationResponse<SupplyDto>>(
+      `${this.baseUrl}/${orderId}/draft`
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to fetch draft supply');
+        }
+        return response.data || null;
+      }),
+      catchError(error => {
+        this.config.logError(`Failed to fetch draft supply for order ${orderId}`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Check if a draft supply exists for an order
    * @param orderId Order ID
    */
   checkDraftSupplyExists(orderId: number): Observable<SupplyDto | null> {
-    this.config.log(`Checking for draft supply for order ${orderId}`);
-    return this.getAll().pipe(
-      map(supplies => {
-        // Find draft supply for this order (SupplySubmissionStatus: Draft = 1, Submitted = 2)
-        const draftSupply = supplies.find(s => s.orderId === orderId && s.submissionStatus === 1);
-        return draftSupply || null;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to check draft supply for order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.getDraftByOrderId(orderId);
   }
 
   /**
