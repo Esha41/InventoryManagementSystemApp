@@ -38,7 +38,15 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "qrcode",
+              "leaflet",
+              "core-js",
+              "rgbcolor",
+              "raf"]
+
           },
           "configurations": {
             "production": {
