@@ -26,7 +26,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
-import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -522,6 +522,32 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
+      const invalidFiles: string[] = [];
+
+      // Validate file sizes
+      newFiles.forEach(file => {
+        const validation = validateFileSize(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        }
+      });
+
+      // Show error message if any files exceed the limit
+      if (invalidFiles.length > 0) {
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded'] 
+            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
+            : invalidFiles.join('\n');
+          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
+        });
+        // Reset input
+        if (input) {
+          input.value = '';
+        }
+        return;
+      }
+
+      // Add valid files
       this.approvalFiles = [...this.approvalFiles, ...newFiles];
       // Reset input to allow selecting the same file again
       if (input) {
@@ -1223,9 +1249,31 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
 
-      // Add new files to existing selection (avoid duplicates by name)
-      newFiles.forEach(newFile => {
+      // Validate file sizes and separate valid/invalid files
+      newFiles.forEach(file => {
+        const validation = validateFileSize(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      // Show error message if any files exceed the limit
+      if (invalidFiles.length > 0) {
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded'] 
+            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
+            : invalidFiles.join('\n');
+          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
+        });
+      }
+
+      // Add only valid files to existing selection (avoid duplicates by name)
+      validFiles.forEach(newFile => {
         const isDuplicate = this.selectedFiles.some(existingFile =>
           existingFile.name === newFile.name && existingFile.size === newFile.size
         );
@@ -1251,6 +1299,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Get file size in readable format
    */
   getFileSize = getFileSizeFromFile;
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   /**
    * Handle additional file selection after submission
@@ -1259,9 +1308,31 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
 
-      // Add new files to existing selection (avoid duplicates by name)
-      newFiles.forEach(newFile => {
+      // Validate file sizes and separate valid/invalid files
+      newFiles.forEach(file => {
+        const validation = validateFileSize(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      // Show error message if any files exceed the limit
+      if (invalidFiles.length > 0) {
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded'] 
+            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
+            : invalidFiles.join('\n');
+          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
+        });
+      }
+
+      // Add only valid files to existing selection (avoid duplicates by name)
+      validFiles.forEach(newFile => {
         const isDuplicate = this.additionalFiles.some(existingFile =>
           existingFile.name === newFile.name && existingFile.size === newFile.size
         );

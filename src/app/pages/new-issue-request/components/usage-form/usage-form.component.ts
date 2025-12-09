@@ -5,7 +5,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { ToastService } from '@services/toast.service';
+
+// Export MAX_FILE_SIZE_MB for template use
+export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
 
 @Component({
   selector: 'app-usage-form',
@@ -15,7 +19,10 @@ import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
   styleUrls: ['./usage-form.component.css']
 })
 export class UsageFormComponent {
-  constructor(public translateService: TranslateService) {}
+  constructor(
+    public translateService: TranslateService,
+    private toastService: ToastService
+  ) {}
   
   get currentLang(): string {
     return this.translateService.currentLang || 'en';
@@ -225,8 +232,35 @@ export class UsageFormComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
-      this.selectedFiles = [...this.selectedFiles, ...newFiles];
-      this.filesChange.emit(this.selectedFiles);
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
+
+      // Validate file sizes and separate valid/invalid files
+      newFiles.forEach(file => {
+        const validation = validateFileSize(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      // Show error message if any files exceed the limit
+      if (invalidFiles.length > 0) {
+        this.translateService.get(['toast.error', 'newIssueRequest.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['newIssueRequest.errors.fileSizeExceeded'] 
+            ? `${translations['newIssueRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
+            : invalidFiles.join('\n');
+          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
+        });
+      }
+
+      // Add only valid files to the selection
+      if (validFiles.length > 0) {
+        this.selectedFiles = [...this.selectedFiles, ...validFiles];
+        this.filesChange.emit(this.selectedFiles);
+      }
+
       // Reset input to allow selecting the same files again if needed
       input.value = '';
     }
@@ -238,6 +272,7 @@ export class UsageFormComponent {
   }
 
   getFileSize = getFileSizeFromFile;
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB_EXPORT;
 
   onPrevious(): void {
     this.previous.emit();

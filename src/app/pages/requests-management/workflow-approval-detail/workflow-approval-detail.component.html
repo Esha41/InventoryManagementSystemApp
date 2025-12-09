@@ -598,6 +598,9 @@
                   <p class="text-xs text-[var(--color-text-muted)]">
                     {{ 'workflowApprovalDetail.fileAttachmentsHint' | translate }}
                   </p>
+                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                    Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
+                  </p>
                 </div>
               </div>
 
@@ -682,6 +685,11 @@
                       </button>
                     </div>
                   </div>
+
+                  <!-- Helper Text -->
+                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                    Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
+                  </p>
 
                   <!-- Upload Button -->
                   <div class="flex justify-end">
@@ -772,6 +780,9 @@
               <!-- Helper Text -->
               <p class="text-xs text-[var(--color-text-muted)]">
                 {{ 'newIssueRequest.attachmentsHint' | translate }}
+              </p>
+              <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
               </p>
             </div>
           </div>
