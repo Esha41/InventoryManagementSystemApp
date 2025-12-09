@@ -68,7 +68,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private lookupService: LookupService,
     private offlineMapService: OfflineMapService,
-    private translateService: TranslateService,
+    private translate: TranslateService,
     private translationService: TranslationService
   ) { }
 
@@ -80,7 +80,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Subscribe to language changes to update markers
-    this.translateService.onLangChange
+    this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         // Reload warehouse locations to get fresh localized names
@@ -461,7 +461,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     const latitude = depot.latitude ? Number(depot.latitude) : 25.2854;
     const longitude = depot.longitude ? Number(depot.longitude) : 51.5310;
 
-    const localizedName = getLocalizedName(depot, getCurrentLang(this.translateService));
+    const localizedName = getLocalizedName(depot, getCurrentLang(this.translate));
 
     return {
       id: depot.id.toString(),
@@ -521,10 +521,12 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
    * Clear offline cache
    */
   async clearOfflineCache(): Promise<void> {
-    if (confirm('Are you sure you want to clear the offline map cache?')) {
+    const confirmMessage = this.translate.instant('warehouseMap.confirmClearCache');
+    if (confirm(confirmMessage)) {
       await this.offlineMapService.clearCache();
       await this.checkCacheStatus();
-      alert('Offline map cache cleared.');
+      const successMessage = this.translate.instant('warehouseMap.cacheCleared');
+      alert(successMessage);
     }
   }
 

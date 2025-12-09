@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Search, Package } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -30,7 +30,8 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     private router: Router,
     private orderService: OrderService,
     private supplyService: SupplyService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -58,7 +59,9 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load orders:', error);
-          this.toastService.error('Failed to load orders');
+          this.translateService.get(['toast.failedToLoadOrders', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadOrders'], translations['toast.error']);
+          });
           this.loading = false;
         }
       });

@@ -1,8 +1,8 @@
 <div class="page-wrapper">
   <div class="page-container">
     <div class="mb-6">
-    <h1 class="text-2xl font-bold text-[var(--color-text)]">Supply Orders</h1>
-    <p class="text-sm text-gray-600 mt-1">Manage and fulfill supply orders</p>
+    <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'supplyOrder.pageTitle' | translate }}</h1>
+    <p class="text-sm text-gray-600 mt-1">{{ 'supplyOrder.pageSubtitle' | translate }}</p>
   </div>
 
   <app-loading-state 
@@ -22,11 +22,11 @@
       <table class="min-w-full">
         <thead class="bg-white border-b border-gray-200">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Order ID</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Request Number</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Priority</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Items</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.orderId' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.requestNumber' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.status' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.priority' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.items' | translate }}</th>
             <th class="px-6 py-3"></th>
           </tr>
         </thead>

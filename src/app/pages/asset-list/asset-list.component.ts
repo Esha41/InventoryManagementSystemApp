@@ -851,8 +851,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       if (!this.isValidImageType(file)) {
-        const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
-        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle);
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
+        });
         input.value = '';
         this.editImageFile = null;
         this.editImagePreview = null;
@@ -873,8 +874,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
     if (files && files.length > 0) {
       const file = files[0];
       if (!this.isValidImageType(file)) {
-        const errorTitle = this.translationService.getTranslation('toast.error') || 'Error';
-        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle);
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
+        });
         this.editImageFile = null;
         this.editImagePreview = null;
         return;
@@ -942,8 +944,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
       next: (fileId) => {
         console.log('Image updated successfully, file ID:', fileId);
         this.completeEdit();
-        const successTitle = this.translationService.getTranslation('toast.success') || 'Success';
-        this.toastService.success('Image updated successfully', successTitle);
+        this.translateService.get(['toast.imageUpdatedSuccessfully', 'toast.success']).subscribe(translations => {
+          this.toastService.success(translations['toast.imageUpdatedSuccessfully'], translations['toast.success']);
+        });
       },
       error: (err) => {
         console.error('Failed to update image:', err);

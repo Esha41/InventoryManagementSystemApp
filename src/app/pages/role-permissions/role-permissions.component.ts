@@ -166,7 +166,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
-          this.toastService.error('Failed to load roles', 'Error');
+          this.translateService.get(['toast.failedToLoadRoles', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadRoles'], translations['toast.error']);
+          });
         }
       });
   }
@@ -195,7 +197,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.isLoading = false;
-        this.toastService.error('Failed to load permissions', 'Error');
+        this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.failedToLoadPermissions'], translations['toast.error']);
+        });
       }
     });
   }

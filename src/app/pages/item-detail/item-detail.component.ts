@@ -11,6 +11,7 @@ import { CartridgeDetailsComponent } from '@pages/new-issue-request/components/c
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-item-detail',
@@ -52,7 +53,8 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     private ammunitionService: AmmunitionService,
     private cartridgeMapper: CartridgeMapperService,
     private toastService: ToastService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -114,7 +116,9 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
           console.error('Failed to load item details:', err);
           this.error = 'Failed to load item details. Please try again.';
           this.loading = false;
-          this.toastService.error('Failed to load item details');
+          this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
+          });
         }
       });
   }

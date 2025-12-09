@@ -221,7 +221,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply for this order');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.loading = false;
           this.goBack();
         }
@@ -251,7 +253,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply order');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.loading = false;
           this.goBack();
         }
@@ -362,7 +366,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onUpdateItem(item: SupplyItemDisplay): void {
     if (!this.supplyData) {
-      this.toastService.error('Supply data not loaded');
+      this.translateService.get(['supplyOrder.toast.supplyDataNotLoaded', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.supplyDataNotLoaded'], translations['toast.error']);
+      });
       return;
     }
 
@@ -370,18 +376,24 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     item.quantityError = undefined;
 
     if (!item.quantity || item.quantity <= 0) {
-      item.quantityError = 'Quantity must be greater than 0';
-      this.toastService.error('Quantity must be greater than 0');
+      this.translateService.get(['supplyOrder.toast.quantityMustBeGreaterThanZero']).subscribe(translations => {
+        item.quantityError = translations['supplyOrder.toast.quantityMustBeGreaterThanZero'];
+        this.toastService.error(translations['supplyOrder.toast.quantityMustBeGreaterThanZero']);
+      });
       return;
     }
 
     if (!item.lot || item.lot <= 0) {
-      this.toastService.error('Invalid lot number');
+      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
+      });
       return;
     }
 
     if (!item.itemId || item.itemId <= 0) {
-      this.toastService.error('Invalid item');
+      this.translateService.get(['supplyOrder.toast.invalidItem', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.invalidItem'], translations['toast.error']);
+      });
       return;
     }
 
@@ -393,8 +405,13 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
     if (newTotalSupplied > item.requestedQuantity) {
       const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
-      item.quantityError = `Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`;
-      this.toastService.error(`Maximum allowed quantity is ${formatNumberUtil(maxAllowedQuantity)}. The requested quantity is ${formatNumberUtil(item.requestedQuantity)}.`);
+      this.translateService.get(['supplyOrder.toast.maxQuantityExceeded', 'toast.error']).subscribe(translations => {
+        const errorMsg = translations['supplyOrder.toast.maxQuantityExceeded']
+          .replace('{{maxQuantity}}', formatNumberUtil(maxAllowedQuantity))
+          .replace('{{requestedQuantity}}', formatNumberUtil(item.requestedQuantity));
+        item.quantityError = errorMsg;
+        this.toastService.error(errorMsg, translations['toast.error']);
+      });
       return;
     }
 
@@ -407,7 +424,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.toastService.success('Item updated successfully');
+          this.translateService.get(['supplyOrder.toast.itemUpdatedSuccessfully', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['supplyOrder.toast.itemUpdatedSuccessfully'], translations['toast.success']);
+          });
           item.isEditing = false;
           item.originalQuantity = undefined;
           item.quantityError = undefined;
@@ -416,7 +435,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.updatingItem = false;
           this.loadSupplyData();
         }
@@ -502,19 +523,25 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   onAddLot(): void {
     if (!this.selectedItemForLot) {
       this.addLotForm.get('itemId')?.markAsTouched();
-      this.toastService.error('Please select an item');
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItem', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.pleaseSelectItem'], translations['toast.error']);
+      });
       return;
     }
 
     if (!this.selectedLotNumber) {
       this.addLotForm.get('lot')?.markAsTouched();
-      this.toastService.error('Please select a lot');
+      this.translateService.get(['supplyOrder.toast.pleaseSelectLot', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.pleaseSelectLot'], translations['toast.error']);
+      });
       return;
     }
 
     if (this.addLotForm.invalid) {
       this.addLotForm.markAllAsTouched();
-      this.toastService.error('Please fill in all required fields');
+      this.translateService.get(['supplyOrder.toast.pleaseFillRequiredFields', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.pleaseFillRequiredFields'], translations['toast.error']);
+      });
       return;
     }
 
@@ -529,14 +556,18 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.toastService.success('Lot added successfully to supply');
+          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyToSupply', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['supplyOrder.toast.lotAddedSuccessfullyToSupply'], translations['toast.success']);
+          });
           this.loadingLotDetails = false;
           this.closeAddLotModal();
           this.loadSupplyData();
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add lot');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.loadingLotDetails = false;
         }
       });
@@ -544,7 +575,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onShowAvailableLots(): void {
     if (!this.selectedItemForLot) {
-      this.toastService.warning('Please select an item first');
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).subscribe(translations => {
+        this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
+      });
       return;
     }
     this.loadAvailableLotsForQuantity(this.selectedItemForLot);
@@ -559,13 +592,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onGetManualLotDetails(): void {
     if (!this.selectedItemForLot || !this.manualLotNumber.trim()) {
-      this.toastService.warning('Please enter a lot number');
+      this.translateService.get(['supplyOrder.toast.pleaseEnterLotNumber', 'toast.warning']).subscribe(translations => {
+        this.toastService.warning(translations['supplyOrder.toast.pleaseEnterLotNumber'], translations['toast.warning']);
+      });
       return;
     }
 
     const lotNum = parseInt(this.manualLotNumber.trim(), 10);
     if (isNaN(lotNum)) {
-      this.toastService.error('Invalid lot number');
+      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
+      });
       return;
     }
 
@@ -575,14 +612,22 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (lot: LotDetailDto) => {
           if (lot.itemId !== this.selectedItemForLot!.itemId) {
-            this.toastService.error(`Lot ${lotNum} belongs to a different item (${lot.itemName || 'Unknown'})`);
+            this.translateService.get(['supplyOrder.toast.lotBelongsToDifferentItemWithName', 'toast.error']).subscribe(translations => {
+              const errorMsg = translations['supplyOrder.toast.lotBelongsToDifferentItemWithName']
+                .replace('{{lotNumber}}', lotNum.toString())
+                .replace('{{itemName}}', lot.itemName || 'Unknown');
+              this.toastService.error(errorMsg, translations['toast.error']);
+            });
             this.loadingManualLot = false;
             return;
           }
 
           const existingLot = this.availableLots.find(l => l.lotNumber === lot.lot);
           if (existingLot) {
-            this.toastService.warning(`Lot ${lotNum} is already in the list`);
+            this.translateService.get(['supplyOrder.toast.lotAlreadyInListWithNumber', 'toast.warning']).subscribe(translations => {
+              const warningMsg = translations['supplyOrder.toast.lotAlreadyInListWithNumber'].replace('{{lotNumber}}', lotNum.toString());
+              this.toastService.warning(warningMsg, translations['toast.warning']);
+            });
             this.loadingManualLot = false;
             return;
           }
@@ -604,13 +649,18 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.availableLots.push(newLot);
           this.availableLots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
-          this.toastService.success(`Lot ${lotNum} added successfully`);
+          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyWithNumber', 'toast.success']).subscribe(translations => {
+            const successMsg = translations['supplyOrder.toast.lotAddedSuccessfullyWithNumber'].replace('{{lotNumber}}', lotNum.toString());
+            this.toastService.success(successMsg, translations['toast.success']);
+          });
           this.manualLotNumber = '';
           this.loadingManualLot = false;
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Lot not found or error loading details');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.loadingManualLot = false;
         }
       });
@@ -626,14 +676,23 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
 
           if (this.availableLots.length > 0) {
-            this.toastService.success(`Loaded ${this.availableLots.length} available lot(s) optimized for quantity ${item.quantity}`);
+            this.translateService.get(['supplyOrder.toast.loadedAvailableLotsCount', 'toast.success']).subscribe(translations => {
+              const successMsg = translations['supplyOrder.toast.loadedAvailableLotsCount']
+                .replace('{{count}}', this.availableLots.length.toString())
+                .replace('{{quantity}}', formatNumberUtil(item.quantity));
+              this.toastService.success(successMsg, translations['toast.success']);
+            });
           } else {
-            this.toastService.warning('No available lots found for requested quantity');
+            this.translateService.get(['supplyOrder.toast.noAvailableLotsFoundForQuantity', 'toast.warning']).subscribe(translations => {
+              this.toastService.warning(translations['supplyOrder.toast.noAvailableLotsFoundForQuantity'], translations['toast.warning']);
+            });
           }
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load available lots');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.loadingAllLots = false;
         }
       });
@@ -662,13 +721,18 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.toastService.success(`Item "${item.itemName}" removed from supply`);
+          this.translateService.get(['supplyOrder.toast.itemRemovedFromSupply', 'toast.success']).subscribe(translations => {
+            const successMsg = translations['supplyOrder.toast.itemRemovedFromSupply'].replace('{{itemName}}', item.itemName);
+            this.toastService.success(successMsg, translations['toast.success']);
+          });
           this.deletingItem = false;
           this.loadSupplyData();
         },
         error: (error) => {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete item');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.deletingItem = false;
         }
       });
@@ -810,7 +874,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.loadingItems = false;
         },
         error: () => {
-          this.toastService.error('Failed to load items');
+          this.translateService.get(['supplyOrder.toast.failedToLoadItems', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['supplyOrder.toast.failedToLoadItems'], translations['toast.error']);
+          });
           this.loadingItems = false;
         }
       });
@@ -834,7 +900,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const formValue = this.addItemForm.value;
     const existingItem = this.orderItems.find(item => item.itemId === formValue.itemId);
     if (existingItem) {
-      this.toastService.error(`Item already exists in this order. Please use Edit to update the quantity instead.`);
+      this.translateService.get(['supplyOrder.toast.itemAlreadyExists', 'toast.error']).subscribe(translations => {
+        this.toastService.error(translations['supplyOrder.toast.itemAlreadyExists'], translations['toast.error']);
+      });
       return;
     }
 
@@ -850,17 +918,23 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<number>) => {
           if (response.succeeded) {
-            this.toastService.success('Item added successfully');
+            this.translateService.get(['supplyOrder.toast.itemAddedSuccessfully', 'toast.success']).subscribe(translations => {
+              this.toastService.success(translations['supplyOrder.toast.itemAddedSuccessfully'], translations['toast.success']);
+            });
             this.closeAddOrderItemModal();
             this.loadSupplyData();
           } else {
-            this.toastService.error(response.message || 'Failed to add item');
+            this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
+              this.toastService.error(response.message || translations['toast.failedToAddItem'], translations['toast.error']);
+            });
           }
           this.savingItem = false;
         },
         error: (error: any) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add item');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['toast.failedToAddItem']);
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.savingItem = false;
         }
       });
@@ -881,17 +955,23 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.toastService.success('Item quantity updated successfully');
+            this.translateService.get(['supplyOrder.toast.itemQuantityUpdatedSuccessfully', 'toast.success']).subscribe(translations => {
+              this.toastService.success(translations['supplyOrder.toast.itemQuantityUpdatedSuccessfully'], translations['toast.success']);
+            });
             this.closeEditOrderItemModal();
             this.loadSupplyData();
           } else {
-            this.toastService.error(response.message || 'Failed to update item quantity');
+            this.translateService.get(['toast.error', 'toast.failedToUpdateItemQuantity']).subscribe(translations => {
+              this.toastService.error(response.message || translations['toast.failedToUpdateItemQuantity'], translations['toast.error']);
+            });
           }
           this.savingItem = false;
         },
         error: (error: any) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item quantity');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error', 'toast.failedToUpdateItemQuantity']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['toast.failedToUpdateItemQuantity']);
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.savingItem = false;
         }
       });
@@ -905,16 +985,22 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.toastService.success('Item removed successfully');
+            this.translateService.get(['supplyOrder.toast.itemRemovedSuccessfully', 'toast.success']).subscribe(translations => {
+              this.toastService.success(translations['supplyOrder.toast.itemRemovedSuccessfully'], translations['toast.success']);
+            });
             this.closeRemoveOrderItemModal();
             this.loadSupplyData();
           } else {
-            this.toastService.error(response.message || 'Failed to remove item');
+            this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).subscribe(translations => {
+              this.toastService.error(response.message || translations['toast.failedToRemoveItem'], translations['toast.error']);
+            });
           }
         },
         error: (error: any) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove item');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['toast.failedToRemoveItem']);
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
         }
       });
   }
@@ -965,6 +1051,12 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   getApprovalStatusClass(status: string): string {
     return getApprovalStatusBadgeClass(status);
+  }
+
+  isPartiallyFulfilled(item: SupplyItemDisplay): boolean {
+    return !item.isFullyFulfilled && 
+           item.totalSuppliedQuantity > 0 && 
+           item.totalSuppliedQuantity < item.requestedQuantity;
   }
 }
 

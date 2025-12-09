@@ -447,7 +447,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
 
     this.isExportingPdf = true;
-    this.toastService.info('Exporting order to PDF...');
+    this.translate.get(['toast.exportingOrderToPdf', 'toast.info']).subscribe((translations: Record<string, string>) => {
+      this.toastService.info(translations['toast.exportingOrderToPdf'], translations['toast.info']);
+    });
 
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -456,7 +458,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       // Load order details for selected order
       const orderData = await this.loadOrderDataForExport(this.selectedOrderId);
       if (!orderData) {
-        this.toastService.error('Failed to load order data. Please try again.');
+        this.translate.get(['toast.failedToLoadOrderData', 'toast.error']).subscribe((translations: Record<string, string>) => {
+          this.toastService.error(translations['toast.failedToLoadOrderData'], translations['toast.error']);
+        });
         this.isExportingPdf = false;
         return;
       }
@@ -481,10 +485,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       const orderId = orderData.summary.orderId.replace('#', '');
       const fileName = `order-report-${orderId}.pdf`;
       pdf.save(fileName);
-      this.toastService.success('Successfully exported order to PDF');
+      this.translate.get(['toast.orderExportedToPdfSuccessfully', 'toast.success']).subscribe((translations: Record<string, string>) => {
+        this.toastService.success(translations['toast.orderExportedToPdfSuccessfully'], translations['toast.success']);
+      });
     } catch (error) {
       console.error('Failed to export PDF', error);
-      this.toastService.error('Failed to export PDF. Please try again.');
+      this.translate.get(['toast.failedToExportPdf', 'toast.error']).subscribe((translations: Record<string, string>) => {
+        this.toastService.error(translations['toast.failedToExportPdf'], translations['toast.error']);
+      });
     } finally {
       this.isExportingPdf = false;
     }

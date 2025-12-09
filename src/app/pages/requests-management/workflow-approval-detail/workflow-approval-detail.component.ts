@@ -371,10 +371,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.ranks = [];
           this.isLoadingRanks = false;
           this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToLoadRanks']).subscribe(translations => {
-            this.toastService.error(
-              translations['workflowApprovalDetail.errors.failedToLoadRanks'] || 'Failed to load ranks',
-              translations['toast.error']
-            );
+            const errorMsg = translations['workflowApprovalDetail.errors.failedToLoadRanks'] || translations['toast.failedToLoadRoles'];
+            this.toastService.error(errorMsg, translations['toast.error']);
           });
         }
       });
@@ -996,8 +994,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.loadRequestDetail();
         },
         error: (error) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to confirm pickup date');
-          this.toastService.error(errorMessage);
+          this.translateService.get(['toast.error', 'toast.failedToConfirmPickupDate']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['toast.failedToConfirmPickupDate']);
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
           this.confirmPickupDateProcessing = false;
         }
       });

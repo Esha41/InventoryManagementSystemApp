@@ -10,7 +10,7 @@
         <input
           type="text"
           [ngModel]="requesterName"
-          placeholder="Lt. Ahmed"
+          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate"
           readonly
           class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
@@ -21,7 +21,7 @@
         <input
           type="text"
           [ngModel]="requesterComments"
-          placeholder="None"
+          [placeholder]="'newIssueRequest.commentsNonePlaceholder' | translate"
           readonly
           class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
@@ -39,7 +39,7 @@
         <input
           type="text"
           [ngModel]="orderType"
-          placeholder="New Issue Request"
+          [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
@@ -50,7 +50,7 @@
         <input
           type="text"
           [ngModel]="getTranslatedPriority()"
-          placeholder="High Priority"
+          [placeholder]="'newIssueRequest.priorityPlaceholder' | translate"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
       </div>
@@ -168,7 +168,7 @@
           <input
             type="text"
             [ngModel]="usePurpose"
-            placeholder="Training"
+            [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
@@ -179,7 +179,7 @@
           <input
             type="text"
             [ngModel]="usageLocation"
-            placeholder="Location"
+            [placeholder]="'newIssueRequest.usageLocationPlaceholder' | translate"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
@@ -213,7 +213,7 @@
           <input
             type="text"
             [ngModel]="getFormattedUsageDateFrom()"
-            placeholder="20/7/2025 10:00"
+            [placeholder]="'newIssueRequest.usageDatePlaceholder' | translate"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>
@@ -224,7 +224,7 @@
           <input
             type="text"
             [ngModel]="getFormattedUsageDateTo()"
-            placeholder="20/7/2025 18:00"
+            [placeholder]="'newIssueRequest.usageDateToPlaceholder' | translate"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
         </div>

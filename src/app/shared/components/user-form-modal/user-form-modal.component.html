@@ -41,7 +41,7 @@
         <input
           type="text"
           formControlName="nameEn"
-          placeholder="Enter English name"
+          [placeholder]="'userFormModal.nameEnPlaceholder' | translate"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         />
       </div>
@@ -50,7 +50,7 @@
         <input
           type="text"
           formControlName="nameAr"
-          placeholder="Enter Arabic name"
+          [placeholder]="'userFormModal.nameArPlaceholder' | translate"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         />
       </div>
@@ -126,7 +126,7 @@
       <input
         type="text"
         formControlName="militaryId"
-        placeholder="Enter military ID"
+        [placeholder]="'userFormModal.militaryIdPlaceholder' | translate"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
       />
     </div>

@@ -483,7 +483,9 @@ export class NotificationService implements OnDestroy {
         hasEmailInUser: !!this.currentUser.email
       });
       this.configService.logWarning('Cannot send email notification: user email not available');
-      this.toastService.warning('Email notification skipped: User email not found. Please update your profile.');
+      this.translate.get(['toast.emailNotificationSkipped', 'toast.warning']).subscribe(translations => {
+        this.toastService.warning(translations['toast.emailNotificationSkipped'], translations['toast.warning']);
+      });
       return;
     }
 
@@ -607,7 +609,9 @@ export class NotificationService implements OnDestroy {
         });
         this.configService.logError('Failed to send email notification', error);
         // Show user-friendly error message
-        this.toastService.error('Failed to send email notification. Please check email settings.');
+        this.translate.get(['toast.failedToSendEmailNotification', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.failedToSendEmailNotification'], translations['toast.error']);
+        });
       }
     });
   }

@@ -142,7 +142,7 @@
                 [(ngModel)]="permissionSearchTerm"
                 (ngModelChange)="onPermissionSearchChange()"
                 [ngModelOptions]="{standalone: true}"
-                placeholder="Search permissions by name, entity, description, or page..."
+                [placeholder]="'rolePermissions.searchPlaceholder' | translate"
                 class="w-full pl-9 pr-9 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] text-sm" />
               <button
                 *ngIf="permissionSearchTerm"

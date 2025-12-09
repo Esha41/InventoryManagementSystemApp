@@ -443,8 +443,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       if (!this.isValidImageType(file)) {
-        const errorTitle = this.translationService.getTranslation('toast.error');
-        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle || 'Invalid File Type');
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
+        });
         // Clear the file input
         input.value = '';
         this.assetForm.image = undefined;
@@ -466,8 +467,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (files && files.length > 0) {
       const file = files[0];
       if (!this.isValidImageType(file)) {
-        const errorTitle = this.translationService.getTranslation('toast.error');
-        this.toastService.error('Only JPG, JPEG, and PNG image files are allowed.', errorTitle || 'Invalid File Type');
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+          this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
+        });
         this.assetForm.image = undefined;
         this.previewUrl = null;
         return;
