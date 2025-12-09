@@ -648,6 +648,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+
+    if (currentPendingStep.isCurrentUserApprover !== undefined) {
+    
+      if (isAdministrator) {
+        return true;
+      }
+      return currentPendingStep.isCurrentUserApprover;
+    }
+
     // Check if user has already acted in the current workflow step
     if (this.requestDetail.approvalHistory && this.requestDetail.approvalHistory.length > 0) {
       const hasUserAlreadyActedInCurrentStep = this.requestDetail.approvalHistory.some(step => {
@@ -690,7 +699,51 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     });
 
     if (hasAnyApprovedOrRejectedByCurrentUser) {
-      return false;
+      // If user has acted before, check if they are authorized for the CURRENT pending step
+      // This handles the case where a user appears multiple times in the workflow
+      
+      const currentUserRoles = this.authService.getCurrentUser()?.roles || [];
+      
+      // Helper to normalize strings for comparison
+      const normalize = (s: string) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+      
+      const pendingRoleName = normalize(currentPendingStep.applicationRoleName || '');
+      const pendingRoleId = normalize(currentPendingStep.applicationRoleId || '');
+      
+      // Check if user has a role that matches the pending step
+      const hasMatchingRole = currentUserRoles.some(userRole => {
+        const normalizedUserRole = normalize(userRole);
+        if (!normalizedUserRole) return false;
+        
+        // 1. Check against Role ID (if available)
+        if (pendingRoleId) {
+          if (normalizedUserRole === pendingRoleId) return true;
+          // Handle cases where ID might be a subset or superset
+          if (normalizedUserRole.includes(pendingRoleId) || pendingRoleId.includes(normalizedUserRole)) return true;
+        }
+
+        // 2. Check against Role Name
+        if (pendingRoleName) {
+          // Exact match
+          if (normalizedUserRole === pendingRoleName) return true;
+          
+          // Prefix match (e.g. "Director" matches "Director (Department)")
+          if (pendingRoleName.startsWith(normalizedUserRole)) return true;
+          
+          // Substring match for sufficiently long roles (avoids false positives like "User" matching "SuperUser")
+          // If the role string is long enough (>10 chars), assume it's specific enough to be safe
+          if (normalizedUserRole.length > 10 && pendingRoleName.includes(normalizedUserRole)) return true;
+          
+          // Reverse check: if pending role name is inside user role (unlikely but possible)
+          if (pendingRoleName.length > 10 && normalizedUserRole.includes(pendingRoleName)) return true;
+        }
+        
+        return false;
+      });
+
+      if (!hasMatchingRole) {
+        return false;
+      }
     }
 
     return true;

@@ -38,6 +38,7 @@ export interface WorkflowApprovalStep {
   isPending?: boolean;
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string;
+  isCurrentUserApprover?: boolean;
   files?: FileUploadDto[];
 }
 
