@@ -63,3 +63,34 @@ export function viewFile(file: File): void {
   }, 100);
 }
 
+/**
+ * Maximum file size in bytes (30 MB)
+ */
+export const MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024; // 30 MB
+
+/**
+ * Maximum file size in MB (for display)
+ */
+export const MAX_FILE_SIZE_MB = 30;
+
+/**
+ * Validates if a file size is within the maximum allowed size
+ * @param file File object to validate
+ * @returns Object with isValid boolean and errorMessage string
+ */
+export function validateFileSize(file: File): { isValid: boolean; errorMessage: string } {
+  if (!file) {
+    return { isValid: false, errorMessage: 'No file provided' };
+  }
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    return {
+      isValid: false,
+      errorMessage: `File "${file.name}" is too large (${fileSizeMB} MB). Maximum file size is ${MAX_FILE_SIZE_MB} MB.`
+    };
+  }
+
+  return { isValid: true, errorMessage: '' };
+}
+

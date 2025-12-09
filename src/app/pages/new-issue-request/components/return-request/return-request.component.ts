@@ -21,7 +21,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getFileSizeFromFile, removeFile } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -652,7 +652,34 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const newFiles = Array.from(input.files);
-      this.selectedFiles = [...this.selectedFiles, ...newFiles];
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
+
+      // Validate file sizes and separate valid/invalid files
+      newFiles.forEach(file => {
+        const validation = validateFileSize(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      // Show error message if any files exceed the limit
+      if (invalidFiles.length > 0) {
+        this.translate.get(['toast.error', 'returnRequest.errors.fileSizeExceeded']).subscribe((translations: any) => {
+          const errorMessage = translations['returnRequest.errors.fileSizeExceeded'] 
+            ? `${translations['returnRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
+            : invalidFiles.join('\n');
+          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
+        });
+      }
+
+      // Add only valid files to the selection
+      if (validFiles.length > 0) {
+        this.selectedFiles = [...this.selectedFiles, ...validFiles];
+      }
+
       this.fileInputElement = input;
       // Clear the input so the same file can be selected again
       input.value = '';
@@ -664,6 +691,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   }
 
   getFileSize = getFileSizeFromFile;
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   private toNumber(value: any): number | null {
     if (value === null || value === undefined || value === '') return null;
