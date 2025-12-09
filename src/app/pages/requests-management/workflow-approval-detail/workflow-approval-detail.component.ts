@@ -626,6 +626,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // If the current user is the requester, don't show approve/reject buttons
+    if (this.requestDetail.requesterId && currentUser.id) {
+      const requesterId = this.requestDetail.requesterId.toLowerCase().trim();
+      const currentUserId = currentUser.id.toLowerCase().trim();
+      if (requesterId === currentUserId) {
+        return false;
+      }
+    }
+
     // Check if user is administrator (multiple detection methods)
     const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
     const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
