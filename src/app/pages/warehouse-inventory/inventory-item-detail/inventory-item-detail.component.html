@@ -127,11 +127,6 @@
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.lotNumber' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ inventoryDetail.lot }}</p>
-              </div>
-
-              <div>
                 <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.expiryDate' | translate }}</p>
                 <p class="text-sm text-gray-800">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
               </div>
@@ -147,31 +142,6 @@
               alt="Ammunition" 
               class="h-48 object-contain">
           </div>
-
-          <!-- Stock Summary Card -->
-          <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700 mb-4">{{ 'warehouseInventory.stockSummary' | translate }}</h3>
-            <div class="space-y-4">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">{{ 'warehouseInventory.totalQuantity' | translate }}</span>
-                <span class="text-lg font-bold text-gray-900">{{ formatNumber(inventoryDetail.originalQuantity) }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">{{ 'warehouseInventory.currentAvailable' | translate }}</span>
-                <span class="text-lg font-bold text-green-600">{{ formatNumber(inventoryDetail.currentQuantity) }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">{{ 'warehouseInventory.utilization' | translate }}</span>
-                <span class="text-lg font-bold text-blue-600">{{ getUtilizationPercentage() }}%</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">{{ 'warehouseInventory.status' | translate }}</span>
-                <span [class]="getStockStatusClass()" class="px-3 py-1 rounded-full text-xs font-medium">
-                  {{ getStockStatus() }}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -185,69 +155,183 @@
           class="h-40 object-contain">
       </div>
 
-      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+      <!-- Item Summary Table -->
+      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 mb-6">
         <table class="min-w-full">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.lot' | translate }}
+                {{ 'inventorySummary.itemName' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.totalQuantity' | translate }}
+                {{ 'inventorySummary.itemNo' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.utilization' | translate }}
+                {{ 'inventorySummary.type' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.availableInventory' | translate }}
+                {{ 'inventorySummary.nsn' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.status' | translate }}
+                {{ 'inventorySummary.partNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
-                {{ 'warehouseInventory.expiryDate' | translate }}
+              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                {{ 'inventorySummary.totalQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                {{ 'inventorySummary.usedQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                {{ 'inventorySummary.reservedQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                {{ 'inventorySummary.remainingQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wide">
+                {{ 'inventorySummary.totalLots' | translate }}
               </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-100">
             <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ 'warehouseInventory.lot' | translate }} {{ inventoryDetail.lot }}
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {{ getItemName() }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatNumber(inventoryDetail.originalQuantity) }}
+                {{ getItemNo() }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ getUtilizationPercentage() }}%
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatNumber(inventoryDetail.currentQuantity) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span [class]="getStockStatusClass()" class="px-3 py-1 rounded-full text-xs font-medium">
-                  {{ getStockStatus() }}
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ inventoryDetail?.item?.itemType === 1 ? ('warehouseInventory.tabs.ammunition' | translate) : 
+                      inventoryDetail?.item?.itemType === 2 ? ('warehouseInventory.tabs.weapon' | translate) : 
+                      ('warehouseInventory.tabs.explosive' | translate) }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatDate(inventoryDetail.item?.expiryDate) }}
+                {{ inventoryDetail?.item?.nsn || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ inventoryDetail?.item?.partNo || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                {{ formatNumber(getTotalQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                {{ formatNumber(getTotalUsedQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                {{ formatNumber(getTotalReservedQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 text-end">
+                {{ formatNumber(getTotalRemainingQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {{ lots.length }}
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Stock Progress Bar -->
-      <div class="mt-8 bg-gray-50 rounded-lg p-6">
-        <h3 class="text-sm font-semibold text-gray-700 mb-4">{{ 'warehouseInventory.stockUtilization' | translate }}</h3>
-        <div class="relative w-full h-8 bg-gray-200 rounded-full overflow-hidden">
-          <div 
-            class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500"
-            [style.width.%]="getUtilizationPercentage()">
+      <!-- Lot Details Section -->
+      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+            {{ 'inventorySummary.lotDetails' | translate }}
+          </h3>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loadingLots" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <span class="ml-3 text-sm text-gray-600">{{ 'common.loading' | translate }}</span>
+        </div>
+
+        <!-- Lot Details Table -->
+        <div *ngIf="!loadingLots">
+          <div *ngIf="lots.length === 0" class="text-center py-12">
+            <p class="text-sm text-gray-500">{{ 'inventorySummary.noLots' | translate }}</p>
           </div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-xs font-semibold text-gray-700">
-              {{ formatNumber(inventoryDetail.currentQuantity) }} / {{ formatNumber(inventoryDetail.originalQuantity) }}
-            </span>
+
+          <div *ngIf="lots.length > 0" class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.lotNumber' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.depot' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.supplier' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.manufacturer' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.country' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.batchNo' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.expiryDate' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.originalQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.usedQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.reservedQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    {{ 'inventorySummary.remainingQty' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-100">
+                <tr *ngFor="let lot of lots" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                    {{ lot.lot }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getDepotName(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getSupplierNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getManufacturerNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getCountryNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ lot.batchNo || '-' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatDate(lot.expiryDate) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                    {{ formatNumber(lot.originalQuantity) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                    {{ formatNumber(lot.usedQuantity) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                    {{ formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                    {{ formatNumber(lot.remainingQuantity) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
