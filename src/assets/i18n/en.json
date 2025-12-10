@@ -137,7 +137,9 @@
       "underProcess": "Under Process",
       "approved": "Approved",
       "rejected": "Rejected",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "returned": "Returned for Review",
+      "returnedForReview": "Returned for Review"
     },
     "filters": {
       "all": "All",
@@ -1911,6 +1913,11 @@
     "attachmentsHint": "Select one or more files to attach",
     "reject": "Reject",
     "approve": "Approve",
+    "returnForReview": "Return for Review",
+    "selectStepToReturn": "Select Step to Return To",
+    "selectStep": "Select a step",
+    "noPreviousSteps": "No previous steps available",
+    "returnRequest": "Return Request",
     "errors": {
       "invalidRequestData": "Invalid request data",
       "failedToLoadRanks": "Failed to load ranks",
@@ -1918,7 +1925,8 @@
       "receiverRankRequired": "Receiver rank is required",
       "militaryIdRequired": "Military ID is required",
       "filesRequired": "At least one file attachment is required",
-      "fileDownloadFailed": "Failed to download file"
+      "fileDownloadFailed": "Failed to download file",
+      "selectStepToReturn": "Please select a step to return to"
     }
   }
 }

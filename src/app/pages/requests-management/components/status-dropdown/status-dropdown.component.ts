@@ -10,15 +10,15 @@ import { LucideAngularModule, ChevronDown } from 'lucide-angular';
   styleUrls: ['./status-dropdown.component.css']
 })
 export class StatusDropdownComponent {
-  @Input() status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' = 'New';
+  @Input() status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview' = 'New';
   @Output() statusChange = new EventEmitter<string>();
 
   readonly ChevronDown = ChevronDown;
   isOpen = false;
 
-  statuses = ['New', 'Pending', 'Confirmed', 'Rejected'];
+  statuses = ['New', 'Pending', 'Confirmed', 'Rejected', 'Returned'];
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(private elementRef: ElementRef) { }
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
@@ -37,6 +37,8 @@ export class StatusDropdownComponent {
       case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
       case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
       case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
+      case 'Returned':
+      case 'ReturnedForReview': return 'bg-purple-50 text-purple-700';
       default: return 'bg-gray-100 text-gray-800';
     }
   }

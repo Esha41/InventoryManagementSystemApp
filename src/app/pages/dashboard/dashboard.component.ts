@@ -59,7 +59,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   viewMode: 'grid' | 'table' = 'grid';
   currentPage = 1;
   rowsPerPage = 9;
-  
+
   // Icons
   readonly Grid = Grid;
   readonly List = List;
@@ -76,7 +76,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Filtered cards based on user permissions and roles
   visibleCards: DashboardCard[] = [];
-  
+
   // Status filter
   selectedStatusFilter: CardStatus | 'all' = 'all';
   readonly statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
@@ -84,7 +84,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
     { label: 'dashboard.statusLabels.approved', value: 'completed' },
-    { label: 'dashboard.statusLabels.rejected', value: 'declined' }
+    { label: 'dashboard.statusLabels.rejected', value: 'declined' },
+    { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
   ];
 
   // Modal state
@@ -112,6 +113,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'bg-green-100 text-green-800';
       case 'declined':
         return 'bg-red-100 text-red-800';
+      case 'returned':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -129,6 +132,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'dashboard.completed';
       case 'declined':
         return 'dashboard.statusLabels.rejected';
+      case 'returned':
+        return 'dashboard.statusLabels.returnedForReview';
       default:
         return 'dashboard.statusLabels.new';
     }
@@ -156,7 +161,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly userContext: UserContextService,
     private readonly requestStatusUpdateService: RequestStatusUpdateService
-  ) {}
+  ) { }
 
   get paginatedCards(): DashboardCard[] {
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
@@ -267,7 +272,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     let filteredCards = this.allCards.filter(card => {
       if (card.roles && card.roles.length > 0) {
         const hasRequiredRole = card.roles.some(requiredRole =>
-          userRoles.some(userRole => 
+          userRoles.some(userRole =>
             userRole.toLowerCase() === requiredRole.toLowerCase()
           )
         );
@@ -297,7 +302,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const query = this.searchQuery.trim().toLowerCase();
       filteredCards = filteredCards.filter(card => {
         // Search in order IDs, department names, requester names
-        return card.orders.some(order => 
+        return card.orders.some(order =>
           (order.orderId && order.orderId.toLowerCase().includes(query)) ||
           (order.departmentName && order.departmentName.toLowerCase().includes(query)) ||
           (order.requesterName && order.requesterName.toLowerCase().includes(query))
@@ -337,9 +342,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Only show button for pending orders (status 1 = New, 2 = Under Process)
+    // Only show button for pending orders (status 1 = New, 2 = Under Process, 6 = ReturnedForReview)
     // Status 3 = Approved, 4 = Rejected
-    if (order.status !== 1 && order.status !== 2) {
+    if (order.status !== 1 && order.status !== 2 && order.status !== 6) {
       return false;
     }
 
@@ -350,13 +355,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Check if user is administrator (multiple detection methods)
     const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                              currentUser?.email?.toLowerCase().includes('administrator');
+    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+      currentUser?.email?.toLowerCase().includes('administrator');
     const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
     const isAdminUser = this.userContext.isAdminUser();
-    
+
     const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isAdminUser;
-    
+
     // Administrators can always approve
     if (isAdministrator) {
       return true;
@@ -569,7 +574,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onViewOrderDetails(orderRequestId: number): void {
     const cachedOrder = this.orderRequestsMap.get(orderRequestId);
-    
+
     this.orderService.getOrderById(orderRequestId)
       .pipe(
         takeUntil(this.destroy$),
@@ -594,7 +599,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onViewDetails(returnRequestId: number): void {
     const cachedReturn = this.returnRequestsMap.get(returnRequestId);
-    
+
     this.returnService.getReturnById(returnRequestId)
       .pipe(
         takeUntil(this.destroy$),
@@ -618,7 +623,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onViewDiscardDetails(discardRequestId: number): void {
     const cachedDiscard = this.discardRequestsMap.get(discardRequestId);
-    
+
     this.discardService.getDiscardById(discardRequestId)
       .pipe(
         takeUntil(this.destroy$),
@@ -663,10 +668,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   formatOrderDate(order: OrderDto): string {
     if (!order.usageDateFrom) return 'N/A';
-    
+
     const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
     const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
-    
+
     return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
 
@@ -705,7 +710,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (priority === null || priority === undefined) {
       return 'dashboard.priorityLabels.high';
     }
-    
+
     // Normalize to number
     let priorityNum: number;
     if (typeof priority === 'string') {
@@ -725,7 +730,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       priorityNum = priority;
     }
-    
+
     switch (priorityNum) {
       case 2:
         return 'dashboard.priorityLabels.medium';
@@ -763,7 +768,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   formatOrderUsageTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
-    
+
     // Handle military format (HHMM) and legacy format (HH:mm)
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
@@ -780,10 +785,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
       return timeStr;
     };
-    
+
     const fromTime = formatTime(order.usageTimeFrom);
     const toTime = formatTime(order.usageTimeTo);
-    
+
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;
   }
