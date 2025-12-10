@@ -135,7 +135,9 @@
       "underProcess": "قيد المعالجة",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
-      "cancelled": "ملغي"
+      "cancelled": "ملغي",
+      "returned": "مُرجع للمراجعة",
+      "returnedForReview": "مُرجع للمراجعة"
     },
     "filters": {
       "all": "الكل",
@@ -1901,6 +1903,11 @@
     "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق",
     "reject": "رفض",
     "approve": "موافقة",
+    "returnForReview": "إرجاع للمراجعة",
+    "selectStepToReturn": "اختر الخطوة للإرجاع إليها",
+    "selectStep": "اختر خطوة",
+    "noPreviousSteps": "لا توجد خطوات سابقة متاحة",
+    "returnRequest": "إرجاع الطلب",
     "errors": {
       "invalidRequestData": "بيانات الطلب غير صحيحة",
       "failedToLoadRanks": "فشل تحميل الرتب",
@@ -1908,7 +1915,8 @@
       "receiverRankRequired": "رتبة المستلم مطلوبة",
       "militaryIdRequired": "الرقم العسكري مطلوب",
       "filesRequired": "مطلوب مرفق ملف واحد على الأقل",
-      "fileDownloadFailed": "فشل تحميل الملف"
+      "fileDownloadFailed": "فشل تحميل الملف",
+      "selectStepToReturn": "يرجى اختيار خطوة للإرجاع إليها"
     }
   }
 }

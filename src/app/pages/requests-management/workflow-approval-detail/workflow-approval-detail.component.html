@@ -185,22 +185,21 @@
             </div>
 
             <!-- Request Attachments (Order, Return, Discard) -->
-            <div *ngIf="(requestDetail.requestType === 'Order' || requestDetail.requestType === 'Return' || requestDetail.requestType === 'Discard') && orderFiles && orderFiles.length > 0" class="md:col-span-2 space-y-1">
+            <div
+              *ngIf="(requestDetail.requestType === 'Order' || requestDetail.requestType === 'Return' || requestDetail.requestType === 'Discard') && orderFiles && orderFiles.length > 0"
+              class="md:col-span-2 space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'newIssueRequest.attachments' | translate }}
               </label>
               <div class="mt-1 space-y-2">
-                <div *ngFor="let file of orderFiles" class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
+                <div *ngFor="let file of orderFiles"
+                  class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
                   <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <button 
-                    type="button" 
-                    (click)="downloadFile(file.id, file.originalName || file.fileName)"
+                  <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
                     class="text-sm text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded flex-1 text-left">
                     {{ file.originalName || file.fileName }}
                   </button>
-                  <button 
-                    type="button" 
-                    (click)="downloadFile(file.id, file.originalName || file.fileName)"
+                  <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
                     class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1">
                     <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
                   </button>
@@ -289,18 +288,18 @@
           </button>
 
           <div *ngIf="isApprovalWorkflowExpanded" class="px-6 pb-6">
-            <div *ngIf="displayApprovalHistory && displayApprovalHistory.length > 0" class="relative approval-workflow-container">
+            <div *ngIf="displayApprovalHistory && displayApprovalHistory.length > 0"
+              class="relative approval-workflow-container">
               <div *ngFor="let approval of displayApprovalHistory; let i = index; let isLast = last" class="relative">
                 <!-- Connection Line - connects from bottom of current circle to top of next circle -->
-                <div *ngIf="!isLast" 
-                  class="approval-connector-line"
-                  style="top: 3rem; height: calc(100% - 1.5rem);">
+                <div *ngIf="!isLast" class="approval-connector-line" style="top: 3rem; height: calc(100% - 1.5rem);">
                 </div>
 
                 <div class="flex gap-4 relative z-10 mb-6">
                   <!-- Status Icon -->
                   <div class="flex-shrink-0">
-                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-md bg-white approval-circle"
+                    <div
+                      class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-md bg-white approval-circle"
                       [ngClass]="{
                         'approved': approval.status === 'Approved',
                         'pending': approval.status === 'Pending',
@@ -345,17 +344,15 @@
                         class="text-sm text-[var(--color-text)] mt-3 pt-3 border-t border-[var(--color-border)] italic">
                         "{{ approval.comments }}"
                       </p>
-                      
+
                       <!-- Files Section -->
-                      <div *ngIf="approval.files && approval.files.length > 0" class="mt-3 pt-3 border-t border-[var(--color-border)]">
+                      <div *ngIf="approval.files && approval.files.length > 0"
+                        class="mt-3 pt-3 border-t border-[var(--color-border)]">
                         <p class="text-xs font-semibold text-[var(--color-text-muted)] mb-2">
                           {{ 'workflowApprovalDetail.attachedDocuments' | translate }}:
                         </p>
                         <div class="flex flex-wrap gap-2">
-                          <button
-                            *ngFor="let file of approval.files"
-                            (click)="downloadApprovalFile(file)"
-                            type="button"
+                          <button *ngFor="let file of approval.files" (click)="downloadApprovalFile(file)" type="button"
                             class="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--color-brand)]/10 hover:bg-[var(--color-brand)]/20 text-[var(--color-brand)] rounded-lg text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
                             <lucide-angular [img]="FileText" class="h-4 w-4"></lucide-angular>
                             <span class="truncate max-w-[200px]">{{ file.originalName || file.fileName }}</span>
@@ -552,7 +549,8 @@
               <!-- Notes (Full Width) -->
               <div>
                 <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                  {{ 'workflowApprovalDetail.notes' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+                  {{ 'workflowApprovalDetail.notes' | translate }} <span
+                    class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
                 </label>
                 <textarea [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply" rows="3"
                   [placeholder]="'workflowApprovalDetail.enterAdditionalNotes' | translate"
@@ -708,109 +706,148 @@
           </div>
         </div>
 
-    <!-- Approval/Rejection Actions - At the end -->
-    <div *ngIf="!loading && !error && requestDetail && canApproveOrReject()" class="mt-6">
-      <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
-          <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-            <lucide-angular [img]="CheckCircle" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-          </div>
-          <h2 class="text-lg font-semibold text-[var(--color-text)]">
-            {{ 'workflowApprovalDetail.takeAction' | translate }}
-          </h2>
-        </div>
-        
-        <div class="space-y-6">
-          <!-- Higher Approval Dropdown -->
-          <div *ngIf="hasHigherApproval()">
-            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-              {{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}
-            </label>
-            <app-dropdown
-              class="w-full"
-              [(ngModel)]="sendToHigherApproval"
-              [options]="higherApprovalOptions"
-              optionValue="value"
-              [optionLabelFn]="higherApprovalOptionLabel"
-              [placeholderSelectable]="false"
-              [placeholderValue]="null"
-              [disabled]="processing"
-              placeholder="{{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}">
-            </app-dropdown>
-          </div>
-
-          <!-- File Upload for Approval/Rejection -->
-          <div>
-            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-              {{ 'newIssueRequest.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
-            </label>
-            <div class="space-y-3">
-              <!-- File Input -->
-              <div class="relative">
-                <input
-                  type="file"
-                  #approvalFileInput
-                  (change)="onApprovalFileSelected($event)"
-                  [disabled]="processing"
-                  multiple
-                  accept="*/*"
-                  class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-brand)]/10 file:text-[var(--color-brand)] hover:file:bg-[var(--color-brand)]/20 file:cursor-pointer">
+        <!-- Approval/Rejection Actions - At the end -->
+        <div *ngIf="!loading && !error && requestDetail && canApproveOrReject()" class="mt-6">
+          <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+              <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+                <lucide-angular [img]="CheckCircle" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
               </div>
-              
-              <!-- Selected Files List -->
-              <div *ngIf="approvalFiles.length > 0" class="space-y-2">
-                <div *ngFor="let file of approvalFiles; let i = index" 
-                     class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
-                    <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+              <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'workflowApprovalDetail.takeAction' | translate }}
+              </h2>
+            </div>
+
+            <div class="space-y-6">
+              <!-- Higher Approval Dropdown -->
+              <div *ngIf="hasHigherApproval()">
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                  {{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}
+                </label>
+                <app-dropdown class="w-full" [(ngModel)]="sendToHigherApproval" [options]="higherApprovalOptions"
+                  optionValue="value" [optionLabelFn]="higherApprovalOptionLabel" [placeholderSelectable]="false"
+                  [placeholderValue]="null" [disabled]="processing"
+                  placeholder="{{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}">
+                </app-dropdown>
+              </div>
+
+
+              <!-- File Upload for Approval/Rejection -->
+              <div>
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                  {{ 'newIssueRequest.attachments' | translate }} <span
+                    class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+                </label>
+                <div class="space-y-3">
+                  <!-- File Input -->
+                  <div class="relative">
+                    <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
+                      [disabled]="processing" multiple accept="*/*"
+                      class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-brand)]/10 file:text-[var(--color-brand)] hover:file:bg-[var(--color-brand)]/20 file:cursor-pointer">
                   </div>
-                  <button
-                    type="button"
-                    (click)="removeApprovalFile(i)"
-                    [disabled]="processing"
-                    class="ml-3 p-1 text-[var(--color-error)] hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
+
+                  <!-- Selected Files List -->
+                  <div *ngIf="approvalFiles.length > 0" class="space-y-2">
+                    <div *ngFor="let file of approvalFiles; let i = index"
+                      class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+                        <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+                      </div>
+                      <button type="button" (click)="removeApprovalFile(i)" [disabled]="processing"
+                        class="ml-3 p-1 text-[var(--color-error)] hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Helper Text -->
+                  <p class="text-xs text-[var(--color-text-muted)]">
+                    {{ 'newIssueRequest.attachmentsHint' | translate }}
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                    Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
+                  </p>
                 </div>
               </div>
-              
-              <!-- Helper Text -->
-              <p class="text-xs text-[var(--color-text-muted)]">
-                {{ 'newIssueRequest.attachmentsHint' | translate }}
-              </p>
-              <p class="text-xs text-[var(--color-text-muted)] font-medium">
-                Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
-              </p>
-            </div>
-          </div>
 
-          <!-- Comments Textarea -->
-          <div>
-            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-              {{ 'workflowApprovalDetail.comments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
-            </label>
-            <textarea
-              [(ngModel)]="comments"
-              [disabled]="processing"
-              rows="4"
-              [placeholder]="'workflowApprovalDetail.enterComments' | translate"
-              class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
-            </textarea>
+              <!-- Comments Textarea -->
+              <div>
+                <label class="block text-sm font-semibold text-[var(--color-text)] m>
+-2">
+                  {{ 'workflowApprovalDetail.comments' | translate }} <span
+                    class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+                </label>
+                <textarea [(ngModel)]="comments" [disabled]="processing" rows="4"
+                  [placeholder]="'workflowApprovalDetail.enterComments' | translate"
+                  class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
+                </textarea>
               </div>
 
               <!-- Action Buttons -->
               <div class="flex gap-3 pt-2">
+                <!-- Reject Button -->
                 <button *ngIf="canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
                   class="flex-1 px-6 py-3 bg-[var(--color-error)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-error)] focus:ring-offset-2">
                   <span *ngIf="!processing">{{ 'workflowApprovalDetail.reject' | translate }}</span>
                   <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
                 </button>
 
-                <button (click)="approveRequest()" [disabled]="processing" [class.flex-1]="canRejectRequest()"
-                  [class.w-full]="!canRejectRequest()"
+                <!-- Return for Review Dropdown Button -->
+                <div *ngIf="canReturnForReview()" class="relative flex-1">
+                  <button type="button" (click)="toggleReturnForReview()" [disabled]="processing"
+                    class="w-full px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                    </svg>
+                    <span>{{ 'workflowApprovalDetail.returnForReview' | translate }}</span>
+                    <svg class="w-4 h-4 ml-1 transition-transform" [class.rotate-180]="showReturnForReview" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Dropdown Panel -->
+                  <div *ngIf="showReturnForReview"
+                    class="absolute bottom-full left-0 right-0 mb-2 p-4 bg-white border-2 border-orange-200 rounded-lg shadow-lg z-10 space-y-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                        {{ 'workflowApprovalDetail.selectStepToReturn' | translate }} <span
+                          class="text-[var(--color-error)]">*</span>
+                      </label>
+                      <select [(ngModel)]="returnToStepId" [disabled]="processing || loadingPreviousSteps"
+                        class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                        <option [ngValue]="null" disabled>
+                          {{ loadingPreviousSteps ? ('common.loading' | translate) :
+                          ('workflowApprovalDetail.selectStep' | translate) }}
+                        </option>
+                        <option *ngFor="let step of previousWorkflowSteps" [ngValue]="step.id">
+                          {{ getWorkflowStepDisplayName(step) }}
+                        </option>
+                      </select>
+                      <p *ngIf="previousWorkflowSteps.length === 0 && !loadingPreviousSteps"
+                        class="mt-2 text-xs text-orange-600">
+                        {{ 'workflowApprovalDetail.noPreviousSteps' | translate }}
+                      </p>
+                    </div>
+
+                    <button (click)="returnForReview()"
+                      [disabled]="processing || !returnToStepId || loadingPreviousSteps"
+                      class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-1">
+                      <span *ngIf="!processing">{{ 'workflowApprovalDetail.returnRequest' | translate }}</span>
+                      <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Approve Button -->
+                <button (click)="approveRequest()" [disabled]="processing"
+                  [class.flex-1]="canRejectRequest() || canReturnForReview()"
+                  [class.w-full]="!canRejectRequest() && !canReturnForReview()"
                   class="px-6 py-3 bg-[var(--color-success)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2">
                   <span *ngIf="!processing">{{ 'workflowApprovalDetail.approve' | translate }}</span>
                   <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>

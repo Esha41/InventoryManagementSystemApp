@@ -31,7 +31,7 @@ export interface WorkflowApprovalStep {
   steporder?: number;
   applicationRoleId?: string;
   approverName?: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Returned' | 'ReturnedForReview';
   approvedDate?: string;
   approvedDateTime?: string;
   applicationRoleName?: string;
@@ -55,7 +55,7 @@ export type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
 /**
  * Request status options
  */
-export type RequestStatus = 'Pending' | 'Approved' | 'Rejected';
+export type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Returned' | 'ReturnedForReview';
 
 /**
  * Request item in a request

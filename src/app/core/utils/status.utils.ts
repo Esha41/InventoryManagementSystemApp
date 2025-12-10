@@ -65,8 +65,9 @@ const REQUEST_STATUS_UNDER_PROCESS = 2;
 const REQUEST_STATUS_APPROVED = 3;
 const REQUEST_STATUS_REJECTED = 4;
 const REQUEST_STATUS_CANCELLED = 5;
+const REQUEST_STATUS_RETURNED_FOR_REVIEW = 6;
 
-export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined';
+export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'returned';
 export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED | typeof REQUEST_STATUS_REJECTED;
 
 /**
@@ -79,7 +80,7 @@ export function isDisplayableRequestStatus(status: number | string | null | unde
   if (status === null || status === undefined) {
     return false;
   }
-  
+
   // Convert to number if it's a string
   let statusNum: number;
   if (typeof status === 'string') {
@@ -93,6 +94,8 @@ export function isDisplayableRequestStatus(status: number | string | null | unde
       statusNum = REQUEST_STATUS_APPROVED;
     } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
       statusNum = REQUEST_STATUS_REJECTED;
+    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
+      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
     } else {
       // Try to parse as number
       statusNum = parseInt(status, 10);
@@ -103,11 +106,12 @@ export function isDisplayableRequestStatus(status: number | string | null | unde
   } else {
     statusNum = status;
   }
-  
-  return statusNum === REQUEST_STATUS_NEW || 
-         statusNum === REQUEST_STATUS_UNDER_PROCESS || 
-         statusNum === REQUEST_STATUS_APPROVED ||
-         statusNum === REQUEST_STATUS_REJECTED;
+
+  return statusNum === REQUEST_STATUS_NEW ||
+    statusNum === REQUEST_STATUS_UNDER_PROCESS ||
+    statusNum === REQUEST_STATUS_APPROVED ||
+    statusNum === REQUEST_STATUS_REJECTED ||
+    statusNum === REQUEST_STATUS_RETURNED_FOR_REVIEW;
 }
 
 /**
@@ -119,7 +123,7 @@ export function mapRequestStatusToCardStatus(status: number | string | null | un
   if (status === null || status === undefined) {
     return 'new';
   }
-  
+
   // Convert to number if it's a string
   let statusNum: number;
   if (typeof status === 'string') {
@@ -133,6 +137,8 @@ export function mapRequestStatusToCardStatus(status: number | string | null | un
       statusNum = REQUEST_STATUS_APPROVED;
     } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
       statusNum = REQUEST_STATUS_REJECTED;
+    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
+      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
     } else {
       // Try to parse as number
       statusNum = parseInt(status, 10);
@@ -143,10 +149,12 @@ export function mapRequestStatusToCardStatus(status: number | string | null | un
   } else {
     statusNum = status;
   }
-  
+
   switch (statusNum) {
     case REQUEST_STATUS_UNDER_PROCESS:
       return 'on-progress';
+    case REQUEST_STATUS_RETURNED_FOR_REVIEW:
+      return 'returned';
     case REQUEST_STATUS_APPROVED:
       return 'completed';
     case REQUEST_STATUS_REJECTED:
@@ -166,7 +174,7 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
   if (status === null || status === undefined) {
     return 'dashboard.statusLabels.new';
   }
-  
+
   // Convert to number if it's a string
   let statusNum: number;
   if (typeof status === 'string') {
@@ -181,6 +189,8 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
       statusNum = REQUEST_STATUS_REJECTED;
     } else if (lowerStatus === 'cancelled' || lowerStatus === '5') {
       statusNum = REQUEST_STATUS_CANCELLED;
+    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview' || lowerStatus === '6') {
+      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
     } else {
       // Try to parse as number
       statusNum = parseInt(status, 10);
@@ -191,7 +201,7 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
   } else {
     statusNum = status;
   }
-  
+
   switch (statusNum) {
     case REQUEST_STATUS_UNDER_PROCESS:
       return 'dashboard.statusLabels.underProcess';
@@ -201,6 +211,8 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
       return 'dashboard.statusLabels.rejected';
     case REQUEST_STATUS_CANCELLED:
       return 'dashboard.statusLabels.cancelled';
+    case REQUEST_STATUS_RETURNED_FOR_REVIEW:
+      return 'dashboard.statusLabels.returnedForReview';
     case REQUEST_STATUS_NEW:
     default:
       return 'dashboard.statusLabels.new';
@@ -223,6 +235,7 @@ export function mapOrderStatusToString(status: number): string {
     case 3: return 'Approved';
     case 4: return 'Rejected';
     case 5: return 'Cancelled';
+    case 6: return 'Returned for Review';
     default: return 'New';
   }
 }
@@ -240,6 +253,7 @@ export function mapOrderStatusFromApi(status: any): string {
     if (lowerStatus === 'approved') return 'Approved';
     if (lowerStatus === 'rejected') return 'Rejected';
     if (lowerStatus === 'cancelled') return 'Cancelled';
+    if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') return 'Returned for Review';
     if (lowerStatus === 'pending') return 'New';
   }
   // Handle numeric status
