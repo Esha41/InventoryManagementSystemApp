@@ -35,7 +35,7 @@ export const API_ENDPOINTS = {
     ME: '/Users/me',
     BY_ID: (id: string) => `/Users/${id}`,
     ROLES: (id: string) => `/Users/${id}/roles`,
-    UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
+    UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,    
   },
 
   // role management (match backend casing)
@@ -63,6 +63,15 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/Workflows/${id}`,
     ALL: '/Workflows/all',
     ALL_LIST: '/Workflows/all-list',
+  },
+
+  // workflow step notifiers
+  WORKFLOW_STEP_NOTIFIERS: {
+    BASE: '/WorkflowStepNotifiers',
+    BY_STEP_ID: (stepId: number) => `/WorkflowStepNotifiers/step/${stepId}`,
+    UPDATE_STEP: (stepId: number) => `/WorkflowStepNotifiers/step/${stepId}`,
+    ADD: '/WorkflowStepNotifiers',
+    REMOVE: (notifierId: number) => `/WorkflowStepNotifiers/${notifierId}`,
   },
 
   // workflow approval

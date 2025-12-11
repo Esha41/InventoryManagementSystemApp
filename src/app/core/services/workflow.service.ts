@@ -10,7 +10,13 @@ import {
   UpdateWorkflowDto,
   BackendWorkflowDto,
   BackendCreateWorkflowDto,
-  BackendUpdateWorkflowDto,WorkflowType,WORKFLOW_TYPE_NAMES,WorkflowTypeItem
+  BackendUpdateWorkflowDto,
+  WorkflowType,
+  WORKFLOW_TYPE_NAMES,
+  WorkflowTypeItem,
+  WorkflowStepNotifierDto,
+  UpdateWorkflowStepNotifiersDto,
+  CreateWorkflowStepNotifierDto
 } from '@models/workflow.model';
 import { ApiResponse } from '@models/api-response.model';
 
@@ -307,5 +313,61 @@ export class WorkflowService {
       })
     );
   }
+
+  /**
+   * Get notifiers for a workflow step
+   */
+  getStepNotifiers(stepId: number): Observable<WorkflowStepNotifierDto[]> {
+    this.configService.log('Fetching step notifiers', { stepId });
+
+    return this.apiService.getWithAuth<ApiResponse<WorkflowStepNotifierDto[]>>(
+      API_ENDPOINTS.WORKFLOW_STEP_NOTIFIERS.BY_STEP_ID(stepId)
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to fetch step notifiers');
+        }
+        return response.data || [];
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to fetch step notifiers', error);
+        return throwError(() => new Error(
+          error.message || 'Failed to fetch step notifiers'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Update notifiers for a workflow step
+   */
+  updateStepNotifiers(stepId: number, roleIds: string[], userIds?: string[]): Observable<boolean> {
+    this.configService.log('Updating step notifiers', { stepId, roleIds, userIds });
+
+    const payload = {
+      workflowStepId: stepId,
+      roleIds: roleIds || [],
+      userIds: userIds || []
+    };
+
+    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+      API_ENDPOINTS.WORKFLOW_STEP_NOTIFIERS.UPDATE_STEP(stepId),
+      payload
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to update step notifiers');
+        }
+        return true;
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to update step notifiers', error);
+        return throwError(() => new Error(
+          error.message || 'Failed to update step notifiers'
+        ));
+      })
+    );
+  }
 }
+
 
