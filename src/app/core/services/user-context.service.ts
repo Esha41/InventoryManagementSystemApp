@@ -26,7 +26,7 @@ export class UserContextService {
   constructor(
     private readonly authService: BackendAuthService,
     private readonly apiService: ApiService
-  ) {}
+  ) { }
 
   getCurrentUserDetails(forceRefresh: boolean = false): Observable<BackendUserDto | null> {
     const authUser = this.authService.getCurrentUser();
@@ -65,7 +65,7 @@ export class UserContextService {
     const hasAdminRole = (authUser.roles || []).some(role =>
       ADMIN_ROLE_KEYWORDS.some(keyword => role?.toLowerCase().includes(keyword))
     );
-    
+
     if (hasAdminRole) {
       return true;
     }
@@ -149,7 +149,7 @@ export class UserContextService {
 
   private fetchCurrentUserProfile(): Observable<BackendUserDto | null> {
     // Use /Users/me endpoint which returns more complete user data
-    return this.apiService.getWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME).pipe(
+    return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
       map(response => {
         if (response?.succeeded && response.data) {
           // Map the API response to BackendUserDto format
@@ -162,46 +162,46 @@ export class UserContextService {
 
   private mapApiResponseToDto(apiData: any): BackendUserDto {
     const departmentId = this.toNumber(
-      apiData.department?.id ?? 
-      apiData.Department?.Id ?? 
+      apiData.department?.id ??
+      apiData.Department?.Id ??
       apiData.deparmentId ??
-      apiData.DeparmentId ?? 
-      apiData.departmentId ?? 
+      apiData.DeparmentId ??
+      apiData.departmentId ??
       apiData.DepartmentId
     );
 
     const departmentName = (
-      apiData.department?.nameEn ?? 
-      apiData.department?.NameEn ?? 
-      apiData.Department?.NameEn ?? 
-      apiData.department?.nameAr ?? 
-      apiData.department?.NameAr ?? 
-      apiData.Department?.NameAr ?? 
-      apiData.departmentName ?? 
+      apiData.department?.nameEn ??
+      apiData.department?.NameEn ??
+      apiData.Department?.NameEn ??
+      apiData.department?.nameAr ??
+      apiData.department?.NameAr ??
+      apiData.Department?.NameAr ??
+      apiData.departmentName ??
       apiData.DepartmentName
     ) || undefined;
 
     const nameEn = (
-      apiData.fullNameEN ?? 
-      apiData.FullNameEN ?? 
-      apiData.fullNameEn ?? 
-      apiData.FullNameEn ?? 
-      apiData.nameEn ?? 
+      apiData.fullNameEN ??
+      apiData.FullNameEN ??
+      apiData.fullNameEn ??
+      apiData.FullNameEn ??
+      apiData.nameEn ??
       apiData.NameEn
     ) || undefined;
 
     const nameAr = (
-      apiData.fullNameAR ?? 
-      apiData.FullNameAR ?? 
-      apiData.fullNameAr ?? 
-      apiData.FullNameAr ?? 
-      apiData.nameAr ?? 
+      apiData.fullNameAR ??
+      apiData.FullNameAR ??
+      apiData.fullNameAr ??
+      apiData.FullNameAr ??
+      apiData.nameAr ??
       apiData.NameAr
     ) || undefined;
 
     const roleIds: string[] = [];
     const normalizedRoles: any[] = [];
-    
+
     const rolesArray = apiData.roles ?? apiData.Roles ?? [];
     if (Array.isArray(rolesArray)) {
       rolesArray.forEach((role: any) => {
@@ -218,31 +218,31 @@ export class UserContextService {
       });
     }
 
-    const militaryId = 
-      apiData.militaryId ?? 
-      apiData.MilitaryId ?? 
+    const militaryId =
+      apiData.militaryId ??
+      apiData.MilitaryId ??
       apiData.militoryId ??
       apiData.MilitoryId;
 
     const rankId = this.toNumber(
-      apiData.rankId ?? 
-      apiData.RankId ?? 
-      apiData.rank?.id ?? 
+      apiData.rankId ??
+      apiData.RankId ??
+      apiData.rank?.id ??
       apiData.Rank?.Id
     );
 
-    const rankNameEn = 
-      apiData.rank?.nameEn ?? 
-      apiData.rank?.NameEn ?? 
-      apiData.Rank?.NameEn ?? 
-      apiData.rankNameEn ?? 
+    const rankNameEn =
+      apiData.rank?.nameEn ??
+      apiData.rank?.NameEn ??
+      apiData.Rank?.NameEn ??
+      apiData.rankNameEn ??
       apiData.RankNameEn;
 
-    const rankNameAr = 
-      apiData.rank?.nameAr ?? 
-      apiData.rank?.NameAr ?? 
-      apiData.Rank?.NameAr ?? 
-      apiData.rankNameAr ?? 
+    const rankNameAr =
+      apiData.rank?.nameAr ??
+      apiData.rank?.NameAr ??
+      apiData.Rank?.NameAr ??
+      apiData.rankNameAr ??
       apiData.RankNameAr;
 
     return {

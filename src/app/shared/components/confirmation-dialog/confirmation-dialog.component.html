@@ -1,0 +1,63 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true"
+    [attr.aria-labelledby]="'dialog-title'" [attr.aria-describedby]="'dialog-description'">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" (click)="onBackdropClick()" aria-hidden="true">
+    </div>
+
+    <!-- Modal Container -->
+    <div class="relative flex min-h-full items-center justify-center p-4 pointer-events-none">
+        <!-- Modal Content -->
+        <div
+            class="relative bg-white rounded-lg shadow-custom-xl w-full max-w-md transition-all pointer-events-auto animate-modal-in">
+            <!-- Header with Icon -->
+            <div class="flex items-start gap-4 p-6">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" [ngClass]="{
+            'bg-yellow-100': type === 'warning',
+            'bg-red-100': type === 'danger',
+            'bg-blue-100': type === 'info',
+            'bg-green-100': type === 'success'
+          }" aria-hidden="true">
+                    <lucide-angular [img]="getIcon()" class="h-6 w-6" [ngClass]="{
+              'text-yellow-600': type === 'warning',
+              'text-red-600': type === 'danger',
+              'text-blue-600': type === 'info',
+              'text-green-600': type === 'success'
+            }"></lucide-angular>
+                </div>
+
+                <div class="flex-1">
+                    <h3 id="dialog-title" class="text-lg font-semibold text-[var(--color-text)] mb-2">
+                        {{ title }}
+                    </h3>
+                    <p id="dialog-description" class="text-sm text-[var(--color-text-muted)]">
+                        {{ message }}
+                    </p>
+                </div>
+
+                <button *ngIf="showCloseButton" (click)="onCancel()" type="button"
+                    class="flex-shrink-0 p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]"
+                    [attr.aria-label]="'common.close' | translate">
+                    <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+                </button>
+            </div>
+
+            <!-- Footer with Actions -->
+            <div class="flex items-center justify-end gap-3 px-6 pb-6">
+                <button (click)="onCancel()" type="button"
+                    class="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]">
+                    {{ cancelText || ('common.cancel' | translate) }}
+                </button>
+                <button (click)="onConfirm()" type="button"
+                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    [ngClass]="{
+            'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-600': type === 'warning',
+            'bg-red-600 hover:bg-red-700 focus:ring-red-600': type === 'danger',
+            'bg-blue-600 hover:bg-blue-700 focus:ring-blue-600': type === 'info',
+            'bg-green-600 hover:bg-green-700 focus:ring-green-600': type === 'success'
+          }">
+                    {{ confirmText || ('common.confirm' | translate) }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -48,7 +48,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private translateService: TranslateService,
     private translationService: TranslationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -63,7 +63,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     // Fetch both user profile and user claims (for permissions)
     forkJoin({
-      profile: this.apiService.getWithAuth<ApiResponse<UserMeResponse>>(API_ENDPOINTS.USERS.ME),
+      profile: this.apiService.postWithAuth<ApiResponse<UserMeResponse>>(API_ENDPOINTS.USERS.ME, {}),
       claims: this.authService.getUserClaims().pipe(
         catchError(() => {
           // If getUserClaims fails, return empty permissions

@@ -820,3 +820,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Confirmation Dialog -->
+      <app-confirmation-dialog [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title"
+        [message]="confirmationDialog.message" [type]="confirmationDialog.type"
+        [confirmText]="confirmationDialog.confirmText" [cancelText]="confirmationDialog.cancelText"
+        (confirmed)="onConfirmationConfirmed()" (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
