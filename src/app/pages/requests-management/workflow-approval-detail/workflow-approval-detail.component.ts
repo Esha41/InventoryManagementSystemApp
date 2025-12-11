@@ -162,6 +162,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private fileUploadService: FileUploadService
   ) { }
 
+  // Bound functions for dropdown label generation to preserve 'this' context
+  getRankDisplayNameFn = (rank: any) => this.getRankDisplayName(rank);
+  getWorkflowStepDisplayNameFn = (step: any) => this.getWorkflowStepDisplayName(step);
+
   ngOnInit(): void {
     // Use route params observable instead of snapshot for better reactivity
     this.route.params

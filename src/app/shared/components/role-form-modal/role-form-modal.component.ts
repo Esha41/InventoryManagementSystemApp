@@ -8,6 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ProfileDataService } from '@services/profile-data.service';
 
 export interface ApplicationEntity {
   id: number;
@@ -39,11 +40,11 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() role?: RoleDto;
   @Input() mode: 'create' | 'edit' = 'create';
-  
+
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<RoleDto>();
   @Output() error = new EventEmitter<string>();
-  
+
   roleForm!: FormGroup;
   isLoading = false;
   isLoadingEntities = false;
@@ -55,15 +56,23 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     return entity ? this.getEntityName(entity) : '';
   };
 
+  // Super admin check
+  isSuperAdmin = false;
+
   constructor(
     private fb: FormBuilder,
     private backendUserService: BackendUserService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private profileDataService: ProfileDataService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
+    // Check if user is super admin
+    const profileData = this.profileDataService.getFullProfileData();
+    this.isSuperAdmin = profileData?.isSuperAdmin || false;
+
     this.initializeForm();
   }
 
