@@ -39,7 +39,7 @@ function mapPriority(priority: number | string | null | undefined): 'High' | 'Me
   if (priority === null || priority === undefined) {
     return 'Low';
   }
-  
+
   // Convert to number if it's a string
   let priorityNum: number;
   if (typeof priority === 'string') {
@@ -60,7 +60,7 @@ function mapPriority(priority: number | string | null | undefined): 'High' | 'Me
   } else {
     priorityNum = priority;
   }
-  
+
   switch (priorityNum) {
     case 1: return 'High';
     case 2: return 'Medium';
@@ -79,7 +79,7 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
   if (type === null || type === undefined) {
     return 'Order';
   }
-  
+
   // Convert to number if it's a string
   let typeNum: number;
   if (typeof type === 'string') {
@@ -101,7 +101,7 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
   } else {
     typeNum = type;
   }
-  
+
   switch (typeNum) {
     case 1: return 'Order';
     case 2: return 'Return';
@@ -112,15 +112,15 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
 
 /**
  * Map status enum to display string
- * RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected
+ * RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected, 6=ReturnedForReview
  * Handles both number and string status values for robustness
  */
-function mapStatus(status: number | string | null | undefined): 'New' | 'Pending' | 'Confirmed' | 'Rejected' {
+function mapStatus(status: number | string | null | undefined): 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview' {
   // Handle null/undefined
   if (status === null || status === undefined) {
     return 'New';
   }
-  
+
   // Convert to number if it's a string
   let statusNum: number;
   if (typeof status === 'string') {
@@ -134,6 +134,8 @@ function mapStatus(status: number | string | null | undefined): 'New' | 'Pending
       statusNum = 3;
     } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
       statusNum = 4;
+    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
+      statusNum = 6;
     } else {
       // Try to parse as number
       statusNum = parseInt(status, 10);
@@ -144,13 +146,15 @@ function mapStatus(status: number | string | null | undefined): 'New' | 'Pending
   } else {
     statusNum = status;
   }
-  
+
   switch (statusNum) {
     case 1: return 'New';
     case 2: return 'Pending';
     case 3: return 'Confirmed';
     case 4: return 'Rejected';
+    case 6: return 'Returned';
     default: return 'New';
   }
 }
+
 

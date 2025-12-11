@@ -31,7 +31,8 @@ export enum RequestStatusEnum {
   New = 1,
   UnderProcess = 2,
   Approved = 3,
-  Rejected = 4
+  Rejected = 4,
+  ReturnedForReview = 6
 }
 
 /**
@@ -149,12 +150,14 @@ export function mapRequestStatus(status: number | string): RequestStatus {
 /**
  * Map numeric approval status to string
  */
-export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' {
+export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' | 'Returned' {
   switch (status) {
     case RequestStatusEnum.Approved:
       return 'Approved';
     case RequestStatusEnum.Rejected:
       return 'Rejected';
+    case RequestStatusEnum.ReturnedForReview:
+      return 'Returned';
     case RequestStatusEnum.New:
     case RequestStatusEnum.UnderProcess:
     default:
@@ -209,6 +212,7 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
           if (lower === 'underprocess' || lower === 'under process' || lower === 'inprogress' || lower === 'in progress') return RequestStatusEnum.UnderProcess;
           if (lower === 'approved' || lower === 'completed') return RequestStatusEnum.Approved;
           if (lower === 'rejected' || lower === 'declined') return RequestStatusEnum.Rejected;
+          if (lower === 'returnedforreview' || lower === 'returned') return RequestStatusEnum.ReturnedForReview;
         }
         return 0;
       };
@@ -260,7 +264,12 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         files: h.files || h.Files || []
       };
     })
-    .sort((a, b) => (a.steporder || 0) - (b.steporder || 0));
+    // Sort chronologically by ID (which represents creation order)
+    // This ensures the workflow displays in the order events actually happened:
+    // 1. Original steps in sequential order
+    // 2. Return action
+    // 3. New pending step created after return (appears at the end, not in the middle)
+    .sort((a, b) => (a.id || 0) - (b.id || 0));
 
   // If base request is approved, filter out pending steps
   if (requestStatus === 'Approved') {
@@ -334,13 +343,13 @@ export function formatRequestDate(date: string | Date | undefined): string {
  */
 export function formatRequestDateTime(date: string | Date | undefined): string {
   if (!date) return '';
-  
+
   const d = new Date(date);
   // Check if date is valid
   if (isNaN(d.getTime())) return '';
-  
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                  'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const months = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
   const day = d.getDate();
   const month = months[d.getMonth()];
   const year = d.getFullYear();

@@ -35,6 +35,8 @@ export function getApprovalStatusIcon(status: string): any {
   switch (status) {
     case 'Approved': return CheckCircle;
     case 'Rejected': return AlertTriangle;
+    case 'Returned':
+    case 'ReturnedForReview': return Clock;
     case 'Pending': return Clock;
     default: return Clock;
   }
@@ -76,6 +78,8 @@ export function getRequestStatusClass(status: string): string {
     case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
     case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
     case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
+    case 'Returned':
+    case 'ReturnedForReview': return 'bg-purple-50 text-purple-700';
     default: return 'bg-gray-100 text-gray-800';
   }
 }

@@ -137,7 +137,9 @@
       "underProcess": "Under Process",
       "approved": "Approved",
       "rejected": "Rejected",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "returned": "Returned for Review",
+      "returnedForReview": "Returned for Review"
     },
     "filters": {
       "all": "All",

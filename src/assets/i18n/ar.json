@@ -135,7 +135,9 @@
       "underProcess": "قيد المعالجة",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
-      "cancelled": "ملغي"
+      "cancelled": "ملغي",
+      "returned": "مُرجع للمراجعة",
+      "returnedForReview": "مُرجع للمراجعة"
     },
     "filters": {
       "all": "الكل",

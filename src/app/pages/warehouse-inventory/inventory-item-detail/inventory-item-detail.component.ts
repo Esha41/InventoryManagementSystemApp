@@ -4,7 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
-import { InventoryService } from '@services/inventory.service';
+import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -28,6 +28,11 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   activeTab: TabType = 'overview';
   loading = true;
   error: string | null = null;
+
+  // Stock tab data
+  lots: LotDetailDto[] = [];
+  loadingLots = false;
+  itemId: number = 0;
 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
@@ -81,6 +86,13 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
             this.translateService.get('warehouseInventory.itemNotFound').subscribe(text => {
               this.error = text;
             });
+          } else {
+            // Store itemId for loading lots
+            this.itemId = this.inventoryDetail.itemId;
+            // Load lots if stock tab is active
+            if (this.activeTab === 'stock') {
+              this.loadLots();
+            }
           }
 
           this.loading = false;
@@ -97,6 +109,31 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: TabType): void {
     this.activeTab = tab;
+    // Load lots when switching to stock tab
+    if (tab === 'stock' && this.itemId && this.lots.length === 0) {
+      this.loadLots();
+    }
+  }
+
+  /**
+   * Load lot details for the current item
+   */
+  private loadLots(): void {
+    if (!this.itemId) return;
+
+    this.loadingLots = true;
+    this.inventoryService.getLotsByItemId(this.itemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots) => {
+          this.lots = lots;
+          this.loadingLots = false;
+        },
+        error: (error) => {
+          console.error('Error loading lots:', error);
+          this.loadingLots = false;
+        }
+      });
   }
 
   onBack(): void {
@@ -203,5 +240,64 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       case 'Used': return 'bg-gray-50 text-gray-700 border border-gray-200';
       default: return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
+  }
+
+  /**
+   * Calculate totals from lots, fallback to inventoryDetail if lots not loaded
+   */
+  getTotalQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.originalQuantity, 0);
+    }
+    return this.inventoryDetail?.originalQuantity || 0;
+  }
+
+  getTotalUsedQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.usedQuantity, 0);
+    }
+    return this.inventoryDetail?.usedQuantity || 0;
+  }
+
+  getTotalReservedQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.reservedQuantityByOrdersOnProcessing, 0);
+    }
+    return this.inventoryDetail?.reservedQuantityByOrdersOnProcessing || 0;
+  }
+
+  getTotalRemainingQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.remainingQuantity, 0);
+    }
+    return this.inventoryDetail?.remainingQuantity || 0;
+  }
+
+  /**
+   * Get depot name for lot
+   */
+  getDepotName(lot: LotDetailDto): string {
+    return lot.depot ? getLocalizedName(lot.depot, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get supplier name for lot
+   */
+  getSupplierNameForLot(lot: LotDetailDto): string {
+    return lot.supplier ? getLocalizedName(lot.supplier, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get manufacturer name for lot
+   */
+  getManufacturerNameForLot(lot: LotDetailDto): string {
+    return lot.manufacturer ? getLocalizedName(lot.manufacturer, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get country name for lot
+   */
+  getCountryNameForLot(lot: LotDetailDto): string {
+    return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
   }
 }
