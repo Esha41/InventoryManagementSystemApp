@@ -64,6 +64,7 @@ export interface BackendWorkflowStepDto {
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string | null;
   reserveQty?: boolean;
+ 
 }
 
 export interface BackendCreateWorkflowDto {
@@ -81,5 +82,32 @@ export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: str
 };
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
+}
+
+/**
+ * Workflow Step Notifier DTOs
+ */
+export interface WorkflowStepNotifierDto {
+  id: number;
+  workflowStepId: number;
+  userId?: string | null;
+  roleId?: string | null;
+  userName?: string | null;
+  userFullNameEn?: string | null;
+  userFullNameAr?: string | null;
+  roleName?: string | null;
+  roleNameAr?: string | null;
+}
+
+export interface UpdateWorkflowStepNotifiersDto {
+  workflowStepId: number;
+  userIds?: string[];
+  roleIds?: string[];
+}
+
+export interface CreateWorkflowStepNotifierDto {
+  workflowStepId: number;
+  userIds?: string[];
+  roleIds?: string[];
 }
 
