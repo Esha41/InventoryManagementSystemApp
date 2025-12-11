@@ -682,129 +682,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load previous workflow steps that the request can be returned to
-   */
-  loadPreviousWorkflowSteps(): void {
-    if (!this.requestId) return;
-
-    this.loadingPreviousSteps = true;
-    this.apiService.getWithAuth<any[]>(
-      `${API_ENDPOINTS.WORKFLOW_APPROVAL.BASE}/previous-steps/${this.requestId}`
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          const data = Array.isArray(response) ? response : (response?.data || []);
-          this.previousWorkflowSteps = data;
-          this.loadingPreviousSteps = false;
-        },
-        error: (error) => {
-          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load previous workflow steps');
-          this.loadingPreviousSteps = false;
-        }
-      });
-  }
-
-  /**
-   * Return request for review to a previous workflow step
-   */
-  returnForReview(): void {
-    if (this.processing || !this.requestDetail || !this.returnToStepId) {
-      if (!this.returnToStepId) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectStepToReturn']).subscribe(translations => {
-          this.toastService.error(
-            translations['workflowApprovalDetail.errors.selectStepToReturn'] || 'Please select a step to return to',
-            translations['toast.error']
-          );
-        });
-      }
-      return;
-    }
-
-    this.processing = true;
-
-    const formData = new FormData();
-
-    // Add DTO fields
-    formData.append('BaseRequestID', this.requestId.toString());
-    formData.append('IsApproved', 'false');
-    formData.append('Action', '6'); // RequestStatus.ReturnedForReview = 6
-    formData.append('ReturnToWorkflowStepId', this.returnToStepId.toString());
-
-    if (this.comments) {
-      formData.append('Comments', this.comments);
-    }
-
-    // Add files if any
-    if (this.approvalFiles && this.approvalFiles.length > 0) {
-      this.approvalFiles.forEach((file) => {
-        formData.append('files', file);
-      });
-    }
-
-    this.apiService.postWithAuth(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
-      formData
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.comments = '';
-          this.returnToStepId = null;
-          this.showReturnForReview = false;
-          this.approvalFiles = [];
-          // Notify other components about the status update
-          this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
-          // Reload to get updated status and approval history
-          this.loadRequestDetail();
-        },
-        error: (error) => {
-          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to return request for review');
-          this.processing = false;
-          // Revert status on error
-          if (this.requestDetail) {
-            this.loadRequestDetail();
-          }
-        }
-      });
-  }
-
-  /**
-   * Toggle return for review section
-   */
-  toggleReturnForReview(): void {
-    this.showReturnForReview = !this.showReturnForReview;
-    if (this.showReturnForReview && this.previousWorkflowSteps.length === 0) {
-      this.loadPreviousWorkflowSteps();
-    }
-  }
-
-  /**
-   * Check if return for review is available
-   */
-  canReturnForReview(): boolean {
-    if (!this.requestDetail || this.processing) {
-      return false;
-    }
-
-    // Allow return for review when status is Pending or ReturnedForReview
-    if (this.requestDetail.status !== 'Pending' && this.requestDetail.status !== 'ReturnedForReview' && this.requestDetail.status !== 'Returned') {
-      return false;
-    }
-
-    // User must be able to approve/reject to return
-    return this.canApproveOrReject();
-  }
-
-  /**
-   * Get workflow step display name
-   */
-  getWorkflowStepDisplayName(step: any): string {
-    if (!step) return '';
-    return `Step ${step.stepOrder}: ${step.applicationRoleName || 'Unknown Role'}`;
-  }
-
-  /**
    * Create FormData for approval/rejection request with optional files
    */
   private createApprovalFormData(isApproved: boolean): FormData {
@@ -859,7 +736,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
@@ -912,35 +788,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       headers: headers,
       responseType: 'blob'
     })
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError((error: any) => {
-          console.error('Failed to download file:', error);
-          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
-            this.toastService.error(
-              ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
-              translations['toast.error']
-            );
-          });
-          return throwError(() => error);
-        })
-      )
-      .subscribe({
-        next: (blob: Blob) => {
-          // Create blob URL and trigger download
-          const blobUrl = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = blobUrl;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(blobUrl);
-        },
-        error: () => {
-          // Error already handled in catchError
-        }
-      });
       .pipe(
         takeUntil(this.destroy$),
         catchError((error: any) => {
@@ -1632,7 +1479,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
@@ -1691,7 +1537,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');

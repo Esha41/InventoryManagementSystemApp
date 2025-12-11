@@ -24,24 +24,50 @@
     ],
     "baseUrl": "./",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@constants/*": ["src/app/core/constants/*"],
-      "@components/*": ["src/app/shared/components/*"],
-      "@layouts/*": ["src/app/shared/layouts/*"],
-      "@utils/*": ["src/app/core/utils/*"],
-      "@services/*": ["src/app/core/services/*"],
-      "@interceptors/*": ["src/app/core/interceptors/*"],
-      "@pages/*": ["src/app/pages/*"],
-      "@guards/*": ["src/app/core/guards/*"],
-      "@models/*": ["src/app/core/models/*"],
-      "@environments/*": ["src/environments/*"]
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@constants/*": [
+        "src/app/core/constants/*"
+      ],
+      "@components/*": [
+        "src/app/shared/components/*"
+      ],
+      "@layouts/*": [
+        "src/app/shared/layouts/*"
+      ],
+      "@utils/*": [
+        "src/app/core/utils/*"
+      ],
+      "@services/*": [
+        "src/app/core/services/*"
+      ],
+      "@interceptors/*": [
+        "src/app/core/interceptors/*"
+      ],
+      "@pages/*": [
+        "src/app/pages/*"
+      ],
+      "@guards/*": [
+        "src/app/core/guards/*"
+      ],
+      "@models/*": [
+        "src/app/core/models/*"
+      ],
+      "@environments/*": [
+        "src/environments/*"
+      ]
     }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
+    "extendedDiagnostics": {
+      "checks": {
+        "optionalChainNotNullable": "suppress"
+      }
+    }
   }
 }
-
