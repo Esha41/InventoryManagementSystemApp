@@ -19,6 +19,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ProfileDataService } from '@services/profile-data.service';
 
 @Component({
   selector: 'app-workflow',
@@ -38,10 +39,10 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   workflows: WorkflowDto[] = [];
   filteredWorkflows: WorkflowDto[] = [];
   searchTerm: string = '';
- 
+
   loading = false;
   errorMessage: string | null = null;
-  
+
   currentPage: number = 1;
   rowsPerPage: number = 10;
   readonly rowsPerPageOptions = [5, 10, 20, 50];
@@ -51,18 +52,18 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   showDeleteDialog = false;
   workflowToDelete: { id: number; name: string } | null = null;
   selectedWorkflow: any = null;
-  
+
   deleteDialogTitle = '';
   deleteDialogMessage = '';
   deleteDialogDescription = '';
   editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
   editWorkflowType: number = 1;
-  editSteps: Array<{ 
-    order: number; 
-    roleId: string | null; 
-    applicationEntityId: number | null; 
-    requireHigherApproval?: boolean; 
-    higherApprovalRoleId?: string | null; 
+  editSteps: Array<{
+    order: number;
+    roleId: string | null;
+    applicationEntityId: number | null;
+    requireHigherApproval?: boolean;
+    higherApprovalRoleId?: string | null;
     higherApplicationEntityId?: number | null;
     notifyingRoleIds?: string[];
     notifyingUserIds?: string[]; // Selected user IDs for notifications
@@ -85,6 +86,9 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   private boundHandleDocumentClick?: () => void;
   private destroy$ = new Subject<void>();
 
+  // Super admin check
+  isSuperAdmin = false;
+
   constructor(
     private router: Router,
     private workflowService: WorkflowService,
@@ -93,14 +97,19 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private translate: TranslateService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private profileDataService: ProfileDataService
+  ) { }
 
   ngOnInit(): void {
+    // Check if user is super admin
+    const profileData = this.profileDataService.getFullProfileData();
+    this.isSuperAdmin = profileData?.isSuperAdmin || false;
+
     this.loadWorkflows();
     this.backendUserService.getAllRolesSimple().subscribe({ next: r => this.roles = r, error: () => this.roles = [] });
     this.loadApplicationEntities();
-    
+
     const lang = this.translationService.getCurrentLanguage();
     this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
 
@@ -149,20 +158,20 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.validateCurrentPage();
   }
 
-getWorkflowType(id: number | string): string {
-  if (id === null || id === undefined) {
-    return 'Unknown';
+  getWorkflowType(id: number | string): string {
+    if (id === null || id === undefined) {
+      return 'Unknown';
+    }
+
+    const lang = this.translationService.getCurrentLanguage();
+    const typeName = this.workflowService.getWorkflowTypeNameById(id, lang);
+
+    return typeName;
   }
-  
-  const lang = this.translationService.getCurrentLanguage();
-  const typeName = this.workflowService.getWorkflowTypeNameById(id, lang);
-  
-  return typeName;
-}
   loadWorkflows(): void {
     this.loading = true;
     this.errorMessage = null;
-    
+
     this.workflowService.getWorkflows().subscribe({
       next: (workflows) => {
         this.workflows = workflows;
@@ -186,7 +195,7 @@ getWorkflowType(id: number | string): string {
       filtered = filtered.filter(workflow => {
         const workflowName = getLocalizedName(workflow, getCurrentLang(this.translate));
         return workflowName.toLowerCase().includes(searchLower) ||
-               workflow.id.toString().includes(this.searchTerm);
+          workflow.id.toString().includes(this.searchTerm);
       });
     }
 
@@ -234,17 +243,17 @@ getWorkflowType(id: number | string): string {
     this.workflowService.getWorkflowDetailById(id).subscribe({
       next: wf => {
         const status = wf?.isActive ? 'Active' : 'Inactive';
-        this.editForm = { 
-          id: wf?.id || target.id, 
-          name: wf?.workflowName || target.name, 
+        this.editForm = {
+          id: wf?.id || target.id,
+          name: wf?.workflowName || target.name,
           status: status as 'Active' | 'Inactive',
           workflowType: wf?.workflowType || target.workflowType || 1
         };
         this.editWorkflowType = wf?.workflowType || target.workflowType || 1;
         const steps = (wf?.workflowSteps || []) as any[];
-        this.editSteps = steps.map((s, idx) => ({ 
-          order: s.stepOrder || idx + 1, 
-          roleId: s.applicationRoleId || null, 
+        this.editSteps = steps.map((s, idx) => ({
+          order: s.stepOrder || idx + 1,
+          roleId: s.applicationRoleId || null,
           applicationEntityId: s.applicationEntityId || null,
           requireHigherApproval: !!s.requireHigherApproval,
           higherApprovalRoleId: s.higherApprovalRoleId || null,
@@ -256,14 +265,14 @@ getWorkflowType(id: number | string): string {
           usersInNotifyingRoles: [],
           availableUsers: [] // Will be populated by loadUsersForNotifyingRoles
         }));
-        
+
         // Load notifiers for each step from the API first, then load users
         // This ensures saved notifiers are displayed in dropdowns
         this.loadNotifiersForSteps(() => {
           // After notifiers are loaded, load all users for dropdowns
           this.loadAllUsersForSteps();
         });
-        
+
         this.showEditModal = true;
         setTimeout(() => {
           this.initializeEditModalDropdowns();
@@ -300,20 +309,20 @@ getWorkflowType(id: number | string): string {
       setTimeout(() => this.checkAndPositionDropdowns(), 0);
     };
     document.addEventListener('click', this.boundHandleDocumentClick);
-    
+
     this.checkAndPositionDropdowns();
   }
 
   onAddWorkflow(): void {
     this.router.navigate(['/workflow/add']);
   }
-  addEditStep(): void { 
-    const newStep = { 
-      order: this.editSteps.length + 1, 
-      roleId: null, 
-      applicationEntityId: null, 
-      requireHigherApproval: false, 
-      higherApprovalRoleId: null, 
+  addEditStep(): void {
+    const newStep = {
+      order: this.editSteps.length + 1,
+      roleId: null,
+      applicationEntityId: null,
+      requireHigherApproval: false,
+      higherApprovalRoleId: null,
       higherApplicationEntityId: null,
       notifyingRoleIds: [],
       notifyingUserIds: [],
@@ -331,21 +340,21 @@ getWorkflowType(id: number | string): string {
   onDelete(id: number): void {
     const workflow = this.workflows.find(w => w.id === id);
     if (!workflow) return;
-    
+
     const workflowName = getLocalizedName(workflow, getCurrentLang(this.translate));
     this.workflowToDelete = { id: workflow.id, name: workflowName };
-    
+
     this.deleteDialogTitle = this.translate.instant('workflow.deleteConfirmation.title');
     this.deleteDialogMessage = this.translate.instant('workflow.deleteConfirmation.message');
     const workflowLabel = this.translate.instant('workflow.deleteConfirmation.workflow');
     this.deleteDialogDescription = `${workflowLabel}: ${workflowName}`;
-    
+
     this.showDeleteDialog = true;
   }
 
   onDeleteConfirm(): void {
     if (!this.workflowToDelete) return;
-    
+
     const id = this.workflowToDelete.id;
     this.workflowService.deleteWorkflow(id).subscribe({
       next: () => {
@@ -353,22 +362,22 @@ getWorkflowType(id: number | string): string {
         this.currentPage = 1;
         this.filterWorkflows();
         this.validateCurrentPage();
-        
+
         this.translate.get(['toast.success', 'toast.workflowDeleted']).subscribe((translations: any) => {
           this.toastService.success(translations['toast.workflowDeleted'], translations['toast.success']);
         });
-        
+
         this.showDeleteDialog = false;
         this.workflowToDelete = null;
       },
       error: (error) => {
         this.errorMessage = error.message || 'Failed to delete workflow';
-        
+
         this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: any) => {
           const errorMsg = error.message || translations['toast.failedToDeleteWorkflow'];
           this.toastService.error(errorMsg, translations['toast.error']);
         });
-        
+
         this.showDeleteDialog = false;
         this.workflowToDelete = null;
       }
@@ -441,7 +450,7 @@ getWorkflowType(id: number | string): string {
     if (n <= 0) {
       return String(n);
     }
- 
+
     const key = this.getOrdinalKey(n);
     if (key) {
       if (key.includes('-')) {
@@ -449,7 +458,7 @@ getWorkflowType(id: number | string): string {
       }
       return this.translate.instant(key);
     }
- 
+
     return this.translate.instant('workflow.stepNumber', { number: n });
   }
 
@@ -550,7 +559,7 @@ getWorkflowType(id: number | string): string {
   private checkAndPositionDropdowns(): void {
     const openDropdowns = document.querySelectorAll('.app-dropdown-open');
     this.hasOpenDropdown = openDropdowns.length > 0;
-    
+
     if (this.hasOpenDropdown) {
       this.repositionDropdowns();
       if (!this.positioningInterval) {
@@ -589,7 +598,7 @@ getWorkflowType(id: number | string): string {
     document.querySelectorAll('.app-dropdown-open').forEach((trigger: any) => {
       const dropdown = trigger.closest('.app-dropdown');
       const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
-      
+
       if (!panel || !scrollContainer.contains(dropdown)) return;
 
       const rect = trigger.getBoundingClientRect();
@@ -618,7 +627,7 @@ getWorkflowType(id: number | string): string {
   saveEdit(): void {
     if (!this.editForm) return;
     const editId = this.editForm.id;
-    
+
     // Store notifier data before saving workflow (in case step IDs change)
     const notifierData = this.editSteps.map((s, idx) => ({
       originalIndex: idx,
@@ -626,7 +635,7 @@ getWorkflowType(id: number | string): string {
       notifyingRoleIds: s.notifyingRoleIds || [],
       notifyingUserIds: s.notifyingUserIds || []
     }));
-    
+
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,
@@ -653,13 +662,13 @@ getWorkflowType(id: number | string): string {
     const updateNotifiers = (): Observable<boolean> => {
       // Use step IDs from editSteps directly (don't need to reload workflow)
       const notifierSaveObservables: Observable<boolean>[] = [];
-      
+
       this.editSteps.forEach((step, idx) => {
         const notifierInfo = notifierData[idx];
         if (notifierInfo && step.workflowStepId) {
           const roleIds = notifierInfo.notifyingRoleIds || [];
           const userIds = notifierInfo.notifyingUserIds || [];
-          
+
           // Only call API if there are notifiers to save (backend requires at least one)
           // If both are empty, skip (existing notifiers remain unchanged)
           if (roleIds.length > 0 || userIds.length > 0) {
@@ -681,13 +690,13 @@ getWorkflowType(id: number | string): string {
           }
         }
       });
-      
+
       // Save notifiers for all steps in parallel
       if (notifierSaveObservables.length === 0) {
         // Return a successful observable immediately when no notifiers to update
         return of(true);
       }
-      
+
       return forkJoin(notifierSaveObservables).pipe(
         map(() => true)
       );
@@ -713,7 +722,7 @@ getWorkflowType(id: number | string): string {
         this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
           this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
         });
-        
+
         setTimeout(() => {
           this.loadWorkflows();
           this.closeModals();
@@ -722,12 +731,12 @@ getWorkflowType(id: number | string): string {
       error: err => {
         // This error is from notifier updates, not workflow update
         this.errorMessage = err.message || 'Failed to update step notifiers';
-        
+
         // Still show success for workflow update
         this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
           this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
         });
-        
+
         setTimeout(() => {
           this.loadWorkflows();
           this.closeModals();
@@ -739,14 +748,14 @@ getWorkflowType(id: number | string): string {
   private loadNotifiersForSteps(callback?: () => void): void {
     // Load saved notifiers for each step from the API
     const stepsWithIds = this.editSteps.filter(step => step.workflowStepId);
-    
+
     if (stepsWithIds.length === 0) {
       // No steps to load notifiers for, call callback immediately
       if (callback) callback();
       return;
     }
-    
-    const notifierObservables = stepsWithIds.map(step => 
+
+    const notifierObservables = stepsWithIds.map(step =>
       this.workflowService.getStepNotifiers(step.workflowStepId!).pipe(
         map(notifiers => ({ step, notifiers })),
         catchError(err => {
@@ -758,7 +767,7 @@ getWorkflowType(id: number | string): string {
         })
       )
     );
-    
+
     // Load all notifiers in parallel
     forkJoin(notifierObservables).subscribe({
       next: (results) => {
@@ -766,7 +775,7 @@ getWorkflowType(id: number | string): string {
           // Extract role IDs and user IDs from notifiers
           const roleIds: string[] = [];
           const userIds: string[] = [];
-          
+
           notifiers.forEach(notifier => {
             if (notifier.roleId) {
               roleIds.push(notifier.roleId);
@@ -775,15 +784,15 @@ getWorkflowType(id: number | string): string {
               userIds.push(String(notifier.userId)); // Normalize to string
             }
           });
-          
+
           // Update the step with saved notifiers
           step.notifyingRoleIds = roleIds;
           step.notifyingUserIds = userIds;
         });
-        
+
         // Trigger change detection
         this.cdr.detectChanges();
-        
+
         // Call callback after all notifiers are loaded
         if (callback) {
           setTimeout(() => callback(), 100);
@@ -795,7 +804,7 @@ getWorkflowType(id: number | string): string {
           step.notifyingRoleIds = step.notifyingRoleIds || [];
           step.notifyingUserIds = step.notifyingUserIds || [];
         });
-        
+
         if (callback) {
           setTimeout(() => callback(), 100);
         }
@@ -810,7 +819,7 @@ getWorkflowType(id: number | string): string {
       step.notifyingRoleIds = step.notifyingRoleIds || [];
       step.notifyingUserIds = step.notifyingUserIds || [];
       step.availableUsers = step.availableUsers || [];
-      
+
       // Load all users for the dropdown
       setTimeout(() => {
         this.loadUsersForNotifyingRoles(step, index);
@@ -828,7 +837,7 @@ getWorkflowType(id: number | string): string {
     }
 
     // Preserve selected user IDs before loading, normalize to strings
-    const preservedUserIds = step.notifyingUserIds 
+    const preservedUserIds = step.notifyingUserIds
       ? [...step.notifyingUserIds].map((id: any) => String(id))
       : [];
 
@@ -839,19 +848,19 @@ getWorkflowType(id: number | string): string {
         step.availableUsers = (allUsers || []).map((user: any) => ({
           id: String(user.id),
           userName: user.userName || ''
-        })).sort((a: any, b: any) => 
+        })).sort((a: any, b: any) =>
           (a.userName || '').localeCompare(b.userName || '')
         );
-        
+
         // Restore selected user IDs after loading users, ensure type matching
         if (preservedUserIds.length > 0) {
           // Filter to only include users that exist in availableUsers, using string comparison
-          const validUserIds = preservedUserIds.filter((userId: string) => 
+          const validUserIds = preservedUserIds.filter((userId: string) =>
             step.availableUsers.some((u: any) => String(u.id) === String(userId))
           );
           step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
         }
-        
+
         // Trigger change detection by creating new array references
         step.availableUsers = [...step.availableUsers];
         if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
@@ -864,7 +873,7 @@ getWorkflowType(id: number | string): string {
         } else {
           step.notifyingRoleIds = [];
         }
-        
+
         // Force change detection
         this.cdr.detectChanges();
       },
@@ -877,7 +886,7 @@ getWorkflowType(id: number | string): string {
 
   private saveStepNotifiers(): Observable<boolean> {
     const saveObservables: Observable<boolean>[] = [];
-    
+
     // Save notifiers for all steps that have workflowStepId
     this.editSteps.forEach((step) => {
       if (step.workflowStepId) {
@@ -909,17 +918,17 @@ getWorkflowType(id: number | string): string {
   onNotifyingRolesChange(stepIndex: number): void {
     const step = this.editSteps[stepIndex];
     if (!step) return;
-    
+
     // Ensure notifyingRoleIds is initialized
     if (!step.notifyingRoleIds) {
       step.notifyingRoleIds = [];
     }
-    
+
     // Ensure notifyingUserIds is initialized
     if (!step.notifyingUserIds) {
       step.notifyingUserIds = [];
     }
-    
+
     // Load all users (not filtered by roles)
     // Users dropdown is independent of roles selection
     this.loadUsersForNotifyingRoles(step, stepIndex);

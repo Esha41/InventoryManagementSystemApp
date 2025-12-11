@@ -14,6 +14,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ProfileDataService } from '@services/profile-data.service';
 
 @Component({
   selector: 'app-depot-management',
@@ -42,16 +43,24 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   showDeleteDialog = false;
   depotToDelete?: DepotDto;
 
+  // Super admin check
+  isSuperAdmin = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private lookupService: LookupService,
     private apiService: ApiService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private profileDataService: ProfileDataService
   ) { }
 
   ngOnInit(): void {
+    // Check if user is super admin
+    const profileData = this.profileDataService.getFullProfileData();
+    this.isSuperAdmin = profileData?.isSuperAdmin || false;
+
     this.loadDepots();
 
     // Subscribe to language changes to update depot names

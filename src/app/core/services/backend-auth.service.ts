@@ -16,6 +16,7 @@ import {
   AuthState
 } from '@models/auth.model';
 import { ApiResponse } from '@models/api-response.model';
+import { ProfileDataService } from './profile-data.service';
 
 /**
  * Backend Authentication Service
@@ -37,7 +38,8 @@ export class BackendAuthService {
   constructor(
     private apiService: ApiService,
     private storageService: StorageService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private profileDataService: ProfileDataService
   ) {
     this.checkAuthStatus();
   }
@@ -154,34 +156,72 @@ export class BackendAuthService {
           this.userContextService.clearCache();
         }
 
-        return this.getUserClaims().pipe(
-          map(userWithClaims => {
-            const mergedUser: AuthenticatedUser = {
-              ...authenticatedUser,
-              permissions: userWithClaims.permissions || [],
-              roles: userWithClaims.roles || []
-            };
+        // Fetch full user profile from /Users/me for ProfileDataService
+        return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
+          switchMap(userMeResponse => {
+            return this.getUserClaims().pipe(
+              map(userWithClaims => {
+                const mergedUser: AuthenticatedUser = {
+                  ...authenticatedUser,
+                  permissions: userWithClaims.permissions || [],
+                  roles: userWithClaims.roles || []
+                };
 
-            this.configService.log('Login complete with permissions', {
-              userId: mergedUser.id,
-              userName: mergedUser.userName,
-              permissionsCount: mergedUser.permissions?.length || 0,
-              rolesCount: mergedUser.roles?.length || 0,
-              samplePermissions: mergedUser.permissions?.slice(0, 5).map(p => p.id || p.claimType)
-            });
+                this.configService.log('Login complete with permissions', {
+                  userId: mergedUser.id,
+                  userName: mergedUser.userName,
+                  permissionsCount: mergedUser.permissions?.length || 0,
+                  rolesCount: mergedUser.roles?.length || 0,
+                  samplePermissions: mergedUser.permissions?.slice(0, 5).map(p => p.id || p.claimType)
+                });
 
-            this.storageService.set('current_user', mergedUser);
-            this.currentUserSubject.next(mergedUser);
-            this.updateAuthState(mergedUser, response.accessToken, expiresAt);
+                // Save profile data including isSuperAdmin flag
+                this.profileDataService.saveProfile(mergedUser, userMeResponse?.data);
 
-            return response;
+                this.storageService.set('current_user', mergedUser);
+                this.currentUserSubject.next(mergedUser);
+                this.updateAuthState(mergedUser, response.accessToken, expiresAt);
+
+                return response;
+              }),
+              catchError((error) => {
+                this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
+
+                // Still save profile data even without claims
+                this.profileDataService.saveProfile(authenticatedUser, userMeResponse?.data);
+
+                this.storageService.set('current_user', authenticatedUser);
+                this.currentUserSubject.next(authenticatedUser);
+                this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
+                return of(response);
+              })
+            );
           }),
-          catchError((error) => {
-            this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
-            this.storageService.set('current_user', authenticatedUser);
-            this.currentUserSubject.next(authenticatedUser);
-            this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
-            return of(response);
+          catchError(error => {
+            // Fallback: save profile without /Users/me data
+            return this.getUserClaims().pipe(
+              map(userWithClaims => {
+                const mergedUser: AuthenticatedUser = {
+                  ...authenticatedUser,
+                  permissions: userWithClaims.permissions || [],
+                  roles: userWithClaims.roles || []
+                };
+
+                this.profileDataService.saveProfile(mergedUser);
+                this.storageService.set('current_user', mergedUser);
+                this.currentUserSubject.next(mergedUser);
+                this.updateAuthState(mergedUser, response.accessToken, expiresAt);
+                return response;
+              }),
+              catchError((error) => {
+                this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
+                this.profileDataService.saveProfile(authenticatedUser);
+                this.storageService.set('current_user', authenticatedUser);
+                this.currentUserSubject.next(authenticatedUser);
+                this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
+                return of(response);
+              })
+            );
           })
         );
       }),
