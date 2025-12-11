@@ -3,6 +3,7 @@
 .inventory-table {
     border-collapse: separate;
     border-spacing: 0;
+    min-width: 100%;
 }
 
 .inventory-table th {
@@ -44,6 +45,59 @@
 /* Detail row animation */
 .detail-row {
     animation: slideDown 0.3s ease;
+}
+
+/* Lot details container - independent scrolling */
+.detail-row td {
+    padding: 0 !important;
+}
+
+.detail-row .lot-details-container {
+    width: 100%;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+}
+
+/* Lot details table - flexible width to fit container */
+.lot-details-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
+}
+
+/* Lot details table headers - better spacing */
+.lot-details-table thead th {
+    padding: 0.75rem 0.5rem !important;
+    background-color: #f3f4f6;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Lot details table cells - better spacing */
+.lot-details-table tbody td {
+    padding: 0.75rem 0.5rem !important;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Make quantity columns right-aligned and use percentage width */
+.lot-details-table th:nth-child(8),
+.lot-details-table td:nth-child(8),
+.lot-details-table th:nth-child(9),
+.lot-details-table td:nth-child(9),
+.lot-details-table th:nth-child(10),
+.lot-details-table td:nth-child(10),
+.lot-details-table th:nth-child(11),
+.lot-details-table td:nth-child(11) {
+    text-align: right;
+    width: 8%;
 }
 
 @keyframes slideDown {

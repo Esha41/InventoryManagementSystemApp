@@ -16,7 +16,7 @@ export class ApiService {
   constructor(
     private http: HttpClient,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   private get baseUrl(): string {
     return this.configService.apiUrl;
@@ -76,12 +76,12 @@ export class ApiService {
    */
   postWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
     let headers = this.getAuthHeaders();
-    
+
     // If data is FormData, don't set Content-Type header (browser will set it with boundary)
     if (data instanceof FormData) {
       headers = headers.delete('Content-Type');
     }
-    
+
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, { headers })
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -119,11 +119,11 @@ export class ApiService {
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token');
     let headers = new HttpHeaders();
-    
+
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    
+
     headers = headers.set('Content-Type', 'application/json');
     return headers;
   }
@@ -133,9 +133,12 @@ export class ApiService {
    */
   private handleError(error: unknown): Observable<never> {
     let errorMessage = 'An unknown error occurred';
-    
-    // Type guard for HttpErrorResponse
-    if (error instanceof HttpErrorResponse) {
+
+    // Check if error has userMessage from error interceptor
+    if (error && typeof error === 'object' && 'userMessage' in error) {
+      errorMessage = (error as any).userMessage;
+    } else if (error instanceof HttpErrorResponse) {
+      // Type guard for HttpErrorResponse
       if (error.error instanceof ErrorEvent) {
         // Client-side error
         errorMessage = `Client Error: ${error.error.message}`;
@@ -178,7 +181,7 @@ export class ApiService {
     } else if (error instanceof Error) {
       errorMessage = error.message;
     }
-    
+
     this.configService.logError('API Error:', error);
     return throwError(() => new Error(errorMessage));
   }

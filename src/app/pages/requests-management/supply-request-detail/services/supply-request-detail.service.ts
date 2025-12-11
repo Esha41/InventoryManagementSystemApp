@@ -47,7 +47,7 @@ export class SupplyRequestDetailService {
     private toastService: ToastService,
     private translate: TranslateService,
     private router: Router
-  ) {}
+  ) { }
 
   /**
    * Load order details and map to request detail
@@ -70,18 +70,18 @@ export class SupplyRequestDetailService {
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     ).pipe(
       map((response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
+        const data: BaseRequestDto[] = Array.isArray(response)
+          ? response
           : (response?.data || []);
-        
+
         const baseRequest = data.find(r => r.id === orderId);
-        
+
         if (baseRequest && baseRequest.approvalHistory) {
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
           requestDetail.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
         }
-        
+
         return requestDetail;
       }),
       catchError((error) => {
@@ -206,7 +206,7 @@ export class SupplyRequestDetailService {
     });
 
     const loadPromises: Observable<any>[] = [];
-    
+
     detailsByItem.forEach((details, itemId) => {
       const item = requestDetail.items.find(i => i.itemId === itemId);
       if (item) {
@@ -307,7 +307,7 @@ export class SupplyRequestDetailService {
    */
   private createNewSupply(orderId: number, requestDetail: SupplyRequestDetail): Observable<number> {
     const supplyDetails = this.buildSupplyDetails(requestDetail);
-    
+
     if (supplyDetails.length === 0) {
       const message = this.translate.instant('supplyRequestDetail.noItemsSelectedForDischarge');
       const title = this.translate.instant('toast.error');
@@ -340,7 +340,7 @@ export class SupplyRequestDetailService {
    */
   private updateExistingSupply(supply: SupplyDto, requestDetail: SupplyRequestDetail): Observable<number> {
     const newSupplyDetails = this.buildSupplyDetails(requestDetail);
-    
+
     if (newSupplyDetails.length === 0) {
       const message = this.translate.instant('supplyRequestDetail.noItemsSelectedForDischarge');
       const title = this.translate.instant('toast.error');
@@ -351,7 +351,7 @@ export class SupplyRequestDetailService {
     return this.supplyService.replaceSupplyDetails(supply.id, newSupplyDetails).pipe(
       tap(() => {
         const message = this.translate.instant('supplyRequestDetail.draftUpdatedSuccessfully', {
-          supplyId: supply.id
+          count: newSupplyDetails.length
         });
         const title = this.translate.instant('toast.success');
         this.toastService.success(message, title);
@@ -377,7 +377,7 @@ export class SupplyRequestDetailService {
    */
   private buildSupplyDetails(requestDetail: SupplyRequestDetail): CreateSupplyDetailDto[] {
     const supplyDetails: CreateSupplyDetailDto[] = [];
-    
+
     requestDetail.items.forEach(item => {
       item.availableLots.forEach(lot => {
         if (lot.selectedQuantity > 0) {
@@ -393,11 +393,11 @@ export class SupplyRequestDetailService {
 
     // Consolidate duplicates by grouping on itemId+lot and summing quantities
     const consolidatedMap = new Map<string, CreateSupplyDetailDto>();
-    
+
     supplyDetails.forEach(detail => {
       const key = `${detail.itemId}_${detail.lot}`;
       const existing = consolidatedMap.get(key);
-      
+
       if (existing) {
         // Sum quantities for duplicate item+lot combinations
         existing.quantity += detail.quantity;
@@ -408,7 +408,7 @@ export class SupplyRequestDetailService {
     });
 
     const consolidated = Array.from(consolidatedMap.values());
-    
+
     if (consolidated.length < supplyDetails.length) {
       this.config.log(`Consolidated ${supplyDetails.length} supply details into ${consolidated.length} unique combinations`);
     }

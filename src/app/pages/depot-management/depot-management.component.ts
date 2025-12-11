@@ -49,7 +49,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private toastService: ToastService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDepots();
@@ -141,13 +141,13 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
     const request$ = this.isEditMode
       ? this.apiService.putWithAuth<APIOperationResponse<DepotDto>>(
-          `${API_ENDPOINTS.DEPOT.BASE}/${this.currentDepot.id}`,
-          this.currentDepot
-        )
+        `${API_ENDPOINTS.DEPOT.BASE}/${this.currentDepot.id}`,
+        this.currentDepot
+      )
       : this.apiService.postWithAuth<APIOperationResponse<DepotDto>>(
-          API_ENDPOINTS.DEPOT.BASE,
-          this.currentDepot
-        );
+        API_ENDPOINTS.DEPOT.BASE,
+        this.currentDepot
+      );
 
     request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (response) => {
@@ -221,11 +221,32 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.depotToDelete = undefined;
         },
-        error: (error) => {
-          console.error('Error deleting depot:', error);
-          this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).subscribe(translations => {
+        error: (err) => {
+          console.error('Error deleting depot:', err);
+
+          // Extract the actual error message from various possible error structures
+          let errorMessage = 'Failed to delete depot';
+
+          // Check for userMessage from error interceptor first
+          if (err?.userMessage) {
+            errorMessage = err.userMessage;
+          } else if (err instanceof Error && err.message) {
+            // The API service's handleError wraps the error in an Error object with message property
+            errorMessage = err.message;
+          } else if (err?.error?.message) {
+            // Direct error response from backend
+            errorMessage = err.error.message;
+          } else if (err?.message) {
+            // Error message at top level
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            // String error
+            errorMessage = err;
+          }
+
+          this.translateService.get('toast.error').subscribe(translations => {
             this.toastService.error(
-              error.message || translations['toast.failedToDeleteDepot'],
+              errorMessage,
               translations['toast.error']
             );
           });
