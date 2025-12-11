@@ -1,7 +1,3 @@
-/**
- * Workflow Approval Models
- * Models for workflow approval detail view
- */
 
 /**
  * File upload DTO matching backend structure

@@ -27,6 +27,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { ConfirmationDialogComponent, ConfirmationType } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -39,7 +40,8 @@ import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } f
     HasPermissionDirective,
     LoadingStateComponent,
     ErrorStateComponent,
-    DropdownComponent
+    DropdownComponent,
+    ConfirmationDialogComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css']
@@ -89,6 +91,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   sendToHigherApproval: string = 'no'; // 'yes' = yes, 'no' = no (default is 'no')
   processing: boolean = false;
 
+
   // File upload for approval/rejection
   approvalFiles: File[] = [];
   approvalFileInput: HTMLInputElement | null = null;
@@ -101,6 +104,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   returnToStepId: number | null = null;
   previousWorkflowSteps: any[] = [];
   loadingPreviousSteps: boolean = false;
+
+  // Confirmation dialog state
+  confirmationDialog = {
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'warning' as ConfirmationType,
+    confirmText: '',
+    cancelText: '',
+    onConfirm: () => { }
+  };
 
 
   // Pickup date management
@@ -430,67 +444,241 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   approveRequest(): void {
     if (this.processing || !this.requestDetail) return;
 
-    this.processing = true;
+    // Show confirmation dialog
+    this.translateService.get([
+      'workflowApprovalDetail.confirmApprove',
+      'workflowApprovalDetail.confirmApproveMessage',
+      'common.yes',
+      'common.cancel'
+    ]).subscribe(translations => {
+      this.showConfirmationDialog(
+        translations['workflowApprovalDetail.confirmApprove'] || 'Confirm Approval',
+        translations['workflowApprovalDetail.confirmApproveMessage'] || 'Are you sure you want to approve this request?',
+        'success',
+        translations['common.yes'] || 'Yes',
+        translations['common.cancel'] || 'Cancel',
+        () => {
+          this.processing = true;
 
-    const formData = this.createApprovalFormData(true);
+          const formData = this.createApprovalFormData(true);
 
-    this.apiService.postWithAuth(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
-      formData
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.comments = '';
-          this.sendToHigherApproval = 'no';
-          this.approvalFiles = [];
-          // Notify other components about the status update
-          this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
-          // Reload to get updated status and approval history
-          this.loadRequestDetail();
-        },
-        error: (error) => {
-          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
-          this.processing = false;
-          // Revert status on error by reloading
-          if (this.requestDetail) {
-            this.loadRequestDetail();
-          }
+          this.apiService.postWithAuth(
+            API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+            formData
+          )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.comments = '';
+                this.sendToHigherApproval = 'no';
+                this.approvalFiles = [];
+                // Notify other components about the status update
+                this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
+                // Reload to get updated status and approval history
+                this.loadRequestDetail();
+              },
+              error: (error) => {
+                this.error = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
+                this.processing = false;
+                // Revert status on error by reloading
+                if (this.requestDetail) {
+                  this.loadRequestDetail();
+                }
+              }
+            });
         }
-      });
+      );
+    });
   }
 
   rejectRequest(): void {
     if (this.processing || !this.requestDetail) return;
 
-    this.processing = true;
+    // Show confirmation dialog
+    this.translateService.get([
+      'workflowApprovalDetail.confirmReject',
+      'workflowApprovalDetail.confirmRejectMessage',
+      'common.yes',
+      'common.cancel'
+    ]).subscribe(translations => {
+      this.showConfirmationDialog(
+        translations['workflowApprovalDetail.confirmReject'] || 'Confirm Rejection',
+        translations['workflowApprovalDetail.confirmRejectMessage'] || 'Are you sure you want to reject this request?',
+        'danger',
+        translations['common.yes'] || 'Yes',
+        translations['common.cancel'] || 'Cancel',
+        () => {
+          this.processing = true;
 
-    const formData = this.createApprovalFormData(false);
+          const formData = this.createApprovalFormData(false);
 
-    this.apiService.postWithAuth(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
-      formData
+          this.apiService.postWithAuth(
+            API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+            formData
+          )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.comments = '';
+                this.sendToHigherApproval = 'no';
+                this.approvalFiles = [];
+                // Notify other components about the status update
+                this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
+                // Reload to get updated status and approval history
+                this.loadRequestDetail();
+              },
+              error: (error) => {
+                this.error = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
+                this.processing = false;
+                // Revert status on error
+                if (this.requestDetail) {
+                  this.loadRequestDetail();
+                }
+              }
+            });
+        }
+      );
+    });
+  }
+
+  /**
+   * Load previous workflow steps that the request can be returned to
+   */
+  loadPreviousWorkflowSteps(): void {
+    if (!this.requestId) return;
+
+    this.loadingPreviousSteps = true;
+    this.apiService.getWithAuth<any[]>(
+      `${API_ENDPOINTS.WORKFLOW_APPROVAL.BASE}/previous-steps/${this.requestId}`
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.comments = '';
-          this.sendToHigherApproval = 'no';
-          this.approvalFiles = [];
-          // Notify other components about the status update
-          this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
-          // Reload to get updated status and approval history
-          this.loadRequestDetail();
+        next: (response: any) => {
+          const data = Array.isArray(response) ? response : (response?.data || []);
+          this.previousWorkflowSteps = data;
+          this.loadingPreviousSteps = false;
         },
         error: (error) => {
-          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
-          this.processing = false;
-          // Revert status on error
-          if (this.requestDetail) {
-            this.loadRequestDetail();
-          }
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load previous workflow steps');
+          this.loadingPreviousSteps = false;
         }
       });
+  }
+
+  /**
+   * Return request for review to a previous workflow step
+   */
+  returnForReview(): void {
+    if (this.processing || !this.requestDetail || !this.returnToStepId) {
+      if (!this.returnToStepId) {
+        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectStepToReturn']).subscribe(translations => {
+          this.toastService.error(
+            translations['workflowApprovalDetail.errors.selectStepToReturn'] || 'Please select a step to return to',
+            translations['toast.error']
+          );
+        });
+      }
+      return;
+    }
+
+    // Show confirmation dialog
+    this.translateService.get([
+      'workflowApprovalDetail.confirmReturnForReview',
+      'workflowApprovalDetail.confirmReturnForReviewMessage',
+      'common.yes',
+      'common.cancel'
+    ]).subscribe(translations => {
+      this.showConfirmationDialog(
+        translations['workflowApprovalDetail.confirmReturnForReview'] || 'Confirm Return for Review',
+        translations['workflowApprovalDetail.confirmReturnForReviewMessage'] || 'Are you sure you want to return this request for review?',
+        'warning',
+        translations['common.yes'] || 'Yes',
+        translations['common.cancel'] || 'Cancel',
+        () => {
+          this.processing = true;
+
+          const formData = new FormData();
+
+          // Add DTO fields
+          formData.append('BaseRequestID', this.requestId.toString());
+          formData.append('IsApproved', 'false');
+          formData.append('Action', '6'); // RequestStatus.ReturnedForReview = 6
+          formData.append('ReturnToWorkflowStepId', this.returnToStepId!.toString());
+
+          if (this.comments) {
+            formData.append('Comments', this.comments);
+          }
+
+          // Add files if any
+          if (this.approvalFiles && this.approvalFiles.length > 0) {
+            this.approvalFiles.forEach((file) => {
+              formData.append('files', file);
+            });
+          }
+
+          this.apiService.postWithAuth(
+            API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+            formData
+          )
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.comments = '';
+                this.returnToStepId = null;
+                this.showReturnForReview = false;
+                this.approvalFiles = [];
+                // Notify other components about the status update
+                this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
+                // Reload to get updated status and approval history
+                this.loadRequestDetail();
+              },
+              error: (error) => {
+                this.error = ErrorHandler.extractErrorMessage(error, 'Failed to return request for review');
+                this.processing = false;
+                // Revert status on error
+                if (this.requestDetail) {
+                  this.loadRequestDetail();
+                }
+              }
+            });
+        }
+      );
+    });
+  }
+
+  /**
+   * Toggle return for review section
+   */
+  toggleReturnForReview(): void {
+    this.showReturnForReview = !this.showReturnForReview;
+    if (this.showReturnForReview && this.previousWorkflowSteps.length === 0) {
+      this.loadPreviousWorkflowSteps();
+    }
+  }
+
+  /**
+   * Check if return for review is available
+   */
+  canReturnForReview(): boolean {
+    if (!this.requestDetail || this.processing) {
+      return false;
+    }
+
+    // Allow return for review when status is Pending or ReturnedForReview
+    if (this.requestDetail.status !== 'Pending' && this.requestDetail.status !== 'ReturnedForReview' && this.requestDetail.status !== 'Returned') {
+      return false;
+    }
+
+    // User must be able to approve/reject to return
+    return this.canApproveOrReject();
+  }
+
+  /**
+   * Get workflow step display name
+   */
+  getWorkflowStepDisplayName(step: any): string {
+    if (!step) return '';
+    return `Step ${step.stepOrder}: ${step.applicationRoleName || 'Unknown Role'}`;
   }
 
   /**
@@ -622,18 +810,22 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   private createApprovalFormData(isApproved: boolean): FormData {
     const formData = new FormData();
 
+
     // Add DTO fields (using PascalCase to match backend DTO)
     formData.append('BaseRequestID', this.requestId.toString());
     formData.append('IsApproved', isApproved.toString());
     formData.append('Action', isApproved ? RequestStatusEnum.Approved.toString() : RequestStatusEnum.Rejected.toString());
 
+
     if (this.comments) {
       formData.append('Comments', this.comments);
     }
 
+
     if (this.sendToHigherApproval === 'yes') {
       formData.append('SendToHigherApproval', 'true');
     }
+
 
     // Add files if any (backend expects 'files' parameter)
     if (this.approvalFiles && this.approvalFiles.length > 0) {
@@ -641,6 +833,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         formData.append('files', file);
       });
     }
+
 
     return formData;
   }
@@ -665,6 +858,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
@@ -710,12 +904,43 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
+
     const fileName = file.originalName || file.fileName || 'download';
+
 
     this.http.get(downloadUrl, {
       headers: headers,
       responseType: 'blob'
     })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((error: any) => {
+          console.error('Failed to download file:', error);
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
+            this.toastService.error(
+              ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
+              translations['toast.error']
+            );
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          // Create blob URL and trigger download
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        },
+        error: () => {
+          // Error already handled in catchError
+        }
+      });
       .pipe(
         takeUntil(this.destroy$),
         catchError((error: any) => {
@@ -817,6 +1042,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     if (currentPendingStep.isCurrentUserApprover !== undefined) {
 
+
       if (isAdministrator) {
         return true;
       }
@@ -868,18 +1094,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       // If user has acted before, check if they are authorized for the CURRENT pending step
       // This handles the case where a user appears multiple times in the workflow
 
+
       const currentUserRoles = this.authService.getCurrentUser()?.roles || [];
+
 
       // Helper to normalize strings for comparison
       const normalize = (s: string) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
 
+
       const pendingRoleName = normalize(currentPendingStep.applicationRoleName || '');
       const pendingRoleId = normalize(currentPendingStep.applicationRoleId || '');
+
 
       // Check if user has a role that matches the pending step
       const hasMatchingRole = currentUserRoles.some(userRole => {
         const normalizedUserRole = normalize(userRole);
         if (!normalizedUserRole) return false;
+
 
         // 1. Check against Role ID (if available)
         if (pendingRoleId) {
@@ -893,16 +1124,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           // Exact match
           if (normalizedUserRole === pendingRoleName) return true;
 
+
           // Prefix match (e.g. "Director" matches "Director (Department)")
           if (pendingRoleName.startsWith(normalizedUserRole)) return true;
+
 
           // Substring match for sufficiently long roles (avoids false positives like "User" matching "SuperUser")
           // If the role string is long enough (>10 chars), assume it's specific enough to be safe
           if (normalizedUserRole.length > 10 && pendingRoleName.includes(normalizedUserRole)) return true;
 
+
           // Reverse check: if pending role name is inside user role (unlikely but possible)
           if (pendingRoleName.length > 10 && normalizedUserRole.includes(pendingRoleName)) return true;
         }
+
 
         return false;
       });
@@ -1397,6 +1632,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
@@ -1455,6 +1691,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
+          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
           const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
             ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
@@ -1701,5 +1938,42 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return `${time.substring(0, 2)}:${time.substring(2, 4)}`;
     }
     return time;
+  }
+
+  /**
+   * Show confirmation dialog
+   */
+  showConfirmationDialog(title: string, message: string, type: ConfirmationType, confirmText: string, cancelText: string, onConfirm: () => void): void {
+    this.confirmationDialog = {
+      isOpen: true,
+      title,
+      message,
+      type,
+      confirmText,
+      cancelText,
+      onConfirm
+    };
+  }
+
+  /**
+   * Close confirmation dialog
+   */
+  closeConfirmationDialog(): void {
+    this.confirmationDialog.isOpen = false;
+  }
+
+  /**
+   * Handle confirmation dialog confirm action
+   */
+  onConfirmationConfirmed(): void {
+    this.confirmationDialog.onConfirm();
+    this.closeConfirmationDialog();
+  }
+
+  /**
+   * Handle confirmation dialog cancel action
+   */
+  onConfirmationCancelled(): void {
+    this.closeConfirmationDialog();
   }
 }

@@ -461,7 +461,7 @@ export class NotificationService implements OnDestroy {
 
     // Try to get email from current user, or from token payload as fallback
     let recipientEmail = this.currentUser.email;
-    
+
     if (!recipientEmail) {
       // Try to get email from JWT token payload as fallback
       const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
@@ -668,8 +668,8 @@ export class NotificationService implements OnDestroy {
           const toDate = details.usageDateTo ? new Date(details.usageDateTo).toLocaleString() : '';
           const fromTime = details.usageTimeFrom || '';
           const toTime = details.usageTimeTo || '';
-          emailDetails['Usage Date'] = toDate 
-            ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+          emailDetails['Usage Date'] = toDate
+            ? `${fromDate} ${fromTime} - ${toDate} ${toTime}`
             : `${fromDate} ${fromTime}`;
         }
         if (details.usageLocation) {
@@ -817,7 +817,7 @@ export class NotificationService implements OnDestroy {
     } else {
       priorityNum = priority;
     }
-    
+
     switch (priorityNum) {
       case 1:
         return 'High';
@@ -858,7 +858,7 @@ export class NotificationService implements OnDestroy {
     } else {
       statusNum = status;
     }
-    
+
     switch (statusNum) {
       case 0:
       case 1:

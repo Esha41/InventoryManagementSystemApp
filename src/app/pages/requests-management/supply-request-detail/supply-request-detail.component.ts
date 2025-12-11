@@ -28,8 +28,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 // Utils
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
-import { 
-  getLotConditionClass, 
+import {
+  getLotConditionClass,
   getApprovalStatusIcon as getApprovalStatusIconUtil,
   getItemTypeIcon as getItemTypeIconUtil,
   getDepartmentName as getDepartmentNameUtil,
@@ -59,7 +59,7 @@ import { TranslationService } from '@services/translation.service';
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   // Icons
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
@@ -84,19 +84,19 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   issueNo: string = '';
   requestDetail: SupplyRequestDetail | null = null;
   orderData: OrderDto | null = null;
-  
+
   // UI State
   isRequestInfoExpanded: boolean = true;
   isApprovalWorkflowExpanded: boolean = true;
   isOrderItemsExpanded: boolean = true;
-  
+
   // Loading States
   loading: boolean = true;
   loadingSuggestion: boolean = false;
   processingDischarge: boolean = false;
   loadingAllLots: boolean = false;
   loadingManualLot: boolean = false;
-  
+
   // Lot Selection Modal
   isLotModalOpen: boolean = false;
   selectedItem: OrderItem | null = null;
@@ -125,7 +125,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translate: TranslateService,
     private config: ConfigService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.params['id'];
@@ -149,7 +149,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   loadRequestDetail(): void {
     this.loading = true;
-    
+
     this.supplyRequestDetailService.loadRequestDetail(this.orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -157,7 +157,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.orderData = result.orderData;
           this.issueNo = result.issueNo;
           this.requestDetail = result.requestDetail;
-          
+
           // Load approval history
           this.supplyRequestDetailService.loadApprovalHistory(this.orderId, this.requestDetail)
             .pipe(takeUntil(this.destroy$))
@@ -166,7 +166,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
                 this.requestDetail = updatedDetail;
               }
             });
-          
+
           this.loading = false;
           this.loadSuggestionsAutomatically();
         },
@@ -213,7 +213,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
                 this.requestDetail,
                 existingSupply.supplyDetails
               );
-              
+
               if (notFoundCount > 0) {
                 this.config.log(`${notFoundCount} previously selected lots are no longer available`);
               }
@@ -286,7 +286,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     const validation = this.lotSelectionService.validateLotNumber(lotNumber);
     if (!validation.isValid) {
-      const title = validation.error?.includes('invalid') 
+      const title = validation.error?.includes('invalid')
         ? this.translate.instant('toast.error')
         : this.translate.instant('toast.warning');
       this.toastService.warning(validation.error!, title);
@@ -299,7 +299,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ lot, isValid, error }) => {
           if (!isValid) {
-            const title = error?.includes('different') 
+            const title = error?.includes('different')
               ? this.translate.instant('toast.error')
               : this.translate.instant('toast.warning');
             this.toastService.warning(error!, title);
@@ -330,14 +330,14 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   private loadAvailableLotsForQuantity(item: OrderItem): void {
     this.loadingAllLots = true;
     const currentSelections = new Map(this.tempLotSelections);
-    
+
     this.lotSelectionService.loadAvailableLotsForQuantity(item, currentSelections)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
           item.availableLots = result.lots;
           this.loadingAllLots = false;
-          
+
           if (item.availableLots.length > 0) {
             const message = this.translate.instant('supplyRequestDetail.loadedAvailableLots', {
               count: item.availableLots.length,
@@ -407,12 +407,12 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
    */
   hasPartialFulfillment(): boolean {
     if (!this.requestDetail?.items) return false;
-    
-    this.partiallyFulfilledItems = this.requestDetail.items.filter(item => 
-      item.totalSelectedForDischarge > 0 && 
+
+    this.partiallyFulfilledItems = this.requestDetail.items.filter(item =>
+      item.totalSelectedForDischarge > 0 &&
       item.totalSelectedForDischarge < item.approvedQuantity
     );
-    
+
     return this.partiallyFulfilledItems.length > 0;
   }
 
@@ -472,7 +472,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
           }
           this.loadingSuggestion = false;
-          
+
           if (suggestion.canFulfillCompletely) {
             const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
             const title = this.translate.instant('toast.success');

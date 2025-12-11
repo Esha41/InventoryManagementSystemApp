@@ -1054,9 +1054,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   isPartiallyFulfilled(item: SupplyItemDisplay): boolean {
-    return !item.isFullyFulfilled && 
-           item.totalSuppliedQuantity > 0 && 
-           item.totalSuppliedQuantity < item.requestedQuantity;
+    return !item.isFullyFulfilled &&
+      item.totalSuppliedQuantity > 0 &&
+      item.totalSuppliedQuantity < item.requestedQuantity;
   }
 }
 

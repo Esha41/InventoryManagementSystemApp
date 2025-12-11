@@ -6,10 +6,10 @@ import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
-import { 
-  LoginRequest, 
-  LoginResponse, 
-  AuthenticatedUser, 
+import {
+  LoginRequest,
+  LoginResponse,
+  AuthenticatedUser,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ClaimDto,
@@ -43,7 +43,7 @@ export class BackendAuthService {
   }
 
   private userContextService: { clearCache: () => void } | null = null;
-  
+
   setUserContextService(service: { clearCache: () => void }): void {
     this.userContextService = service;
   }
@@ -54,7 +54,7 @@ export class BackendAuthService {
   private getInitialState(): AuthState {
     const token = this.storageService.get<string>('auth_token');
     const user = this.storageService.get<AuthenticatedUser>('current_user');
-    
+
     return {
       isAuthenticated: !!token && !!user,
       user: user,
@@ -70,16 +70,16 @@ export class BackendAuthService {
   private checkAuthStatus(): void {
     try {
       const state = this.getInitialState();
-      
-      
+
+
       if (state.isAuthenticated && state.user && !this.isTokenExpired()) {
         this.currentUserSubject.next(state.user);
         this.isAuthenticatedSubject.next(true);
         this.authStateSubject.next(state);
-        
+
         this.configService.log('User session restored', { userId: state.user.id });
       } else {
-    
+
         if (state.isAuthenticated && this.isTokenExpired()) {
           this.configService.log('Token expired, clearing session');
           this.clearAuthData();
@@ -194,14 +194,14 @@ export class BackendAuthService {
   }
 
   private fetchCompleteUserData(): Observable<AuthenticatedUser | null> {
-    return this.apiService.getWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME).pipe(
+    return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
       map(response => {
         if (!response?.succeeded || !response.data) {
           return null;
         }
 
         const apiData = response.data;
-        
+
         const departmentId = this.tryParseNumber(
           apiData.department?.id ??
           apiData.deparmentId ??
@@ -407,17 +407,17 @@ export class BackendAuthService {
       if (!token || typeof token !== 'string') {
         return null;
       }
-      
+
       const parts = token.split('.');
       if (parts.length !== 3) {
         return null;
       }
-      
+
       const payload = parts[1];
       if (!payload) {
         return null;
       }
-      
+
       const decoded = atob(payload);
       return JSON.parse(decoded);
     } catch (error) {
@@ -448,7 +448,7 @@ export class BackendAuthService {
   logout(): Observable<boolean> {
     this.configService.log('Logging out user');
     this.clearAuthData();
-    
+
     return new Observable(observer => {
       observer.next(true);
       observer.complete();
@@ -516,12 +516,12 @@ export class BackendAuthService {
    */
   private normalizePermission(permission: string): string {
     if (!permission) return '';
-    
+
     let normalized = permission.toLowerCase().trim();
-    
+
     // Remove "Permissions." prefix if present
     normalized = normalized.replace(/^permissions\./, '');
-    
+
     // Handle formats like "Roles.View" or "Roles.Edit"
     // Extract the entity name (Roles, Warehouse, etc.) and action (View, Edit, Create, Delete, Page)
     const parts = normalized.split('.');
@@ -529,10 +529,10 @@ export class BackendAuthService {
       // Get last part (action) and second-to-last or last entity name
       const action = parts[parts.length - 1]; // View, Edit, Create, Delete, Page, etc.
       const entity = parts.length > 2 ? parts[parts.length - 2] : parts[0]; // Roles, Warehouse, etc.
-      
+
       // Convert "Roles" -> "role", "Warehouse" -> "warehouse"
       const entityNormalized = entity.replace(/s$/, '').toLowerCase(); // Remove plural 's'
-      
+
       // Combine: "role" + "view" = "roleview" OR "role" + "page" = "rolepage"
       // Note: page and view are now treated as different permissions
       normalized = entityNormalized + action;
@@ -540,7 +540,7 @@ export class BackendAuthService {
       // Handle simple formats like "role.view"
       normalized = normalized.replace(/\./g, '').replace(/\s+/g, '');
     }
-    
+
     return normalized;
   }
 
@@ -590,14 +590,14 @@ export class BackendAuthService {
     // Check permissions - user.permissions should contain ALL permissions from ALL roles combined
     const hasPermission = user.permissions.some(p => {
       if (!p) return false;
-      
+
       // Check both id and claimType fields
       const permissionId = p.id || '';
       const claimType = p.claimType || '';
-      
+
       // Use the new matching function that handles format differences
       return this.permissionMatches(permissionId, permission) ||
-             this.permissionMatches(claimType, permission);
+        this.permissionMatches(claimType, permission);
     });
 
     // Debug logging for permission checks (only for role-related permissions to avoid spam)
@@ -650,7 +650,7 @@ export class BackendAuthService {
     this.storageService.remove('refresh_token');
     this.storageService.remove('current_user');
     this.storageService.remove('token_expires_at');
-    
+
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
     this.authStateSubject.next({
@@ -668,7 +668,7 @@ export class BackendAuthService {
   isTokenExpired(): boolean {
     const expiresAt = this.storageService.get<Date>('token_expires_at');
     if (!expiresAt) return true;
-    
+
     return new Date(expiresAt) <= new Date();
   }
 
