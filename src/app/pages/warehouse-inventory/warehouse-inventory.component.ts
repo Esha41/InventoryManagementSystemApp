@@ -148,30 +148,28 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     forkJoin({
       depot: this.lookupService.getDepots(),
-      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
-      weapons: this.weaponService.getAll<BaseItemDto>(),
-      explosives: this.explosiveService.getAll<BaseItemDto>()
+      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depot, inventoryDetails, weapons, explosives }) => {
+        next: ({ depot, inventoryDetails }) => {
           // Find the specific depot
           this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
 
-          const weaponDetails: InventoryDetailDto[] = (weapons || [])
-            .filter(weapon => !weapon.isDeleted)
-            .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
+          // DEBUG: Log item types
+          console.log('=== INVENTORY DEBUG ===');
+          console.log('Total items:', inventoryDetails.length);
+          inventoryDetails.forEach((detail, index) => {
+            console.log(`Item ${index + 1}:`, {
+              name: detail.item?.name,
+              itemType: detail.item?.itemType,
+              typeofItemType: typeof detail.item?.itemType
+            });
+          });
 
-
-          const explosiveDetails: InventoryDetailDto[] = (explosives || [])
-            .filter(explosive => !explosive.isDeleted)
-            .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
-
-
-          const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
-
-          const normalizedDetails = allDetails.map(detail => {
+          // Only use real inventory data - no fake static items
+          const normalizedDetails = inventoryDetails.map(detail => {
             if (detail.item) {
               const normalizedType = this.normalizeItemType(detail.item.itemType);
               if (normalizedType !== undefined) {
@@ -187,9 +185,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             return detail;
           });
 
-          const uniqueDetails = this.removeDuplicateItems(normalizedDetails);
-
-          this.inventoryDetails = uniqueDetails;
+          this.inventoryDetails = normalizedDetails;
           this.applyFilters();
           this.loading = false;
         },
@@ -207,7 +203,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   private convertBaseItemToInventoryDetail(item: BaseItemDto, itemType: ItemType): InventoryDetailDto {
     const normalizedItemType = this.normalizeItemType(item.itemType);
     const finalItemType = normalizedItemType !== undefined ? normalizedItemType : itemType;
-    
+
     return {
       id: item.id * -1,
       itemId: item.id,
@@ -279,12 +275,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         const supplierName = this.getSupplierName(detail).toLowerCase();
         const lot = detail.lot?.toString().toLowerCase() || '';
         const batchNo = detail.batchNo?.toLowerCase() || '';
-        
+
         return itemName.includes(searchTerm) ||
-               itemNo.includes(searchTerm) ||
-               supplierName.includes(searchTerm) ||
-               lot.includes(searchTerm) ||
-               batchNo.includes(searchTerm);
+          itemNo.includes(searchTerm) ||
+          supplierName.includes(searchTerm) ||
+          lot.includes(searchTerm) ||
+          batchNo.includes(searchTerm);
       });
     }
 
@@ -325,6 +321,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return itemType;
     }
     if (typeof itemType === 'string') {
+      // Handle enum string names from backend (e.g., "Ammunition", "Weapon", "Explosive")
+      const enumMap: { [key: string]: number } = {
+        'Ammunition': 1,
+        'Weapon': 2,
+        'Explosive': 3,
+        'Accessory': 4
+      };
+
+      if (enumMap[itemType] !== undefined) {
+        return enumMap[itemType];
+      }
+
+      // Try parsing as number (e.g., "1", "2", "3")
       const parsed = parseInt(itemType, 10);
       return isNaN(parsed) ? undefined : parsed;
     }
@@ -575,34 +584,22 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               this.loading = true;
               return forkJoin({
                 depot: this.lookupService.getDepots(),
-                inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
-                weapons: this.weaponService.getAll<BaseItemDto>(),
-                explosives: this.explosiveService.getAll<BaseItemDto>()
+                inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
               });
             })
           );
         })
       )
       .subscribe({
-        next: ({ depot, inventoryDetails, weapons, explosives }) => {
+        next: ({ depot, inventoryDetails }) => {
           // Find the specific depot
           this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = this.currentDepot
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
             : `Depot ${this.depoId}`;
 
-          const weaponDetails: InventoryDetailDto[] = (weapons || [])
-            .filter(weapon => !weapon.isDeleted)
-            .map(weapon => this.convertBaseItemToInventoryDetail(weapon, ItemType.Weapon));
-
-          const explosiveDetails: InventoryDetailDto[] = (explosives || [])
-            .filter(explosive => !explosive.isDeleted)
-            .map(explosive => this.convertBaseItemToInventoryDetail(explosive, ItemType.Explosive));
-
-          const allDetails = [...inventoryDetails, ...weaponDetails, ...explosiveDetails];
-          
-          // Normalize itemType for all details to ensure consistent comparison
-          const normalizedDetails = allDetails.map(detail => {
+          // Only use real inventory data - no fake static items
+          const normalizedDetails = inventoryDetails.map(detail => {
             if (detail.item?.itemType !== undefined) {
               const normalizedType = this.normalizeItemType(detail.item.itemType);
               if (normalizedType !== undefined && detail.item) {
@@ -617,11 +614,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             }
             return detail;
           });
-          
-          const uniqueDetails = this.removeDuplicateItems(normalizedDetails);
 
           // Update inventory details with fresh data
-          this.inventoryDetails = uniqueDetails;
+          this.inventoryDetails = normalizedDetails;
           this.applyFilters();
           this.loading = false;
         },

@@ -36,6 +36,17 @@ export interface Cartridge {
   added?: boolean;
   ammunitionType?: string | number; // Backend returns as string: "Small", "Medium", "Large"
   armNumber?: string;
+
+  // Weapon Specific
+  weaponType?: string;
+  caliber?: string;
+  actionType?: string;
+  barrelLength?: number;
+
+  // Explosive Specific
+  explosiveType?: string;
+  unNumber?: string;
+  netExplosiveQuantity?: number;
 }
 
 @Component({
@@ -47,16 +58,40 @@ export interface Cartridge {
 })
 export class CartridgeListComponent {
   @Input() cartridges: Cartridge[] = [];
+
+  // Filter Options
   @Input() itemTypeOptions: string[] = [];
+
+  // Ammunition Options
   @Input() ammunitionTypeOptions: string[] = [];
   @Input() bulletDiameters: string[] = [];
   @Input() linkedOptions: string[] = [];
   @Input() natureOptions: string[] = [];
+
+  // Weapon Options
+  @Input() weaponTypeOptions: string[] = [];
+  @Input() caliberOptions: string[] = []; // If we have predefined calibers
+
+  // Explosive Options
+  @Input() explosiveTypeOptions: string[] = [];
+
+  // Selected Values
   @Input() selectedItemType: string = '';
+
+  // Ammunition Selections
   @Input() selectedAmmunitionType: string = '';
   @Input() selectedBulletDiameter: string = '';
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
+
+  // Weapon Selections
+  @Input() selectedWeaponType: string = '';
+  @Input() selectedCaliber: string = '';
+
+  // Explosive Selections
+  @Input() selectedExplosiveType: string = '';
+  @Input() selectedUNNumber: string = ''; // Similar to NSN search
+
   @Input() selectedNSN: string = '';
   @Input() canProceed: boolean = false;
   @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
@@ -68,11 +103,21 @@ export class CartridgeListComponent {
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
+
+  // Filter Change Outputs
   @Output() itemTypeChange = new EventEmitter<string>();
+
   @Output() ammunitionTypeChange = new EventEmitter<string>();
   @Output() bulletDiameterChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
+
+  @Output() weaponTypeChange = new EventEmitter<string>();
+  @Output() caliberChange = new EventEmitter<string>();
+
+  @Output() explosiveTypeChange = new EventEmitter<string>();
+  @Output() unNumberChange = new EventEmitter<string>();
+
   @Output() nsnChange = new EventEmitter<string>();
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
   @Output() removeSelection = new EventEmitter<number>();
@@ -87,7 +132,7 @@ export class CartridgeListComponent {
   constructor(
     private orderService: OrderService,
     private config: ConfigService
-  ) {}
+  ) { }
 
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeClick.emit(cartridge);
@@ -113,26 +158,26 @@ export class CartridgeListComponent {
     if (event) {
       event.stopPropagation();
     }
-    
+
     const quantity = this.pendingQuantity > 0 ? this.pendingQuantity : 1;
     this.allowanceErrorMessage = null;
-    
+
     // If "From Allowance" is selected, verify allowance before confirming
     if (this.fromReserve === 'Yes') {
       this.verifyingAllowance = true;
       this.orderService.verifyAllowance(cartridge.id, quantity).subscribe({
         next: (result) => {
           this.verifyingAllowance = false;
-          
+
           if (!result.isValid) {
             // Quantity exceeds available allowance
-            const errorMsg = result.message || 
+            const errorMsg = result.message ||
               `Requested quantity (${quantity}) exceeds available allowance. Available: ${result.availableQuantity}`;
             this.allowanceErrorMessage = errorMsg;
             this.allowanceError.emit(errorMsg);
             return; // Don't confirm, show error
           }
-          
+
           // Quantity is valid, proceed with confirmation
           this.proceedWithConfirmation(cartridge, quantity);
         },
@@ -226,6 +271,26 @@ export class CartridgeListComponent {
     this.onFilterChange();
   }
 
+  onWeaponTypeChange(value: string): void {
+    this.weaponTypeChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onCaliberChange(value: string): void {
+    this.caliberChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onExplosiveTypeChange(value: string): void {
+    this.explosiveTypeChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onUnNumberChange(value: string): void {
+    this.unNumberChange.emit(value);
+    this.onFilterChange();
+  }
+
   onNSNChange(value: string): void {
     this.nsnChange.emit(value);
     this.onFilterChange();
@@ -236,4 +301,3 @@ export class CartridgeListComponent {
     this.searchChange.emit(value);
   }
 }
-

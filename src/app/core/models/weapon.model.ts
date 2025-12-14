@@ -3,12 +3,29 @@
  */
 
 import { BaseItemDto } from './inventory.model';
+import { LookupDto } from './ammunition.model';
 
 /**
  * Weapon DTO (extends BaseItem)
  */
 export interface WeaponDto extends BaseItemDto {
-  // Weapons only have BaseItem properties, no additional fields
+  weaponType: number;
+  caliber: string;
+  actionType: number;
+  barrelLength?: number;
+  barrelLengthUnitId?: number;
+  overallLength?: number;
+  overallLengthUnitId?: number;
+  weight?: number;
+  weightUnitId?: number;
+  capacity?: number;
+
+  // Navigation properties
+  weaponTypeNav?: LookupDto; // Enum mapped to lookup if needed, usually just handled by util
+  actionTypeNav?: LookupDto; // Enum mapped to lookup if needed
+  barrelLengthUnit?: LookupDto;
+  overallLengthUnit?: LookupDto;
+  weightUnit?: LookupDto;
 }
 
 /**
@@ -17,11 +34,23 @@ export interface WeaponDto extends BaseItemDto {
 export interface CreateUpdateWeaponDto {
   name: string;
   itemNo: string;
-  partNo: string;
-  batchNo: string;
-  hccId: number;
+  partNo?: string;
+  batchNo?: string; // Managed separately usually, but included in backend entity
+  hccId?: number;
   nsn?: string;
-  readyForIssue: boolean;
+  readyForIssue?: boolean;
   expiryDate?: Date | string;
-}
 
+  weaponType: number;
+  caliber: string;
+  actionType: number;
+  barrelLength?: number;
+  barrelLengthUnitId?: number;
+  overallLength?: number;
+  overallLengthUnitId?: number;
+  weight?: number;
+  weightUnitId?: number;
+  capacity?: number;
+  price?: number;
+  minimumQuantity?: number;
+}

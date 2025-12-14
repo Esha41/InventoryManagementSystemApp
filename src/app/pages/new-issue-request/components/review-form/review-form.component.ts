@@ -60,8 +60,11 @@ export class ReviewFormComponent {
     if (this.orderPriority.startsWith('newIssueRequest.')) {
       return this.translateService.instant(this.orderPriority);
     }
-    // Otherwise, try to map the old English values to translation keys
+    // Map the actual values to translation keys
     const priorityMap: { [key: string]: string } = {
+      'High': 'newIssueRequest.highPriority',
+      'Normal': 'newIssueRequest.mediumPriority',
+      'Low': 'newIssueRequest.lowPriority',
       'High Priority': 'newIssueRequest.highPriority',
       'Medium Priority': 'newIssueRequest.mediumPriority',
       'Low Priority': 'newIssueRequest.lowPriority'

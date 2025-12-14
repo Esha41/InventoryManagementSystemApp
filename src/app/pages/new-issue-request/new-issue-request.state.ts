@@ -16,6 +16,12 @@ export interface FilterState {
   selectedNature: string;
   selectedNSN: string;
   searchTerm: string;
+
+  // New Filters
+  selectedWeaponType?: string;
+  selectedCaliber?: string;
+  selectedExplosiveType?: string;
+  selectedUNNumber?: string;
 }
 
 export interface FilterOptions {
@@ -24,7 +30,10 @@ export interface FilterOptions {
   bulletDiameters: string[];
   linkedOptions: string[];
   natureOptions: string[];
-  orderPriorities: string[];
+  orderPriorities: DropdownOption<string>[] | string[]; // Allow objects or strings
+
+  weaponTypeOptions?: any[]; // DropdownOption[]
+  explosiveTypeOptions?: any[]; // DropdownOption[]
 }
 
 export interface CartridgeState {
@@ -88,4 +97,3 @@ export interface ReviewFormData {
   orderType: string;
   orderDocument: string;
 }
-

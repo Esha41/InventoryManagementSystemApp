@@ -6,10 +6,12 @@
         <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
         <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
       </div>
-      <app-button *ngIf="canEdit" variant="primary" (click)="navigateToAddAsset()">
+      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()">
         <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
           <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-          <span>{{ 'assetList.addAmmunition' | translate }}</span>
+          <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
+          <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
+          <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
         </span>
       </app-button>
     </div>
@@ -31,9 +33,6 @@
                  }"></div>
               <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
             </div>
-            <div *ngIf="activeTab === 'ammunition'"
-              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-            </div>
           </button>
           <button (click)="switchTab('weapon')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
@@ -48,9 +47,6 @@
                  }"></div>
               <span>{{ 'assetList.tabs.weapon' | translate }}</span>
             </div>
-            <div *ngIf="activeTab === 'weapon'"
-              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-            </div>
           </button>
           <button (click)="switchTab('explosive')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
@@ -64,9 +60,6 @@
                    'bg-[var(--color-brand)]': activeTab !== 'explosive'
                  }"></div>
               <span>{{ 'assetList.tabs.explosive' | translate }}</span>
-            </div>
-            <div *ngIf="activeTab === 'explosive'"
-              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
             </div>
           </button>
         </nav>
@@ -187,58 +180,44 @@
                         class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                     </div>
                   </th>
-                  <th
-                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('partNo')">
-                    <div class="flex items-center gap-2">
-                      {{ 'assetList.table.partNo' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'partNo'" [img]="ArrowUpDown"
-                        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'partNo' && sortDirection === 'asc'" [img]="ArrowUp"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'partNo' && sortDirection === 'desc'" [img]="ArrowDown"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    </div>
+                  <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'assetList.table.partNo' | translate }}
                   </th>
-                  <th
-                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('nsn')">
-                    <div class="flex items-center gap-2">
-                      {{ 'assetList.table.nsn' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'nsn'" [img]="ArrowUpDown"
-                        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'nsn' && sortDirection === 'asc'" [img]="ArrowUp"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'nsn' && sortDirection === 'desc'" [img]="ArrowDown"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    </div>
+                  <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'assetList.table.nsn' | translate }}
+                  </th>
+
+                  <!-- Ammunition Specific Columns -->
+                  <th *ngIf="activeTab === 'ammunition'"
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'assetList.table.caseType' | translate }}
                   </th>
                   <th *ngIf="activeTab === 'ammunition'"
-                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('caseType')">
-                    <div class="flex items-center gap-2">
-                      {{ 'assetList.table.caseType' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'caseType'" [img]="ArrowUpDown"
-                        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'caseType' && sortDirection === 'asc'" [img]="ArrowUp"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'caseType' && sortDirection === 'desc'" [img]="ArrowDown"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    </div>
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'assetList.table.hazardDivision' | translate }}
                   </th>
-                  <th *ngIf="activeTab === 'ammunition'"
-                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                    (click)="sortByColumn('hazardDivision')">
-                    <div class="flex items-center gap-2">
-                      {{ 'assetList.table.hazardDivision' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'hazardDivision'" [img]="ArrowUpDown"
-                        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'hazardDivision' && sortDirection === 'asc'" [img]="ArrowUp"
-                        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'hazardDivision' && sortDirection === 'desc'"
-                        [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                    </div>
+
+                  <!-- Weapon Specific Columns -->
+                  <th *ngIf="activeTab === 'weapon'"
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'addAsset.weaponType' | translate }}
                   </th>
+                  <th *ngIf="activeTab === 'weapon'"
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'addAsset.caliber' | translate }}
+                  </th>
+
+                  <!-- Explosive Specific Columns -->
+                  <th *ngIf="activeTab === 'explosive'"
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'addAsset.explosiveType' | translate }}
+                  </th>
+                  <th *ngIf="activeTab === 'explosive'"
+                    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                    {{ 'addAsset.unNumber' | translate }}
+                  </th>
+
+                  <!-- Common Columns -->
                   <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{
                     'assetList.table.price' | translate }}</th>
                   <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{
@@ -253,7 +232,7 @@
                   <td class="py-4 px-6">
                     <div class="flex items-center justify-center w-16 h-16">
                       <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name"
-                        (error)="onImageError(asset, $event)" (load)="onImageLoad(asset, $event)"
+                        (error)="onImageError(asset, $event)"
                         class="max-w-full max-h-full object-contain rounded border border-[var(--color-border)]">
                       <div *ngIf="!asset.imageUrl"
                         class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
@@ -267,10 +246,25 @@
                   <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
                   <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
                   <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.nsn }}</td>
+
+                  <!-- Ammunition Columns -->
                   <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                     asset.caseType }}</td>
                   <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                     asset.hazardDivision }}</td>
+
+                  <!-- Weapon Columns -->
+                  <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                    asset.weaponType }}</td>
+                  <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caliber
+                    }}</td>
+
+                  <!-- Explosive Columns -->
+                  <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                    asset.explosiveType }}</td>
+                  <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                    asset.unNumber }}</td>
+
                   <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.price ? asset.price : '-' }}</td>
                   <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.minimumQuantity ?
                     asset.minimumQuantity : '-' }}</td>
@@ -282,6 +276,8 @@
                         <lucide-angular [img]="Eye"
                           class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
                       </button>
+
+                      <!-- Permissions should ideally be dynamic or verified for each type, assuming consistent naming -->
                       <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
                         class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
                         [title]="'common.edit' | translate">
@@ -298,7 +294,7 @@
                   </td>
                 </tr>
                 <tr *ngIf="filteredAssets.length === 0 && !loading">
-                  <td [attr.colspan]="activeTab === 'ammunition' ? 10 : 8" class="text-center py-12">
+                  <td class="text-center py-12" colspan="100%">
                     <div class="flex flex-col items-center justify-center">
                       <div class="text-[var(--color-text-muted)] text-lg mb-2">{{ 'assetList.noItems' | translate }}
                       </div>
@@ -357,6 +353,7 @@
           <!-- Content -->
           <div class="px-6 py-6" *ngIf="selectedAsset">
             <div class="grid grid-cols-2 gap-6">
+              <!-- Common Fields -->
               <div>
                 <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
                   'assetList.viewModal.name' | translate }}</label>
@@ -377,54 +374,111 @@
                   'assetList.viewModal.nsn' | translate }}</label>
                 <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn || '-' }}</p>
               </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.bulletDiameter' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter != null ?
-                  (selectedAsset.bulletDiameter + ' ' + getUnitName(selectedAsset.bulletDiameterUnit)) : '-' }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.armNumber' |
-                  translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.armNumber || '-' }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.caseType' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.caseType) }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.propellant' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.propellant) }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.compatibility' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.compatibility) }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.hazardDivision' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.hazardDivision) }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.primer' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.primer || '-' }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.totalWeight' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ?
-                  (selectedAsset.totalWeight + ' g') : '-' }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.isLinked' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ (selectedAsset.isLinked ? 'common.yes' :
-                  'common.no') | translate }}</p>
-              </div>
+
+              <!-- Ammunition Specific -->
+              <ng-container *ngIf="activeTab === 'ammunition'">
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.bulletDiameter' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter != null ?
+                    (selectedAsset.bulletDiameter + ' ' + getUnitName(selectedAsset.bulletDiameterUnit)) : '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.armNumber'
+                    | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.armNumber || '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.caseType' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.caseType) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.propellant' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.propellant) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.compatibility' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.compatibility) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.hazardDivision' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.hazardDivision) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.primer' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.primer || '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.totalWeight' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ?
+                    (selectedAsset.totalWeight + ' g') : '-' }}</p>
+                </div>
+              </ng-container>
+
+              <!-- Weapon Specific -->
+              <ng-container *ngIf="activeTab === 'weapon'">
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.weaponType'
+                    | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getWeaponTypeName(selectedAsset.weaponType) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.caliber' |
+                    translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caliber || '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.actionType'
+                    | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getActionTypeName(selectedAsset.actionType) }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'addAsset.barrelLength' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.barrelLength != null ?
+                    (selectedAsset.barrelLength + ' ' + getUnitName(selectedAsset.barrelLengthUnit)) : '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.capacity' |
+                    translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.capacity || '-' }}</p>
+                </div>
+              </ng-container>
+
+              <!-- Explosive Specific -->
+              <ng-container *ngIf="activeTab === 'explosive'">
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'addAsset.explosiveType' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getExplosiveTypeName(selectedAsset.explosiveType)
+                    }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' |
+                    translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.unNumber || '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'addAsset.netExplosiveQuantity' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.netExplosiveQuantity != null ?
+                    (selectedAsset.netExplosiveQuantity + ' ' + getUnitName(selectedAsset.netExplosiveQuantityUnit)) :
+                    '-' }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.totalWeight' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ?
+                    (selectedAsset.totalWeight + ' g') : '-' }}</p>
+                </div>
+              </ng-container>
+
             </div>
           </div>
 
@@ -498,8 +552,6 @@
                     <input type="text" formControlName="name"
                       class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                       [placeholder]="'assetList.editModal.namePlaceholder' | translate" />
-                    <span *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.nameRequired' | translate }}</span>
                   </div>
 
                   <!-- Item No -->
@@ -508,8 +560,6 @@
                     <input type="text" formControlName="itemNo"
                       class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                       [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate" />
-                    <span *ngIf="editForm.get('itemNo')?.invalid && editForm.get('itemNo')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.itemNoRequired' | translate }}</span>
                   </div>
 
                   <!-- Part No -->
@@ -518,190 +568,126 @@
                     <input type="text" formControlName="partNo"
                       class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                       [placeholder]="'assetList.editModal.partNoPlaceholder' | translate" />
-                    <span *ngIf="editForm.get('partNo')?.invalid && editForm.get('partNo')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.partNoRequired' | translate }}</span>
                   </div>
 
-                  <!-- Bullet Diameter -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter *</label>
-                    <input type="number" formControlName="bulletDiameter"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate" step="0.01" />
-                    <span *ngIf="editForm.get('bulletDiameter')?.invalid && editForm.get('bulletDiameter')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.bulletDiameterRequired' | translate }}</span>
-                  </div>
+                  <!-- Ammunition Specific Fields -->
+                  <ng-container *ngIf="activeTab === 'ammunition'">
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter</label>
+                      <input type="number" formControlName="bulletDiameter"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate" step="0.01" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit</label>
+                      <app-dropdown class="w-full" formControlName="bulletDiameterUnitId" [options]="units"
+                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                        [placeholder]="'assetList.editModal.bulletDiameterUnitPlaceholder' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type</label>
+                      <app-dropdown class="w-full" formControlName="caseTypeId" [options]="caseTypeList"
+                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                        [placeholder]="'assetList.editModal.caseTypePlaceholder' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant</label>
+                      <app-dropdown class="w-full" formControlName="propellantId" [options]="propellantList"
+                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                        [placeholder]="'assetList.editModal.propellantPlaceholder' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division</label>
+                      <app-dropdown class="w-full" formControlName="hazardDivisionId" [options]="hazardDivisionList"
+                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                        [placeholder]="'assetList.editModal.hazardDivisionPlaceholder' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g)</label>
+                      <input type="number" formControlName="totalWeight"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" step="0.01" />
+                    </div>
+                  </ng-container>
 
-                  <!-- Bullet Diameter Unit -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit *</label>
-                    <app-dropdown class="w-full" formControlName="bulletDiameterUnitId" [options]="units"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null"
-                      [error]="!!(editForm.get('bulletDiameterUnitId')?.invalid && editForm.get('bulletDiameterUnitId')?.touched)"
-                      [placeholder]="'assetList.editModal.bulletDiameterUnitPlaceholder' | translate">
-                    </app-dropdown>
-                    <span
-                      *ngIf="editForm.get('bulletDiameterUnitId')?.invalid && editForm.get('bulletDiameterUnitId')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.bulletDiameterUnitRequired' | translate }}</span>
-                  </div>
+                  <!-- Weapon Specific Fields -->
+                  <ng-container *ngIf="activeTab === 'weapon'">
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.weaponType' |
+                        translate }}</label>
+                      <app-dropdown class="w-full" formControlName="weaponType" [options]="weaponTypeOptions"
+                        optionValue="value" optionLabel="label" [translateLabels]="true"
+                        [placeholder]="'addAsset.selectWeaponType' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliber' |
+                        translate }}</label>
+                      <input type="text" formControlName="caliber"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'addAsset.enterCaliber' | translate" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.actionType' |
+                        translate }}</label>
+                      <app-dropdown class="w-full" formControlName="actionType" [options]="actionTypeOptions"
+                        optionValue="value" optionLabel="label" [translateLabels]="true"
+                        [placeholder]="'addAsset.selectActionType' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.barrelLength'
+                        | translate }}</label>
+                      <input type="number" formControlName="barrelLength"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'addAsset.enterBarrelLength' | translate" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.capacity' |
+                        translate }}</label>
+                      <input type="number" formControlName="capacity"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'addAsset.enterCapacity' | translate" />
+                    </div>
+                  </ng-container>
 
-                  <!-- Arm Number -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.armNumber' |
-                      translate }}</label>
-                    <input type="text" formControlName="armNumber"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'addAsset.enterArmNumber' | translate" />
-                  </div>
+                  <!-- Explosive Specific Fields -->
+                  <ng-container *ngIf="activeTab === 'explosive'">
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.explosiveType'
+                        | translate }}</label>
+                      <app-dropdown class="w-full" formControlName="explosiveType" [options]="explosiveTypeOptions"
+                        optionValue="value" optionLabel="label" [translateLabels]="true"
+                        [placeholder]="'addAsset.selectExplosiveType' | translate">
+                      </app-dropdown>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' |
+                        translate }}</label>
+                      <input type="text" formControlName="unNumber"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'addAsset.enterUnNumber' | translate" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                        'addAsset.netExplosiveQuantity' | translate }}</label>
+                      <input type="number" formControlName="netExplosiveQuantity"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'addAsset.enterNetExplosiveQuantity' | translate" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                        'assetList.editModal.totalWeight' | translate }}</label>
+                      <input type="number" formControlName="totalWeight"
+                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                        [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" />
+                    </div>
+                  </ng-container>
 
-                  <!-- Case Type -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type *</label>
-                    <app-dropdown class="w-full" formControlName="caseTypeId" [options]="caseTypeList" optionValue="id"
-                      [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
-                      [error]="!!(editForm.get('caseTypeId')?.invalid && editForm.get('caseTypeId')?.touched)"
-                      [placeholder]="'assetList.editModal.caseTypePlaceholder' | translate">
-                    </app-dropdown>
-                    <span *ngIf="editForm.get('caseTypeId')?.invalid && editForm.get('caseTypeId')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.caseTypeRequired' | translate }}</span>
-                  </div>
-
-                  <!-- Propellant -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant *</label>
-                    <app-dropdown class="w-full" formControlName="propellantId" [options]="propellantList"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null"
-                      [error]="!!(editForm.get('propellantId')?.invalid && editForm.get('propellantId')?.touched)"
-                      [placeholder]="'assetList.editModal.propellantPlaceholder' | translate">
-                    </app-dropdown>
-                    <span *ngIf="editForm.get('propellantId')?.invalid && editForm.get('propellantId')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.propellantRequired' | translate }}</span>
-                  </div>
-
-                  <!-- Compatibility -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Compatibility *</label>
-                    <app-dropdown class="w-full" formControlName="compatibilityId" [options]="compatibilityList"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null"
-                      [error]="!!(editForm.get('compatibilityId')?.invalid && editForm.get('compatibilityId')?.touched)"
-                      [placeholder]="'assetList.editModal.compatibilityPlaceholder' | translate">
-                    </app-dropdown>
-                    <span *ngIf="editForm.get('compatibilityId')?.invalid && editForm.get('compatibilityId')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.compatibilityRequired' | translate }}</span>
-                  </div>
-
-                  <!-- Hazard Division -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division *</label>
-                    <app-dropdown class="w-full" formControlName="hazardDivisionId" [options]="hazardDivisionList"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null"
-                      [error]="!!(editForm.get('hazardDivisionId')?.invalid && editForm.get('hazardDivisionId')?.touched)"
-                      [placeholder]="'assetList.editModal.hazardDivisionPlaceholder' | translate">
-                    </app-dropdown>
-                    <span *ngIf="editForm.get('hazardDivisionId')?.invalid && editForm.get('hazardDivisionId')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.hazardDivisionRequired' | translate }}</span>
-                  </div>
-
-                  <!-- Primer -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primer *</label>
-                    <input type="text" formControlName="primer"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.primerPlaceholder' | translate" />
-                    <span *ngIf="editForm.get('primer')?.invalid && editForm.get('primer')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.primerRequired' | translate }}</span>
-                  </div>
-
-                  <!-- Total Weight -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g) *</label>
-                    <input type="number" formControlName="totalWeight"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" step="0.01" />
-                    <span *ngIf="editForm.get('totalWeight')?.invalid && editForm.get('totalWeight')?.touched"
-                      class="text-xs text-red-600 mt-1">{{ 'assetList.editModal.totalWeightRequired' | translate }}</span>
-                  </div>
-                </div>
-
-                <!-- Optional Fields Section -->
-                <hr class="border-[var(--color-border)]" />
-                <h3 class="text-lg font-semibold text-[var(--color-text)]">Optional Fields</h3>
-
-                <div class="grid grid-cols-2 gap-6">
-                  <!-- NSN -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">NSN</label>
-                    <input type="text" formControlName="nsn"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.nsnOptionalPlaceholder' | translate" />
-                  </div>
-
-                  <!-- Is Linked -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Linked</label>
-                    <app-dropdown class="w-full" formControlName="isLinked" [options]="linkedOptions"
-                      optionLabel="label" optionValue="value" [translateLabels]="true"
-                      [placeholder]="'assetList.editModal.linkedPlaceholder' | translate">
-                    </app-dropdown>
-                  </div>
-
-                  <!-- Nature Option -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Nature</label>
-                    <app-dropdown class="w-full" formControlName="natureOptionId" [options]="natureOptions"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null" [placeholder]="'assetList.editModal.natureOptionPlaceholder' | translate">
-                    </app-dropdown>
-                  </div>
-
-                  <!-- Primary Purpose -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Primary Purpose</label>
-                    <app-dropdown class="w-full" formControlName="primaryPurposId" [options]="primaryPurposes"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null" [placeholder]="'assetList.editModal.primaryPurposePlaceholder' | translate">
-                    </app-dropdown>
-                  </div>
-
-                  <!-- Projectile Color -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Projectile Color</label>
-                    <app-dropdown class="w-full" formControlName="projectileColorId" [options]="projectileColors"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null" [placeholder]="'assetList.editModal.projectileColorPlaceholder' | translate">
-                    </app-dropdown>
-                  </div>
-
-                  <!-- Projectile Material -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Projectile Material</label>
-                    <app-dropdown class="w-full" formControlName="projectailMaterialId" [options]="projectailMaterials"
-                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                      [placeholderValue]="null" [placeholder]="'assetList.editModal.projectileMaterialPlaceholder' | translate">
-                    </app-dropdown>
-                  </div>
-
-                  <!-- Price -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                      'assetList.editModal.price' | translate }}</label>
-                    <input type="number" formControlName="price"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" min="0" />
-                  </div>
-
-                  <!-- Minimum Quantity -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                      'assetList.editModal.minimumQuantity' | translate }}</label>
-                    <input type="number" formControlName="minimumQuantity"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" step="1" min="0" />
-                  </div>
                 </div>
               </div>
             </div>
