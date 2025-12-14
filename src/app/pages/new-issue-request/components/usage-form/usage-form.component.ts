@@ -22,12 +22,12 @@ export class UsageFormComponent {
   constructor(
     public translateService: TranslateService,
     private toastService: ToastService
-  ) {}
-  
+  ) { }
+
   get currentLang(): string {
     return this.translateService.currentLang || 'en';
   }
-  
+
   get isArabic(): boolean {
     return this.currentLang === 'ar';
   }
@@ -49,7 +49,7 @@ export class UsageFormComponent {
   @Input() reserveDetailsByItem: any[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
-  @Input() orderPriorities: string[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
+  @Input() orderPriorities: any[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
   @Input() requesterComments: string = '';
   @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();
@@ -110,9 +110,9 @@ export class UsageFormComponent {
     this.selectedUsePurposeIdChange.emit(value);
     const label = this.resolveUsePurposeLabel(value);
     this.usePurposeChange.emit(label);
-    
+
     this.clearError('usePurpose');
-    
+
     if (this.hasAttemptedSubmit) {
       if (value === null || value === undefined) {
         this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
@@ -124,9 +124,9 @@ export class UsageFormComponent {
 
   onUsageLocationChange(value: string): void {
     this.usageLocationChange.emit(value);
-    
+
     this.clearError('usageLocation');
-    
+
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageLocation = 'newIssueRequest.validation.usageLocationRequired';
@@ -146,9 +146,9 @@ export class UsageFormComponent {
 
   onUsageDateFromChange(value: string): void {
     this.usageDateFromChange.emit(value);
-    
+
     this.clearError('usageDateFrom');
-    
+
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateRequired';
@@ -162,7 +162,7 @@ export class UsageFormComponent {
     // Dropdown will only return valid military time format (HHMM)
     this.usageTimeFromChange.emit(value || '');
     this.clearError('usageTimeFrom');
-    
+
     if (this.hasAttemptedSubmit) {
       if (value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)) {
         this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
@@ -174,9 +174,9 @@ export class UsageFormComponent {
 
   onUsageDateToChange(value: string): void {
     this.usageDateToChange.emit(value);
-    
+
     this.clearError('usageDateTo');
-    
+
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
@@ -190,7 +190,7 @@ export class UsageFormComponent {
     // Dropdown will only return valid military time format (HHMM)
     this.usageTimeToChange.emit(value || '');
     this.clearError('usageTimeTo');
-    
+
     if (this.hasAttemptedSubmit) {
       if (value === null || value === undefined || (typeof value === 'string' && value.trim().length === 0)) {
         this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
@@ -202,9 +202,9 @@ export class UsageFormComponent {
 
   onOrderPriorityChange(value: string): void {
     this.orderPriorityChange.emit(value);
-    
+
     this.clearError('orderPriority');
-    
+
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.orderPriority = 'newIssueRequest.validation.orderPriorityRequired';
@@ -216,9 +216,9 @@ export class UsageFormComponent {
 
   onRequesterCommentsChange(value: string): void {
     this.requesterCommentsChange.emit(value);
-    
+
     this.clearError('requesterComments');
-    
+
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
@@ -248,7 +248,7 @@ export class UsageFormComponent {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translateService.get(['toast.error', 'newIssueRequest.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['newIssueRequest.errors.fileSizeExceeded'] 
+          const errorMessage = translations['newIssueRequest.errors.fileSizeExceeded']
             ? `${translations['newIssueRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
@@ -318,8 +318,8 @@ export class UsageFormComponent {
 
     // Validate usageTimeFrom - explicitly check for null/undefined/empty string (not falsy values)
     // "0000" is a valid military time and should pass validation
-    if (this.usageTimeFrom === null || this.usageTimeFrom === undefined || 
-        (typeof this.usageTimeFrom === 'string' && this.usageTimeFrom.trim().length === 0)) {
+    if (this.usageTimeFrom === null || this.usageTimeFrom === undefined ||
+      (typeof this.usageTimeFrom === 'string' && this.usageTimeFrom.trim().length === 0)) {
       this.formErrors.usageTimeFrom = 'newIssueRequest.validation.usageTimeRequired';
       isValid = false;
     }
@@ -331,8 +331,8 @@ export class UsageFormComponent {
 
     // Validate usageTimeTo - explicitly check for null/undefined/empty string (not falsy values)
     // "0000" is a valid military time and should pass validation
-    if (this.usageTimeTo === null || this.usageTimeTo === undefined || 
-        (typeof this.usageTimeTo === 'string' && this.usageTimeTo.trim().length === 0)) {
+    if (this.usageTimeTo === null || this.usageTimeTo === undefined ||
+      (typeof this.usageTimeTo === 'string' && this.usageTimeTo.trim().length === 0)) {
       this.formErrors.usageTimeTo = 'newIssueRequest.validation.usageTimeRequired';
       isValid = false;
     }

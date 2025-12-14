@@ -3,212 +3,173 @@
     <!-- Header -->
     <div>
       <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate }}</h1>
-  </div>
+    </div>
 
-  <!-- Stepper -->
-  <app-stepper
-    [steps]="steps"
-    [currentStep]="currentStep"
-    (stepChange)="onStepChange($event)">
-  </app-stepper>
+    <!-- Stepper -->
+    <app-stepper [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
+    </app-stepper>
 
-  <div *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
-    {{ orderSubmissionState.orderSubmitError }}
-  </div>
+    <div *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
+      class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
+      {{ orderSubmissionState.orderSubmitError }}
+    </div>
 
-  <!-- Step 0: Allowance Selection -->
-  <div *ngIf="currentStep === 0" class="bg-white rounded-lg p-8 shadow-sm">
-    <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectOrderSource' | translate }}</h2>
+    <!-- Step 0: Allowance Selection -->
+    <div *ngIf="currentStep === 0" class="bg-white rounded-lg p-8 shadow-sm">
+      <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectOrderSource' | translate }}
+      </h2>
 
-    <div class="mb-8">
-      <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' | translate }}</p>
+      <div class="mb-8">
+        <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' |
+          translate }}</p>
 
-      <div class="flex flex-col space-y-4">
-        <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-               [ngClass]="fromReserve === 'Yes' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
-          <input
-            type="radio"
-            name="fromReserve"
-            value="Yes"
-            [(ngModel)]="fromReserve"
-            (ngModelChange)="onFromReserveChange($event)"
-            class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
-          <div class="ml-4">
-            <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' | translate }}</span>
-            <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{ 'newIssueRequest.fromAllowanceDescription' | translate }}</span>
-          </div>
-        </label>
+        <div class="flex flex-col space-y-4">
+          <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+            [ngClass]="fromReserve === 'Yes' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
+            <input type="radio" name="fromReserve" value="Yes" [(ngModel)]="fromReserve"
+              (ngModelChange)="onFromReserveChange($event)"
+              class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
+            <div class="ml-4">
+              <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' |
+                translate }}</span>
+              <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
+                'newIssueRequest.fromAllowanceDescription' | translate }}</span>
+            </div>
+          </label>
 
-        <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-               [ngClass]="fromReserve === 'No' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
-          <input
-            type="radio"
-            name="fromReserve"
-            value="No"
-            [(ngModel)]="fromReserve"
-            (ngModelChange)="onFromReserveChange($event)"
-            class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
-          <div class="ml-4">
-            <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllAmmunition' | translate }}</span>
-            <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{ 'newIssueRequest.fromAllAmmunitionDescription' | translate }}</span>
-          </div>
-        </label>
+          <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
+            [ngClass]="fromReserve === 'No' ? 'border-[#D0B888] bg-[#D0B888]/5' : 'border-[var(--color-border)] hover:border-[#D0B888]/50'">
+            <input type="radio" name="fromReserve" value="No" [(ngModel)]="fromReserve"
+              (ngModelChange)="onFromReserveChange($event)"
+              class="w-5 h-5 mt-0.5 text-[#D0B888] border-gray-300 focus:ring-[#D0B888] focus:ring-2">
+            <div class="ml-4">
+              <span class="block text-base font-semibold text-[var(--color-text)]">{{
+                'newIssueRequest.fromAllAmmunition' | translate }}</span>
+              <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
+                'newIssueRequest.fromAllAmmunitionDescription' | translate }}</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <app-button variant="primary" (clicked)="onNext()">
+          {{ 'newIssueRequest.next' | translate }}
+        </app-button>
       </div>
     </div>
 
-    <div class="flex justify-end">
-      <app-button
-        variant="primary"
-        (clicked)="onNext()">
-        {{ 'newIssueRequest.next' | translate }}
-      </app-button>
-    </div>
-  </div>
+    <!-- Step 1: Selection -->
+    <div *ngIf="currentStep === 1">
+      <ng-container
+        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError; else cartridgeLoadingTemplate">
+        <!-- Cartridge Details View -->
+        <app-cartridge-details *ngIf="cartridgeState.showCartridgeDetails"
+          [cartridge]="cartridgeState.selectedCartridgeForView" (select)="onSelectCartridge()"
+          (cancel)="onCloseCartridgeDetails()">
+        </app-cartridge-details>
 
-  <!-- Step 1: Selection -->
-  <div *ngIf="currentStep === 1">
-    <ng-container *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError; else cartridgeLoadingTemplate">
-      <!-- Cartridge Details View -->
-      <app-cartridge-details
-        *ngIf="cartridgeState.showCartridgeDetails"
-        [cartridge]="cartridgeState.selectedCartridgeForView"
-        (select)="onSelectCartridge()"
-        (cancel)="onCloseCartridgeDetails()">
-      </app-cartridge-details>
+        <!-- Cartridge List View -->
+        <app-cartridge-list *ngIf="!cartridgeState.showCartridgeDetails"
+          [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="filterOptions.itemTypeOptions"
+          [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions"
+          [bulletDiameters]="filterOptions.bulletDiameters" [linkedOptions]="filterOptions.linkedOptions"
+          [natureOptions]="filterOptions.natureOptions" [weaponTypeOptions]="filterOptions.weaponTypeOptions || []"
+          [explosiveTypeOptions]="filterOptions.explosiveTypeOptions || []"
+          [selectedItemType]="filterState.selectedItemType"
+          [selectedAmmunitionType]="filterState.selectedAmmunitionType"
+          [selectedBulletDiameter]="filterState.selectedBulletDiameter" [selectedLinked]="filterState.selectedLinked"
+          [selectedNature]="filterState.selectedNature" [selectedWeaponType]="filterState.selectedWeaponType || ''"
+          [selectedCaliber]="filterState.selectedCaliber || ''"
+          [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
+          [selectedUNNumber]="filterState.selectedUNNumber || ''" [selectedNSN]="filterState.selectedNSN"
+          [canProceed]="canProceedFromSelection" [fromReserve]="fromReserve" (cartridgeClick)="onCartridgeClick($event)"
+          (allowanceError)="onAllowanceError($event)" (addSelection)="onCartridgeAdded($event)"
+          (filterChange)="filterCartridges()" (clearFilters)="onClearFilters()" (next)="onNext()"
+          (previous)="onPrevious()" (searchChange)="onSearchChange($event)" (itemTypeChange)="onItemTypeChange($event)"
+          (ammunitionTypeChange)="onAmmunitionTypeChange($event)"
+          (bulletDiameterChange)="onBulletDiameterChange($event)" (linkedChange)="onLinkedChange($event)"
+          (natureChange)="onNatureChange($event)" (weaponTypeChange)="onWeaponTypeChange($event)"
+          (caliberChange)="onCaliberChange($event)" (explosiveTypeChange)="onExplosiveTypeChange($event)"
+          (unNumberChange)="onUnNumberChange($event)" (nsnChange)="onNSNChange($event)"
+          (removeSelection)="onRemoveSelectedCartridge($event)">
+        </app-cartridge-list>
 
-      <!-- Cartridge List View -->
-      <app-cartridge-list
-        *ngIf="!cartridgeState.showCartridgeDetails"
-        [cartridges]="cartridgeState.filteredCartridges"
-        [itemTypeOptions]="filterOptions.itemTypeOptions"
-        [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions"
-        [bulletDiameters]="filterOptions.bulletDiameters"
-        [linkedOptions]="filterOptions.linkedOptions"
-        [natureOptions]="filterOptions.natureOptions"
-        [selectedItemType]="filterState.selectedItemType"
-        [selectedAmmunitionType]="filterState.selectedAmmunitionType"
-        [selectedBulletDiameter]="filterState.selectedBulletDiameter"
-        [selectedLinked]="filterState.selectedLinked"
-        [selectedNature]="filterState.selectedNature"
-        [selectedNSN]="filterState.selectedNSN"
-        [canProceed]="canProceedFromSelection"
-        [fromReserve]="fromReserve"
-        (cartridgeClick)="onCartridgeClick($event)"
-        (allowanceError)="onAllowanceError($event)"
-        (addSelection)="onCartridgeAdded($event)"
-        (filterChange)="filterCartridges()"
-        (clearFilters)="onClearFilters()"
-        (next)="onNext()"
-        (previous)="onPrevious()"
-        (searchChange)="onSearchChange($event)"
-        (itemTypeChange)="onItemTypeChange($event)"
-        (ammunitionTypeChange)="onAmmunitionTypeChange($event)"
-        (bulletDiameterChange)="onBulletDiameterChange($event)"
-        (linkedChange)="onLinkedChange($event)"
-        (natureChange)="onNatureChange($event)"
-        (nsnChange)="onNSNChange($event)"
-        (removeSelection)="onRemoveSelectedCartridge($event)">
-      </app-cartridge-list>
+        <!-- Allowance Error Banner -->
+        <div *ngIf="allowanceError" class="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
+          {{ allowanceError }}
+        </div>
+      </ng-container>
 
-      <!-- Allowance Error Banner -->
-      <div *ngIf="allowanceError" class="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4">
-        {{ allowanceError }}
-      </div>
-    </ng-container>
-
-    <ng-template #cartridgeLoadingTemplate>
-      <div *ngIf="cartridgeState.loadingCartridges" class="bg-white rounded-lg p-6 text-sm text-gray-500 border border-dashed border-gray-300">
-        {{ 'common.loading' | translate }}...
-      </div>
-      <div *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError" class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 flex items-center justify-between">
-        <span>{{ cartridgeState.cartridgeError }}</span>
-        <button type="button" class="px-3 py-1 border border-red-300 rounded hover:bg-red-100" (click)="retryLoadCartridges()">
-          {{ 'common.retry' | translate }}
-        </button>
-      </div>
-    </ng-template>
-  </div>
-
-  <!-- Step 2: Usage -->
-  <app-usage-form
-    *ngIf="currentStep === 2"
-    [fromReserve]="fromReserve"
-    [usePurpose]="usageFormData.usePurpose"
-    [selectedUsePurposeId]="requestPurposeState.selectedRequestPurposeId"
-    [usePurposeOptions]="requestPurposeState.requestPurposeOptions"
-    [usageLocation]="usageFormData.usageLocation"
-    [numberOfOfficers]="usageFormData.numberOfOfficers"
-    [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
-    [usageDateFrom]="usageFormData.usageDateFrom"
-    [usageTimeFrom]="usageFormData.usageTimeFrom"
-    [usageDateTo]="usageFormData.usageDateTo"
-    [usageTimeTo]="usageFormData.usageTimeTo"
-    [orderPriority]="usageFormData.orderPriority"
-    [orderPriorities]="filterOptions.orderPriorities"
-    [requesterComments]="reviewFormData.requesterComments"
-    [selectedFiles]="usageFormFiles"
-    [totalReserve]="selectedTotalReserve"
-    [availableReserve]="selectedAvailableReserve"
-    [orderedQuantity]="selectedOrderedQuantity"
-    [usedQuantity]="selectedUsedQuantity"
-    [reserveDetailsByItem]="selectedItemsReserveDetails"
-    [selectedCartridges]="selectedCartridges"
-    (removeCartridge)="onRemoveSelectedCartridge($event)"
-    (usePurposeChange)="usageFormData.usePurpose = $event"
-    (selectedUsePurposeIdChange)="onUsePurposeIdChange($event)"
-    (usageLocationChange)="usageFormData.usageLocation = $event"
-    (numberOfOfficersChange)="usageFormData.numberOfOfficers = $event"
-    (numberOfOtherRanksChange)="usageFormData.numberOfOtherRanks = $event"
-    (usageDateFromChange)="usageFormData.usageDateFrom = $event"
-    (usageTimeFromChange)="usageFormData.usageTimeFrom = $event"
-    (usageDateToChange)="usageFormData.usageDateTo = $event"
-    (usageTimeToChange)="usageFormData.usageTimeTo = $event"
-    (orderPriorityChange)="usageFormData.orderPriority = $event"
-    (requesterCommentsChange)="reviewFormData.requesterComments = $event"
-    (filesChange)="usageFormFiles = $event"
-    (previous)="onPrevious()"
-    (next)="onNext()">
-  </app-usage-form>
-
-  <!-- Step 3: Review -->
-  <app-review-form
-    *ngIf="currentStep === 3"
-    [requesterName]="currentRequesterName"
-    [requesterComments]="reviewFormData.requesterComments"
-    [orderType]="reviewFormData.orderType"
-    [orderPriority]="usageFormData.orderPriority"
-    [fromReserve]="fromReserve"
-    [usePurpose]="usageFormData.usePurpose"
-    [usageLocation]="usageFormData.usageLocation"
-    [numberOfOfficers]="usageFormData.numberOfOfficers"
-    [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
-    [usageDateFrom]="usageFormData.usageDateFrom"
-    [usageTimeFrom]="usageFormData.usageTimeFrom"
-    [usageDateTo]="usageFormData.usageDateTo"
-    [usageTimeTo]="usageFormData.usageTimeTo"
-    [selectedCartridges]="selectedCartridges"
-    [files]="usageFormFiles"
-    (previous)="onPrevious()"
-    (next)="onNext()">
-  </app-review-form>
-
-  <!-- Step 4: Send -->
-  <div *ngIf="currentStep === 4" class="bg-[#F5F5F5] rounded-lg py-24 px-12 text-center">
-    <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderSentSuccessfully' | translate }}</h2>
-
-    <div class="space-y-2 text-sm text-[var(--color-text)] mb-8">
-      <div *ngIf="orderSubmissionState.orderNumber">
-        <span class="font-semibold">{{ 'newIssueRequest.orderNumber' | translate }}:</span>
-        <span>{{ orderSubmissionState.orderNumber }}</span>
-      </div>
+      <ng-template #cartridgeLoadingTemplate>
+        <div *ngIf="cartridgeState.loadingCartridges"
+          class="bg-white rounded-lg p-6 text-sm text-gray-500 border border-dashed border-gray-300">
+          {{ 'common.loading' | translate }}...
+        </div>
+        <div *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
+          class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 flex items-center justify-between">
+          <span>{{ cartridgeState.cartridgeError }}</span>
+          <button type="button" class="px-3 py-1 border border-red-300 rounded hover:bg-red-100"
+            (click)="retryLoadCartridges()">
+            {{ 'common.retry' | translate }}
+          </button>
+        </div>
+      </ng-template>
     </div>
 
-    <button
-      class="px-8 py-3 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-      (click)="onTrackOrder()"
-      [disabled]="orderSubmissionState.createdOrderId === null">
-      {{ 'newIssueRequest.trackOrder' | translate }}
-    </button>
-  </div>
+    <!-- Step 2: Usage -->
+    <app-usage-form *ngIf="currentStep === 2" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
+      [selectedUsePurposeId]="requestPurposeState.selectedRequestPurposeId"
+      [usePurposeOptions]="requestPurposeState.requestPurposeOptions" [usageLocation]="usageFormData.usageLocation"
+      [numberOfOfficers]="usageFormData.numberOfOfficers" [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
+      [usageDateFrom]="usageFormData.usageDateFrom" [usageTimeFrom]="usageFormData.usageTimeFrom"
+      [usageDateTo]="usageFormData.usageDateTo" [usageTimeTo]="usageFormData.usageTimeTo"
+      [orderPriority]="usageFormData.orderPriority" [orderPriorities]="filterOptions.orderPriorities"
+      [requesterComments]="reviewFormData.requesterComments" [selectedFiles]="usageFormFiles"
+      [totalReserve]="selectedTotalReserve" [availableReserve]="selectedAvailableReserve"
+      [orderedQuantity]="selectedOrderedQuantity" [usedQuantity]="selectedUsedQuantity"
+      [reserveDetailsByItem]="selectedItemsReserveDetails" [selectedCartridges]="selectedCartridges"
+      (removeCartridge)="onRemoveSelectedCartridge($event)" (usePurposeChange)="usageFormData.usePurpose = $event"
+      (selectedUsePurposeIdChange)="onUsePurposeIdChange($event)"
+      (usageLocationChange)="usageFormData.usageLocation = $event"
+      (numberOfOfficersChange)="usageFormData.numberOfOfficers = $event"
+      (numberOfOtherRanksChange)="usageFormData.numberOfOtherRanks = $event"
+      (usageDateFromChange)="usageFormData.usageDateFrom = $event"
+      (usageTimeFromChange)="usageFormData.usageTimeFrom = $event"
+      (usageDateToChange)="usageFormData.usageDateTo = $event" (usageTimeToChange)="usageFormData.usageTimeTo = $event"
+      (orderPriorityChange)="usageFormData.orderPriority = $event"
+      (requesterCommentsChange)="reviewFormData.requesterComments = $event" (filesChange)="usageFormFiles = $event"
+      (previous)="onPrevious()" (next)="onNext()">
+    </app-usage-form>
+
+    <!-- Step 3: Review -->
+    <app-review-form *ngIf="currentStep === 3" [requesterName]="currentRequesterName"
+      [requesterComments]="reviewFormData.requesterComments" [orderType]="reviewFormData.orderType"
+      [orderPriority]="usageFormData.orderPriority" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
+      [usageLocation]="usageFormData.usageLocation" [numberOfOfficers]="usageFormData.numberOfOfficers"
+      [numberOfOtherRanks]="usageFormData.numberOfOtherRanks" [usageDateFrom]="usageFormData.usageDateFrom"
+      [usageTimeFrom]="usageFormData.usageTimeFrom" [usageDateTo]="usageFormData.usageDateTo"
+      [usageTimeTo]="usageFormData.usageTimeTo" [selectedCartridges]="selectedCartridges" [files]="usageFormFiles"
+      (previous)="onPrevious()" (next)="onNext()">
+    </app-review-form>
+
+    <!-- Step 4: Send -->
+    <div *ngIf="currentStep === 4" class="bg-[#F5F5F5] rounded-lg py-24 px-12 text-center">
+      <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderSentSuccessfully' |
+        translate }}</h2>
+
+      <div class="space-y-2 text-sm text-[var(--color-text)] mb-8">
+        <div *ngIf="orderSubmissionState.orderNumber">
+          <span class="font-semibold">{{ 'newIssueRequest.orderNumber' | translate }}:</span>
+          <span>{{ orderSubmissionState.orderNumber }}</span>
+        </div>
+      </div>
+
+      <button
+        class="px-8 py-3 bg-[#D0B888] text-white text-sm font-medium rounded-lg hover:bg-[#BEA06E] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        (click)="onTrackOrder()" [disabled]="orderSubmissionState.createdOrderId === null">
+        {{ 'newIssueRequest.trackOrder' | translate }}
+      </button>
+    </div>
   </div>
 </div>

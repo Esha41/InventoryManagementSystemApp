@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { AmmunitionService } from './ammunition.service';
+import { WeaponService } from './weapon.service';
+import { ExplosiveService } from './explosive.service';
 import { ApiService } from './api.service';
 import { CartridgeMapperService } from './cartridge-mapper.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -36,10 +38,12 @@ export interface ReserveDetailsResult {
 export class CartridgeDataService {
   constructor(
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private apiService: ApiService,
     private mapperService: CartridgeMapperService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   loadAllAmmunition(): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
@@ -56,7 +60,45 @@ export class CartridgeDataService {
     );
   }
 
+  loadAllWeapons(): Observable<CartridgeLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
+    return this.weaponService.getAll<any>().pipe(
+      map((items) => ({
+        cartridges: this.mapperService.mapWeaponArrayToCartridges(items || [], currentLang)
+      })),
+      catchError(() => {
+        return throwError(() => ({
+          cartridges: [],
+          error: 'Failed to load weapon catalog. Please try again.'
+        }));
+      })
+    );
+  }
+
+  loadAllExplosives(): Observable<CartridgeLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
+    return this.explosiveService.getAll<any>().pipe(
+      map((items) => ({
+        cartridges: this.mapperService.mapExplosiveArrayToCartridges(items || [], currentLang)
+      })),
+      catchError(() => {
+        return throwError(() => ({
+          cartridges: [],
+          error: 'Failed to load explosive catalog. Please try again.'
+        }));
+      })
+    );
+  }
+
+  // Allowance Methods
+  // Note: Allowance API returns generic items. We filter by ID locally after fetching respective catalog.
+
   loadAllowanceItems(departmentId: number): Observable<CartridgeLoadResult> {
+    // Default to ammunition for backward compatibility or when context is ambiguous
+    return this.loadAllowanceAmmunition(departmentId);
+  }
+
+  private loadAllowanceGeneric(departmentId: number, fetchDetailsFn: (ids: number[]) => Observable<CartridgeLoadResult>): Observable<CartridgeLoadResult> {
     const currentYear = new Date().getFullYear();
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, currentYear);
 
@@ -71,9 +113,8 @@ export class CartridgeDataService {
           });
         }
 
-        // Extract item IDs and fetch full ammunition details
         const itemIds = allowanceItems.map((item: any) => item.itemId);
-        return this.fetchAmmunitionDetails(itemIds);
+        return fetchDetailsFn(itemIds);
       }),
       catchError(() => {
         return throwError(() => ({
@@ -83,6 +124,19 @@ export class CartridgeDataService {
       })
     );
   }
+
+  loadAllowanceAmmunition(departmentId: number): Observable<CartridgeLoadResult> {
+    return this.loadAllowanceGeneric(departmentId, (ids) => this.fetchAmmunitionDetails(ids));
+  }
+
+  loadAllowanceWeapons(departmentId: number): Observable<CartridgeLoadResult> {
+    return this.loadAllowanceGeneric(departmentId, (ids) => this.fetchWeaponDetails(ids));
+  }
+
+  loadAllowanceExplosives(departmentId: number): Observable<CartridgeLoadResult> {
+    return this.loadAllowanceGeneric(departmentId, (ids) => this.fetchExplosiveDetails(ids));
+  }
+
 
   fetchAmmunitionDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
     return this.ammunitionService.getAll<any>().pipe(
@@ -99,6 +153,42 @@ export class CartridgeDataService {
         return throwError(() => ({
           cartridges: [],
           error: 'Failed to load ammunition details. Please try again.'
+        }));
+      })
+    );
+  }
+
+  fetchWeaponDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
+    return this.weaponService.getAll<any>().pipe(
+      map((allWeapons) => {
+        const allowanceWeapons = allWeapons.filter((w: any) => itemIds.includes(w.id));
+        const currentLang = getCurrentLang(this.translateService);
+        return {
+          cartridges: this.mapperService.mapWeaponArrayToCartridges(allowanceWeapons, currentLang)
+        };
+      }),
+      catchError(() => {
+        return throwError(() => ({
+          cartridges: [],
+          error: 'Failed to load weapon details. Please try again.'
+        }));
+      })
+    );
+  }
+
+  fetchExplosiveDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
+    return this.explosiveService.getAll<any>().pipe(
+      map((allExplosives) => {
+        const allowanceExplosives = allExplosives.filter((e: any) => itemIds.includes(e.id));
+        const currentLang = getCurrentLang(this.translateService);
+        return {
+          cartridges: this.mapperService.mapExplosiveArrayToCartridges(allowanceExplosives, currentLang)
+        };
+      }),
+      catchError(() => {
+        return throwError(() => ({
+          cartridges: [],
+          error: 'Failed to load explosive details. Please try again.'
         }));
       })
     );
@@ -171,4 +261,3 @@ export class CartridgeDataService {
     };
   }
 }
-

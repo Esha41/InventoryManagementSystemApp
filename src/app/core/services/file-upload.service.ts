@@ -17,7 +17,9 @@ export enum FileEntityType {
   Workflow = 3,
   WorkflowApproval = 4,
   Supply = 5,
-  
+  Return = 6,
+  Weapon = 7,
+  Explosive = 8
 }
 
 /**
@@ -44,7 +46,7 @@ export class FileUploadService {
   constructor(
     private apiService: ApiService,
     private config: ConfigService
-  ) {}
+  ) { }
 
   /**
    * Upload a single file and link it to an entity
