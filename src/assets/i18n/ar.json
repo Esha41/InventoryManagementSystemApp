@@ -772,6 +772,8 @@
     "minimumQuantity": "الحد الأدنى للكمية",
     "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
     "enterAmmunitionName": "أدخل اسم المادة",
+    "enterWeaponName": "أدخل اسم السلاح",
+    "enterExplosiveName": "أدخل اسم المتفجر",
     "enterItemNumber": "أدخل رقم مادة الفريد (مثل: AMM-001)",
     "enterPartNumber": "أدخل رقم القطعة",
     "enterArmNumber": "أدخل رقم السلاح",
@@ -957,7 +959,11 @@
       "compatibility": "التوافق",
       "hazardDivision": "قسم المخاطر",
       "primer": "الصاعق",
-      "totalWeight": "الوزن الإجمالي"
+      "totalWeight": "الوزن الإجمالي",
+      "commonFields": "الحقول المشتركة",
+      "batchNo": "رقم الدفعة",
+      "expiryDate": "تاريخ الانتهاء",
+      "readyForIssue": "جاهز للإصدار"
     },
     "editModal": {
       "title": "تعديل المادة",
@@ -965,12 +971,25 @@
       "namePlaceholder": "أدخل الاسم",
       "itemNoPlaceholder": "أدخل رقم المادة",
       "partNoPlaceholder": "أدخل رقم القطعة",
+      "nsnPlaceholder": "أدخل NSN",
+      "pricePlaceholder": "أدخل السعر",
+      "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية",
       "bulletDiameterPlaceholder": "أدخل قطر الرصاصة",
       "bulletDiameterUnitPlaceholder": "اختر الوحدة",
       "caseTypePlaceholder": "اختر نوع العلبة",
       "propellantPlaceholder": "اختر المادة الدافعة",
       "hazardDivisionPlaceholder": "اختر قسم المخاطر",
       "totalWeightPlaceholder": "أدخل الوزن الإجمالي",
+      "totalWeightUnitPlaceholder": "اختر وحدة الوزن",
+      "barrelLengthPlaceholder": "أدخل طول السبطانة",
+      "barrelLengthUnitPlaceholder": "اختر وحدة طول السبطانة",
+      "overallLengthPlaceholder": "أدخل الطول الإجمالي",
+      "overallLengthUnitPlaceholder": "اختر وحدة الطول الإجمالي",
+      "weightPlaceholder": "أدخل الوزن",
+      "weightUnitPlaceholder": "اختر وحدة الوزن",
+      "capacityPlaceholder": "أدخل السعة",
+      "netExplosiveQuantityPlaceholder": "أدخل كمية المتفجرات الصافية",
+      "netExplosiveQuantityUnitPlaceholder": "اختر وحدة كمية المتفجرات الصافية",
       "notLinked": "غير مربوط",
       "linked": "مربوط"
     },
@@ -1762,7 +1781,8 @@
       "totalWeight": "الوزن الكلي",
       "isLinked": "مرتبط",
       "readyForIssue": "جاهز للإصدار",
-      "expiryDate": "تاريخ الانتهاء"
+      "expiryDate": "تاريخ الانتهاء",
+      "commonFields": "الحقول المشتركة"
     },
     "editModal": {
       "title": "تعديل الذخيرة",

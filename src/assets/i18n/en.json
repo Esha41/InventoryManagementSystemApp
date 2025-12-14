@@ -778,6 +778,8 @@
     "minimumQuantity": "Minimum Quantity",
     "minimumQuantityPlaceholder": "Enter minimum quantity (optional)",
     "enterAmmunitionName": "Enter ammunition name",
+    "enterWeaponName": "Enter weapon name",
+    "enterExplosiveName": "Enter explosive name",
     "enterItemNumber": "Enter unique item number (e.g., AMM-001)",
     "enterPartNumber": "Enter part number",
     "enterArmNumber": "Enter arm number",
@@ -963,7 +965,11 @@
       "compatibility": "Compatibility",
       "hazardDivision": "Hazard Division",
       "primer": "Primer",
-      "totalWeight": "Total Weight"
+      "totalWeight": "Total Weight",
+      "commonFields": "Common Fields",
+      "batchNo": "Batch No",
+      "expiryDate": "Expiry Date",
+      "readyForIssue": "Ready For Issue"
     },
     "editModal": {
       "title": "Edit Asset",
@@ -971,12 +977,25 @@
       "namePlaceholder": "Enter name",
       "itemNoPlaceholder": "Enter item number",
       "partNoPlaceholder": "Enter part number",
+      "nsnPlaceholder": "Enter NSN",
+      "pricePlaceholder": "Enter price",
+      "minimumQuantityPlaceholder": "Enter minimum quantity",
       "bulletDiameterPlaceholder": "Enter bullet diameter",
       "bulletDiameterUnitPlaceholder": "Select unit",
       "caseTypePlaceholder": "Select case type",
       "propellantPlaceholder": "Select propellant",
       "hazardDivisionPlaceholder": "Select hazard division",
       "totalWeightPlaceholder": "Enter total weight",
+      "totalWeightUnitPlaceholder": "Select weight unit",
+      "barrelLengthPlaceholder": "Enter barrel length",
+      "barrelLengthUnitPlaceholder": "Select barrel length unit",
+      "overallLengthPlaceholder": "Enter overall length",
+      "overallLengthUnitPlaceholder": "Select overall length unit",
+      "weightPlaceholder": "Enter weight",
+      "weightUnitPlaceholder": "Select weight unit",
+      "capacityPlaceholder": "Enter capacity",
+      "netExplosiveQuantityPlaceholder": "Enter net explosive quantity",
+      "netExplosiveQuantityUnitPlaceholder": "Select net explosive quantity unit",
       "notLinked": "Not Linked",
       "linked": "Linked"
     },
@@ -1772,7 +1791,8 @@
       "totalWeight": "Total Weight",
       "isLinked": "Is Linked",
       "readyForIssue": "Ready For Issue",
-      "expiryDate": "Expiry Date"
+      "expiryDate": "Expiry Date",
+      "commonFields": "Common Fields"
     },
     "editModal": {
       "title": "Edit Ammunition",
