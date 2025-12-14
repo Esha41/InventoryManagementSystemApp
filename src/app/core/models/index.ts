@@ -24,3 +24,4 @@ export * from './workflow-approval.model';
 export * from './order-report.model';
 export * from './dashboard.model';
 export * from './inventory-dashboard.model';
+export * from './asset-list.model';

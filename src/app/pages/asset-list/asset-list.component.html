@@ -87,7 +87,7 @@
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
               </div>
-              <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
+              <input type="text" [(ngModel)]="filterState.searchTerm" (ngModelChange)="onFilterChange()"
                 [placeholder]="'assetList.searchPlaceholder' | translate"
                 class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
             </div>
@@ -98,7 +98,7 @@
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.caseType' | translate }}
             </label>
-            <app-dropdown class="w-full" [(ngModel)]="selectedCaseType" (selectionChange)="onFilterChange()"
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCaseType" (selectionChange)="onFilterChange()"
               [options]="caseTypeFilterOptions" optionLabel="label" optionValue="value" [placeholderSelectable]="false"
               placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
             </app-dropdown>
@@ -109,7 +109,7 @@
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.hazardDivision' | translate }}
             </label>
-            <app-dropdown class="w-full" [(ngModel)]="selectedHazardDivision" (selectionChange)="onFilterChange()"
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedHazardDivision" (selectionChange)="onFilterChange()"
               [options]="hazardDivisionFilterOptions" optionLabel="label" optionValue="value"
               [placeholderSelectable]="false" placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
             </app-dropdown>
@@ -120,7 +120,7 @@
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.compatibility' | translate }}
             </label>
-            <app-dropdown class="w-full" [(ngModel)]="selectedCompatibility" (selectionChange)="onFilterChange()"
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCompatibility" (selectionChange)="onFilterChange()"
               [options]="compatibilityFilterOptions" optionLabel="label" optionValue="value"
               [placeholderSelectable]="false" placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
             </app-dropdown>
@@ -159,11 +159,11 @@
                     (click)="sortByColumn('name')">
                     <div class="flex items-center gap-2">
                       {{ 'assetList.table.name' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'name'" [img]="ArrowUpDown"
+                      <lucide-angular *ngIf="sortState.column !== 'name'" [img]="ArrowUpDown"
                         class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'name' && sortDirection === 'asc'" [img]="ArrowUp"
+                      <lucide-angular *ngIf="sortState.column === 'name' && sortState.direction === 'asc'" [img]="ArrowUp"
                         class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'name' && sortDirection === 'desc'" [img]="ArrowDown"
+                      <lucide-angular *ngIf="sortState.column === 'name' && sortState.direction === 'desc'" [img]="ArrowDown"
                         class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                     </div>
                   </th>
@@ -172,11 +172,11 @@
                     (click)="sortByColumn('itemNo')">
                     <div class="flex items-center gap-2">
                       {{ 'assetList.table.itemNo' | translate }}
-                      <lucide-angular *ngIf="sortColumn !== 'itemNo'" [img]="ArrowUpDown"
+                      <lucide-angular *ngIf="sortState.column !== 'itemNo'" [img]="ArrowUpDown"
                         class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'itemNo' && sortDirection === 'asc'" [img]="ArrowUp"
+                      <lucide-angular *ngIf="sortState.column === 'itemNo' && sortState.direction === 'asc'" [img]="ArrowUp"
                         class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                      <lucide-angular *ngIf="sortColumn === 'itemNo' && sortDirection === 'desc'" [img]="ArrowDown"
+                      <lucide-angular *ngIf="sortState.column === 'itemNo' && sortState.direction === 'desc'" [img]="ArrowDown"
                         class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                     </div>
                   </th>
@@ -232,7 +232,7 @@
                   <td class="py-4 px-6">
                     <div class="flex items-center justify-center w-16 h-16">
                       <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name"
-                        (error)="onImageError(asset, $event)"
+                        (error)="onImageError(asset)"
                         class="max-w-full max-h-full object-contain rounded border border-[var(--color-border)]">
                       <div *ngIf="!asset.imageUrl"
                         class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
@@ -314,16 +314,16 @@
         class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
         <div class="flex items-center justify-between w-full flex-nowrap">
           <!-- Rows Per Page Selector -->
-          <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredAssets.length"
+          <app-rows-per-page [rowsPerPage]="paginationState.rowsPerPage" [totalItems]="filteredAssets.length"
             [visibleItems]="paginatedAssets.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
           </app-rows-per-page>
 
           <!-- Pagination Controls -->
           <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
-            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+            <app-pagination [currentPage]="paginationState.currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
             </app-pagination>
             <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
-              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+              {{ paginationState.currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
             </span>
           </div>
         </div>
@@ -331,422 +331,42 @@
     </app-card>
 
     <!-- View Modal -->
-    <div *ngIf="showViewModal" class="fixed inset-0 z-40 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="closeViewModal()"></div>
-
-        <!-- Modal panel -->
-        <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
-          <!-- Header -->
-          <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'assetList.viewModal.title' | translate }}
-              </h3>
-              <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-white transition-colors">
-                <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-              </button>
-            </div>
-          </div>
-
-          <!-- Content -->
-          <div class="px-6 py-6" *ngIf="selectedAsset">
-            <div class="grid grid-cols-2 gap-6">
-              <!-- Common Fields -->
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.name' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getAssetName(selectedAsset) }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.itemNo' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.itemNo }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.partNo' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.nsn' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn || '-' }}</p>
-              </div>
-
-              <!-- Ammunition Specific -->
-              <ng-container *ngIf="activeTab === 'ammunition'">
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.bulletDiameter' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.bulletDiameter != null ?
-                    (selectedAsset.bulletDiameter + ' ' + getUnitName(selectedAsset.bulletDiameterUnit)) : '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.armNumber'
-                    | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.armNumber || '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.caseType' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.caseType) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.propellant' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.propellant) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.compatibility' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.compatibility) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.hazardDivision' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLookupName(selectedAsset.hazardDivision) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.primer' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.primer || '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.totalWeight' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ?
-                    (selectedAsset.totalWeight + ' g') : '-' }}</p>
-                </div>
-              </ng-container>
-
-              <!-- Weapon Specific -->
-              <ng-container *ngIf="activeTab === 'weapon'">
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.weaponType'
-                    | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getWeaponTypeName(selectedAsset.weaponType) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.caliber' |
-                    translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.caliber || '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.actionType'
-                    | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getActionTypeName(selectedAsset.actionType) }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'addAsset.barrelLength' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.barrelLength != null ?
-                    (selectedAsset.barrelLength + ' ' + getUnitName(selectedAsset.barrelLengthUnit)) : '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.capacity' |
-                    translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.capacity || '-' }}</p>
-                </div>
-              </ng-container>
-
-              <!-- Explosive Specific -->
-              <ng-container *ngIf="activeTab === 'explosive'">
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'addAsset.explosiveType' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getExplosiveTypeName(selectedAsset.explosiveType)
-                    }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' |
-                    translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.unNumber || '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'addAsset.netExplosiveQuantity' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.netExplosiveQuantity != null ?
-                    (selectedAsset.netExplosiveQuantity + ' ' + getUnitName(selectedAsset.netExplosiveQuantityUnit)) :
-                    '-' }}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                    'assetList.viewModal.totalWeight' | translate }}</label>
-                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.totalWeight != null ?
-                    (selectedAsset.totalWeight + ' g') : '-' }}</p>
-                </div>
-              </ng-container>
-
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
-            <app-button variant="outline" (click)="closeViewModal()">{{ 'common.close' | translate }}</app-button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-asset-view-modal
+      [isOpen]="modalState.showViewModal"
+      [activeTab]="activeTab"
+      [selectedAsset]="modalState.selectedAsset"
+      (closed)="closeViewModal()">
+    </app-asset-view-modal>
 
     <!-- Edit Modal -->
-    <div *ngIf="showEditModal" class="fixed inset-0 z-40 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="cancelEdit()"></div>
-
-        <!-- Modal panel -->
-        <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-          <!-- Header -->
-          <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'assetList.editModal.title' | translate }}
-              </h3>
-              <button (click)="cancelEdit()" class="p-1 rounded-lg hover:bg-white transition-colors">
-                <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-              </button>
-            </div>
-          </div>
-
-          <!-- Form -->
-          <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
-            <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
-              <div class="space-y-6">
-                <!-- Image Upload Section -->
-                <div class="flex items-center justify-center gap-4 mb-6">
-                  <div
-                    class="w-[81px] h-[81px] border border-dashed border-[var(--color-brand)]/50 rounded-md bg-white overflow-hidden cursor-pointer relative"
-                    (click)="triggerEditFileInput(); $event.stopPropagation()" (dragover)="onEditDragOver($event)"
-                    (drop)="onEditDrop($event)">
-                    <img *ngIf="editImagePreview || editImageUrl; else placeholderIcon"
-                      [src]="editImagePreview || editImageUrl" alt="Preview"
-                      class="w-full h-full object-cover rounded-md" />
-                    <ng-template #placeholderIcon>
-                      <div class="w-full h-full flex items-center justify-center">
-                        <div class="w-12 h-12 bg-[#F3F4F6] rounded-lg flex items-center justify-center">
-                          <svg class="w-6 h-6 text-[#6B7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                          </svg>
-                        </div>
-                      </div>
-                    </ng-template>
-                  </div>
-                  <div class="text-left">
-                    <p class="text-sm text-[#6B7280]">Drag image here or <span
-                        class="text-[var(--color-brand)] cursor-pointer"
-                        (click)="triggerEditFileInput(); $event.stopPropagation()">browse</span></p>
-                    <p class="text-xs text-[#6B7280] mt-1">Only JPG, JPEG, and PNG files are allowed</p>
-                  </div>
-                  <input type="file" id="editFileInput" #editFileInput (change)="onEditFileSelect($event)"
-                    accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="hidden" />
-                </div>
-
-                <!-- Required Fields Section -->
-                <div class="grid grid-cols-2 gap-6">
-                  <!-- Name -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Name *</label>
-                    <input type="text" formControlName="name"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.namePlaceholder' | translate" />
-                  </div>
-
-                  <!-- Item No -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Item No *</label>
-                    <input type="text" formControlName="itemNo"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate" />
-                  </div>
-
-                  <!-- Part No -->
-                  <div>
-                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Part No *</label>
-                    <input type="text" formControlName="partNo"
-                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                      [placeholder]="'assetList.editModal.partNoPlaceholder' | translate" />
-                  </div>
-
-                  <!-- Ammunition Specific Fields -->
-                  <ng-container *ngIf="activeTab === 'ammunition'">
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Bullet Diameter</label>
-                      <input type="number" formControlName="bulletDiameter"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate" step="0.01" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Diameter Unit</label>
-                      <app-dropdown class="w-full" formControlName="bulletDiameterUnitId" [options]="units"
-                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                        [placeholder]="'assetList.editModal.bulletDiameterUnitPlaceholder' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Case Type</label>
-                      <app-dropdown class="w-full" formControlName="caseTypeId" [options]="caseTypeList"
-                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                        [placeholder]="'assetList.editModal.caseTypePlaceholder' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Propellant</label>
-                      <app-dropdown class="w-full" formControlName="propellantId" [options]="propellantList"
-                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                        [placeholder]="'assetList.editModal.propellantPlaceholder' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Hazard Division</label>
-                      <app-dropdown class="w-full" formControlName="hazardDivisionId" [options]="hazardDivisionList"
-                        optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                        [placeholder]="'assetList.editModal.hazardDivisionPlaceholder' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">Total Weight (g)</label>
-                      <input type="number" formControlName="totalWeight"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" step="0.01" />
-                    </div>
-                  </ng-container>
-
-                  <!-- Weapon Specific Fields -->
-                  <ng-container *ngIf="activeTab === 'weapon'">
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.weaponType' |
-                        translate }}</label>
-                      <app-dropdown class="w-full" formControlName="weaponType" [options]="weaponTypeOptions"
-                        optionValue="value" optionLabel="label" [translateLabels]="true"
-                        [placeholder]="'addAsset.selectWeaponType' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliber' |
-                        translate }}</label>
-                      <input type="text" formControlName="caliber"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'addAsset.enterCaliber' | translate" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.actionType' |
-                        translate }}</label>
-                      <app-dropdown class="w-full" formControlName="actionType" [options]="actionTypeOptions"
-                        optionValue="value" optionLabel="label" [translateLabels]="true"
-                        [placeholder]="'addAsset.selectActionType' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.barrelLength'
-                        | translate }}</label>
-                      <input type="number" formControlName="barrelLength"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'addAsset.enterBarrelLength' | translate" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.capacity' |
-                        translate }}</label>
-                      <input type="number" formControlName="capacity"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'addAsset.enterCapacity' | translate" />
-                    </div>
-                  </ng-container>
-
-                  <!-- Explosive Specific Fields -->
-                  <ng-container *ngIf="activeTab === 'explosive'">
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.explosiveType'
-                        | translate }}</label>
-                      <app-dropdown class="w-full" formControlName="explosiveType" [options]="explosiveTypeOptions"
-                        optionValue="value" optionLabel="label" [translateLabels]="true"
-                        [placeholder]="'addAsset.selectExplosiveType' | translate">
-                      </app-dropdown>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' |
-                        translate }}</label>
-                      <input type="text" formControlName="unNumber"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'addAsset.enterUnNumber' | translate" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                        'addAsset.netExplosiveQuantity' | translate }}</label>
-                      <input type="number" formControlName="netExplosiveQuantity"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'addAsset.enterNetExplosiveQuantity' | translate" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                        'assetList.editModal.totalWeight' | translate }}</label>
-                      <input type="number" formControlName="totalWeight"
-                        class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                        [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" />
-                    </div>
-                  </ng-container>
-
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div
-              class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
-              <app-button variant="outline" type="button" (click)="cancelEdit()">{{ 'common.cancel' | translate
-                }}</app-button>
-              <app-button variant="primary" type="submit" [disabled]="editForm.invalid || loading">
-                {{ loading ? ('common.saving' | translate) : ('assetList.editModal.saveChanges' | translate) }}
-              </app-button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <app-asset-edit-modal
+      [isOpen]="modalState.showEditModal"
+      [activeTab]="activeTab"
+      [selectedAsset]="modalState.selectedAsset"
+      [loading]="loading"
+      [units]="units"
+      [caseTypeList]="caseTypeList"
+      [propellantList]="propellantList"
+      [compatibilityList]="compatibilityList"
+      [hazardDivisionList]="hazardDivisionList"
+      [natureOptions]="natureOptions"
+      [primaryPurposes]="primaryPurposes"
+      [projectileColors]="projectileColors"
+      [projectailMaterials]="projectailMaterials"
+      [imageState]="imageState"
+      (closed)="closeEditModal()"
+      (saved)="onEditSaved($event)">
+    </app-asset-edit-modal>
 
     <!-- Delete Confirmation Modal -->
-    <div *ngIf="showDeleteModal" class="fixed inset-0 z-40 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="cancelDelete()"></div>
-
-        <!-- Modal panel -->
-        <div
-          class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <!-- Header -->
-          <div class="bg-red-50 px-6 py-4 border-b border-red-200">
-            <div class="flex items-center gap-3">
-              <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                <lucide-angular [img]="Trash2" class="h-5 w-5 text-red-600"></lucide-angular>
-              </div>
-              <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.deleteModal.title' | translate }}
-              </h3>
-            </div>
-          </div>
-
-          <!-- Content -->
-          <div class="px-6 py-6">
-            <p class="text-[var(--color-text)]">
-              {{ 'assetList.deleteModal.confirmMessage' | translate }} <strong>{{ selectedAsset?.name }}</strong>?
-            </p>
-            <p class="text-[var(--color-text-muted)] text-sm mt-2">
-              {{ 'assetList.deleteModal.warning' | translate }}
-            </p>
-          </div>
-
-          <!-- Footer -->
-          <div
-            class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
-            <app-button variant="outline" (click)="cancelDelete()">{{ 'common.cancel' | translate }}</app-button>
-            <button (click)="confirmDelete()" [disabled]="loading"
-              class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium">
-              {{ loading ? ('assetList.deleteModal.deleting' | translate) : ('common.delete' | translate) }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    <app-confirm-dialog
+      [isOpen]="modalState.showDeleteModal"
+      [title]="'assetList.deleteModal.title' | translate"
+      [message]="('assetList.deleteModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.deleteModal.warning' | translate"
+      confirmText="{{ 'common.delete' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}"
+      confirmVariant="danger"
+      (confirmed)="confirmDelete()"
+      (cancelled)="closeDeleteModal()">
+    </app-confirm-dialog>

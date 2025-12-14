@@ -24,7 +24,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getWeaponTypeOptions, getActionTypeOptions } from '@utils/weapon.utils';
+import { getWeaponTypeOptions, getActionTypeOptions, WeaponType } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
 interface AssetForm {
@@ -321,12 +321,30 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   private submitWeapon() {
+    // Convert enum name to numeric value
+    const weaponTypeValue = this.assetForm.weaponType && WeaponType[this.assetForm.weaponType as keyof typeof WeaponType] 
+      ? WeaponType[this.assetForm.weaponType as keyof typeof WeaponType] 
+      : null;
+    
+    const actionTypeValue = this.assetForm.actionType 
+      ? (typeof this.assetForm.actionType === 'string' ? parseInt(this.assetForm.actionType) : this.assetForm.actionType)
+      : null;
+
+    if (!weaponTypeValue) {
+      this.errorMessage = 'Weapon Type is required';
+      return;
+    }
+    if (!actionTypeValue) {
+      this.errorMessage = 'Action Type is required';
+      return;
+    }
+
     const dto: CreateUpdateWeaponDto = {
       name: this.assetForm.name.trim(),
       itemNo: this.assetForm.itemNo.trim(),
-      weaponType: parseInt(this.assetForm.weaponType),
+      weaponType: weaponTypeValue,
       caliber: this.assetForm.caliber.trim(),
-      actionType: parseInt(this.assetForm.actionType)
+      actionType: actionTypeValue
     };
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
