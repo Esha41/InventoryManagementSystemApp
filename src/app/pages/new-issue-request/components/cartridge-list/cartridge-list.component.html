@@ -29,21 +29,21 @@
 
               <!-- Weapon Specific -->
               <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Weapons' && cartridge.weaponType">
+                *ngIf="selectedItemType === 'Weapon' && cartridge.weaponType">
                 {{ 'addAsset.weaponType' | translate }}: {{ cartridge.weaponType }}
               </p>
               <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Weapons' && cartridge.caliber">
+                *ngIf="selectedItemType === 'Weapon' && cartridge.caliber">
                 {{ 'addAsset.caliber' | translate }}: {{ cartridge.caliber }}
               </p>
 
               <!-- Explosive Specific -->
               <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Explosives' && cartridge.explosiveType">
+                *ngIf="selectedItemType === 'Explosive' && cartridge.explosiveType">
                 {{ 'addAsset.explosiveType' | translate }}: {{ cartridge.explosiveType }}
               </p>
               <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Explosives' && cartridge.unNumber">
+                *ngIf="selectedItemType === 'Explosive' && cartridge.unNumber">
                 {{ 'addAsset.unNumber' | translate }}: {{ cartridge.unNumber }}
               </p>
             </div>
@@ -183,13 +183,13 @@
     </ng-container>
 
     <!-- Weapon Filters -->
-    <ng-container *ngIf="selectedItemType === 'Weapons'">
+    <ng-container *ngIf="selectedItemType === 'Weapon'">
       <div>
         <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'addAsset.weaponType' | translate }}
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedWeaponType" (ngModelChange)="onWeaponTypeChange($event)"
-          [options]="weaponTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'label'"
+          [options]="weaponTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
           [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'addAsset.selectWeaponType' | translate }}">
         </app-dropdown>
@@ -216,13 +216,13 @@
     </ng-container>
 
     <!-- Explosive Filters -->
-    <ng-container *ngIf="selectedItemType === 'Explosives'">
+    <ng-container *ngIf="selectedItemType === 'Explosive'">
       <div>
         <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'addAsset.explosiveType' | translate }}
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedExplosiveType" (ngModelChange)="onExplosiveTypeChange($event)"
-          [options]="explosiveTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'label'"
+          [options]="explosiveTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
           [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'addAsset.selectExplosiveType' | translate }}">
         </app-dropdown>

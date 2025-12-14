@@ -339,6 +339,15 @@
                 </app-dropdown>
               </div>
 
+              <!-- Capacity -->
+              <div class="flex items-center gap-6">
+                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.capacity' | translate
+                  }}</label>
+                <input type="number" [(ngModel)]="assetForm.capacity" name="capacity"
+                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  [placeholder]="'addAsset.enterCapacity' | translate" step="1" min="0" />
+              </div>
+
               <!-- Barrel Length -->
               <div class="flex items-center gap-6">
                 <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.barrelLength' | translate
@@ -394,15 +403,6 @@
                   optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                   [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
                 </app-dropdown>
-              </div>
-
-              <!-- Capacity -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.capacity' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.capacity" name="capacity"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterCapacity' | translate" step="1" min="0" />
               </div>
             </ng-container>
 

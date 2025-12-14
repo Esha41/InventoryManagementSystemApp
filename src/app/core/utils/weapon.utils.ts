@@ -28,12 +28,12 @@ export enum ActionType {
     SingleShot = 8
 }
 
-export const getWeaponTypeOptions = (): { label: string; value: number }[] => {
+export const getWeaponTypeOptions = (): { label: string; value: string }[] => {
     return Object.keys(WeaponType)
         .filter(key => isNaN(Number(key)))
         .map(key => ({
             label: key.replace(/([A-Z])/g, ' $1').trim(), // Add space before capital letters
-            value: WeaponType[key as keyof typeof WeaponType]
+            value: key // Use enum name as value to match backend JsonStringEnumConverter
         }));
 };
 

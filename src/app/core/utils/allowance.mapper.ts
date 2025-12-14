@@ -40,23 +40,24 @@ export function processAllowanceData(
   });
 
   const groupedItems = new Map<string, AllowanceItemDetailDto[]>();
-  
+
   items.forEach(item => {
     const ammunition = ammunitionMap.get(item.itemId);
     const key = `${item.departmentId}_${item.year}`;
-    
+
     if (!groupedItems.has(key)) {
       groupedItems.set(key, []);
     }
-    
+
     groupedItems.get(key)!.push({
       id: item.id,
       itemId: item.itemId,
       year: item.year,
       quantity: item.quantity,
       itemType: item.itemType,
-      itemName: ammunition?.name,
-      itemNo: ammunition?.itemNo,
+      // Use itemName from DTO first (supports all item types), fallback to ammunition lookup
+      itemName: item.itemName || ammunition?.name,
+      itemNo: item.itemNo || ammunition?.itemNo,
       batchNo: ammunition?.batchNo,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
       reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
@@ -67,21 +68,25 @@ export function processAllowanceData(
   const rows: AllowanceTableRow[] = items.map(item => {
     const ammunition = ammunitionMap.get(item.itemId);
     const key = `${item.departmentId}_${item.year}`;
-    
+
+    // Use itemName from DTO first (supports all item types), fallback to ammunition lookup
+    const itemName = item.itemName || (ammunition ? getLocalizedName(ammunition, currentLang) || ammunition.name || '' : '');
+    const itemNo = item.itemNo || ammunition?.itemNo || '';
+
     return {
       id: item.id,
       departmentId: item.departmentId,
       departmentName: departmentMap.get(item.departmentId) || `Department ${item.departmentId}`,
       year: item.year,
       itemId: item.itemId,
-      itemName: ammunition ? getLocalizedName(ammunition, currentLang) || ammunition.name || '' : '',
-      itemNo: ammunition?.itemNo || '',
+      itemName: itemName,
+      itemNo: itemNo,
       batchNo: ammunition?.batchNo || '',
       quantity: item.quantity,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
       reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
       remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0,
-      items: groupedItems.get(key)! 
+      items: groupedItems.get(key)!
     };
   });
 

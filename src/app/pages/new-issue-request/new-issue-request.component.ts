@@ -115,7 +115,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   };
 
   filterOptions: ExtendedFilterOptions = {
-    itemTypeOptions: ['Ammunition', 'Explosives', 'Weapons'],
+    itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
     ammunitionTypeOptions: ['Small', 'Medium', 'Large'], // These map to backend Enums often
     bulletDiameters: [],
     linkedOptions: ['Linked', 'Not Linked'],
@@ -298,9 +298,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
     let load$: any;
 
-    if (type === 'Weapons') {
+    if (type === 'Weapon') {
       load$ = isAllowance ? this.cartridgeDataService.loadAllowanceWeapons(deptId!) : this.cartridgeDataService.loadAllWeapons();
-    } else if (type === 'Explosives') {
+    } else if (type === 'Explosive') {
       load$ = isAllowance ? this.cartridgeDataService.loadAllowanceExplosives(deptId!) : this.cartridgeDataService.loadAllExplosives();
     } else {
       // Ammunition
@@ -551,7 +551,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
         return byDiameter && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
 
-      } else if (this.filterState.selectedItemType === 'Weapons') {
+      } else if (this.filterState.selectedItemType === 'Weapon') {
         const byWeaponType = !this.filterState.selectedWeaponType || cartridge.weaponType === this.filterState.selectedWeaponType;
 
         // Caliber might be numeric or string, loosely matching or contains
@@ -564,7 +564,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
         return byWeaponType && byCaliber && byNSN && bySearch;
 
-      } else if (this.filterState.selectedItemType === 'Explosives') {
+      } else if (this.filterState.selectedItemType === 'Explosive') {
         const byExplosiveType = !this.filterState.selectedExplosiveType || cartridge.explosiveType === this.filterState.selectedExplosiveType;
 
         const unfilter = this.filterState.selectedUNNumber?.toLowerCase() ?? '';
@@ -941,9 +941,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   private rebuildOrderPriorities(): void {
     this.filterOptions.orderPriorities = [
-      { label: this.translate.instant('newIssueRequest.priorityHigh'), value: 'High' },
-      { label: this.translate.instant('newIssueRequest.priorityNormal'), value: 'Normal' },
-      { label: this.translate.instant('newIssueRequest.priorityLow'), value: 'Low' }
+      { label: 'newIssueRequest.highPriority', value: 'High' },
+      { label: 'newIssueRequest.mediumPriority', value: 'Normal' },
+      { label: 'newIssueRequest.lowPriority', value: 'Low' }
     ];
   }
 

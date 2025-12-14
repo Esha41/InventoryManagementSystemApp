@@ -1674,6 +1674,8 @@
     "title": "مخزون المواد",
     "subtitle": "إدارة وتتبع جميع مواد المخزون في النظام",
     "addAmmunition": "إضافة ذخيرة",
+    "addWeapon": "إضافة سلاح",
+    "addExplosive": "إضافة متفجر",
     "searchPlaceholder": "البحث بالاسم، رقم مادة، رقم القطعة...",
     "tabs": {
       "ammunition": "الذخيرة",

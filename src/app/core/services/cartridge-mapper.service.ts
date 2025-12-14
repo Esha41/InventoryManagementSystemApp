@@ -78,10 +78,10 @@ export class CartridgeMapperService {
       selected: false,
       added: false,
 
-      // Weapon specific
-      weaponType: getWeaponTypeName(dto.weaponType),
+      // Weapon specific - backend sends enum as string (JsonStringEnumConverter)
+      weaponType: dto.weaponType, // Pass through as-is (e.g., "Rifle", "Pistol")
       caliber: dto.caliber,
-      actionType: getActionTypeName(dto.actionType),
+      actionType: dto.actionType, // Pass through as-is
       barrelLength: dto.barrelLength // Could add unit label helper here
     };
   }
@@ -104,8 +104,8 @@ export class CartridgeMapperService {
       selected: false,
       added: false,
 
-      // Explosive specific
-      explosiveType: getExplosiveTypeName(dto.explosiveType),
+      // Explosive specific - backend sends enum as string (JsonStringEnumConverter)
+      explosiveType: dto.explosiveType, // Pass through as-is (e.g., "Grenade", "Mine")
       unNumber: dto.unNumber,
       netExplosiveQuantity: dto.netExplosiveQuantity
     };

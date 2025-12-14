@@ -5,6 +5,8 @@
 export interface AllowanceItemDto {
   id: number;
   itemId: number;
+  itemName?: string;
+  itemNo?: string;
   departmentId: number;
   year: number;
   quantity: number;
