@@ -5,6 +5,66 @@
         <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'discardRequest.title' | translate }}</h1>
       </div>
 
+      <!-- Item Type Selection Buttons -->
+      <div class="bg-white rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
+        <nav class="flex gap-1" aria-label="Item Type Tabs">
+          <button 
+            (click)="onItemTypeChange('Ammunition')" 
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Ammunition',
+              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
+            }" 
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                'bg-white': selectedItemType === 'Ammunition',
+                'bg-[var(--color-brand)]': selectedItemType !== 'Ammunition'
+              }"></div>
+              <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
+            </div>
+            <div *ngIf="selectedItemType === 'Ammunition'"
+              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+            </div>
+          </button>
+          <button 
+            (click)="onItemTypeChange('Weapon')" 
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Weapon',
+              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
+            }" 
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                'bg-white': selectedItemType === 'Weapon',
+                'bg-[var(--color-brand)]': selectedItemType !== 'Weapon'
+              }"></div>
+              <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
+            </div>
+            <div *ngIf="selectedItemType === 'Weapon'"
+              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+            </div>
+          </button>
+          <button 
+            (click)="onItemTypeChange('Explosive')" 
+            [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Explosive',
+              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
+            }" 
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                'bg-white': selectedItemType === 'Explosive',
+                'bg-[var(--color-brand)]': selectedItemType !== 'Explosive'
+              }"></div>
+              <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
+            </div>
+            <div *ngIf="selectedItemType === 'Explosive'"
+              class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+            </div>
+          </button>
+        </nav>
+      </div>
+
       <div class="bg-[#F5F5F5] rounded-xl p-8">
         <form #discardForm="ngForm" (ngSubmit)="onSendRequest(discardForm)">
           <div class="space-y-6 max-w-3xl">

@@ -9,12 +9,15 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { ReturnService, CreateReturnDto, CreateReturnItemDto } from '@services/return.service';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
+import { Observable } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserService } from '@services/backend-user.service';
@@ -55,6 +58,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
+  // Item type selection
+  selectedItemType: 'Ammunition' | 'Weapon' | 'Explosive' = 'Ammunition';
 
   reason: string = '';
   priority: number = 1;
@@ -113,6 +118,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     private returnService: ReturnService,
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private toastService: ToastService,
     private apiService: ApiService,
     private translate: TranslateService,
@@ -261,12 +268,27 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   private loadItems(): void {
     this.isLoadingItems = true;
-    this.ammunitionService.getAll()
+    let load$: Observable<any[]>;
+
+    if (this.selectedItemType === 'Weapon') {
+      load$ = this.weaponService.getAll();
+    } else if (this.selectedItemType === 'Explosive') {
+      load$ = this.explosiveService.getAll();
+    } else {
+      // Ammunition (default)
+      load$ = this.ammunitionService.getAll();
+    }
+
+    load$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
           this.items = items || [];
           this.isLoadingItems = false;
+          // Clear selected items when switching types
+          this.returnItems.forEach(item => {
+            item.itemId = null;
+          });
         },
         error: () => {
           this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
@@ -278,6 +300,13 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           this.isLoadingItems = false;
         }
       });
+  }
+
+  onItemTypeChange(itemType: 'Ammunition' | 'Weapon' | 'Explosive'): void {
+    if (this.selectedItemType !== itemType) {
+      this.selectedItemType = itemType;
+      this.loadItems();
+    }
   }
 
   addReturnItem(): void {
@@ -646,6 +675,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     }
     this.isSubmitted = false;
     this.errors = {};
+    // Reset item type to default and reload items
+    this.selectedItemType = 'Ammunition';
+    this.loadItems();
   }
 
   onFilesSelected(event: Event): void {
