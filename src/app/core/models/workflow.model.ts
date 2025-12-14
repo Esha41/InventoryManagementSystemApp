@@ -111,3 +111,22 @@ export interface CreateWorkflowStepNotifierDto {
   roleIds?: string[];
 }
 
+/**
+ * Workflow Step DTO - matches backend WorkflowStepDto
+ */
+export interface WorkflowStepDto {
+  id: number;
+  workflowId: number;
+  stepOrder: number;
+  applicationRoleId: string;
+  applicationRoleName?: string;
+  applicationEntityId: number;
+  mustApprove?: boolean;
+  requireHigherApproval?: boolean;
+  higherApprovalRoleId?: string | null;
+  higherApplicationEntityId?: number | null;
+  reserveQty?: boolean;
+  canSkip?: boolean;
+  allowedSkipTargetIds?: number[];
+}
+

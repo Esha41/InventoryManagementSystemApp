@@ -16,7 +16,8 @@ import {
   WorkflowTypeItem,
   WorkflowStepNotifierDto,
   UpdateWorkflowStepNotifiersDto,
-  CreateWorkflowStepNotifierDto
+  CreateWorkflowStepNotifierDto,
+  WorkflowStepDto
 } from '@models/workflow.model';
 import { ApiResponse } from '@models/api-response.model';
 
@@ -364,6 +365,60 @@ export class WorkflowService {
         this.configService.logError('Failed to update step notifiers', error);
         return throwError(() => new Error(
           error.message || 'Failed to update step notifiers'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Get next steps for a workflow step
+   */
+  getNextStepsForWorkflowStep(stepId: number): Observable<WorkflowStepDto[]> {
+    this.configService.log('Fetching next steps for workflow step', { stepId });
+
+    return this.apiService.getWithAuth<ApiResponse<WorkflowStepDto[]>>(
+      `/Workflows/step/${stepId}/next-steps`
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to fetch next steps');
+        }
+        return response.data || [];
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to fetch next steps', error);
+        return throwError(() => new Error(
+          error.message || 'Failed to fetch next steps'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Set step transitions (skip-to steps)
+   */
+  setStepTransitions(stepId: number, targetStepIds: number[]): Observable<boolean> {
+    this.configService.log('Setting step transitions', { stepId, targetStepIds });
+
+    const payload = {
+      sourceStepId: stepId,
+      targetStepIds: targetStepIds || []
+    };
+
+    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+      '/Workflows/step-transition',
+      payload
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to set step transitions');
+        }
+        return true;
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to set step transitions', error);
+        return throwError(() => new Error(
+          error.message || 'Failed to set step transitions'
         ));
       })
     );

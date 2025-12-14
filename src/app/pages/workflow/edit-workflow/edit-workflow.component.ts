@@ -1,0 +1,813 @@
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
+import { WorkflowService } from '@services/workflow.service';
+import { BackendUserService } from '@services/backend-user.service';
+import { RoleDto } from '@models/backend-user.model';
+import { WorkflowStepDto } from '@models/workflow.model';
+import { TranslationService } from '@services/translation.service';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { ToastService } from '@services/toast.service';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+
+@Component({
+  selector: 'app-edit-workflow',
+  standalone: true,
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, HasPermissionDirective],
+  templateUrl: './edit-workflow.component.html',
+  styleUrls: ['./edit-workflow.component.css']
+})
+export class EditWorkflowComponent implements OnInit, OnDestroy {
+  readonly Save = Save;
+  readonly X = X;
+  readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  workflowId: number | null = null;
+  editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
+  editWorkflowType: number = 1;
+  editSteps: Array<{ 
+    order: number; 
+    roleId: string | null; 
+    applicationEntityId: number | null; 
+    requireHigherApproval?: boolean; 
+    higherApprovalRoleId?: string | null; 
+    higherApplicationEntityId?: number | null;
+    notifyingRoleIds?: string[];
+    notifyingUserIds?: string[];
+    workflowStepId?: number;
+    usersInNotifyingRoles?: Array<{ roleId: string; users: any[] }>;
+    availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>;
+    skipToStepIds?: number[];
+    availableNextSteps?: WorkflowStepDto[];
+  }> = [];
+  
+  roles: RoleDto[] = [];
+  allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  workflowTypes: Array<{ id: number; name: string }> = [];
+  readonly workflowStatusOptions = [
+    { label: 'Active', value: 'Active' as const },
+    { label: 'Inactive', value: 'Inactive' as const }
+  ];
+
+  loading = false;
+  submitting = false;
+  errorMessage: string | null = null;
+
+  hasOpenDropdown = false;
+  private mutationObserver?: MutationObserver;
+  private positioningInterval?: any;
+  private boundRepositionDropdowns?: () => void;
+  private boundHandleDocumentClick?: () => void;
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private workflowService: WorkflowService,
+    private translationService: TranslationService,
+    private backendUserService: BackendUserService,
+    private translate: TranslateService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/workflow']);
+      return;
+    }
+    this.workflowId = Number(id);
+    this.loadWorkflow();
+    
+    this.backendUserService.getAllRolesSimple().subscribe({
+      next: roles => this.roles = roles,
+      error: () => this.roles = []
+    });
+    this.loadApplicationEntities();
+    
+    const lang = this.translationService.getCurrentLanguage();
+    this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
+    
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.loadApplicationEntities();
+    });
+
+    setTimeout(() => {
+      this.initializeDropdowns();
+    }, 0);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.cleanupDropdownPositioning();
+  }
+
+  private loadApplicationEntities(): void {
+    this.backendUserService.getApplicationEntities().subscribe({
+      next: (entities: any[]) => {
+        const currentLang = getCurrentLang(this.translate);
+        this.allApplicationEntities = (entities || []).map((e: any) => {
+          const id = e?.id ?? e?.applicationEntityId ?? e;
+          const localizedName = getLocalizedName(e, currentLang);
+          return { id, name: localizedName || String(id), entity: e };
+        });
+      },
+      error: () => { this.allApplicationEntities = []; }
+    });
+  }
+
+  private loadWorkflow(): void {
+    if (!this.workflowId) return;
+    
+    this.loading = true;
+    this.workflowService.getWorkflowDetailById(this.workflowId).subscribe({
+      next: wf => {
+        const status = wf?.isActive ? 'Active' : 'Inactive';
+        this.editForm = { 
+          id: wf?.id || this.workflowId!, 
+          name: wf?.workflowName || '', 
+          status: status as 'Active' | 'Inactive',
+          workflowType: wf?.workflowType || 1
+        };
+        this.editWorkflowType = wf?.workflowType || 1;
+        const steps = (wf?.workflowSteps || []) as any[];
+        this.editSteps = steps.map((s, idx) => ({ 
+          order: s.stepOrder || idx + 1, 
+          roleId: s.applicationRoleId || null, 
+          applicationEntityId: s.applicationEntityId || null,
+          requireHigherApproval: !!s.requireHigherApproval,
+          higherApprovalRoleId: s.higherApprovalRoleId || null,
+          higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
+          notifyingRoleIds: [],
+          notifyingUserIds: [],
+          workflowStepId: s.id,
+          usersInNotifyingRoles: [],
+          availableUsers: [],
+          skipToStepIds: Array.isArray((s as any).allowedSkipTargetIds) ? [...(s as any).allowedSkipTargetIds] : [],
+          availableNextSteps: []
+        }));
+        
+        this.loadNotifiersForSteps(() => {
+          this.loadAllUsersForSteps();
+          this.loadNextStepsForAllSteps();
+        });
+        
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load workflow';
+        this.loading = false;
+      }
+    });
+  }
+
+  private initializeDropdowns(): void {
+    const stepsContainer = document.querySelector('.edit-steps-table-wrapper');
+    if (!stepsContainer) return;
+
+    this.mutationObserver = new MutationObserver(() => {
+      this.checkAndPositionDropdowns();
+    });
+
+    this.mutationObserver.observe(stepsContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    this.boundHandleDocumentClick = () => {
+      setTimeout(() => this.checkAndPositionDropdowns(), 0);
+    };
+    document.addEventListener('click', this.boundHandleDocumentClick);
+    
+    this.checkAndPositionDropdowns();
+  }
+
+  private cleanupDropdownPositioning(): void {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+      this.mutationObserver = undefined;
+    }
+    if (this.positioningInterval) {
+      clearInterval(this.positioningInterval);
+      this.positioningInterval = undefined;
+    }
+    if (this.boundRepositionDropdowns) {
+      document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
+    }
+    if (this.boundHandleDocumentClick) {
+      document.removeEventListener('click', this.boundHandleDocumentClick);
+      this.boundHandleDocumentClick = undefined;
+    }
+    this.resetDropdownPanels();
+  }
+
+  private resetDropdownPanels(): void {
+    document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+      panel.style.position = '';
+      panel.style.top = '';
+      panel.style.left = '';
+      panel.style.width = '';
+      panel.style.maxWidth = '';
+    });
+  }
+
+  private checkAndPositionDropdowns(): void {
+    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
+    this.hasOpenDropdown = openDropdowns.length > 0;
+    
+    if (this.hasOpenDropdown) {
+      this.repositionDropdowns();
+      if (!this.positioningInterval) {
+        if (!this.boundRepositionDropdowns) {
+          this.boundRepositionDropdowns = this.repositionDropdowns.bind(this);
+        }
+        document.addEventListener('scroll', this.boundRepositionDropdowns, true);
+        this.positioningInterval = setInterval(() => {
+          if (this.hasOpenDropdown) {
+            this.repositionDropdowns();
+          } else {
+            this.stopPositioningInterval();
+          }
+        }, 100);
+      }
+    } else {
+      this.stopPositioningInterval();
+      this.resetDropdownPanels();
+    }
+  }
+
+  private stopPositioningInterval(): void {
+    if (this.positioningInterval) {
+      clearInterval(this.positioningInterval);
+      this.positioningInterval = undefined;
+      if (this.boundRepositionDropdowns) {
+        document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
+      }
+    }
+  }
+
+  private repositionDropdowns(): void {
+    const scrollContainer = document.querySelector('.edit-steps-table-scroll-container');
+    if (!scrollContainer) return;
+
+    document.querySelectorAll('.app-dropdown-open').forEach((trigger: any) => {
+      const dropdown = trigger.closest('.app-dropdown');
+      const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
+      
+      if (!panel || !scrollContainer.contains(dropdown)) return;
+
+      const rect = trigger.getBoundingClientRect();
+      Object.assign(panel.style, {
+        position: 'fixed',
+        top: `${rect.bottom + 8}px`,
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        minWidth: `${rect.width}px`,
+        maxWidth: `${rect.width}px`,
+        zIndex: '10000',
+        right: 'auto'
+      });
+    });
+  }
+
+  addEditStep(): void { 
+    const newStep = { 
+      order: this.editSteps.length + 1, 
+      roleId: null, 
+      applicationEntityId: null, 
+      requireHigherApproval: false, 
+      higherApprovalRoleId: null, 
+      higherApplicationEntityId: null,
+      notifyingRoleIds: [],
+      notifyingUserIds: [],
+      usersInNotifyingRoles: [],
+      availableUsers: [],
+      skipToStepIds: [],
+      availableNextSteps: []
+    };
+    this.editSteps.push(newStep);
+    setTimeout(() => {
+      this.loadUsersForNotifyingRoles(newStep, this.editSteps.length - 1);
+    }, 0);
+  }
+
+  removeEditStep(index: number): void { 
+    this.editSteps.splice(index, 1); 
+    this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 })); 
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/workflow']);
+  }
+
+  saveEdit(): void {
+    if (!this.editForm) return;
+    const editId = this.editForm.id;
+    
+    // Capture notifier data directly from editSteps at save time
+    // Ensure arrays are properly initialized
+    const notifierData = this.editSteps.map((s, idx) => {
+      // Ensure arrays exist and are properly formatted
+      const roleIds = Array.isArray(s.notifyingRoleIds) ? [...s.notifyingRoleIds] : [];
+      const userIds = Array.isArray(s.notifyingUserIds) ? [...s.notifyingUserIds] : [];
+      
+      console.log(`Step ${idx} notifiers:`, {
+        workflowStepId: s.workflowStepId,
+        roleIds,
+        userIds,
+        rawRoleIds: s.notifyingRoleIds,
+        rawUserIds: s.notifyingUserIds
+      });
+      
+      return {
+        originalIndex: idx,
+        workflowStepId: s.workflowStepId,
+        notifyingRoleIds: roleIds,
+        notifyingUserIds: userIds
+      };
+    });
+
+    const transitionData = this.editSteps.map((s, idx) => ({
+      originalIndex: idx,
+      workflowStepId: s.workflowStepId,
+      skipToStepIds: s.skipToStepIds || []
+    }));
+    
+    const backendPayload = {
+      id: editId,
+      workflowName: this.editForm.name,
+      workflowType: this.editWorkflowType,
+      isActive: this.editForm.status === 'Active',
+      isSpecialOrReserved: false,
+      workflowSteps: (this.editSteps || []).map((s, idx) => ({
+        id: s.workflowStepId,
+        stepOrder: idx + 1,
+        applicationRoleId: s.roleId as any,
+        applicationEntityId: s.applicationEntityId as any,
+        mustApprove: false,
+        requireHigherApproval: !!s.requireHigherApproval,
+        higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
+        higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
+        reserveQty: false,
+        notifyingRoleIds: s.notifyingRoleIds || [],
+        notifyingUserIds: s.notifyingUserIds || []
+      }))
+    } as any;
+
+    const updateNotifiers = (workflowSteps?: any[]): Observable<boolean> => {
+      const notifierSaveObservables: Observable<boolean>[] = [];
+      
+      // If workflowSteps is provided (after reload), use it to map step IDs by order
+      // Otherwise use the existing workflowStepId from editSteps
+      this.editSteps.forEach((step, idx) => {
+        // Use current values from editSteps, not the captured snapshot
+        // This ensures we have the latest values even if they changed
+        const currentStep = this.editSteps[idx];
+        if (!currentStep) return;
+        
+        // For new steps, try to find the step ID from the reloaded workflow
+        // Match by stepOrder (idx + 1) since steps are saved in order
+        let stepId = currentStep.workflowStepId;
+        if (!stepId && workflowSteps && workflowSteps.length > 0) {
+          // Find step by order (stepOrder should match idx + 1)
+          const matchingStep = workflowSteps.find((ws: any) => ws.stepOrder === (idx + 1));
+          if (matchingStep) {
+            stepId = matchingStep.id;
+            console.log(`Found step ID ${stepId} for new step at index ${idx} (order ${idx + 1})`);
+          }
+        }
+        
+        if (stepId) {
+          // Get current values directly from the step object
+          const roleIds = Array.isArray(currentStep.notifyingRoleIds) 
+            ? [...currentStep.notifyingRoleIds].filter(id => id != null && id !== '')
+            : [];
+          const userIds = Array.isArray(currentStep.notifyingUserIds) 
+            ? [...currentStep.notifyingUserIds].filter(id => id != null && id !== '')
+            : [];
+          
+          console.log(`Saving notifiers for step ${stepId} (index ${idx}):`, { 
+            roleIds, 
+            userIds,
+            stepOrder: idx + 1
+          });
+          
+          // Always call updateStepNotifiers, even if arrays are empty (to clear existing notifiers)
+          notifierSaveObservables.push(
+            this.workflowService.updateStepNotifiers(
+              stepId,
+              roleIds,
+              userIds
+            ).pipe(
+              tap(() => {
+                console.log(`Successfully saved notifiers for step ${stepId}`);
+              }),
+              catchError(err => {
+                console.error('Failed to update notifiers for step', stepId, err);
+                return new Observable<boolean>(observer => {
+                  observer.next(true);
+                  observer.complete();
+                });
+              })
+            )
+          );
+        } else {
+          console.warn(`Skipping notifiers for step at index ${idx} - no stepId found`, {
+            hasWorkflowStepId: !!currentStep.workflowStepId,
+            workflowStepsCount: workflowSteps?.length || 0
+          });
+        }
+      });
+      
+      if (notifierSaveObservables.length === 0) {
+        return of(true);
+      }
+      
+      return forkJoin(notifierSaveObservables).pipe(
+        map(() => true)
+      );
+    };
+
+    const updateTransitions = (workflowSteps?: any[]): Observable<boolean> => {
+      const transitionSaveObservables: Observable<boolean>[] = [];
+      
+      this.editSteps.forEach((step, idx) => {
+        const transitionInfo = transitionData[idx];
+        if (transitionInfo) {
+          // For new steps, try to find the step ID from the reloaded workflow
+          let stepId = step.workflowStepId;
+          if (!stepId && workflowSteps && workflowSteps.length > idx) {
+            stepId = workflowSteps[idx]?.id;
+          }
+          
+          if (stepId) {
+            const targetStepIds = transitionInfo.skipToStepIds || [];
+            
+            transitionSaveObservables.push(
+              this.workflowService.setStepTransitions(
+                stepId,
+                targetStepIds
+              ).pipe(
+                catchError(err => {
+                  console.error('Failed to update transitions for step', stepId, err);
+                  return new Observable<boolean>(observer => {
+                    observer.next(true);
+                    observer.complete();
+                  });
+                })
+              )
+            );
+          }
+        }
+      });
+      
+      if (transitionSaveObservables.length === 0) {
+        return of(true);
+      }
+      
+      return forkJoin(transitionSaveObservables).pipe(
+        map(() => true)
+      );
+    };
+
+    this.submitting = true;
+    this.workflowService.updateBackendWorkflow(backendPayload).pipe(
+      catchError(err => {
+        return new Observable<any>(observer => {
+          observer.next(null);
+          observer.complete();
+        });
+      }),
+      // Reload workflow to get step IDs for newly created steps
+      switchMap(() => {
+        return this.workflowService.getWorkflowDetailById(editId).pipe(
+          catchError(() => of(null))
+        );
+      }),
+      switchMap((reloadedWorkflow: any) => {
+        // Extract workflow steps from reloaded workflow if available
+        const workflowSteps = reloadedWorkflow?.workflowSteps || [];
+        return forkJoin([
+          updateNotifiers(workflowSteps), 
+          updateTransitions(workflowSteps)
+        ]).pipe(
+          map(() => true)
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
+          this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
+        });
+        
+        setTimeout(() => {
+          this.router.navigate(['/workflow']);
+        }, 500);
+      },
+      error: err => {
+        this.submitting = false;
+        this.errorMessage = err.message || 'Failed to update workflow';
+        
+        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
+          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'] || 'Failed to update workflow';
+          this.toastService.error(errorMsg, translations['toast.error']);
+        });
+      }
+    });
+  }
+
+  private loadNotifiersForSteps(callback?: () => void): void {
+    const stepsWithIds = this.editSteps.filter(step => step.workflowStepId);
+    
+    if (stepsWithIds.length === 0) {
+      if (callback) callback();
+      return;
+    }
+    
+    const notifierObservables = stepsWithIds.map(step => 
+      this.workflowService.getStepNotifiers(step.workflowStepId!).pipe(
+        map(notifiers => ({ step, notifiers })),
+        catchError(err => {
+          return new Observable<{ step: any; notifiers: any[] }>(observer => {
+            observer.next({ step, notifiers: [] });
+            observer.complete();
+          });
+        })
+      )
+    );
+    
+    forkJoin(notifierObservables).subscribe({
+      next: (results) => {
+        results.forEach(({ step, notifiers }) => {
+          const roleIds: string[] = [];
+          const userIds: string[] = [];
+          
+          notifiers.forEach(notifier => {
+            if (notifier.roleId) {
+              roleIds.push(notifier.roleId);
+            }
+            if (notifier.userId) {
+              userIds.push(String(notifier.userId));
+            }
+          });
+          
+          step.notifyingRoleIds = roleIds;
+          step.notifyingUserIds = userIds;
+        });
+        
+        this.cdr.detectChanges();
+        
+        if (callback) {
+          setTimeout(() => callback(), 100);
+        }
+      },
+      error: (err) => {
+        this.editSteps.forEach(step => {
+          step.notifyingRoleIds = step.notifyingRoleIds || [];
+          step.notifyingUserIds = step.notifyingUserIds || [];
+        });
+        
+        if (callback) {
+          setTimeout(() => callback(), 100);
+        }
+      }
+    });
+  }
+
+  private loadAllUsersForSteps(): void {
+    this.editSteps.forEach((step, index) => {
+      step.notifyingRoleIds = step.notifyingRoleIds || [];
+      step.notifyingUserIds = step.notifyingUserIds || [];
+      step.availableUsers = step.availableUsers || [];
+      
+      setTimeout(() => {
+        this.loadUsersForNotifyingRoles(step, index);
+      }, 100);
+    });
+  }
+
+  private loadUsersForNotifyingRoles(step: any, stepIndex: number): void {
+    if (!step.usersInNotifyingRoles) {
+      step.usersInNotifyingRoles = [];
+    }
+    if (!step.availableUsers) {
+      step.availableUsers = [];
+    }
+
+    const preservedUserIds = step.notifyingUserIds 
+      ? [...step.notifyingUserIds].map((id: any) => String(id))
+      : [];
+
+    this.backendUserService.getUsers().subscribe({
+      next: (allUsers) => {
+        step.availableUsers = (allUsers || []).map((user: any) => ({
+          id: String(user.id),
+          userName: user.userName || ''
+        })).sort((a: any, b: any) => 
+          (a.userName || '').localeCompare(b.userName || '')
+        );
+        
+        if (preservedUserIds.length > 0) {
+          const validUserIds = preservedUserIds.filter((userId: string) => 
+            step.availableUsers.some((u: any) => String(u.id) === String(userId))
+          );
+          step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
+        }
+        
+        step.availableUsers = [...step.availableUsers];
+        if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
+          step.notifyingUserIds = [...step.notifyingUserIds];
+        } else {
+          step.notifyingUserIds = [];
+        }
+        if (step.notifyingRoleIds && step.notifyingRoleIds.length > 0) {
+          step.notifyingRoleIds = [...step.notifyingRoleIds];
+        } else {
+          step.notifyingRoleIds = [];
+        }
+        
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        step.availableUsers = [];
+        step.availableUsers = [...step.availableUsers];
+      }
+    });
+  }
+
+  onNotifyingRolesChange(stepIndex: number): void {
+    const step = this.editSteps[stepIndex];
+    if (!step) return;
+    
+    if (!step.notifyingRoleIds) {
+      step.notifyingRoleIds = [];
+    }
+    
+    if (!step.notifyingUserIds) {
+      step.notifyingUserIds = [];
+    }
+    
+    this.loadUsersForNotifyingRoles(step, stepIndex);
+  }
+
+  private loadNextStepsForAllSteps(): void {
+    this.editSteps.forEach((step, index) => {
+      if (step.workflowStepId) {
+        this.loadNextStepsForStep(step, index);
+      }
+    });
+  }
+
+  private loadNextStepsForStep(step: any, stepIndex: number): void {
+    if (!step.workflowStepId) {
+      step.availableNextSteps = [];
+      return;
+    }
+
+    this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).subscribe({
+      next: (nextSteps: WorkflowStepDto[]) => {
+        step.availableNextSteps = (nextSteps || []).map((ns: WorkflowStepDto) => ({
+          ...ns,
+          displayName: this.getStepDisplayName(ns)
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Failed to load next steps for step', step.workflowStepId, err);
+        step.availableNextSteps = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getStepDisplayName(step: WorkflowStepDto): string {
+    const roleName = step.applicationRoleName || this.getRoleNameById(step.applicationRoleId);
+    const entityName = this.getEntityNameById(step.applicationEntityId);
+    const orderLabel = this.orderLabel(step.stepOrder);
+    return `${orderLabel} - ${roleName}${entityName ? ` (${entityName})` : ''}`;
+  }
+
+  onSkipToStepChange(stepIndex: number): void {
+    const step = this.editSteps[stepIndex];
+    if (!step) return;
+    
+    if (step.workflowStepId) {
+      this.loadNextStepsForStep(step, stepIndex);
+    }
+  }
+
+  getRoleNameById(roleId?: string | null): string {
+    if (!roleId) return '';
+    const r = this.roles.find(role => role.id === roleId);
+    return r ? getLocalizedName(r, getCurrentLang(this.translate)) || r.name : String(roleId);
+  }
+
+  getEntityNameById(entityId?: number | null): string {
+    if (entityId === undefined || entityId === null) return '';
+    const e = this.allApplicationEntities.find(x => x.id === entityId);
+    if (e) {
+      const entity = (e as any).entity;
+      if (entity) {
+        return getLocalizedName(entity, getCurrentLang(this.translate)) || e.name || String(e.id);
+      }
+      return e.name || String(e.id);
+    }
+    return String(entityId);
+  }
+
+  orderLabel(n: number): string {
+    if (n <= 0) {
+      return String(n);
+    }
+ 
+    const key = this.getOrdinalKey(n);
+    if (key) {
+      if (key.includes('-')) {
+        return key.replace('-', ' ');
+      }
+      return this.translate.instant(key);
+    }
+ 
+    return this.translate.instant('workflow.stepNumber', { number: n });
+  }
+
+  private getOrdinalKey(n: number): string | null {
+    const predefined: { [k: number]: string } = {
+      1: 'workflow.first',
+      2: 'workflow.second',
+      3: 'workflow.third',
+      4: 'workflow.fourth',
+      5: 'workflow.fifth',
+      6: 'workflow.sixth',
+      7: 'workflow.seventh',
+      8: 'workflow.eighth',
+      9: 'workflow.ninth',
+      10: 'workflow.tenth',
+      11: 'workflow.eleventh',
+      12: 'workflow.twelfth',
+      13: 'workflow.thirteenth',
+      14: 'workflow.fourteenth',
+      15: 'workflow.fifteenth',
+      16: 'workflow.sixteenth',
+      17: 'workflow.seventeenth',
+      18: 'workflow.eighteenth',
+      19: 'workflow.nineteenth',
+      20: 'workflow.twentieth'
+    };
+
+    if (predefined[n]) {
+      return predefined[n];
+    }
+
+    const tens: { [k: number]: string } = {
+      20: 'workflow.twentieth',
+      30: 'workflow.thirtieth',
+      40: 'workflow.fortieth',
+      50: 'workflow.fiftieth',
+      60: 'workflow.sixtieth',
+      70: 'workflow.seventieth',
+      80: 'workflow.eightieth',
+      90: 'workflow.ninetieth',
+      100: 'workflow.oneHundredth'
+    };
+
+    if (tens[n]) {
+      return tens[n];
+    }
+
+    if (n > 20 && n < 100) {
+      const ones = n % 10;
+      const base = n - ones;
+      const baseKey = tens[base];
+      const onesKey = predefined[ones];
+      if (baseKey && onesKey) {
+        const baseText = this.translate.instant(baseKey).replace(/th$/i, '').trim();
+        const onesText = this.translate.instant(onesKey).toLowerCase();
+        return `${baseText}-${onesText}`;
+      }
+    }
+
+    return null;
+  }
+}
+

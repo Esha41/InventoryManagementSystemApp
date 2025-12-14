@@ -71,7 +71,7 @@
               <button type="button"
                 class="inline-flex items-center px-3 py-1 border rounded-md text-xs font-medium transition-colors"
                 [ngClass]="getStatusButtonClass(workflow.status)">
-                {{ workflow.status }}
+                {{ workflow.status === 'Active' ? ('workflow.active' | translate) : ('workflow.inactive' | translate) }}
               </button>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -131,29 +131,38 @@
 
   <!-- View Modal -->
   <div *ngIf="showViewModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] p-8 overflow-hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-[98vw] max-h-[95vh] p-8 overflow-hidden">
       <div class="flex items-start justify-between mb-4 gap-4">
         <div class="flex items-center gap-3">
           <h3 class="text-2xl font-semibold text-[var(--color-text)]">{{ selectedWorkflow?.workflowName }}</h3>
-          <span class="inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold text-white"
-            [ngClass]="selectedWorkflow?.isActive ? 'bg-green-500' : 'bg-gray-400'">
-            {{ selectedWorkflow?.isActive ? 'Active' : 'Inactive' }}
+          <span
+            class="inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold text-white"
+            [ngClass]="selectedWorkflow?.isActive ? 'bg-green-500' : 'bg-gray-400'"
+          >
+            {{ selectedWorkflow?.isActive ? ('workflow.active' | translate) : ('workflow.inactive' | translate) }}
           </span>
         </div>
         <button class="px-3 py-1.5 border rounded text-lg" (click)="closeModals()">×</button>
       </div>
-      <h4 class="text-lg font-medium text-[var(--color-text)] mb-3">Steps</h4>
+      <h4 class="text-lg font-medium text-[var(--color-text)] mb-3">{{ 'workflow.steps' | translate }}</h4>
       <div class="max-h-[60vh] overflow-auto border border-gray-200 rounded-lg">
         <table class="min-w-full">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalRole' |
-                translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalEntity' |
-                translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.role' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.applicationEntity' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalRole' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApprovalEntity' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.skipTo' | translate }}</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">
+                {{ 'workflow.rolesToBeNotified' | translate }}
+                <span class="block text-xs font-normal text-gray-500">{{ 'workflow.whenApproveRejectReturn' | translate }}</span>
+              </th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">
+                {{ 'workflow.usersToBeNotified' | translate }}
+                <span class="block text-xs font-normal text-gray-500">{{ 'workflow.whenApproveRejectReturn' | translate }}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -162,144 +171,28 @@
               <td class="px-4 py-2">{{ orderLabel(s.stepOrder || (i + 1)) }}</td>
               <td class="px-4 py-2">{{ getRoleNameById(s.applicationRoleId) }}</td>
               <td class="px-4 py-2">{{ getEntityNameById(s.applicationEntityId) }}</td>
-              <td class="px-4 py-2">{{ s.requireHigherApproval ? getRoleNameById(resolveHigherApprovalRoleId(s)) : '' }}
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getRoleNameById(resolveHigherApprovalRoleId(s)) : '' }}</td>
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getEntityNameById(resolveHigherApplicationEntityId(s)) : '' }}</td>
+              <td class="px-4 py-2 text-sm">
+                <div *ngIf="getSkipToSteps(s).length > 0; else noSkipTo" class="space-y-1">
+                  <div *ngFor="let skipStep of getSkipToSteps(s)" class="block">{{ skipStep }}</div>
+                </div>
+                <ng-template #noSkipTo>
+                  <span>-</span>
+                </ng-template>
               </td>
-              <td class="px-4 py-2">{{ s.requireHigherApproval ? getEntityNameById(resolveHigherApplicationEntityId(s))
-                : '' }}</td>
+              <td class="px-4 py-2 text-sm">{{ getNotifyingRoles(s) }}</td>
+              <td class="px-4 py-2 text-sm">{{ getNotifyingUsers(s) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div class="mt-6 text-right">
-        <button class="px-5 py-2 border rounded" (click)="closeModals()">Close</button>
+        <button class="px-5 py-2 border rounded" (click)="closeModals()">{{ 'common.close' | translate }}</button>
       </div>
     </div>
   </div>
 
-  <!-- Edit Modal -->
-  <div *ngIf="showEditModal && editForm"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 py-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-[95vw] max-h-[95vh] flex flex-col">
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-        <h3 class="text-lg font-semibold">Edit Workflow</h3>
-        <button class="px-2 py-1 border rounded hover:bg-gray-100" (click)="closeModals()">×</button>
-      </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Name</label>
-            <input type="text" [(ngModel)]="editForm.name" class="w-full px-3 py-2 border rounded" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">{{ 'workflow.workflowType' | translate }}</label>
-            <app-dropdown class="w-full" [(ngModel)]="editWorkflowType" [options]="workflowTypes" optionLabel="name"
-              optionValue="id" placeholder="{{ 'workflow.workflowType' | translate }}">
-            </app-dropdown>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Status</label>
-            <app-dropdown class="w-full" [(ngModel)]="editForm.status" [options]="workflowStatusOptions"
-              optionLabel="label" optionValue="value" placeholder="{{ 'workflow.status' | translate }}">
-            </app-dropdown>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium">Steps</label>
-              <button class="px-3 py-1.5 text-sm rounded bg-[var(--color-brand)] text-white" (click)="addEditStep()">Add
-                Step</button>
-            </div>
-            <div class="edit-steps-table-wrapper" [class.has-open-dropdown]="hasOpenDropdown">
-              <div class="edit-steps-table-scroll-container" [class.dropdown-open]="hasOpenDropdown">
-                <table class="edit-steps-table min-w-full border text-sm">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">#</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Role</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Application Entity</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{ 'workflow.higherApproval' |
-                        translate }}</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{
-                        'workflow.higherApprovalRole' | translate }}</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">{{
-                        'workflow.higherApprovalEntity' | translate }}</th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">
-                        Roles to be Notified
-                        <span class="block text-xs font-normal text-gray-500">(when approve/reject/return)</span>
-                      </th>
-                      <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">
-                        Users to be Notified
-                        <span class="block text-xs font-normal text-gray-500">(when approve/reject/return)</span>
-                      </th>
-                      <th class="px-2 py-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let s of editSteps; let i = index" class="border-t">
-                      <td class="px-2 py-2">{{ orderLabel(i + 1) }}</td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full max-w-[200px]" [(ngModel)]="s.roleId" name="erole-{{i}}"
-                          [options]="roles" optionLabel="name" optionValue="id"
-                          [placeholder]="'workflow.selectRole' | translate">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full" [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}"
-                          [options]="allApplicationEntities" optionLabel="name" optionValue="id"
-                          [placeholder]="'workflow.selectEntity' | translate">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2">
-                        <label class="inline-flex items-center gap-2 text-sm">
-                          <input type="checkbox" [(ngModel)]="s.requireHigherApproval" name="erequire-{{i}}"
-                            class="h-4 w-4" />
-                          <span>{{ 'workflow.required' | translate }}</span>
-                        </label>
-                      </td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full max-w-[200px]" [(ngModel)]="s.higherApprovalRoleId"
-                          name="ehigher-{{i}}" [disabled]="!s.requireHigherApproval" [options]="roles"
-                          optionLabel="name" optionValue="id"
-                          placeholder="{{ 'workflow.selectHigherApprovalRole' | translate }}">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full" [(ngModel)]="s.higherApplicationEntityId"
-                          name="ehigherEntity-{{i}}" [disabled]="!s.requireHigherApproval"
-                          [options]="allApplicationEntities" optionLabel="name" optionValue="id"
-                          placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full max-w-[200px]" [(ngModel)]="s.notifyingRoleIds"
-                          (ngModelChange)="onNotifyingRolesChange(i)" name="enotifyingRoles-{{i}}" [options]="roles"
-                          optionLabel="name" optionValue="id" [multiple]="true" placeholder="Select notifying roles">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2">
-                        <app-dropdown class="w-full" [(ngModel)]="s.notifyingUserIds" name="enotifyingUsers-{{i}}"
-                          [options]="s.availableUsers || []" optionLabel="userName" optionValue="id" [multiple]="true"
-                          [disabled]="!s.availableUsers || s.availableUsers.length === 0"
-                          placeholder="{{ (s.availableUsers && s.availableUsers.length > 0) ? ('workflow.selectUsers' | translate) : ('common.loadingUsers' | translate) }}">
-                        </app-dropdown>
-                      </td>
-                      <td class="px-2 py-2 text-right">
-                        <button class="px-2 py-1 border rounded" (click)="removeEditStep(i)">Delete</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="p-6 border-t border-gray-200 flex justify-end gap-2 flex-shrink-0">
-        <button class="px-4 py-2 border rounded hover:bg-gray-50" (click)="closeModals()">Cancel</button>
-        <button class="px-4 py-2 bg-[var(--color-brand)] text-white rounded hover:bg-[var(--color-brand-dark)]"
-          (click)="saveEdit()">Save</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Delete Confirmation Dialog -->
   <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="deleteDialogTitle" [message]="deleteDialogMessage"
