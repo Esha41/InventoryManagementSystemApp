@@ -722,43 +722,34 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadNextStepsForStep(step: any, stepIndex: number): void {
-    // Show only steps that come AFTER the current step in the workflow order
+    // Use API to get next steps - only for existing steps with workflowStepId
     // This populates the dropdown options - does not modify workflow data
     // Each step maintains its own identity - skip steps don't affect step properties
-    const currentOrder = step.order || (stepIndex + 1);
     
-    const nextSteps: WorkflowStepDto[] = this.editSteps
-      .filter((s, idx) => {
-        // Only include steps that come after the current step
-        const sOrder = s.order || (idx + 1);
-        return sOrder > currentOrder;
-      })
-      .map((s, idx) => {
-        // Use the step's own order from backend, not array index
-        // This ensures each step keeps its own identity regardless of skip configurations
-        const sOrder = s.order || (idx + 1);
-        return {
-          id: s.workflowStepId || 0, // Each step has unique ID
-          workflowId: this.workflowId || 0,
-          stepOrder: sOrder, // Preserve each step's own order
-          applicationRoleId: s.roleId || '', // Each step has its own role
-          applicationEntityId: s.applicationEntityId || 0, // Each step has its own entity
-          applicationRoleName: this.getRoleNameById(s.roleId),
-          mustApprove: false,
-          requireHigherApproval: !!s.requireHigherApproval, // Each step has its own higher approval settings
-          higherApprovalRoleId: s.higherApprovalRoleId || null,
-          higherApplicationEntityId: s.higherApplicationEntityId || null
-        } as WorkflowStepDto;
-      });
+    // Only call API for existing steps (those with workflowStepId)
+    if (!step.workflowStepId) {
+      // New steps don't have ID yet, so no next steps available
+      step.availableNextSteps = [];
+      return;
+    }
 
-    // Set dropdown options - only steps after current step are shown for selection
-    // Skip steps are just options, they don't change the step's own properties
-    step.availableNextSteps = nextSteps.map((ns: WorkflowStepDto) => ({
-      ...ns,
-      displayName: this.getStepDisplayName(ns)
-    }));
-    
-    this.cdr.detectChanges();
+    // Call API to get next steps for this step
+    this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).subscribe({
+      next: (nextSteps: WorkflowStepDto[]) => {
+        // Set dropdown options - API returns only steps after current step
+        // Skip steps are just options, they don't change the step's own properties
+        step.availableNextSteps = nextSteps.map((ns: WorkflowStepDto) => ({
+          ...ns,
+          displayName: this.getStepDisplayName(ns)
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load next steps for step', step.workflowStepId, err);
+        step.availableNextSteps = [];
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   getStepDisplayName(step: WorkflowStepDto): string {
