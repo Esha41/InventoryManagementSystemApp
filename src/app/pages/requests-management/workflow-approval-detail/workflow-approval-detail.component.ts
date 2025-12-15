@@ -234,16 +234,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
           this.loadRequestItems(baseRequest).then(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
-            // Auto-select first transition if available
-            this.selectFirstTransition();
+            // Do not auto-select - user must manually select skip step
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
             this.loading = false;
           }).catch(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
-            // Auto-select first transition if available
-            this.selectFirstTransition();
+            // Do not auto-select - user must manually select skip step
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
@@ -455,6 +453,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   approveRequest(): void {
     if (this.processing || !this.requestDetail) return;
 
+    // Validate: If there are multiple skip-to step options, user must select one
+    const transitions = this.getCurrentStepTransitions();
+    if (transitions.length > 1 && !this.selectedNextStepId) {
+      this.translateService.get([
+        'toast.error',
+        'workflowApprovalDetail.selectSkipToStepRequired',
+        'workflowApprovalDetail.skipToStep'
+      ]).subscribe(translations => {
+        const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Skip To Step';
+        const errorMsg = translations['workflowApprovalDetail.selectSkipToStepRequired'] || 
+          `Please select a step to skip to from the "${skipToStepLabel}" dropdown before approving this request.`;
+        const errorTitle = translations['toast.error'] || 'Action Required';
+        this.toastService.error(errorMsg, errorTitle);
+      });
+      return;
+    }
+
     // Show confirmation dialog
     this.translateService.get([
       'workflowApprovalDetail.confirmApprove',
@@ -620,23 +635,22 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Auto-select the first transition if available
-   * If only one transition exists, automatically select it (no dropdown needed)
+   * Do not auto-select transitions - user must manually select
+   * This ensures user explicitly chooses which step to skip to
    */
   selectFirstTransition(): void {
-    const transitions = this.getCurrentStepTransitions();
-    if (transitions.length > 0 && !this.selectedNextStepId) {
-      // Always select the first transition (will be used even if dropdown is hidden)
-      this.selectedNextStepId = transitions[0].targetWorkflowStepId;
-    }
+    // Removed auto-selection - user must manually select skip step
+    // Even if there's only one option, user should explicitly choose it
   }
 
   /**
    * Check if dropdown should be shown (only if multiple transitions exist)
+   * User must manually select - no auto-selection
    */
   shouldShowTransitionsDropdown(): boolean {
     const transitions = this.getCurrentStepTransitions();
-    // Only show dropdown if there are multiple options
+    // Only show dropdown if there are multiple options (more than one)
+    // User must manually select - no default selection
     return transitions.length > 1;
   }
 

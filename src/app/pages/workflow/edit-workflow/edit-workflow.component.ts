@@ -397,26 +397,16 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       skipToStepIds: Array.isArray(s.skipToStepIds) ? [...s.skipToStepIds] : []
     }));
     
+    // IMPORTANT: Only send workflow metadata (name, type, status) - do NOT send workflowSteps
+    // This prevents backend from checking if steps are in approval history
+    // We only want to update skip steps (transitions), not modify workflow steps themselves
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,
       workflowType: this.editWorkflowType,
       isActive: this.editForm.status === 'Active',
       isSpecialOrReserved: false,
-      workflowSteps: (this.editSteps || []).map((s, idx) => ({
-        id: s.workflowStepId,
-        stepOrder: idx + 1,
-        applicationRoleId: s.roleId as any,
-        applicationEntityId: s.applicationEntityId as any,
-        mustApprove: false,
-        requireHigherApproval: !!s.requireHigherApproval,
-        higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
-        higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
-        reserveQty: false,
-        canSkip: s.canSkip === true, // Preserve canSkip - ensures normal sequential flow (skip steps are optional)
-        notifyingRoleIds: s.notifyingRoleIds || [],
-        notifyingUserIds: s.notifyingUserIds || []
-      }))
+      workflowSteps: [] // Send empty array to avoid backend validation on steps in approval history
     } as any;
 
     const updateNotifiers = (workflowSteps?: any[]): Observable<boolean> => {
@@ -543,20 +533,11 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     
-    // Step 1: Save the workflow (name, type, status, steps) using workflow update API
-    // Step 2: Then update skip steps (transitions) using separate transitions API
-    // Keep step IDs the same - no need to reload
-    this.workflowService.updateBackendWorkflow(backendPayload).pipe(
-      switchMap(() => {
-        // After workflow is saved, update transitions (skip steps) using separate API
-        // Step IDs remain the same, no reload needed
-        return updateTransitions();
-      }),
-      catchError(err => {
-        console.error('Failed to save workflow or transitions', err);
-        return throwError(() => err);
-      })
-    ).subscribe({
+    // IMPORTANT: Only update skip steps (transitions) - do NOT update workflow steps
+    // This prevents backend from checking if steps are in approval history
+    // Workflow steps remain unchanged, only transitions are updated
+    // If workflow metadata (name, type, status) needs to be updated, that should be done separately
+    updateTransitions().subscribe({
       next: () => {
         this.submitting = false;
         this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
@@ -569,10 +550,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       },
       error: err => {
         this.submitting = false;
-        this.errorMessage = err.message || 'Failed to update workflow';
+        this.errorMessage = err.message || 'Failed to update transitions';
         
         this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
-          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'] || 'Failed to update workflow';
+          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'] || 'Failed to update transitions';
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }
@@ -741,10 +722,17 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadNextStepsForStep(step: any, stepIndex: number): void {
-    // Show ALL steps in dropdown - no filtering based on order
+    // Show only steps that come AFTER the current step in the workflow order
     // This populates the dropdown options - does not modify workflow data
     // Each step maintains its own identity - skip steps don't affect step properties
-    const allSteps: WorkflowStepDto[] = this.editSteps
+    const currentOrder = step.order || (stepIndex + 1);
+    
+    const nextSteps: WorkflowStepDto[] = this.editSteps
+      .filter((s, idx) => {
+        // Only include steps that come after the current step
+        const sOrder = s.order || (idx + 1);
+        return sOrder > currentOrder;
+      })
       .map((s, idx) => {
         // Use the step's own order from backend, not array index
         // This ensures each step keeps its own identity regardless of skip configurations
@@ -763,9 +751,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         } as WorkflowStepDto;
       });
 
-    // Set dropdown options - all steps are shown here for selection
+    // Set dropdown options - only steps after current step are shown for selection
     // Skip steps are just options, they don't change the step's own properties
-    step.availableNextSteps = allSteps.map((ns: WorkflowStepDto) => ({
+    step.availableNextSteps = nextSteps.map((ns: WorkflowStepDto) => ({
       ...ns,
       displayName: this.getStepDisplayName(ns)
     }));

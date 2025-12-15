@@ -731,10 +731,11 @@
                 </app-dropdown>
               </div>
 
-              <!-- Transitions (Skip-to Steps) Dropdown - Only show if multiple options -->
+              <!-- Transitions (Skip-to Steps) Dropdown - User must manually select, no auto-selection -->
               <div *ngIf="hasTransitions() && shouldShowTransitionsDropdown()">
                 <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                   {{ 'workflowApprovalDetail.skipToStep' | translate }}
+                  <span class="text-[var(--color-error)]">*</span>
                 </label>
                 <app-dropdown 
                   class="w-full" 

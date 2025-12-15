@@ -1938,6 +1938,7 @@
     "success": {
       "supplySubmitted": "Supply submitted successfully"
     },
+    "selectSkipToStepRequired": "Please select a step to skip to from the \"Skip To Step\" dropdown before approving this request.",
     "errors": {
       "invalidRequestData": "Invalid request data",
       "failedToLoadRanks": "Failed to load ranks",
