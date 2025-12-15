@@ -15,6 +15,32 @@ export interface FileUploadDto {
 /**
  * Approval step in the workflow (for workflow approval detail view)
  */
+export interface WorkflowStepTransition {
+  id: number;
+  sourceWorkflowStepId: number;
+  targetWorkflowStepId: number;
+  targetStep?: {
+    id: number;
+    workflowId: number;
+    stepOrder: number;
+    applicationRoleId?: string;
+    applicationRoleName?: string;
+    applicationRole?: {
+      id: string;
+      name?: string;
+      nameEn?: string;
+      nameAr?: string;
+    };
+    applicationEntityId?: number;
+    requireHigherApproval?: boolean;
+    higherApprovalRoleId?: string | null;
+    higherApplicationEntityId?: number | null;
+    mustApprove?: boolean;
+    reserveQty?: boolean;
+    canSkip?: boolean;
+  };
+}
+
 export interface WorkflowApprovalStep {
   id: number;
   workflowApprovalstepId?: number;
@@ -36,6 +62,7 @@ export interface WorkflowApprovalStep {
   higherApprovalRoleId?: string;
   isCurrentUserApprover?: boolean;
   files?: FileUploadDto[];
+  transitions?: WorkflowStepTransition[];
 }
 
 /**

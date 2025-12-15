@@ -105,6 +105,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   previousWorkflowSteps: any[] = [];
   loadingPreviousSteps: boolean = false;
 
+  // Transitions (skip-to steps) for current step
+  selectedNextStepId: number | null = null;
+
   // Confirmation dialog state
   confirmationDialog = {
     isOpen: false,
@@ -206,17 +209,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.apiService.getWithAuth<BaseRequestDto[]>(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
+    // Call specific endpoint to get single request by ID instead of loading all requests
+    this.apiService.getWithAuth<BaseRequestDto>(
+      API_ENDPOINTS.WORKFLOW_APPROVAL.BASE_REQUEST_BY_ID(this.requestId)
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          const data: BaseRequestDto[] = Array.isArray(response)
-            ? response
-            : (response?.data || []);
-
-          const baseRequest = data.find(r => r.id === this.requestId);
+          // Handle API response format: { succeeded: true, data: {...} } or direct BaseRequestDto
+          const baseRequest: BaseRequestDto = response?.succeeded && response?.data
+            ? response.data
+            : (response?.id ? response : null);
 
           if (!baseRequest) {
             this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
@@ -231,12 +234,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
           this.loadRequestItems(baseRequest).then(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
+            // Auto-select first transition if available
+            this.selectFirstTransition();
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
             this.loading = false;
           }).catch(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
+            // Auto-select first transition if available
+            this.selectFirstTransition();
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
@@ -476,6 +483,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
                 this.comments = '';
                 this.sendToHigherApproval = 'no';
                 this.approvalFiles = [];
+                this.selectedNextStepId = null; // Reset transition selection
                 // Notify other components about the status update
                 this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
                 // Reload to get updated status and approval history
@@ -526,6 +534,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
                 this.comments = '';
                 this.sendToHigherApproval = 'no';
                 this.approvalFiles = [];
+                this.selectedNextStepId = null; // Reset transition selection
                 // Notify other components about the status update
                 this.requestStatusUpdateService.notifyRequestStatusUpdated(this.requestId);
                 // Reload to get updated status and approval history
@@ -543,6 +552,92 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
       );
     });
+  }
+
+  /**
+   * Get transitions (skip-to steps) for the current pending step
+   */
+  getCurrentStepTransitions(): any[] {
+    if (!this.requestDetail || !this.requestDetail.approvalHistory) {
+      return [];
+    }
+
+    const currentPendingStep = this.requestDetail.approvalHistory.find(
+      step => step.status === 'Pending' && step.isPending
+    );
+
+    if (!currentPendingStep) {
+      return [];
+    }
+
+    // Check for transitions property (may be in different formats from backend)
+    const transitions = currentPendingStep.transitions || 
+                       (currentPendingStep as any).Transitions ||
+                       [];
+
+    if (!Array.isArray(transitions) || transitions.length === 0) {
+      return [];
+    }
+
+    return transitions;
+  }
+
+  /**
+   * Get display name for a transition target step (for dropdown)
+   */
+  getTransitionDisplayName = (option: any): string => {
+    if (!option) return '';
+    
+    const transition = typeof option === 'object' && 'value' in option ? option.value : option;
+    if (!transition || !transition.targetStep) {
+      return '';
+    }
+
+    const targetStep = transition.targetStep;
+    const stepOrder = targetStep.stepOrder || '';
+    const roleName = targetStep.applicationRole?.name || targetStep.applicationRole?.nameEn || targetStep.applicationRoleName || 'Unknown Role';
+    const entityName = targetStep.applicationEntityId ? ` (Entity ${targetStep.applicationEntityId})` : '';
+
+    return `Step ${stepOrder}: ${roleName}${entityName}`;
+  }
+
+  /**
+   * Check if current step has transitions
+   */
+  hasTransitions(): boolean {
+    const transitions = this.getCurrentStepTransitions();
+    // Debug: log to console to help diagnose
+    if (this.requestDetail && this.requestDetail.approvalHistory) {
+      const currentPendingStep = this.requestDetail.approvalHistory.find(
+        step => step.status === 'Pending' && step.isPending
+      );
+      if (currentPendingStep) {
+        console.log('Current pending step:', currentPendingStep);
+        console.log('Transitions found:', transitions);
+      }
+    }
+    return transitions.length > 0;
+  }
+
+  /**
+   * Auto-select the first transition if available
+   * If only one transition exists, automatically select it (no dropdown needed)
+   */
+  selectFirstTransition(): void {
+    const transitions = this.getCurrentStepTransitions();
+    if (transitions.length > 0 && !this.selectedNextStepId) {
+      // Always select the first transition (will be used even if dropdown is hidden)
+      this.selectedNextStepId = transitions[0].targetWorkflowStepId;
+    }
+  }
+
+  /**
+   * Check if dropdown should be shown (only if multiple transitions exist)
+   */
+  shouldShowTransitionsDropdown(): boolean {
+    const transitions = this.getCurrentStepTransitions();
+    // Only show dropdown if there are multiple options
+    return transitions.length > 1;
   }
 
   /**
@@ -696,6 +791,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     formData.append('BaseRequestID', this.requestId.toString());
     formData.append('IsApproved', isApproved.toString());
     formData.append('Action', isApproved ? RequestStatusEnum.Approved.toString() : RequestStatusEnum.Rejected.toString());
+    
+    // Add NextStepId if a transition is selected (for skip-to functionality)
+    // Always send if selected, even if it's the auto-selected first transition
+    if (isApproved && this.selectedNextStepId != null) {
+      formData.append('NextStepId', this.selectedNextStepId.toString());
+      console.log('Sending NextStepId in approval:', this.selectedNextStepId);
+    }
 
 
     if (this.comments) {

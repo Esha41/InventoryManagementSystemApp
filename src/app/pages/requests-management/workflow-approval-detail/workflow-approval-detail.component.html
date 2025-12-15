@@ -731,6 +731,24 @@
                 </app-dropdown>
               </div>
 
+              <!-- Transitions (Skip-to Steps) Dropdown - Only show if multiple options -->
+              <div *ngIf="hasTransitions() && shouldShowTransitionsDropdown()">
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                  {{ 'workflowApprovalDetail.skipToStep' | translate }}
+                </label>
+                <app-dropdown 
+                  class="w-full" 
+                  [(ngModel)]="selectedNextStepId" 
+                  [options]="getCurrentStepTransitions()"
+                  [optionLabelFn]="getTransitionDisplayName"
+                  optionValue="targetWorkflowStepId"
+                  [placeholder]="'workflowApprovalDetail.selectSkipToStep' | translate"
+                  [disabled]="processing">
+                </app-dropdown>
+                <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                  {{ 'workflowApprovalDetail.skipToStepHint' | translate }}
+                </p>
+              </div>
 
               <!-- File Upload for Approval/Rejection -->
               <div>

@@ -545,12 +545,25 @@ export class WorkflowComponent implements OnInit, OnDestroy {
    * Get formatted list of skip-to steps for a step (returns array for line-by-line display)
    */
   getSkipToSteps(step: any): string[] {
-    if (!step?.allowedSkipTargetIds || !Array.isArray(step.allowedSkipTargetIds) || step.allowedSkipTargetIds.length === 0) {
+    // Extract skip-to step IDs from transitions array first
+    let skipToStepIds: number[] = [];
+    
+    if (Array.isArray(step?.transitions) && step.transitions.length > 0) {
+      // Extract targetWorkflowStepId from transitions
+      skipToStepIds = step.transitions
+        .map((t: any) => t.targetWorkflowStepId)
+        .filter((id: any) => id != null && id !== undefined);
+    } else if (Array.isArray(step?.allowedSkipTargetIds) && step.allowedSkipTargetIds.length > 0) {
+      // Fallback to allowedSkipTargetIds if transitions not available
+      skipToStepIds = [...step.allowedSkipTargetIds];
+    }
+    
+    if (skipToStepIds.length === 0) {
       return [];
     }
 
     const steps = (this.selectedWorkflow?.workflowSteps || []) as any[];
-    const skipToStepLabels = step.allowedSkipTargetIds
+    const skipToStepLabels = skipToStepIds
       .map((targetId: number) => {
         const targetStep = steps.find(s => s.id === targetId);
         if (!targetStep) return null;

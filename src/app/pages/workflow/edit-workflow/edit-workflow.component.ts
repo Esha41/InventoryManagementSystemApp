@@ -67,6 +67,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
+  allUsers: Array<{ id: string; userName: string; roles?: string[] }> = [];
 
   hasOpenDropdown = false;
   private mutationObserver?: MutationObserver;
@@ -148,25 +149,45 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         };
         this.editWorkflowType = wf?.workflowType || 1;
         const steps = (wf?.workflowSteps || []) as any[];
-        this.editSteps = steps.map((s, idx) => ({ 
-          order: s.stepOrder || idx + 1, 
-          roleId: s.applicationRoleId || null, 
-          applicationEntityId: s.applicationEntityId || null,
-          requireHigherApproval: !!s.requireHigherApproval,
-          higherApprovalRoleId: s.higherApprovalRoleId || null,
-          higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
-          notifyingRoleIds: [],
-          notifyingUserIds: [],
-          workflowStepId: s.id,
-          usersInNotifyingRoles: [],
-          availableUsers: [],
-          skipToStepIds: Array.isArray((s as any).allowedSkipTargetIds) ? [...(s as any).allowedSkipTargetIds] : [],
-          availableNextSteps: []
-        }));
+        
+        // Load workflow steps exactly as they are - no modification
+        // Only extract transition step IDs to display in dropdown
+        this.editSteps = steps.map((s, idx) => {
+          // Extract transition step IDs (skip-to steps) - only for display in dropdown
+          // These are read-only for display purposes, workflow data remains unchanged
+          let skipToStepIds: number[] = [];
+          if (Array.isArray((s as any).transitions) && (s as any).transitions.length > 0) {
+            skipToStepIds = (s as any).transitions
+              .map((t: any) => t.targetWorkflowStepId)
+              .filter((id: any) => id != null && id !== undefined);
+          } else if (Array.isArray((s as any).allowedSkipTargetIds)) {
+            // Fallback to allowedSkipTargetIds if transitions not available
+            skipToStepIds = [...(s as any).allowedSkipTargetIds];
+          }
+          
+          // Load step data as-is from backend - no modification
+          return {
+            order: s.stepOrder || idx + 1, 
+            roleId: s.applicationRoleId || null, 
+            applicationEntityId: s.applicationEntityId || null,
+            requireHigherApproval: !!s.requireHigherApproval,
+            higherApprovalRoleId: s.higherApprovalRoleId || null,
+            higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
+            notifyingRoleIds: [],
+            notifyingUserIds: [],
+            workflowStepId: s.id, // Keep step ID as-is from backend
+            usersInNotifyingRoles: [],
+            availableUsers: [],
+            skipToStepIds: skipToStepIds, // Transition steps - only for dropdown display
+            availableNextSteps: [] // Will be populated for dropdown options
+          };
+        });
         
         this.loadNotifiersForSteps(() => {
-          this.loadAllUsersForSteps();
-          this.loadNextStepsForAllSteps();
+          this.loadAllUsers(() => {
+            this.loadAllUsersForSteps();
+            this.loadNextStepsForAllSteps();
+          });
         });
         
         this.loading = false;
@@ -306,13 +327,26 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     };
     this.editSteps.push(newStep);
     setTimeout(() => {
-      this.loadUsersForNotifyingRoles(newStep, this.editSteps.length - 1);
+      // If users haven't been loaded yet, load them first
+      if (this.allUsers.length === 0) {
+        this.loadAllUsers(() => {
+          this.loadUsersForNotifyingRoles(newStep, this.editSteps.length - 1);
+          // Recalculate next steps for all steps after adding new step
+          this.loadNextStepsForAllSteps();
+        });
+      } else {
+        this.loadUsersForNotifyingRoles(newStep, this.editSteps.length - 1);
+        // Recalculate next steps for all steps after adding new step
+        this.loadNextStepsForAllSteps();
+      }
     }, 0);
   }
 
   removeEditStep(index: number): void { 
     this.editSteps.splice(index, 1); 
     this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 })); 
+    // Recalculate next steps for all steps after removal
+    this.loadNextStepsForAllSteps();
   }
 
   onCancel(): void {
@@ -346,10 +380,12 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       };
     });
 
+    // Capture transition data (skip-to steps) only - create a snapshot to preserve original values
+    // This ensures we only update transitions and don't accidentally modify workflow steps
     const transitionData = this.editSteps.map((s, idx) => ({
       originalIndex: idx,
       workflowStepId: s.workflowStepId,
-      skipToStepIds: s.skipToStepIds || []
+      skipToStepIds: Array.isArray(s.skipToStepIds) ? [...s.skipToStepIds] : []
     }));
     
     const backendPayload = {
@@ -447,36 +483,42 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       );
     };
 
-    const updateTransitions = (workflowSteps?: any[]): Observable<boolean> => {
+    const updateTransitions = (): Observable<boolean> => {
       const transitionSaveObservables: Observable<boolean>[] = [];
       
-      this.editSteps.forEach((step, idx) => {
-        const transitionInfo = transitionData[idx];
-        if (transitionInfo) {
-          // For new steps, try to find the step ID from the reloaded workflow
-          let stepId = step.workflowStepId;
-          if (!stepId && workflowSteps && workflowSteps.length > idx) {
-            stepId = workflowSteps[idx]?.id;
-          }
+      // IMPORTANT: Only update transitions (skip-to steps) - do NOT update workflow steps
+      // This function uses the captured transitionData to ensure we only save transitions
+      // and preserve all original step properties (role, entity, higher approval, etc.)
+      transitionData.forEach((transitionInfo) => {
+        const stepId = transitionInfo.workflowStepId;
+        
+        // Only update transitions for existing steps (skip new steps without IDs)
+        if (stepId) {
+          // Use captured transition data - ensures we only update skip-to steps
+          const targetStepIds = Array.isArray(transitionInfo.skipToStepIds) 
+            ? [...transitionInfo.skipToStepIds].filter(id => id != null && id !== undefined)
+            : [];
           
-          if (stepId) {
-            const targetStepIds = transitionInfo.skipToStepIds || [];
-            
-            transitionSaveObservables.push(
-              this.workflowService.setStepTransitions(
-                stepId,
-                targetStepIds
-              ).pipe(
-                catchError(err => {
-                  console.error('Failed to update transitions for step', stepId, err);
-                  return new Observable<boolean>(observer => {
-                    observer.next(true);
-                    observer.complete();
-                  });
-                })
-              )
-            );
-          }
+          console.log(`Updating transitions only for step ${stepId}:`, { targetStepIds });
+          
+          // Call API that ONLY updates transitions, does NOT touch workflow step properties
+          transitionSaveObservables.push(
+            this.workflowService.setStepTransitions(
+              stepId,
+              targetStepIds
+            ).pipe(
+              tap(() => {
+                console.log(`Successfully updated transitions for step ${stepId} (workflow step unchanged)`);
+              }),
+              catchError(err => {
+                console.error('Failed to update transitions for step', stepId, err);
+                return new Observable<boolean>(observer => {
+                  observer.next(true);
+                  observer.complete();
+                });
+              })
+            )
+          );
         }
       });
       
@@ -490,28 +532,19 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     };
 
     this.submitting = true;
+    
+    // Step 1: Save the workflow (name, type, status, steps) using workflow update API
+    // Step 2: Then update skip steps (transitions) using separate transitions API
+    // Keep step IDs the same - no need to reload
     this.workflowService.updateBackendWorkflow(backendPayload).pipe(
-      catchError(err => {
-        return new Observable<any>(observer => {
-          observer.next(null);
-          observer.complete();
-        });
-      }),
-      // Reload workflow to get step IDs for newly created steps
       switchMap(() => {
-        return this.workflowService.getWorkflowDetailById(editId).pipe(
-          catchError(() => of(null))
-        );
+        // After workflow is saved, update transitions (skip steps) using separate API
+        // Step IDs remain the same, no reload needed
+        return updateTransitions();
       }),
-      switchMap((reloadedWorkflow: any) => {
-        // Extract workflow steps from reloaded workflow if available
-        const workflowSteps = reloadedWorkflow?.workflowSteps || [];
-        return forkJoin([
-          updateNotifiers(workflowSteps), 
-          updateTransitions(workflowSteps)
-        ]).pipe(
-          map(() => true)
-        );
+      catchError(err => {
+        console.error('Failed to save workflow or transitions', err);
+        return throwError(() => err);
       })
     ).subscribe({
       next: () => {
@@ -594,6 +627,31 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadAllUsers(callback?: () => void): void {
+    // Load users only once and cache them
+    this.backendUserService.getUsers().subscribe({
+      next: (users) => {
+        this.allUsers = (users || []).map((user: any) => ({
+          id: String(user.id),
+          userName: user.userName || '',
+          roles: user.roleIds || []
+        })).sort((a: any, b: any) => 
+          (a.userName || '').localeCompare(b.userName || '')
+        );
+        
+        if (callback) {
+          callback();
+        }
+      },
+      error: (err) => {
+        this.allUsers = [];
+        if (callback) {
+          callback();
+        }
+      }
+    });
+  }
+
   private loadAllUsersForSteps(): void {
     this.editSteps.forEach((step, index) => {
       step.notifyingRoleIds = step.notifyingRoleIds || [];
@@ -618,41 +676,29 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       ? [...step.notifyingUserIds].map((id: any) => String(id))
       : [];
 
-    this.backendUserService.getUsers().subscribe({
-      next: (allUsers) => {
-        step.availableUsers = (allUsers || []).map((user: any) => ({
-          id: String(user.id),
-          userName: user.userName || ''
-        })).sort((a: any, b: any) => 
-          (a.userName || '').localeCompare(b.userName || '')
-        );
-        
-        if (preservedUserIds.length > 0) {
-          const validUserIds = preservedUserIds.filter((userId: string) => 
-            step.availableUsers.some((u: any) => String(u.id) === String(userId))
-          );
-          step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
-        }
-        
-        step.availableUsers = [...step.availableUsers];
-        if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
-          step.notifyingUserIds = [...step.notifyingUserIds];
-        } else {
-          step.notifyingUserIds = [];
-        }
-        if (step.notifyingRoleIds && step.notifyingRoleIds.length > 0) {
-          step.notifyingRoleIds = [...step.notifyingRoleIds];
-        } else {
-          step.notifyingRoleIds = [];
-        }
-        
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        step.availableUsers = [];
-        step.availableUsers = [...step.availableUsers];
-      }
-    });
+    // Use cached users instead of making API call
+    step.availableUsers = [...this.allUsers];
+    
+    if (preservedUserIds.length > 0) {
+      const validUserIds = preservedUserIds.filter((userId: string) => 
+        step.availableUsers.some((u: any) => String(u.id) === String(userId))
+      );
+      step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
+    }
+    
+    step.availableUsers = [...step.availableUsers];
+    if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
+      step.notifyingUserIds = [...step.notifyingUserIds];
+    } else {
+      step.notifyingUserIds = [];
+    }
+    if (step.notifyingRoleIds && step.notifyingRoleIds.length > 0) {
+      step.notifyingRoleIds = [...step.notifyingRoleIds];
+    } else {
+      step.notifyingRoleIds = [];
+    }
+    
+    this.cdr.detectChanges();
   }
 
   onNotifyingRolesChange(stepIndex: number): void {
@@ -667,37 +713,50 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       step.notifyingUserIds = [];
     }
     
-    this.loadUsersForNotifyingRoles(step, stepIndex);
+    // If users haven't been loaded yet, load them first
+    if (this.allUsers.length === 0) {
+      this.loadAllUsers(() => {
+        this.loadUsersForNotifyingRoles(step, stepIndex);
+      });
+    } else {
+      this.loadUsersForNotifyingRoles(step, stepIndex);
+    }
   }
 
   private loadNextStepsForAllSteps(): void {
+    // Populate dropdown options for skip-to steps - only for display, no workflow modification
     this.editSteps.forEach((step, index) => {
-      if (step.workflowStepId) {
-        this.loadNextStepsForStep(step, index);
-      }
+      this.loadNextStepsForStep(step, index);
     });
   }
 
   private loadNextStepsForStep(step: any, stepIndex: number): void {
-    if (!step.workflowStepId) {
-      step.availableNextSteps = [];
-      return;
-    }
+    // Show ALL steps in dropdown - no filtering based on order
+    // This populates the dropdown options - does not modify workflow data
+    const allSteps: WorkflowStepDto[] = this.editSteps
+      .map((s, idx) => {
+        const sOrder = s.order || idx + 1;
+        return {
+          id: s.workflowStepId || 0,
+          workflowId: this.workflowId || 0,
+          stepOrder: sOrder,
+          applicationRoleId: s.roleId || '',
+          applicationEntityId: s.applicationEntityId || 0,
+          applicationRoleName: this.getRoleNameById(s.roleId),
+          mustApprove: false,
+          requireHigherApproval: !!s.requireHigherApproval,
+          higherApprovalRoleId: s.higherApprovalRoleId || null,
+          higherApplicationEntityId: s.higherApplicationEntityId || null
+        } as WorkflowStepDto;
+      });
 
-    this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).subscribe({
-      next: (nextSteps: WorkflowStepDto[]) => {
-        step.availableNextSteps = (nextSteps || []).map((ns: WorkflowStepDto) => ({
-          ...ns,
-          displayName: this.getStepDisplayName(ns)
-        }));
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        console.error('Failed to load next steps for step', step.workflowStepId, err);
-        step.availableNextSteps = [];
-        this.cdr.detectChanges();
-      }
-    });
+    // Set dropdown options - all steps are shown here for selection
+    step.availableNextSteps = allSteps.map((ns: WorkflowStepDto) => ({
+      ...ns,
+      displayName: this.getStepDisplayName(ns)
+    }));
+    
+    this.cdr.detectChanges();
   }
 
   getStepDisplayName(step: WorkflowStepDto): string {
@@ -711,9 +770,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     const step = this.editSteps[stepIndex];
     if (!step) return;
     
-    if (step.workflowStepId) {
-      this.loadNextStepsForStep(step, stepIndex);
-    }
+    // Recalculate next steps when step order changes
+    this.loadNextStepsForStep(step, stepIndex);
   }
 
   getRoleNameById(roleId?: string | null): string {

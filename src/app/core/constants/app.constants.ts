@@ -79,14 +79,17 @@ export const API_ENDPOINTS = {
     BASE: '/WorkflowApproval',
     ALL_ORDERS: '/WorkflowApproval/AllOrders',
     ALL_BASE_REQUESTS: '/WorkflowApproval/AllBaseRequests',
+    BASE_REQUEST_BY_ID: (requestId: number) => `/WorkflowApproval/BaseRequest/${requestId}`,
     APPROVE_REJECT: '/WorkflowApproval/approve-reject',
   },
 
   // requests management
   REQUESTS: {
-    BASE: '/requests',
-    BY_ID: (id: number) => `/requests/${id}`,
-    ALL: '/requests/all',
+    BASE: '/Request',
+    BY_ID: (id: number) => `/Request/${id}`,
+    ALL: '/Request',
+    BY_DEPARTMENT: (departmentId: number) => `/Request/department/${departmentId}`,
+    USER_ACTIONS: '/Request/user-actions',
   },
 
   // Return Requests
