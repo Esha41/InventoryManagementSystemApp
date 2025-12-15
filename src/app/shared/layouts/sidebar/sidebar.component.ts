@@ -292,21 +292,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             ? this.authService.hasAllPermissions(child.permissions)
             : this.authService.hasAnyPermission(child.permissions);
 
-          // Detailed logging for warehouse children
-          if (item.label === 'nav.warehouse') {
-            console.log(`Warehouse Child Menu Check [${child.label}]:`, {
-              childLabel: child.label,
-              childRoute: child.route,
-              requiredPermissions: child.permissions,
-              hasChildPermission: hasChildPermission,
-              requireAll: child.requireAll,
-              userPermissions: user?.permissions?.map(p => `${p.id || ''}|${p.claimType || ''}`).filter(Boolean) || [],
-              permissionChecks: child.permissions?.map(perm => ({
-                permission: perm,
-                hasPermission: this.authService.hasPermission(perm)
-              })) || []
-            });
-          }
+
 
           return hasChildPermission;
         });
@@ -341,37 +327,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
         ? this.authService.hasAllPermissions(item.permissions)
         : this.authService.hasAnyPermission(item.permissions);
 
-      // Debug specific items
-      if (item.label === 'nav.warehouse') {
-        console.log('Warehouse Menu Item Check:', {
-          label: item.label,
-          requiredPermissions: item.permissions,
-          hasPermission: hasPermission,
-          originalChildrenCount: this.allMenuItems.find(i => i.label === 'nav.warehouse')?.children?.length || 0,
-          filteredChildrenCount: item.children?.length || 0,
-          filteredChildren: item.children?.map(c => ({
-            label: c.label,
-            route: c.route,
-            permissions: c.permissions
-          })) || [],
-          isAuthenticated: isAuthenticated,
-          hasPermissionsLoaded: hasPermissionsLoaded,
-          userPermissions: user?.permissions?.map(p => `${p.id || ''}|${p.claimType || ''}`).filter(Boolean) || []
-        });
-      }
+
 
       // If item has children, show it if user has permission OR if any child is visible
       if (item.children && item.children.length > 0) {
         const shouldShow = hasPermission || item.children.length > 0;
         if (item.label === 'nav.warehouse') {
-          console.log('Warehouse visibility decision:', {
-            hasPermission,
-            visibleChildrenCount: item.children.length,
-            childrenVisible: item.children.length > 0,
-            willShow: shouldShow,
-            allChildren: item.children.map(c => ({ label: c.label, route: c.route }))
-          });
-
           // Auto-expand warehouse menu if it has visible children
           if (shouldShow && item.children.length > 0) {
             this.expandedMenus.add(item.label);
@@ -392,35 +353,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return hasChildren;
     });
 
-    // Debug logging to help identify permission issues
-    const userPermissionIds = user?.permissions?.map(p => p.id || p.claimType).filter(Boolean) || [];
-    const warehouseViewCheck = this.authService.hasPermission('warehouse.view');
-    const warehousePageViewCheck = this.authService.hasPermission('warehousepage.view');
-    const warehouseItem = this.menuItems.find(item => item.label === 'nav.warehouse');
 
-    console.log('Sidebar Filtering Summary:', {
-      userName: user?.userName,
-      totalPermissions: user?.permissions?.length || 0,
-      userPermissionIds: userPermissionIds,
-      warehousePermissionCheck: {
-        'warehouse.view': warehouseViewCheck,
-        'warehousepage.view': warehousePageViewCheck,
-        'hasAny': warehouseViewCheck || warehousePageViewCheck
-      },
-      warehouseItemInMenu: warehouseItem ? {
-        label: warehouseItem.label,
-        hasPermission: warehouseItem.permissions ? this.authService.hasAnyPermission(warehouseItem.permissions) : true,
-        childrenCount: warehouseItem.children?.length || 0,
-        children: warehouseItem.children?.map(c => ({
-          label: c.label,
-          route: c.route,
-          visible: true,
-          permissions: c.permissions,
-          hasPermission: c.permissions ? this.authService.hasAnyPermission(c.permissions) : true
-        })) || []
-      } : 'NOT FOUND',
-      allVisibleMenus: this.menuItems.map(item => item.label)
-    });
   }
 
   /**

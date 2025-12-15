@@ -325,17 +325,12 @@ export class NotificationService implements OnDestroy {
     this.hubConnection.start()
       .then(() => {
         this.configService.log('Notification hub connected successfully');
-        console.log('[NotificationService] SignalR hub connected. Listening for notifications...');
         this.joinUserGroup().catch((err) => {
           this.configService.logError('Failed to join user group', err);
-          console.error('[NotificationService] Failed to join user group:', err);
         });
       })
       .catch((error: unknown) => {
         this.configService.logError('Failed to start notification hub connection', error);
-        console.error('[NotificationService] Failed to start SignalR connection:', error);
-        console.error('[NotificationService] Hub URL:', hubUrl);
-        console.error('[NotificationService] Current User:', this.currentUser?.id);
         this.scheduleReconnect();
       });
   }
@@ -368,7 +363,6 @@ export class NotificationService implements OnDestroy {
   }
 
   private handleIncomingNotification(dto: NotificationDto): void {
-    console.log('[NotificationService] Received notification via SignalR:', dto);
     const notification = this.mapDtoToNotification(dto);
     const current = this.notificationsSubject.getValue();
     const updated = [notification, ...current.filter(item => item.id !== notification.id)];
@@ -384,12 +378,7 @@ export class NotificationService implements OnDestroy {
     const toastTitle = notification.title || 'Notification';
     this.toastService.info(toastMessage, toastTitle);
 
-    console.log('[NotificationService] Notification processed:', {
-      id: notification.id,
-      title: notification.title,
-      message: notification.message,
-      type: notification.type
-    });
+
 
     // Send email notification if enabled
     this.sendEmailNotification(notification, dto);
@@ -399,16 +388,10 @@ export class NotificationService implements OnDestroy {
    * Check email configuration to see if email notifications are enabled
    */
   private checkEmailConfiguration(): void {
-    console.log('[NotificationService] Checking email configuration...');
     this.emailConfigService.getEmailConfiguration().subscribe({
       next: (config: EmailConfigurationDto) => {
         this.emailNotificationsEnabled = config.enableEmailNotifications ?? false;
         this.emailConfigChecked = true;
-        console.log('[NotificationService] Email configuration loaded:', {
-          enabled: this.emailNotificationsEnabled,
-          hasPassword: config.hasPassword,
-          host: config.hostIp
-        });
       },
       error: (error: unknown) => {
         const httpError = error as { status?: number };
@@ -416,11 +399,9 @@ export class NotificationService implements OnDestroy {
         if (httpError?.status === 404) {
           this.emailNotificationsEnabled = false;
           this.emailConfigChecked = true;
-          console.warn('[NotificationService] Email configuration not found (404). Email notifications disabled.');
         } else {
           // For other errors, log but don't block notifications
           this.configService.logError('Failed to check email configuration', error);
-          console.error('[NotificationService] Failed to load email configuration:', error);
           this.emailNotificationsEnabled = false;
           this.emailConfigChecked = true;
         }
@@ -432,29 +413,19 @@ export class NotificationService implements OnDestroy {
    * Send email notification when a notification is received
    */
   private sendEmailNotification(notification: Notification, dto: NotificationDto): void {
-    console.log('[NotificationService] Attempting to send email notification:', {
-      emailEnabled: this.emailNotificationsEnabled,
-      emailConfigChecked: this.emailConfigChecked,
-      hasCurrentUser: !!this.currentUser,
-      currentUserEmail: this.currentUser?.email,
-      notificationId: notification.id
-    });
 
     // Only send email if email notifications are enabled
     if (!this.emailNotificationsEnabled) {
-      console.warn('[NotificationService] Email notifications are disabled in settings');
       return;
     }
 
     if (!this.emailConfigChecked) {
-      console.warn('[NotificationService] Email configuration not yet checked');
       return;
     }
 
     // Notifications received via SignalR are typically for the current user
     // Use current user's email if available
     if (!this.currentUser) {
-      console.error('[NotificationService] Cannot send email: current user is null');
       this.configService.logWarning('Cannot send email notification: current user not available');
       return;
     }
@@ -469,27 +440,19 @@ export class NotificationService implements OnDestroy {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           recipientEmail = payload.email || payload.Email;
-          console.log('[NotificationService] Got email from token payload:', recipientEmail);
         } catch (e) {
-          console.error('[NotificationService] Failed to parse token:', e);
+          // Failed to parse token
         }
       }
     }
 
     if (!recipientEmail) {
-      console.error('[NotificationService] Cannot send email: email not found in user object or token', {
-        userId: this.currentUser.id,
-        userName: this.currentUser.userName,
-        hasEmailInUser: !!this.currentUser.email
-      });
       this.configService.logWarning('Cannot send email notification: user email not available');
       this.translate.get(['toast.emailNotificationSkipped', 'toast.warning']).subscribe(translations => {
         this.toastService.warning(translations['toast.emailNotificationSkipped'], translations['toast.warning']);
       });
       return;
     }
-
-    console.log('[NotificationService] Sending email to:', recipientEmail);
 
     const emailTitle = notification.title || 'New Notification';
     const emailMessage = notification.message || 'You have received a new notification.';
@@ -507,7 +470,6 @@ export class NotificationService implements OnDestroy {
             this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, details, entityType);
           },
           error: (error) => {
-            console.warn('[NotificationService] Failed to fetch entity details, sending email with basic info:', error);
             // Send email with basic information if detailed fetch fails
             this.sendEmailWithDetails(recipientEmail, emailTitle, emailMessage, notification, dto, null, entityType);
           }
@@ -596,17 +558,10 @@ export class NotificationService implements OnDestroy {
       entityType
     ).subscribe({
       next: () => {
-        console.log('[NotificationService] ✅ Email sent successfully to:', recipientEmail);
         this.configService.log('Email notification sent successfully', { recipientEmail, notificationId: notification.id });
       },
       error: (error) => {
         // Log error but don't block notification flow
-        console.error('[NotificationService] ❌ Failed to send email notification:', error);
-        console.error('[NotificationService] Error details:', {
-          status: error?.status,
-          message: error?.message,
-          error: error?.error
-        });
         this.configService.logError('Failed to send email notification', error);
         // Show user-friendly error message
         this.translate.get(['toast.failedToSendEmailNotification', 'toast.error']).subscribe(translations => {

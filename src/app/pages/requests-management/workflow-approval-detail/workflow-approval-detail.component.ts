@@ -475,7 +475,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         'workflowApprovalDetail.skipToStep'
       ]).subscribe(translations => {
         const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Skip To Step';
-        const errorMsg = translations['workflowApprovalDetail.selectSkipToStepRequired'] || 
+        const errorMsg = translations['workflowApprovalDetail.selectSkipToStepRequired'] ||
           `Please select a step to skip to from the "${skipToStepLabel}" dropdown before approving this request.`;
         const errorTitle = translations['toast.error'] || 'Action Required';
         this.toastService.error(errorMsg, errorTitle);
@@ -599,9 +599,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     // Check for transitions property (may be in different formats from backend)
-    const transitions = currentPendingStep.transitions || 
-                       (currentPendingStep as any).Transitions ||
-                       [];
+    const transitions = currentPendingStep.transitions ||
+      (currentPendingStep as any).Transitions ||
+      [];
 
     if (!Array.isArray(transitions) || transitions.length === 0) {
       return [];
@@ -615,7 +615,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   getTransitionDisplayName = (option: any): string => {
     if (!option) return '';
-    
+
     const transition = typeof option === 'object' && 'value' in option ? option.value : option;
     if (!transition || !transition.targetStep) {
       return '';
@@ -634,16 +634,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   hasTransitions(): boolean {
     const transitions = this.getCurrentStepTransitions();
-    // Debug: log to console to help diagnose
-    if (this.requestDetail && this.requestDetail.approvalHistory) {
-      const currentPendingStep = this.requestDetail.approvalHistory.find(
-        step => step.status === 'Pending' && step.isPending
-      );
-      if (currentPendingStep) {
-        console.log('Current pending step:', currentPendingStep);
-        console.log('Transitions found:', transitions);
-      }
-    }
     return transitions.length > 0;
   }
 
@@ -818,7 +808,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     formData.append('BaseRequestID', this.requestId.toString());
     formData.append('IsApproved', isApproved.toString());
     formData.append('Action', isApproved ? RequestStatusEnum.Approved.toString() : RequestStatusEnum.Rejected.toString());
-    
+
     // Add NextStepId if a transition is selected (for skip-to functionality)
     // Always send if selected, even if it's the auto-selected first transition
     if (isApproved && this.selectedNextStepId != null) {

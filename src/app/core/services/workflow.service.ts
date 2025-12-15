@@ -4,9 +4,9 @@ import { map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { 
-  WorkflowDto, 
-  CreateWorkflowDto, 
+import {
+  WorkflowDto,
+  CreateWorkflowDto,
   UpdateWorkflowDto,
   BackendWorkflowDto,
   BackendCreateWorkflowDto,
@@ -35,45 +35,44 @@ export class WorkflowService {
   constructor(
     private apiService: ApiService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
-   getWorkflowTypeItems(lang: 'en' | 'ar'): WorkflowTypeItem[] {
-  return Object.values(WorkflowType)
-    .filter(v => typeof v === 'number')
-    .map(id => ({
-      id: id as number,
-      name: WORKFLOW_TYPE_NAMES[id as WorkflowType][lang]
-    }));
-}
-
- /**
-  * Convert string enum value (from backend) to numeric ID
-  */
- private convertWorkflowTypeToId(workflowType: any): number {
-  if (typeof workflowType === 'number') {
-    return workflowType;
+  getWorkflowTypeItems(lang: 'en' | 'ar'): WorkflowTypeItem[] {
+    return Object.values(WorkflowType)
+      .filter(v => typeof v === 'number')
+      .map(id => ({
+        id: id as number,
+        name: WORKFLOW_TYPE_NAMES[id as WorkflowType][lang]
+      }));
   }
-  
-  // Handle string enum values from backend
-  const stringValue = String(workflowType);
-  switch (stringValue) {
-    case 'NoramlOrder': return WorkflowType.NoramlOrder;
-    case 'OrderFromAllowance': return WorkflowType.OrderFromAllowance;
-    case 'Return': return WorkflowType.Return;
-    case 'Discard': return WorkflowType.Discard;
-    default:
-      console.warn('Unknown workflow type:', workflowType);
-      return 0;
-  }
-}
 
- getWorkflowTypeNameById(id: number | string, lang: 'en' | 'ar'): string {
-  // Convert to numeric ID if string
-  const numericId = this.convertWorkflowTypeToId(id);
-  const workflow = WORKFLOW_TYPE_NAMES[numericId as WorkflowType];
-  return workflow ? workflow[lang] : 'Unknown';
-}
-  
+  /**
+   * Convert string enum value (from backend) to numeric ID
+   */
+  private convertWorkflowTypeToId(workflowType: any): number {
+    if (typeof workflowType === 'number') {
+      return workflowType;
+    }
+
+    // Handle string enum values from backend
+    const stringValue = String(workflowType);
+    switch (stringValue) {
+      case 'NoramlOrder': return WorkflowType.NoramlOrder;
+      case 'OrderFromAllowance': return WorkflowType.OrderFromAllowance;
+      case 'Return': return WorkflowType.Return;
+      case 'Discard': return WorkflowType.Discard;
+      default:
+        return 0;
+    }
+  }
+
+  getWorkflowTypeNameById(id: number | string, lang: 'en' | 'ar'): string {
+    // Convert to numeric ID if string
+    const numericId = this.convertWorkflowTypeToId(id);
+    const workflow = WORKFLOW_TYPE_NAMES[numericId as WorkflowType];
+    return workflow ? workflow[lang] : 'Unknown';
+  }
+
   /**
    * Get all workflows
    */
@@ -88,14 +87,11 @@ export class WorkflowService {
           throw new Error(response.message || 'Failed to fetch workflows');
         }
         const rawItems = response.data || [];
-        console.log('Raw workflows from API:', rawItems);
-        console.log('Number of workflows:', rawItems.length);
-        
+
         // Map backend fields to UI model expected by components
         const mapped: WorkflowDto[] = rawItems.map(w => {
           const status = w.isActive ? 'Active' : 'Inactive';
           const numericWorkflowType = this.convertWorkflowTypeToId(w.workflowType);
-          console.log(`Workflow ${w.id} (${w.workflowName}): isActive=${w.isActive}, status=${status}, workflowType=${w.workflowType} -> ${numericWorkflowType}`);
           return {
             id: w.id,
             name: w.workflowName,
@@ -105,10 +101,7 @@ export class WorkflowService {
             workflowTypeName: (w as any).workflowTypeName || undefined
           };
         });
-        
-        const activeCount = mapped.filter(w => w.status === 'Active').length;
-        console.log(`Total workflows: ${mapped.length}, Active: ${activeCount}, Inactive: ${mapped.length - activeCount}`);
-        
+
         return mapped;
       }),
       tap(workflows => {
@@ -284,7 +277,7 @@ export class WorkflowService {
     );
   }
 
-  
+
   /**
    * Delete workflow
    */
