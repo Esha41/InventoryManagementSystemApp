@@ -332,6 +332,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const requesterStep: WorkflowApprovalStep = {
       id: 0,
       approverName: this.orderData.requesterName || 'Unknown Requester',
+      approverNameEn: this.baseRequestData?.['requesterNameEn'] || this.orderData.requesterName,
+      approverNameAr: this.baseRequestData?.['requesterNameAr'],
       status: 'Approved',
       applicationRoleName: 'Requester (Order Requesting Entity)',
       approvedDateTime: requestDateString,
@@ -1057,6 +1059,33 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     return !item.isFullyFulfilled &&
       item.totalSuppliedQuantity > 0 &&
       item.totalSuppliedQuantity < item.requestedQuantity;
+  }
+
+  /**
+   * Get localized approver name based on current language
+   */
+  getApproverName(approval: any): string {
+    const currentLang = this.translationService.getCurrentLanguage();
+
+    // For pending steps, use role name (not user name)
+    if (approval.isPending) {
+      if (currentLang === 'ar' && approval.applicationRoleNameAr) {
+        return approval.applicationRoleNameAr;
+      } else if (approval.applicationRoleName) {
+        return approval.applicationRoleName;
+      }
+    }
+
+    // For completed steps, use user name
+    if (currentLang === 'ar' && approval.approverNameAr) {
+      return approval.approverNameAr;
+    } else if (approval.approverNameEn) {
+      return approval.approverNameEn;
+    } else if (approval.approverName) {
+      return approval.approverName;
+    }
+
+    return '';
   }
 }
 

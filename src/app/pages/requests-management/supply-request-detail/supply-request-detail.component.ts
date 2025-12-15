@@ -37,6 +37,7 @@ import {
 } from '../utils/ui-helpers.utils';
 import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
+import { getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -652,6 +653,36 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   getItemProductId(item: OrderItem): string {
     return getItemProductIdUtil(item, this.orderData);
+  }
+
+  /**
+   * Get localized approver name based on current language
+   */
+  getApproverName(approval: any): string {
+    const currentLang = getCurrentLang(this.translate);
+
+    // Check if this is a WorkflowApprovalStep (has applicationRoleName) or ApprovalStep (has militaryRank)
+    // For pending steps, use role name (not user name)
+    if (approval.isPending) {
+      if (currentLang === 'ar' && approval.applicationRoleNameAr) {
+        return approval.applicationRoleNameAr;
+      } else if (approval.applicationRoleName) {
+        return approval.applicationRoleName;
+      }
+    }
+
+    // For completed steps, use user name
+    // Check for Arabic name first
+    if (currentLang === 'ar' && approval.approverNameAr) {
+      return approval.approverNameAr;
+    } else if (approval.approverNameEn) {
+      return approval.approverNameEn;
+    } else if (approval.approverName) {
+      return approval.approverName;
+    }
+
+    // Fallback: if no name found, return empty string
+    return '';
   }
 }
 

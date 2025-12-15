@@ -3,6 +3,7 @@
  */
 
 import { LotItem, ApprovalStep } from './supply-order.model';
+import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 
 /**
  * Supply request for the management list view
@@ -44,7 +45,7 @@ export interface SupplyRequestDetail {
   requesterId: string;
   requesterRank: string;
   status: 'Pending' | 'Processing' | 'Completed' | 'Delivered' | 'Returned' | 'Cancelled';
-  approvalWorkflow: ApprovalStep[];
+  approvalWorkflow: WorkflowApprovalStep[];
   items: OrderItem[];
 }
 

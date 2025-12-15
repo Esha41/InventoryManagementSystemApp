@@ -79,7 +79,24 @@ export class SupplyRequestDetailService {
         if (baseRequest && baseRequest.approvalHistory) {
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
-          requestDetail.approvalWorkflow = mapWorkflowStepsToApprovalSteps(workflowSteps);
+
+          // Add requester as the first step with localized names
+          const requesterStep: any = {
+            id: 0,
+            approverName: baseRequest.requesterName || requestDetail.requesterName || 'Unknown Requester',
+            approverNameEn: baseRequest['requesterNameEn'] || requestDetail.requesterName,
+            approverNameAr: baseRequest['requesterNameAr'],
+            status: 'Approved',
+            applicationRoleName: 'Requester (Order Requesting Entity)',
+            applicationRoleNameAr: baseRequest['requesterRoleNameAr'],
+            approvedDateTime: baseRequest.requestDate || requestDetail.requestDate,
+            approvedDate: baseRequest.requestDate || requestDetail.requestDate,
+            isPending: false,
+            comments: ''
+          };
+
+          // Keep WorkflowApprovalStep format to preserve Arabic names
+          requestDetail.approvalWorkflow = [requesterStep, ...workflowSteps] as any;
         }
 
         return requestDetail;

@@ -411,9 +411,22 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return [];
     }
 
+    const currentLang = getCurrentLang(this.translateService);
+    let requesterDisplayName = 'Unknown Requester';
+
+    if (currentLang === 'ar' && this.requestDetail.requesterNameAr) {
+      requesterDisplayName = this.requestDetail.requesterNameAr;
+    } else if (this.requestDetail.requesterNameEn) {
+      requesterDisplayName = this.requestDetail.requesterNameEn;
+    } else if (this.requestDetail.requesterName) {
+      requesterDisplayName = this.requestDetail.requesterName;
+    }
+
     const requesterStep: WorkflowApprovalStep = {
       id: 0,
-      approverName: this.requestDetail.requesterName || 'Unknown Requester',
+      approverName: requesterDisplayName,
+      approverNameEn: this.requestDetail.requesterNameEn,
+      approverNameAr: this.requestDetail.requesterNameAr,
       status: 'Approved',
       applicationRoleName: 'Requester (Order Requesting Entity)',
       approvedDateTime: this.requestDetail.requestDate,
@@ -1824,5 +1837,32 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   onConfirmationCancelled(): void {
     this.closeConfirmationDialog();
+  }
+
+  /**
+   * Get localized approver name based on current language
+   */
+  getApproverName(approval: WorkflowApprovalStep): string {
+    const currentLang = getCurrentLang(this.translateService);
+
+    // For pending steps, use role name (not user name)
+    if (approval.isPending) {
+      if (currentLang === 'ar' && approval.applicationRoleNameAr) {
+        return approval.applicationRoleNameAr;
+      } else if (approval.applicationRoleName) {
+        return approval.applicationRoleName;
+      }
+    }
+
+    // For completed steps, use user name
+    if (currentLang === 'ar' && approval.approverNameAr) {
+      return approval.approverNameAr;
+    } else if (approval.approverNameEn) {
+      return approval.approverNameEn;
+    } else if (approval.approverName) {
+      return approval.approverName;
+    }
+
+    return '';
   }
 }

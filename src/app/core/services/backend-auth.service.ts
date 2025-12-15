@@ -15,6 +15,7 @@ import {
   ClaimDto,
   AuthState
 } from '@models/auth.model';
+import { ChangePasswordRequest } from '@models/change-password.model';
 import { ApiResponse } from '@models/api-response.model';
 import { ProfileDataService } from './profile-data.service';
 
@@ -523,6 +524,32 @@ export class BackendAuthService {
       catchError(error => {
         this.configService.logError('Reset password failed', error);
         return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Change password for current user
+   */
+  changePassword(request: ChangePasswordRequest): Observable<boolean> {
+    this.configService.log('Attempting to change password');
+
+    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+      API_ENDPOINTS.USERS.CHANGE_PASSWORD,
+      request
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Password change failed');
+        }
+        this.configService.log('Password changed successfully');
+        return true;
+      }),
+      catchError(error => {
+        this.configService.logError('Change password failed', error);
+        return throwError(() => new Error(
+          error.userMessage || error.message || 'Failed to change password. Please try again.'
+        ));
       })
     );
   }

@@ -249,14 +249,17 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         newRequestStatus: h.newRequestStatus || h.NewRequestStatus,
         comments: h.comments || h.Comments,
         changedBy: h.changedBy || h.ChangedBy,
+        approverName: approverName,
+        approverNameEn: h.approverNameEn || h.ApproverNameEn,
+        approverNameAr: h.approverNameAr || h.ApproverNameAr,
         changedAt: h.changedAt || h.ChangedAt,
         steporder: h.steporder || h.stepOrder || h.StepOrder || index + 1,
         applicationRoleId: h.applicationRoleId || h.ApplicationRoleId,
-        approverName: approverName,
         status: status,
         approvedDate: h.changedAt && !isPending ? formatApprovalDate(h.changedAt) : undefined,
         approvedDateTime: h.changedAt && !isPending ? formatApprovalDateTime(h.changedAt) : undefined,
         applicationRoleName: h.applicationRoleName || h.ApplicationRoleName,
+        applicationRoleNameAr: h.applicationRoleNameAr || h.ApplicationRoleNameAr,
         isPending: isPending,
         requireHigherApproval: h.requireHigherApproval || h.RequireHigherApproval || false,
         higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId,
@@ -377,6 +380,8 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     departmentNameAr: data['departmentNameAr'],
     departmentNameEn: data['departmentNameEn'],
     requesterName: data.requesterName,
+    requesterNameEn: data['requesterNameEn'],
+    requesterNameAr: data['requesterNameAr'],
     requesterId: data.requesterId,
     requesterUserName: data.requesterUserName,
     requestPurposeName: data.requestPurposeName,
@@ -395,4 +400,5 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     numberOfOtherRank: data['numberOfOtherRank']
   };
 }
+
 

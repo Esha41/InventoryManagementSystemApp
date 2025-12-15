@@ -37,14 +37,18 @@
         <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
           <button
             (click)="toggleSubmenu(item.label)"
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
+            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
           >
             <lucide-angular
               [img]="item.icon"
               class="h-5 w-5 flex-shrink-0"
+              [class.mr-3]="!isRTL"
+              [class.ml-3]="isRTL"
             ></lucide-angular>
             <span
-              class="font-medium flex-1 text-left transition-opacity duration-300"
+              class="font-medium flex-1 transition-opacity duration-300"
+              [class.text-left]="!isRTL"
+              [class.text-right]="isRTL"
               [class.opacity-0]="isCollapsed"
               [class.opacity-100]="!isCollapsed"
               [class.hidden]="isCollapsed"
@@ -54,7 +58,7 @@
             <lucide-angular
               *ngIf="!isCollapsed"
               [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
-              class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+              class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"
             ></lucide-angular>
           </button>
           <!-- Tooltip for collapsed state -->

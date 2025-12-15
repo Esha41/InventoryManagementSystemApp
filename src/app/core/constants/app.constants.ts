@@ -6,7 +6,7 @@ export const APP_CONSTANTS = {
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
 
- // request Status Constants, Maps to backend RequestStatus enum
+// request Status Constants, Maps to backend RequestStatus enum
 export const REQUEST_STATUS = {
   NEW: 1,
   UNDER_PROCESS: 2,
@@ -35,7 +35,8 @@ export const API_ENDPOINTS = {
     ME: '/Users/me',
     BY_ID: (id: string) => `/Users/${id}`,
     ROLES: (id: string) => `/Users/${id}/roles`,
-    UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,    
+    UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
+    CHANGE_PASSWORD: '/Users/change-password',
   },
 
   // role management (match backend casing)
@@ -213,7 +214,7 @@ export const ROUTES = {
   ADMIN_ROLES: '/admin-roles',
 } as const;
 
-   // Supply order Component Constants
+// Supply order Component Constants
 export const SUPPLY_ORDER_CONSTANTS = {
   NAVIGATION_DELAY_MS: 1500,
   REJECTION_DELAY_MS: 1000,

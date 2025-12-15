@@ -137,6 +137,7 @@
   padding: 0;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.5);
+  position: relative;
 }
 
 :host ::ng-deep .custom-popup .leaflet-popup-content {
@@ -152,9 +153,17 @@
 
 :host ::ng-deep .popup-header {
   padding: 16px 20px;
+  padding-right: 50px; /* Make room for close button in LTR */
   color: white;
   text-align: center;
   position: relative;
+  overflow: visible;
+}
+
+/* RTL support for popup header padding */
+[dir="rtl"] :host ::ng-deep .popup-header {
+  padding-right: 20px;
+  padding-left: 50px; /* Make room for close button in RTL */
 }
 
 :host ::ng-deep .popup-header::after {
@@ -253,6 +262,36 @@
   padding: 8px 12px !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  text-align: center !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* LTR support - ensure button stays within container */
+[dir="ltr"] :host ::ng-deep .custom-popup .leaflet-popup-close-button {
+  right: 2px !important;
+  left: auto !important;
+  top: 2px !important;
+}
+
+/* RTL support - ensure button stays within container */
+[dir="rtl"] :host ::ng-deep .custom-popup .leaflet-popup-close-button {
+  right: auto !important;
+  left: 2px !important;
+  top: 2px !important;
 }
 
 :host ::ng-deep .custom-popup .leaflet-popup-close-button:hover {
