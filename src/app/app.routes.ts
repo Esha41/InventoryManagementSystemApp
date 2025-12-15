@@ -13,6 +13,14 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/auth/login/login.component').then(m => m.LoginComponent)
       },
       {
+        path: 'forgot-password',
+        loadComponent: () => import('@pages/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () => import('@pages/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+      },
+      {
         path: '',
         redirectTo: 'login',
         pathMatch: 'full'
@@ -207,7 +215,7 @@ export const routes: Routes = [
         path: 'item-detail/:id',
         loadComponent: () => import('@pages/item-detail/item-detail.component').then(m => m.ItemDetailComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['ammunition.page', 'ammunition.view'] }
+        data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
       {
         path: 'depot-management',
