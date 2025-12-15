@@ -27,10 +27,13 @@ export interface WorkflowApprovalStep {
   steporder?: number;
   applicationRoleId?: string;
   approverName?: string;
+  approverNameEn?: string;
+  approverNameAr?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Returned' | 'ReturnedForReview';
   approvedDate?: string;
   approvedDateTime?: string;
   applicationRoleName?: string;
+  applicationRoleNameAr?: string;
   isPending?: boolean;
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string;
@@ -82,6 +85,8 @@ export interface RequestDetail {
   departmentNameAr?: string;
   departmentNameEn?: string;
   requesterName?: string;
+  requesterNameEn?: string;
+  requesterNameAr?: string;
   requesterId?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
