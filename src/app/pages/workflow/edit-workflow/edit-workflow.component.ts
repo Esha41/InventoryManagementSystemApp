@@ -54,6 +54,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>;
     skipToStepIds?: number[];
     availableNextSteps?: WorkflowStepDto[];
+    canSkip?: boolean; // Preserve canSkip to maintain normal sequential flow
   }> = [];
   
   roles: RoleDto[] = [];
@@ -150,9 +151,13 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         this.editWorkflowType = wf?.workflowType || 1;
         const steps = (wf?.workflowSteps || []) as any[];
         
+        // Sort steps by stepOrder to ensure correct order, then load workflow steps exactly as they are
+        // Each step maintains its own identity - skip steps don't affect other steps
+        const sortedSteps = [...steps].sort((a, b) => (a.stepOrder || 0) - (b.stepOrder || 0));
+        
         // Load workflow steps exactly as they are - no modification
         // Only extract transition step IDs to display in dropdown
-        this.editSteps = steps.map((s, idx) => {
+        this.editSteps = sortedSteps.map((s, idx) => {
           // Extract transition step IDs (skip-to steps) - only for display in dropdown
           // These are read-only for display purposes, workflow data remains unchanged
           let skipToStepIds: number[] = [];
@@ -166,8 +171,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           }
           
           // Load step data as-is from backend - no modification
+          // Each step maintains its own identity and order, independent of skip steps
+          // Preserve canSkip to ensure normal sequential flow (skip steps are optional, not default)
           return {
-            order: s.stepOrder || idx + 1, 
+            order: s.stepOrder || (idx + 1), // Always use stepOrder from backend, preserve step's own order
             roleId: s.applicationRoleId || null, 
             applicationEntityId: s.applicationEntityId || null,
             requireHigherApproval: !!s.requireHigherApproval,
@@ -175,11 +182,12 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
             notifyingRoleIds: [],
             notifyingUserIds: [],
-            workflowStepId: s.id, // Keep step ID as-is from backend
+            workflowStepId: s.id, // Keep step ID as-is from backend - each step has unique ID
             usersInNotifyingRoles: [],
             availableUsers: [],
-            skipToStepIds: skipToStepIds, // Transition steps - only for dropdown display
-            availableNextSteps: [] // Will be populated for dropdown options
+            skipToStepIds: skipToStepIds, // Transition steps - only for dropdown display, doesn't affect step identity
+            availableNextSteps: [], // Will be populated for dropdown options
+            canSkip: (s as any).canSkip === true // Preserve canSkip - false by default to maintain normal sequential flow
           };
         });
         
@@ -323,7 +331,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       usersInNotifyingRoles: [],
       availableUsers: [],
       skipToStepIds: [],
-      availableNextSteps: []
+      availableNextSteps: [],
+      canSkip: false // New steps default to normal sequential flow
     };
     this.editSteps.push(newStep);
     setTimeout(() => {
@@ -404,6 +413,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
         higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
         reserveQty: false,
+        canSkip: s.canSkip === true, // Preserve canSkip - ensures normal sequential flow (skip steps are optional)
         notifyingRoleIds: s.notifyingRoleIds || [],
         notifyingUserIds: s.notifyingUserIds || []
       }))
@@ -733,24 +743,28 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   private loadNextStepsForStep(step: any, stepIndex: number): void {
     // Show ALL steps in dropdown - no filtering based on order
     // This populates the dropdown options - does not modify workflow data
+    // Each step maintains its own identity - skip steps don't affect step properties
     const allSteps: WorkflowStepDto[] = this.editSteps
       .map((s, idx) => {
-        const sOrder = s.order || idx + 1;
+        // Use the step's own order from backend, not array index
+        // This ensures each step keeps its own identity regardless of skip configurations
+        const sOrder = s.order || (idx + 1);
         return {
-          id: s.workflowStepId || 0,
+          id: s.workflowStepId || 0, // Each step has unique ID
           workflowId: this.workflowId || 0,
-          stepOrder: sOrder,
-          applicationRoleId: s.roleId || '',
-          applicationEntityId: s.applicationEntityId || 0,
+          stepOrder: sOrder, // Preserve each step's own order
+          applicationRoleId: s.roleId || '', // Each step has its own role
+          applicationEntityId: s.applicationEntityId || 0, // Each step has its own entity
           applicationRoleName: this.getRoleNameById(s.roleId),
           mustApprove: false,
-          requireHigherApproval: !!s.requireHigherApproval,
+          requireHigherApproval: !!s.requireHigherApproval, // Each step has its own higher approval settings
           higherApprovalRoleId: s.higherApprovalRoleId || null,
           higherApplicationEntityId: s.higherApplicationEntityId || null
         } as WorkflowStepDto;
       });
 
     // Set dropdown options - all steps are shown here for selection
+    // Skip steps are just options, they don't change the step's own properties
     step.availableNextSteps = allSteps.map((ns: WorkflowStepDto) => ({
       ...ns,
       displayName: this.getStepDisplayName(ns)
