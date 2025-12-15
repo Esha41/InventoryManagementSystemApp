@@ -497,38 +497,6 @@ export class BackendAuthService {
   }
 
   /**
-   * Forgot password
-   */
-  forgotPassword(request: ForgotPasswordRequest): Observable<boolean> {
-    return this.apiService.post<ApiResponse<any>>(
-      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-      request
-    ).pipe(
-      map(response => response.succeeded),
-      catchError(error => {
-        this.configService.logError('Forgot password failed', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Reset password
-   */
-  resetPassword(request: ResetPasswordRequest): Observable<boolean> {
-    return this.apiService.post<ApiResponse<any>>(
-      API_ENDPOINTS.AUTH.RESET_PASSWORD,
-      request
-    ).pipe(
-      map(response => response.succeeded),
-      catchError(error => {
-        this.configService.logError('Reset password failed', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Change password for current user
    */
   changePassword(request: ChangePasswordRequest): Observable<boolean> {
@@ -549,6 +517,58 @@ export class BackendAuthService {
         this.configService.logError('Change password failed', error);
         return throwError(() => new Error(
           error.userMessage || error.message || 'Failed to change password. Please try again.'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Request password reset (forgot password)
+   */
+  forgotPassword(email: string): Observable<boolean> {
+    this.configService.log('Requesting password reset', { email });
+
+    return this.apiService.post<ApiResponse<string>>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      { email }
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to send password reset email');
+        }
+        this.configService.log('Password reset email sent successfully');
+        return true;
+      }),
+      catchError(error => {
+        this.configService.logError('Forgot password failed', error);
+        return throwError(() => new Error(
+          error.userMessage || error.message || 'Failed to send password reset email. Please try again.'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Reset password with token
+   */
+  resetPassword(email: string, token: string, newPassword: string): Observable<boolean> {
+    this.configService.log('Attempting to reset password', { email });
+
+    return this.apiService.post<ApiResponse<string>>(
+      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      { email, token, newPassword }
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Password reset failed');
+        }
+        this.configService.log('Password reset successfully');
+        return true;
+      }),
+      catchError(error => {
+        this.configService.logError('Reset password failed', error);
+        return throwError(() => new Error(
+          error.userMessage || error.message || 'Failed to reset password. Please try again.'
         ));
       })
     );

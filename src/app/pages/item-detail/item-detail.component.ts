@@ -30,9 +30,9 @@ import { TranslateService } from '@ngx-translate/core';
 export class ItemDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
-  
+
   private readonly destroy$ = new Subject<void>();
-  
+
   itemId: number = 0;
   requestId: number | null = null;
   cartridge: Cartridge | null = null;
@@ -55,7 +55,7 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translationService: TranslationService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Get item ID from route params
