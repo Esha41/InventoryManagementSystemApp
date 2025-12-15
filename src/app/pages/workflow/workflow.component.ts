@@ -48,7 +48,6 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   readonly rowsPerPageOptions = [5, 10, 20, 50];
 
   showViewModal = false;
-  showEditModal = false;
   showDeleteDialog = false;
   workflowToDelete: { id: number; name: string } | null = null;
   selectedWorkflow: any = null;
@@ -56,24 +55,8 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   deleteDialogTitle = '';
   deleteDialogMessage = '';
   deleteDialogDescription = '';
-  editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
-  editWorkflowType: number = 1;
-  editSteps: Array<{
-    order: number;
-    roleId: string | null;
-    applicationEntityId: number | null;
-    requireHigherApproval?: boolean;
-    higherApprovalRoleId?: string | null;
-    higherApplicationEntityId?: number | null;
-    notifyingRoleIds?: string[];
-    notifyingUserIds?: string[]; // Selected user IDs for notifications
-    workflowStepId?: number; // For existing steps
-    usersInNotifyingRoles?: Array<{ roleId: string; users: any[] }>; // Cache users by role
-    availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>; // All available users from selected roles with their roles
-  }> = [];
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
-  workflowTypes: Array<{ id: number; name: string }> = [];
   readonly workflowStatusOptions = [
     { label: 'Active', value: 'Active' as const },
     { label: 'Inactive', value: 'Inactive' as const }
@@ -109,9 +92,6 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.loadWorkflows();
     this.backendUserService.getAllRolesSimple().subscribe({ next: r => this.roles = r, error: () => this.roles = [] });
     this.loadApplicationEntities();
-
-    const lang = this.translationService.getCurrentLanguage();
-    this.workflowTypes = this.workflowService.getWorkflowTypeItems(lang);
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
@@ -238,104 +218,13 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   }
 
   onEdit(id: number): void {
-    const target = this.workflows.find(w => w.id === id);
-    if (!target) return;
-    this.workflowService.getWorkflowDetailById(id).subscribe({
-      next: wf => {
-        const status = wf?.isActive ? 'Active' : 'Inactive';
-        this.editForm = {
-          id: wf?.id || target.id,
-          name: wf?.workflowName || target.name,
-          status: status as 'Active' | 'Inactive',
-          workflowType: wf?.workflowType || target.workflowType || 1
-        };
-        this.editWorkflowType = wf?.workflowType || target.workflowType || 1;
-        const steps = (wf?.workflowSteps || []) as any[];
-        this.editSteps = steps.map((s, idx) => ({
-          order: s.stepOrder || idx + 1,
-          roleId: s.applicationRoleId || null,
-          applicationEntityId: s.applicationEntityId || null,
-          requireHigherApproval: !!s.requireHigherApproval,
-          higherApprovalRoleId: s.higherApprovalRoleId || null,
-          higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
-          // Initialize notifiers arrays - will be populated from API
-          notifyingRoleIds: [],
-          notifyingUserIds: [],
-          workflowStepId: s.id,
-          usersInNotifyingRoles: [],
-          availableUsers: [] // Will be populated by loadUsersForNotifyingRoles
-        }));
-
-        // Load notifiers for each step from the API first, then load users
-        // This ensures saved notifiers are displayed in dropdowns
-        this.loadNotifiersForSteps(() => {
-          // After notifiers are loaded, load all users for dropdowns
-          this.loadAllUsersForSteps();
-        });
-
-        this.showEditModal = true;
-        setTimeout(() => {
-          this.initializeEditModalDropdowns();
-        }, 0);
-      },
-      error: () => {
-        this.editForm = { id: target.id, name: target.name, status: (target.status as any), workflowType: target.workflowType };
-        this.editWorkflowType = target.workflowType || 1;
-        this.editSteps = [];
-        this.showEditModal = true;
-        setTimeout(() => {
-          this.initializeEditModalDropdowns();
-        }, 0);
-      }
-    });
+    this.router.navigate(['/workflow', id, 'edit']);
   }
 
-  private initializeEditModalDropdowns(): void {
-    const stepsContainer = document.querySelector('.edit-steps-table-wrapper');
-    if (!stepsContainer) return;
-
-    this.mutationObserver = new MutationObserver(() => {
-      this.checkAndPositionDropdowns();
-    });
-
-    this.mutationObserver.observe(stepsContainer, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    this.boundHandleDocumentClick = () => {
-      setTimeout(() => this.checkAndPositionDropdowns(), 0);
-    };
-    document.addEventListener('click', this.boundHandleDocumentClick);
-
-    this.checkAndPositionDropdowns();
-  }
 
   onAddWorkflow(): void {
     this.router.navigate(['/workflow/add']);
   }
-  addEditStep(): void {
-    const newStep = {
-      order: this.editSteps.length + 1,
-      roleId: null,
-      applicationEntityId: null,
-      requireHigherApproval: false,
-      higherApprovalRoleId: null,
-      higherApplicationEntityId: null,
-      notifyingRoleIds: [],
-      notifyingUserIds: [],
-      usersInNotifyingRoles: [],
-      availableUsers: []
-    };
-    this.editSteps.push(newStep);
-    // Load all users for the new step
-    setTimeout(() => {
-      this.loadUsersForNotifyingRoles(newStep, this.editSteps.length - 1);
-    }, 0);
-  }
-  removeEditStep(index: number): void { this.editSteps.splice(index, 1); this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 })); }
 
   onDelete(id: number): void {
     const workflow = this.workflows.find(w => w.id === id);
@@ -617,321 +506,75 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   closeModals(): void {
     this.showViewModal = false;
-    this.showEditModal = false;
     this.selectedWorkflow = null;
-    this.editForm = null;
     this.hasOpenDropdown = false;
     this.cleanupDropdownPositioning();
   }
 
-  saveEdit(): void {
-    if (!this.editForm) return;
-    const editId = this.editForm.id;
 
-    // Store notifier data before saving workflow (in case step IDs change)
-    const notifierData = this.editSteps.map((s, idx) => ({
-      originalIndex: idx,
-      workflowStepId: s.workflowStepId,
-      notifyingRoleIds: s.notifyingRoleIds || [],
-      notifyingUserIds: s.notifyingUserIds || []
-    }));
+  /**
+   * Get formatted list of notifying roles for a step
+   */
+  getNotifyingRoles(step: any): string {
+    if (!step?.notifiers) return '-';
+    const roleNotifiers = step.notifiers.filter((n: any) => n.roleId);
+    if (roleNotifiers.length === 0) return '-';
+    return roleNotifiers.map((n: any) => {
+      const roleName = getLocalizedName({ name: n.roleName, nameAr: n.roleNameAr }, getCurrentLang(this.translate));
+      return roleName || n.roleName || n.roleId;
+    }).join(', ');
+  }
 
-    const backendPayload = {
-      id: editId,
-      workflowName: this.editForm.name,
-      workflowType: this.editWorkflowType,
-      isActive: this.editForm.status === 'Active',
-      isSpecialOrReserved: false,
-      workflowSteps: (this.editSteps || []).map((s, idx) => ({
-        id: s.workflowStepId, // Include existing step ID if available
-        stepOrder: idx + 1,
-        applicationRoleId: s.roleId as any,
-        applicationEntityId: s.applicationEntityId as any,
-        mustApprove: false,
-        requireHigherApproval: !!s.requireHigherApproval,
-        higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
-        higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
-        reserveQty: false,
-        notifyingRoleIds: s.notifyingRoleIds || [],
-        notifyingUserIds: s.notifyingUserIds || []
-      }))
-    } as any;
-
-    // Update notifiers independently - don't wait for workflow update to succeed
-    // This allows updating notifiers even if workflow steps are in approval history
-    const updateNotifiers = (): Observable<boolean> => {
-      // Use step IDs from editSteps directly (don't need to reload workflow)
-      const notifierSaveObservables: Observable<boolean>[] = [];
-
-      this.editSteps.forEach((step, idx) => {
-        const notifierInfo = notifierData[idx];
-        if (notifierInfo && step.workflowStepId) {
-          const roleIds = notifierInfo.notifyingRoleIds || [];
-          const userIds = notifierInfo.notifyingUserIds || [];
-
-          // Only call API if there are notifiers to save (backend requires at least one)
-          // If both are empty, skip (existing notifiers remain unchanged)
-          if (roleIds.length > 0 || userIds.length > 0) {
-            notifierSaveObservables.push(
-              this.workflowService.updateStepNotifiers(
-                step.workflowStepId,
-                roleIds,
-                userIds
-              ).pipe(
-                catchError(err => {
-                  // Return success observable so forkJoin continues - notifier update failure shouldn't block other updates
-                  return new Observable<boolean>(observer => {
-                    observer.next(true);
-                    observer.complete();
-                  });
-                })
-              )
-            );
-          }
-        }
-      });
-
-      // Save notifiers for all steps in parallel
-      if (notifierSaveObservables.length === 0) {
-        // Return a successful observable immediately when no notifiers to update
-        return of(true);
-      }
-
-      return forkJoin(notifierSaveObservables).pipe(
-        map(() => true)
+  /**
+   * Get formatted list of notifying users for a step
+   */
+  getNotifyingUsers(step: any): string {
+    if (!step?.notifiers) return '-';
+    const userNotifiers = step.notifiers.filter((n: any) => n.userId);
+    if (userNotifiers.length === 0) return '-';
+    return userNotifiers.map((n: any) => {
+      const userName = getLocalizedName(
+        { name: n.userFullNameEn, nameAr: n.userFullNameAr },
+        getCurrentLang(this.translate)
       );
-    };
+      return userName || n.userName || n.userId;
+    }).join(', ');
+  }
 
-    // Try to update workflow, but always update notifiers regardless of workflow update result
-    this.workflowService.updateBackendWorkflow(backendPayload).pipe(
-      catchError(err => {
-        // If workflow update fails (e.g., steps in approval history), still update notifiers
-        // Return a success observable so we can continue to update notifiers
-        return new Observable<any>(observer => {
-          observer.next(null);
-          observer.complete();
-        });
-      }),
-      switchMap(() => {
-        // Always update notifiers after workflow update attempt
-        return updateNotifiers();
+  /**
+   * Get formatted list of skip-to steps for a step (returns array for line-by-line display)
+   */
+  getSkipToSteps(step: any): string[] {
+    // Extract skip-to step IDs from transitions array first
+    let skipToStepIds: number[] = [];
+    
+    if (Array.isArray(step?.transitions) && step.transitions.length > 0) {
+      // Extract targetWorkflowStepId from transitions
+      skipToStepIds = step.transitions
+        .map((t: any) => t.targetWorkflowStepId)
+        .filter((id: any) => id != null && id !== undefined);
+    } else if (Array.isArray(step?.allowedSkipTargetIds) && step.allowedSkipTargetIds.length > 0) {
+      // Fallback to allowedSkipTargetIds if transitions not available
+      skipToStepIds = [...step.allowedSkipTargetIds];
+    }
+    
+    if (skipToStepIds.length === 0) {
+      return [];
+    }
+
+    const steps = (this.selectedWorkflow?.workflowSteps || []) as any[];
+    const skipToStepLabels = skipToStepIds
+      .map((targetId: number) => {
+        const targetStep = steps.find(s => s.id === targetId);
+        if (!targetStep) return null;
+        const roleName = this.getRoleNameById(targetStep.applicationRoleId);
+        const entityName = this.getEntityNameById(targetStep.applicationEntityId);
+        const orderLabel = this.orderLabel(targetStep.stepOrder);
+        return `${orderLabel} - ${roleName}${entityName ? ` (${entityName})` : ''}`;
       })
-    ).subscribe({
-      next: () => {
-        // Notifiers have been updated successfully
-        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
-          this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
-        });
+      .filter((label: string | null) => label !== null) as string[];
 
-        setTimeout(() => {
-          this.loadWorkflows();
-          this.closeModals();
-        }, 500);
-      },
-      error: err => {
-        // This error is from notifier updates, not workflow update
-        this.errorMessage = err.message || 'Failed to update step notifiers';
-
-        // Still show success for workflow update
-        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
-          this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
-        });
-
-        setTimeout(() => {
-          this.loadWorkflows();
-          this.closeModals();
-        }, 500);
-      }
-    });
-  }
-
-  private loadNotifiersForSteps(callback?: () => void): void {
-    // Load saved notifiers for each step from the API
-    const stepsWithIds = this.editSteps.filter(step => step.workflowStepId);
-
-    if (stepsWithIds.length === 0) {
-      // No steps to load notifiers for, call callback immediately
-      if (callback) callback();
-      return;
-    }
-
-    const notifierObservables = stepsWithIds.map(step =>
-      this.workflowService.getStepNotifiers(step.workflowStepId!).pipe(
-        map(notifiers => ({ step, notifiers })),
-        catchError(err => {
-          // Return empty notifiers on error
-          return new Observable<{ step: any; notifiers: any[] }>(observer => {
-            observer.next({ step, notifiers: [] });
-            observer.complete();
-          });
-        })
-      )
-    );
-
-    // Load all notifiers in parallel
-    forkJoin(notifierObservables).subscribe({
-      next: (results) => {
-        results.forEach(({ step, notifiers }) => {
-          // Extract role IDs and user IDs from notifiers
-          const roleIds: string[] = [];
-          const userIds: string[] = [];
-
-          notifiers.forEach(notifier => {
-            if (notifier.roleId) {
-              roleIds.push(notifier.roleId);
-            }
-            if (notifier.userId) {
-              userIds.push(String(notifier.userId)); // Normalize to string
-            }
-          });
-
-          // Update the step with saved notifiers
-          step.notifyingRoleIds = roleIds;
-          step.notifyingUserIds = userIds;
-        });
-
-        // Trigger change detection
-        this.cdr.detectChanges();
-
-        // Call callback after all notifiers are loaded
-        if (callback) {
-          setTimeout(() => callback(), 100);
-        }
-      },
-      error: (err) => {
-        // Initialize empty arrays for all steps if loading fails
-        this.editSteps.forEach(step => {
-          step.notifyingRoleIds = step.notifyingRoleIds || [];
-          step.notifyingUserIds = step.notifyingUserIds || [];
-        });
-
-        if (callback) {
-          setTimeout(() => callback(), 100);
-        }
-      }
-    });
-  }
-
-  private loadAllUsersForSteps(): void {
-    // Load all users for all steps
-    this.editSteps.forEach((step, index) => {
-      // Ensure arrays are initialized
-      step.notifyingRoleIds = step.notifyingRoleIds || [];
-      step.notifyingUserIds = step.notifyingUserIds || [];
-      step.availableUsers = step.availableUsers || [];
-
-      // Load all users for the dropdown
-      setTimeout(() => {
-        this.loadUsersForNotifyingRoles(step, index);
-      }, 100);
-    });
-  }
-
-  private loadUsersForNotifyingRoles(step: any, stepIndex: number): void {
-    // Initialize arrays if needed
-    if (!step.usersInNotifyingRoles) {
-      step.usersInNotifyingRoles = [];
-    }
-    if (!step.availableUsers) {
-      step.availableUsers = [];
-    }
-
-    // Preserve selected user IDs before loading, normalize to strings
-    const preservedUserIds = step.notifyingUserIds
-      ? [...step.notifyingUserIds].map((id: any) => String(id))
-      : [];
-
-    // Fetch ALL users (not filtered by roles)
-    this.backendUserService.getUsers().subscribe({
-      next: (allUsers) => {
-        // Map all users to the format needed for the dropdown, normalize IDs to strings
-        step.availableUsers = (allUsers || []).map((user: any) => ({
-          id: String(user.id),
-          userName: user.userName || ''
-        })).sort((a: any, b: any) =>
-          (a.userName || '').localeCompare(b.userName || '')
-        );
-
-        // Restore selected user IDs after loading users, ensure type matching
-        if (preservedUserIds.length > 0) {
-          // Filter to only include users that exist in availableUsers, using string comparison
-          const validUserIds = preservedUserIds.filter((userId: string) =>
-            step.availableUsers.some((u: any) => String(u.id) === String(userId))
-          );
-          step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
-        }
-
-        // Trigger change detection by creating new array references
-        step.availableUsers = [...step.availableUsers];
-        if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
-          step.notifyingUserIds = [...step.notifyingUserIds];
-        } else {
-          step.notifyingUserIds = [];
-        }
-        if (step.notifyingRoleIds && step.notifyingRoleIds.length > 0) {
-          step.notifyingRoleIds = [...step.notifyingRoleIds];
-        } else {
-          step.notifyingRoleIds = [];
-        }
-
-        // Force change detection
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        step.availableUsers = [];
-        step.availableUsers = [...step.availableUsers];
-      }
-    });
-  }
-
-  private saveStepNotifiers(): Observable<boolean> {
-    const saveObservables: Observable<boolean>[] = [];
-
-    // Save notifiers for all steps that have workflowStepId
-    this.editSteps.forEach((step) => {
-      if (step.workflowStepId) {
-        const saveObs = this.workflowService.updateStepNotifiers(
-          step.workflowStepId,
-          step.notifyingRoleIds || [],
-          step.notifyingUserIds || []
-        );
-        saveObservables.push(saveObs);
-      }
-    });
-
-    if (saveObservables.length === 0) {
-      return new Observable(observer => {
-        observer.next(true);
-        observer.complete();
-      });
-    }
-
-    // Execute all saves in parallel using forkJoin
-    return forkJoin(saveObservables).pipe(
-      map(() => true),
-      catchError((err) => {
-        return throwError(() => err);
-      })
-    );
-  }
-
-  onNotifyingRolesChange(stepIndex: number): void {
-    const step = this.editSteps[stepIndex];
-    if (!step) return;
-
-    // Ensure notifyingRoleIds is initialized
-    if (!step.notifyingRoleIds) {
-      step.notifyingRoleIds = [];
-    }
-
-    // Ensure notifyingUserIds is initialized
-    if (!step.notifyingUserIds) {
-      step.notifyingUserIds = [];
-    }
-
-    // Load all users (not filtered by roles)
-    // Users dropdown is independent of roles selection
-    this.loadUsersForNotifyingRoles(step, stepIndex);
+    return skipToStepLabels;
   }
 }
 

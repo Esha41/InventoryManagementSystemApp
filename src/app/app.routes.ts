@@ -135,7 +135,7 @@ export const routes: Routes = [
       },
       {
         path: 'workflow/:id/edit',
-        loadComponent: () => import('@pages/workflow/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
+        loadComponent: () => import('@pages/workflow/edit-workflow/edit-workflow.component').then(m => m.EditWorkflowComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['workflowtype.edit'] }
       },

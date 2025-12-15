@@ -26,14 +26,14 @@ export class RequestsManagementService {
    * Load all base requests
    */
   loadRequests(): Observable<Request[]> {
-    return this.apiService.getWithAuth<BaseRequestDto[]>(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
+    return this.apiService.getWithAuth<any>(
+      API_ENDPOINTS.REQUESTS.USER_ACTIONS
     ).pipe(
       map((response: any) => {
-        // Handle both direct array response and wrapped response
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
-          : (response?.data || []);
+        // Handle API response format: { succeeded: true, data: [...] }
+        const data: BaseRequestDto[] = response?.succeeded && response?.data 
+          ? response.data 
+          : (Array.isArray(response) ? response : []);
         
         return data.map(item => mapBaseRequestToRequest(item));
       }),

@@ -1,0 +1,88 @@
+/* Edit Workflow specific styles - reuse add-workflow styles */
+.edit-steps-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.edit-steps-table-scroll-container {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+  position: relative;
+  background-color: #ffffff;
+  max-height: 1600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.edit-steps-table {
+  width: 100%;
+  min-width: 1600px;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: auto;
+  box-sizing: border-box;
+}
+
+.edit-steps-table thead {
+  background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.edit-steps-table th {
+  background-color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  white-space: nowrap;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  min-width: 120px;
+}
+
+.edit-steps-table td {
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  vertical-align: top;
+  min-width: 120px;
+}
+
+.edit-steps-table td app-dropdown {
+  width: 100%;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.edit-steps-table td .app-dropdown {
+  width: 100%;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.edit-steps-table td app-dropdown .app-dropdown-trigger {
+  max-width: 280px;
+}
+
+.edit-steps-table-wrapper :host ::ng-deep app-dropdown .app-dropdown-panel {
+  z-index: 10000 !important;
+}
+
+.edit-steps-table-wrapper :host ::ng-deep app-dropdown .app-dropdown-panel[style*="position: fixed"] {
+  position: fixed !important;
+  transform: none !important;
+}
+
+label,
+.edit-steps-table th {
+  text-transform: none !important;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+

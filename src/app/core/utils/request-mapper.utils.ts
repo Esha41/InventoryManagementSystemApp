@@ -264,7 +264,8 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         requireHigherApproval: h.requireHigherApproval || h.RequireHigherApproval || false,
         higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId,
         isCurrentUserApprover: h.isCurrentUserApprover || h.IsCurrentUserApprover || false,
-        files: h.files || h.Files || []
+        files: h.files || h.Files || [],
+        transitions: h.transitions || h.Transitions || []
       };
     })
     // Sort chronologically by ID (which represents creation order)
