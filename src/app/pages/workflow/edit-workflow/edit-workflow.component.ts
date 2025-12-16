@@ -537,7 +537,11 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     // This prevents backend from checking if steps are in approval history
     // Workflow steps remain unchanged, only transitions are updated
     // If workflow metadata (name, type, status) needs to be updated, that should be done separately
-    updateTransitions().subscribe({
+    
+    // Chain: first update transitions, then update notifiers
+    updateTransitions().pipe(
+      switchMap(() => updateNotifiers())
+    ).subscribe({
       next: () => {
         this.submitting = false;
         this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
@@ -550,10 +554,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       },
       error: err => {
         this.submitting = false;
-        this.errorMessage = err.message || 'Failed to update transitions';
+        this.errorMessage = err.message || 'Failed to update workflow';
         
         this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
-          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'] || 'Failed to update transitions';
+          const errorMsg = err.message || translations['toast.failedToUpdateWorkflow'] || 'Failed to update workflow';
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }
@@ -663,30 +667,40 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       step.availableUsers = [];
     }
 
+    // Preserve existing user IDs
     const preservedUserIds = step.notifyingUserIds 
       ? [...step.notifyingUserIds].map((id: any) => String(id))
+      : [];
+
+    // Preserve existing role IDs - don't modify them here
+    const preservedRoleIds = step.notifyingRoleIds 
+      ? [...step.notifyingRoleIds]
       : [];
 
     // Use cached users instead of making API call
     step.availableUsers = [...this.allUsers];
     
+    // Restore user IDs if they were preserved and are still valid
     if (preservedUserIds.length > 0) {
       const validUserIds = preservedUserIds.filter((userId: string) => 
         step.availableUsers.some((u: any) => String(u.id) === String(userId))
       );
       step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
+    } else {
+      // Only set to empty array if it wasn't previously set
+      if (step.notifyingUserIds === undefined || step.notifyingUserIds === null) {
+        step.notifyingUserIds = [];
+      }
     }
     
-    step.availableUsers = [...step.availableUsers];
-    if (step.notifyingUserIds && step.notifyingUserIds.length > 0) {
-      step.notifyingUserIds = [...step.notifyingUserIds];
+    // Restore role IDs - preserve them, don't clear
+    if (preservedRoleIds.length > 0) {
+      step.notifyingRoleIds = [...preservedRoleIds];
     } else {
-      step.notifyingUserIds = [];
-    }
-    if (step.notifyingRoleIds && step.notifyingRoleIds.length > 0) {
-      step.notifyingRoleIds = [...step.notifyingRoleIds];
-    } else {
-      step.notifyingRoleIds = [];
+      // Only initialize if not already set
+      if (step.notifyingRoleIds === undefined || step.notifyingRoleIds === null) {
+        step.notifyingRoleIds = [];
+      }
     }
     
     this.cdr.detectChanges();
