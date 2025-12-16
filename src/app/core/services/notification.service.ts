@@ -638,12 +638,12 @@ export class NotificationService implements OnDestroy {
         }
       } else if (entityType === 'return' && this.isReturnDto(details)) {
         emailDetails['Return Number'] = details.requestNo || `#${details.id}`;
-        emailDetails['Department'] = details.departmentName || 'N/A';
-        emailDetails['Requester'] = details.requesterName || 'N/A';
+        emailDetails['Department'] = details.department?.nameEn || details.department?.nameAr || 'N/A';
+        emailDetails['Requester'] = details.requester?.fullNameEN || details.requester?.fullNameAR || details.requester?.userName || 'N/A';
         emailDetails['Priority'] = this.getPriorityLabel(details.priority);
         emailDetails['Status'] = this.getStatusLabel(details.status);
-        if (details.requestPurposeName) {
-          emailDetails['Request Purpose'] = details.requestPurposeName;
+        if (details.requestPurpose) {
+          emailDetails['Request Purpose'] = details.requestPurpose.nameEn || details.requestPurpose.nameAr;
         }
         if (details.reason) {
           emailDetails['Reason'] = details.reason;
@@ -656,12 +656,12 @@ export class NotificationService implements OnDestroy {
         }
       } else if (entityType === 'discard' && this.isDiscardDto(details)) {
         emailDetails['Discard Number'] = details.requestNo || `#${details.id}`;
-        emailDetails['Department'] = details.departmentName || 'N/A';
-        emailDetails['Requester'] = details.requesterName || 'N/A';
+        emailDetails['Department'] = details.department?.nameEn || details.department?.nameAr || 'N/A';
+        emailDetails['Requester'] = details.requester?.fullNameEN || details.requester?.fullNameAR || details.requester?.userName || 'N/A';
         emailDetails['Priority'] = this.getPriorityLabel(details.priority);
         emailDetails['Status'] = this.getStatusLabel(details.status);
-        if (details.requestPurposeName) {
-          emailDetails['Request Purpose'] = details.requestPurposeName;
+        if (details.requestPurpose) {
+          emailDetails['Request Purpose'] = details.requestPurpose.nameEn || details.requestPurpose.nameAr;
         }
         if (details.reason) {
           emailDetails['Reason'] = details.reason;

@@ -21,8 +21,8 @@ export class ReturnDetailsModalComponent {
 
   readonly X = X;
 
-  constructor(private readonly router: Router) {}
-  
+  constructor(private readonly router: Router) { }
+
   onClose(): void {
     this.close.emit();
   }
@@ -88,17 +88,17 @@ export class ReturnDetailsModalComponent {
 
   resolveDepartmentName(request: ReturnDto | null): string {
     if (!request) return 'N/A';
-    return request.departmentName || 'N/A';
+    return request.department?.nameEn || request.department?.nameAr || 'N/A';
   }
 
   resolveRequestPurpose(request: ReturnDto | null): string {
     if (!request) return 'N/A';
-    return request.requestPurposeName || 'N/A';
+    return request.requestPurpose?.nameEn || request.requestPurpose?.nameAr || 'N/A';
   }
 
   resolveDepotName(request: ReturnDto | null): string {
     if (!request) return 'N/A';
-    return request.depotName || 'N/A';
+    return 'N/A'; // Depot info not available in nested objects
   }
 
   hasItems(items?: any[] | null): boolean {

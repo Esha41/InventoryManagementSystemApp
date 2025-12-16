@@ -147,6 +147,7 @@ export interface BaseRequestDto {
   requesterId?: string;
   requestPurposeId: number;
   requestDate: string | Date;
+  creationDate?: string | Date; // Actual creation date from backend audit fields
   departmentName?: string;
   requesterName?: string;
   requesterUserName?: string;
@@ -156,4 +157,5 @@ export interface BaseRequestDto {
   files?: FileUploadDto[];
   [key: string]: any;
 }
+
 

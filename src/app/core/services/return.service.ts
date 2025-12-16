@@ -11,7 +11,7 @@ import { APIOperationResponse } from '@models/api-response.model';
  */
 export interface CreateReturnDto {
   reason?: string;
-  priority: number; 
+  priority: number;
   notes?: string;
   departmentId: number;
   requesterId?: string;
@@ -34,16 +34,36 @@ export interface ReturnDto {
   status: number;
   notes?: string;
   departmentId: number;
-  requesterId?: number;
+  requesterId?: string;
   recieverId?: number;
   depotId?: number;
   requestPurposeId: number;
-  departmentName?: string;
-  requesterName?: string;
-  recieverName?: string;
-  depotName?: string;
-  requestPurposeName?: string;
+  // Nested objects from backend BaseRequestDto
+  department?: {
+    id: number;
+    code: string;
+    nameAr: string;
+    nameEn: string;
+    isDeleted: boolean;
+  };
+  requester?: {
+    id: string;
+    userName: string;
+    fullNameEN: string;
+    fullNameAR: string;
+    militoryId?: string | null;
+    email?: string;
+    rank?: any;
+    department?: any;
+  };
+  requestPurpose?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+    requestType: number;
+  };
   requestItems?: ReturnItemDto[];
+  creationDate?: string | Date; // From BaseRequestDto
 }
 
 export interface ReturnItemDto {
@@ -67,7 +87,7 @@ export class ReturnService {
   constructor(
     private apiService: ApiService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   /**
    * Create a new return request
@@ -78,7 +98,7 @@ export class ReturnService {
     // If files are provided, use FormData
     if (files && files.length > 0) {
       const formData = new FormData();
-      
+
       // Append DTO properties
       if (dto.reason) formData.append('Reason', dto.reason);
       formData.append('Priority', dto.priority.toString());
@@ -86,7 +106,7 @@ export class ReturnService {
       formData.append('DepartmentId', dto.departmentId.toString());
       if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
       formData.append('RequestPurposeId', dto.requestPurposeId.toString());
-      
+
       // Append ReturnItems array
       if (dto.returnItems && dto.returnItems.length > 0) {
         dto.returnItems.forEach((item, index) => {
@@ -97,7 +117,7 @@ export class ReturnService {
           }
         });
       }
-      
+
       // Append files
       files.forEach(file => {
         formData.append('files', file);

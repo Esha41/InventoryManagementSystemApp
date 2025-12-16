@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, EMPTY } from 'rxjs';
-import { catchError, debounceTime, filter } from 'rxjs/operators';
+import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from './components/return-details-modal/return-details-modal.component';
 import { DiscardDetailsModalComponent } from './components/discard-details-modal/discard-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { UnifiedRequestService, BaseRequestDto } from '@services/unified-request.service';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
 import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
@@ -29,6 +30,7 @@ import {
 } from '@utils/dashboard.utils';
 import { isDisplayableRequestStatus } from '@utils/status.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
+import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -152,6 +154,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly authService: BackendAuthService,
+    private readonly unifiedRequestService: UnifiedRequestService,
     private readonly orderService: OrderService,
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
@@ -159,7 +162,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly userContext: UserContextService,
+    private readonly userContextService: UserContextService,
     private readonly requestStatusUpdateService: RequestStatusUpdateService
   ) { }
 
@@ -226,21 +229,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load all requests in parallel for better performance
+   * Load all requests using unified endpoint for better performance
+   * Reduces API calls from 3 (Order, Return, Discard) to 1 unified call
+   * Following Angular best practices for data fetching and transformation
    */
   private loadAllRequests(): void {
-    combineLatest({
-      orders: this.loadOrderRequests$(),
-      returns: this.loadReturnRequests$(),
-      discards: this.loadDiscardRequests$()
-    })
-      .pipe(takeUntil(this.destroy$))
+    this.unifiedRequestService.getUserActionRequests()
+      .pipe(
+        map(requests => separateRequestsByType(requests)),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: ({ orders, returns, discards }) => {
           this.allCards = [];
-          this.processOrderRequests(orders);
-          this.processReturnRequests(returns);
-          this.processDiscardRequests(discards);
+
+          // Process each request type
+          this.processUnifiedOrders(orders);
+          this.processUnifiedReturns(returns);
+          this.processUnifiedDiscards(discards);
+
+          // Apply filters and update view
           this.filterCardsByPermissionsAndRoles();
           this.cdr.markForCheck();
         },
@@ -251,6 +259,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  /**
+   * Process unified order requests
+   * Transforms BaseRequestDto to OrderDto and processes them
+   */
+  private processUnifiedOrders(orders: BaseRequestDto[]): void {
+    if (!orders || orders.length === 0) {
+      return;
+    }
+
+    // Transform BaseRequestDto to OrderDto
+    const orderDtos = orders.map(order => mapToOrderDto(order));
+
+    // Process using existing logic
+    this.processOrderRequests(orderDtos);
+  }
+
+  /**
+   * Process unified return requests
+   * Transforms BaseRequestDto to ReturnDto and processes them
+   */
+  private processUnifiedReturns(returns: BaseRequestDto[]): void {
+    if (!returns || returns.length === 0) {
+      return;
+    }
+
+    // Transform BaseRequestDto to ReturnDto
+    const returnDtos = returns.map(ret => mapToReturnDto(ret));
+
+    // Process using existing logic
+    this.processReturnRequests(returnDtos);
+  }
+
+  /**
+   * Process unified discard requests
+   * Transforms BaseRequestDto to DiscardDto and processes them
+   */
+  private processUnifiedDiscards(discards: BaseRequestDto[]): void {
+    if (!discards || discards.length === 0) {
+      return;
+    }
+
+    // Transform BaseRequestDto to DiscardDto
+    const discardDtos = discards.map(discard => mapToDiscardDto(discard));
+
+    // Process using existing logic
+    this.processDiscardRequests(discardDtos);
+  }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -358,7 +415,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
       currentUser?.email?.toLowerCase().includes('administrator');
     const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-    const isAdminUser = this.userContext.isAdminUser();
+    const isAdminUser = this.userContextService.isAdminUser();
 
     const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isAdminUser;
 
@@ -531,9 +588,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(ret.status),
         orders: [{
           orderId: getRequestTitle(ret),
-          requestDate: 'N/A', // Return requests don't have a date field in the DTO
-          departmentName: ret.departmentName || 'N/A',
-          requesterName: ret.requesterName || 'N/A',
+          requestDate: ret.creationDate ? new Date(ret.creationDate).toLocaleDateString() : 'N/A',
+          departmentName: ret.department?.nameEn || ret.department?.nameAr || 'N/A',
+          requesterName: ret.requester?.fullNameEN || ret.requester?.fullNameAR || ret.requester?.userName || 'N/A',
           items: mapRequestItems(ret.requestItems)
         }],
         permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
@@ -560,9 +617,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(discard.status),
         orders: [{
           orderId: getRequestTitle(discard),
-          requestDate: 'N/A', // Discard requests don't have a date field in the DTO
-          departmentName: discard.departmentName || 'N/A',
-          requesterName: discard.requesterName || 'N/A',
+          requestDate: discard.creationDate ? new Date(discard.creationDate).toLocaleDateString() : 'N/A',
+          departmentName: discard.department?.nameEn || discard.department?.nameAr || 'N/A',
+          requesterName: discard.requester?.fullNameEN || discard.requester?.fullNameAR || discard.requester?.userName || 'N/A',
           items: mapRequestItems(discard.requestItems)
         }],
         permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
@@ -764,19 +821,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format order usage time (HH:MM format)
+   * Format order usage time to military format (HHMM)
+   * Handles backend TimeOnly serialization format (HH:mm:ss)
    */
   formatOrderUsageTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
 
-    // Handle military format (HHMM) and legacy format (HH:mm)
+    // Backend sends TimeOnly as "HH:mm:ss" format, convert to military time (HHMM)
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
-      // Military format (HHMM - 4 digits)
+      // Military format (HHMM - 4 digits) - already in correct format
       if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
         return timeStr;
       }
-      // Legacy format (HH:mm) - convert to military
+      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to military
       if (timeStr.includes(':')) {
         const parts = timeStr.split(':');
         const hours = parts[0].padStart(2, '0');
