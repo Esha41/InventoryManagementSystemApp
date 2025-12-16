@@ -23,6 +23,24 @@ export const getExplosiveTypeOptions = (): { label: string; value: string }[] =>
         }));
 };
 
-export const getExplosiveTypeName = (value: number): string => {
-    return ExplosiveType[value] || 'Unknown';
+export const getExplosiveTypeName = (value: number | string): string => {
+    // Handle both number and string values from backend
+    if (typeof value === 'string') {
+        // If backend sends enum name as string (JsonStringEnumConverter)
+        return value.replace(/([A-Z])/g, ' $1').trim();
+    }
+    
+    // Convert numeric enum value to enum name
+    // For numeric enums, we need to find the key that matches the value
+    const numericValue = value as number;
+    const enumKey = Object.keys(ExplosiveType).find(
+        key => ExplosiveType[key as keyof typeof ExplosiveType] === numericValue && isNaN(Number(key))
+    );
+    
+    if (!enumKey) {
+        return 'Unknown';
+    }
+    
+    // Convert enum name to readable format: "PlasticExplosive" -> "Plastic Explosive"
+    return enumKey.replace(/([A-Z])/g, ' $1').trim();
 };

@@ -8,11 +8,15 @@ import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } fro
 import { InventoryService } from '@services/inventory.service';
 import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
-import { CreateInventoryDto, CreateInventoryDetailDto } from '@models/inventory.model';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
+import { CreateInventoryDto, CreateInventoryDetailDto, ItemType } from '@models/inventory.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
@@ -54,27 +58,46 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   warehouseId!: number;
   warehouseName: string = '';
 
+  // Active tab for item type
+  activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+
   // Form
   inventoryForm!: FormGroup;
 
-  // Lookup data
-  availableItems: AmmunitionReadDto[] = [];
+  // Lookup data - separate arrays for each type
+  availableAmmunition: AmmunitionReadDto[] = [];
+  availableWeapons: WeaponDto[] = [];
+  availableExplosives: ExplosiveDto[] = [];
   suppliers: SupplierDto[] = [];
   manufacturers: ManufacturerDto[] = [];
   countries: CountryDto[] = [];
+
+  // Computed property for current items based on active tab
+  get availableItems(): (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] {
+    switch (this.activeTab) {
+      case 'ammunition':
+        return this.availableAmmunition;
+      case 'weapon':
+        return this.availableWeapons;
+      case 'explosive':
+        return this.availableExplosives;
+      default:
+        return this.availableAmmunition;
+    }
+  }
   readonly supplierOptionLabel = (option: DropdownOption<SupplierDto> | SupplierDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
   readonly manufacturerOptionLabel = (option: DropdownOption<ManufacturerDto> | ManufacturerDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
   readonly countryOptionLabel = (option: DropdownOption<CountryDto> | CountryDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
-  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) {
       return '';
     }
     const name = getLocalizedName(item, getCurrentLang(this.translateService)) || '';
-    const itemNo = item.itemNo ? ` (${item.itemNo})` : '';
+    const itemNo = (item as any).itemNo ? ` (${(item as any).itemNo})` : '';
     return `${name}${itemNo}`.trim();
   };
 
@@ -91,6 +114,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     private inventoryService: InventoryService,
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private translationService: TranslationService
@@ -149,30 +174,41 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
     forkJoin({
       depot: this.lookupService.getDepots(),
-      items: this.ammunitionService.getAll(),
+      ammunition: this.ammunitionService.getAll(),
+      weapons: this.weaponService.getAll(),
+      explosives: this.explosiveService.getAll(),
       suppliers: this.lookupService.getSuppliers(),
       manufacturers: this.lookupService.getManufacturers(),
       countries: this.lookupService.getCountries()
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ depot, items, suppliers, manufacturers, countries }) => {
-        const currentDepot = depot.find(d => d.id === this.warehouseId);
-        this.warehouseName = getLocalizedName(currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
-        
-        this.availableItems = items;
-        this.suppliers = suppliers;
-        this.manufacturers = manufacturers;
-        this.countries = countries;
-        
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading data:', error);
-        this.errorMessage = this.translateService.instant('addInventory.loadError');
-        this.loading = false;
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ depot, ammunition, weapons, explosives, suppliers, manufacturers, countries }) => {
+          const currentDepot = depot.find(d => d.id === this.warehouseId);
+          this.warehouseName = getLocalizedName(currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
+
+          this.availableAmmunition = ammunition;
+          this.availableWeapons = weapons;
+          this.availableExplosives = explosives;
+          this.suppliers = suppliers;
+          this.manufacturers = manufacturers;
+          this.countries = countries;
+
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading data:', error);
+          this.errorMessage = this.translateService.instant('addInventory.loadError');
+          this.loading = false;
+        }
+      });
+  }
+
+  switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+    this.activeTab = tab;
+    // Clear existing items when switching tabs
+    this.itemsFormArray.clear();
+    this.addItem();
   }
 
   addItem(): void {
@@ -205,7 +241,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   onItemChange(index: number): void {
     const itemFormGroup = this.itemsFormArray.at(index);
     const itemId = itemFormGroup.get('itemId')?.value;
-    const selectedItem = this.availableItems.find(i => i.id === itemId);
+    const selectedItem = this.availableItems.find((i: any) => i.id === itemId);
     // Clear validation error when item is selected
     if (selectedItem) {
       itemFormGroup.get('itemId')?.setErrors(null);
@@ -218,31 +254,31 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   isFieldInvalid(fieldPath: string, index?: number): boolean {
     let control: AbstractControl | null;
-    
+
     if (index !== undefined) {
       const itemGroup = this.itemsFormArray.at(index) as FormGroup;
       control = itemGroup.get(fieldPath);
     } else {
       control = this.inventoryForm.get(fieldPath);
     }
-    
+
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
   getFieldError(fieldPath: string, index?: number): string | null {
     let control: AbstractControl | null;
-    
+
     if (index !== undefined) {
       const itemGroup = this.itemsFormArray.at(index) as FormGroup;
       control = itemGroup.get(fieldPath);
     } else {
       control = this.inventoryForm.get(fieldPath);
     }
-    
+
     if (!control || !control.errors || (!control.dirty && !control.touched)) {
       return null;
     }
-    
+
     if (control.errors['required']) {
       return this.translateService.instant('addInventory.required');
     }
@@ -255,20 +291,20 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (control.errors['futureDate']) {
       return this.translateService.instant('addInventory.cannotBeFuture');
     }
-    
+
     return null;
   }
 
   onFieldChange(fieldPath: string, index?: number): void {
     let control: AbstractControl | null;
-    
+
     if (index !== undefined) {
       const itemGroup = this.itemsFormArray.at(index) as FormGroup;
       control = itemGroup.get(fieldPath);
     } else {
       control = this.inventoryForm.get(fieldPath);
     }
-    
+
     if (control) {
       control.markAsTouched();
       // Clear errors if field becomes valid
@@ -394,13 +430,13 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.submitting = false;
-          
+
           this.translateService.get(['toast.success', 'addInventory.successMessage']).subscribe(translations => {
             const message = translations['addInventory.successMessage'] || 'Inventory created successfully!';
             const title = translations['toast.success'];
             this.toastService.success(message, title);
           });
-          
+
           // Redirect after a short delay
           setTimeout(() => {
             this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
@@ -412,7 +448,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
           this.errorMessage = errorMsg;
           this.submitting = false;
-          
+
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMsg, translations['toast.error']);
           });

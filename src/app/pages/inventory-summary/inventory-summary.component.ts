@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { CardComponent } from '@components/card/card.component';
@@ -16,6 +16,8 @@ import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { ToastService } from '@services/toast.service';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -65,6 +67,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     readonly Package = Package;
     readonly AlertCircle = AlertCircle;
     readonly Search = Search;
+    readonly Download = Download;
 
     private destroy$ = new Subject<void>();
 
@@ -72,7 +75,9 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private dataService: InventorySummaryDataService,
         private inventoryService: InventoryService,
         private translateService: TranslateService,
-        private translationService: TranslationService
+        private translationService: TranslationService,
+        private excelExportService: ExcelExportService,
+        private toastService: ToastService
     ) { }
 
     get isRTL(): boolean {
@@ -282,5 +287,74 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
     getCountryName(lot: LotDetailDto): string {
         return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
+    }
+
+    /**
+     * Export inventory summary to Excel
+     */
+    exportToExcel(): void {
+        const columns: ExcelColumn[] = [
+            {
+                header: this.translateService.instant('inventorySummary.itemName'),
+                key: 'itemName',
+                width: 30
+            },
+            {
+                header: this.translateService.instant('inventorySummary.itemNo'),
+                key: 'itemNo',
+                width: 15
+            },
+            {
+                header: this.translateService.instant('inventorySummary.partNo'),
+                key: 'partNo',
+                width: 15,
+                format: (value: string) => value || '-'
+            },
+            {
+                header: this.translateService.instant('inventorySummary.nsn'),
+                key: 'nsn',
+                width: 15,
+                format: (value: string) => value || '-'
+            },
+            {
+                header: this.translateService.instant('inventorySummary.totalQty'),
+                key: 'totalQuantity',
+                width: 15
+            },
+            {
+                header: this.translateService.instant('inventorySummary.usedQty'),
+                key: 'usedQuantity',
+                width: 15
+            },
+            {
+                header: this.translateService.instant('inventorySummary.reservedQty'),
+                key: 'reservedQuantityByOrdersOnProcessing',
+                width: 18
+            },
+            {
+                header: this.translateService.instant('inventorySummary.remainingQty'),
+                key: 'remainingQuantity',
+                width: 18
+            },
+            {
+                header: this.translateService.instant('inventorySummary.totalLots'),
+                key: 'totalLots',
+                width: 12
+            }
+        ];
+
+        const fileName = `Inventory_Summary_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
+
+        this.excelExportService.exportToExcel({
+            fileName: fileName,
+            sheetName: 'Summary',
+            columns: columns,
+            data: this.filteredItems,
+            includeTimestamp: true
+        });
+
+        this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+        });
     }
 }

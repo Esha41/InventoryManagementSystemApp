@@ -52,7 +52,11 @@
     "reason": "Reason",
     "comments": "Comments",
     "notAvailable": "Not Available",
-    "optional": "Optional"
+    "optional": "Optional",
+    "exportToExcel": "Export to Excel",
+    "exportSuccess": "Data exported successfully",
+    "exportError": "Failed to export data",
+    "exporting": "Exporting..."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -489,13 +493,21 @@
     "noLots": "No lots available for this item",
     "noItems": "No inventory items available",
     "searchPlaceholder": "Search by item name, item number, NSN, or part number...",
-    "noResults": "No items match your search criteria"
+    "noResults": "No items match your search criteria",
+    "exportWithDetails": "Export with Lot Details",
+    "exportingWithDetails": "Loading lot details for export. Please wait..."
   },
   "requestsManagement": {
     "title": "Requests Management",
     "orderId": "Order ID",
     "requestDate": "Request Date",
     "priority": "Priority",
+    "filterByPriority": "Filter by Priority",
+    "priorities": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
     "requestType": "Request Type",
     "status": "Status",
     "noRequestsFound": "No requests found",
@@ -1101,7 +1113,7 @@
     "approvalStages": "Approval Stages",
     "steps": "Steps",
     "addStep": "Add Step",
-    "role": "Role",   
+    "role": "Role",
     "stepOrder": "Order",
     "first": "First",
     "second": "Second",

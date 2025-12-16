@@ -31,6 +31,18 @@
             placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
           </app-dropdown>
         </div>
+
+        <!-- Priority Filter -->
+        <div
+          class="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
+          <span class="text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{
+            'requestsManagement.filterByPriority' | translate }}:</span>
+          <app-dropdown class="w-40 flex-shrink-0" [(ngModel)]="selectedPriorityFilter"
+            (ngModelChange)="onPriorityFilterChange()" [options]="priorityFilterOptions"
+            [optionLabelFn]="priorityFilterLabelFn" optionValue="value" [placeholderSelectable]="false"
+            placeholder="{{ 'requestsManagement.filterByPriority' | translate }}">
+          </app-dropdown>
+        </div>
       </div>
     </div>
 
@@ -78,7 +90,12 @@
               class="hover:bg-[var(--color-background-muted)] transition-colors">
               <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
               <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.creationDate }}</td>
-              <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.priority }}</td>
+              <td class="px-6 py-4 text-start">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getPriorityClass(request.priority) }}">
+                  {{ request.priority }}
+                </span>
+              </td>
               <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.requestType }}</td>
               <td class="px-6 py-4 text-start">
                 <span

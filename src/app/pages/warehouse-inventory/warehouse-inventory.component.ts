@@ -5,7 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, switchMap, timer } from 'rxjs';
 import { debounceTime, startWith, map, combineLatest } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X, Search } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X, Search, Download } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { WeaponService } from '@services/weapon.service';
@@ -23,6 +23,7 @@ import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, Error
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
+import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -73,6 +74,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly X = X;
   readonly Search = Search;
+  readonly Download = Download;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -104,7 +106,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private excelExportService: ExcelExportService
   ) { }
 
   ngOnInit(): void {
@@ -745,5 +748,81 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onDeleteCancel(): void {
     this.showDeleteDialog = false;
     this.selectedDetail = undefined;
+  }
+
+  /**
+   * Export filtered inventory to Excel
+   */
+  exportToExcel(): void {
+    const columns: ExcelColumn[] = [
+      {
+        header: this.translateService.instant('warehouseInventory.itemName'),
+        key: 'item',
+        width: 30,
+        format: (item) => this.getItemName({ item } as InventoryDetailDto)
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.itemNo'),
+        key: 'item.itemNo',
+        width: 15
+      },
+      {
+        header: this.translateService.instant('common.supplier'),
+        key: 'supplier',
+        width: 20,
+        format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.lot'),
+        key: 'lot',
+        width: 10
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.batchNo'),
+        key: 'batchNo',
+        width: 15,
+        format: (value) => value || '-'
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.originalQty'),
+        key: 'originalQuantity',
+        width: 15
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.currentQty'),
+        key: 'currentQuantity',
+        width: 15
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.usedQty'),
+        key: 'usedQuantity',
+        width: 15
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.remainingQty'),
+        key: 'remainingQuantity',
+        width: 15
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.expiryDate'),
+        key: 'expiryDate',
+        width: 15,
+        format: (date) => this.formatDate(date)
+      }
+    ];
+
+    const fileName = `${this.depoName}_Inventory_${this.activeTab}`;
+
+    this.excelExportService.exportToExcel({
+      fileName: fileName,
+      sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
+      columns: columns,
+      data: this.filteredInventoryDetails,
+      includeTimestamp: true
+    });
+
+    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+    });
   }
 }

@@ -52,7 +52,7 @@ function mapPriority(priority: number | string | null | undefined): 'High' | 'Me
     const lowerPriority = priority.toLowerCase().trim();
     if (lowerPriority === 'high' || lowerPriority === '1') {
       priorityNum = 1;
-    } else if (lowerPriority === 'medium' || lowerPriority === '2') {
+    } else if (lowerPriority === 'medium' || lowerPriority === 'normal' || lowerPriority === '2') {
       priorityNum = 2;
     } else if (lowerPriority === 'low' || lowerPriority === '3') {
       priorityNum = 3;
