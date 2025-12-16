@@ -37,15 +37,6 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
-// Extending FilterState locally for now or assuming the imported one is just an interface I can conform to if updated?
-// Actually I need to extend the component's usage of it.
-// The imported FilterState interface might be strict (from separate file). 
-// I will check if I can augment it or just add properties to the object.
-// Given constraints, I'll CAST or assume loose typing if possible, OR I should have updated the state file.
-// Since I can't easily see state file without extra tool call, I'll update the component to use a local extended interface or Just modify the object literal.
-// But Typescript will complain.
-// I'll define an ExtendedFilterState here.
-
 interface ExtendedFilterState extends FilterState {
   selectedWeaponType?: string;
   selectedCaliber?: string;
@@ -942,7 +933,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private rebuildOrderPriorities(): void {
     this.filterOptions.orderPriorities = [
       { label: 'newIssueRequest.highPriority', value: 'High' },
-      { label: 'newIssueRequest.mediumPriority', value: 'Normal' },
+      { label: 'newIssueRequest.mediumPriority', value: 'Medium' },
       { label: 'newIssueRequest.lowPriority', value: 'Low' }
     ];
   }

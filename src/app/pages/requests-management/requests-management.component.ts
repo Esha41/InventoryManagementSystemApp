@@ -45,6 +45,15 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     { label: 'dashboard.statusLabels.rejected', value: 'declined' }
   ];
 
+  // Priority filter
+  selectedPriorityFilter: 'all' | 'High' | 'Medium' | 'Low' = 'all';
+  readonly priorityFilterOptions: DropdownOption<'all' | 'High' | 'Medium' | 'Low'>[] = [
+    { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'requestsManagement.priorities.high', value: 'High' },
+    { label: 'requestsManagement.priorities.medium', value: 'Medium' },
+    { label: 'requestsManagement.priorities.low', value: 'Low' }
+  ];
+
   currentPage: number = 1;
   rowsPerPage: number = 10;
   totalItems: number = 0;
@@ -138,6 +147,13 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Apply priority filter
+    if (this.selectedPriorityFilter !== 'all') {
+      filtered = filtered.filter(request => {
+        return request.priority === this.selectedPriorityFilter;
+      });
+    }
+
     // Apply search filter
     if (this.searchQuery && this.searchQuery.trim().length > 0) {
       const query = this.searchQuery.trim().toLowerCase();
@@ -153,6 +169,11 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Sort by priority (Critical > High > Medium > Low)
+    filtered.sort((a, b) => {
+      return this.getPriorityOrder(a.priority) - this.getPriorityOrder(b.priority);
+    });
+
     this.filteredRequests = filtered;
     this.totalItems = filtered.length;
     this.currentPage = 1; // Reset to first page when filtering
@@ -162,8 +183,29 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  onPriorityFilterChange(): void {
+    this.applyFilters();
+  }
+
   onSearchChange(): void {
     this.applyFilters();
+  }
+
+  /**
+   * Get priority order for sorting (lower number = higher priority)
+   */
+  private getPriorityOrder(priority: string): number {
+    const priorityLower = priority.toLowerCase().trim();
+    switch (priorityLower) {
+      case 'high':
+        return 0;
+      case 'medium':
+        return 1;
+      case 'low':
+        return 2;
+      default:
+        return 3;
+    }
   }
 
   get paginatedRequests(): Request[] {
@@ -177,6 +219,13 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+    if (typeof option === 'object' && option !== null && 'label' in option) {
+      return this.translate.instant(option.label as string);
+    }
+    return '';
+  };
+
+  readonly priorityFilterLabelFn = (option: DropdownOption<'all' | 'High' | 'Medium' | 'Low'> | 'all' | 'High' | 'Medium' | 'Low'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }
@@ -198,6 +247,20 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     return getRequestStatusClass(status);
+  }
+
+  getPriorityClass(priority: string): string {
+    const priorityLower = priority.toLowerCase().trim();
+    switch (priorityLower) {
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border border-orange-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+      case 'low':
+        return 'bg-green-100 text-green-800 border border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border border-gray-200';
+    }
   }
 
   openOrderDetails(order: Request): void {

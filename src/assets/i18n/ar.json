@@ -51,7 +51,11 @@
     "reason": "السبب",
     "comments": "التعليقات",
     "notAvailable": "غير متوفر",
-    "optional": "اختياري"
+    "optional": "اختياري",
+    "exportToExcel": "تصدير إلى Excel",
+    "exportSuccess": "تم تصدير البيانات بنجاح",
+    "exportError": "فشل تصدير البيانات",
+    "exporting": "جاري التصدير..."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -189,7 +193,9 @@
     "noLots": "لا يوجد لوت متاح لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
     "searchPlaceholder": "البحث باسم مادة، رقم مادة، NSN، أو رقم القطعة...",
-    "noResults": "لا توجد مواد تطابق معايير البحث"
+    "noResults": "لا توجد مواد تطابق معايير البحث",
+    "exportWithDetails": "تصدير مع تفاصيل اللوتات",
+    "exportingWithDetails": "جارٍ تحميل تفاصيل اللوتات للتصدير. الرجاء الانتظار..."
   },
   "notifications": {
     "title": "الإشعارات",
@@ -492,6 +498,12 @@
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",
     "priority": "الأولوية",
+    "filterByPriority": "تصفية حسب الأولوية",
+    "priorities": {
+      "high": "عالية",
+      "medium": "متوسطة",
+      "low": "منخفضة"
+    },
     "requestType": "نوع الطلب",
     "status": "الحالة",
     "noRequestsFound": "لم يتم العثور على طلبات",
@@ -1092,11 +1104,10 @@
     "currentStatus": "الحالة الحالية",
     "statusNote": "يمكن أن يكون العديد من سير العمل نشطاً في نفس الوقت",
     "workflowType": "نوع سير العمل",
-   
     "approvalStages": "مراحل الموافقة",
     "steps": "الخطوات",
     "addStep": "إضافة خطوة",
-    "role": "الدور",  
+    "role": "الدور",
     "stepOrder": "الترتيب",
     "first": "الأولى",
     "second": "الثانية",

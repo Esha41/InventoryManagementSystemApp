@@ -340,7 +340,7 @@ export class SupplyRequestDetailService {
     return this.supplyService.create(createSupplyDto).pipe(
       tap((supplyId: number) => {
         const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
-          supplyId: supplyId
+          count: supplyDetails.length
         });
         const title = this.translate.instant('toast.success');
         this.toastService.success(message, title);

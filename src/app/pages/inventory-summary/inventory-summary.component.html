@@ -94,6 +94,19 @@
 
         <!-- Inventory Summary Table -->
         <app-card *ngIf="!loading && !error" [shadow]="true">
+            <div class="p-6 border-b border-[var(--color-border)] flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-[var(--color-text)]">
+                    {{ 'inventorySummary.title' | translate }}
+                </h2>
+                <div class="flex items-center gap-3" *ngIf="filteredItems.length > 0">
+                    <button (click)="exportToExcel()"
+                        class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                        [class.flex-row-reverse]="isRTL">
+                        <lucide-icon [img]="Download" class="w-4 h-4"></lucide-icon>
+                        <span>{{ 'common.exportToExcel' | translate }}</span>
+                    </button>
+                </div>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full inventory-table">
                     <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">

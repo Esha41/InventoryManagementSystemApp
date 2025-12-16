@@ -42,11 +42,30 @@ export class ChangePasswordModalComponent implements OnInit {
     private initializeForm(): void {
         this.changePasswordForm = this.fb.group({
             oldPassword: ['', [Validators.required, Validators.minLength(6)]],
-            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+            newPassword: ['', [Validators.required, Validators.minLength(6), this.passwordStrengthValidator]],
             confirmPassword: ['', [Validators.required]]
         }, {
             validators: this.passwordMatchValidator
         });
+    }
+
+    private passwordStrengthValidator(control: any): { [key: string]: boolean } | null {
+        const value = control.value;
+        if (!value) {
+            return null;
+        }
+
+        const hasLetter = /[a-zA-Z]/.test(value);
+        const hasNumber = /[0-9]/.test(value);
+        const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+
+        const valid = hasLetter && hasNumber && hasSymbol;
+
+        if (!valid) {
+            return { passwordStrength: true };
+        }
+
+        return null;
     }
 
     private passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {

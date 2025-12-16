@@ -3,165 +3,160 @@
   <div class="bg-gray-50 border-b border-gray-200">
     <div class="page-container py-4">
       <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <button 
-          (click)="onBackToWarehouses()"
-          class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
-          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-          <span class="font-medium">{{ 'warehouseInventory.backToWarehouses' | translate }}</span>
-        </button>
+        <div class="flex items-center space-x-4">
+          <button (click)="onBackToWarehouses()"
+            class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+            <span class="font-medium">{{ 'warehouseInventory.backToWarehouses' | translate }}</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="page-container">
-    <!-- Page Title -->
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          {{ depoName }} {{ 'warehouseInventory.inventory' | translate }}
-        </h1>
-        <p class="text-sm text-gray-600">
-          {{ 'warehouseInventory.totalItems' | translate }}: {{ filteredInventoryDetails.length }}
-        </p>
+    <div class="page-container">
+      <!-- Page Title -->
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            {{ depoName }} {{ 'warehouseInventory.inventory' | translate }}
+          </h1>
+          <p class="text-sm text-gray-600">
+            {{ 'warehouseInventory.totalItems' | translate }}: {{ filteredInventoryDetails.length }}
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="exportToExcel()"
+            class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+            <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
+            <span>{{ 'common.exportToExcel' | translate }}</span>
+          </button>
+          <button *appHasPermission="'Inventory.Create'" (click)="onAddInventory()"
+            class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
+            + {{ 'warehouseInventory.addInventory' | translate }}
+          </button>
+        </div>
       </div>
-      <button
-        *appHasPermission="'Inventory.Create'"
-        (click)="onAddInventory()"
-        class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
-        + {{ 'warehouseInventory.addInventory' | translate }}
-      </button>
-    </div>
 
-    <!-- Enhanced Tabs -->
-    <div class="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-      <div class="bg-gradient-to-r from-gray-50 to-gray-100">
-        <nav class="flex gap-1 p-2" aria-label="Tabs">
-          <button
-            (click)="switchTab('ammunition')"
-            [ngClass]="{
+      <!-- Enhanced Tabs -->
+      <div class="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100">
+          <nav class="flex gap-1 p-2" aria-label="Tabs">
+            <button (click)="switchTab('ammunition')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
               'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'ammunition'
             }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
-            <div class="flex items-center gap-2 relative z-10">
-              <div class="w-2 h-2 rounded-full transition-all duration-200"
-                   [ngClass]="{
+              class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+              <div class="flex items-center gap-2 relative z-10">
+                <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
                      'bg-white': activeTab === 'ammunition',
                      'bg-[var(--color-brand)]': activeTab !== 'ammunition'
                    }"></div>
-              <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
-            </div>
-            <div *ngIf="activeTab === 'ammunition'" 
-                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-          </button>
-          <button
-            (click)="switchTab('weapon')"
-            [ngClass]="{
+                <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
+              </div>
+              <div *ngIf="activeTab === 'ammunition'"
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+              </div>
+            </button>
+            <button (click)="switchTab('weapon')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
               'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'weapon'
             }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
-            <div class="flex items-center gap-2 relative z-10">
-              <div class="w-2 h-2 rounded-full transition-all duration-200"
-                   [ngClass]="{
+              class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+              <div class="flex items-center gap-2 relative z-10">
+                <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
                      'bg-white': activeTab === 'weapon',
                      'bg-[var(--color-brand)]': activeTab !== 'weapon'
                    }"></div>
-              <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
-            </div>
-            <div *ngIf="activeTab === 'weapon'" 
-                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-          </button>
-          <button
-            (click)="switchTab('explosive')"
-            [ngClass]="{
+                <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
+              </div>
+              <div *ngIf="activeTab === 'weapon'"
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+              </div>
+            </button>
+            <button (click)="switchTab('explosive')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
               'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900': activeTab !== 'explosive'
             }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
-            <div class="flex items-center gap-2 relative z-10">
-              <div class="w-2 h-2 rounded-full transition-all duration-200"
-                   [ngClass]="{
+              class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+              <div class="flex items-center gap-2 relative z-10">
+                <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
                      'bg-white': activeTab === 'explosive',
                      'bg-[var(--color-brand)]': activeTab !== 'explosive'
                    }"></div>
-              <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
-            </div>
-            <div *ngIf="activeTab === 'explosive'" 
-                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-          </button>
-        </nav>
+                <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
+              </div>
+              <div *ngIf="activeTab === 'explosive'"
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+              </div>
+            </button>
+          </nav>
+        </div>
       </div>
-    </div>
 
-    <!-- Search Bar -->
-    <div class="mb-6">
-      <label class="search-field">
-        <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
-        <input
-          type="search"
-          class="search-field__input"
-          [placeholder]="'warehouseInventory.searchPlaceholder' | translate"
-          [formControl]="searchControl"
-        />
-      </label>
-    </div>
+      <!-- Search Bar -->
+      <div class="mb-6">
+        <label class="search-field">
+          <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
+          <input type="search" class="search-field__input"
+            [placeholder]="'warehouseInventory.searchPlaceholder' | translate" [formControl]="searchControl" />
+        </label>
+      </div>
 
-    <!-- Loading State -->
-    <app-loading-state 
-      *ngIf="loading"
-      size="lg"
-      [fullPage]="true">
-    </app-loading-state>
+      <!-- Loading State -->
+      <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+      </app-loading-state>
 
-    <!-- Error State -->
-    <app-error-state
-      *ngIf="error && !loading"
-      [error]="error || ''"
-      variant="inline"
-      title="common.error"
-      containerClass="mb-8">
-    </app-error-state>
+      <!-- Error State -->
+      <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+        containerClass="mb-8">
+      </app-error-state>
 
-    <!-- Inventory Table -->
-    <app-card *ngIf="!loading && !error" [shadow]="true">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-            <tr>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.itemName' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.supplier' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.lot' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.quantity' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.readyForIssue' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.expiryDate' | translate }}
-              </th>
-              <th class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.actions' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--color-border)]">
-            <!-- Empty State -->
-            <tr *ngIf="paginatedItems.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center">
-                <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noItems' | translate }}</p>
-              </td>
-            </tr>
-            <!-- Inventory Items -->
-            <tr *ngFor="let detail of paginatedItems" class="hover:bg-[var(--color-background-muted)] transition-colors">
+      <!-- Inventory Table -->
+      <app-card *ngIf="!loading && !error" [shadow]="true">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+              <tr>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.itemName' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.supplier' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.lot' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.quantity' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.readyForIssue' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.expiryDate' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.actions' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--color-border)]">
+              <!-- Empty State -->
+              <tr *ngIf="paginatedItems.length === 0">
+                <td colspan="7" class="px-6 py-12 text-center">
+                  <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noItems' | translate }}</p>
+                </td>
+              </tr>
+              <!-- Inventory Items -->
+              <tr *ngFor="let detail of paginatedItems"
+                class="hover:bg-[var(--color-background-muted)] transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
                   {{ getItemName(detail) }}
                 </td>
@@ -176,170 +171,165 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                        [ngClass]="detail.readyForIssue ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    [ngClass]="detail.readyForIssue ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                     {{ detail.readyForIssue ? ('common.yes' | translate) : ('common.no' | translate) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ formatDate(detail.expiryDate) }}
                 </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <div class="flex items-center justify-center space-x-2">
-                  <!-- Edit Button - Only for inventory items (not static) -->
-                  <ng-container *ngIf="!isStaticItem(detail)">
-                    <button 
-                      *appHasPermission="'Inventory.Edit'"
-                      (click)="onEditItem(detail)"
-                      class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
-                      [title]="'warehouseInventory.edit' | translate">
-                      <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
-                    </button>
-                  </ng-container>
-                  
-                  <!-- Delete Button - Only for inventory items (not static) -->
-                  <ng-container *ngIf="!isStaticItem(detail)">
-                    <button 
-                      *appHasPermission="'Inventory.Delete'"
-                      (click)="onDeleteItem(detail)"
-                      class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
-                      [title]="'warehouseInventory.delete' | translate">
-                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                    </button>
-                  </ng-container>
-                  
-                  <!-- View Details Button - For all items -->
-                  <button 
-                    (click)="onViewItem(detail)"
-                    class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] rounded-lg transition-colors"
-                    [title]="'warehouseInventory.viewDetails' | translate">
-                    <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <div class="flex items-center justify-center space-x-2">
+                    <!-- Edit Button - Only for inventory items (not static) -->
+                    <ng-container *ngIf="!isStaticItem(detail)">
+                      <button *appHasPermission="'Inventory.Edit'" (click)="onEditItem(detail)"
+                        class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+                        [title]="'warehouseInventory.edit' | translate">
+                        <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                      </button>
+                    </ng-container>
 
-      <!-- Pagination Footer - Outside table overflow container -->
-      <div *ngIf="filteredInventoryDetails.length > 0 && !loading" class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
-        <div class="flex items-center justify-between w-full flex-nowrap">
-          <!-- Rows Per Page Selector -->
-          <app-rows-per-page
-            [rowsPerPage]="rowsPerPage"
-            [totalItems]="filteredInventoryDetails.length"
-            [visibleItems]="paginatedItems.length"
-            (rowsPerPageChange)="onRowsPerPageChange($event)">
-          </app-rows-per-page>
+                    <!-- Delete Button - Only for inventory items (not static) -->
+                    <ng-container *ngIf="!isStaticItem(detail)">
+                      <button *appHasPermission="'Inventory.Delete'" (click)="onDeleteItem(detail)"
+                        class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                        [title]="'warehouseInventory.delete' | translate">
+                        <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                      </button>
+                    </ng-container>
 
-          <!-- Pagination Controls -->
-          <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
-            <app-pagination
-              [currentPage]="currentPage"
-              [totalPages]="totalPages"
-              (pageChange)="onPageChange($event)">
-            </app-pagination>
-            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
-              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
-            </span>
+                    <!-- View Details Button - For all items -->
+                    <button (click)="onViewItem(detail)"
+                      class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] rounded-lg transition-colors"
+                      [title]="'warehouseInventory.viewDetails' | translate">
+                      <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer - Outside table overflow container -->
+        <div *ngIf="filteredInventoryDetails.length > 0 && !loading"
+          class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
+          <div class="flex items-center justify-between w-full flex-nowrap">
+            <!-- Rows Per Page Selector -->
+            <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredInventoryDetails.length"
+              [visibleItems]="paginatedItems.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+            </app-rows-per-page>
+
+            <!-- Pagination Controls -->
+            <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+              <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+              </app-pagination>
+              <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </app-card>
+      </app-card>
+    </div>
   </div>
-</div>
 
-<!-- Edit Modal -->
-<app-edit-inventory-detail-modal
-  [isOpen]="showEditModal"
-  [inventoryDetail]="selectedDetail"
-  [inventoryId]="selectedDetail?.inventoryId || 0"
-  (closed)="onEditModalClose()"
-  (saved)="onEditSave($event)">
-</app-edit-inventory-detail-modal>
+  <!-- Edit Modal -->
+  <app-edit-inventory-detail-modal [isOpen]="showEditModal" [inventoryDetail]="selectedDetail"
+    [inventoryId]="selectedDetail?.inventoryId || 0" (closed)="onEditModalClose()" (saved)="onEditSave($event)">
+  </app-edit-inventory-detail-modal>
 
-<!-- Delete Confirmation Dialog -->
-<app-confirm-dialog
-  [isOpen]="showDeleteDialog"
-  [title]="'deleteConfirmation.title' | translate"
-  [message]="'deleteConfirmation.message' | translate"
-  [description]="('deleteConfirmation.item' | translate) + ': ' + getItemName(selectedDetail)"
-  [confirmText]="'deleteConfirmation.confirmDelete' | translate"
-  [cancelText]="'deleteConfirmation.cancel' | translate"
-  confirmVariant="danger"
-  (confirmed)="onDeleteConfirm()"
-  (cancelled)="onDeleteCancel()">
-</app-confirm-dialog>
+  <!-- Delete Confirmation Dialog -->
+  <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="'deleteConfirmation.title' | translate"
+    [message]="'deleteConfirmation.message' | translate"
+    [description]="('deleteConfirmation.item' | translate) + ': ' + getItemName(selectedDetail)"
+    [confirmText]="'deleteConfirmation.confirmDelete' | translate"
+    [cancelText]="'deleteConfirmation.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteConfirm()"
+    (cancelled)="onDeleteCancel()">
+  </app-confirm-dialog>
 
-<!-- View Details Modal for Static Items (Weapons/Explosives) -->
-<div *ngIf="showViewModal" class="fixed inset-0 z-40 overflow-y-auto">
-  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
-    <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="closeViewModal()"></div>
+  <!-- View Details Modal for Static Items (Weapons/Explosives) -->
+  <div *ngIf="showViewModal" class="fixed inset-0 z-40 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="closeViewModal()"></div>
 
-    <!-- Modal panel -->
-    <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
-      <!-- Header -->
-      <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.viewDetails' | translate }}</h3>
-          <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-white transition-colors">
-            <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+      <!-- Modal panel -->
+      <div
+        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <!-- Header -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.viewDetails' | translate
+              }}</h3>
+            <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-white transition-colors">
+              <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-6" *ngIf="selectedDetailForView?.item">
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'warehouseInventory.itemName' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ?
+                getItemName(selectedDetailForView) : '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'warehouseInventory.itemNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ?
+                getItemNo(selectedDetailForView) : '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'warehouseInventory.hcc'
+                | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ?
+                getHccName(selectedDetailForView) : '-' }}</p>
+            </div>
+            <div *ngIf="selectedDetailForView?.item?.nsn">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">NSN</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.nsn || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'warehouseInventory.expiryDate' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ formatDate(selectedDetailForView?.item?.expiryDate) }}
+              </p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.batchNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.batchNo || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.partNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.partNo || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.readyForIssue' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                  [ngClass]="(selectedDetailForView?.item?.readyForIssue ?? false) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                  {{ (selectedDetailForView?.item?.readyForIssue ?? false) ? ('common.yes' | translate) : ('common.no' |
+                  translate) }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
+          <button (click)="closeViewModal()"
+            class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
+            {{ 'common.close' | translate }}
           </button>
         </div>
       </div>
-
-      <!-- Content -->
-      <div class="px-6 py-6" *ngIf="selectedDetailForView?.item">
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'warehouseInventory.itemName' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ? getItemName(selectedDetailForView) : '-' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'warehouseInventory.itemNo' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ? getItemNo(selectedDetailForView) : '-' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'warehouseInventory.hcc' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView ? getHccName(selectedDetailForView) : '-' }}</p>
-          </div>
-          <div *ngIf="selectedDetailForView?.item?.nsn">
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">NSN</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.nsn || '-' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'warehouseInventory.expiryDate' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ formatDate(selectedDetailForView?.item?.expiryDate) }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.batchNo' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.batchNo || '-' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.partNo' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedDetailForView?.item?.partNo || '-' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.viewModal.readyForIssue' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                    [ngClass]="(selectedDetailForView?.item?.readyForIssue ?? false) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                {{ (selectedDetailForView?.item?.readyForIssue ?? false) ? ('common.yes' | translate) : ('common.no' | translate) }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end">
-        <button
-          (click)="closeViewModal()"
-          class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
-          {{ 'common.close' | translate }}
-        </button>
-      </div>
     </div>
   </div>
-</div>

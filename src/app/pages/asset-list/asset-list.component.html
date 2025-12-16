@@ -139,6 +139,12 @@
             <span *ngIf="activeTab === 'explosive'">{{ 'assetList.explosiveItems' | translate }}</span>
             ({{ filteredAssets.length }})
           </h2>
+          <button (click)="exportToExcel()" *ngIf="filteredAssets.length > 0"
+            class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+            [class.flex-row-reverse]="isRTL">
+            <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
+            <span>{{ 'common.exportToExcel' | translate }}</span>
+          </button>
         </div>
 
         <!-- Loading State -->

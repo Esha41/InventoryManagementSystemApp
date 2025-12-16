@@ -2,15 +2,14 @@
   <!-- Header -->
   <div class="bg-white border-b border-gray-200">
     <div class="page-container py-4">
-    <div class="flex items-center space-x-4">
-      <button 
-        (click)="onCancel()"
-        class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
-        <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-        <span class="font-medium">{{ 'addInventory.backToInventory' | translate }}</span>
-      </button>
+      <div class="flex items-center space-x-4">
+        <button (click)="onCancel()"
+          class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+          <span class="font-medium">{{ 'addInventory.backToInventory' | translate }}</span>
+        </button>
+      </div>
     </div>
-  </div>
   </div>
 
   <!-- Main Content -->
@@ -26,22 +25,45 @@
     </div>
 
     <!-- Loading State -->
-    <app-loading-state 
-      *ngIf="loading"
-      size="lg"
-      [fullPage]="true">
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
     </app-loading-state>
 
 
     <!-- Form -->
     <form *ngIf="!loading" [formGroup]="inventoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Item Type Tabs -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="flex border-b border-gray-200">
+          <button type="button" (click)="switchTab('ammunition')" [class.border-b-3]="activeTab === 'ammunition'"
+            [class.border-[var(--color-brand)]="activeTab === 'ammunition'"
+            [class.bg-blue-50]="activeTab === 'ammunition'"
+            [class.text-[var(--color-brand)]="activeTab === 'ammunition'"
+            [class.font-semibold]="activeTab === 'ammunition'" [class.text-gray-600]="activeTab !== 'ammunition'"
+            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
+            {{ 'warehouseInventory.tabs.ammunition' | translate }}
+          </button>
+          <button type="button" (click)="switchTab('weapon')" [class.border-b-3]="activeTab === 'weapon'"
+            [class.border-[var(--color-brand)]="activeTab === 'weapon'" [class.bg-blue-50]="activeTab === 'weapon'"
+            [class.text-[var(--color-brand)]="activeTab === 'weapon'" [class.font-semibold]="activeTab === 'weapon'"
+            [class.text-gray-600]="activeTab !== 'weapon'"
+            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
+            {{ 'warehouseInventory.tabs.weapon' | translate }}
+          </button>
+          <button type="button" (click)="switchTab('explosive')" [class.border-b-3]="activeTab === 'explosive'"
+            [class.border-[var(--color-brand)]="activeTab === 'explosive'"
+            [class.bg-blue-50]="activeTab === 'explosive'" [class.text-[var(--color-brand)]="activeTab === 'explosive'"
+            [class.font-semibold]="activeTab === 'explosive'" [class.text-gray-600]="activeTab !== 'explosive'"
+            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
+            {{ 'warehouseInventory.tabs.explosive' | translate }}
+          </button>
+        </div>
+      </div>
+
       <!-- Inventory Items Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold text-gray-900">{{ 'addInventory.inventoryItems' | translate }}</h2>
-          <button
-            type="button"
-            (click)="addItem()"
+          <button type="button" (click)="addItem()"
             class="flex items-center space-x-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
             <lucide-angular [img]="Plus" class="w-4 w-4"></lucide-angular>
             <span>{{ 'addInventory.addItem' | translate }}</span>
@@ -50,13 +72,11 @@
 
         <!-- Items List -->
         <div class="space-y-4" formArrayName="items">
-          <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i" class="p-4 border border-gray-200 rounded-lg">
+          <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i"
+            class="p-4 border border-gray-200 rounded-lg">
             <div class="flex items-start justify-between mb-4">
               <h3 class="text-sm font-medium text-gray-700">{{ 'addInventory.item' | translate }} {{ i + 1 }}</h3>
-              <button
-                type="button"
-                *ngIf="itemsFormArray.length > 1"
-                (click)="removeItem(i)"
+              <button type="button" *ngIf="itemsFormArray.length > 1" (click)="removeItem(i)"
                 class="text-red-600 hover:text-red-800 transition-colors">
                 <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
               </button>
@@ -68,16 +88,10 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.item' | translate }} <span class="text-red-500">*</span>
                 </label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="itemId"
-                  (selectionChange)="onItemChange(i); onFieldChange('itemId', i)"
-                  [options]="availableItems"
-                  optionValue="id"
-                  [optionLabelFn]="itemOptionLabel"
-                  [placeholderSelectable]="false"
-                  [placeholderValue]="null"
-                  [error]="isFieldInvalid('itemId', i)"
+                <app-dropdown class="w-full" formControlName="itemId"
+                  (selectionChange)="onItemChange(i); onFieldChange('itemId', i)" [options]="availableItems"
+                  optionValue="id" [optionLabelFn]="itemOptionLabel" [placeholderSelectable]="false"
+                  [placeholderValue]="null" [error]="isFieldInvalid('itemId', i)"
                   placeholder="{{ 'addInventory.selectItem' | translate }}">
                 </app-dropdown>
                 <p *ngIf="isFieldInvalid('itemId', i)" class="mt-1 text-sm text-red-500">
@@ -90,16 +104,10 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.lotNumber' | translate }} <span class="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  formControlName="lot"
-                  min="1"
-                  step="1"
-                  [max]="999999"
+                <input type="number" formControlName="lot" min="1" step="1" [max]="999999"
                   (input)="onFieldChange('lot', i)"
                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                  [class.border-gray-300]="!isFieldInvalid('lot', i)"
-                  [class.border-red-500]="isFieldInvalid('lot', i)"
+                  [class.border-gray-300]="!isFieldInvalid('lot', i)" [class.border-red-500]="isFieldInvalid('lot', i)"
                   [placeholder]="'addInventory.enterLotNumber' | translate">
                 <p *ngIf="isFieldInvalid('lot', i)" class="mt-1 text-sm text-red-500">
                   {{ getFieldError('lot', i) || ('addInventory.lotNumberMustBeGreaterThanZero' | translate) }}
@@ -111,19 +119,15 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.quantity' | translate }} <span class="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  formControlName="originalQuantity"
-                  min="1"
-                  step="1"
-                  [max]="999999999"
+                <input type="number" formControlName="originalQuantity" min="1" step="1" [max]="999999999"
                   (input)="onFieldChange('originalQuantity', i)"
                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                   [class.border-gray-300]="!isFieldInvalid('originalQuantity', i)"
                   [class.border-red-500]="isFieldInvalid('originalQuantity', i)"
                   [placeholder]="'addInventory.enterQuantity' | translate">
                 <p *ngIf="isFieldInvalid('originalQuantity', i)" class="mt-1 text-sm text-red-500">
-                  {{ getFieldError('originalQuantity', i) || ('addInventory.quantityMustBeGreaterThanZero' | translate) }}
+                  {{ getFieldError('originalQuantity', i) || ('addInventory.quantityMustBeGreaterThanZero' | translate)
+                  }}
                 </p>
               </div>
 
@@ -132,10 +136,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.batchNo' | translate }}
                 </label>
-                <input
-                  type="text"
-                  formControlName="batchNo"
-                  (input)="onFieldChange('batchNo', i)"
+                <input type="text" formControlName="batchNo" (input)="onFieldChange('batchNo', i)"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                   [placeholder]="'addInventory.enterBatchNo' | translate">
               </div>
@@ -145,10 +146,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.expiryDate' | translate }}
                 </label>
-                <input
-                  type="date"
-                  formControlName="expiryDate"
-                  (input)="onFieldChange('expiryDate', i)"
+                <input type="date" formControlName="expiryDate" (input)="onFieldChange('expiryDate', i)"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
               </div>
 
@@ -157,14 +155,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.supplier' | translate }}
                 </label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="supplierId"
-                  [options]="suppliers"
-                  optionValue="id"
-                  [optionLabelFn]="supplierOptionLabel"
-                  [placeholderSelectable]="false"
-                  [placeholderValue]="null"
+                <app-dropdown class="w-full" formControlName="supplierId" [options]="suppliers" optionValue="id"
+                  [optionLabelFn]="supplierOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectSupplier' | translate }}">
                 </app-dropdown>
               </div>
@@ -174,14 +166,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.manufacturer' | translate }}
                 </label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="manufacturerId"
-                  [options]="manufacturers"
-                  optionValue="id"
-                  [optionLabelFn]="manufacturerOptionLabel"
-                  [placeholderSelectable]="false"
-                  [placeholderValue]="null"
+                <app-dropdown class="w-full" formControlName="manufacturerId" [options]="manufacturers" optionValue="id"
+                  [optionLabelFn]="manufacturerOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectManufacturer' | translate }}">
                 </app-dropdown>
               </div>
@@ -191,14 +177,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   {{ 'addInventory.country' | translate }}
                 </label>
-                <app-dropdown
-                  class="w-full"
-                  formControlName="countryId"
-                  [options]="countries"
-                  optionValue="id"
-                  [optionLabelFn]="countryOptionLabel"
-                  [placeholderSelectable]="false"
-                  [placeholderValue]="null"
+                <app-dropdown class="w-full" formControlName="countryId" [options]="countries" optionValue="id"
+                  [optionLabelFn]="countryOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
                   placeholder="{{ 'addInventory.selectCountry' | translate }}">
                 </app-dropdown>
               </div>
@@ -206,9 +186,7 @@
               <!-- Ready For Issue -->
               <div class="flex items-center h-full pt-8 md:col-span-3">
                 <label class="flex items-center space-x-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    formControlName="readyForIssue"
+                  <input type="checkbox" formControlName="readyForIssue"
                     class="w-4 h-4 text-[var(--color-brand)] border-gray-300 rounded focus:ring-[var(--color-brand)]">
                   <span class="text-sm font-medium text-gray-700">{{ 'addInventory.readyForIssue' | translate }}</span>
                 </label>
@@ -221,17 +199,14 @@
       <!-- Invoice Information Card -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ 'addInventory.invoiceInformation' | translate }}</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Invoice Number -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ 'addInventory.invoiceNumber' | translate }}
             </label>
-            <input
-              type="text"
-              formControlName="invoiceNumber"
-              (input)="onFieldChange('invoiceNumber')"
+            <input type="text" formControlName="invoiceNumber" (input)="onFieldChange('invoiceNumber')"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
               [class.border-red-500]="isFieldInvalid('invoiceNumber')"
               [placeholder]="'addInventory.enterInvoiceNumber' | translate">
@@ -245,17 +220,15 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ 'addInventory.invoiceDate' | translate }}
             </label>
-            <input
-              type="date"
-              formControlName="invoiceDate"
-              (input)="onFieldChange('invoiceDate'); validateDates()"
+            <input type="date" formControlName="invoiceDate" (input)="onFieldChange('invoiceDate'); validateDates()"
               [max]="getMaxDate()"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
               [class.border-red-500]="isFieldInvalid('invoiceDate')">
             <p *ngIf="isFieldInvalid('invoiceDate')" class="mt-1 text-sm text-red-500">
               {{ getFieldError('invoiceDate') || ('addInventory.cannotBeFuture' | translate) }}
             </p>
-            <p *ngIf="!isFieldInvalid('invoiceDate')" class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
+            <p *ngIf="!isFieldInvalid('invoiceDate')" class="mt-1 text-xs text-gray-500">{{
+              'addInventory.cannotBeFuture' | translate }}</p>
           </div>
 
           <!-- Received Date -->
@@ -263,17 +236,15 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ 'addInventory.receivedDate' | translate }}
             </label>
-            <input
-              type="date"
-              formControlName="receivedDate"
-              (input)="onFieldChange('receivedDate'); validateDates()"
+            <input type="date" formControlName="receivedDate" (input)="onFieldChange('receivedDate'); validateDates()"
               [max]="getMaxDate()"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
               [class.border-red-500]="isFieldInvalid('receivedDate')">
             <p *ngIf="isFieldInvalid('receivedDate')" class="mt-1 text-sm text-red-500">
               {{ getFieldError('receivedDate') || ('addInventory.cannotBeFuture' | translate) }}
             </p>
-            <p *ngIf="!isFieldInvalid('receivedDate')" class="mt-1 text-xs text-gray-500">{{ 'addInventory.cannotBeFuture' | translate }}</p>
+            <p *ngIf="!isFieldInvalid('receivedDate')" class="mt-1 text-xs text-gray-500">{{
+              'addInventory.cannotBeFuture' | translate }}</p>
           </div>
 
           <!-- Notes -->
@@ -281,10 +252,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">
               {{ 'addInventory.notes' | translate }}
             </label>
-            <textarea
-              formControlName="notes"
-              (input)="onFieldChange('notes')"
-              rows="3"
+            <textarea formControlName="notes" (input)="onFieldChange('notes')" rows="3"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
               [class.border-red-500]="isFieldInvalid('notes')"
               [placeholder]="'addInventory.notesPlaceholder' | translate"></textarea>
@@ -297,25 +265,20 @@
 
       <!-- Form Actions -->
       <div class="flex items-center justify-end space-x-4">
-        <button
-          type="button"
-          (click)="onCancel()"
-          [disabled]="submitting"
+        <button type="button" (click)="onCancel()" [disabled]="submitting"
           class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <div class="flex items-center space-x-2">
             <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
             <span>{{ 'addInventory.cancel' | translate }}</span>
           </div>
         </button>
-        
-        <button
-          *appHasPermission="'Inventory.Create'"
-          type="submit"
-          [disabled]="submitting"
+
+        <button *appHasPermission="'Inventory.Create'" type="submit" [disabled]="submitting"
           class="px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <div class="flex items-center space-x-2">
             <lucide-angular [img]="Save" class="w-4 h-4"></lucide-angular>
-            <span>{{ submitting ? ('addInventory.saving' | translate) : ('addInventory.saveInventory' | translate) }}</span>
+            <span>{{ submitting ? ('addInventory.saving' | translate) : ('addInventory.saveInventory' | translate)
+              }}</span>
           </div>
         </button>
       </div>

@@ -7,13 +7,14 @@ import { Observable, forkJoin, Subject, takeUntil, timer } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, Download } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
+import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { AmmunitionReadDto, AmmunitionCreateDto, LookupDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
@@ -98,27 +99,28 @@ export class AssetListComponent implements OnInit, OnDestroy {
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly FilterX = FilterX;
+  readonly Download = Download;
 
   // State
   assets: Asset[] = [];
   loading = false;
   activeTab: AssetType = 'ammunition';
-  
+
   // Filter state
   filterState: AssetFilterState = createInitialFilterState();
-  
+
   // Sort state
   sortState: AssetSortState = createInitialSortState();
-  
+
   // Pagination state
   paginationState: AssetPaginationState = createInitialPaginationState();
-  
+
   // Modal state
   modalState: AssetModalState = createInitialModalState();
-  
+
   // Image state
   imageState: AssetImageState = createInitialImageState();
-  
+
   private readonly destroy$ = new Subject<void>();
 
   // Lookup data
@@ -139,7 +141,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
     getLookupDisplayName(unwrapDropdownOption(option), this.translateService);
-  
+
   readonly linkedOptions = [
     { label: 'assetList.editModal.notLinked', value: false },
     { label: 'assetList.editModal.linked', value: true }
@@ -190,13 +192,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private toastService: ToastService,
     private propertyAccessor: AssetPropertyAccessor,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private excelExportService: ExcelExportService
+  ) { }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    
+
     // Clean up all blob URLs to prevent memory leaks
     this.blobUrls.forEach((url: string) => {
       try {
@@ -365,7 +368,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const ids = this.assets
       .map(asset => parseInt(asset.id))
       .filter(id => !isNaN(id) && id > 0);
-    
+
     if (ids.length === 0) return;
 
     const imageService$ = this.getAssetService().loadAssetImages(ids);
@@ -416,7 +419,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const service = this.getAssetService();
     this.loading = true;
     this.cdr.markForCheck();
-    
+
     service.getById(numericId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -453,14 +456,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.cdr.markForCheck();
-    
+
     service.getById(numericId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           this.loading = false;
           this.modalState.selectedAsset = data;
-          
+
           // Load image for edit
           this.loadEditImage(numericId);
           this.modalState.showEditModal = true;
@@ -476,7 +479,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   private loadEditImage(id: number): void {
     const service = this.getAssetService();
-    
+
     service.getFileInfo(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -518,7 +521,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const service = this.getAssetService();
     this.loading = true;
     this.cdr.markForCheck();
-    
+
     service.update(id, event.dto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -583,7 +586,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const service = this.getAssetService();
     this.loading = true;
     this.cdr.markForCheck();
-    
+
     service.delete(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -686,7 +689,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   getExplosiveTypeName = () => this.propertyAccessor.getExplosiveTypeName(this.modalState.selectedAsset);
   getUnNumber = () => this.propertyAccessor.getUnNumber(this.modalState.selectedAsset);
   getNetExplosiveQuantity = () => this.propertyAccessor.getNetExplosiveQuantity(this.modalState.selectedAsset);
-  getAssetName = (asset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => 
+  getAssetName = (asset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) =>
     this.propertyAccessor.getAssetName(asset);
 
   // Pagination methods
@@ -710,5 +713,119 @@ export class AssetListComponent implements OnInit, OnDestroy {
   onImageError(asset: Asset): void {
     asset.imageUrl = undefined;
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Export filtered assets to Excel
+   */
+  exportToExcel(): void {
+    const columns: ExcelColumn[] = [
+      {
+        header: this.translateService.instant('assetList.table.name'),
+        key: 'name',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('assetList.table.itemNo'),
+        key: 'itemNo',
+        width: 15,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('assetList.table.partNo'),
+        key: 'partNo',
+        width: 15,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('assetList.table.nsn'),
+        key: 'nsn',
+        width: 15,
+        format: (value: string) => value || '-'
+      }
+    ];
+
+    // Add tab-specific columns
+    if (this.activeTab === 'ammunition') {
+      columns.push(
+        {
+          header: this.translateService.instant('assetList.table.caseType'),
+          key: 'caseType',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.hazardDivision'),
+          key: 'hazardDivision',
+          width: 20,
+          format: (value: string | LookupDto) => {
+            if (!value) return '-';
+            if (typeof value === 'string') return value;
+            return getLookupDisplayName(value, this.translateService) || '-';
+          }
+        }
+      );
+    } else if (this.activeTab === 'weapon') {
+      columns.push(
+        {
+          header: this.translateService.instant('addAsset.weaponType'),
+          key: 'weaponType',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.caliber'),
+          key: 'caliber',
+          width: 15,
+          format: (value: string) => value || '-'
+        }
+      );
+    } else if (this.activeTab === 'explosive') {
+      columns.push(
+        {
+          header: this.translateService.instant('addAsset.explosiveType'),
+          key: 'explosiveType',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.unNumber'),
+          key: 'unNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        }
+      );
+    }
+
+    // Add common columns
+    columns.push(
+      {
+        header: this.translateService.instant('assetList.table.price'),
+        key: 'price',
+        width: 15,
+        format: (value: number) => value ? value.toString() : '-'
+      },
+      {
+        header: this.translateService.instant('assetList.table.minimumQuantity'),
+        key: 'minimumQuantity',
+        width: 18,
+        format: (value: number) => value ? value.toString() : '-'
+      }
+    );
+
+    const fileName = `Asset_List_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
+
+    this.excelExportService.exportToExcel({
+      fileName: fileName,
+      sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
+      columns: columns,
+      data: this.filteredAssets,
+      includeTimestamp: true
+    });
+
+    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+    });
   }
 }
