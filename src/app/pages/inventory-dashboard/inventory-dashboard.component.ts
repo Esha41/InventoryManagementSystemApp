@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, combineLatest, of } from 'rxjs';
-import { catchError, debounceTime, filter } from 'rxjs/operators';
+import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from '@pages/dashboard/components/return-details-modal/return-details-modal.component';
@@ -14,6 +14,7 @@ import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.ser
 import { NotificationService } from '@services/notification.service';
 import { InventoryService } from '@services/inventory.service';
 import { UserContextService } from '@services/user-context.service';
+import { UnifiedRequestService } from '@services/unified-request.service';
 import { OverstockCardComponent, OverstockItemView } from '@pages/dashboard/components/overstock-card/overstock-card.component';
 import { AnnualActivityCardComponent } from '@pages/dashboard/components/annual-activity-card/annual-activity-card.component';
 import { ReturnService, ReturnDto } from '@services/return.service';
@@ -35,6 +36,7 @@ import {
   CardStatus
 } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { separateRequestsByType, mapToOrderDto, mapToReturnDto, mapToDiscardDto } from '@utils/request-type-mapper.utils';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -110,7 +112,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   readonly List = List;
   readonly Eye = Eye;
   readonly Search = Search;
-  
+
   showContactAdminNotice = false;
 
   // Search functionality
@@ -118,6 +120,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly authService: BackendAuthService,
+    private readonly unifiedRequestService: UnifiedRequestService,
     private readonly orderService: OrderService,
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
@@ -129,7 +132,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
     private readonly requestStatusUpdateService: RequestStatusUpdateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.currentUser$
@@ -156,7 +159,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.loadAll();
       });
-    
+
     this.loadAll();
 
     // Auto-refresh periodically
@@ -210,32 +213,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadDataParallel(): void {
-    // Check permissions first
-    const canViewOrders = this.authService.hasAnyPermission(['Permissions.Order.View', 'Permissions.Order.Page']);
-    
-    // If user can't view orders, just load stats if they can view dashboard (implied by access)
-    // Or handle gracefully. For now assuming mixed permissions logic from original code.
-
-    const orders$ = canViewOrders ? this.orderService.getAllOrders().pipe(
+    // Use unified API endpoint for better performance
+    const requests$ = this.unifiedRequestService.getUserActionRequests().pipe(
+      map(requests => separateRequestsByType(requests)),
       catchError((error) => {
         this.errorHandlingService.resolveHttpErrorMessage(error);
-        return of([] as OrderDto[]);
+        return of({ orders: [], returns: [], discards: [] });
       })
-    ) : of([] as OrderDto[]);
-
-    const returns$ = canViewOrders ? this.returnService.getAllReturns().pipe(
-      catchError((error) => {
-        this.errorHandlingService.resolveHttpErrorMessage(error);
-        return of([] as ReturnDto[]);
-      })
-    ) : of([] as ReturnDto[]);
-
-    const discards$ = canViewOrders ? this.discardService.getAllDiscards().pipe(
-      catchError((error) => {
-        this.errorHandlingService.resolveHttpErrorMessage(error);
-        return of([] as DiscardDto[]);
-      })
-    ) : of([] as DiscardDto[]);
+    );
 
     const inventories$ = this.inventoryService.getAll().pipe(
       catchError((error) => {
@@ -245,29 +230,32 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     );
 
     combineLatest({
-      orders: orders$,
-      returns: returns$,
-      discards: discards$,
+      requests: requests$,
       inventories: inventories$
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ orders, returns, discards, inventories }) => {
-        // Process cards
-        this.allCards = []; // Reset cards before rebuilding
-        this.processRequestData(orders, returns, discards);
-        
-        // Process statistics
-        this.calculateStatistics(inventories, orders);
-        
-        this.filterCards();
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.errorHandlingService.resolveHttpErrorMessage(error);
-        this.cdr.markForCheck();
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ requests, inventories }) => {
+          // Transform BaseRequestDto to specific types
+          const orders = requests.orders.map(o => mapToOrderDto(o));
+          const returns = requests.returns.map(r => mapToReturnDto(r));
+          const discards = requests.discards.map(d => mapToDiscardDto(d));
+
+          // Process cards
+          this.allCards = []; // Reset cards before rebuilding
+          this.processRequestData(orders, returns, discards);
+
+          // Process statistics
+          this.calculateStatistics(inventories, orders);
+
+          this.filterCards();
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.errorHandlingService.resolveHttpErrorMessage(error);
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private filterCards(): void {
@@ -289,10 +277,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         if (userDeptId == null) return false;
         if (!card.departmentIds.includes(userDeptId)) return false;
       }
-      
+
       // If no specific permissions required, allow
       if (!card.permissions || card.permissions.length === 0) return true;
-      
+
       if (!hasPermissionsLoaded) return false;
       return this.authService.hasAnyPermission(card.permissions);
     });
@@ -307,7 +295,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       const query = this.searchQuery.trim().toLowerCase();
       filtered = filtered.filter(card => {
         // Search in order IDs, department names, requester names
-        return card.orders.some(order => 
+        return card.orders.some(order =>
           (order.orderId && order.orderId.toLowerCase().includes(query)) ||
           (order.departmentName && order.departmentName.toLowerCase().includes(query)) ||
           (order.requesterName && order.requesterName.toLowerCase().includes(query))
@@ -381,13 +369,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     // Check if user is administrator (multiple detection methods)
     const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') || 
-                              currentUser?.email?.toLowerCase().includes('administrator');
+    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+      currentUser?.email?.toLowerCase().includes('administrator');
     const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
     const isAdminUser = this.userContext.isAdminUser();
-    
+
     const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isAdminUser;
-    
+
     // Administrators can always approve
     if (isAdministrator) {
       return true;
@@ -451,8 +439,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       if (firstItem) {
         // Determine type if possible, or default to order if we have an order ID
         if (card.title.toLowerCase().includes('order') || firstItem.orderId) {
-           // Assuming we stored the ID in requestId on the OrderItem
-           if (firstItem.requestId) this.onViewOrderDetails(firstItem.requestId);
+          // Assuming we stored the ID in requestId on the OrderItem
+          if (firstItem.requestId) this.onViewOrderDetails(firstItem.requestId);
         }
       }
     }
@@ -521,7 +509,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           orderId: getRequestTitle(ret),
           requestDate: this.formatReturnDate(ret),
           departmentName: this.resolveReturnDepartmentName(ret),
-          requesterName: ret.requesterName || 'N/A',
+          requesterName: ret.requester?.fullNameEN || ret.requester?.fullNameAR || ret.requester?.userName || 'N/A',
           items: mapRequestItems(ret.requestItems),
           requestId: ret.id
         }],
@@ -546,7 +534,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           orderId: getRequestTitle(discard),
           requestDate: this.formatDiscardDate(discard),
           departmentName: this.resolveDiscardDepartmentName(discard),
-          requesterName: discard.requesterName || 'N/A',
+          requesterName: discard.requester?.fullNameEN || discard.requester?.fullNameAR || discard.requester?.userName || 'N/A',
           items: mapRequestItems(discard.requestItems),
           requestId: discard.id
         }],
@@ -562,7 +550,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Format return request date
    */
   private formatReturnDate(ret: ReturnDto): string {
-    const date = (ret as any).creationDate || (ret as any).createdOn;
+    // Use creationDate from BaseRequestDto
+    const date = (ret as any).creationDate;
     return date ? this.formatDate(date) : 'N/A';
   }
 
@@ -570,7 +559,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Format discard request date
    */
   private formatDiscardDate(discard: DiscardDto): string {
-    const date = (discard as any).creationDate || (discard as any).createdOn;
+    // Use creationDate from BaseRequestDto
+    const date = (discard as any).creationDate;
     return date ? this.formatDate(date) : 'N/A';
   }
 
@@ -578,14 +568,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Resolve return department name
    */
   private resolveReturnDepartmentName(ret: ReturnDto): string {
-    return (ret as any).departmentName || 'N/A';
+    return ret.department?.nameEn || ret.department?.nameAr || 'N/A';
   }
 
   /**
    * Resolve discard department name
    */
   private resolveDiscardDepartmentName(discard: DiscardDto): string {
-    return (discard as any).departmentName || 'N/A';
+    return discard.department?.nameEn || discard.department?.nameAr || 'N/A';
   }
 
   // Legacy individual load methods are removed as we use parallel loading now
@@ -609,14 +599,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     // Process inventories
     const itemMap = new Map<number, { quantity: number; expiryDate?: Date; name: string; hasExpiringLot: boolean; hasLowStockLot: boolean }>();
-    
+
     (inventories || []).forEach((inv: any) => {
       const details = inv.inventoryDetails || [];
       details.forEach((d: any) => {
         const quantity = Number(d.originalQuantity ?? d.currentQuantity ?? 0);
         const itemId = d.itemId;
         const itemName = d.item ? (getLocalizedName(d.item, getCurrentLang(this.translate)) || d.item.itemNo || 'Item') : 'Item';
-        
+
         if (quantity > 0) {
           stats.totalQuantity += quantity;
 
@@ -658,7 +648,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           name: item.name,
           lot: 'N/A',
           percentage,
-          expiryDate: item.expiryDate 
+          expiryDate: item.expiryDate
             ? `${item.expiryDate.getDate()} ${item.expiryDate.toLocaleString('en', { month: 'short' })} ${item.expiryDate.getFullYear()}`
             : undefined,
           imageUrl: 'assets/Ammunition.png' // Default, can be enhanced
@@ -690,7 +680,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     // Calculate percentages (distribution across months)
     const totalOrders = monthlyCounts.reduce((sum, count) => sum + count, 0);
     if (totalOrders > 0) {
-      stats.monthlyActivityPercentages = monthlyCounts.map(count => 
+      stats.monthlyActivityPercentages = monthlyCounts.map(count =>
         Math.round((count / totalOrders) * 100)
       );
     } else {
@@ -703,7 +693,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // Modal handlers
   onViewOrderDetails(orderRequestId: number): void {
     const orderRequest = this.orderRequestsMap.get(orderRequestId);
-    
+
     // Try to fetch fresh data
     this.orderService.getOrderById(orderRequestId)
       .pipe(takeUntil(this.destroy$))
@@ -724,7 +714,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onViewReturnDetails(returnRequestId: number): void {
     const returnRequest = this.returnRequestsMap.get(returnRequestId);
-    
+
     this.returnService.getReturnById(returnRequestId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -743,7 +733,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onViewDiscardDetails(discardRequestId: number): void {
     const discardRequest = this.discardRequestsMap.get(discardRequestId);
-    
+
     this.discardService.getDiscardById(discardRequestId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -781,10 +771,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // Formatting helpers
   formatOrderDate(order: OrderDto): string {
     if (!order.usageDateFrom) return 'N/A';
-    
+
     const fromDate = this.formatDate(order.usageDateFrom);
     const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : '';
-    
+
     return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
 
@@ -825,7 +815,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (priority === null || priority === undefined) {
       return 'dashboard.priorityLabels.high';
     }
-    
+
     // Normalize to number
     let priorityNum: number;
     if (typeof priority === 'string') {
@@ -845,7 +835,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     } else {
       priorityNum = priority;
     }
-    
+
     switch (priorityNum) {
       case 2: return 'dashboard.priorityLabels.medium';
       case 3: return 'dashboard.priorityLabels.low';
@@ -871,7 +861,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   formatOrderUsageTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
-    
+
     // Handle military format (HHMM) and legacy format (HH:mm)
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
@@ -888,10 +878,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       }
       return timeStr;
     };
-    
+
     const fromTime = formatTime(order.usageTimeFrom);
     const toTime = formatTime(order.usageTimeTo);
-    
+
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;
   }

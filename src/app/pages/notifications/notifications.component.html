@@ -265,12 +265,14 @@
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.departmentName)
+                    <span class="detail-field__value">{{ getLocalizedDepartmentName(returnDetail.department?.nameEn,
+                      returnDetail.department?.nameAr)
                       }}</span>
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requesterName) }}</span>
+                    <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requester?.fullNameEN ||
+                      returnDetail.requester?.fullNameAR || returnDetail.requester?.userName) }}</span>
                   </div>
                   <div class="detail-field" *ngIf="returnDetail.priority">
                     <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
@@ -283,9 +285,10 @@
                       }}</span>
                   </div>
                 </div>
-                <div class="detail-field" *ngIf="returnDetail.requestPurposeName">
+                <div class="detail-field" *ngIf="returnDetail.requestPurpose">
                   <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-                  <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requestPurposeName)
+                  <span class="detail-field__value">{{ getLocalizedPurposeName(returnDetail.requestPurpose?.nameEn,
+                    returnDetail.requestPurpose?.nameAr)
                     }}</span>
                 </div>
                 <div class="detail-field" *ngIf="returnDetail.reason">
@@ -321,12 +324,14 @@
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.departmentName)
+                    <span class="detail-field__value">{{ getLocalizedDepartmentName(discardDetail.department?.nameEn,
+                      discardDetail.department?.nameAr)
                       }}</span>
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requesterName)
+                    <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requester?.fullNameEN
+                      || discardDetail.requester?.fullNameAR || discardDetail.requester?.userName)
                       }}</span>
                   </div>
                   <div class="detail-field" *ngIf="discardDetail.priority">
@@ -340,9 +345,10 @@
                       }}</span>
                   </div>
                 </div>
-                <div class="detail-field" *ngIf="discardDetail.requestPurposeName">
+                <div class="detail-field" *ngIf="discardDetail.requestPurpose">
                   <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-                  <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requestPurposeName)
+                  <span class="detail-field__value">{{ getLocalizedPurposeName(discardDetail.requestPurpose?.nameEn,
+                    discardDetail.requestPurpose?.nameAr)
                     }}</span>
                 </div>
                 <div class="detail-field" *ngIf="discardDetail.reason">

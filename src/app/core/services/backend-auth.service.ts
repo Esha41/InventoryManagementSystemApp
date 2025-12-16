@@ -687,20 +687,6 @@ export class BackendAuthService {
         this.permissionMatches(claimType, permission);
     });
 
-    // Debug logging for permission checks (only for role-related permissions to avoid spam)
-    if (permission.toLowerCase().includes('role')) {
-      console.log('Permission Check:', {
-        required: permission,
-        hasPermission: hasPermission,
-        userPermissions: user.permissions.map(p => ({
-          id: p.id,
-          claimType: p.claimType,
-          normalizedId: this.normalizePermission(p.id || ''),
-          normalizedClaimType: this.normalizePermission(p.claimType || ''),
-          requiredNormalized: this.normalizePermission(permission)
-        }))
-      });
-    }
 
     return hasPermission;
   }

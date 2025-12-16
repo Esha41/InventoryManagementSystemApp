@@ -34,16 +34,36 @@ export interface DiscardDto {
   status: number;
   notes?: string;
   departmentId: number;
-  requesterId?: number;
+  requesterId?: string;
   recieverId?: number;
   depotId?: number;
   requestPurposeId: number;
-  departmentName?: string;
-  requesterName?: string;
-  recieverName?: string;
-  depotName?: string;
-  requestPurposeName?: string;
+  // Nested objects from backend BaseRequestDto
+  department?: {
+    id: number;
+    code: string;
+    nameAr: string;
+    nameEn: string;
+    isDeleted: boolean;
+  };
+  requester?: {
+    id: string;
+    userName: string;
+    fullNameEN: string;
+    fullNameAR: string;
+    militoryId?: string | null;
+    email?: string;
+    rank?: any;
+    department?: any;
+  };
+  requestPurpose?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+    requestType: number;
+  };
   requestItems?: DiscardItemDto[];
+  creationDate?: string | Date; // From BaseRequestDto
 }
 
 export interface DiscardItemDto {
@@ -67,7 +87,7 @@ export class DiscardService {
   constructor(
     private apiService: ApiService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   /**
    * Create a new discard request
@@ -78,7 +98,7 @@ export class DiscardService {
     // If files are provided, use FormData
     if (files && files.length > 0) {
       const formData = new FormData();
-      
+
       // Append DTO properties
       if (dto.reason) formData.append('Reason', dto.reason);
       formData.append('Priority', dto.priority.toString());
@@ -86,7 +106,7 @@ export class DiscardService {
       formData.append('DepartmentId', dto.departmentId.toString());
       if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
       formData.append('RequestPurposeId', dto.requestPurposeId.toString());
-      
+
       // Append DiscardItems array
       if (dto.discardItems && dto.discardItems.length > 0) {
         dto.discardItems.forEach((item, index) => {
@@ -97,7 +117,7 @@ export class DiscardService {
           }
         });
       }
-      
+
       // Append files
       files.forEach(file => {
         formData.append('files', file);

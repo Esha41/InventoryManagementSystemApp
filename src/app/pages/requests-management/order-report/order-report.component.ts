@@ -712,18 +712,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         if (yPosition !== 0) {
           pdf.addPage();
         }
-        
+
         // Calculate how much of the image to show on this page
         const pageContentHeight = Math.min(pageHeight, heightLeft);
         const sourceY = (yPosition / pdfHeight) * imgHeight;
         const sourceHeight = (pageContentHeight / pdfHeight) * imgHeight;
-        
+
         // Create a temporary canvas for this page's content
         const pageCanvas = document.createElement('canvas');
         pageCanvas.width = imgWidth;
         pageCanvas.height = sourceHeight;
         const pageCtx = pageCanvas.getContext('2d');
-        
+
         if (pageCtx) {
           pageCtx.drawImage(
             canvas,
@@ -738,7 +738,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Fallback: use negative positioning (may clip some content)
           pdf.addImage(imgData, 'PNG', 0, -yPosition, pdfWidth, pdfHeight);
         }
-        
+
         heightLeft -= pageHeight;
         yPosition += pageHeight;
       }
@@ -756,7 +756,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const direction = isRTL ? 'rtl' : 'ltr';
     const textAlign = isRTL ? 'right' : 'left';
     const flexDirection = isRTL ? 'row-reverse' : 'row';
-    
+
     const qrCodeImg = data.qrCode
       ? `<img src="${data.qrCode}" alt="Order QR Code" style="width: 100px; height: 100px; display: block; margin: 0 auto;" />`
       : '<div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">QR Code</div>';
@@ -814,7 +814,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const textAlign = isRTL ? 'right' : 'left';
     const textAlignReverse = isRTL ? 'left' : 'right';
     const flexDirection = isRTL ? 'row-reverse' : 'row';
-    
+
     const statusLabel = this.getStatusLabel(data.order.status);
     const priorityLabel = this.getPriorityLabel(data.order.priority);
 
@@ -892,15 +892,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const textAlignReverse = isRTL ? 'left' : 'right';
     // Invert column order for RTL
     const gridColumns = isRTL ? '100px 140px 2fr 2fr 50px' : '50px 2fr 2fr 140px 100px';
-    
+
     const workflowHtml = data.workflow.length > 0
       ? data.workflow.map(step => {
-          const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
-                             step.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                             step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                             step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                             'bg-slate-100 text-slate-700';
-          return `
+        const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
+          step.status === 'rejected' ? 'bg-red-100 text-red-800' :
+            step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+              step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                'bg-slate-100 text-slate-700';
+        return `
             <div style="display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; direction: ${direction};">
               <div style="font-weight: bold; color: #111827; font-size: 0.65rem; text-align: ${textAlign};">${step.step}</div>
               <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal; text-align: ${textAlign};">${step.role}</div>
@@ -913,7 +913,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               </div>
             </div>
           `;
-        }).join('')
+      }).join('')
       : `<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>`;
 
     return `
@@ -965,12 +965,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
     const workflowHtml = data.workflow.length > 0
       ? data.workflow.map(step => {
-          const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
-                             step.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                             step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                             step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                             'bg-slate-100 text-slate-700';
-          return `
+        const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
+          step.status === 'rejected' ? 'bg-red-100 text-red-800' :
+            step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+              step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                'bg-slate-100 text-slate-700';
+        return `
             <div style="display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
               <div style="font-weight: bold; color: #111827; font-size: 0.65rem;">${step.step}</div>
               <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal;">${step.role}</div>
@@ -983,7 +983,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               </div>
             </div>
           `;
-        }).join('')
+      }).join('')
       : '<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>';
 
     return `
@@ -1183,15 +1183,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       depotId: returnDto.depotId || null,
       requestPurposeId: returnDto.requestPurposeId,
       isFromAllowance: false,
-      usagePurpose: returnDto.requestPurposeName || undefined,
-      departmentNameAr: returnDto.departmentName,
-      departmentNameEn: returnDto.departmentName,
-      requesterName: returnDto.requesterName,
-      recieverName: returnDto.recieverName,
-      depotNameAr: returnDto.depotName,
-      depotNameEn: returnDto.depotName,
-      requestPurposeNameAr: returnDto.requestPurposeName,
-      requestPurposeNameEn: returnDto.requestPurposeName,
+      usagePurpose: returnDto.requestPurpose?.nameEn || returnDto.requestPurpose?.nameAr || undefined,
+      departmentNameAr: returnDto.department?.nameAr,
+      departmentNameEn: returnDto.department?.nameEn,
+      requesterName: returnDto.requester?.fullNameEN || returnDto.requester?.fullNameAR || returnDto.requester?.userName,
+      recieverName: undefined,
+      depotNameAr: undefined,
+      depotNameEn: undefined,
+      requestPurposeNameAr: returnDto.requestPurpose?.nameAr,
+      requestPurposeNameEn: returnDto.requestPurpose?.nameEn,
       requestItems: returnDto.requestItems?.map(item => ({
         id: item.id,
         itemId: item.itemId,
@@ -1222,15 +1222,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       depotId: discardDto.depotId || null,
       requestPurposeId: discardDto.requestPurposeId,
       isFromAllowance: false,
-      usagePurpose: discardDto.requestPurposeName || undefined,
-      departmentNameAr: discardDto.departmentName,
-      departmentNameEn: discardDto.departmentName,
-      requesterName: discardDto.requesterName,
-      recieverName: discardDto.recieverName,
-      depotNameAr: discardDto.depotName,
-      depotNameEn: discardDto.depotName,
-      requestPurposeNameAr: discardDto.requestPurposeName,
-      requestPurposeNameEn: discardDto.requestPurposeName,
+      usagePurpose: discardDto.requestPurpose?.nameEn || discardDto.requestPurpose?.nameAr || undefined,
+      departmentNameAr: discardDto.department?.nameAr,
+      departmentNameEn: discardDto.department?.nameEn,
+      requesterName: discardDto.requester?.fullNameEN || discardDto.requester?.fullNameAR || discardDto.requester?.userName,
+      recieverName: undefined,
+      depotNameAr: undefined,
+      depotNameEn: undefined,
+      requestPurposeNameAr: discardDto.requestPurpose?.nameAr,
+      requestPurposeNameEn: discardDto.requestPurpose?.nameEn,
       requestItems: discardDto.requestItems?.map(item => ({
         id: item.id,
         itemId: item.itemId,

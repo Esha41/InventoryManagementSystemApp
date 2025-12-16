@@ -15,6 +15,7 @@ export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
     id: dto.id,
     orderId: `#${dto.requestNo || dto.id.toString().padStart(4, '0')}`,
     requestDate: formatRequestDate(dto.requestDate),
+    creationDate: formatRequestDate(dto.creationDate || dto.requestDate), // Use creationDate if available, fallback to requestDate
     priority: mapPriority(dto.priority),
     requestType: mapRequestType(dto.requestType),
     status: mapStatus(dto.status)
@@ -24,9 +25,14 @@ export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
 /**
  * Format date for display
  */
-function formatRequestDate(date: string | Date | undefined): string {
-  if (!date) return '';
-  return formatDate(date as string);
+function formatRequestDate(date: string | Date | undefined | null): string {
+  if (!date) return 'N/A';
+
+  try {
+    return formatDate(date as string);
+  } catch (error) {
+    return 'N/A';
+  }
 }
 
 /**

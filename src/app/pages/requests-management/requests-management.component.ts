@@ -24,7 +24,7 @@ import { CardStatus } from '@utils/status.utils';
 })
 export class RequestsManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
@@ -57,7 +57,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     private router: Router,
     private requestStatusUpdateService: RequestStatusUpdateService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Initial load
@@ -145,6 +145,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
         return (
           (request.orderId && request.orderId.toLowerCase().includes(query)) ||
           (request.requestDate && request.requestDate.toLowerCase().includes(query)) ||
+          (request.creationDate && request.creationDate.toLowerCase().includes(query)) ||
           (request.priority && request.priority.toLowerCase().includes(query)) ||
           (request.requestType && request.requestType.toLowerCase().includes(query)) ||
           (request.status && request.status.toLowerCase().includes(query))
