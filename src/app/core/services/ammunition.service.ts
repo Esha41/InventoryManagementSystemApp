@@ -18,7 +18,7 @@ export class AmmunitionService {
     private http: HttpClient,
     private config: ConfigService,
     private fileUploadService: FileUploadService
-  ) {}
+  ) { }
 
   private get baseUrl(): string {
     return `${this.config.apiUrl}/Ammunition`;
@@ -131,7 +131,7 @@ export class AmmunitionService {
   // Update image: delete old file and upload new one
   updateImage(ammunitionId: number, file: File, existingFileId: number | null): Observable<number> {
     const upload$ = this.uploadFile(ammunitionId, file, true);
-    
+
     if (existingFileId) {
       // Delete old file first, then upload new one
       return this.deleteFile(existingFileId).pipe(
@@ -170,7 +170,7 @@ export class AmmunitionService {
 
     console.log('loadAssetImages called with IDs:', ammunitionIds);
 
-    const imageMap$ = ammunitionIds.map(id => 
+    const imageMap$ = ammunitionIds.map(id =>
       this.getImageUrl(id).pipe(
         switchMap(url => {
           console.log(`Ammunition ${id}: Got image URL:`, url);
@@ -178,7 +178,7 @@ export class AmmunitionService {
             console.log(`Ammunition ${id}: No image URL found`);
             return of({ id, url: null });
           }
-          
+
           // Fetch image as blob with authentication headers
           // The HTTP interceptor will add the auth token automatically
           return this.http.get(url, { responseType: 'blob' }).pipe(
@@ -240,25 +240,31 @@ export class AmmunitionService {
     if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
       return fileUrl;
     }
-    
+
     // For UNC paths, we should use the file serving endpoint instead
     // This is a fallback that tries to extract a relative path
     let cleaned = fileUrl.replace(/^\\\\/, '');
     cleaned = cleaned.replace(/\\/g, '/');
-    
+
     const sharePrefix = 'SDShare/';
     const indexOfShare = cleaned.indexOf(sharePrefix);
-    
+
     if (indexOfShare !== -1) {
       const relativePath = cleaned.substring(indexOfShare + sharePrefix.length);
       // Use the file serving endpoint with path parameter
       return `${this.config.apiUrl}/FileUpload/serve?path=${encodeURIComponent(relativePath)}`;
     }
-    
+
     // Fallback: try to use the path directly
     return `${this.config.apiUrl}/FileUpload/serve?path=${encodeURIComponent(cleaned)}`;
   }
-  
+
+  // Import ammunition data
+  importData(file: File): Observable<APIOperationResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData);
+  }
 }
 
 

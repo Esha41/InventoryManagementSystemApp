@@ -43,6 +43,7 @@ export function createInitialModalState(): AssetModalState {
     showEditModal: false,
     showDeleteModal: false,
     showViewModal: false,
+    showImportModal: false,
     selectedAsset: null
   };
 }

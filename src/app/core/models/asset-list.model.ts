@@ -102,6 +102,7 @@ export interface AssetModalState {
   showEditModal: boolean;
   showDeleteModal: boolean;
   showViewModal: boolean;
+  showImportModal: boolean;
   selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 }
 
