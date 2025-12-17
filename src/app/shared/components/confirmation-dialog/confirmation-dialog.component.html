@@ -41,14 +41,33 @@
                 </button>
             </div>
 
+            <!-- Comment Field (Optional) -->
+            <div *ngIf="requireComment" class="px-6 pb-4">
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                    {{ commentLabel || ('workflowApprovalDetail.returnComment' | translate) }}
+                    <span class="text-[var(--color-error)]">*</span>
+                </label>
+                <textarea [(ngModel)]="comment" [rows]="commentRows"
+                    [placeholder]="commentPlaceholder || ('workflowApprovalDetail.enterReturnComment' | translate)"
+                    class="w-full px-4 py-3 border rounded-lg text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-all"
+                    [ngClass]="{
+                        'border-[var(--color-border)] focus:ring-[var(--color-brand)]': !comment || comment.trim(),
+                        'border-red-300 focus:ring-red-500': comment !== '' && !comment.trim()
+                    }" [attr.aria-label]="commentLabel || ('workflowApprovalDetail.returnComment' | translate)"
+                    [attr.aria-required]="true" [attr.aria-invalid]="comment !== '' && !comment.trim()"></textarea>
+                <p *ngIf="comment !== '' && !comment.trim()" class="mt-1 text-xs text-red-600">
+                    {{ 'workflowApprovalDetail.commentRequired' | translate }}
+                </p>
+            </div>
+
             <!-- Footer with Actions -->
             <div class="flex items-center justify-end gap-3 px-6 pb-6">
                 <button (click)="onCancel()" type="button"
                     class="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]">
                     {{ cancelText || ('common.cancel' | translate) }}
                 </button>
-                <button (click)="onConfirm()" type="button"
-                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                <button (click)="onConfirm()" type="button" [disabled]="isConfirmDisabled()"
+                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     [ngClass]="{
             'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-600': type === 'warning',
             'bg-red-600 hover:bg-red-700 focus:ring-red-600': type === 'danger',

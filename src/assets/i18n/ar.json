@@ -2153,6 +2153,9 @@
     "confirmRejectMessage": "هل أنت متأكد من رفض هذا الطلب؟",
     "confirmReturnForReview": "تأكيد الإرجاع للمراجعة",
     "confirmReturnForReviewMessage": "هل أنت متأكد من إرجاع هذا الطلب للمراجعة؟",
+    "returnComment": "تعليق الإرجاع",
+    "enterReturnComment": "أدخل سبب الإرجاع...",
+    "commentRequired": "التعليق مطلوب",
     "errors": {
       "invalidRequestData": "بيانات الطلب غير صحيحة",
       "failedToLoadRanks": "فشل تحميل الرتب",

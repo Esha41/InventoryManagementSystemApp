@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, AlertTriangle, CheckCircle, Info, X } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -15,7 +16,10 @@ export type ConfirmationType = 'warning' | 'danger' | 'info' | 'success';
  *   [title]="'Confirm Action'"
  *   [message]="'Are you sure?'"
  *   [type]="'warning'"
- *   (confirmed)="onConfirm()"
+ *   [requireComment]="true"
+ *   [commentLabel]="'Enter your comment'"
+ *   [commentPlaceholder]="'Type here...'"
+ *   (confirmed)="onConfirm($event)"
  *   (cancelled)="onCancel()"
  * ></app-confirmation-dialog>
  * ```
@@ -23,7 +27,7 @@ export type ConfirmationType = 'warning' | 'danger' | 'info' | 'success';
 @Component({
     selector: 'app-confirmation-dialog',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule, TranslateModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
     templateUrl: './confirmation-dialog.component.html',
     styleUrls: ['./confirmation-dialog.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,13 +42,22 @@ export class ConfirmationDialogComponent {
     @Input() showCloseButton = true;
     @Input() closeOnBackdrop = false;
 
-    @Output() confirmed = new EventEmitter<void>();
+    // Comment field support
+    @Input() requireComment = false;
+    @Input() commentLabel = '';
+    @Input() commentPlaceholder = '';
+    @Input() commentRows = 3;
+
+    @Output() confirmed = new EventEmitter<string | undefined>();
     @Output() cancelled = new EventEmitter<void>();
 
     readonly AlertTriangle = AlertTriangle;
     readonly CheckCircle = CheckCircle;
     readonly Info = Info;
     readonly X = X;
+
+    // Internal comment state
+    comment = '';
 
     /**
      * Handle ESC key press to close dialog
@@ -74,16 +87,38 @@ export class ConfirmationDialogComponent {
     }
 
     /**
-     * Emit confirmed event
+     * Check if confirm button should be disabled
      */
-    onConfirm(): void {
-        this.confirmed.emit();
+    isConfirmDisabled(): boolean {
+        if (this.requireComment) {
+            return !this.comment || !this.comment.trim();
+        }
+        return false;
     }
 
     /**
-     * Emit cancelled event
+     * Emit confirmed event with optional comment
+     */
+    onConfirm(): void {
+        if (this.isConfirmDisabled()) {
+            return;
+        }
+
+        if (this.requireComment) {
+            this.confirmed.emit(this.comment.trim());
+        } else {
+            this.confirmed.emit();
+        }
+
+        // Reset comment after confirmation
+        this.comment = '';
+    }
+
+    /**
+     * Emit cancelled event and reset comment
      */
     onCancel(): void {
+        this.comment = '';
         this.cancelled.emit();
     }
 

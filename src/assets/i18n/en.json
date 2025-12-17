@@ -2162,6 +2162,9 @@
     "confirmRejectMessage": "Are you sure you want to reject this request?",
     "confirmReturnForReview": "Confirm Return for Review",
     "confirmReturnForReviewMessage": "Are you sure you want to return this request for review?",
+    "returnComment": "Return Comment",
+    "enterReturnComment": "Enter reason for returning...",
+    "commentRequired": "Comment is required",
     "success": {
       "supplySubmitted": "Supply submitted successfully"
     },

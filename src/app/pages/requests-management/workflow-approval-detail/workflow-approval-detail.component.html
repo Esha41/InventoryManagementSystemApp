@@ -872,4 +872,6 @@
       <app-confirmation-dialog [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title"
         [message]="confirmationDialog.message" [type]="confirmationDialog.type"
         [confirmText]="confirmationDialog.confirmText" [cancelText]="confirmationDialog.cancelText"
-        (confirmed)="onConfirmationConfirmed()" (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
+        [requireComment]="confirmationDialog.requireComment" [commentLabel]="confirmationDialog.commentLabel"
+        [commentPlaceholder]="confirmationDialog.commentPlaceholder" (confirmed)="onConfirmationConfirmed($event)"
+        (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>

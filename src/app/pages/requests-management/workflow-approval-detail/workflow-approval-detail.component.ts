@@ -116,7 +116,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     type: 'warning' as ConfirmationType,
     confirmText: '',
     cancelText: '',
-    onConfirm: () => { }
+    requireComment: false,
+    commentLabel: '',
+    commentPlaceholder: '',
+    onConfirm: (comment?: string) => { }
   };
 
 
@@ -697,10 +700,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Show confirmation dialog
+    // Show confirmation dialog with required comment
     this.translateService.get([
       'workflowApprovalDetail.confirmReturnForReview',
       'workflowApprovalDetail.confirmReturnForReviewMessage',
+      'workflowApprovalDetail.returnComment',
+      'workflowApprovalDetail.enterReturnComment',
       'common.yes',
       'common.cancel'
     ]).subscribe(translations => {
@@ -710,7 +715,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         'warning',
         translations['common.yes'] || 'Yes',
         translations['common.cancel'] || 'Cancel',
-        () => {
+        (returnComment?: string) => {
           this.processing = true;
 
           const formData = new FormData();
@@ -721,8 +726,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           formData.append('Action', '6'); // RequestStatus.ReturnedForReview = 6
           formData.append('ReturnToWorkflowStepId', this.returnToStepId!.toString());
 
-          if (this.comments) {
-            formData.append('Comments', this.comments);
+          // Use the comment from the dialog (required)
+          if (returnComment) {
+            formData.append('Comments', returnComment);
           }
 
           // Add files if any
@@ -757,7 +763,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
                 }
               }
             });
-        }
+        },
+        true, // requireComment
+        translations['workflowApprovalDetail.returnComment'] || 'Return Comment',
+        translations['workflowApprovalDetail.enterReturnComment'] || 'Enter reason for returning...'
       );
     });
   }
@@ -1911,7 +1920,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Show confirmation dialog
    */
-  showConfirmationDialog(title: string, message: string, type: ConfirmationType, confirmText: string, cancelText: string, onConfirm: () => void): void {
+  showConfirmationDialog(
+    title: string,
+    message: string,
+    type: ConfirmationType,
+    confirmText: string,
+    cancelText: string,
+    onConfirm: (comment?: string) => void,
+    requireComment: boolean = false,
+    commentLabel: string = '',
+    commentPlaceholder: string = ''
+  ): void {
     this.confirmationDialog = {
       isOpen: true,
       title,
@@ -1919,6 +1938,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       type,
       confirmText,
       cancelText,
+      requireComment,
+      commentLabel,
+      commentPlaceholder,
       onConfirm
     };
   }
@@ -1933,8 +1955,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Handle confirmation dialog confirm action
    */
-  onConfirmationConfirmed(): void {
-    this.confirmationDialog.onConfirm();
+  onConfirmationConfirmed(comment?: string): void {
+    this.confirmationDialog.onConfirm(comment);
     this.closeConfirmationDialog();
   }
 
