@@ -94,6 +94,8 @@ export interface UserRolesDto {
 export interface RoleDto {
   id: string;
   name: string;
+  nameEn?: string;
+  nameAr?: string;
   isDefaultRole: boolean;
   isSuperAdmin: boolean;
   applicationEntityIds?: number[]; // Optional: Array of application entity IDs associated with the role

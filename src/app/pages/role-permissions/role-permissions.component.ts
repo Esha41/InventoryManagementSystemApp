@@ -76,18 +76,18 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   selectedRole: RoleDto | null = null;
   permissions: CrudPermission[] = [];
   plainPermissions: CrudPermission[] = [];
-  
+
   categories: PermissionCategory[] = [];
   filteredCategories: PermissionCategory[] = [];
-  
+
   roleSearchTerm = '';
   permissionSearchTerm = '';
-  
+
   isLoading = false;
   isSaving = false;
-  
+
   rowsPerPage = 10;
-  
+
   permissionForm: FormGroup;
   private destroy$ = new Subject<void>();
 
@@ -152,6 +152,24 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     this.rowsPerPage = rows;
   }
 
+  /**
+   * Get localized role name based on current language
+   */
+  getRoleDisplayName(role: RoleDto): string {
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang;
+
+    if (currentLang === 'ar' && role.nameAr) {
+      return role.nameAr;
+    }
+
+    if (currentLang === 'en' && role.nameEn) {
+      return role.nameEn;
+    }
+
+    // Fallback to default name
+    return role.name;
+  }
+
   // ============================================================================
   // DATA LOADING
   // ============================================================================
@@ -180,28 +198,28 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   loadRolePermissions(roleId: string): void {
     this.isLoading = true;
-    
+
     // Load both CRUD and Plain permissions in parallel
     forkJoin({
       crud: this.backendUserService.getCrudPermissionsForRole(roleId),
       plain: this.backendUserService.getPlainPermissionsForRole(roleId)
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ crud, plain }) => {
-        this.permissions = crud;
-        this.plainPermissions = plain;
-        this.organizePermissions();
-        this.createPermissionForm();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).subscribe(translations => {
-          this.toastService.error(translations['toast.failedToLoadPermissions'], translations['toast.error']);
-        });
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ crud, plain }) => {
+          this.permissions = crud;
+          this.plainPermissions = plain;
+          this.organizePermissions();
+          this.createPermissionForm();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadPermissions'], translations['toast.error']);
+          });
+        }
+      });
   }
 
   // ============================================================================
@@ -247,12 +265,12 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       const order = ['Dashboard', 'Requests', 'Inventory', 'User Management', 'System Features', 'Other'];
       return order.indexOf(a.name) - order.indexOf(b.name);
     });
-    
+
     // Pre-calculate permission types for performance (avoids recalculation in template)
     this.categories.forEach(category => {
       category.permissionTypes = this.calculateUniquePermissionTypes(category);
     });
-    
+
     this.filteredCategories = this.categories;
   }
 
@@ -321,10 +339,10 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     }
 
     const searchLower = this.permissionSearchTerm.toLowerCase().trim();
-    
+
     this.filteredCategories = this.categories
       .map(category => {
-        const categoryMatches = 
+        const categoryMatches =
           category.name.toLowerCase().includes(searchLower) ||
           category.displayName.toLowerCase().includes(searchLower) ||
           category.description.toLowerCase().includes(searchLower);
@@ -409,7 +427,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
     const parts = displayValue.split('.');
     const key = parts[parts.length - 1];
-    
+
     // Check if we have metadata for this permission
     if (this.permissionDescriptions[key]) {
       return this.permissionDescriptions[key];
@@ -434,7 +452,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   private calculateUniquePermissionTypes(category: PermissionCategory): string[] {
     const permissionTypes = new Set<string>();
-    
+
     category.permissions.forEach(group => {
       group.permissionsList.forEach(perm => {
         const label = this.getPermissionInfo(perm.displayValue).label;
@@ -443,7 +461,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
         }
       });
     });
-    
+
     // Sort by priority: Page, View, Create, Edit, Delete
     const order = ['Page', 'View', 'Create', 'Edit', 'Delete'];
     return Array.from(permissionTypes).sort((a, b) => {
@@ -558,7 +576,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
 
   isFirstPermissionOfType(group: CrudPermission, permType: string, currentPerm: any): boolean {
-    const permissionsOfType = group.permissionsList.filter(p => 
+    const permissionsOfType = group.permissionsList.filter(p =>
       this.getPermissionInfo(p.displayValue).label === permType
     );
     return permissionsOfType.length > 0 && permissionsOfType[0] === currentPerm;
@@ -583,7 +601,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   onRowToggle(group: CrudPermission, event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     const selectAll = checkbox.checked;
-    
+
     group.permissionsList.forEach(perm => {
       const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
       if (control) {
@@ -597,7 +615,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
    */
   isColumnFullySelected(category: PermissionCategory, permType: string): boolean {
     let hasAnyPermission = false;
-    
+
     for (const group of category.permissions) {
       for (const perm of group.permissionsList) {
         const label = this.getPermissionInfo(perm.displayValue).label;
@@ -610,7 +628,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     return hasAnyPermission;
   }
 
@@ -620,7 +638,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   onColumnToggle(category: PermissionCategory, permType: string, event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     const selectAll = checkbox.checked;
-    
+
     category.permissions.forEach(group => {
       group.permissionsList.forEach(perm => {
         const label = this.getPermissionInfo(perm.displayValue).label;
