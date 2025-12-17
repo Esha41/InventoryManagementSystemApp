@@ -56,7 +56,14 @@
     "exportToExcel": "Export to Excel",
     "exportSuccess": "Data exported successfully",
     "exportError": "Failed to export data",
-    "exporting": "Exporting..."
+    "exporting": "Exporting...",
+    "maximumFileSize": "Maximum file size {{size}} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.",
+    "maximumFileSizeLabel": "Maximum file size",
+    "allowedFormats": "Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX",
+    "chooseFiles": "Choose Files",
+    "noFileChosen": "No file chosen",
+    "file": "file",
+    "files": "files"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -142,6 +149,7 @@
       "approved": "Approved",
       "rejected": "Rejected",
       "cancelled": "Cancelled",
+      "completed": "Completed",
       "returned": "Returned for Review",
       "returnedForReview": "Returned for Review"
     },
@@ -167,7 +175,9 @@
       "lowStock": "Low Stock",
       "next30Days": "Next 30 days",
       "belowThreshold": "Below threshold"
-    }
+    },
+    "annualSupplyActivity": "Annual Supply Activity",
+    "overstock": "Overstock"
   },
   "notifications": {
     "title": "Notifications",
@@ -516,6 +526,7 @@
     "low": "Low",
     "critical": "Critical",
     "issue": "Issue",
+    "order": "Order",
     "return": "Return",
     "discard": "Discard",
     "pending": "Pending",
@@ -670,6 +681,8 @@
     "title": "Depots",
     "subtitle": "Warehouse inventory overview and management",
     "consumed": "Consumed",
+    "neq": "NEQ",
+    "capacity": "Capacity",
     "totalCapacity": "Total Capacity",
     "currentStock": "Current Stock",
     "noWarehouses": "No Warehouses Available",

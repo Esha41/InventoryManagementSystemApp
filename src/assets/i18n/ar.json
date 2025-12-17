@@ -55,7 +55,14 @@
     "exportToExcel": "تصدير إلى Excel",
     "exportSuccess": "تم تصدير البيانات بنجاح",
     "exportError": "فشل تصدير البيانات",
-    "exporting": "جاري التصدير..."
+    "exporting": "جاري التصدير...",
+    "maximumFileSize": "الحد الأقصى لحجم الملف {{size}} ميجابايت. المسموح: JPG، JPEG، PNG، PDF، DOC، DOCX، XLS، XLSX.",
+    "maximumFileSizeLabel": "الحد الأقصى لحجم الملف",
+    "allowedFormats": "المسموح: JPG، JPEG، PNG، PDF، DOC، DOCX، XLS، XLSX",
+    "chooseFiles": "اختر الملفات",
+    "noFileChosen": "لم يتم اختيار ملف",
+    "file": "ملف",
+    "files": "ملفات"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -140,6 +147,7 @@
       "approved": "موافق عليه",
       "rejected": "مرفوض",
       "cancelled": "ملغي",
+      "completed": "مكتمل",
       "returned": "مُرجع للمراجعة",
       "returnedForReview": "مُرجع للمراجعة"
     },
@@ -165,7 +173,9 @@
       "lowStock": "مخزون منخفض",
       "next30Days": "الـ 30 يوم القادمة",
       "belowThreshold": "أقل من الحد الأدنى"
-    }
+    },
+    "annualSupplyActivity": "نشاط التوريد السنوي",
+    "overstock": "الفائض"
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
@@ -512,6 +522,7 @@
     "low": "منخفضة",
     "critical": "حرجة",
     "issue": "إصدار",
+    "order": "طلب",
     "return": "إرجاع",
     "discard": "إتلاف",
     "pending": "قيد الانتظار",
@@ -662,6 +673,8 @@
     "title": "المستودعات",
     "subtitle": "نظرة عامة على مخزون المستودع وإدارته",
     "consumed": "مستهلك",
+    "neq": "NEQ",
+    "capacity": "السعة",
     "totalCapacity": "السعة الإجمالية",
     "currentStock": "المخزون الحالي",
     "noWarehouses": "لا توجد مستودعات متاحة",

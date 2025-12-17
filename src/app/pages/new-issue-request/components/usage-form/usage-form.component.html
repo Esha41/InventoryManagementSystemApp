@@ -125,9 +125,17 @@
           </label>
           <div class="space-y-3">
             <!-- File Input -->
-            <div class="relative">
+            <div class="relative flex items-center gap-2">
               <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept="*/*"
-                class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent transition-all file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#D0B888]/10 file:text-[#D0B888] hover:file:bg-[#D0B888]/20 file:cursor-pointer">
+                class="hidden">
+              <label (click)="fileInput.click()" 
+                class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[#D0B888]/10 text-[#D0B888] hover:bg-[#D0B888]/20 cursor-pointer transition-all">
+                {{ 'common.chooseFiles' | translate }}
+              </label>
+              <span class="text-sm text-[var(--color-text-muted)] flex-1">
+                <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
+                <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+              </span>
             </div>
 
             <!-- Selected Files List -->
@@ -153,7 +161,7 @@
               {{ 'newIssueRequest.attachmentsHint' | translate }}
             </p>
             <p class="text-xs text-[var(--color-text-muted)] font-medium">
-              Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
+              {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
             </p>
           </div>
         </div>

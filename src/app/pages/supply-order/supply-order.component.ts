@@ -761,8 +761,45 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   formatDate = formatDateUtil;
   formatNumber = formatNumberUtil;
-  getPriorityText = getPriorityText;
   getPriorityClass = getPriorityClass;
+
+  /**
+   * Get priority translation key
+   * Handles both number and string priority values
+   */
+  getPriorityText(priority?: number | string | null): string {
+    if (priority === null || priority === undefined) {
+      return 'dashboard.priorityLabels.medium';
+    }
+
+    // Normalize priority to number
+    let priorityNum: number;
+    if (typeof priority === 'string') {
+      const priorityLower = priority.toLowerCase().trim();
+      if (priorityLower === 'high' || priorityLower === '1') {
+        priorityNum = 1;
+      } else if (priorityLower === 'medium' || priorityLower === '2') {
+        priorityNum = 2;
+      } else if (priorityLower === 'low' || priorityLower === '3') {
+        priorityNum = 3;
+      } else if (priorityLower === 'critical' || priorityLower === '4') {
+        priorityNum = 4;
+      } else {
+        const parsed = parseInt(priority, 10);
+        priorityNum = isNaN(parsed) ? 2 : parsed;
+      }
+    } else {
+      priorityNum = priority;
+    }
+
+    const priorityMap: { [key: number]: string } = {
+      1: 'dashboard.priorityLabels.high',
+      2: 'dashboard.priorityLabels.medium',
+      3: 'dashboard.priorityLabels.low',
+      4: 'dashboard.priorityLabels.high' // Critical maps to high
+    };
+    return priorityMap[priorityNum] || 'dashboard.priorityLabels.medium';
+  }
 
   getDepartmentName(): string {
     if (!this.orderData) return 'N/A';
@@ -1040,6 +1077,21 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const id = anyItem.itemId || anyItem.id || 0;
 
     return localized || this.getItemDisplayName(id);
+  }
+
+  /**
+   * Get approval status translation key
+   */
+  getApprovalStatusText(status: string): string {
+    const statusLower = status?.toLowerCase().trim() || '';
+    if (statusLower === 'approved') {
+      return 'dashboard.statusLabels.approved';
+    } else if (statusLower === 'rejected') {
+      return 'dashboard.statusLabels.rejected';
+    } else if (statusLower === 'pending') {
+      return 'dashboard.statusLabels.underProcess';
+    }
+    return 'dashboard.statusLabels.new';
   }
 
   getApprovalStatusIcon(status: string): any {

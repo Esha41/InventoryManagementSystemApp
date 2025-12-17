@@ -58,7 +58,7 @@
                 {{ 'supplyOrder.priority' | translate }}
               </label>
               <p class="text-sm mt-1 font-semibold" [ngClass]="getPriorityClass(orderData.priority)">
-                {{ getPriorityText(orderData.priority) }}
+                {{ getPriorityText(orderData.priority) | translate }}
               </p>
             </div>
 
@@ -196,7 +196,7 @@
                           <span
                             class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
                             [ngClass]="getApprovalStatusClass(approval.status)">
-                            {{ approval.status }}
+                            {{ getApprovalStatusText(approval.status) | translate }}
                           </span>
                           <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
                             <span *ngIf="approval.status === 'Approved'">

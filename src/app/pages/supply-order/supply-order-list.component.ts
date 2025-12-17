@@ -89,7 +89,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get status display text
+   * Get status translation key
    * Handles both number and string status values
    */
   getStatusText(status: number | string): string {
@@ -116,13 +116,13 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     }
 
     const statusMap: { [key: number]: string } = {
-      1: 'New',
-      2: 'Under Process',
-      3: 'Approved',
-      4: 'Rejected',
-      5: 'Completed'
+      1: 'dashboard.statusLabels.new',
+      2: 'dashboard.statusLabels.underProcess',
+      3: 'dashboard.statusLabels.approved',
+      4: 'dashboard.statusLabels.rejected',
+      5: 'dashboard.statusLabels.completed'
     };
-    return statusMap[statusNum] || 'Unknown';
+    return statusMap[statusNum] || 'dashboard.statusLabels.new';
   }
 
   /**
@@ -163,7 +163,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get priority display text
+   * Get priority translation key
    * Handles both number and string priority values
    */
   getPriorityText(priority: number | string): string {
@@ -188,12 +188,12 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     }
 
     const priorityMap: { [key: number]: string } = {
-      1: 'High',
-      2: 'Medium',
-      3: 'Low',
-      4: 'Critical'
+      1: 'dashboard.priorityLabels.high',
+      2: 'dashboard.priorityLabels.medium',
+      3: 'dashboard.priorityLabels.low',
+      4: 'dashboard.priorityLabels.high' // Critical maps to high for now
     };
-    return priorityMap[priorityNum] || 'Medium';
+    return priorityMap[priorityNum] || 'dashboard.priorityLabels.medium';
   }
 }
 

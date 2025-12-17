@@ -93,14 +93,14 @@
               <td class="px-6 py-4 text-start">
                 <span
                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getPriorityClass(request.priority) }}">
-                  {{ request.priority }}
+                  {{ getPriorityText(request.priority) | translate }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.requestType }}</td>
+              <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ getRequestTypeText(request.requestType) | translate }}</td>
               <td class="px-6 py-4 text-start">
                 <span
                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(request.status) }}">
-                  {{ request.status }}
+                  {{ getStatusText(request.status) | translate }}
                 </span>
               </td>
               <td class="px-6 py-4 text-end">
