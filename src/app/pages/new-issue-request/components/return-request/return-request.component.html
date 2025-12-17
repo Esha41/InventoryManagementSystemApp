@@ -220,14 +220,23 @@
               <div class="flex-1">
                 <!-- File Input -->
                 <div class="space-y-3">
-                  <input
-                    type="file"
-                    #fileInput
-                    (change)="onFilesSelected($event)"
-                    multiple
-                    accept="*/*"
-                    class="block w-full text-sm text-[#23272E] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--color-brand)] file:text-white hover:file:bg-[var(--color-brand)]/90 file:cursor-pointer"
-                  />
+                  <div class="relative flex items-center gap-2">
+                    <input
+                      type="file"
+                      #fileInput
+                      (change)="onFilesSelected($event)"
+                      multiple
+                      accept="*/*"
+                      class="hidden">
+                    <label (click)="fileInput.click()" 
+                      class="px-4 py-2 rounded-lg border-0 text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
+                      {{ 'common.chooseFiles' | translate }}
+                    </label>
+                    <span class="text-sm text-[#6B7280] flex-1">
+                      <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
+                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                    </span>
+                  </div>
 
                   <!-- Selected Files List -->
                   <div *ngIf="selectedFiles.length > 0" class="space-y-2">
@@ -252,7 +261,7 @@
                     {{ 'returnRequest.attachmentsHint' | translate }}
                   </p>
                   <p class="text-xs text-[#6B7280] font-medium">
-                    Maximum file size {{ MAX_FILE_SIZE_MB }} MB. Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, XLS, XLSX.
+                    {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
                   </p>
                 </div>
               </div>

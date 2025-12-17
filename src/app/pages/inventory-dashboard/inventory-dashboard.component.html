@@ -214,8 +214,8 @@
 
     <!-- Statistics Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <app-overstock-card [title]="'Overstock'" [items]="overstockItems"></app-overstock-card>
-      <app-annual-activity-card class="lg:col-span-2" [values]="annualActivityValues"></app-annual-activity-card>
+      <app-overstock-card [title]="'inventoryDashboard.overstock' | translate" [items]="overstockItems"></app-overstock-card>
+      <app-annual-activity-card class="lg:col-span-2" [title]="'inventoryDashboard.annualSupplyActivity' | translate" [values]="annualActivityValues"></app-annual-activity-card>
     </div>
   </div>
 </div>

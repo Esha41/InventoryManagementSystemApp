@@ -263,6 +263,62 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Get priority translation key
+   */
+  getPriorityText(priority: string): string {
+    const priorityLower = priority?.toLowerCase().trim() || '';
+    switch (priorityLower) {
+      case 'high':
+        return 'dashboard.priorityLabels.high';
+      case 'medium':
+        return 'dashboard.priorityLabels.medium';
+      case 'low':
+        return 'dashboard.priorityLabels.low';
+      default:
+        return 'dashboard.priorityLabels.medium';
+    }
+  }
+
+  /**
+   * Get status translation key
+   */
+  getStatusText(status: string): string {
+    const statusLower = status?.toLowerCase().trim() || '';
+    switch (statusLower) {
+      case 'new':
+        return 'dashboard.statusLabels.new';
+      case 'pending':
+        return 'dashboard.statusLabels.underProcess';
+      case 'confirmed':
+        return 'requestsManagement.confirmed';
+      case 'rejected':
+        return 'dashboard.statusLabels.rejected';
+      case 'returned':
+      case 'returnedforreview':
+        return 'dashboard.statusLabels.returnedForReview';
+      default:
+        return 'dashboard.statusLabels.new';
+    }
+  }
+
+  /**
+   * Get request type translation key
+   */
+  getRequestTypeText(requestType: string): string {
+    const typeLower = requestType?.toLowerCase().trim() || '';
+    switch (typeLower) {
+      case 'order':
+        return 'requestsManagement.order';
+      case 'return':
+        return 'requestsManagement.return';
+      case 'discard':
+        return 'requestsManagement.discard';
+      default:
+        return 'requestsManagement.order';
+    }
+  }
+
   openOrderDetails(order: Request): void {
     this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
   }

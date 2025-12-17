@@ -58,7 +58,7 @@
           <!-- NEQ Progress Bar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">NEQ</span>
+              <span class="text-sm font-medium text-gray-700">{{ 'warehouse.neq' | translate }}</span>
               <span class="text-sm font-bold text-gray-900">{{ warehouse.neqPercentage }}%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
@@ -72,7 +72,7 @@
           <!-- Consumed Progress Bar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">Consumed</span>
+              <span class="text-sm font-medium text-gray-700">{{ 'warehouse.consumed' | translate }}</span>
               <span class="text-sm font-bold text-gray-900">{{ warehouse.consumedPercentage }}%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
@@ -93,7 +93,7 @@
               <span class="ml-2">{{ warehouse.code }}</span>
             </div>
             <div class="text-xs text-gray-500">
-              <span class="font-medium">Capacity:</span>
+              <span class="font-medium">{{ 'warehouse.capacity' | translate }}:</span>
               <span class="ml-2">{{ warehouse.currentStock | number }} / {{ warehouse.totalCapacity | number }}</span>
             </div>
           </div>
