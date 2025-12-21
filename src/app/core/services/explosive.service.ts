@@ -190,4 +190,12 @@ export class ExplosiveService {
       })
     );
   }
+
+  // Import explosives from Excel file
+  importData(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<any>(`${this.baseUrl}/Import`, formData);
+  }
 }

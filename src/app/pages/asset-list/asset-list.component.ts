@@ -7,7 +7,7 @@ import { Observable, forkJoin, Subject, takeUntil, timer } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, Download } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, Download, Upload } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
@@ -62,6 +62,7 @@ import {
 import { AssetPropertyAccessor } from '@utils/asset-property.utils';
 import { AssetViewModalComponent } from './components/asset-view-modal/asset-view-modal.component';
 import { AssetEditModalComponent } from './components/asset-edit-modal/asset-edit-modal.component';
+import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 
 @Component({
   selector: 'app-asset-list',
@@ -81,7 +82,8 @@ import { AssetEditModalComponent } from './components/asset-edit-modal/asset-edi
     RowsPerPageComponent,
     LoadingStateComponent,
     AssetViewModalComponent,
-    AssetEditModalComponent
+    AssetEditModalComponent,
+    ImportDialogComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -100,6 +102,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   readonly ArrowDown = ArrowDown;
   readonly FilterX = FilterX;
   readonly Download = Download;
+  readonly Upload = Upload;
 
   // State
   assets: Asset[] = [];
@@ -635,6 +638,204 @@ export class AssetListComponent implements OnInit, OnDestroy {
         this.initializePropertyAccessor();
         this.cdr.markForCheck();
       });
+  }
+
+  onImportClick(): void {
+    this.openImportModal();
+  }
+
+  openImportModal(): void {
+    this.modalState.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImportModal(): void {
+    this.modalState.showImportModal = false;
+    this.cdr.markForCheck();
+  }
+
+  onImportConfirmed(file: File): void {
+    this.loading = true;
+    this.closeImportModal();
+    this.cdr.markForCheck();
+
+    // Get the appropriate service based on active tab
+    const service = this.getAssetService() as any;
+
+    service.importData(file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          if (res.succeeded) {
+            const result = res.data;
+            if (result.errors && result.errors.length > 0) {
+              let msg = `Imported ${result.successCount} items. ${result.failureCount} failed.`;
+
+              // If only 1-2 errors, show the first reason
+              if (result.failureCount <= 2 && result.errors[0]?.errorMessage) {
+                // Clean up the message a bit if it's too long
+                let reason = result.errors[0].errorMessage;
+
+                // Extract inner exception if present for cleaner message
+                if (reason.includes("(Inner:")) {
+                  const parts = reason.split("(Inner:");
+                  if (parts.length > 1) {
+                    reason = parts[1].replace(")", "").trim();
+                  }
+                }
+
+                if (reason.length > 300) reason = reason.substring(0, 300) + '...';
+                msg += ` Reason: ${reason}`;
+              }
+              else {
+                // Check for common issues in bulk
+                const hasDuplicates = result.errors.some((e: any) =>
+                  e.errorMessage?.toLowerCase().includes('duplicate') ||
+                  e.errorMessage?.toLowerCase().includes('already exists')
+                );
+                if (hasDuplicates) msg += " (Duplicates found)";
+                else msg += " Check console for details.";
+              }
+
+              this.toastService.warning(msg);
+              console.warn('Import Validation Errors:', result.errors);
+            } else {
+              this.toastService.success(`Imported ${result.successCount} items successfully.`);
+            }
+            this.loadAssets();
+          } else {
+            this.toastService.error(res.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.loading = false;
+          this.toastService.error('Import failed');
+          console.error(err);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  downloadImportTemplate(): void {
+    let headers: ExcelColumn[] = [];
+    let sampleData: any[] = [];
+
+    if (this.activeTab === 'ammunition') {
+      headers = [
+        { header: 'Name', key: 'name' },
+        { header: 'Item No', key: 'itemNo' },
+        { header: 'Part No', key: 'partNo' },
+        { header: 'Arm Number', key: 'armNumber' },
+        { header: 'Price', key: 'price' },
+        { header: 'Minimum Quantity', key: 'minimumQuantity' },
+        { header: 'Bullet Diameter', key: 'bulletDiameter' },
+        { header: 'Is Linked', key: 'isLinked' },
+        { header: 'Primer', key: 'primer' },
+        { header: 'Total Weight', key: 'totalWeight' },
+        { header: 'NSN', key: 'nsn' }
+      ];
+
+      sampleData = [
+        {
+          name: '6.5×55mm Swedish',
+          itemNo: 'AMM-111',
+          partNo: 'P-655-SWE',
+          armNumber: 'ARM-111',
+          price: 4.8,
+          minimumQuantity: 100,
+          bulletDiameter: 6.5,
+          isLinked: false,
+          primer: 'Boxer',
+          totalWeight: 25.1,
+          nsn: '1305-01-612-4419'
+        },
+        {
+          name: '7.62×51mm NATO',
+          itemNo: 'AMM-112',
+          partNo: 'P-762-NATO',
+          armNumber: 'ARM-112',
+          price: 5.2,
+          minimumQuantity: 200,
+          bulletDiameter: 7.62,
+          isLinked: true,
+          primer: 'Berdan',
+          totalWeight: 25.4,
+          nsn: '1305-01-234-5678'
+        }
+      ];
+    } else if (this.activeTab === 'weapon') {
+      headers = [
+        { header: 'Name', key: 'name' },
+        { header: 'Item No', key: 'itemNo' },
+        { header: 'Part No', key: 'partNo' },
+        { header: 'Price', key: 'price' },
+        { header: 'Minimum Quantity', key: 'minimumQuantity' },
+        { header: 'NSN', key: 'nsn' },
+        { header: 'Weapon Type', key: 'weaponType' },
+        { header: 'Caliber', key: 'caliber' },
+        { header: 'Action Type', key: 'actionType' },
+        { header: 'Barrel Length', key: 'barrelLength' },
+        { header: 'Overall Length', key: 'overallLength' },
+        { header: 'Weight', key: 'weight' },
+        { header: 'Capacity', key: 'capacity' }
+      ];
+
+      sampleData = [
+        {
+          name: 'M4 Carbine',
+          itemNo: 'WPN-001',
+          partNo: 'M4-5.56',
+          price: 850.00,
+          minimumQuantity: 10,
+          nsn: '1005-01-231-0973',
+          weaponType: 'Rifle',
+          caliber: '5.56×45mm NATO',
+          actionType: 'SemiAutomatic',
+          barrelLength: 14.5,
+          overallLength: 33,
+          weight: 6.9,
+          capacity: 30
+        }
+      ];
+    } else if (this.activeTab === 'explosive') {
+      headers = [
+        { header: 'Name', key: 'name' },
+        { header: 'Item No', key: 'itemNo' },
+        { header: 'Part No', key: 'partNo' },
+        { header: 'Price', key: 'price' },
+        { header: 'Minimum Quantity', key: 'minimumQuantity' },
+        { header: 'NSN', key: 'nsn' },
+        { header: 'Explosive Type', key: 'explosiveType' },
+        { header: 'UN Number', key: 'unNumber' },
+        { header: 'Net Explosive Quantity', key: 'netExplosiveQuantity' },
+        { header: 'Total Weight', key: 'totalWeight' }
+      ];
+
+      sampleData = [
+        {
+          name: 'C-4 Plastic Explosive',
+          itemNo: 'EXP-001',
+          partNo: 'C4-1.25',
+          price: 125.00,
+          minimumQuantity: 5,
+          nsn: '1375-00-122-2956',
+          explosiveType: 'PlasticExplosive',
+          unNumber: 'UN0056',
+          netExplosiveQuantity: 1.25,
+          totalWeight: 1.5
+        }
+      ];
+    }
+
+    this.excelExportService.exportToExcel({
+      fileName: `${this.activeTab}_import_template`,
+      columns: headers,
+      data: sampleData,
+      sheetName: 'Import Template',
+      includeTimestamp: false
+    });
   }
 
   onFilterChange(): void {
