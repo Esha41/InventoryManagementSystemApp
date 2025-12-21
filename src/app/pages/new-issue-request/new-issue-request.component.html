@@ -172,4 +172,17 @@
       </button>
     </div>
   </div>
+
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="showConfirmDialog"
+    [title]="confirmDialogTitle"
+    [message]="confirmDialogMessage"
+    [type]="confirmDialogType"
+    [confirmText]="confirmDialogConfirmText"
+    [cancelText]="confirmDialogCancelText"
+    [closeOnBackdrop]="true"
+    (confirmed)="onConfirmSubmit()"
+    (cancelled)="onCancelConfirm()"
+  ></app-confirmation-dialog>
 </div>

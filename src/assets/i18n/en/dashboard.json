@@ -31,6 +31,8 @@
     "usagePurpose": "Usage Purpose",
     "usageLocation": "Usage Location",
     "usageDate": "Usage Date",
+    "usageDateFrom": "Usage From Date",
+    "usageDateTo": "Usage To Date",
     "usageTime": "Usage Time",
     "isFromAllowance": "From Allowance",
     "numberOfOfficers": "Number of Officers",

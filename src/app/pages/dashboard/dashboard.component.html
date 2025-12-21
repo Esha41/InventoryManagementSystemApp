@@ -294,14 +294,13 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
-                    'dashboard.isFromAllowance' | translate }}</p>
-                  <p class="text-base font-medium text-[var(--color-text)]">{{
-                    getOrderAllowanceKey(order.isFromAllowance) | translate }}</p>
+                    'dashboard.usageDateFrom' | translate }}</p>
+                  <p class="text-base font-medium text-[var(--color-text)]">{{ formatOrderUsageDateFrom(order) }}</p>
                 </div>
                 <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
-                    'dashboard.usageDate' | translate }}</p>
-                  <p class="text-base font-medium text-[var(--color-text)]">{{ formatOrderUsageDateAndTime(order) }}</p>
+                    'dashboard.usageDateTo' | translate }}</p>
+                  <p class="text-base font-medium text-[var(--color-text)]">{{ formatOrderUsageDateTo(order) }}</p>
                 </div>
                 <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
@@ -332,6 +331,12 @@
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.depot' | translate }}</p>
                   <p class="text-base font-medium text-[var(--color-text)]">{{ resolveDepotName(order) }}</p>
+                </div>
+                <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
+                    'dashboard.isFromAllowance' | translate }}</p>
+                  <p class="text-base font-medium text-[var(--color-text)]">{{
+                    getOrderAllowanceKey(order.isFromAllowance) | translate }}</p>
                 </div>
               </div>
             </div>

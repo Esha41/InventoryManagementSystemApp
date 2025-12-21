@@ -156,6 +156,10 @@
     "errors": {
       "allowanceExceeded": "الكمية المطلوبة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
       "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى."
+    },
+    "confirmDialog": {
+      "title": "تأكيد الطلب",
+      "message": "هل أنت متأكد أنك تريد إرسال طلب الطلب هذا؟"
     }
   },
   "returnRequest": {
@@ -172,7 +176,7 @@
     "item": "مادة",
     "quantity": "الكمية",
     "itemNotes": "ملاحظات مادة",
-    "sendRequest": "إرسال الطلب",
+    "sendRequest": "إرسال",
     "selectDepartment": "اختر القسم",
     "selectRequester": "اختر المقدم (اختياري)",
     "selectRequestPurpose": "اختر الغرض من الطلب",
@@ -192,6 +196,10 @@
     },
     "success": {
       "created": "تم إنشاء طلب الإرجاع بنجاح"
+    },
+    "confirmDialog": {
+      "title": "تأكيد الطلب",
+      "message": "هل أنت متأكد أنك تريد إرسال طلب الإرجاع هذا؟"
     }
   },
   "discardRequest": {
@@ -207,7 +215,7 @@
     "item": "مادة",
     "quantity": "الكمية",
     "itemNotes": "ملاحظات مادة",
-    "sendRequest": "إرسال الطلب",
+    "sendRequest": "إرسال",
     "selectDepartment": "اختر القسم",
     "selectRequester": "اختر المقدم (اختياري)",
     "selectRequestPurpose": "اختر الغرض من الطلب",
@@ -229,6 +237,10 @@
     },
     "success": {
       "created": "تم إنشاء طلب الإتلاف بنجاح"
+    },
+    "confirmDialog": {
+      "title": "تأكيد الطلب",
+      "message": "هل أنت متأكد أنك تريد إرسال طلب الإتلاف هذا؟"
     }
   },
   "requestsManagement": {

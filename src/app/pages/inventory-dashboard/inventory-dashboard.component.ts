@@ -966,19 +966,93 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   /**
    * Format order usage date and time together
-   * Combines usage date range with usage time range
+   * Combines usage date range with usage time range in one line
+   * Format: "From Date (From Time) - To Date (To Time)"
    */
   formatOrderUsageDateAndTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
 
-    const dateRange = this.formatOrderDate(order);
+    const fromDate = order.usageDateFrom ? this.formatDate(order.usageDateFrom) : null;
+    const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : null;
+
+    // Format time helper
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      // Military format (HHMM - 4 digits) - already in correct format
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return timeStr;
+      }
+      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to military
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        const hours = parts[0].padStart(2, '0');
+        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+        return hours + minutes;
+      }
+      return timeStr;
+    };
+
+    const fromTime = formatTime(order.usageTimeFrom);
+    const toTime = formatTime(order.usageTimeTo);
+
+    // Build the combined string
+    let result = '';
+    
+    if (fromDate) {
+      result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
+    }
+    
+    if (toDate) {
+      const toPart = toTime ? `${toDate} (${toTime})` : toDate;
+      if (result) {
+        result = `${result} - ${toPart}`;
+      } else {
+        result = toPart;
+      }
+    }
+
+    return result || 'N/A';
+  }
+
+  /**
+   * Format usage date from with time
+   */
+  formatOrderUsageDateFrom(order: OrderDto | null): string {
+    if (!order || !order.usageDateFrom) return 'N/A';
+
+    const fromDate = this.formatDate(order.usageDateFrom);
     const timeRange = this.formatOrderUsageTime(order);
+    
+    // Extract just the "from" time (before the dash)
+    let timePart = 'N/A';
+    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
+      timePart = timeRange.split(' - ')[0];
+    } else if (timeRange !== 'N/A') {
+      timePart = timeRange;
+    }
 
-    if (dateRange === 'N/A' && timeRange === 'N/A') return 'N/A';
-    if (dateRange === 'N/A') return timeRange;
-    if (timeRange === 'N/A') return dateRange;
+    return timePart !== 'N/A' ? `${fromDate} (${timePart})` : fromDate;
+  }
 
-    return `${dateRange} (${timeRange})`;
+  /**
+   * Format usage date to with time
+   */
+  formatOrderUsageDateTo(order: OrderDto | null): string {
+    if (!order || !order.usageDateTo) return 'N/A';
+
+    const toDate = this.formatDate(order.usageDateTo);
+    const timeRange = this.formatOrderUsageTime(order);
+    
+    // Extract just the "to" time (after the dash)
+    let timePart = 'N/A';
+    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
+      timePart = timeRange.split(' - ')[1];
+    } else if (timeRange !== 'N/A' && !order.usageTimeFrom) {
+      // If there's only one time and no from time, it might be the to time
+      timePart = timeRange;
+    }
+
+    return timePart !== 'N/A' ? `${toDate} (${timePart})` : toDate;
   }
 
   // Statistics getters
