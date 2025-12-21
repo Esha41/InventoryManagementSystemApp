@@ -1,0 +1,77 @@
+<!-- Asset Type Tabs -->
+<app-card [shadow]="true" class="mb-6">
+  <div class="p-4">
+    <nav class="flex gap-2">
+      <button (click)="switchTab('ammunition')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white': currentTab === 'ammunition',
+        'bg-gray-100 text-gray-700 hover:bg-gray-200': currentTab !== 'ammunition'
+      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        {{ 'warehouseInventory.tabs.ammunition' | translate }}
+      </button>
+      <button (click)="switchTab('weapon')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white': currentTab === 'weapon',
+        'bg-gray-100 text-gray-700 hover:bg-gray-200': currentTab !== 'weapon'
+      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        {{ 'warehouseInventory.tabs.weapon' | translate }}
+      </button>
+      <button (click)="switchTab('explosive')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white': currentTab === 'explosive',
+        'bg-gray-100 text-gray-700 hover:bg-gray-200': currentTab !== 'explosive'
+      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        {{ 'warehouseInventory.tabs.explosive' | translate }}
+      </button>
+    </nav>
+  </div>
+</app-card>
+
+<!-- Actions -->
+<app-card [shadow]="true" class="mb-6">
+  <div class="p-6">
+    <div class="flex items-center gap-4 flex-wrap">
+      <button (click)="onImportClick()"
+        class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Upload" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'common.import' | translate }}</span>
+      </button>
+      <button (click)="downloadTemplate()"
+        class="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="FileText" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'adminImportExport.downloadTemplate' | translate }}</span>
+      </button>
+      <button (click)="exportToExcel()" [disabled]="loadingAssets"
+        class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'common.exportToExcel' | translate }}</span>
+      </button>
+    </div>
+    <p class="mt-4 text-sm text-gray-600">
+      {{ 'adminImportExport.assetsDescription' | translate }}
+    </p>
+  </div>
+</app-card>
+
+<!-- Loading State -->
+<app-loading-state *ngIf="loadingAssets" size="lg" [fullPage]="false" containerClass="text-center py-12">
+</app-loading-state>
+
+<!-- Assets Info -->
+<app-card *ngIf="!loadingAssets" [shadow]="true">
+  <div class="p-6">
+    <p class="text-sm text-gray-600">
+      {{ 'adminImportExport.totalItems' | translate }}: <strong>{{ filteredAssets.length }}</strong>
+    </p>
+  </div>
+</app-card>
+
+<!-- Import Dialog -->
+<app-import-dialog 
+  [isOpen]="showImportModal" 
+      [entityName]="currentTab"
+  (close)="closeImportModal()"
+  (import)="onImportConfirmed($event)" 
+  (downloadTemplate)="downloadTemplate()">
+</app-import-dialog>
+

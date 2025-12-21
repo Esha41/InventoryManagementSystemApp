@@ -136,6 +136,33 @@ export class InventoryService {
   }
 
   /**
+   * Import inventory from Excel file
+   */
+  importData(file: File, depotId: number): Observable<APIOperationResponse<any>> {
+    this.config.log('Importing inventory from Excel', { fileName: file.name, depotId });
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('depotId', depotId.toString());
+
+    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData).pipe(
+      map(response => {
+        if (response.succeeded) {
+          this.config.log('Inventory import completed', { 
+            successCount: response.data?.successCount || 0,
+            failureCount: response.data?.failureCount || 0
+          });
+        }
+        return response;
+      }),
+      catchError(err => {
+        this.config.logError('Failed to import inventory', err);
+        throw err;
+      })
+    );
+  }
+
+  /**
    * Update an existing inventory and its details
    */
   update(id: number, dto: UpdateInventoryDto): Observable<InventoryDto> {

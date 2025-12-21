@@ -103,6 +103,7 @@
     "adminRoles": "أدوار المسؤولين",
     "rolePermissions": "صلاحيات الأدوار",
     "emailSettings": "إعدادات البريد الإلكتروني",
+    "adminImportExport": "الاستيراد والتصدير",
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "نظام التسلح المتكامل",
     "supplyOrder": "طلب التوريد"

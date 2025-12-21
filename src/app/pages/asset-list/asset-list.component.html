@@ -141,20 +141,6 @@
             <span *ngIf="activeTab === 'explosive'">{{ 'assetList.explosiveItems' | translate }}</span>
             ({{ filteredAssets.length }})
           </h2>
-          <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
-            <button (click)="exportToExcel()" *ngIf="filteredAssets.length > 0"
-              class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
-              [class.flex-row-reverse]="isRTL">
-              <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
-              <span>{{ 'common.exportToExcel' | translate }}</span>
-            </button>
-            <button (click)="onImportClick()"
-              class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-              [class.flex-row-reverse]="isRTL">
-              <lucide-angular [img]="Upload" class="w-4 h-4"></lucide-angular>
-              <span>{{ 'common.import' | translate }}</span>
-            </button>
-          </div>
         </div>
 
         <!-- Loading State -->
@@ -368,8 +354,3 @@
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmDelete()"
       (cancelled)="closeDeleteModal()">
     </app-confirm-dialog>
-
-    <!-- Import Dialog -->
-    <app-import-dialog [isOpen]="modalState.showImportModal" [entityName]="activeTab" (close)="closeImportModal()"
-      (import)="onImportConfirmed($event)" (downloadTemplate)="downloadImportTemplate()">
-    </app-import-dialog>

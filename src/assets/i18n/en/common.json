@@ -103,6 +103,7 @@
     "adminRoles": "Admin Roles",
     "rolePermissions": "Role Permissions",
     "emailSettings": "Email Settings",
+    "adminImportExport": "Import & Export",
     "notifications": "Notifications",
     "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order"
