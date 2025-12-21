@@ -1,9 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { DiscardDto } from '@services/discard.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-discard-details-modal',
@@ -12,7 +14,7 @@ import { DiscardDto } from '@services/discard.service';
   templateUrl: './discard-details-modal.component.html',
   styleUrls: ['./discard-details-modal.component.css']
 })
-export class DiscardDetailsModalComponent {
+export class DiscardDetailsModalComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;
 
   @Input() discardRequest: DiscardDto | null = null;
@@ -20,8 +22,29 @@ export class DiscardDetailsModalComponent {
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;
+  private readonly destroy$ = new Subject<void>();
 
-  constructor(private readonly router: Router) { }
+  constructor(
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly cdr: ChangeDetectorRef
+  ) { }
+
+  ngOnInit(): void {
+    // Subscribe to language changes to update localized names
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.isOpen) {
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   onClose(): void {
     this.close.emit();
@@ -88,12 +111,33 @@ export class DiscardDetailsModalComponent {
 
   resolveDepartmentName(request: DiscardDto | null): string {
     if (!request) return 'N/A';
-    return request.department?.nameEn || request.department?.nameAr || 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    if (request.department) {
+      const localized = getLocalizedName(request.department, currentLang);
+      if (localized) return localized;
+    }
+    return 'N/A';
+  }
+
+  resolveRequesterName(request: DiscardDto | null): string {
+    if (!request) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    if (request.requester) {
+      const localized = getLocalizedName(request.requester, currentLang);
+      if (localized) return localized;
+      if (request.requester.userName) return request.requester.userName;
+    }
+    return 'N/A';
   }
 
   resolveRequestPurpose(request: DiscardDto | null): string {
     if (!request) return 'N/A';
-    return request.requestPurpose?.nameEn || request.requestPurpose?.nameAr || 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    if (request.requestPurpose) {
+      const localized = getLocalizedName(request.requestPurpose, currentLang);
+      if (localized) return localized;
+    }
+    return 'N/A';
   }
 
   resolveDepotName(request: DiscardDto | null): string {

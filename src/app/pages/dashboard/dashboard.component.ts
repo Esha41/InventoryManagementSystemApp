@@ -31,6 +31,7 @@ import {
 import { isDisplayableRequestStatus } from '@utils/status.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -222,6 +223,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.loadAllRequests();
+      });
+
+    // Subscribe to language changes to update localized names in modals
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Trigger change detection to update modal content when language changes
+        if (this.isOrderModalOpen && this.selectedOrderRequest) {
+          this.cdr.markForCheck();
+        }
       });
 
     // Initial load
@@ -559,9 +570,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(order.status),
         orders: [{
           orderId: getRequestTitle(order, order.orderNo),
-          requestDate: this.formatOrderDate(order),
+          requestDate: this.formatCreationDate(order),
           departmentName: this.resolveOrderDepartmentName(order),
-          requesterName: order.requesterName || 'N/A',
+          requesterName: this.resolveRequesterName(order),
           items: mapRequestItems(order.requestItems)
         }],
         permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
@@ -588,9 +599,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(ret.status),
         orders: [{
           orderId: getRequestTitle(ret),
-          requestDate: ret.creationDate ? new Date(ret.creationDate).toLocaleDateString() : 'N/A',
-          departmentName: ret.department?.nameEn || ret.department?.nameAr || 'N/A',
-          requesterName: ret.requester?.fullNameEN || ret.requester?.fullNameAR || ret.requester?.userName || 'N/A',
+          requestDate: this.formatCreationDate(ret),
+          departmentName: this.resolveReturnDepartmentName(ret),
+          requesterName: this.resolveRequesterName(ret),
           items: mapRequestItems(ret.requestItems)
         }],
         permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
@@ -617,9 +628,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         status: mapRequestStatusToCardStatus(discard.status),
         orders: [{
           orderId: getRequestTitle(discard),
-          requestDate: discard.creationDate ? new Date(discard.creationDate).toLocaleDateString() : 'N/A',
-          departmentName: discard.department?.nameEn || discard.department?.nameAr || 'N/A',
-          requesterName: discard.requester?.fullNameEN || discard.requester?.fullNameAR || discard.requester?.userName || 'N/A',
+          requestDate: this.formatCreationDate(discard),
+          departmentName: this.resolveDiscardDepartmentName(discard),
+          requesterName: this.resolveRequesterName(discard),
           items: mapRequestItems(discard.requestItems)
         }],
         permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
@@ -635,6 +646,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.orderService.getOrderById(orderRequestId)
       .pipe(
         takeUntil(this.destroy$),
+        map((order) => {
+          // Ensure nested objects are preserved for localization
+          // Backend returns OrderDto which extends BaseRequestDto with nested objects
+          // But we need to ensure they're available for the modal
+          if (order && !order.department && (order as any).Department) {
+            // Handle potential casing differences
+            order.department = (order as any).Department;
+          }
+          if (order && !order.requester && (order as any).Requester) {
+            order.requester = (order as any).Requester;
+          }
+          return order;
+        }),
         catchError((error) => {
           const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
           console.error('Failed to load order details:', errorMessage);
@@ -733,10 +757,77 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Resolve department name with fallback
+   * Format creation date for display
+   */
+  formatCreationDate(order: OrderDto | any): string {
+    const creationDate = order.creationDate;
+    if (!creationDate) return 'N/A';
+    return new Date(creationDate).toLocaleDateString();
+  }
+
+  /**
+   * Resolve department name with localization
    */
   resolveOrderDepartmentName(order: OrderDto): string {
-    return order.departmentNameEn || order.departmentNameAr || 'N/A';
+    if (!order) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    // Use nested department object if available (for proper localization)
+    if (order.department) {
+      const localized = getLocalizedName(order.department, currentLang);
+      if (localized) return localized;
+    }
+    // Fallback to flattened properties
+    if (order.departmentNameEn || order.departmentNameAr) {
+      const localized = getLocalizedName(
+        {
+          nameEn: order.departmentNameEn,
+          nameAr: order.departmentNameAr
+        },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Resolve requester name with localization
+   * Works for OrderDto, ReturnDto, and DiscardDto
+   */
+  resolveRequesterName(request: OrderDto | ReturnDto | DiscardDto | any): string {
+    if (!request) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    // Use nested requester object if available (for proper localization)
+    if (request.requester) {
+      const localized = getLocalizedName(request.requester, currentLang);
+      if (localized) return localized;
+      if (request.requester.userName) return request.requester.userName;
+    }
+    // Fallback to flattened property (for OrderDto compatibility)
+    if (request.requesterName) return request.requesterName;
+    return 'N/A';
+  }
+
+  /**
+   * Resolve return department name with localization
+   */
+  resolveReturnDepartmentName(ret: ReturnDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      ret.department,
+      currentLang
+    ) || 'N/A';
+  }
+
+  /**
+   * Resolve discard department name with localization
+   */
+  resolveDiscardDepartmentName(discard: DiscardDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      discard.department,
+      currentLang
+    ) || 'N/A';
   }
 
   /**
@@ -849,6 +940,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;
+  }
+
+  /**
+   * Format order usage date and time together
+   * Combines usage date range with usage time range
+   */
+  formatOrderUsageDateAndTime(order: OrderDto | null): string {
+    if (!order) return 'N/A';
+
+    const dateRange = this.formatOrderDate(order);
+    const timeRange = this.formatOrderUsageTime(order);
+
+    if (dateRange === 'N/A' && timeRange === 'N/A') return 'N/A';
+    if (dateRange === 'N/A') return timeRange;
+    if (timeRange === 'N/A') return dateRange;
+
+    return `${dateRange} (${timeRange})`;
   }
 }
 
