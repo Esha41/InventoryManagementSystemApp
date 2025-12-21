@@ -15,6 +15,7 @@ export class TranslationService {
   private readonly STORAGE_KEY = 'app_language';
   private readonly AVAILABLE_LANGUAGES: Language[] = ['en', 'ar'];
   private readonly DEFAULT_LANGUAGE: Language = 'en';
+  private isInitializing: boolean = true;
 
   constructor(private translate: TranslateService) {
     this.initializeLanguage();
@@ -33,8 +34,9 @@ export class TranslationService {
     this.translate.addLangs(this.AVAILABLE_LANGUAGES);
     this.translate.setDefaultLang(this.DEFAULT_LANGUAGE);
 
-    // Set the current language
-    this.setLanguage(languageToUse);
+    // Set the current language without reload during initialization
+    this.setLanguage(languageToUse, false);
+    this.isInitializing = false;
   }
 
   /**
@@ -46,17 +48,27 @@ export class TranslationService {
 
   /**
    * Set application language
+   * @param lang - Language to set
+   * @param reload - Whether to reload the page when language changes (default: true)
    */
-  setLanguage(lang: Language): void {
+  setLanguage(lang: Language, reload: boolean = true): void {
     if (!this.isValidLanguage(lang)) {
       console.warn(`Invalid language: ${lang}. Using default: ${this.DEFAULT_LANGUAGE}`);
       lang = this.DEFAULT_LANGUAGE;
     }
 
+    // Check if language is actually changing
+    const isLanguageChanging = this.currentLang !== lang;
+
     this.currentLang = lang;
     this.translate.use(lang);
     localStorage.setItem(this.STORAGE_KEY, lang);
     this.updateDirection(lang);
+
+    // Reload page if language is changing and reload is enabled (not during initialization)
+    if (isLanguageChanging && reload && !this.isInitializing) {
+      window.location.reload();
+    }
   }
 
   /**

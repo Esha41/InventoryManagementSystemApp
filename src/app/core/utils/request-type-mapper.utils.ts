@@ -140,6 +140,25 @@ export function mapToOrderDto(base: BaseRequestDto): OrderDto {
         requestPurposeNameAr: normalized.requestPurpose?.nameAr,
         requestPurposeNameEn: normalized.requestPurpose?.nameEn,
 
+        // Nested objects for localization (similar to ReturnDto and DiscardDto)
+        department: normalized.department ? {
+            id: normalized.department.id,
+            code: normalized.department.code,
+            nameAr: normalized.department.nameAr,
+            nameEn: normalized.department.nameEn,
+            isDeleted: normalized.department.isDeleted
+        } : undefined,
+        requester: normalized.requester ? {
+            id: normalized.requester.id,
+            userName: normalized.requester.userName,
+            fullNameEN: normalized.requester.fullNameEN,
+            fullNameAR: normalized.requester.fullNameAR,
+            militoryId: normalized.requester.militoryId,
+            email: normalized.requester.email,
+            rank: normalized.requester.rank,
+            department: normalized.requester.department
+        } : undefined,
+
         // Request items
         requestItems: normalized.requestItems?.map(item => ({
             id: item.id,
@@ -166,7 +185,10 @@ export function mapToOrderDto(base: BaseRequestDto): OrderDto {
         depotNameEn: normalized.depotNameEn,
         recieverId: normalized.receiverId,
         recieverName: normalized.receiverName,
-        depotId: normalized.depotId
+        depotId: normalized.depotId,
+
+        // Audit fields from BaseRequestDto
+        creationDate: normalized.creationDate
     } as OrderDto;
 }
 

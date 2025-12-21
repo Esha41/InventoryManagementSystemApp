@@ -156,6 +156,10 @@
     "errors": {
       "allowanceExceeded": "Requested quantity ({{requestedQuantity}}) exceeds available allowance. Available: {{availableQuantity}}",
       "failedToVerifyAllowance": "Failed to verify allowance. Please try again."
+    },
+    "confirmDialog": {
+      "title": "Confirm Request",
+      "message": "Are you sure you want to submit this order request?"
     }
   },
   "returnRequest": {
@@ -172,7 +176,7 @@
     "item": "Item",
     "quantity": "Quantity",
     "itemNotes": "Item Notes",
-    "sendRequest": "Send Request",
+    "sendRequest": "Submit",
     "selectDepartment": "Select Department",
     "selectRequester": "Select Requester (Optional)",
     "selectRequestPurpose": "Select Request Purpose",
@@ -194,6 +198,10 @@
     },
     "success": {
       "created": "Return request created successfully"
+    },
+    "confirmDialog": {
+      "title": "Confirm Request",
+      "message": "Are you sure you want to submit this return request?"
     }
   },
   "discardRequest": {
@@ -209,7 +217,7 @@
     "item": "Item",
     "quantity": "Quantity",
     "itemNotes": "Item Notes",
-    "sendRequest": "Send Request",
+    "sendRequest": "Submit",
     "selectDepartment": "Select Department",
     "selectRequester": "Select Requester (Optional)",
     "selectRequestPurpose": "Select Request Purpose",
@@ -233,6 +241,10 @@
     },
     "success": {
       "created": "Discard request created successfully"
+    },
+    "confirmDialog": {
+      "title": "Confirm Request",
+      "message": "Are you sure you want to submit this discard request?"
     }
   },
   "requestsManagement": {

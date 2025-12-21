@@ -30,6 +30,8 @@
     "usagePurpose": "غرض الاستخدام",
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
+    "usageDateFrom": "تاريخ الاستخدام من",
+    "usageDateTo": "تاريخ الاستخدام إلى",
     "usageTime": "وقت الاستخدام",
     "isFromAllowance": "من المقرر",
     "numberOfOfficers": "عدد الضباط",

@@ -36,6 +36,7 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
+import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 interface ExtendedFilterState extends FilterState {
   selectedWeaponType?: string;
@@ -62,7 +63,8 @@ interface ExtendedFilterOptions extends FilterOptions {
     CartridgeListComponent,
     UsageFormComponent,
     ReviewFormComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
+    ConfirmationDialogComponent
   ],
   templateUrl: './new-issue-request.component.html',
   styleUrls: ['./new-issue-request.component.css']
@@ -172,6 +174,14 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     orderNumber: null,
     orderSubmitted: false
   };
+
+  // Confirmation dialog state
+  showConfirmDialog = false;
+  confirmDialogTitle = '';
+  confirmDialogMessage = '';
+  confirmDialogType: ConfirmationType = 'success';
+  confirmDialogConfirmText = '';
+  confirmDialogCancelText = '';
 
   reviewFormData: ReviewFormData = {
     requesterName: '', // Will be populated from /Users/me API
@@ -832,6 +842,52 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       this.updateQueryParams(3);
       return;
     }
+
+    // Show confirmation dialog
+    this.translate.get([
+      'newIssueRequest.confirmDialog.title',
+      'newIssueRequest.confirmDialog.message',
+      'common.yes',
+      'common.cancel'
+    ]).subscribe((translations: any) => {
+      this.confirmDialogTitle = translations['newIssueRequest.confirmDialog.title'] || 'Confirm Request';
+      this.confirmDialogMessage = translations['newIssueRequest.confirmDialog.message'] || 'Are you sure you want to submit this order request?';
+      this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
+      this.confirmDialogCancelText = translations['common.cancel'] || 'Cancel';
+      this.confirmDialogType = 'success';
+      this.showConfirmDialog = true;
+    });
+  }
+
+  onConfirmSubmit(): void {
+    this.showConfirmDialog = false;
+    this.submitOrderRequest();
+  }
+
+  onCancelConfirm(): void {
+    this.showConfirmDialog = false;
+  }
+
+  private submitOrderRequest(): void {
+    const submissionData = {
+      selectedEntries: this.cartridgeState.selectedEntries,
+      selectedRequestPurposeId: this.requestPurposeState.selectedRequestPurposeId,
+      usePurpose: this.usageFormData.usePurpose,
+      usageDateFrom: this.usageFormData.usageDateFrom,
+      usageTimeFrom: this.usageFormData.usageTimeFrom,
+      usageDateTo: this.usageFormData.usageDateTo,
+      usageTimeTo: this.usageFormData.usageTimeTo,
+      usageLocation: this.usageFormData.usageLocation,
+      orderPriority: this.usageFormData.orderPriority,
+      numberOfOfficers: this.usageFormData.numberOfOfficers,
+      numberOfOtherRanks: this.usageFormData.numberOfOtherRanks,
+      requesterComments: this.reviewFormData.requesterComments,
+      fromReserve: this.fromReserve,
+      departmentId: this.getDepartmentIdForRequest(),
+      defaultRequestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
+      defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
+      orderType: this.reviewFormData.orderType
+    };
 
     const payload = this.orderSubmissionService.buildOrderPayload(submissionData);
     this.orderSubmissionState.submittingOrder = true;

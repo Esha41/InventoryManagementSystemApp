@@ -160,6 +160,16 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         this.loadAll();
       });
 
+    // Subscribe to language changes to update localized names in modals
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Trigger change detection to update modal content when language changes
+        if (this.isOrderModalOpen && this.selectedOrderRequest) {
+          this.cdr.markForCheck();
+        }
+      });
+
     this.loadAll();
 
     // Auto-refresh periodically
@@ -482,9 +492,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         status: cardStatus,
         orders: [{
           orderId: getRequestTitle(order, order.orderNo),
-          requestDate: this.formatOrderDate(order),
+          requestDate: this.formatCreationDate(order),
           departmentName: this.resolveOrderDepartmentName(order),
-          requesterName: order.requesterName || 'N/A',
+          requesterName: this.resolveRequesterName(order),
           items: mapRequestItems(order.requestItems),
           requestId: order.id
         }],
@@ -509,7 +519,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           orderId: getRequestTitle(ret),
           requestDate: this.formatReturnDate(ret),
           departmentName: this.resolveReturnDepartmentName(ret),
-          requesterName: ret.requester?.fullNameEN || ret.requester?.fullNameAR || ret.requester?.userName || 'N/A',
+          requesterName: this.resolveRequesterName(ret),
           items: mapRequestItems(ret.requestItems),
           requestId: ret.id
         }],
@@ -534,7 +544,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           orderId: getRequestTitle(discard),
           requestDate: this.formatDiscardDate(discard),
           departmentName: this.resolveDiscardDepartmentName(discard),
-          requesterName: discard.requester?.fullNameEN || discard.requester?.fullNameAR || discard.requester?.userName || 'N/A',
+          requesterName: this.resolveRequesterName(discard),
           items: mapRequestItems(discard.requestItems),
           requestId: discard.id
         }],
@@ -564,19 +574,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return date ? this.formatDate(date) : 'N/A';
   }
 
-  /**
-   * Resolve return department name
-   */
-  private resolveReturnDepartmentName(ret: ReturnDto): string {
-    return ret.department?.nameEn || ret.department?.nameAr || 'N/A';
-  }
-
-  /**
-   * Resolve discard department name
-   */
-  private resolveDiscardDepartmentName(discard: DiscardDto): string {
-    return discard.department?.nameEn || discard.department?.nameAr || 'N/A';
-  }
 
   // Legacy individual load methods are removed as we use parallel loading now
 
@@ -778,6 +775,15 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
 
+  /**
+   * Format creation date for display
+   */
+  formatCreationDate(order: OrderDto | any): string {
+    const creationDate = order.creationDate;
+    if (!creationDate) return 'N/A';
+    return this.formatDate(creationDate);
+  }
+
   private formatDate(source?: string | Date): string {
     let date: Date;
     if (source instanceof Date) {
@@ -794,17 +800,89 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   resolveOrderDepartmentName(order: OrderDto): string {
-    return (order as any).departmentNameEn || (order as any).departmentNameAr || 'N/A';
+    if (!order) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    // Use nested department object if available (for proper localization)
+    if (order.department) {
+      const localized = getLocalizedName(order.department, currentLang);
+      if (localized) return localized;
+    }
+    // Fallback to flattened properties
+    if (order.departmentNameEn || order.departmentNameAr) {
+      const localized = getLocalizedName(
+        {
+          nameEn: order.departmentNameEn,
+          nameAr: order.departmentNameAr
+        },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Resolve requester name with localization
+   * Works for OrderDto, ReturnDto, and DiscardDto
+   */
+  resolveRequesterName(request: OrderDto | ReturnDto | DiscardDto | any): string {
+    if (!request) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    // Use nested requester object if available (for proper localization)
+    if (request.requester) {
+      const localized = getLocalizedName(request.requester, currentLang);
+      if (localized) return localized;
+      if (request.requester.userName) return request.requester.userName;
+    }
+    // Fallback to flattened property (for OrderDto compatibility)
+    if (request.requesterName) return request.requesterName;
+    return 'N/A';
+  }
+
+  /**
+   * Resolve return department name with localization
+   */
+  resolveReturnDepartmentName(ret: ReturnDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      ret.department,
+      currentLang
+    ) || 'N/A';
+  }
+
+  /**
+   * Resolve discard department name with localization
+   */
+  resolveDiscardDepartmentName(discard: DiscardDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      discard.department,
+      currentLang
+    ) || 'N/A';
   }
 
   resolveRequestPurpose(order: OrderDto | null): string {
     if (!order) return 'N/A';
-    return (order as any).requestPurposeNameEn || (order as any).requestPurposeNameAr || 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      {
+        nameEn: order.requestPurposeNameEn,
+        nameAr: order.requestPurposeNameAr
+      },
+      currentLang
+    ) || 'N/A';
   }
 
   resolveDepotName(order: OrderDto | null): string {
     if (!order) return 'N/A';
-    return (order as any).depotNameEn || (order as any).depotNameAr || 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      {
+        nameEn: order.depotNameEn,
+        nameAr: order.depotNameAr
+      },
+      currentLang
+    ) || 'N/A';
   }
 
   /**
@@ -884,6 +962,97 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;
+  }
+
+  /**
+   * Format order usage date and time together
+   * Combines usage date range with usage time range in one line
+   * Format: "From Date (From Time) - To Date (To Time)"
+   */
+  formatOrderUsageDateAndTime(order: OrderDto | null): string {
+    if (!order) return 'N/A';
+
+    const fromDate = order.usageDateFrom ? this.formatDate(order.usageDateFrom) : null;
+    const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : null;
+
+    // Format time helper
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      // Military format (HHMM - 4 digits) - already in correct format
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return timeStr;
+      }
+      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to military
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        const hours = parts[0].padStart(2, '0');
+        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+        return hours + minutes;
+      }
+      return timeStr;
+    };
+
+    const fromTime = formatTime(order.usageTimeFrom);
+    const toTime = formatTime(order.usageTimeTo);
+
+    // Build the combined string
+    let result = '';
+    
+    if (fromDate) {
+      result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
+    }
+    
+    if (toDate) {
+      const toPart = toTime ? `${toDate} (${toTime})` : toDate;
+      if (result) {
+        result = `${result} - ${toPart}`;
+      } else {
+        result = toPart;
+      }
+    }
+
+    return result || 'N/A';
+  }
+
+  /**
+   * Format usage date from with time
+   */
+  formatOrderUsageDateFrom(order: OrderDto | null): string {
+    if (!order || !order.usageDateFrom) return 'N/A';
+
+    const fromDate = this.formatDate(order.usageDateFrom);
+    const timeRange = this.formatOrderUsageTime(order);
+    
+    // Extract just the "from" time (before the dash)
+    let timePart = 'N/A';
+    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
+      timePart = timeRange.split(' - ')[0];
+    } else if (timeRange !== 'N/A') {
+      timePart = timeRange;
+    }
+
+    return timePart !== 'N/A' ? `${fromDate} (${timePart})` : fromDate;
+  }
+
+  /**
+   * Format usage date to with time
+   */
+  formatOrderUsageDateTo(order: OrderDto | null): string {
+    if (!order || !order.usageDateTo) return 'N/A';
+
+    const toDate = this.formatDate(order.usageDateTo);
+    const timeRange = this.formatOrderUsageTime(order);
+    
+    // Extract just the "to" time (after the dash)
+    let timePart = 'N/A';
+    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
+      timePart = timeRange.split(' - ')[1];
+    } else if (timeRange !== 'N/A' && !order.usageTimeFrom) {
+      // If there's only one time and no from time, it might be the to time
+      timePart = timeRange;
+    }
+
+    return timePart !== 'N/A' ? `${toDate} (${timePart})` : toDate;
   }
 
   // Statistics getters

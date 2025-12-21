@@ -25,6 +25,7 @@ import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -47,7 +48,8 @@ interface RequestPurpose {
     TranslateModule,
     ButtonComponent,
     LucideAngularModule,
-    DropdownComponent
+    DropdownComponent,
+    ConfirmationDialogComponent
   ],
   templateUrl: './return-request.component.html',
   styleUrls: ['./return-request.component.css']
@@ -97,6 +99,14 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   itemDropdownOpen: boolean[] = [];
 
   @ViewChildren('itemDropdown') itemDropdownRefs?: QueryList<ElementRef<HTMLElement>>;
+
+  // Confirmation dialog state
+  showConfirmDialog = false;
+  confirmDialogTitle = '';
+  confirmDialogMessage = '';
+  confirmDialogType: ConfirmationType = 'success';
+  confirmDialogConfirmText = '';
+  confirmDialogCancelText = '';
 
   private destroy$ = new Subject<void>();
   currentUserDetails: BackendUserDto | null = null;
@@ -478,6 +488,32 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Show confirmation dialog
+    this.translate.get([
+      'returnRequest.confirmDialog.title',
+      'returnRequest.confirmDialog.message',
+      'common.yes',
+      'common.cancel'
+    ]).subscribe((translations: any) => {
+      this.confirmDialogTitle = translations['returnRequest.confirmDialog.title'] || 'Confirm Request';
+      this.confirmDialogMessage = translations['returnRequest.confirmDialog.message'] || 'Are you sure you want to submit this return request?';
+      this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
+      this.confirmDialogCancelText = translations['common.cancel'] || 'Cancel';
+      this.confirmDialogType = 'success';
+      this.showConfirmDialog = true;
+    });
+  }
+
+  onConfirmSubmit(): void {
+    this.showConfirmDialog = false;
+    this.submitReturnRequest();
+  }
+
+  onCancelConfirm(): void {
+    this.showConfirmDialog = false;
+  }
+
+  private submitReturnRequest(): void {
     const createReturnDto: CreateReturnDto = {
       reason: this.reason || undefined,
       priority: Number(this.priority),

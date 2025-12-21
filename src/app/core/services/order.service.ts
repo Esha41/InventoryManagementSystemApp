@@ -83,6 +83,25 @@ export interface OrderDto {
   requestPurposeNameAr?: string;
   requestPurposeNameEn?: string;
   requestItems?: OrderRequestItemDto[];
+  creationDate?: string | Date;
+  // Nested objects for localization (similar to ReturnDto and DiscardDto)
+  department?: {
+    id: number;
+    code: string;
+    nameAr: string;
+    nameEn: string;
+    isDeleted: boolean;
+  };
+  requester?: {
+    id: string;
+    userName: string;
+    fullNameEN: string;
+    fullNameAR: string;
+    militoryId?: string | null;
+    email?: string;
+    rank?: any;
+    department?: any;
+  };
 }
 
 export interface OrderStatusSummaryItem {
