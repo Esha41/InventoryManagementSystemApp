@@ -27,6 +27,7 @@
     "retry": "Retry",
     "refresh": "Refresh",
     "view": "View",
+    "preview": "Preview",
     "showing": "Showing",
     "of": "of",
     "page": "Page",
@@ -39,6 +40,7 @@
     "requestType": "Request Type",
     "priority": "Priority",
     "status": "Status",
+    "errors": "Errors",
     "requestDate": "Request Date",
     "department": "Department",
     "requestPurpose": "Request Purpose",
@@ -73,6 +75,16 @@
     "description": "Upload an Excel file to import {{entityName}} data. Please ensure your file follows the required format.",
     "clickToUpload": "Click to upload or drag and drop",
     "xlsxOnly": "XLSX files only"
+  },
+  "import": {
+    "previewTitle": "Import Preview",
+    "totalRows": "Total Rows",
+    "validRows": "Valid Rows",
+    "invalidRows": "Invalid Rows",
+    "previewInfo": "Double-click any cell to edit. Only valid rows will be imported.",
+    "confirmImport": "Confirm Import",
+    "noDataToPreview": "No data available to preview",
+    "invalidRowsWarning": "{{count}} invalid rows will be skipped"
   },
   "nav": {
     "dashboard": "Dashboard",

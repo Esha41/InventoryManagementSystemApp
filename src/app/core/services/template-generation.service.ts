@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
 import { ExcelExportService, ExcelColumn } from './excel-export.service';
+import { InventoryService } from './inventory.service';
+import { saveAs } from 'file-saver';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TemplateGenerationService {
-  constructor(private excelExportService: ExcelExportService) {}
+  constructor(
+    private excelExportService: ExcelExportService,
+    private inventoryService: InventoryService,
+    private toastService: ToastService
+  ) { }
 
   /**
    * Generate asset import template based on type
@@ -13,7 +22,7 @@ export class TemplateGenerationService {
   generateAssetTemplate(type: 'ammunition' | 'weapon' | 'explosive'): void {
     let headers: ExcelColumn[] = [];
     let sampleData: any[] = [];
-    
+
     if (type === 'ammunition') {
       headers = [
         { header: 'Name', key: 'name' },
@@ -84,7 +93,7 @@ export class TemplateGenerationService {
         nsn: '1375-12-345-6789'
       }];
     }
-    
+
     this.excelExportService.exportToExcel({
       fileName: `${type}_import_template`,
       columns: headers,
@@ -95,48 +104,30 @@ export class TemplateGenerationService {
   }
 
   /**
-   * Generate warehouse inventory import template
+   * Generate warehouse inventory import template with data validation
+   * Downloads template from backend which includes Excel dropdown validation for lookups
    */
   generateWarehouseInventoryTemplate(depotId: number): void {
-    const headers: ExcelColumn[] = [
-      { header: 'Item No', key: 'itemNo', width: 20 },
-      { header: 'Lot', key: 'lot', width: 10 },
-      { header: 'Supplier ID', key: 'supplierId', width: 15 },
-      { header: 'Manufacturer ID', key: 'manufacturerId', width: 15 },
-      { header: 'Country ID', key: 'countryId', width: 15 },
-      { header: 'Original Quantity', key: 'originalQuantity', width: 18 },
-      { header: 'Batch No', key: 'batchNo', width: 15 },
-      { header: 'Expiry Date', key: 'expiryDate', width: 15 },
-      { header: 'Ready For Issue', key: 'readyForIssue', width: 15 },
-      { header: 'Invoice Number', key: 'invoiceNumber', width: 20 },
-      { header: 'Invoice Date', key: 'invoiceDate', width: 15 },
-      { header: 'Received Date', key: 'receivedDate', width: 15 },
-      { header: 'Notes', key: 'notes', width: 30 }
-    ];
+    if (!depotId || depotId <= 0) {
+      this.toastService.error('Please select a valid depot first');
+      return;
+    }
 
-    const sampleData = [{
-      itemNo: 'AMM-001',
-      lot: 1,
-      supplierId: 1,
-      manufacturerId: 1,
-      countryId: 1,
-      originalQuantity: 100,
-      batchNo: 'BATCH001',
-      expiryDate: '2025-12-31',
-      readyForIssue: 'Yes',
-      invoiceNumber: 'INV-001',
-      invoiceDate: '2025-01-01',
-      receivedDate: '2025-01-02',
-      notes: 'Sample inventory entry'
-    }];
-
-    this.excelExportService.exportToExcel({
-      fileName: `Warehouse_Inventory_Import_Template_Depot_${depotId}`,
-      columns: headers,
-      data: sampleData,
-      sheetName: 'Import Template',
-      includeTimestamp: false
-    });
+    this.inventoryService.downloadImportTemplate(depotId)
+      .pipe(
+        catchError(error => {
+          console.error('Error downloading template:', error);
+          this.toastService.error('Failed to download template. Please try again.');
+          return of(null);
+        })
+      )
+      .subscribe(blob => {
+        if (blob) {
+          const fileName = `Warehouse_Inventory_Import_Template_Depot_${depotId}.xlsx`;
+          saveAs(blob, fileName);
+          this.toastService.success('Template downloaded successfully');
+        }
+      });
   }
 }
 

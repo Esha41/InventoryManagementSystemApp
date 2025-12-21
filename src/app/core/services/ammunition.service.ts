@@ -265,6 +265,13 @@ export class AmmunitionService {
     formData.append('file', file);
     return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData);
   }
+
+  // Preview import data without saving
+  importPreview(file: File): Observable<APIOperationResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData);
+  }
 }
 
 

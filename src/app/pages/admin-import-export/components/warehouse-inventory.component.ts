@@ -19,6 +19,7 @@ import { InventoryDetailDto } from '@models/inventory.model';
 import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
+import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -31,6 +32,7 @@ import { TranslationService } from '@services/translation.service';
     CardComponent,
     ButtonComponent,
     ImportDialogComponent,
+    ImportPreviewDialogComponent,
     DropdownComponent,
     LoadingStateComponent
   ],
@@ -44,6 +46,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
   loadingWarehouseInventory = false;
   showImportModal = false;
+  showPreviewModal = false;
+  previewData: any = null;
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -61,7 +65,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -115,10 +119,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   loadWarehouseInventory(): void {
     if (!this.selectedDepotId) return;
-    
+
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
-    
+
     this.inventoryService.getWarehouseInventoryItems(this.selectedDepotId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -139,7 +143,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   private applyFilters(): void {
     let filtered = [...this.warehouseInventoryDetails];
-    
+
     if (this.activeTab === 'ammunition') {
       filtered = filtered.filter(d => {
         const type = this.normalizeItemType(d.item?.itemType);
@@ -156,7 +160,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         return type === 3;
       });
     }
-    
+
     this.filteredWarehouseInventory = filtered;
   }
 
@@ -198,6 +202,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  // Import methods
+
   onImportConfirmed(file: File): void {
     if (!this.selectedDepotId) {
       this.toastService.warning('Please select a depot first');
@@ -214,7 +220,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.loadingWarehouseInventory = false;
-          
+
           if (response.succeeded && response.data) {
             const result = response.data;
             const successCount = result.successCount || 0;
@@ -236,7 +242,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           } else {
             this.toastService.error(response.message || 'Import failed');
           }
-          
+
           this.loadWarehouseInventory();
           this.cdr.markForCheck();
         },
@@ -247,6 +253,74 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  onImportPreview(file: File): void {
+    if (!this.selectedDepotId) {
+      this.toastService.warning('Please select a depot first');
+      return;
+    }
+
+    this.loadingWarehouseInventory = true;
+    this.closeImportModal();
+    this.cdr.markForCheck();
+
+    this.inventoryService.importPreview(file, this.selectedDepotId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.loadingWarehouseInventory = false;
+          if (res.succeeded) {
+            const result = res.data;
+            this.previewData = {
+              rows: result.successfulRecords.map((record: any, index: number) => ({
+                rowNumber: index + 1,
+                data: record,
+                isValid: true,
+                errors: []
+              })).concat(
+                result.errors.map((error: any, index: number) => ({
+                  rowNumber: result.successfulRecords.length + index + 1,
+                  data: {},
+                  isValid: false,
+                  errors: [error.errorMessage]
+                }))
+              ),
+              totalRows: result.successCount + result.failureCount,
+              validRows: result.successCount,
+              invalidRows: result.failureCount,
+              columns: result.successfulRecords.length > 0 ? Object.keys(result.successfulRecords[0]) : []
+            };
+            this.showPreviewModal = true;
+          } else {
+            this.toastService.error(res.message || 'Preview failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.loadingWarehouseInventory = false;
+          this.toastService.error('Preview failed');
+          console.error(err);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPreviewConfirmed(validRows: any[]): void {
+    this.showPreviewModal = false;
+    this.loadingWarehouseInventory = true;
+    this.cdr.markForCheck();
+
+    this.toastService.success(`${validRows.length} rows will be imported`);
+    this.loadingWarehouseInventory = false;
+    this.loadWarehouseInventory();
+    this.cdr.markForCheck();
+  }
+
+  onPreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.cdr.markForCheck();
   }
 
   downloadTemplate(): void {
@@ -262,12 +336,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Please select a depot first');
       return;
     }
-    
+
     const selectedDepot = this.depots.find(d => d.id === this.selectedDepotId);
-    const depotName = selectedDepot 
+    const depotName = selectedDepot
       ? getLocalizedName(selectedDepot, getCurrentLang(this.translateService)) || `Depot ${this.selectedDepotId}`
       : `Depot ${this.selectedDepotId}`;
-    
+
     const columns: ExcelColumn[] = [
       {
         header: this.translateService.instant('warehouseInventory.itemName'),
@@ -324,9 +398,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         format: (date) => this.importExportService.formatDate(date)
       }
     ];
-    
+
     const fileName = `${depotName}_Inventory_${this.activeTab}`;
-    
+
     this.importExportService.exportToExcel({
       fileName,
       sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
@@ -334,7 +408,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       data: this.filteredWarehouseInventory,
       includeTimestamp: true
     });
-    
+
     this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });

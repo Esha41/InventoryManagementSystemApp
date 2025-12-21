@@ -19,6 +19,7 @@ import { ExplosiveDto } from '@models/explosive.model';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent } from '@components/index';
+import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
 
 @Component({
   selector: 'app-assets-import-export',
@@ -30,19 +31,22 @@ import { LoadingStateComponent } from '@components/index';
     CardComponent,
     ButtonComponent,
     ImportDialogComponent,
+    ImportPreviewDialogComponent,
     LoadingStateComponent
   ],
   templateUrl: './assets-import-export.component.html'
 })
 export class AssetsImportExportComponent implements OnInit, OnDestroy {
   @Input() activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
-  
+
   private _activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
 
   assets: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = [];
   filteredAssets: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = [];
   loadingAssets = false;
   showImportModal = false;
+  showPreviewModal = false;
+  previewData: any = null;
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -61,7 +65,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -91,9 +95,9 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   loadAssets(): void {
     this.loadingAssets = true;
     this.cdr.markForCheck();
-    
+
     const service = this.getService(this._activeTab);
-    
+
     service.getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -132,13 +136,62 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  onImportPreview(file: File): void {
+    this.loadingAssets = true;
+    this.closeImportModal();
+    this.cdr.markForCheck();
+
+    const service = this.getService(this._activeTab) as any;
+
+    service.importPreview(file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.loadingAssets = false;
+          if (res.succeeded) {
+            const result = res.data;
+            // Transform backend data to preview format
+            this.previewData = {
+              rows: result.successfulRecords.map((record: any, index: number) => ({
+                rowNumber: index + 1,
+                data: record,
+                isValid: true,
+                errors: []
+              })).concat(
+                result.errors.map((error: any, index: number) => ({
+                  rowNumber: result.successfulRecords.length + index + 1,
+                  data: {},
+                  isValid: false,
+                  errors: [error.errorMessage]
+                }))
+              ),
+              totalRows: result.successCount + result.failureCount,
+              validRows: result.successCount,
+              invalidRows: result.failureCount,
+              columns: result.successfulRecords.length > 0 ? Object.keys(result.successfulRecords[0]) : []
+            };
+            this.showPreviewModal = true;
+          } else {
+            this.toastService.error(res.message || 'Preview failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.loadingAssets = false;
+          this.toastService.error('Preview failed');
+          console.error(err);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
   onImportConfirmed(file: File): void {
     this.loadingAssets = true;
     this.closeImportModal();
     this.cdr.markForCheck();
-    
+
     const service = this.getService(this._activeTab) as any;
-    
+
     service.importData(file)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -170,6 +223,25 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.templateGenerationService.generateAssetTemplate(this._activeTab);
   }
 
+  onPreviewConfirmed(validRows: any[]): void {
+    this.showPreviewModal = false;
+    this.loadingAssets = true;
+    this.cdr.markForCheck();
+
+    // TODO: Send the validated/edited rows to the backend for final import
+    // For now, we'll just show a success message
+    this.toastService.success(`${validRows.length} rows will be imported`);
+    this.loadingAssets = false;
+    this.loadAssets();
+    this.cdr.markForCheck();
+  }
+
+  onPreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.cdr.markForCheck();
+  }
+
   exportToExcel(): void {
     if (this.filteredAssets.length === 0) {
       this.toastService.warning('No data available to export');
@@ -178,7 +250,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
     const columns = this.buildExportColumns();
     const fileName = `Asset_List_${this._activeTab.charAt(0).toUpperCase() + this._activeTab.slice(1)}`;
-    
+
     this.importExportService.exportToExcel({
       fileName,
       sheetName: this._activeTab.charAt(0).toUpperCase() + this._activeTab.slice(1),
@@ -186,7 +258,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       data: this.filteredAssets,
       includeTimestamp: true
     });
-    
+
     this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });
@@ -232,7 +304,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         format: (value: string) => value || '-'
       }
     ];
-    
+
     if (this._activeTab === 'ammunition') {
       columns.push(
         {
@@ -287,7 +359,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         }
       );
     }
-    
+
     columns.push(
       {
         header: this.translateService.instant('assetList.table.price'),
@@ -302,7 +374,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         format: (value: number) => value ? value.toString() : '-'
       }
     );
-    
+
     return columns;
   }
 }

@@ -97,6 +97,14 @@
                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     {{ 'common.cancel' | translate }}
                 </button>
+                <button (click)="onPreview()" type="button" [disabled]="!selectedFile || !!error"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    [ngClass]="{
+                        'text-white bg-purple-600 hover:bg-purple-700': selectedFile && !error,
+                        'text-gray-400 bg-gray-200 cursor-not-allowed': !selectedFile || !!error
+                    }">
+                    {{ 'common.preview' | translate }}
+                </button>
                 <button (click)="confirmImport()" type="button" [disabled]="!selectedFile || !!error"
                     class="px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                     [ngClass]="{

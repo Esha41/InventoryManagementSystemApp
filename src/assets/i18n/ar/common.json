@@ -26,6 +26,7 @@
     "retry": "إعادة المحاولة",
     "refresh": "تحديث",
     "view": "عرض",
+    "preview": "معاينة",
     "showing": "عرض",
     "of": "من",
     "page": "صفحة",
@@ -38,6 +39,7 @@
     "requestType": "نوع الطلب",
     "priority": "الأولوية",
     "status": "الحالة",
+    "errors": "الأخطاء",
     "requestDate": "تاريخ الطلب",
     "department": "القسم",
     "requestPurpose": "الغرض من الطلب",
@@ -73,6 +75,16 @@
     "noFileChosen": "لم يتم اختيار ملف",
     "file": "ملف",
     "files": "ملفات"
+  },
+  "import": {
+    "previewTitle": "معاينة الاستيراد",
+    "totalRows": "إجمالي الصفوف",
+    "validRows": "الصفوف الصحيحة",
+    "invalidRows": "الصفوف الخاطئة",
+    "previewInfo": "انقر نقرًا مزدوجًا على أي خلية للتعديل. سيتم استيراد الصفوف الصحيحة فقط.",
+    "confirmImport": "تأكيد الاستيراد",
+    "noDataToPreview": "لا توجد بيانات للمعاينة",
+    "invalidRowsWarning": "سيتم تخطي {{count}} صفوف غير صحيحة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

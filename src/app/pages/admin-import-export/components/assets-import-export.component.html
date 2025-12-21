@@ -67,11 +67,11 @@
 </app-card>
 
 <!-- Import Dialog -->
-<app-import-dialog 
-  [isOpen]="showImportModal" 
-      [entityName]="currentTab"
-  (close)="closeImportModal()"
-  (import)="onImportConfirmed($event)" 
-  (downloadTemplate)="downloadTemplate()">
+<app-import-dialog [isOpen]="showImportModal" [entityName]="currentTab" (close)="closeImportModal()"
+  (preview)="onImportPreview($event)" (import)="onImportConfirmed($event)" (downloadTemplate)="downloadTemplate()">
 </app-import-dialog>
 
+<!-- Import Preview Dialog -->
+<app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData" [assetType]="currentTab"
+  (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+</app-import-preview-dialog>
