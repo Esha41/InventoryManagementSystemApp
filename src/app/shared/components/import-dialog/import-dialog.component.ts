@@ -17,6 +17,7 @@ export class ImportDialogComponent {
     @Input() entityName = 'Items';
     @Output() close = new EventEmitter<void>();
     @Output() import = new EventEmitter<File>();
+    @Output() preview = new EventEmitter<File>();  // New preview event
     @Output() downloadTemplate = new EventEmitter<void>();
 
     selectedFile: File | null = null;
@@ -65,6 +66,12 @@ export class ImportDialogComponent {
             return;
         }
         this.selectedFile = file;
+    }
+
+    onPreview() {
+        if (this.selectedFile) {
+            this.preview.emit(this.selectedFile);
+        }
     }
 
     confirmImport() {

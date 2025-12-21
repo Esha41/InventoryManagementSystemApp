@@ -1,0 +1,111 @@
+<div class="modal-overlay" (click)="onCancel()">
+    <div class="modal-container" (click)="$event.stopPropagation()" [class.rtl]="isRTL">
+        <!-- Header -->
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <lucide-icon [img]="Upload" [size]="24"></lucide-icon>
+                {{ 'import.previewTitle' | translate }}
+            </h2>
+            <button class="close-button" (click)="onCancel()" [attr.aria-label]="'common.close' | translate">
+                <lucide-icon [img]="X" [size]="20"></lucide-icon>
+            </button>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="summary-stats" *ngIf="previewData">
+            <div class="stat-card stat-total">
+                <div class="stat-label">{{ 'import.totalRows' | translate }}</div>
+                <div class="stat-value">{{ previewData.totalRows }}</div>
+            </div>
+            <div class="stat-card stat-valid">
+                <lucide-icon [img]="CheckCircle" [size]="20"></lucide-icon>
+                <div class="stat-content">
+                    <div class="stat-label">{{ 'import.validRows' | translate }}</div>
+                    <div class="stat-value">{{ previewData.validRows }}</div>
+                </div>
+            </div>
+            <div class="stat-card stat-invalid">
+                <lucide-icon [img]="AlertCircle" [size]="20"></lucide-icon>
+                <div class="stat-content">
+                    <div class="stat-label">{{ 'import.invalidRows' | translate }}</div>
+                    <div class="stat-value">{{ previewData.invalidRows }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Message -->
+        <div class="info-message">
+            <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
+            <span>Review the data below. Invalid rows will be skipped during import.</span>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="table-container" *ngIf="previewData">
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th class="row-number-header">#</th>
+                        <th class="status-header">{{ 'common.status' | translate }}</th>
+                        <th *ngFor="let column of previewData.columns">{{ column }}</th>
+                        <th class="errors-header">{{ 'common.errors' | translate }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of previewData.rows; let i = index" [ngClass]="getRowClass(row)">
+                        <!-- Row Number -->
+                        <td class="row-number">{{ row.rowNumber }}</td>
+
+                        <!-- Status Icon -->
+                        <td class="status-cell">
+                            <lucide-icon *ngIf="row.isValid" [img]="CheckCircle" [size]="16" class="status-icon valid">
+                            </lucide-icon>
+                            <lucide-icon *ngIf="!row.isValid" [img]="AlertCircle" [size]="16"
+                                class="status-icon invalid">
+                            </lucide-icon>
+                        </td>
+
+                        <!-- Data Columns (Read-Only) -->
+                        <td *ngFor="let column of previewData.columns" class="data-cell">
+                            <span class="cell-value">
+                                {{ getCellValue(row, column) }}
+                            </span>
+                        </td>
+
+                        <!-- Errors Column -->
+                        <td class="errors-cell">
+                            <span *ngIf="!row.isValid" class="error-text">
+                                {{ getErrorsForRow(row) }}
+                            </span>
+                            <span *ngIf="row.isValid" class="success-text">
+                                ✓
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!previewData || previewData.rows.length === 0">
+            <lucide-icon [img]="AlertCircle" [size]="48"></lucide-icon>
+            <p>{{ 'import.noDataToPreview' | translate }}</p>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="modal-footer">
+            <div class="footer-info">
+                <span *ngIf="previewData && previewData.invalidRows > 0" class="warning-text">
+                    {{ 'import.invalidRowsWarning' | translate: { count: previewData.invalidRows } }}
+                </span>
+            </div>
+            <div class="footer-actions">
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">
+                    {{ 'common.cancel' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="onConfirm()">
+                    {{ 'import.confirmImport' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

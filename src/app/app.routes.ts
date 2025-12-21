@@ -248,6 +248,12 @@ export const routes: Routes = [
         data: { permissions: ['systemusers.page', 'systemusers.view'] }
       },
       {
+        path: 'admin-import-export',
+        loadComponent: () => import('@pages/admin-import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@pages/notifications/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],

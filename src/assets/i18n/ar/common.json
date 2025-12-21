@@ -26,6 +26,7 @@
     "retry": "إعادة المحاولة",
     "refresh": "تحديث",
     "view": "عرض",
+    "preview": "معاينة",
     "showing": "عرض",
     "of": "من",
     "page": "صفحة",
@@ -38,6 +39,7 @@
     "requestType": "نوع الطلب",
     "priority": "الأولوية",
     "status": "الحالة",
+    "errors": "الأخطاء",
     "requestDate": "تاريخ الطلب",
     "department": "القسم",
     "requestPurpose": "الغرض من الطلب",
@@ -74,6 +76,16 @@
     "file": "ملف",
     "files": "ملفات"
   },
+  "import": {
+    "previewTitle": "معاينة الاستيراد",
+    "totalRows": "إجمالي الصفوف",
+    "validRows": "الصفوف الصحيحة",
+    "invalidRows": "الصفوف الخاطئة",
+    "previewInfo": "انقر نقرًا مزدوجًا على أي خلية للتعديل. سيتم استيراد الصفوف الصحيحة فقط.",
+    "confirmImport": "تأكيد الاستيراد",
+    "noDataToPreview": "لا توجد بيانات للمعاينة",
+    "invalidRowsWarning": "سيتم تخطي {{count}} صفوف غير صحيحة"
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "inventoryDashboard": "لوحة تحكم المخزون",
@@ -103,6 +115,7 @@
     "adminRoles": "أدوار المسؤولين",
     "rolePermissions": "صلاحيات الأدوار",
     "emailSettings": "إعدادات البريد الإلكتروني",
+    "adminImportExport": "الاستيراد والتصدير",
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "نظام التسلح المتكامل",
     "supplyOrder": "طلب التوريد"
