@@ -113,7 +113,7 @@
               <div>
                 <h2 class="text-2xl font-bold mb-1.5">{{ orderSummary.orderId }}</h2>
                 <p class="text-sm text-slate-300">
-                  {{ orderSummary.usagePurpose || ('requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department }) }}
+                  {{ resolveUsagePurpose() || ('requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department }) }}
                 </p>
               </div>
               <div class="flex flex-col gap-2 sm:flex-row">
@@ -230,7 +230,7 @@
                     <span class="inline-block px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3">
                       {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
                     </span>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ orderSummary.usagePurpose }}</h3>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ resolveUsagePurpose() }}</h3>
                     <p class="text-sm text-slate-600 flex items-center gap-2">
                       <span>{{ 'requestsManagement.orderReport.labels.submitted' | translate }}:</span>
                       <span class="font-semibold">{{ orderSummary.submittedOn }}</span>

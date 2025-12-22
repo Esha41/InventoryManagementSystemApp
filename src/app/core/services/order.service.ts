@@ -102,6 +102,12 @@ export interface OrderDto {
     rank?: any;
     department?: any;
   };
+  requestPurpose?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+    requestType: number;
+  };
 }
 
 export interface OrderStatusSummaryItem {
@@ -114,7 +120,7 @@ export class OrderService {
   constructor(
     private http: HttpClient,
     private config: ConfigService
-  ) {}
+  ) { }
 
   private get baseUrl(): string {
     return `${this.config.apiUrl}/Order`;
@@ -122,10 +128,10 @@ export class OrderService {
 
   createOrder(payload: CreateOrderRequest, files?: File[]): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
-    
+
     // Always send as FormData (multipart/form-data) to match backend expectations
     const formData = new FormData();
-    
+
     // Append DTO fields matching backend CreateOrderDto structure
     if (payload.reason) formData.append('Reason', payload.reason);
     formData.append('Priority', payload.priority.toString());
@@ -147,7 +153,7 @@ export class OrderService {
     if (payload.numberOfOtherRank !== null && payload.numberOfOtherRank !== undefined) {
       formData.append('NumberOfOtherRank', payload.numberOfOtherRank.toString());
     }
-    
+
     // Append RequestItems array - ASP.NET Core expects indexed notation for arrays
     if (payload.requestItems && payload.requestItems.length > 0) {
       payload.requestItems.forEach((item, index) => {
@@ -158,14 +164,14 @@ export class OrderService {
         }
       });
     }
-    
+
     // Append files if provided
     if (files && files.length > 0) {
       files.forEach(file => {
         formData.append('files', file);
       });
     }
-    
+
     // Get auth token and set headers
     const token = localStorage.getItem('auth_token');
     const headers: { [key: string]: string } = {};
@@ -173,7 +179,7 @@ export class OrderService {
       headers['Authorization'] = `Bearer ${token}`;
     }
     // Don't set Content-Type - browser will set it with boundary for FormData
-    
+
     return this.http.post<APIOperationResponse<number>>(this.baseUrl, formData, { headers }).pipe(
       catchError(error => {
         this.config.logError('Failed to create order', error);
@@ -249,13 +255,13 @@ export class OrderService {
     const params = new HttpParams()
       .set('itemId', itemId.toString())
       .set('requestedQuantity', requestedQuantity.toString());
-    
+
     return this.http.get<any>(`${this.baseUrl}/verify-allowance`, { params }).pipe(
       map(response => {
         // Handle different response structures
         const availableQuantity = response?.availableQuantity ?? response?.data?.availableQuantity ?? 0;
         const isValid = requestedQuantity <= availableQuantity;
-        
+
         return {
           availableQuantity,
           isValid,

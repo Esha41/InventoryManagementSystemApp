@@ -834,7 +834,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!order) {
       return 'N/A';
     }
-    return order.requestPurposeNameEn || order.requestPurposeNameAr || 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+
+    // Try nested object first (current backend structure)
+    if (order.requestPurpose) {
+      return getLocalizedName(
+        {
+          nameEn: order.requestPurpose.nameEn,
+          nameAr: order.requestPurpose.nameAr
+        },
+        currentLang
+      ) || order.usagePurpose || 'N/A';
+    }
+
+    // Fallback to flattened properties (if they exist)
+    return getLocalizedName(
+      {
+        nameEn: order.requestPurposeNameEn,
+        nameAr: order.requestPurposeNameAr
+      },
+      currentLang
+    ) || order.usagePurpose || 'N/A';
   }
 
   /**

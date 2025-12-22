@@ -50,10 +50,20 @@ export function getItemTypeIcon(type: string): any {
 }
 
 /**
- * Get department name from order data
+ * Get department name from order data with proper localization
+ * @deprecated Use resolveDepartmentName method in component instead for proper localization
+ * This function doesn't have access to TranslateService to determine current language
  */
 export function getDepartmentName(orderData: OrderDto | null): string {
   if (!orderData) return 'N/A';
+
+  // Try nested department object first
+  if (orderData.department) {
+    // Return English name as default since we don't have language context here
+    return orderData.department.nameEn || orderData.department.nameAr || 'N/A';
+  }
+
+  // Fallback to flattened properties
   return orderData.departmentNameEn || orderData.departmentNameAr || 'N/A';
 }
 

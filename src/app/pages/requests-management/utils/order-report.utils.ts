@@ -12,16 +12,18 @@ import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
 import { formatDate } from '@utils/format.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Map OrderDto to OrderSummary for report display
  */
-export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | string | null): OrderSummary {
+export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | string | null, translateService?: TranslateService): OrderSummary {
   // Use requestNo/orderNo if available, otherwise fallback to #${id}
   const requestNo = order.requestNo?.trim() || '';
   const orderNo = order.orderNo?.trim() || '';
   const orderId = requestNo || orderNo || (order.id ? `#${order.id}` : 'N/A');
-  
+
   let statusValue: number;
   if (typeof order.status === 'string') {
     const orderStatusLower = order.status.toLowerCase().trim();
@@ -40,7 +42,7 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   } else {
     statusValue = order.status;
   }
-  
+
   // Override with baseRequestStatus if provided
   if (baseRequestStatus !== undefined && baseRequestStatus !== null) {
     if (typeof baseRequestStatus === 'number') {
@@ -64,10 +66,10 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
       }
     }
   }
-  
+
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
-  
+
   // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
   const formatTime = (timeStr: string | null | undefined): string => {
     if (!timeStr) return '';
@@ -84,21 +86,54 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     }
     return timeStr;
   };
-  
+
   // Format submitted date with time (for submittedOn field)
   const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : '';
   const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
-  
-  const submittedDateTime = toDate 
+
+  const submittedDateTime = toDate
     ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
     : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
-  
+
   // Format usage date without time (for lastUpdated/usageDate field)
-  const usageDateOnly = fromDate 
+  const usageDateOnly = fromDate
     ? (toDate ? `${fromDate} - ${toDate}` : fromDate)
     : '';
+
+  // Get localized department name
+  const currentLang = translateService ? getCurrentLang(translateService) : 'en';
+  let departmentName = 'N/A';
+  if (order.department) {
+    departmentName = getLocalizedName(order.department, currentLang) || 'N/A';
+  } else if (order.departmentNameEn || order.departmentNameAr) {
+    departmentName = getLocalizedName(
+      { nameEn: order.departmentNameEn, nameAr: order.departmentNameAr },
+      currentLang
+    ) || 'N/A';
+  }
+
+  // Get requester name
+  let requesterName = 'N/A';
+  if (order.requester) {
+    requesterName = getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A';
+  } else if (order.requesterName) {
+    requesterName = order.requesterName;
+  }
+
+  // Get localized request purpose
+  let usagePurpose = 'N/A';
+  if (order.requestPurpose) {
+    usagePurpose = getLocalizedName(order.requestPurpose, currentLang) || 'N/A';
+  } else if (order.requestPurposeNameEn || order.requestPurposeNameAr) {
+    usagePurpose = getLocalizedName(
+      { nameEn: order.requestPurposeNameEn, nameAr: order.requestPurposeNameAr },
+      currentLang
+    ) || order.usagePurpose || 'N/A';
+  } else if (order.usagePurpose) {
+    usagePurpose = order.usagePurpose;
+  }
 
   return {
     orderId: orderId,
@@ -106,9 +141,11 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     priority: mapOrderPriorityToString(order.priority),
     submittedOn: submittedDateTime,
     requestDate: '', // Will be set from BaseRequestDto
-    department: order.departmentNameEn || order.departmentNameAr || 'N/A',
-    requester: order.requesterName || 'N/A',
-    usagePurpose: order.usagePurpose || 'N/A',
+    department: departmentName,
+    requester: requesterName,
+    usagePurpose: usagePurpose,
+    requestPurposeNameEn: order.requestPurpose?.nameEn || order.requestPurposeNameEn,
+    requestPurposeNameAr: order.requestPurpose?.nameAr || order.requestPurposeNameAr,
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
     lastUpdated: usageDateOnly // Usage date without time
@@ -151,7 +188,7 @@ export function mapItemStatus(orderStatus: number | string): string {
   } else {
     statusNum = orderStatus;
   }
-  
+
   switch (statusNum) {
     case 1: return 'Allocated';
     case 2: return 'Rejected';
@@ -164,7 +201,7 @@ export function mapItemStatus(orderStatus: number | string): string {
  */
 export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' {
   if (!status) return 'pending';
-  
+
   const statusStr = String(status).toLowerCase();
   if (statusStr.includes('approved') || statusStr === '1' || statusStr === 'true') {
     return 'approved';
@@ -190,7 +227,7 @@ export function mapApprovalRecordsToSteps(
     const step = item.higherApprovalRoleId || `Step ${index + 1}`;
     const role = item.applicationRoleName || 'N/A';
     const approver = item.changedBy || 'N/A';
-    
+
     // Format date - handle both date-only and datetime strings
     let date = 'Pending';
     if (item.changedAt) {
@@ -198,7 +235,7 @@ export function mapApprovalRecordsToSteps(
         const dateObj = new Date(item.changedAt);
         if (!isNaN(dateObj.getTime())) {
           // Extract time if it's a datetime string
-          const timeStr = item.changedAt.includes('T') 
+          const timeStr = item.changedAt.includes('T')
             ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
             : '';
           date = formatDateTime(item.changedAt, timeStr);
@@ -207,9 +244,9 @@ export function mapApprovalRecordsToSteps(
         date = item.changedAt;
       }
     }
-    
+
     const status = mapApprovalStatus(item.oldRequestStatus);
-    
+
     return {
       step,
       role,
@@ -244,21 +281,29 @@ export function generateApprovalWorkflowFallback(
     }
     return timeStr;
   };
-  
+
   const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : 'N/A';
   const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
-  
-  const formattedDateTime = toDate 
+
+  const formattedDateTime = toDate
     ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()
     : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
+
+  // Get requester name with fallback
+  let requesterName = 'N/A';
+  if (order.requester) {
+    requesterName = order.requester.fullNameEN || order.requester.fullNameAR || order.requester.userName || 'N/A';
+  } else if (order.requesterName) {
+    requesterName = order.requesterName;
+  }
 
   const steps: OrderReportApprovalStep[] = [
     {
       step: 'Submission',
       role: 'Request Owner',
-      approver: order.requesterName || 'N/A',
+      approver: requesterName,
       status: 'approved',
       date: formattedDateTime,
       notes: 'Initial request submitted.'
@@ -340,7 +385,7 @@ export function generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail
   } else {
     orderStatusNum = order.status;
   }
-  
+
   return [
     {
       phase: 'Intake & Validation',
@@ -370,17 +415,24 @@ export function generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail
  * Generate QR code data for order
  * Includes comprehensive order information for scanning and verification
  * Format: Human-readable text that can be easily parsed
+ *
+ * @param orderSummary - Summary data for the order
+ * @param localizedUsagePurpose - Optional, already-localized usage purpose string
+ *   (if provided, this will be used instead of orderSummary.usagePurpose)
  */
-export function generateQrCodeData(orderSummary: OrderSummary): string {
+export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePurpose?: string): string {
   // Get actual status text (not translation key) for QR code
   // Status is a translation key like 'dashboard.statusLabels.new', so we extract readable text
   const statusText = orderSummary.status.includes('new') ? 'NEW' :
-                     orderSummary.status.includes('approved') ? 'APPROVED' :
-                     orderSummary.status.includes('rejected') ? 'REJECTED' :
-                     orderSummary.status.includes('underProcess') ? 'UNDER PROCESS' :
-                     orderSummary.status.includes('cancelled') ? 'CANCELLED' : 
-                     orderSummary.status.includes('Pending') ? 'PENDING' : 'NEW';
-  
+    orderSummary.status.includes('approved') ? 'APPROVED' :
+      orderSummary.status.includes('rejected') ? 'REJECTED' :
+        orderSummary.status.includes('underProcess') ? 'UNDER PROCESS' :
+          orderSummary.status.includes('cancelled') ? 'CANCELLED' :
+            orderSummary.status.includes('Pending') ? 'PENDING' : 'NEW';
+
+  // Use localized usage purpose when provided, otherwise fallback to summary field
+  const usagePurpose = localizedUsagePurpose || orderSummary.usagePurpose;
+
   // Create a human-readable format that's easy to scan and verify
   const qrLines = [
     '=== ORDER REPORT ===',
@@ -389,14 +441,14 @@ export function generateQrCodeData(orderSummary: OrderSummary): string {
     `Requester: ${orderSummary.requester}`,
     `Status: ${statusText}`,
     `Priority: ${orderSummary.priority}`,
-    `Usage Purpose: ${orderSummary.usagePurpose}`,
+    `Usage Purpose: ${usagePurpose}`,
     `Submitted: ${orderSummary.submittedOn}`,
     `Total Items: ${orderSummary.totalItems}`,
     `Total Quantity: ${orderSummary.totalQuantity}`,
     `Usage Date: ${orderSummary.lastUpdated}`,
     '==================='
   ];
-  
+
   // Also include JSON format for programmatic parsing
   const qrData = {
     type: 'order-report',
@@ -405,14 +457,14 @@ export function generateQrCodeData(orderSummary: OrderSummary): string {
     requester: orderSummary.requester,
     status: statusText,
     priority: orderSummary.priority,
-    usagePurpose: orderSummary.usagePurpose,
+    usagePurpose: usagePurpose,
     submittedOn: orderSummary.submittedOn,
     totalItems: orderSummary.totalItems,
     totalQuantity: orderSummary.totalQuantity,
     lastUpdated: orderSummary.lastUpdated,
     timestamp: new Date().toISOString()
   };
-  
+
   // Return both human-readable and JSON format
   return qrLines.join('\n') + '\n\n' + JSON.stringify(qrData);
 }
@@ -429,12 +481,12 @@ export function filterApprovalRecordsByOrderId(
     if (item.id === orderId) {
       return true;
     }
-    
+
     // Check other ID fields
     if (item.orderId === orderId || item.requestId === orderId) {
       return true;
     }
-    
+
     // Check requestNo - extract order number from request number pattern
     if (item.requestNo) {
       const orderNumMatch = item.requestNo.match(/0*(\d+)/);
@@ -442,7 +494,7 @@ export function filterApprovalRecordsByOrderId(
         return true;
       }
     }
-    
+
     return false;
   });
 }

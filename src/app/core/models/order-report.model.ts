@@ -15,6 +15,8 @@ export interface OrderSummary {
   department: string;
   requester: string;
   usagePurpose: string;
+  requestPurposeNameEn?: string;
+  requestPurposeNameAr?: string;
   totalItems: number;
   totalQuantity: number;
   lastUpdated: string;

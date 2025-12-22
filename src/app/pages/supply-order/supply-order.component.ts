@@ -271,13 +271,19 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
           if (this.orderData) {
 
-            if (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr) {
-              this.orderData.departmentNameEn = fullOrder.departmentNameEn;
-              this.orderData.departmentNameAr = fullOrder.departmentNameAr;
+            // Copy nested department object if not already present
+            if (!this.orderData.department && fullOrder.department) {
+              this.orderData.department = fullOrder.department;
             }
 
-            if (!this.orderData.requesterName) {
-              this.orderData.requesterName = fullOrder.requesterName;
+            // Copy nested requester object if not already present
+            if (!this.orderData.requester && fullOrder.requester) {
+              this.orderData.requester = fullOrder.requester;
+            }
+
+            // Copy nested requestPurpose object if not already present
+            if (!this.orderData.requestPurpose && fullOrder.requestPurpose) {
+              this.orderData.requestPurpose = fullOrder.requestPurpose;
             }
           }
         },
@@ -1138,6 +1144,84 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
 
     return '';
+  }
+
+  /**
+   * Resolve usage purpose with proper localization
+   */
+  resolveUsagePurpose(): string {
+    if (!this.orderData) {
+      return 'N/A';
+    }
+    const currentLang = getCurrentLang(this.translateService);
+
+    // Try nested object first (current backend structure)
+    if (this.orderData.requestPurpose) {
+      return getLocalizedName(
+        {
+          nameEn: this.orderData.requestPurpose.nameEn,
+          nameAr: this.orderData.requestPurpose.nameAr
+        },
+        currentLang
+      ) || this.orderData.usagePurpose || 'N/A';
+    }
+
+    // Fallback to flattened properties
+    return getLocalizedName(
+      {
+        nameEn: this.orderData.requestPurposeNameEn,
+        nameAr: this.orderData.requestPurposeNameAr
+      },
+      currentLang
+    ) || this.orderData.usagePurpose || 'N/A';
+  }
+
+  /**
+   * Resolve department name with proper localization
+   */
+  resolveDepartmentName(): string {
+    if (!this.orderData) return 'N/A';
+    const currentLang = getCurrentLang(this.translateService);
+
+    // Use nested department object if available (for proper localization)
+    if (this.orderData.department) {
+      const localized = getLocalizedName(this.orderData.department, currentLang);
+      if (localized) return localized;
+    }
+
+    // Fallback to flattened properties
+    if (this.orderData.departmentNameEn || this.orderData.departmentNameAr) {
+      const localized = getLocalizedName(
+        {
+          nameEn: this.orderData.departmentNameEn,
+          nameAr: this.orderData.departmentNameAr
+        },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+
+    return 'N/A';
+  }
+
+  /**
+   * Resolve requester name with proper localization
+   */
+  resolveRequesterName(): string {
+    if (!this.orderData) return 'N/A';
+    const currentLang = getCurrentLang(this.translateService);
+
+    // Use nested requester object if available (for proper localization)
+    if (this.orderData.requester) {
+      const localized = getLocalizedName(this.orderData.requester, currentLang);
+      if (localized) return localized;
+      if (this.orderData.requester.userName) return this.orderData.requester.userName;
+    }
+
+    // Fallback to flattened property
+    if (this.orderData.requesterName) return this.orderData.requesterName;
+
+    return 'N/A';
   }
 }
 
