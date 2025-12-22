@@ -5,6 +5,7 @@ import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
+import { CartridgeMapperService } from '@services/cartridge-mapper.service';
 import { HttpClient } from '@angular/common/http';
 import { catchError, switchMap, of } from 'rxjs';
 
@@ -28,6 +29,7 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
+    private cartridgeMapper: CartridgeMapperService,
     private http: HttpClient
   ) {}
 
@@ -38,15 +40,15 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
   }
 
   get isWeapon(): boolean {
-    return !!(this.cartridge?.weaponType || this.cartridge?.caliber || this.cartridge?.actionType);
+    return this.cartridgeMapper.isWeapon(this.cartridge);
   }
 
   get isExplosive(): boolean {
-    return !!(this.cartridge?.explosiveType || this.cartridge?.unNumber || this.cartridge?.netExplosiveQuantity !== undefined);
+    return this.cartridgeMapper.isExplosive(this.cartridge);
   }
 
   get isAmmunition(): boolean {
-    return !this.isWeapon && !this.isExplosive;
+    return this.cartridgeMapper.isAmmunition(this.cartridge);
   }
 
   ngOnDestroy(): void {

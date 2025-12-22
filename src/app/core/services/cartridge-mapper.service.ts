@@ -163,6 +163,30 @@ export class CartridgeMapperService {
     return (dtos || []).map(dto => this.mapExplosiveToCartridge(dto, currentLang));
   }
 
+  /**
+   * Check if a cartridge is a weapon
+   */
+  isWeapon(cartridge: Cartridge | null): boolean {
+    if (!cartridge) return false;
+    return !!(cartridge.weaponType || cartridge.caliber || cartridge.actionType);
+  }
+
+  /**
+   * Check if a cartridge is an explosive
+   */
+  isExplosive(cartridge: Cartridge | null): boolean {
+    if (!cartridge) return false;
+    return !!(cartridge.explosiveType || cartridge.unNumber || cartridge.netExplosiveQuantity !== undefined);
+  }
+
+  /**
+   * Check if a cartridge is ammunition
+   */
+  isAmmunition(cartridge: Cartridge | null): boolean {
+    if (!cartridge) return false;
+    return !this.isWeapon(cartridge) && !this.isExplosive(cartridge);
+  }
+
   private buildMeasurementLabel(value: any, unit: any, currentLang: string = 'en'): string | undefined {
     if (value === null || value === undefined) {
       return undefined;
