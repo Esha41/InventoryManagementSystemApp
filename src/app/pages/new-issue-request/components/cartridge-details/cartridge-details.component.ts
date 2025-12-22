@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { HttpClient } from '@angular/common/http';
 import { catchError, switchMap, of } from 'rxjs';
 
@@ -24,6 +26,8 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
 
   constructor(
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private http: HttpClient
   ) {}
 
@@ -31,6 +35,18 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
     if (changes['cartridge'] && this.cartridge?.id) {
       this.loadImage(this.cartridge.id);
     }
+  }
+
+  get isWeapon(): boolean {
+    return !!(this.cartridge?.weaponType || this.cartridge?.caliber || this.cartridge?.actionType);
+  }
+
+  get isExplosive(): boolean {
+    return !!(this.cartridge?.explosiveType || this.cartridge?.unNumber || this.cartridge?.netExplosiveQuantity !== undefined);
+  }
+
+  get isAmmunition(): boolean {
+    return !this.isWeapon && !this.isExplosive;
   }
 
   ngOnDestroy(): void {
@@ -45,7 +61,7 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
     this.blobUrls.clear();
   }
 
-  private loadImage(ammunitionId: number): void {
+  private loadImage(itemId: number): void {
     // Clean up previous image URL
     if (this.imageUrl) {
       try {
@@ -57,8 +73,18 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
     }
     this.imageUrl = null;
 
+    // Determine which service to use based on cartridge type
+    let imageUrl$;
+    if (this.isWeapon) {
+      imageUrl$ = this.weaponService.getImageUrl(itemId);
+    } else if (this.isExplosive) {
+      imageUrl$ = this.explosiveService.getImageUrl(itemId);
+    } else {
+      imageUrl$ = this.ammunitionService.getImageUrl(itemId);
+    }
+
     // Fetch image URL
-    this.ammunitionService.getImageUrl(ammunitionId).pipe(
+    imageUrl$.pipe(
       switchMap((imageUrl) => {
         if (imageUrl) {
           // Fetch image as blob with authentication

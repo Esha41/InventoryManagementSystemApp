@@ -18,7 +18,7 @@
           
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productId' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ cartridge.productId }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.productId || cartridge.itemNo }}</p>
           </div>
           
           <div>
@@ -26,20 +26,33 @@
             <p class="text-[var(--color-text)]">{{ cartridge.ncn }}</p>
           </div>
           
-          <div>
+          <!-- Ammunition specific fields -->
+          <div *ngIf="isAmmunition">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primaryPurpose' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.primaryPurpose }}</p>
           </div>
           
-          <div class="col-span-2">
+          <!-- Weapon specific fields -->
+          <div *ngIf="isWeapon">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weaponType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.weaponType }}</p>
+          </div>
+          
+          <!-- Explosive specific fields -->
+          <div *ngIf="isExplosive">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.explosiveType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.explosiveType }}</p>
+          </div>
+          
+          <div class="col-span-2" *ngIf="isAmmunition">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileColor' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.projectileColor }}</p>
           </div>
         </div>
       </div>
       
-      <!-- Caliber Specifications -->
-      <div class="space-y-4">
+      <!-- Ammunition Specifications -->
+      <div class="space-y-4" *ngIf="isAmmunition">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate }}</h4>
         
         <div class="space-y-3 text-sm">
@@ -70,8 +83,67 @@
         </div>
       </div>
       
-      <!-- Classifications -->
-      <div class="space-y-4">
+      <!-- Weapon Specifications -->
+      <div class="space-y-4" *ngIf="isWeapon">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'weapon.specifications' | translate }}</h4>
+        
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.caliber }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.actionType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.actionType }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.barrelLength' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.barrelLengthLabel }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.overallLength' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.overallLengthLabel }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weight' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.weightLabel }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.capacity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.capacity }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Explosive Specifications -->
+      <div class="space-y-4" *ngIf="isExplosive">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'explosive.specifications' | translate }}</h4>
+        
+        <div class="space-y-3 text-sm">
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.unNumber }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.netExplosiveQuantity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.netExplosiveQuantityLabel }}</p>
+          </div>
+          
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ cartridge.totalWeightLabel }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Classifications (Ammunition and Explosive) -->
+      <div class="space-y-4" *ngIf="isAmmunition || isExplosive">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}</h4>
         
         <div class="grid grid-cols-2 gap-4 text-sm">

@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, catchError, combineLatest } from 'rxjs';
 import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { CartridgeMapperService } from '@services/cartridge-mapper.service';
 import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
 import { CartridgeDetailsComponent } from '@pages/new-issue-request/components/cartridge-details/cartridge-details.component';
@@ -51,6 +53,8 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private cartridgeMapper: CartridgeMapperService,
     private toastService: ToastService,
     private translationService: TranslationService,
@@ -58,15 +62,25 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Get item ID from route params
-    this.route.params
+    // Combine params and queryParams to get all route information at once
+    combineLatest([this.route.params, this.route.queryParams])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
+      .subscribe(([params, queryParams]) => {
         const id = params['id'];
         if (id) {
           this.itemId = parseInt(id, 10);
           if (!isNaN(this.itemId) && this.itemId > 0) {
-            this.loadItemDetails();
+            // Get request ID from query params
+            const requestIdParam = queryParams['requestId'];
+            if (requestIdParam) {
+              this.requestId = parseInt(requestIdParam, 10);
+              if (isNaN(this.requestId) || this.requestId <= 0) {
+                this.requestId = null;
+              }
+            }
+            // Get item type from query params
+            const itemType = queryParams['itemType'];
+            this.loadItemDetails(itemType);
           } else {
             this.error = 'Invalid item ID';
             this.loading = false;
@@ -76,19 +90,6 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
-
-    // Get request ID from query params for navigation back
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(queryParams => {
-        const requestIdParam = queryParams['requestId'];
-        if (requestIdParam) {
-          this.requestId = parseInt(requestIdParam, 10);
-          if (isNaN(this.requestId) || this.requestId <= 0) {
-            this.requestId = null;
-          }
-        }
-      });
   }
 
   ngOnDestroy(): void {
@@ -96,16 +97,53 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadItemDetails(): void {
+  private loadItemDetails(itemType?: string): void {
     this.loading = true;
     this.error = null;
 
+    // If itemType is provided, use the specific service
+    if (itemType) {
+      this.loadItemByType(itemType);
+      return;
+    }
+
+    // Otherwise, try all three services in sequence
+    this.tryLoadItem();
+  }
+
+  private tryLoadItem(): void {
+    // Try ammunition first
     this.ammunitionService.getById<any>(this.itemId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => {
+          // If ammunition fails, try weapon
+          return this.weaponService.getById<any>(this.itemId).pipe(
+            catchError(() => {
+              // If weapon fails, try explosive
+              return this.explosiveService.getById<any>(this.itemId).pipe(
+                catchError((err) => {
+                  // All three failed
+                  throw err;
+                })
+              );
+            })
+          );
+        })
+      )
       .subscribe({
         next: (data) => {
           if (data) {
-            this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data);
+            const currentLang = this.translationService?.getCurrentLanguage() || 'en';
+            // Determine which mapper to use based on the data structure
+            if (this.isWeapon(data)) {
+              this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
+            } else if (this.isExplosive(data)) {
+              this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
+            } else {
+              // Default to ammunition mapper
+              this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
+            }
             this.loading = false;
           } else {
             this.error = 'Item not found';
@@ -121,6 +159,90 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
           });
         }
       });
+  }
+
+  private loadItemByType(itemType: string): void {
+    const normalizedType = itemType.toLowerCase();
+    
+    if (normalizedType === 'weapon' || normalizedType === '2') {
+      this.weaponService.getById<any>(this.itemId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            if (data) {
+              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
+              this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
+              this.loading = false;
+            } else {
+              this.error = 'Item not found';
+              this.loading = false;
+            }
+          },
+          error: (err) => {
+            console.error('Failed to load weapon details:', err);
+            this.error = 'Failed to load item details. Please try again.';
+            this.loading = false;
+            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
+              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
+            });
+          }
+        });
+    } else if (normalizedType === 'explosive' || normalizedType === '3') {
+      this.explosiveService.getById<any>(this.itemId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            if (data) {
+              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
+              this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
+              this.loading = false;
+            } else {
+              this.error = 'Item not found';
+              this.loading = false;
+            }
+          },
+          error: (err) => {
+            console.error('Failed to load explosive details:', err);
+            this.error = 'Failed to load item details. Please try again.';
+            this.loading = false;
+            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
+              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
+            });
+          }
+        });
+    } else {
+      // Default to ammunition
+      this.ammunitionService.getById<any>(this.itemId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            if (data) {
+              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
+              this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
+              this.loading = false;
+            } else {
+              this.error = 'Item not found';
+              this.loading = false;
+            }
+          },
+          error: (err) => {
+            console.error('Failed to load item details:', err);
+            this.error = 'Failed to load item details. Please try again.';
+            this.loading = false;
+            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
+              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
+            });
+          }
+        });
+    }
+  }
+
+  private isWeapon(data: any): boolean {
+    return data && (data.weaponType !== undefined || data.caliber !== undefined || data.actionType !== undefined);
+  }
+
+  private isExplosive(data: any): boolean {
+    return data && (data.explosiveType !== undefined || data.unNumber !== undefined || data.netExplosiveQuantity !== undefined);
   }
 
   goBack(): void {

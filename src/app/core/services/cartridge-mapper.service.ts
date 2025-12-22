@@ -68,21 +68,49 @@ export class CartridgeMapperService {
     const nameAr = dto.nameAr || dto.nameAR || null;
     const nameEn = dto.nameEn || dto.nameEN || null;
 
+    // Build barrel length label with unit
+    const barrelLengthLabel = this.buildMeasurementLabel(
+      dto.barrelLength, 
+      dto.barrelLengthUnit, 
+      currentLang
+    );
+
+    // Build overall length label with unit
+    const overallLengthLabel = this.buildMeasurementLabel(
+      dto.overallLength,
+      dto.overallLengthUnit,
+      currentLang
+    );
+
+    // Build weight label with unit
+    const weightLabel = this.buildMeasurementLabel(
+      dto.weight,
+      dto.weightUnit,
+      currentLang
+    );
+
     return {
       id: Number(dto.id),
       name: getLocalizedName(dto, currentLang) || 'Weapon',
       nameAr: nameAr || undefined,
       nameEn: nameEn || undefined,
       itemNo: dto.itemNo,
+      productId: dto.itemNo, // Set productId for weapons
       ncn: dto.nsn || undefined,
       selected: false,
       added: false,
 
       // Weapon specific - backend sends enum as string (JsonStringEnumConverter)
-      weaponType: dto.weaponType, // Pass through as-is (e.g., "Rifle", "Pistol")
+      weaponType: dto.weaponType ? getWeaponTypeName(dto.weaponType) : undefined,
       caliber: dto.caliber,
-      actionType: dto.actionType, // Pass through as-is
-      barrelLength: dto.barrelLength // Could add unit label helper here
+      actionType: dto.actionType ? getActionTypeName(dto.actionType) : undefined,
+      barrelLength: dto.barrelLength,
+      barrelLengthLabel: barrelLengthLabel,
+      overallLength: dto.overallLength,
+      overallLengthLabel: overallLengthLabel,
+      weight: dto.weight,
+      weightLabel: weightLabel,
+      capacity: dto.capacity
     };
   }
 
@@ -94,20 +122,40 @@ export class CartridgeMapperService {
     const nameAr = dto.nameAr || dto.nameAR || null;
     const nameEn = dto.nameEn || dto.nameEN || null;
 
+    // Build total weight label with unit
+    const totalWeightLabel = this.buildMeasurementLabel(
+      dto.totalWeight,
+      dto.totalWeightUnit,
+      currentLang
+    );
+
+    // Build net explosive quantity label with unit
+    const netExplosiveQuantityLabel = this.buildMeasurementLabel(
+      dto.netExplosiveQuantity,
+      dto.netExplosiveQuantityUnit,
+      currentLang
+    );
+
     return {
       id: Number(dto.id),
       name: getLocalizedName(dto, currentLang) || 'Explosive',
       nameAr: nameAr || undefined,
       nameEn: nameEn || undefined,
       itemNo: dto.itemNo,
-      ncn: dto.nsn || undefined, // nsn is used for display
+      productId: dto.itemNo, // Set productId for explosives
+      ncn: dto.nsn || undefined,
       selected: false,
       added: false,
 
       // Explosive specific - backend sends enum as string (JsonStringEnumConverter)
-      explosiveType: dto.explosiveType, // Pass through as-is (e.g., "Grenade", "Mine")
+      explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : undefined,
       unNumber: dto.unNumber,
-      netExplosiveQuantity: dto.netExplosiveQuantity
+      netExplosiveQuantity: dto.netExplosiveQuantity,
+      netExplosiveQuantityLabel: netExplosiveQuantityLabel,
+      totalWeight: dto.totalWeight,
+      totalWeightLabel: totalWeightLabel,
+      hazardDivision: getLocalizedName(dto.hazardDivision, currentLang),
+      capabilityGroup: getLocalizedName(dto.compatibility, currentLang)
     };
   }
 
