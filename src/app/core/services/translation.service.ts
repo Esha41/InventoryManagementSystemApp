@@ -49,9 +49,9 @@ export class TranslationService {
   /**
    * Set application language
    * @param lang - Language to set
-   * @param reload - Whether to reload the page when language changes (default: true)
+   * @param reload - Whether to reload the page when language changes (default: false)
    */
-  setLanguage(lang: Language, reload: boolean = true): void {
+  setLanguage(lang: Language, reload: boolean = false): void {
     if (!this.isValidLanguage(lang)) {
       console.warn(`Invalid language: ${lang}. Using default: ${this.DEFAULT_LANGUAGE}`);
       lang = this.DEFAULT_LANGUAGE;
@@ -65,10 +65,7 @@ export class TranslationService {
     localStorage.setItem(this.STORAGE_KEY, lang);
     this.updateDirection(lang);
 
-    // Reload page if language is changing and reload is enabled (not during initialization)
-    if (isLanguageChanging && reload && !this.isInitializing) {
-      window.location.reload();
-    }
+
   }
 
   /**
@@ -91,11 +88,11 @@ export class TranslationService {
    */
   private updateDirection(lang: Language): void {
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
-    
+
     // Set HTML dir and lang attributes
     document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', lang);
-    
+
     // Update body classes for additional styling
     document.body.classList.remove('rtl', 'ltr');
     document.body.classList.add(dir);

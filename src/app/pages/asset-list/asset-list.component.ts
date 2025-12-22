@@ -219,6 +219,16 @@ export class AssetListComponent implements OnInit, OnDestroy {
       this.loadAssets();
       this.loadDropdowns();
 
+      // Subscribe to language changes to reload assets with new localized names
+      this.translateService.onLangChange
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          // Reload assets to get new localized names
+          this.loadAssets();
+          // Reload dropdowns to get new localized lookup values
+          this.loadDropdowns();
+        });
+
       // Check for viewItemId query parameter to auto-open view modal
       this.route.queryParams
         .pipe(takeUntil(this.destroy$))

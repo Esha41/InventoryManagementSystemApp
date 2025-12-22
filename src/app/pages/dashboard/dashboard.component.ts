@@ -225,14 +225,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loadAllRequests();
       });
 
-    // Subscribe to language changes to update localized names in modals
+    // Subscribe to language changes to update all localized content
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Trigger change detection to update modal content when language changes
-        if (this.isOrderModalOpen && this.selectedOrderRequest) {
-          this.cdr.markForCheck();
-        }
+        this.loadAllRequests();
       });
 
     // Initial load
@@ -975,11 +972,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Build the combined string
     let result = '';
-    
+
     if (fromDate) {
       result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
     }
-    
+
     if (toDate) {
       const toPart = toTime ? `${toDate} (${toTime})` : toDate;
       if (result) {
@@ -1000,7 +997,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
     const fromTime = this.formatOrderUsageTime(order);
-    
+
     // Extract just the "from" time (before the dash)
     let timePart = 'N/A';
     if (fromTime !== 'N/A' && fromTime.includes(' - ')) {
@@ -1020,7 +1017,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     const toDate = new Date(order.usageDateTo).toLocaleDateString();
     const timeRange = this.formatOrderUsageTime(order);
-    
+
     // Extract just the "to" time (after the dash)
     let timePart = 'N/A';
     if (timeRange !== 'N/A' && timeRange.includes(' - ')) {

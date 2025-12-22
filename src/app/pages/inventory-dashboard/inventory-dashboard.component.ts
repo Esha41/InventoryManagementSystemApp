@@ -160,14 +160,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         this.loadAll();
       });
 
-    // Subscribe to language changes to update localized names in modals
+    // Subscribe to language changes to update all localized content
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Trigger change detection to update modal content when language changes
-        if (this.isOrderModalOpen && this.selectedOrderRequest) {
-          this.cdr.markForCheck();
-        }
+        this.loadAll();
       });
 
     this.loadAll();
@@ -997,11 +994,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     // Build the combined string
     let result = '';
-    
+
     if (fromDate) {
       result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
     }
-    
+
     if (toDate) {
       const toPart = toTime ? `${toDate} (${toTime})` : toDate;
       if (result) {
@@ -1022,7 +1019,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     const fromDate = this.formatDate(order.usageDateFrom);
     const timeRange = this.formatOrderUsageTime(order);
-    
+
     // Extract just the "from" time (before the dash)
     let timePart = 'N/A';
     if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
@@ -1042,7 +1039,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     const toDate = this.formatDate(order.usageDateTo);
     const timeRange = this.formatOrderUsageTime(order);
-    
+
     // Extract just the "to" time (after the dash)
     let timePart = 'N/A';
     if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
