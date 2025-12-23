@@ -9,7 +9,10 @@
       <!-- Header -->
       <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
         <div class="flex items-center justify-between">
-          <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'assetList.viewModal.title' | translate }}
+          <h3 class="text-xl font-semibold text-[var(--color-text)]">
+            <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' | translate }}</span>
+            <span *ngIf="activeTab === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} {{ 'common.details' | translate }}</span>
+            <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} {{ 'common.details' | translate }}</span>
           </h3>
           <button (click)="close()" class="p-1 rounded-lg hover:bg-white transition-colors">
             <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -31,16 +34,19 @@
               'assetList.viewModal.itemNo' | translate }}</label>
             <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.itemNo }}</p>
           </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-              'assetList.viewModal.partNo' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-              'assetList.viewModal.nsn' | translate }}</label>
-            <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn || '-' }}</p>
-          </div>
+          <!-- Part No, NSN (Not for Explosives) -->
+          <ng-container *ngIf="activeTab !== 'explosive'">
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.partNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.nsn' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn || '-' }}</p>
+            </div>
+          </ng-container>
 
           <!-- Ammunition Specific -->
           <ng-container *ngIf="activeTab === 'ammunition'">
@@ -83,6 +89,58 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
                 'assetList.viewModal.totalWeight' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getTotalWeight() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.distribution' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getDistribution() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.referenceNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.classification' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getClassification() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.type' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getType() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.table.price' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getPrice() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.table.minimumQuantity' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unit' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnit() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.linked' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getLinked() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.nature' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getNature() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.primaryPurpose' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getPrimaryPurpose() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.projectileColor' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getProjectileColor() }}</p>
+            </div>
+            <div class="col-span-2">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.notes' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ getNotes() }}</p>
             </div>
           </ng-container>
 
@@ -128,68 +186,83 @@
           <!-- Explosive Specific -->
           <ng-container *ngIf="activeTab === 'explosive'">
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                'addAsset.explosiveType' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getExplosiveTypeName() }}</p>
-            </div>
-            <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' |
                 translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumber() }}</p>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                'addAsset.netExplosiveQuantity' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getNetExplosiveQuantity() }}</p>
+                'assetList.viewModal.partNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.partNo || '-' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.distribution' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getDistribution() }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                'addAsset.totalWeight' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getTotalWeight() }}</p>
+                'assetList.viewModal.nsn' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ selectedAsset.nsn || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                'addAsset.hazardDivision' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getHazardDivision() }}</p>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.referenceNo' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getReferenceNo() }}</p>
             </div>
             <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                'addAsset.compatibility' | translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getCompatibility() }}</p>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'assetList.table.price' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getPrice() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.minimumQuantity' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.type' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getType() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.classification' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getClassification() }}</p>
+            </div>
+            <div class="col-span-2">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.notes' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ getNotes() }}</p>
             </div>
           </ng-container>
 
-          <!-- Common Fields Section - Appears after all specific fields -->
-          <div class="col-span-2 border-t border-[var(--color-border)] pt-4 mt-4">
-            <h4 class="text-sm font-semibold text-[var(--color-text)] mb-4">{{ 'assetList.viewModal.commonFields' | translate }}</h4>
-            <div class="grid grid-cols-2 gap-6">
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.batchNo' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getBatchNo() }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.table.price' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getPrice() }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.table.minimumQuantity' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.expiryDate' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getExpiryDate() }}</p>
-              </div>
-              <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
-                  'assetList.viewModal.readyForIssue' | translate }}</label>
-                <p class="mt-1 text-sm text-[var(--color-text)]">{{ getReadyForIssue() }}</p>
+          <!-- Common Fields Section - Appears after all specific fields (Only for Weapons) -->
+          <ng-container *ngIf="activeTab === 'weapon'">
+            <div class="col-span-2 border-t border-[var(--color-border)] pt-4 mt-4">
+              <h4 class="text-sm font-semibold text-[var(--color-text)] mb-4">{{ 'assetList.viewModal.commonFields' | translate }}</h4>
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.batchNo' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getBatchNo() }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.table.price' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getPrice() }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.table.minimumQuantity' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.expiryDate' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getExpiryDate() }}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                    'assetList.viewModal.readyForIssue' | translate }}</label>
+                  <p class="mt-1 text-sm text-[var(--color-text)]">{{ getReadyForIssue() }}</p>
+                </div>
               </div>
             </div>
-          </div>
+          </ng-container>
 
         </div>
       </div>

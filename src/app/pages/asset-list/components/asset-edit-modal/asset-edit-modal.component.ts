@@ -46,6 +46,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() primaryPurposes: LookupItem[] = [];
   @Input() projectileColors: LookupItem[] = [];
   @Input() projectailMaterials: LookupItem[] = [];
+  @Input() classifications: LookupItem[] = [];
+  @Input() itemTypes: LookupItem[] = [];
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
@@ -145,7 +147,11 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     } else if (this.activeTab === 'weapon') {
       dto = formData as CreateUpdateWeaponDto;
     } else {
-      dto = formData as CreateUpdateExplosiveDto;
+      // For explosives, ensure unit field is set (default to 1 = Gram)
+      dto = {
+        ...formData,
+        unit: formData.unit || 1
+      } as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

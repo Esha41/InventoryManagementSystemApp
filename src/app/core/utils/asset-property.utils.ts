@@ -13,6 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
 import { getWeaponTypeName, getActionTypeName } from './weapon.utils';
 import { getExplosiveTypeName } from './explosive.utils';
+import { ItemType } from '../models/inventory.model';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 
@@ -28,7 +29,26 @@ export function isWeapon(asset: AssetUnion): asset is WeaponDto {
 }
 
 export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
-  return asset !== null && 'explosiveType' in asset;
+  if (!asset) return false;
+  // Check itemType first if available (most reliable)
+  if ('itemType' in asset) {
+    const itemType = (asset as any).itemType;
+    if (typeof itemType === 'number') {
+      return itemType === ItemType.Explosive;
+    }
+    if (typeof itemType === 'string') {
+      return itemType === 'Explosive' || itemType === '3' || itemType.toLowerCase() === 'explosive';
+    }
+  }
+  // Fallback: check for explosive-specific properties
+  // If it has unNumber and is NOT ammunition or weapon, it's likely an explosive
+  if ('unNumber' in asset && !isAmmunition(asset) && !isWeapon(asset)) {
+    return true;
+  }
+  // Check for other explosive-specific properties
+  return ('explosiveType' in asset) || 
+         ('netExplosiveQuantity' in asset) ||
+         ('distribution' in asset && 'referenceNo' in asset && !isAmmunition(asset));
 }
 
 /**
@@ -137,7 +157,8 @@ export class AssetPropertyAccessor {
 
   // Explosive properties
   getExplosiveTypeName(asset: AssetUnion): string {
-    return isExplosive(asset) ? getExplosiveTypeName(asset.explosiveType) : '-';
+    if (!isExplosive(asset) || asset.explosiveType == null) return '-';
+    return getExplosiveTypeName(asset.explosiveType);
   }
 
   getUnNumber(asset: AssetUnion): string {
@@ -199,5 +220,128 @@ export class AssetPropertyAccessor {
   getReadyForIssue(asset: AssetUnion): string {
     if (!asset || !('readyForIssue' in asset)) return '-';
     return asset.readyForIssue ? 'Yes' : 'No';
+  }
+
+  // New fields for ammunition and explosives
+  getDistribution(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.distribution || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.distribution || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).distribution || '-';
+      }
+    }
+    return '-';
+  }
+
+  getUnNumberForAmmunition(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.unNumber || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.unNumber || '-';
+    }
+    // Additional check: if itemType is "Explosive" (case-insensitive), treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).unNumber || '-';
+      }
+    }
+    return '-';
+  }
+
+  getReferenceNo(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.referenceNo || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.referenceNo || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).referenceNo || '-';
+      }
+    }
+    return '-';
+  }
+
+  getClassification(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return this.getLookupName(asset.classification);
+    }
+    if (isExplosive(asset)) {
+      return this.getLookupName(asset.classification);
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return this.getLookupName((asset as any).classification);
+      }
+    }
+    return '-';
+  }
+
+  getType(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return this.getLookupName(asset.type);
+    }
+    if (isExplosive(asset)) {
+      return this.getLookupName(asset.type);
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return this.getLookupName((asset as any).type);
+      }
+    }
+    return '-';
+  }
+
+  getNotes(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.notes || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.notes || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).notes || '-';
+      }
+    }
+    return '-';
+  }
+
+  getUnit(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getUnitName(asset.bulletDiameterUnit) : '-';
+  }
+
+  getLinked(asset: AssetUnion): string {
+    return isAmmunition(asset) ? (asset.isLinked ? 'Yes' : 'No') : '-';
+  }
+
+  getNature(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.natureOption) : '-';
+  }
+
+  getPrimaryPurpose(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.primaryPurpos) : '-';
+  }
+
+  getProjectileColor(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.projectileColor) : '-';
   }
 }

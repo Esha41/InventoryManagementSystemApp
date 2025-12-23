@@ -80,7 +80,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
-    explosiveType: getExplosiveTypeName(dto.explosiveType),
+    explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : '-',
     unNumber: dto.unNumber,
     netExplosiveQuantity: dto.netExplosiveQuantity,
     netExplosiveQuantityUnit: dto.netExplosiveQuantityUnit,

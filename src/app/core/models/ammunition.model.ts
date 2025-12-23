@@ -32,6 +32,12 @@ export interface AmmunitionReadDto {
   propellantId?: number;
   compatibilityId?: number;
   hazardDivisionId?: number;
+  distribution?: string;
+  unNumber?: string;
+  referenceNo?: string;
+  classificationId?: number;
+  typeId?: number;
+  notes?: string;
   readyForIssue: boolean;
   expiryDate?: Date | string;
   price?: number;
@@ -53,6 +59,8 @@ export interface AmmunitionReadDto {
   propellant?: LookupDto;
   compatibility?: LookupDto;
   hazardDivision?: LookupDto;
+  classification?: LookupDto;
+  type?: LookupDto;
 }
 
 export interface AmmunitionCreateDto {
@@ -81,6 +89,12 @@ export interface AmmunitionCreateDto {
   propellantId?: number;
   compatibilityId?: number;
   hazardDivisionId?: number;
+  distribution?: string;
+  unNumber?: string;
+  referenceNo?: string;
+  classificationId?: number;
+  typeId?: number;
+  notes?: string;
   price?: number;
   minimumQuantity?: number;
 }
