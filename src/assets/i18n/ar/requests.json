@@ -9,7 +9,7 @@
     "send": "إرسال",
     "selectOrderSource": "اختر مصدر الطلب",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مخصص قسمك أو من جميع الذخائر المتاحة",
-    "fromAllowance": "من المقرر",
+    "fromAllowance": "ضمن المقرر",
     "fromAllowanceDescription": "طلب المواد من المقرر المحدد مسبقا لهذا العام",
     "fromAllAmmunition": "من جميع الذخائر",
     "fromAllAmmunitionDescription": "طلب أي مواد من المخزون الكامل للذخائر",

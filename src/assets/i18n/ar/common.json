@@ -50,6 +50,15 @@
     "usageDateFrom": "تاريخ الاستخدام (من)",
     "usageDateTo": "تاريخ الاستخدام (إلى)",
     "usagePurpose": "غرض الاستخدام",
+    "usagePurposes": {
+      "Training Order": "أمر تدريب",
+      "Operation Order": "أمر عمليات",
+      "Expired Discard": "إتلاف منتهي الصلاحية",
+      "Return After Service": "إرجاع بعد الخدمة",
+      "Duty Order": "أمر واجب",
+      "Normal Order": "أمر عادي",
+      "Field Clearance": "إخلاء الميدان"
+    },
     "requester": "مقدم الطلب",
     "reason": "السبب",
     "comments": "التعليقات",
@@ -62,7 +71,33 @@
     "import": "استيراد",
     "importData": "استيراد البيانات",
     "downloadTemplate": "تحميل النموذج",
-    "selectFile": "اختر ملف"
+    "selectFile": "اختر ملف",
+    "attachments": "المرفقات",
+    "attachmentsHintOptional": "اختر ملفاً واحداً أو أكثر للإرفاق. المرفقات اختيارية.",
+    "priorityLevels": {
+      "High": "عالية",
+      "Medium": "متوسطة",
+      "Low": "منخفضة",
+      "Critical": "حرجة"
+    },
+    "requestTypes": {
+      "Order": "طلب",
+      "Issue": "صرف",
+      "Return": "إرجاع",
+      "Discard": "إتلاف"
+    },
+    "statuses": {
+      "Pending": "قيد الانتظار",
+      "Approved": "مقبولة",
+      "Rejected": "مرفوضة",
+      "Returned": "معادة",
+      "ReturnedForReview": "معادة للمراجعة",
+      "Processing": "قيد المعالجة",
+      "Completed": "مكتملة",
+      "Delivered": "تم التسليم",
+      "Cancelled": "ملغاة",
+      "New": "جديدة"
+    }
   },
   "importDialog": {
     "description": "قم بتحميل ملف Excel لاستيراد بيانات {{entityName}}. يرجى التأكد من أن ملفك يتبع التنسيق المطلوب.",

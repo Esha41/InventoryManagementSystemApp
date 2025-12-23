@@ -45,6 +45,15 @@
     "requestDate": "Request Date",
     "department": "Department",
     "requestPurpose": "Request Purpose",
+    "usagePurposes": {
+      "Training Order": "Training Order",
+      "Operation Order": "Operation Order",
+      "Expired Discard": "Expired Discard",
+      "Return After Service": "Return After Service",
+      "Duty Order": "Duty Order",
+      "Normal Order": "Normal Order",
+      "Field Clearance": "Field Clearance"
+    },
     "usageLocation": "Usage Location",
     "numberOfOfficers": "Number of Officers",
     "numberOfOtherRanks": "Number of Other Ranks",
@@ -70,7 +79,33 @@
     "import": "Import",
     "importData": "Import Data",
     "downloadTemplate": "Download Template",
-    "selectFile": "Select file"
+    "selectFile": "Select file",
+    "attachments": "Attachments",
+    "attachmentsHintOptional": "Select one or more files to attach. Files are optional.",
+    "priorityLevels": {
+      "High": "High",
+      "Medium": "Medium",
+      "Low": "Low",
+      "Critical": "Critical"
+    },
+    "requestTypes": {
+      "Order": "Order",
+      "Issue": "Issue",
+      "Return": "Return",
+      "Discard": "Discard"
+    },
+    "statuses": {
+      "Pending": "Pending",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Returned": "Returned",
+      "ReturnedForReview": "Returned for Review",
+      "Processing": "Processing",
+      "Completed": "Completed",
+      "Delivered": "Delivered",
+      "Cancelled": "Cancelled",
+      "New": "New"
+    }
   },
   "importDialog": {
     "description": "Upload an Excel file to import {{entityName}} data. Please ensure your file follows the required format.",
