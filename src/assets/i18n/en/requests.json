@@ -459,5 +459,21 @@
       "fileDownloadFailed": "Failed to download file",
       "selectStepToReturn": "Please select a step to return to"
     }
+  },
+  "weapon": {
+    "weaponType": "Weapon Type",
+    "caliber": "Caliber",
+    "actionType": "Action Type",
+    "barrelLength": "Barrel Length",
+    "overallLength": "Overall Length",
+    "weight": "Weight",
+    "capacity": "Capacity",
+    "specifications": "Specifications"
+  },
+  "explosive": {
+    "explosiveType": "Explosive Type",
+    "unNumber": "UN Number",
+    "netExplosiveQuantity": "Net Explosive Quantity",
+    "specifications": "Specifications"
   }
 }

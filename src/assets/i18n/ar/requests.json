@@ -463,5 +463,21 @@
       "pickupDateSet": "تم تحديد موعد الاستلام بنجاح",
       "supplySubmitted": "تم تقديم التوريد بنجاح"
     }
+  },
+  "weapon": {
+    "weaponType": "نوع السلاح",
+    "caliber": "العيار",
+    "actionType": "نوع الآلية",
+    "barrelLength": "طول السبطانة",
+    "overallLength": "الطول الكلي",
+    "weight": "الوزن",
+    "capacity": "السعة",
+    "specifications": "المواصفات"
+  },
+  "explosive": {
+    "explosiveType": "نوع المتفجر",
+    "unNumber": "رقم UN",
+    "netExplosiveQuantity": "الكمية الصافية من المتفجرات",
+    "specifications": "المواصفات"
   }
 }

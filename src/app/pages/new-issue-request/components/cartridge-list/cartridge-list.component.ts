@@ -42,11 +42,19 @@ export interface Cartridge {
   caliber?: string;
   actionType?: string;
   barrelLength?: number;
+  barrelLengthLabel?: string;
+  overallLength?: number;
+  overallLengthLabel?: string;
+  weight?: number;
+  weightLabel?: string;
+  capacity?: number;
 
   // Explosive Specific
   explosiveType?: string;
   unNumber?: string;
   netExplosiveQuantity?: number;
+  netExplosiveQuantityLabel?: string;
+  totalWeightLabel?: string;
 }
 
 @Component({
