@@ -14,6 +14,15 @@
     "noRequests": "لم يتم العثور على طلبات",
     "noRequestsFound": "لم يتم العثور على طلبات",
     "noRequestsDescription": "لا توجد طلبات إمدادات تطابق معايير البحث الخاصة بك.",
+    "tabs": {
+      "Cancelled": "ملغاة",
+      "Returned": "مسترجعة",
+      "Delivered": "تم التسليم",
+      "Completed": "مكتملة",
+      "Processing": "قيد المعالجة",
+      "New": "جديدة",
+      "Pending": "قيد الانتظار"
+    },
     "detail": {
       "title": "تفاصيل طلب الإمداد",
       "loadingDetails": "جاري تحميل تفاصيل الطلب...",

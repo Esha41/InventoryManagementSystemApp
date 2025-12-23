@@ -50,7 +50,7 @@
         [class.text-gray-500]="activeTab !== tab"
         [class.hover:text-gray-700]="activeTab !== tab"
         [class.hover:border-gray-300]="activeTab !== tab">
-        {{ tab }}
+        {{ ('supplyRequestManagement.tabs.' + tab) | translate }}
       </button>
     </nav>
   </div>
@@ -88,13 +88,13 @@
               {{ request.issueNo }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-              {{ request.requestType }}
+              {{ ('common.requestTypes.' + request.requestType) | translate }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ formatNumber(request.quantity) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm" [ngClass]="getPriorityColor(request.priority)">
-              {{ request.priority }}
+              {{ ('common.priorityLevels.' + request.priority) | translate }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
               {{ request.requestDate }}
@@ -104,7 +104,7 @@
                 type="button"
                 class="inline-flex items-center px-3 py-1 border rounded-md text-xs font-medium transition-colors"
                 [ngClass]="getStatusButtonClass(request.status)">
-                {{ request.status }}
+                {{ ('common.statuses.' + request.status) | translate }}
                 <lucide-angular [img]="ChevronDown" class="ml-1 h-3 w-3"></lucide-angular>
               </button>
             </td>

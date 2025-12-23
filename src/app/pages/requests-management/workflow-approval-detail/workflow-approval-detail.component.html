@@ -37,7 +37,7 @@
           <div class="flex items-center gap-3">
             <span
               class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm shadow-sm {{ getStatusClass(requestDetail.status) }}">
-              {{ requestDetail.status }}
+              {{ ('common.statuses.' + requestDetail.status) | translate }}
             </span>
           </div>
         </div>
@@ -61,14 +61,18 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.requestType' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestType }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+                {{ ('common.requestTypes.' + requestDetail.requestType) | translate }}
+              </p>
             </div>
 
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.priority' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.priority }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+                {{ ('common.priorityLevels.' + requestDetail.priority) | translate }}
+              </p>
             </div>
 
 
@@ -153,7 +157,9 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.usagePurpose' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+                {{ ('common.usagePurposes.' + requestDetail.usagePurpose) | translate }}
+              </p>
             </div>
 
             <div *ngIf="requestDetail.requesterName" class="md:col-span-2 space-y-1">
@@ -165,7 +171,7 @@
                   <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                 </div>
                 <p class="text-sm text-[var(--color-text)] font-medium">
-                  {{ requestDetail.requesterName }}
+                  {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName, requestDetail.requesterNameAr) }}
                   <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ml-2 font-normal">
                     ({{ requestDetail.requesterUserName }})
                   </span>
@@ -329,7 +335,7 @@
                           <span
                             class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
                             [ngClass]="getApprovalStatusClass(approval.status)">
-                            {{ approval.status }}
+                            {{ ('common.statuses.' + approval.status) | translate }}
                           </span>
                           <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
                             <span *ngIf="approval.status === 'Approved'">
