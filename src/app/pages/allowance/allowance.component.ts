@@ -546,8 +546,10 @@ export class AllowanceComponent implements OnInit {
   }
 
   private mapItemsToForm(items: any[]): void {
+    const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
+    
     this.items = items.map((item: any, index: number) => {
-      const foundItem = this.allItems.find(a => a.id === item.itemId);
+      const foundItem = itemsMap.get(item.itemId);
       this.filteredItems[index] = foundItem
         ? [foundItem, ...this.allItems.filter(a => a.id !== item.itemId)]
         : [...this.allItems];
