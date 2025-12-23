@@ -336,9 +336,13 @@
               class="bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
               <div class="space-y-4">
                 <div *ngIf="order.reason" class="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-4">
-                  <p class="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2">{{ 'dashboard.reason' |
-                    translate }}</p>
-                  <p class="text-sm text-amber-900">{{ order.reason }}</p>
+                  <p class="text-xs font-semibold text-amber-800 uppercase tracking-wider mb-2">
+                    {{ 'dashboard.reason' | translate }}
+                  </p>
+                  <!-- Use i18n mapping for known usage purposes (e.g., Normal Order, Duty Order) -->
+                  <p class="text-sm text-amber-900">
+                    {{ ('common.usagePurposes.' + (order.reason || '')) | translate }}
+                  </p>
                 </div>
                 <div *ngIf="order.notes" class="bg-blue-50 border-l-4 border-blue-400 rounded-r-lg p-4">
                   <p class="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-2">{{ 'dashboard.notes' |
