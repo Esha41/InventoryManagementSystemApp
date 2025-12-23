@@ -65,4 +65,15 @@ export class AssetViewModalComponent implements OnChanges {
   getBatchNo = () => this.propertyAccessor.getBatchNo(this.selectedAsset);
   getExpiryDate = () => this.propertyAccessor.getExpiryDate(this.selectedAsset);
   getReadyForIssue = () => this.propertyAccessor.getReadyForIssue(this.selectedAsset);
+  getDistribution = () => this.propertyAccessor.getDistribution(this.selectedAsset);
+  getUnNumberForAmmunition = () => this.propertyAccessor.getUnNumberForAmmunition(this.selectedAsset);
+  getReferenceNo = () => this.propertyAccessor.getReferenceNo(this.selectedAsset);
+  getClassification = () => this.propertyAccessor.getClassification(this.selectedAsset);
+  getType = () => this.propertyAccessor.getType(this.selectedAsset);
+  getNotes = () => this.propertyAccessor.getNotes(this.selectedAsset);
+  getUnit = () => this.propertyAccessor.getUnit(this.selectedAsset);
+  getLinked = () => this.propertyAccessor.getLinked(this.selectedAsset);
+  getNature = () => this.propertyAccessor.getNature(this.selectedAsset);
+  getPrimaryPurpose = () => this.propertyAccessor.getPrimaryPurpose(this.selectedAsset);
+  getProjectileColor = () => this.propertyAccessor.getProjectileColor(this.selectedAsset);
 }

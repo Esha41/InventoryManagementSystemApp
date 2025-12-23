@@ -136,6 +136,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
   primaryPurposes: LookupItem[] = [];
   projectileColors: LookupItem[] = [];
   projectailMaterials: LookupItem[] = [];
+  classifications: LookupItem[] = [];
+  itemTypes: LookupItem[] = [];
 
   // Enum Options
   readonly weaponTypeOptions = getWeaponTypeOptions();
@@ -632,7 +634,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
       natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       colors: this.lookupService.getColors(),
-      materials: this.lookupService.getProjectailMaterials()
+      materials: this.lookupService.getProjectailMaterials(),
+      classifications: this.lookupService.getLookupItems('Classification'),
+      itemTypes: this.lookupService.getLookupItems('ItemType')
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
@@ -645,6 +649,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
         this.primaryPurposes = data.primaryPurposes;
         this.projectileColors = data.colors;
         this.projectailMaterials = data.materials;
+        this.classifications = data.classifications;
+        this.itemTypes = data.itemTypes;
         this.initializePropertyAccessor();
         this.cdr.markForCheck();
       });

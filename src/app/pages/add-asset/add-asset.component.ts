@@ -37,6 +37,12 @@ interface AssetForm {
   nsn: string;
   price: string;
   minimumQuantity: string;
+  unNumber: string;
+  distribution: string;
+  referenceNo: string;
+  classificationId: string;
+  typeId: string;
+  notes: string;
   image?: File;
 
   // Ammunition specific
@@ -67,7 +73,6 @@ interface AssetForm {
 
   // Explosive specific
   explosiveType: string;
-  unNumber: string;
   netExplosiveQuantity: string;
   netExplosiveQuantityUnitId: string;
 }
@@ -100,6 +105,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   primaryPurposes: LookupItem[] = [];
   projectileColors: LookupItem[] = [];
   projectailMaterials: LookupItem[] = [];
+  classifications: LookupItem[] = [];
+  itemTypes: LookupItem[] = [];
 
   // Enum Options
   weaponTypeOptions = getWeaponTypeOptions();
@@ -142,12 +149,23 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       itemNo: '',
       partNo: '',
       armNumber: '',
+      totalWeight: '',
+      nsn: '',
+      price: '',
+      minimumQuantity: '',
+      unNumber: '',
+      distribution: '',
+      referenceNo: '',
+      classificationId: '',
+      typeId: '',
+      notes: '',
+      image: undefined,
+
+      // Ammunition
       bulletDiameter: '',
       bulletDiameterUnitId: '',
       isLinked: 'false',
       primer: '',
-      totalWeight: '',
-      nsn: '',
       caseTypeId: '',
       propellantId: '',
       compatibilityId: '',
@@ -156,9 +174,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       primaryPurposId: '',
       projectileColorId: '',
       projectailMaterialId: '',
-      price: '',
-      minimumQuantity: '',
-      image: undefined,
 
       // Weapon
       weaponType: '',
@@ -174,7 +189,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
       // Explosive
       explosiveType: '',
-      unNumber: '',
       netExplosiveQuantity: '',
       netExplosiveQuantityUnitId: ''
     };
@@ -216,7 +230,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       projectileColors: this.lookupService.getColors(),
-      projectailMaterials: this.lookupService.getProjectailMaterials()
+      projectailMaterials: this.lookupService.getProjectailMaterials(),
+      classifications: this.lookupService.getLookupItems('Classification'),
+      itemTypes: this.lookupService.getLookupItems('ItemType')
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -230,6 +246,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.primaryPurposes = data.primaryPurposes;
           this.projectileColors = data.projectileColors;
           this.projectailMaterials = data.projectailMaterials;
+          this.classifications = data.classifications;
+          this.itemTypes = data.itemTypes;
           this.loading = false;
         },
         error: (error) => {
@@ -299,6 +317,12 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.primaryPurposId) dto.primaryPurposId = parseInt(this.assetForm.primaryPurposId);
     if (this.assetForm.projectileColorId) dto.projectileColorId = parseInt(this.assetForm.projectileColorId);
     if (this.assetForm.projectailMaterialId) dto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
+    if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
+    if (this.assetForm.unNumber?.trim()) dto.unNumber = this.assetForm.unNumber.trim();
+    if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
+    if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
+    if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
+    if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
@@ -380,21 +404,19 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     const dto: CreateUpdateExplosiveDto = {
       name: this.assetForm.name.trim(),
       itemNo: this.assetForm.itemNo.trim(),
-      explosiveType: parseInt(this.assetForm.explosiveType),
       unNumber: this.assetForm.unNumber.trim(),
-      netExplosiveQuantity: parseFloat(this.assetForm.netExplosiveQuantity),
-      totalWeight: parseFloat(this.assetForm.totalWeight) // Shared
+      unit: 1 // Default to Gram (ExplosiveUnit enum: 1 = Gram, 3 = Meter)
     };
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
-    if (this.assetForm.netExplosiveQuantityUnitId) dto.netExplosiveQuantityUnitId = parseInt(this.assetForm.netExplosiveQuantityUnitId);
-    if (this.assetForm.weightUnitId) dto.totalWeightUnitId = parseInt(this.assetForm.weightUnitId);
-
-    if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
-    if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
+    if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
+    if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
+    if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
+    if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
 
     const formData = new FormData();
     Object.keys(dto).forEach(key => {
@@ -456,10 +478,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       if (!this.assetForm.caliber) { this.errorMessage = 'Caliber is required'; return false; }
       if (!this.assetForm.actionType) { this.errorMessage = 'Action Type is required'; return false; }
     } else if (this.activeTab === 'explosive') {
-      if (!this.assetForm.explosiveType) { this.errorMessage = 'Explosive Type is required'; return false; }
       if (!this.assetForm.unNumber) { this.errorMessage = 'UN Number is required'; return false; }
-      if (!this.assetForm.netExplosiveQuantity) { this.errorMessage = 'Net Explosive Quantity is required'; return false; }
-      if (!this.assetForm.totalWeight) { this.errorMessage = 'Total Weight is required'; return false; }
     }
 
     return true;
@@ -546,7 +565,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   getInputClass(isInvalid: boolean | null | undefined, isDirty: boolean | null | undefined, isTouched: boolean | null | undefined): string {
-    const baseClasses = 'flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2';
+    const baseClasses = 'w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2';
     const showError = !!isInvalid && (!!isDirty || !!isTouched || this.formSubmitted);
 
     if (showError) {

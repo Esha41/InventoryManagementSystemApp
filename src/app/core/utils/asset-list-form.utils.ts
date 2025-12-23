@@ -33,6 +33,11 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     primaryPurposId: [null as number | null],
     projectileColorId: [null as number | null],
     projectailMaterialId: [null as number | null],
+    distribution: [''],
+    referenceNo: [''],
+    classificationId: [null as number | null],
+    typeId: [null as number | null],
+    notes: [''],
 
     // Weapon
     weaponType: [null as number | null],
