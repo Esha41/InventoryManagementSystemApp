@@ -22,7 +22,7 @@
       </div>
       <div class="px-4 py-2 rounded-lg border font-medium text-sm"
         [ngClass]="getApprovalStatusClass(requestDetail.status)">
-        {{ requestDetail.status }}
+        {{ ('common.statuses.' + requestDetail.status) | translate }}
       </div>
     </div>
 
@@ -80,14 +80,14 @@
                 'text-orange-600': requestDetail.priority === 'High',
                 'text-yellow-600': requestDetail.priority === 'Medium',
                 'text-green-600': requestDetail.priority === 'Low'
-              }">{{ requestDetail.priority }}</p>
+              }">{{ ('common.priorityLevels.' + requestDetail.priority) | translate }}</p>
               </div>
 
               <div *ngIf="orderData?.reason">
                 <label class="text-xs font-semibold text-gray-500 uppercase">
                   {{ 'supplyRequestDetail.reason' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.reason }}</p>
+                <p class="text-sm text-gray-900 mt-1 font-medium">{{ ('common.usagePurposes.' + orderData?.reason) | translate }}</p>
               </div>
 
               <div
@@ -294,7 +294,14 @@
                           <span
                             class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
                             [ngClass]="getApprovalStatusClass(approval.status)">
-                            {{ approval.status }}
+                            <ng-container [ngSwitch]="approval.status">
+                              <span *ngSwitchCase="'Approved'">{{ 'common.statuses.Approved' | translate }}</span>
+                              <span *ngSwitchCase="'Rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
+                              <span *ngSwitchCase="'Pending'">{{ 'common.statuses.Pending' | translate }}</span>
+                              <span *ngSwitchCase="'Processing'">{{ 'common.statuses.Processing' | translate }}</span>
+                              <span *ngSwitchCase="'Completed'">{{ 'common.statuses.Completed' | translate }}</span>
+                              <span *ngSwitchDefault>{{ ('common.statuses.' + approval.status) | translate }}</span>
+                            </ng-container>
                           </span>
                           <p *ngIf="approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
                             {{ approval.approvedDate }}

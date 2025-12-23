@@ -182,6 +182,17 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     return getPriorityBadgeClass(priority);
   }
 
+  /**
+   * Get localized value based on current language direction.
+   * If RTL (Arabic), prefer Arabic text, otherwise prefer English.
+   */
+  getLocalizedValue(en?: string | null, ar?: string | null): string {
+    if (this.isRTL) {
+      return (ar || en || '').toString();
+    }
+    return (en || ar || '').toString();
+  }
+
   goBack(): void {
     this.router.navigate(['/supply-request-management']);
   }
