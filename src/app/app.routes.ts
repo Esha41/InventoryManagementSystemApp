@@ -242,6 +242,12 @@ export const routes: Routes = [
         data: { permissions: ['roles.edit', 'roles.view'] }
       },
       {
+        path: 'ldap-settings',
+        loadComponent: () => import('./pages/ldap-settings/ldap-settings.component').then(m => m.LdapSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+      },
+      {
         path: 'email-settings',
         loadComponent: () => import('@pages/email-settings/email-settings.component').then(m => m.EmailSettingsComponent),
         canActivate: [permissionGuard],

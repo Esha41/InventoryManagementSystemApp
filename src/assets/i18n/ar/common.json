@@ -114,6 +114,7 @@
     "manageAdmins": "إدارة المسؤولين",
     "adminRoles": "أدوار المسؤولين",
     "rolePermissions": "صلاحيات الأدوار",
+      "ldapSettings": "إعدادات LDAP",
     "emailSettings": "إعدادات البريد الإلكتروني",
     "adminImportExport": "الاستيراد والتصدير",
     "notifications": "الإشعارات",

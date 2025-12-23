@@ -172,6 +172,11 @@ export const API_ENDPOINTS = {
     BASE: '/EmailSettings',
   },
 
+  // LDAP Settings
+  LDAP_SETTINGS: {
+    BASE: '/LdapSettings',
+  },
+
   // Email
   EMAIL: {
     BASE: '/Email',
