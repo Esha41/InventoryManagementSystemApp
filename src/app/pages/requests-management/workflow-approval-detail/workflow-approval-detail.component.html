@@ -149,11 +149,11 @@
             </div>
 
             <!-- Usage Purpose -->
-            <div *ngIf="requestDetail.usagePurpose" class="space-y-1">
+            <div *ngIf="requestDetail.usagePurpose || requestDetail.requestPurposeNameEn || requestDetail.requestPurposeNameAr" class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.usagePurpose' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.usagePurpose }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
             </div>
 
             <div *ngIf="requestDetail.requesterName" class="md:col-span-2 space-y-1">

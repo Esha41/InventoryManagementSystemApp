@@ -24,10 +24,10 @@ import { ModalComponent } from '@components/modal/modal.component';
 import { OrderDto } from '@services/order.service';
 import { ReturnDto } from '@services/return.service';
 import { DiscardDto } from '@services/discard.service';
-import { 
-  NotificationFilter, 
-  NotificationDetailType, 
-  MetadataDisplayItem 
+import {
+  NotificationFilter,
+  NotificationDetailType,
+  MetadataDisplayItem
 } from '@models/notification.model';
 import { NOTIFICATION_ACTION_KEYS } from '@constants/notification.constants';
 import {
@@ -266,12 +266,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    */
   formatTimeForDisplay(timeStr: string | null | undefined): string {
     if (!timeStr) return '';
-    
+
     // Already in military format (HHMM - 4 digits)
     if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
       return timeStr;
     }
-    
+
     // Convert from HH:mm:ss or HH:mm format to military format (HHMM)
     if (timeStr.includes(':')) {
       const parts = timeStr.split(':');
@@ -279,19 +279,19 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
       return hours + minutes;
     }
-    
+
     return timeStr;
   }
 
   formatMilitaryTime(event: Event): void {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/\D/g, ''); // Remove non-digits
-    
+
     // Limit to 4 digits
     if (value.length > 4) {
       value = value.substring(0, 4);
     }
-    
+
     // Validate hours (00-23) and minutes (00-59)
     if (value.length >= 2) {
       const hours = parseInt(value.substring(0, 2), 10);
@@ -299,14 +299,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         value = '23' + value.substring(2);
       }
     }
-    
+
     if (value.length >= 4) {
       const minutes = parseInt(value.substring(2, 4), 10);
       if (minutes > 59) {
         value = value.substring(0, 2) + '59';
       }
     }
-    
+
     input.value = value;
     this.proposeForm.patchValue({ pickupTime: value }, { emitEvent: false });
   }
@@ -328,7 +328,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     if (pickupTime && pickupTime.includes(':')) {
       pickupTime = pickupTime.replace(':', '');
     }
-    
+
     const payload = {
       pickupDate: this.proposeForm.value.pickupDate,
       pickupTime: pickupTime
@@ -455,21 +455,35 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get localized department name (prefers Arabic when language is Arabic)
+   * Get localized department name with proper nested object support
+   * Handles both flattened properties and nested department objects
    */
   getLocalizedDepartmentName(departmentNameEn?: string | null, departmentNameAr?: string | null): string {
     const lang = getCurrentLang(this.translateService);
-    if (lang === 'ar') {
-      return departmentNameAr || departmentNameEn || this.translateService.instant('common.notAvailable');
+
+    // Check if we have the values
+    if (departmentNameEn || departmentNameAr) {
+      return getLocalizedName(
+        {
+          nameEn: departmentNameEn,
+          nameAr: departmentNameAr
+        },
+        lang
+      ) || this.translateService.instant('common.notAvailable');
     }
-    return departmentNameEn || departmentNameAr || this.translateService.instant('common.notAvailable');
+
+    return this.translateService.instant('common.notAvailable');
   }
 
   /**
-   * Get localized requester name
+   * Get localized requester name with proper nested object support
+   * Handles both simple string and nested requester objects
    */
   getLocalizedRequesterName(requesterName?: string | null): string {
-    return requesterName || this.translateService.instant('common.notAvailable');
+    if (!requesterName) {
+      return this.translateService.instant('common.notAvailable');
+    }
+    return requesterName;
   }
 
   /**
@@ -503,7 +517,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     const titleLower = title.trim();
-    
+
     // Map common title patterns to translation keys
     const titleMap: Record<string, string> = {
       'order created': 'notifications.titles.orderCreated',
@@ -536,13 +550,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     const messageTrimmed = message.trim();
     const messageLower = messageTrimmed.toLowerCase();
-    
+
     // Extract request number (handles patterns like ORD-2025-000003-MP, RET-2025-000001, etc.)
     const requestNoMatch = messageTrimmed.match(/(ORD|RET|DIS)-[\d\-A-Z]+/i);
     const requestNo = requestNoMatch ? requestNoMatch[0] : '';
-    
+
     // Check for "from allowance" pattern
-    const fromAllowance = messageLower.includes('from allowance') 
+    const fromAllowance = messageLower.includes('from allowance')
       ? this.translateService.instant('notifications.messages.orderCreatedFromAllowance')
       : '';
 
@@ -612,7 +626,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     const typeKey = `notifications.entityTypes.${type}`;
     const translated = this.translateService.instant(typeKey);
-    
+
     // If translation key doesn't exist, it returns the key itself, so check if it's different
     if (translated !== typeKey) {
       return translated;

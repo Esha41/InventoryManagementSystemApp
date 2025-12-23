@@ -69,6 +69,25 @@
               </div>
             </div>
 
+            <!-- Item Type Dropdown -->
+            <div class="flex items-start gap-8">
+              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                {{ 'allowance.itemType' | translate }} <span class="text-red-500">*</span>
+              </label>
+              <div class="flex-1">
+                <app-dropdown
+                  class="w-full"
+                  [(ngModel)]="selectedItemType"
+                  name="itemType"
+                  (ngModelChange)="onItemTypeChange()"
+                  [options]="itemTypeOptions"
+                  optionValue="value"
+                  optionLabel="label"
+                  placeholder="{{ 'allowance.selectItemType' | translate }}">
+                </app-dropdown>
+              </div>
+            </div>
+
             <!-- Items List -->
             <div class="space-y-4">
               <div class="flex items-center justify-between">
@@ -123,23 +142,23 @@
                         />
                         <!-- Dropdown Results -->
                         <div
-                          *ngIf="showDropdowns[i] && filteredAmmunition[i] && filteredAmmunition[i].length > 0"
+                          *ngIf="showDropdowns[i] && filteredItems[i] && filteredItems[i].length > 0"
                           class="absolute z-10 w-full mt-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg max-h-60 overflow-y-auto"
                         >
                           <div
-                            *ngFor="let ammo of filteredAmmunition[i]"
-                            (mousedown)="selectAmmunition(i, ammo); $event.preventDefault()"
+                            *ngFor="let item of filteredItems[i]"
+                            (mousedown)="selectItem(i, item); $event.preventDefault()"
                             class="px-3 py-2 hover:bg-[var(--color-background-hover)] cursor-pointer border-b border-[var(--color-border)] last:border-b-0"
                           >
-                            <div class="text-sm font-medium text-[#23272E]">{{ ammo.name || 'N/A' }}</div>
+                            <div class="text-sm font-medium text-[#23272E]">{{ item.name || 'N/A' }}</div>
                             <div class="text-xs text-[#6B7280] mt-0.5">
-                              {{ 'allowance.itemNo' | translate }}: {{ ammo.itemNo || 'N/A' }} | 
-                              {{ 'allowance.batchNo' | translate }}: {{ ammo.batchNo || 'N/A' }}
+                              {{ 'allowance.itemNo' | translate }}: {{ item.itemNo || 'N/A' }} | 
+                              {{ 'allowance.nsn' | translate }}: {{ item.nsn || 'N/A' }}
                             </div>
                           </div>
                         </div>
                         <div
-                          *ngIf="showDropdowns[i] && filteredAmmunition[i] && filteredAmmunition[i].length === 0"
+                          *ngIf="showDropdowns[i] && filteredItems[i] && filteredItems[i].length === 0"
                           class="absolute z-10 w-full mt-1 bg-white border border-[var(--color-border)] rounded-lg shadow-lg px-3 py-2 text-sm text-[#6B7280]"
                         >
                           {{ 'allowance.noItemsFound' | translate }}

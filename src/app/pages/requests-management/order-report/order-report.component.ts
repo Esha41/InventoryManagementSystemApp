@@ -265,7 +265,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private mapOrderToReport(order: OrderDto): void {
-    this.orderSummary = mapOrderToSummary(order);
+    this.orderSummary = mapOrderToSummary(order, undefined, this.translate);
     this.orderItems = mapOrderItems(order);
 
     this.loadApprovalWorkflow(order.id);
@@ -292,7 +292,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           if (baseRequest) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
-              const updatedSummary = mapOrderToSummary(order, baseRequest.status);
+              const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
 
               // Set requestDate from baseRequest (with time)
               if (baseRequest.requestDate) {
@@ -425,7 +425,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      const qrData = generateQrCodeData(this.orderSummary);
+      // Use the same localized usage purpose that we show in the UI
+      const localizedUsagePurpose = this.resolveUsagePurpose();
+      const qrData = generateQrCodeData(this.orderSummary, localizedUsagePurpose);
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
         {
@@ -538,7 +540,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       }
 
       // Map order to report data
-      const summary = mapOrderToSummary(order);
+      const summary = mapOrderToSummary(order, undefined, this.translate);
       const items = mapOrderItems(order);
 
       // Load approval workflow
@@ -560,7 +562,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
         const baseRequest = data.find(r => r.id === orderId);
         if (baseRequest) {
-          const updatedSummary = mapOrderToSummary(order, baseRequest.status);
+          const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
           if (baseRequest.requestDate) {
             updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
           }
@@ -657,7 +659,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       if (!summary.orderId) {
         return null;
       }
-      const qrData = generateQrCodeData(summary);
+      // For export, also use a localized usage purpose if available on the summary
+      const currentLang = getCurrentLang(this.translate);
+      const localizedUsagePurpose =
+        getLocalizedName(
+          {
+            nameEn: summary.requestPurposeNameEn,
+            nameAr: summary.requestPurposeNameAr
+          },
+          currentLang
+        ) || summary.usagePurpose;
+
+      const qrData = generateQrCodeData(summary, localizedUsagePurpose);
       return await QRCode.toDataURL(qrData, {
         width: 320,
         margin: 2,
@@ -1476,5 +1489,19 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       printWindow.print();
       printWindow.close();
     }, 250);
+  }
+
+  /**
+   * Resolve usage purpose with proper localization
+   */
+  resolveUsagePurpose(): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(
+      {
+        nameEn: this.orderSummary.requestPurposeNameEn,
+        nameAr: this.orderSummary.requestPurposeNameAr
+      },
+      currentLang
+    ) || this.orderSummary.usagePurpose || 'N/A';
   }
 }

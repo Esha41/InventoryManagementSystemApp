@@ -1993,4 +1993,21 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     return '';
   }
+
+  /**
+   * Resolve usage purpose with proper localization
+   */
+  resolveUsagePurpose(): string {
+    if (!this.requestDetail) {
+      return 'N/A';
+    }
+    const currentLang = getCurrentLang(this.translateService);
+    return getLocalizedName(
+      {
+        nameEn: this.requestDetail.requestPurposeNameEn,
+        nameAr: this.requestDetail.requestPurposeNameAr
+      },
+      currentLang
+    ) || this.requestDetail.usagePurpose || 'N/A';
+  }
 }

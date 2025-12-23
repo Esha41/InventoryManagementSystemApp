@@ -861,6 +861,19 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   resolveRequestPurpose(order: OrderDto | null): string {
     if (!order) return 'N/A';
     const currentLang = getCurrentLang(this.translate);
+
+    // Try nested object first (current backend structure)
+    if (order.requestPurpose) {
+      return getLocalizedName(
+        {
+          nameEn: order.requestPurpose.nameEn,
+          nameAr: order.requestPurpose.nameAr
+        },
+        currentLang
+      ) || 'N/A';
+    }
+
+    // Fallback to flattened properties (if they exist)
     return getLocalizedName(
       {
         nameEn: order.requestPurposeNameEn,

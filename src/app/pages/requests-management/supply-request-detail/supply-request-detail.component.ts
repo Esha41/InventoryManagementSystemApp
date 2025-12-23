@@ -37,7 +37,7 @@ import {
 } from '../utils/ui-helpers.utils';
 import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
-import { getCurrentLang } from '@utils/localization.utils';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -683,6 +683,84 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     // Fallback: if no name found, return empty string
     return '';
+  }
+
+  /**
+   * Resolve usage purpose with proper localization
+   */
+  resolveUsagePurpose(): string {
+    if (!this.orderData) {
+      return 'N/A';
+    }
+    const currentLang = getCurrentLang(this.translate);
+
+    // Try nested object first (current backend structure)
+    if (this.orderData.requestPurpose) {
+      return getLocalizedName(
+        {
+          nameEn: this.orderData.requestPurpose.nameEn,
+          nameAr: this.orderData.requestPurpose.nameAr
+        },
+        currentLang
+      ) || this.orderData.usagePurpose || 'N/A';
+    }
+
+    // Fallback to flattened properties
+    return getLocalizedName(
+      {
+        nameEn: this.orderData.requestPurposeNameEn,
+        nameAr: this.orderData.requestPurposeNameAr
+      },
+      currentLang
+    ) || this.orderData.usagePurpose || 'N/A';
+  }
+
+  /**
+   * Resolve department name with proper localization
+   */
+  resolveDepartmentName(): string {
+    if (!this.orderData) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+
+    // Use nested department object if available (for proper localization)
+    if (this.orderData.department) {
+      const localized = getLocalizedName(this.orderData.department, currentLang);
+      if (localized) return localized;
+    }
+
+    // Fallback to flattened properties
+    if (this.orderData.departmentNameEn || this.orderData.departmentNameAr) {
+      const localized = getLocalizedName(
+        {
+          nameEn: this.orderData.departmentNameEn,
+          nameAr: this.orderData.departmentNameAr
+        },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+
+    return 'N/A';
+  }
+
+  /**
+   * Resolve requester name with proper localization
+   */
+  resolveRequesterName(): string {
+    if (!this.orderData) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+
+    // Use nested requester object if available (for proper localization)
+    if (this.orderData.requester) {
+      const localized = getLocalizedName(this.orderData.requester, currentLang);
+      if (localized) return localized;
+      if (this.orderData.requester.userName) return this.orderData.requester.userName;
+    }
+
+    // Fallback to flattened property
+    if (this.orderData.requesterName) return this.orderData.requesterName;
+
+    return 'N/A';
   }
 }
 

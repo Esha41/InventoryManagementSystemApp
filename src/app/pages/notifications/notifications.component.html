@@ -213,12 +213,17 @@
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedDepartmentName(orderDetail.departmentNameEn,
-                      orderDetail.departmentNameAr) }}</span>
+                    <span class="detail-field__value">{{ getLocalizedDepartmentName(
+                      orderDetail.department?.nameEn || orderDetail.departmentNameEn,
+                      orderDetail.department?.nameAr || orderDetail.departmentNameAr
+                      ) }}</span>
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(orderDetail.requesterName) }}</span>
+                    <span class="detail-field__value">{{ getLocalizedRequesterName(
+                      orderDetail.requester?.fullNameEN || orderDetail.requester?.fullNameAR ||
+                      orderDetail.requester?.userName || orderDetail.requesterName
+                      ) }}</span>
                   </div>
                   <div class="detail-field" *ngIf="orderDetail.priority">
                     <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>

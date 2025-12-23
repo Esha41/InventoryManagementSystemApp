@@ -9,6 +9,11 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponService } from '@services/weapon.service';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveService } from '@services/explosive.service';
+import { ExplosiveDto } from '@models/explosive.model';
+import { ItemType } from '@models/inventory.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -18,10 +23,12 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 
+export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
+
 export interface AllowanceItem {
   itemId: string;
   quantity: string;
-  selectedAmmunition?: AmmunitionReadDto;
+  selectedItem?: AllowanceItemType;
 }
 
 @Component({
@@ -53,20 +60,24 @@ export class AllowanceComponent implements OnInit {
 
   selectedDepartment: number | string | null = null;
   selectedYear: string = ''; // Changed from selectedDate to selectedYear (string input for year only)
+  selectedItemType: 'Ammunition' | 'Weapon' | 'Explosive' = 'Ammunition';
   items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
-  
+
   departments: DepartmentDto[] = [];
   isLoadingDepartments = false;
   readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
-  
-  // Ammunition search
-  ammunitionItems: AmmunitionReadDto[] = [];
-  filteredAmmunition: { [key: number]: AmmunitionReadDto[] } = {};
+
+  // Item type options - will be populated with translations
+  itemTypeOptions: { value: 'Ammunition' | 'Weapon' | 'Explosive'; label: string }[] = [];
+
+  // Items search (supports all types)
+  allItems: AllowanceItemType[] = [];
+  filteredItems: { [key: number]: AllowanceItemType[] } = {};
   searchTerms: { [key: number]: string } = {};
   showDropdowns: { [key: number]: boolean } = {};
   private searchSubject = new Subject<{ index: number; term: string }>();
-  
+
   isSubmitted = false;
   isLoading = false;
   errors: { [key: string]: string } = {};
@@ -75,6 +86,8 @@ export class AllowanceComponent implements OnInit {
   constructor(
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private apiService: ApiService,
     private translateService: TranslateService,
     private translationService: TranslationService,
@@ -89,54 +102,90 @@ export class AllowanceComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDepartments();
-    
+    this.loadItemTypeOptions();
+
     // Setup search debouncing
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
     ).subscribe(({ index, term }) => {
-      this.filterAmmunition(index, term);
+      this.filterItems(index, term);
     });
 
-    // Load ammunition items first, then check for edit mode
-    this.loadAmmunitionItems();
-    
-    // Check for edit mode from query params after ammunition items are loaded
+    // Subscribe to language changes to reload data with new localized names
+    this.translateService.onLangChange.subscribe(() => {
+      this.loadDepartments();
+      this.loadItemTypeOptions();
+      this.loadItems();
+    });
+
+    // Load items first, then check for edit mode
+    this.loadItems();
+
+    // Check for edit mode from query params after items are loaded
     this.route.queryParams.subscribe(params => {
       if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
         this.selectedDepartment = parseInt(params['departmentId'], 10);
         this.selectedYear = params['year'];
-        // Wait for ammunition items to be loaded before loading allowance data
-        if (this.ammunitionItems.length > 0) {
+        // Set item type from query params if provided
+        if (params['itemType'] && ['Ammunition', 'Weapon', 'Explosive'].includes(params['itemType'])) {
+          this.selectedItemType = params['itemType'];
+        }
+        // Wait for items to be loaded before loading allowance data
+        if (this.allItems.length > 0) {
           this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
         } else {
-          // If ammunition items not loaded yet, wait for them
-          this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
-            next: (items: AmmunitionReadDto[]) => {
-              this.ammunitionItems = items || [];
-              this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
-            }
+          // If items not loaded yet, wait for them
+          this.loadItems().then(() => {
+            this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
           });
         }
       }
     });
   }
 
-  loadAmmunitionItems(): void {
-    this.ammunitionService.getAll<AmmunitionReadDto>().subscribe({
-      next: (items: AmmunitionReadDto[]) => {
-        this.ammunitionItems = items || [];
-        // Initialize filtered list for each existing item
-        this.items.forEach((_, index) => {
-          if (!this.filteredAmmunition[index]) {
-            this.filteredAmmunition[index] = [...this.ammunitionItems];
-          }
-        });
-      },
-      error: (error: any) => {
-        // Silently handle error - user will see it when trying to use items
+  loadItems(): Promise<void> {
+    return new Promise((resolve) => {
+      let load$: any;
+      
+      if (this.selectedItemType === 'Weapon') {
+        load$ = this.weaponService.getAll<WeaponDto>();
+      } else if (this.selectedItemType === 'Explosive') {
+        load$ = this.explosiveService.getAll<ExplosiveDto>();
+      } else {
+        // Ammunition (default)
+        load$ = this.ammunitionService.getAll<AmmunitionReadDto>();
       }
+
+      load$.subscribe({
+        next: (items: AllowanceItemType[]) => {
+          this.allItems = items || [];
+          // Initialize filtered list for each existing item
+          this.items.forEach((_, index) => {
+            if (!this.filteredItems[index]) {
+              this.filteredItems[index] = [...this.allItems];
+            }
+          });
+          resolve();
+        },
+        error: (error: any) => {
+          // Silently handle error - user will see it when trying to use items
+          this.allItems = [];
+          resolve();
+        }
+      });
     });
+  }
+
+  onItemTypeChange(): void {
+    // Clear current selections when item type changes
+    this.items = [{ itemId: '', quantity: '' }];
+    this.searchTerms = {};
+    this.showDropdowns = {};
+    this.filteredItems = {};
+    this.allItems = [];
+    // Reload items for the new type
+    this.loadItems();
   }
 
   onItemSearch(index: number, term: string): void {
@@ -144,25 +193,25 @@ export class AllowanceComponent implements OnInit {
     this.searchSubject.next({ index, term: term || '' });
   }
 
-  filterAmmunition(index: number, term: string): void {
+  filterItems(index: number, term: string): void {
     if (!term || term.trim() === '') {
-      this.filteredAmmunition[index] = [...this.ammunitionItems];
+      this.filteredItems[index] = [...this.allItems];
       return;
     }
 
     const searchLower = term.toLowerCase().trim();
-    this.filteredAmmunition[index] = this.ammunitionItems.filter(item => 
+    this.filteredItems[index] = this.allItems.filter(item =>
       (item.name?.toLowerCase().includes(searchLower)) ||
       (item.itemNo?.toLowerCase().includes(searchLower)) ||
-      (item.batchNo?.toLowerCase().includes(searchLower)) ||
+      (item.nsn?.toLowerCase().includes(searchLower)) ||
       (item.id?.toString().includes(searchLower))
     );
   }
 
-  selectAmmunition(index: number, item: AmmunitionReadDto): void {
-    this.items[index].selectedAmmunition = item;
+  selectItem(index: number, item: AllowanceItemType): void {
+    this.items[index].selectedItem = item;
     this.items[index].itemId = item.id.toString();
-    this.searchTerms[index] = `${item.name} - ${item.itemNo} - ${item.batchNo}`;
+    this.searchTerms[index] = `${item.name} - ${item.itemNo} - ${item.nsn || ''}`.trim();
     this.showDropdowns[index] = false;
     // Clear error when item is selected
     this.onItemSelectionChange(index);
@@ -170,8 +219,8 @@ export class AllowanceComponent implements OnInit {
 
   toggleDropdown(index: number): void {
     this.showDropdowns[index] = !this.showDropdowns[index];
-    if (this.showDropdowns[index] && !this.filteredAmmunition[index]) {
-      this.filteredAmmunition[index] = [...this.ammunitionItems];
+    if (this.showDropdowns[index] && !this.filteredItems[index]) {
+      this.filteredItems[index] = [...this.allItems];
     }
   }
 
@@ -182,10 +231,24 @@ export class AllowanceComponent implements OnInit {
     }, 200);
   }
 
-  getAmmunitionDisplay(item: AmmunitionReadDto): string {
-    return `${item.name || ''} - ${item.itemNo || ''} - ${item.batchNo || ''}`.trim();
+  getItemDisplay(item: AllowanceItemType): string {
+    return `${item.name || ''} - ${item.itemNo || ''} - ${item.nsn || ''}`.trim();
   }
 
+
+  loadItemTypeOptions(): void {
+    this.translateService.get([
+      'allowance.ammunition',
+      'allowance.weapon',
+      'allowance.explosive'
+    ]).subscribe(translations => {
+      this.itemTypeOptions = [
+        { value: 'Ammunition', label: translations['allowance.ammunition'] },
+        { value: 'Weapon', label: translations['allowance.weapon'] },
+        { value: 'Explosive', label: translations['allowance.explosive'] }
+      ];
+    });
+  }
 
   loadDepartments(): void {
     this.isLoadingDepartments = true;
@@ -235,7 +298,7 @@ export class AllowanceComponent implements OnInit {
     this.items.push({ itemId: '', quantity: '' });
     this.searchTerms[newIndex] = '';
     this.showDropdowns[newIndex] = false;
-    this.filteredAmmunition[newIndex] = [...this.ammunitionItems];
+    this.filteredItems[newIndex] = [...this.allItems];
   }
 
   removeItem(index: number): void {
@@ -244,14 +307,14 @@ export class AllowanceComponent implements OnInit {
       delete this.itemErrors[index];
       delete this.searchTerms[index];
       delete this.showDropdowns[index];
-      delete this.filteredAmmunition[index];
-      
-      // Reindex errors, search terms, dropdowns, and filtered ammunition
+      delete this.filteredItems[index];
+
+      // Reindex errors, search terms, dropdowns, and filtered items
       const newErrors: { [key: number]: { [key: string]: string } } = {};
       const newSearchTerms: { [key: number]: string } = {};
       const newShowDropdowns: { [key: number]: boolean } = {};
-      const newFilteredAmmunition: { [key: number]: AmmunitionReadDto[] } = {};
-      
+      const newFilteredItems: { [key: number]: AllowanceItemType[] } = {};
+
       Object.keys(this.itemErrors).forEach(key => {
         const oldIndex = parseInt(key);
         if (oldIndex > index) {
@@ -260,7 +323,7 @@ export class AllowanceComponent implements OnInit {
           newErrors[oldIndex] = this.itemErrors[oldIndex];
         }
       });
-      
+
       Object.keys(this.searchTerms).forEach(key => {
         const oldIndex = parseInt(key);
         if (oldIndex > index) {
@@ -269,7 +332,7 @@ export class AllowanceComponent implements OnInit {
           newSearchTerms[oldIndex] = this.searchTerms[oldIndex];
         }
       });
-      
+
       Object.keys(this.showDropdowns).forEach(key => {
         const oldIndex = parseInt(key);
         if (oldIndex > index) {
@@ -278,20 +341,20 @@ export class AllowanceComponent implements OnInit {
           newShowDropdowns[oldIndex] = this.showDropdowns[oldIndex];
         }
       });
-      
-      Object.keys(this.filteredAmmunition).forEach(key => {
+
+      Object.keys(this.filteredItems).forEach(key => {
         const oldIndex = parseInt(key);
         if (oldIndex > index) {
-          newFilteredAmmunition[oldIndex - 1] = this.filteredAmmunition[oldIndex];
+          newFilteredItems[oldIndex - 1] = this.filteredItems[oldIndex];
         } else if (oldIndex < index) {
-          newFilteredAmmunition[oldIndex] = this.filteredAmmunition[oldIndex];
+          newFilteredItems[oldIndex] = this.filteredItems[oldIndex];
         }
       });
-      
+
       this.itemErrors = newErrors;
       this.searchTerms = newSearchTerms;
       this.showDropdowns = newShowDropdowns;
-      this.filteredAmmunition = newFilteredAmmunition;
+      this.filteredItems = newFilteredItems;
     }
   }
 
@@ -321,11 +384,11 @@ export class AllowanceComponent implements OnInit {
     // Validate items
     this.items.forEach((item, index) => {
       const itemError: { [key: string]: string } = {};
-      
+
       if (!item.itemId || item.itemId.trim() === '') {
         itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
         isValid = false;
-      } else if (!item.selectedAmmunition) {
+      } else if (!item.selectedItem) {
         itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
         isValid = false;
       }
@@ -348,7 +411,7 @@ export class AllowanceComponent implements OnInit {
 
   onSend(form: NgForm): void {
     this.isSubmitted = true;
-    
+
     if (!this.validateForm()) {
       return;
     }
@@ -356,15 +419,25 @@ export class AllowanceComponent implements OnInit {
     // Get year from selectedYear string
     const year = parseInt(this.selectedYear.trim(), 10);
 
+    // Determine itemType based on selectedItemType
+    let itemType: number;
+    if (this.selectedItemType === 'Weapon') {
+      itemType = ItemType.Weapon; // 2
+    } else if (this.selectedItemType === 'Explosive') {
+      itemType = ItemType.Explosive; // 3
+    } else {
+      itemType = ItemType.Ammunition; // 1
+    }
+
     // Prepare request data according to API structure
     const requestData = {
-      departmentId: typeof this.selectedDepartment === 'number' 
-        ? this.selectedDepartment 
+      departmentId: typeof this.selectedDepartment === 'number'
+        ? this.selectedDepartment
         : parseInt(this.selectedDepartment as string, 10),
       year: year,
       items: this.items.map(item => ({
         itemId: parseInt(item.itemId.trim(), 10),
-        itemType: 1, // Default item type as per API example
+        itemType: itemType,
         quantity: parseInt(item.quantity.trim(), 10)
       }))
     };
@@ -389,7 +462,7 @@ export class AllowanceComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        
+
         // Extract error message from various possible locations
         let errorMessage = this.translateService.instant('allowance.errors.failedToSend');
         if (error?.error?.message) {
@@ -401,7 +474,7 @@ export class AllowanceComponent implements OnInit {
         } else if (typeof error?.error === 'string') {
           errorMessage = error.error;
         }
-        
+
         this.translateService.get(['toast.error']).subscribe(translations => {
           this.toastService.error(errorMessage, translations['toast.error']);
         });
@@ -414,12 +487,16 @@ export class AllowanceComponent implements OnInit {
     this.selectedDepartment = null;
     const currentYear = new Date().getFullYear();
     this.selectedYear = currentYear.toString();
+    this.selectedItemType = 'Ammunition';
     this.items = [{ itemId: '', quantity: '' }];
     this.errors = {};
     this.itemErrors = {};
     this.searchTerms = {};
     this.showDropdowns = {};
+    this.filteredItems = {};
+    this.allItems = [];
     this.isSubmitted = false;
+    this.loadItems();
   }
 
   onBack(): void {
@@ -431,25 +508,26 @@ export class AllowanceComponent implements OnInit {
     this.apiService.getWithAuth<ApiResponse<any>>(endpoint).subscribe({
       next: (response) => {
         const items = response.data?.items || response.data?.Items || [];
-        
+
         if (items && items.length > 0) {
-          this.items = items.map((item: any, index: number) => {
-            const ammo = this.ammunitionItems.find(a => a.id === item.itemId);
-            this.filteredAmmunition[index] = ammo 
-              ? [ammo, ...this.ammunitionItems.filter(a => a.id !== item.itemId)]
-              : [...this.ammunitionItems];
-            
-            // Set search term to display the selected item
-            if (ammo) {
-              this.searchTerms[index] = this.getAmmunitionDisplay(ammo);
+          // Determine item type from first item if available
+          const firstItem = items[0];
+          if (firstItem.itemType) {
+            if (firstItem.itemType === ItemType.Weapon) {
+              this.selectedItemType = 'Weapon';
+            } else if (firstItem.itemType === ItemType.Explosive) {
+              this.selectedItemType = 'Explosive';
+            } else {
+              this.selectedItemType = 'Ammunition';
             }
-            
-            return {
-              itemId: item.itemId.toString(),
-              quantity: item.quantity.toString(),
-              selectedAmmunition: ammo
-            };
-          });
+            // Reload items for the correct type
+            this.loadItems().then(() => {
+              this.mapItemsToForm(items);
+            });
+          } else {
+            // Fallback: try to find items in current list
+            this.mapItemsToForm(items);
+          }
         } else {
           this.items = [{ itemId: '', quantity: '' }];
         }
@@ -464,6 +542,28 @@ export class AllowanceComponent implements OnInit {
         // Start with empty form on error
         this.items = [{ itemId: '', quantity: '' }];
       }
+    });
+  }
+
+  private mapItemsToForm(items: any[]): void {
+    const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
+    
+    this.items = items.map((item: any, index: number) => {
+      const foundItem = itemsMap.get(item.itemId);
+      this.filteredItems[index] = foundItem
+        ? [foundItem, ...this.allItems.filter(a => a.id !== item.itemId)]
+        : [...this.allItems];
+
+      // Set search term to display the selected item
+      if (foundItem) {
+        this.searchTerms[index] = this.getItemDisplay(foundItem);
+      }
+
+      return {
+        itemId: item.itemId.toString(),
+        quantity: item.quantity.toString(),
+        selectedItem: foundItem
+      };
     });
   }
 
@@ -512,8 +612,8 @@ export class AllowanceComponent implements OnInit {
     }
   }
 
-  
-  onYearChange(): void { 
+
+  onYearChange(): void {
     if (this.isSubmitted) {
       if (!this.selectedYear || !this.selectedYear.trim()) {
         this.errors['year'] = this.translateService.instant('allowance.errors.yearRequired');
@@ -531,10 +631,10 @@ export class AllowanceComponent implements OnInit {
     }
   }
 
- 
+
   onQuantityChange(itemIndex: number): void {
     this.clearItemError(itemIndex, 'quantity');
-  
+
     if (this.isSubmitted && this.items[itemIndex]) {
       const quantity = this.items[itemIndex].quantity;
       if (!quantity || quantity.trim() === '') {
@@ -549,7 +649,7 @@ export class AllowanceComponent implements OnInit {
     }
   }
 
-  
+
   onItemSelectionChange(itemIndex: number): void {
     this.clearItemError(itemIndex, 'itemId');
 
@@ -558,7 +658,7 @@ export class AllowanceComponent implements OnInit {
       if (!item.itemId || item.itemId.trim() === '') {
         this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
         this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
-      } else if (!item.selectedAmmunition) {
+      } else if (!item.selectedItem) {
         this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
         this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
       } else {

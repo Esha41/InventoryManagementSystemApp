@@ -43,14 +43,14 @@
               <label class="text-xs font-semibold text-gray-500 uppercase">
                 {{ 'supplyOrder.departmentName' | translate }}
               </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ getDepartmentName() }}</p>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveDepartmentName() }}</p>
             </div>
 
             <div>
               <label class="text-xs font-semibold text-gray-500 uppercase">
                 {{ 'supplyOrder.requesterName' | translate }}
               </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData.requesterName || 'N/A' }}</p>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveRequesterName() }}</p>
             </div>
 
             <div>
@@ -69,11 +69,11 @@
               <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData.reason }}</p>
             </div>
 
-            <div *ngIf="orderData.usagePurpose">
+            <div *ngIf="orderData.usagePurpose || orderData.requestPurposeNameEn || orderData.requestPurposeNameAr">
               <label class="text-xs font-semibold text-gray-500 uppercase">
                 {{ 'supplyOrder.usagePurpose' | translate }}
               </label>
-              <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData.usagePurpose }}</p>
+              <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
             </div>
 
             <div *ngIf="orderData.usageLocation">
