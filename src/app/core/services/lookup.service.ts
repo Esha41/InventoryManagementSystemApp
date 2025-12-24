@@ -19,7 +19,7 @@ export class LookupService {
     private apiService: ApiService,
     private http: HttpClient,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   /**
    * Get all lookup items for a specific table
@@ -27,7 +27,7 @@ export class LookupService {
   getLookupItems(tableName: string, includeDeleted: boolean = false): Observable<LookupItem[]> {
     const endpoint = `${this.baseUrl}/${tableName}`;
     const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
-    
+
     return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -43,7 +43,7 @@ export class LookupService {
    */
   getLookupItemById(tableName: string, id: number): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-    
+
     return this.apiService.getWithAuth<APIOperationResponse<LookupItem>>(endpoint).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -59,7 +59,7 @@ export class LookupService {
    */
   createLookupItem(tableName: string, dto: CreateUpdateLookupDto): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}`;
-    
+
     return this.apiService.postWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -75,7 +75,7 @@ export class LookupService {
    */
   updateLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-    
+
     return this.apiService.putWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -92,7 +92,7 @@ export class LookupService {
    */
   deleteLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<boolean> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-    
+
     // HttpClient supports DELETE with body, though it's not standard HTTP
     // We need to use http directly to send DELETE with body
     const headers = this.getAuthHeaders();
@@ -115,11 +115,11 @@ export class LookupService {
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token');
     let headers = new HttpHeaders();
-    
+
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    
+
     headers = headers.set('Content-Type', 'application/json');
     return headers;
   }
@@ -133,7 +133,7 @@ export class LookupService {
     if (includeDeleted) {
       params = params.set('includeDeleted', 'true');
     }
-    
+
     return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
       map(response => {
         if (response.succeeded && response.data) {
@@ -211,6 +211,14 @@ export class LookupService {
 
   getCountries(): Observable<LookupItem[]> {
     return this.getLookupItems('Country');
+  }
+
+  getClassifications(): Observable<LookupItem[]> {
+    return this.getLookupItems('Classification');
+  }
+
+  getItemTypes(): Observable<LookupItem[]> {
+    return this.getLookupItems('ItemType');
   }
 
   /**

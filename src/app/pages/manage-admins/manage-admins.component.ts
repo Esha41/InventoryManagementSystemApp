@@ -15,6 +15,7 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -23,10 +24,10 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
   selector: 'app-manage-admins',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    CardComponent, 
-    ButtonComponent, 
+    CommonModule,
+    FormsModule,
+    CardComponent,
+    ButtonComponent,
     LucideAngularModule,
     UserFormModalComponent,
     LookupFormModalComponent,
@@ -36,7 +37,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     RowsPerPageComponent,
     HasPermissionDirective,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    DropdownComponent
   ],
   templateUrl: './manage-admins.component.html',
   styleUrls: ['./manage-admins.component.css']
@@ -66,7 +68,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   userRolesMap: Map<string, string[]> = new Map(); // Cache user roles
   isLoading = false;
   errorMessage = '';
-  
+
   searchTerm = '';
 
   // Pagination
@@ -86,11 +88,10 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   lookupSearchTerm = '';
   isLoadingLookups = false;
   lookupErrorMessage = '';
-  
-  // Searchable dropdown state
-  tableSearchTerm = '';
-  showTableDropdown = false;
-  
+
+  // Placeholder for dropdown logic cleanup
+
+
   // Lookup modal states
   showLookupModal = false;
   showLookupDeleteConfirm = false;
@@ -100,14 +101,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  @ViewChild('tableDropdown', { static: false }) tableDropdownRef?: ElementRef;
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.tableDropdownRef && !this.tableDropdownRef.nativeElement.contains(event.target)) {
-      this.closeTableDropdown();
-    }
-  }
 
   constructor(
     private backendUserService: BackendUserService,
@@ -116,7 +110,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeTabFromQueryParams();
@@ -124,7 +118,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.loadRoles();
     this.loadRanks();
     this.loadDepartments();
-    
+
     this.backendUserService.users$
       .pipe(takeUntil(this.destroy$))
       .subscribe(users => {
@@ -184,7 +178,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   private extractRoleNames(user: BackendUserDto): string[] {
     const currentLang = getCurrentLang(this.translateService);
-    
+
     if (user.roles && user.roles.length > 0) {
       return user.roles
         .map(role => getLocalizedName(role, currentLang) || role.name)
@@ -489,35 +483,12 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   // Lookup management
   onTableSelect(table: LookupTableConfig | undefined): void {
     this.selectedTable = table;
-    this.showTableDropdown = false;
-    this.tableSearchTerm = '';
     if (table) {
       this.loadLookupItems();
     }
   }
 
-  get filteredLookupTables(): LookupTableConfig[] {
-    if (!this.tableSearchTerm.trim()) {
-      return this.lookupTables;
-    }
-    const search = this.tableSearchTerm.toLowerCase();
-    return this.lookupTables.filter(table =>
-      table.displayName.toLowerCase().includes(search) ||
-      table.name.toLowerCase().includes(search)
-    );
-  }
 
-  toggleTableDropdown(): void {
-    this.showTableDropdown = !this.showTableDropdown;
-    if (!this.showTableDropdown) {
-      this.tableSearchTerm = '';
-    }
-  }
-
-  closeTableDropdown(): void {
-    this.showTableDropdown = false;
-    this.tableSearchTerm = '';
-  }
 
   loadLookupItems(): void {
     if (!this.selectedTable) return;
@@ -541,7 +512,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       return this.lookupItems;
     }
     const search = this.lookupSearchTerm.toLowerCase();
-    return this.lookupItems.filter(item => 
+    return this.lookupItems.filter(item =>
       item.nameEn.toLowerCase().includes(search) ||
       item.nameAr.toLowerCase().includes(search) ||
       (item.code && item.code.toLowerCase().includes(search))
@@ -618,25 +589,25 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     const operation = this.lookupModalMode === 'create'
       ? this.lookupService.createLookupItem(this.selectedTable.apiEndpoint, dto)
       : this.lookupService.updateLookupItem(
-          this.selectedTable.apiEndpoint,
-          this.selectedLookupItem!.id!,
-          dto
-        );
+        this.selectedTable.apiEndpoint,
+        this.selectedLookupItem!.id!,
+        dto
+      );
 
     operation.subscribe({
       next: (item) => {
         const isCreate = this.lookupModalMode === 'create';
         const itemName = getLocalizedName(dto, getCurrentLang(this.translateService)) || '';
-        
+
         this.translateService.get([
           'toast.success',
           'lookupManagement.addItem',
           'lookupManagement.edit'
         ]).subscribe(translations => {
-          const message = isCreate 
+          const message = isCreate
             ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
             : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
-          
+
           this.toastService.success(message, translations['toast.success']);
         });
 
@@ -650,7 +621,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
         this.lookupModalLoading = false; // Reset modal loading state on error
         this.isLoadingLookups = false;
         this.lookupErrorMessage = error.message || `Failed to ${this.lookupModalMode} lookup item`;
-        
+
         this.translateService.get(['toast.error']).subscribe(translations => {
           this.toastService.error(
             error.message || `Failed to ${this.lookupModalMode} lookup item`,
@@ -660,5 +631,53 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
+  /**
+   * Get the translated name for an ItemType enum value
+   */
+  getItemTypeName(item: LookupItem): string {
+    let itemType = (item as any).itemType;
+    if (itemType === undefined || itemType === null) return '-';
+
+    // Convert string enum to number if needed
+    if (typeof itemType === 'string') {
+      const itemTypeMap: { [key: string]: number } = {
+        'Ammunition': 1,
+        'Weapon': 2,
+        'Explosive': 3
+      };
+      itemType = itemTypeMap[itemType] || 0;
+    }
+
+    // If still 0 or invalid, return dash
+    if (itemType === 0) return '-';
+
+    const translationKey = itemType === 1 ? 'lookupFormModal.ammunition'
+      : itemType === 2 ? 'lookupFormModal.weapon'
+        : itemType === 3 ? 'lookupFormModal.explosive'
+          : '';
+
+    if (!translationKey) return '-';
+
+    return this.translateService.instant(translationKey);
+  }
+
+  /**
+   * Get the raw ItemType enum value
+   */
+  getItemType(item: LookupItem): number {
+    let itemType = (item as any).itemType;
+    if (itemType === undefined || itemType === null) return 0;
+
+    if (typeof itemType === 'string') {
+      const itemTypeMap: { [key: string]: number } = {
+        'Ammunition': 1,
+        'Weapon': 2,
+        'Explosive': 3
+      };
+      return itemTypeMap[itemType] || 0;
+    }
+
+    return itemType;
+  }
 }

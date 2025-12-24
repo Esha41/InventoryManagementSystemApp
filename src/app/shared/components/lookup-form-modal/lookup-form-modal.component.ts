@@ -4,7 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
 import { LookupItem, CreateUpdateLookupDto, LookupTableConfig } from '@models/lookup.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DropdownComponent, DropdownOption } from '../dropdown/dropdown.component';
 
 @Component({
   selector: 'app-lookup-form-modal',
@@ -14,6 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
     ReactiveFormsModule,
     ModalComponent,
     ButtonComponent,
+    DropdownComponent,
     TranslateModule
   ],
   templateUrl: './lookup-form-modal.component.html',
@@ -25,7 +27,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
   @Input() tableConfig?: LookupTableConfig;
   @Input() mode: 'create' | 'edit' = 'create';
   @Input() externalLoading: boolean = false; // Allow parent to control loading state
-  
+
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<CreateUpdateLookupDto>();
 
@@ -33,18 +35,50 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
   isLoading = false;
   errorMessage = '';
 
-  constructor(private fb: FormBuilder) {}
+  // Item type options for dropdown
+  itemTypeOptions: DropdownOption<number>[] = [
+    { value: 1, label: '' },
+    { value: 2, label: '' },
+    { value: 3, label: '' }
+  ];
+
+  constructor(private fb: FormBuilder, private translateService: TranslateService) {
+    // Subscribe to translation changes (including initial load)
+    this.translateService.onTranslationChange.subscribe(() => {
+      this.updateItemTypeTranslations();
+    });
+
+    // Subscribe to language changes
+    this.translateService.onLangChange.subscribe(() => {
+      this.updateItemTypeTranslations();
+    });
+  }
 
   ngOnInit(): void {
     this.initializeForm();
+
+    // Use stream to get translations (updates automatically when translations load or language changes)
+    this.translateService.stream([
+      'lookupFormModal.selectItemType',
+      'lookupFormModal.ammunition',
+      'lookupFormModal.weapon',
+      'lookupFormModal.explosive'
+    ]).subscribe(() => {
+      this.updateItemTypeTranslations();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Reinitialize form when tableConfig changes
+    if (changes['tableConfig'] && this.tableConfig) {
+      this.initializeForm();
+    }
+
     // When modal opens, reset loading state and populate/reset form
     if (changes['isOpen'] && this.isOpen) {
       this.isLoading = false; // Reset loading state when modal opens
       this.errorMessage = '';
-      
+
       if (this.mode === 'create') {
         this.lookupForm?.reset();
       } else if (this.mode === 'edit' && this.lookupItem && this.lookupForm) {
@@ -52,14 +86,14 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
         this.populateForm();
       }
     }
-    
+
     // When mode changes to create, reset form
     if (changes['mode'] && this.mode === 'create' && this.isOpen) {
       this.lookupForm?.reset();
       this.errorMessage = '';
       this.isLoading = false; // Reset loading state
     }
-    
+
     // When lookupItem is provided, populate form
     if (changes['lookupItem']) {
       if (this.lookupItem && this.lookupForm) {
@@ -69,7 +103,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
         this.lookupForm.reset();
       }
     }
-    
+
     // Reset loading state when external loading changes to false
     if (changes['externalLoading'] && !this.externalLoading) {
       this.isLoading = false;
@@ -77,11 +111,18 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
   }
 
   private initializeForm(): void {
-    this.lookupForm = this.fb.group({
+    const formConfig: any = {
       nameEn: ['', [Validators.required, Validators.maxLength(100)]],
       nameAr: ['', [Validators.required, Validators.maxLength(100)]],
       code: ['', [Validators.maxLength(50)]]
-    });
+    };
+
+    // Add ItemType field for ItemType lookup table
+    if (this.tableConfig?.name === 'ItemType') {
+      formConfig['itemType'] = [null, [Validators.required]];
+    }
+
+    this.lookupForm = this.fb.group(formConfig);
 
     if (this.lookupItem) {
       this.populateForm();
@@ -90,18 +131,37 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
 
   private populateForm(): void {
     if (this.lookupItem && this.lookupForm) {
-      this.lookupForm.patchValue({
+      const formValue: any = {
         nameEn: this.lookupItem.nameEn || '',
         nameAr: this.lookupItem.nameAr || '',
         code: this.lookupItem.code || ''
-      });
+      };
+
+      // Add ItemType if it exists in the lookup item
+      if (this.tableConfig?.name === 'ItemType' && (this.lookupItem as any).itemType !== undefined) {
+        let itemTypeValue = (this.lookupItem as any).itemType;
+
+        // Convert string enum to number if needed
+        if (typeof itemTypeValue === 'string') {
+          const itemTypeMap: { [key: string]: number } = {
+            'Ammunition': 1,
+            'Weapon': 2,
+            'Explosive': 3
+          };
+          itemTypeValue = itemTypeMap[itemTypeValue] || 0;
+        }
+
+        formValue['itemType'] = itemTypeValue;
+      }
+
+      this.lookupForm.patchValue(formValue);
     }
   }
 
   get title(): string {
     if (!this.tableConfig) return '';
-    return this.mode === 'create' 
-      ? `Add New ${this.tableConfig.displayName.slice(0, -1)}` 
+    return this.mode === 'create'
+      ? `Add New ${this.tableConfig.displayName.slice(0, -1)}`
       : `Edit ${this.tableConfig.displayName.slice(0, -1)}`;
   }
 
@@ -115,11 +175,16 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
     this.errorMessage = '';
 
     const formValue = this.lookupForm.value;
-    const dto: CreateUpdateLookupDto = {
+    const dto: any = {
       nameEn: formValue.nameEn.trim(),
       nameAr: formValue.nameAr.trim(),
       code: this.tableConfig?.hasCode ? formValue.code?.trim() : undefined
     };
+
+    // Add ItemType if this is an ItemType lookup
+    if (this.tableConfig?.name === 'ItemType') {
+      dto.itemType = formValue.itemType;
+    }
 
     this.saved.emit(dto);
   }
@@ -148,6 +213,14 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
       }
     }
     return '';
+  }
+
+  private updateItemTypeTranslations(): void {
+    this.itemTypeOptions = [
+      { value: 1, label: this.translateService.instant('lookupFormModal.ammunition') },
+      { value: 2, label: this.translateService.instant('lookupFormModal.weapon') },
+      { value: 3, label: this.translateService.instant('lookupFormModal.explosive') }
+    ];
   }
 }
 

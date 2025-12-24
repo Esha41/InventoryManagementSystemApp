@@ -9,7 +9,7 @@ import { authInterceptor, errorInterceptor } from './core/interceptors/index';
 import { ConfigService } from './core/services/config.service';
 
 export class JsonTranslationLoader implements TranslateLoader {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getTranslation(lang: string): Observable<any> {
     // List of translation module files to load and merge
@@ -25,8 +25,21 @@ export class JsonTranslationLoader implements TranslateLoader {
       'notifications'
     ];
 
-    // Load all translation files and merge them
-    const loadPromises = translationModules.map(module => 
+    // Load the main translation file first
+    const mainTranslation = this.http.get(`/assets/i18n/${lang}.json`).pipe(
+      map(data => {
+        console.log(`Loaded main translation file for ${lang}:`, Object.keys(data).length, 'top-level keys');
+        console.log('Has lookupFormModal?', 'lookupFormModal' in data);
+        return data;
+      }),
+      catchError(error => {
+        console.warn(`Failed to load main translation file for ${lang}:`, error);
+        return of({});
+      })
+    );
+
+    // Load all modular translation files
+    const moduleTranslations = translationModules.map(module =>
       this.http.get(`/assets/i18n/${lang}/${module}.json`).pipe(
         catchError(error => {
           console.warn(`Failed to load translation module ${module} for ${lang}:`, error);
@@ -35,8 +48,11 @@ export class JsonTranslationLoader implements TranslateLoader {
       )
     );
 
+    // Combine main translation with all module translations
+    const allTranslations = [mainTranslation, ...moduleTranslations];
+
     // Merge all translations using forkJoin
-    return forkJoin(loadPromises).pipe(
+    return forkJoin(allTranslations).pipe(
       map(translations => {
         // Merge all translation objects into one
         return translations.reduce((merged, translation) => {
