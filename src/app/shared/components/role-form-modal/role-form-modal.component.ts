@@ -108,7 +108,8 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
 
   private initializeForm(): void {
     this.roleForm = this.fb.group({
-      name: [this.role?.name || '', [Validators.required, Validators.minLength(3)]],
+      nameEn: [this.role?.nameEn || this.role?.name || '', [Validators.required, Validators.minLength(3)]],
+      nameAr: [this.role?.nameAr || '', [Validators.required, Validators.minLength(3)]],
       isSuperAdmin: [this.role?.isSuperAdmin || false],
       applicationEntityId: [null] // Single entity selection
     });
@@ -126,7 +127,9 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       error: (error: any) => {
         this.isLoadingEntities = false;
         console.error('Failed to load entities:', error);
-        this.errorMessage = `Failed to load entities: ${error.message || 'Unknown error'}`;
+        this.translateService.get('roleFormModal.failedToLoadEntities').subscribe(translation => {
+          this.errorMessage = `${translation}: ${error.message || 'Unknown error'}`;
+        });
       }
     });
   }
@@ -137,7 +140,21 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   }
 
   get title(): string {
-    return this.mode === 'create' ? 'Create New Role' : `Edit Role: ${this.role?.name}`;
+    if (this.mode === 'create') {
+      return this.translateService.instant('roleFormModal.createTitle');
+    }
+
+    const nameAr = this.role?.nameAr;
+    const nameEn = this.role?.nameEn || this.role?.name;
+    let roleDisplayName = '';
+
+    if (nameAr && nameEn) {
+      roleDisplayName = `${nameAr} / ${nameEn}`;
+    } else {
+      roleDisplayName = nameAr || nameEn || '';
+    }
+
+    return `${this.translateService.instant('roleFormModal.editTitle')}: ${roleDisplayName}`;
   }
 
   onSubmit(): void {
@@ -157,7 +174,9 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
 
     if (this.mode === 'create') {
       const dto: CreateRoleDto = {
-        name: this.roleForm.value.name,
+        name: this.roleForm.value.nameEn, // Use nameEn as primary name for now
+        nameEn: this.roleForm.value.nameEn,
+        nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
@@ -182,7 +201,9 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     } else if (this.role) {
       const dto: UpdateRoleDto = {
         id: this.role.id,
-        name: this.roleForm.value.name,
+        name: this.roleForm.value.nameEn, // Use nameEn as primary name
+        nameEn: this.roleForm.value.nameEn,
+        nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
@@ -233,10 +254,11 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     const field = this.roleForm.get(fieldName);
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
-        return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required`;
+        const labelKey = fieldName === 'nameEn' ? 'roleFormModal.nameEn' : (fieldName === 'nameAr' ? 'roleFormModal.nameAr' : fieldName);
+        return `${this.translateService.instant(labelKey)} ${this.translateService.instant('common.requiredSuffix') || 'is required'}`;
       }
       if (field.errors['minlength']) {
-        return `Minimum length is ${field.errors['minlength'].requiredLength}`;
+        return `${this.translateService.instant('common.minLength') || 'Minimum length is'} ${field.errors['minlength'].requiredLength}`;
       }
     }
     return '';

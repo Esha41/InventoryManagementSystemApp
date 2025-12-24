@@ -113,12 +113,22 @@
   },
   "roleFormModal": {
     "roleName": "Role Name",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
     "roleNamePlaceholder": "Enter role name",
+    "nameEnPlaceholder": "Enter English name",
+    "nameArPlaceholder": "Enter Arabic name",
     "superAdmin": "Super Administrator (Full Access)",
     "defaultRole": "Default Role (Auto-assigned to new users)",
+    "applicationEntity": "Application Entity",
     "selectEntity": "Select Application Entity",
+    "loadingEntities": "Loading entities...",
+    "noEntitiesAvailable": "No entities available",
+    "failedToLoadEntities": "Failed to load entities",
     "create": "Create Role",
-    "update": "Update Role"
+    "update": "Update Role",
+    "createTitle": "Create New Role",
+    "editTitle": "Edit Role"
   },
   "lookupManagement": {
     "title": "Lookup Tables",

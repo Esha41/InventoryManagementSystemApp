@@ -111,6 +111,8 @@ export interface RoleApplicationEntityLinkDto {
  */
 export interface CreateRoleDto {
   name: string;
+  nameEn?: string;
+  nameAr?: string;
   isDefaultRole?: boolean;
   isSuperAdmin?: boolean;
   permissions?: string[];
@@ -123,6 +125,8 @@ export interface CreateRoleDto {
 export interface UpdateRoleDto {
   id: string;
   name?: string;
+  nameEn?: string;
+  nameAr?: string;
   isDefaultRole?: boolean;
   isSuperAdmin?: boolean;
   permissions?: string[];

@@ -109,12 +109,22 @@
   },
   "roleFormModal": {
     "roleName": "اسم الدور",
+    "nameEn": "الاسم (بالانجليزية)",
+    "nameAr": "الاسم (بالعربية)",
     "roleNamePlaceholder": "أدخل اسم الدور",
+    "nameEnPlaceholder": "أدخل الاسم بالإنجليزية",
+    "nameArPlaceholder": "أدخل الاسم بالعربية",
     "superAdmin": "مدير فائق (وصول كامل)",
     "defaultRole": "دور افتراضي (يُعيَّن تلقائياً للمستخدمين الجدد)",
+    "applicationEntity": "كيان التطبيق",
     "selectEntity": "اختر كيان التطبيق",
+    "loadingEntities": "جاري تحميل الكيانات...",
+    "noEntitiesAvailable": "لا توجد كيانات متاحة",
+    "failedToLoadEntities": "فشل تحميل الكيانات",
     "create": "إنشاء دور",
-    "update": "تحديث الدور"
+    "update": "تحديث الدور",
+    "createTitle": "إضافة دور جديد",
+    "editTitle": "تعديل الدور"
   },
   "lookupManagement": {
     "title": "جداول البحث",

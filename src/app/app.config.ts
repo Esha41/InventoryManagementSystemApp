@@ -25,19 +25,6 @@ export class JsonTranslationLoader implements TranslateLoader {
       'notifications'
     ];
 
-    // Load the main translation file first
-    const mainTranslation = this.http.get(`/assets/i18n/${lang}.json`).pipe(
-      map(data => {
-        console.log(`Loaded main translation file for ${lang}:`, Object.keys(data).length, 'top-level keys');
-        console.log('Has lookupFormModal?', 'lookupFormModal' in data);
-        return data;
-      }),
-      catchError(error => {
-        console.warn(`Failed to load main translation file for ${lang}:`, error);
-        return of({});
-      })
-    );
-
     // Load all modular translation files
     const moduleTranslations = translationModules.map(module =>
       this.http.get(`/assets/i18n/${lang}/${module}.json`).pipe(
@@ -48,16 +35,15 @@ export class JsonTranslationLoader implements TranslateLoader {
       )
     );
 
-    // Combine main translation with all module translations
-    const allTranslations = [mainTranslation, ...moduleTranslations];
-
     // Merge all translations using forkJoin
-    return forkJoin(allTranslations).pipe(
+    return forkJoin(moduleTranslations).pipe(
       map(translations => {
         // Merge all translation objects into one
-        return translations.reduce((merged, translation) => {
-          return { ...merged, ...translation };
+        const merged = translations.reduce((acc, translation) => {
+          return { ...acc, ...translation };
         }, {});
+        console.log(`Loaded ${translationModules.length} translation modules for ${lang}:`, Object.keys(merged).length, 'top-level keys');
+        return merged;
       }),
       catchError(error => {
         console.error(`Failed to load translations for ${lang}:`, error);
