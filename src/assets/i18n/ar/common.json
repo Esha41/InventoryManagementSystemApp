@@ -57,7 +57,8 @@
       "Return After Service": "إرجاع بعد الخدمة",
       "Duty Order": "أمر واجب",
       "Normal Order": "أمر عادي",
-      "Field Clearance": "إخلاء الميدان"
+      "Field Clearance": "إخلاء الميدان",
+      "طلب عملية": "طلب عملية"
     },
     "requester": "مقدم الطلب",
     "reason": "السبب",

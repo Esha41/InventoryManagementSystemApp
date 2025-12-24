@@ -52,7 +52,8 @@
       "Return After Service": "Return After Service",
       "Duty Order": "Duty Order",
       "Normal Order": "Normal Order",
-      "Field Clearance": "Field Clearance"
+      "Field Clearance": "Field Clearance",
+      "طلب عملية": "Operational Request"
     },
     "usageLocation": "Usage Location",
     "numberOfOfficers": "Number of Officers",
