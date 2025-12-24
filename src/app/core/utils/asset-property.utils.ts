@@ -11,7 +11,6 @@ import { Asset } from '../models/asset-list.model';
 import { LookupItem } from '../models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
-import { getWeaponTypeName, getActionTypeName } from './weapon.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { ItemType } from '../models/inventory.model';
 
@@ -25,7 +24,7 @@ export function isAmmunition(asset: AssetUnion): asset is AmmunitionReadDto {
 }
 
 export function isWeapon(asset: AssetUnion): asset is WeaponDto {
-  return asset !== null && 'weaponType' in asset;
+  return asset !== null && 'caliber' in asset && !('armNumber' in asset) && !('explosiveType' in asset);
 }
 
 export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
@@ -124,35 +123,48 @@ export class AssetPropertyAccessor {
   }
 
   // Weapon properties
-  getWeaponTypeName(asset: AssetUnion): string {
-    return isWeapon(asset) ? getWeaponTypeName(asset.weaponType) : '-';
-  }
-
   getCaliber(asset: AssetUnion): string {
     return isWeapon(asset) ? (asset.caliber || '-') : '-';
   }
 
-  getActionTypeName(asset: AssetUnion): string {
-    return isWeapon(asset) ? getActionTypeName(asset.actionType) : '-';
+  getModel(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.model || '-') : '-';
   }
 
-  getBarrelLength(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.barrelLength == null) return '-';
-    return `${asset.barrelLength} ${this.getUnitName(asset.barrelLengthUnit)}`;
+  getYearOfManufacture(asset: AssetUnion): string {
+    return isWeapon(asset) && asset.yearOfManufacture != null ? asset.yearOfManufacture.toString() : '-';
   }
 
-  getCapacity(asset: AssetUnion): string {
-    return isWeapon(asset) && asset.capacity != null ? asset.capacity.toString() : '-';
+  getCountryOfManufacture(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.countryOfManufacture) : '-';
   }
 
-  getOverallLength(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.overallLength == null) return '-';
-    return `${asset.overallLength} ${this.getUnitName(asset.overallLengthUnit)}`;
+  getCaliberUnit(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getUnitName(asset.caliberUnit) : '-';
   }
 
-  getWeight(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.weight == null) return '-';
-    return `${asset.weight} ${this.getUnitName(asset.weightUnit)}`;
+  getDistributionForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.distribution || '-') : '-';
+  }
+
+  getUnNumberForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.unNumber || '-') : '-';
+  }
+
+  getReferenceNoForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.referenceNo || '-') : '-';
+  }
+
+  getClassificationForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.classification) : '-';
+  }
+
+  getTypeForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.type) : '-';
+  }
+
+  getNotesForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.notes || '-') : '-';
   }
 
   // Explosive properties

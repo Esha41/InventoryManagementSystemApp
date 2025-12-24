@@ -61,6 +61,17 @@ export interface AmmunitionReadDto {
   hazardDivision?: LookupDto;
   classification?: LookupDto;
   type?: LookupDto;
+  
+  // Images array from response
+  images?: Array<{
+    id: number;
+    fileUrl: string;
+    fileName: string;
+    originalName: string;
+    isMain: boolean;
+    entity: string;
+    entityId: number;
+  }>;
 }
 
 export interface AmmunitionCreateDto {

@@ -31,6 +31,17 @@ export interface ExplosiveDto extends BaseItemDto {
   compatibility?: LookupDto;
   classification?: LookupDto;
   type?: LookupDto;
+  
+  // Images array from response
+  images?: Array<{
+    id: number;
+    fileUrl: string;
+    fileName: string;
+    originalName: string;
+    isMain: boolean;
+    entity: string;
+    entityId: number;
+  }>;
 }
 
 /**
@@ -47,7 +58,7 @@ export interface CreateUpdateExplosiveDto {
   expiryDate?: Date | string;
 
   explosiveType?: number;
-  unNumber: string;
+  unNumber?: string;
   netExplosiveQuantity?: number;
   netExplosiveQuantityUnitId?: number;
   totalWeight?: number;

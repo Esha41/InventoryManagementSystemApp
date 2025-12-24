@@ -3,7 +3,6 @@ import { AmmunitionReadDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
-import { getWeaponTypeName, getActionTypeName } from './weapon.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -14,6 +13,9 @@ export function mapAmmunitionToAsset(
   dto: AmmunitionReadDto,
   currentLang: string
 ): Asset {
+  // Note: imageUrl is not set here because fileUrl from response is a network path
+  // Images will be loaded as blobs in loadAmmunitionImages() using the image ID
+
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
@@ -34,7 +36,7 @@ export function mapAmmunitionToAsset(
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
-    imageUrl: undefined,
+    imageUrl: undefined, // Will be set in loadAmmunitionImages() using image ID from response
     originalData: dto
   };
 }
@@ -43,6 +45,9 @@ export function mapAmmunitionToAsset(
  * Maps WeaponDto to Asset
  */
 export function mapWeaponToAsset(dto: WeaponDto): Asset {
+  // Note: imageUrl is not set here because fileUrl from response is a network path
+  // Images will be loaded as blobs in loadImagesFromResponse() using the image ID
+
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
@@ -50,21 +55,12 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
-    weaponType: getWeaponTypeName(dto.weaponType),
     caliber: dto.caliber,
-    actionType: getActionTypeName(dto.actionType),
-    barrelLength: dto.barrelLength,
-    barrelLengthUnit: dto.barrelLengthUnit,
-    overallLength: dto.overallLength,
-    overallLengthUnit: dto.overallLengthUnit,
-    weight: dto.weight,
-    weightUnit: dto.weightUnit,
-    capacity: dto.capacity,
     expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
-    imageUrl: undefined,
+    imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };
 }
@@ -73,6 +69,9 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
  * Maps ExplosiveDto to Asset
  */
 export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
+  // Note: imageUrl is not set here because fileUrl from response is a network path
+  // Images will be loaded as blobs in loadImagesFromResponse() using the image ID
+
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
@@ -92,7 +91,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
-    imageUrl: undefined,
+    imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };
 }

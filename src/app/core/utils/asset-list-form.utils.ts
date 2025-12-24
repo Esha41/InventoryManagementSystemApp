@@ -40,16 +40,11 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     notes: [''],
 
     // Weapon
-    weaponType: [null as number | null],
     caliber: [''],
-    actionType: [null as number | null],
-    barrelLength: [null as number | null],
-    barrelLengthUnitId: [null as number | null],
-    overallLength: [null as number | null],
-    overallLengthUnitId: [null as number | null],
-    weight: [null as number | null],
-    weightUnitId: [null as number | null],
-    capacity: [null as number | null],
+    caliberUnitId: [null as number | null],
+    yearOfManufacture: [null as number | null],
+    countryOfManufactureId: [null as number | null],
+    model: [''],
 
     // Explosive
     explosiveType: [null as number | null],
