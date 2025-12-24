@@ -272,6 +272,11 @@ export class AmmunitionService {
     formData.append('file', file);
     return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData);
   }
+
+  // Download import template with all fields and data validation
+  downloadImportTemplate(): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/template`, { responseType: 'blob' });
+  }
 }
 
 

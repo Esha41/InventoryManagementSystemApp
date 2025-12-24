@@ -289,7 +289,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               totalRows: result.successCount + result.failureCount,
               validRows: result.successCount,
               invalidRows: result.failureCount,
-              columns: result.successfulRecords.length > 0 ? Object.keys(result.successfulRecords[0]) : []
+              columns: result.successfulRecords.length > 0 ? this.getOrderedColumns(result.successfulRecords[0]) : []
             };
             this.showPreviewModal = true;
           } else {
@@ -321,6 +321,44 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.showPreviewModal = false;
     this.previewData = null;
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Get ordered columns for preview dialog
+   * Matches the exact column order from backend InventoryService.GetColumnMappings (line 1580-1600)
+   * This ensures consistency between downloaded templates and import preview
+   */
+  private getOrderedColumns(record: any): string[] {
+    if (!record) return [];
+
+    const allKeys = Object.keys(record);
+
+    // Define column order based on backend GetColumnMappings
+    // From InventoryService.GetColumnMappings
+    const priorityOrder = [
+      'itemName',
+      'itemNo',
+      'itemId',
+      'lot',
+      'supplier',
+      'manufacturer',
+      'country',
+      'originalQuantity',
+      'batchNo',
+      'expiryDate',
+      'readyForIssue',
+      'invoiceNumber',
+      'invoiceDate',
+      'receivedDate',
+      'notes'
+    ];
+
+    // Separate keys into priority (matching template) and remaining
+    const priorityKeys = priorityOrder.filter(key => allKeys.includes(key));
+    const remainingKeys = allKeys.filter(key => !priorityOrder.includes(key));
+
+    // Return priority keys first (matching template order), then remaining keys
+    return [...priorityKeys, ...remainingKeys];
   }
 
   downloadTemplate(): void {

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, combineLatest, of, EMPTY } from 'rxjs';
+import { Subject, takeUntil, combineLatest, of, EMPTY, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
@@ -197,43 +197,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Subscribe to user changes and load data
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAllRequests();
-      });
+    // Combine all triggers that should reload data into a single stream
+    // This is more efficient than multiple separate subscriptions
+    const userChanges$ = this.authService.currentUser$.pipe(
+      filter(user => !!user),
+      map(() => 'user-change')
+    );
 
-    // Subscribe to request status updates to refresh data
-    this.requestStatusUpdateService.onRequestStatusUpdated$
+    const statusUpdates$ = this.requestStatusUpdateService.onRequestStatusUpdated$.pipe(
+      map(() => 'status-update')
+    );
+
+    const navigationChanges$ = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter(() => this.router.url === '/dashboard' || this.router.url.startsWith('/dashboard')),
+      map(() => 'navigation')
+    );
+
+    const languageChanges$ = this.translate.onLangChange.pipe(
+      map(() => 'language-change')
+    );
+
+    // Merge all triggers and use distinctUntilChanged with a time window
+    // to prevent duplicate calls within a short time frame
+    merge(userChanges$, statusUpdates$, navigationChanges$, languageChanges$)
       .pipe(
-        debounceTime(300),
+        debounceTime(100), // Small debounce to handle rapid successive events
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
         this.loadAllRequests();
       });
-
-    // Refresh data when navigating back to dashboard
-    this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationEnd),
-        filter(() => this.router.url === '/dashboard' || this.router.url.startsWith('/dashboard')),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.loadAllRequests();
-      });
-
-    // Subscribe to language changes to update all localized content
-    this.translate.onLangChange
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAllRequests();
-      });
-
-    // Initial load
-    this.loadAllRequests();
   }
 
   /**

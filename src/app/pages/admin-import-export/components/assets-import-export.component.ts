@@ -150,25 +150,64 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           this.loadingAssets = false;
           if (res.succeeded) {
             const result = res.data;
+
+            // Create a map to track which rows have errors (by row number)
+            const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
+            result.errors.forEach((error: any) => {
+              const rowNum = error.rowNumber || 0;
+              if (!errorsByRow.has(rowNum)) {
+                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
+              }
+              errorsByRow.get(rowNum)!.errors.push(error.errorMessage || 'Unknown error');
+            });
+
+            // Build preview rows
+            const previewRows: any[] = [];
+            let currentRowNumber = 2; // Excel rows start at 2 (1 is header)
+
+            // Process successful records
+            result.successfulRecords.forEach((record: any, index: number) => {
+              const rowNum = currentRowNumber + index;
+              const errorInfo = errorsByRow.get(rowNum);
+
+              previewRows.push({
+                rowNumber: rowNum,
+                data: record,
+                isValid: !errorInfo || errorInfo.errors.length === 0,
+                errors: errorInfo ? errorInfo.errors : []
+              });
+
+              // Remove from errorsByRow since we've processed it
+              if (errorInfo) {
+                errorsByRow.delete(rowNum);
+              }
+            });
+
+            // Process errors that don't have corresponding successful records
+            // (These are rows that failed validation and have rowData in the error)
+            errorsByRow.forEach((errorInfo, rowNum) => {
+              previewRows.push({
+                rowNumber: rowNum,
+                data: errorInfo.rowData || {},
+                isValid: false,
+                errors: errorInfo.errors
+              });
+            });
+
+            // Sort by row number
+            previewRows.sort((a, b) => a.rowNumber - b.rowNumber);
+
+            // Calculate valid/invalid counts
+            const validRows = previewRows.filter(r => r.isValid).length;
+            const invalidRows = previewRows.filter(r => !r.isValid).length;
+
             // Transform backend data to preview format
             this.previewData = {
-              rows: result.successfulRecords.map((record: any, index: number) => ({
-                rowNumber: index + 1,
-                data: record,
-                isValid: true,
-                errors: []
-              })).concat(
-                result.errors.map((error: any, index: number) => ({
-                  rowNumber: result.successfulRecords.length + index + 1,
-                  data: {},
-                  isValid: false,
-                  errors: [error.errorMessage]
-                }))
-              ),
-              totalRows: result.successCount + result.failureCount,
-              validRows: result.successCount,
-              invalidRows: result.failureCount,
-              columns: result.successfulRecords.length > 0 ? Object.keys(result.successfulRecords[0]) : []
+              rows: previewRows,
+              totalRows: previewRows.length,
+              validRows: validRows,
+              invalidRows: invalidRows,
+              columns: previewRows.length > 0 && previewRows[0].data ? this.getOrderedColumns(previewRows[0].data) : []
             };
             this.showPreviewModal = true;
           } else {
@@ -277,6 +316,51 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Get ordered columns for preview dialog
+   * Matches the exact column order from backend template generation (GenerateImportTemplateAsync)
+   * This ensures consistency between downloaded templates and import preview
+   */
+  private getOrderedColumns(record: any): string[] {
+    if (!record) return [];
+
+    const allKeys = Object.keys(record);
+
+    // Define column order based on backend template headers
+    // These orders match exactly with the backend GenerateImportTemplateAsync methods
+    let priorityOrder: string[] = [];
+
+    if (this._activeTab === 'ammunition') {
+      // From AmmunitionService.GenerateImportTemplateAsync (line 882-889)
+      priorityOrder = [
+        'name', 'itemNo', 'partNo', 'armNumber', 'nsn', 'price', 'minimumQuantity',
+        'bulletDiameter', 'bulletDiameterUnit', 'totalWeight', 'isLinked', 'primer',
+        'caseType', 'propellant', 'compatibility', 'hazardDivision', 'natureOption',
+        'primaryPurpos', 'projectileColor', 'projectailMaterial',
+        'unNumber', 'distribution', 'referenceNo', 'classification', 'type', 'notes'
+      ];
+    } else if (this._activeTab === 'explosive') {
+      // From ExplosiveService.GenerateImportTemplateAsync (line 598-603)
+      priorityOrder = [
+        'name', 'itemNo', 'partNo', 'nsn', 'price', 'minimumQuantity',
+        'explosiveType', 'unNumber', 'netExplosiveQuantity', 'netExplosiveQuantityUnit',
+        'distribution', 'referenceNo', 'hazardDivision', 'classification', 'type', 'notes'
+      ];
+    } else if (this._activeTab === 'weapon') {
+      // Weapon template order (to be updated when backend template is ready)
+      priorityOrder = [
+        'name', 'itemNo', 'partNo', 'weaponType', 'caliber', 'price', 'minimumQuantity', 'nsn'
+      ];
+    }
+
+    // Separate keys into priority (matching template) and remaining
+    const priorityKeys = priorityOrder.filter(key => allKeys.includes(key));
+    const remainingKeys = allKeys.filter(key => !priorityOrder.includes(key));
+
+    // Return priority keys first (matching template order), then remaining keys
+    return [...priorityKeys, ...remainingKeys];
+  }
+
   private buildExportColumns(): ExcelColumn[] {
     const columns: ExcelColumn[] = [
       {
@@ -296,40 +380,160 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         key: 'partNo',
         width: 15,
         format: (value: string) => value || '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.nsn'),
-        key: 'nsn',
-        width: 15,
-        format: (value: string) => value || '-'
       }
     ];
 
     if (this._activeTab === 'ammunition') {
+      // Add ALL ammunition fields to match template
       columns.push(
+        {
+          header: 'Arm Number',
+          key: 'armNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.nsn'),
+          key: 'nsn',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.price'),
+          key: 'price',
+          width: 12,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.minimumQuantity'),
+          key: 'minimumQuantity',
+          width: 18,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: 'Bullet Diameter',
+          key: 'bulletDiameter',
+          width: 15,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: 'Bullet Diameter Unit',
+          key: 'bulletDiameterUnit',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Total Weight',
+          key: 'totalWeight',
+          width: 15,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: 'Is Linked',
+          key: 'isLinked',
+          width: 12,
+          format: (value: boolean) => value ? 'Yes' : 'No'
+        },
+        {
+          header: 'Primer',
+          key: 'primer',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
         {
           header: this.translateService.instant('assetList.table.caseType'),
           key: 'caseType',
           width: 20,
-          format: (value: string | any) => {
-            if (!value) return '-';
-            if (typeof value === 'string') return value;
-            return getLookupDisplayName(value, this.translateService) || '-';
-          }
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Propellant',
+          key: 'propellant',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Compatibility',
+          key: 'compatibility',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('assetList.table.hazardDivision'),
           key: 'hazardDivision',
           width: 20,
-          format: (value: string | any) => {
-            if (!value) return '-';
-            if (typeof value === 'string') return value;
-            return getLookupDisplayName(value, this.translateService) || '-';
-          }
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Nature Option',
+          key: 'natureOption',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Primary Purpose',
+          key: 'primaryPurpos',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Projectile Color',
+          key: 'projectileColor',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Projectile Material',
+          key: 'projectailMaterial',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'UN Number',
+          key: 'unNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Distribution',
+          key: 'distribution',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Reference No',
+          key: 'referenceNo',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Classification',
+          key: 'classification',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Type',
+          key: 'type',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Notes',
+          key: 'notes',
+          width: 30,
+          format: (value: string) => value || '-'
         }
       );
     } else if (this._activeTab === 'weapon') {
+      // Keep existing weapon columns (will be updated later)
       columns.push(
+        {
+          header: this.translateService.instant('assetList.table.nsn'),
+          key: 'nsn',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
         {
           header: this.translateService.instant('addAsset.weaponType'),
           key: 'weaponType',
@@ -341,10 +545,41 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'caliber',
           width: 15,
           format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.price'),
+          key: 'price',
+          width: 15,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.minimumQuantity'),
+          key: 'minimumQuantity',
+          width: 18,
+          format: (value: number) => value ? value.toString() : '-'
         }
       );
     } else if (this._activeTab === 'explosive') {
+      // Add ALL explosive fields to match template
       columns.push(
+        {
+          header: this.translateService.instant('assetList.table.nsn'),
+          key: 'nsn',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.price'),
+          key: 'price',
+          width: 12,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.minimumQuantity'),
+          key: 'minimumQuantity',
+          width: 18,
+          format: (value: number) => value ? value.toString() : '-'
+        },
         {
           header: this.translateService.instant('addAsset.explosiveType'),
           key: 'explosiveType',
@@ -356,24 +591,51 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'unNumber',
           width: 15,
           format: (value: string) => value || '-'
+        },
+        {
+          header: 'Net Explosive Quantity',
+          key: 'netExplosiveQuantity',
+          width: 20,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: 'NEQ Unit',
+          key: 'netExplosiveQuantityUnit',
+          width: 15,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Distribution',
+          key: 'distribution',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Reference No',
+          key: 'referenceNo',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Classification',
+          key: 'classification',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Type',
+          key: 'type',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Notes',
+          key: 'notes',
+          width: 30,
+          format: (value: string) => value || '-'
         }
       );
     }
-
-    columns.push(
-      {
-        header: this.translateService.instant('assetList.table.price'),
-        key: 'price',
-        width: 15,
-        format: (value: number) => value ? value.toString() : '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.minimumQuantity'),
-        key: 'minimumQuantity',
-        width: 18,
-        format: (value: number) => value ? value.toString() : '-'
-      }
-    );
 
     return columns;
   }
