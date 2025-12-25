@@ -3,6 +3,7 @@ import { ExcelExportService, ExcelColumn } from './excel-export.service';
 import { InventoryService } from './inventory.service';
 import { AmmunitionService } from './ammunition.service';
 import { ExplosiveService } from './explosive.service';
+import { TranslateService } from '@ngx-translate/core';
 import { saveAs } from 'file-saver';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -17,13 +18,15 @@ export class TemplateGenerationService {
     private inventoryService: InventoryService,
     private ammunitionService: AmmunitionService,
     private explosiveService: ExplosiveService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private translateService: TranslateService
   ) { }
 
   /**
    * Generate asset import template based on type
    * For ammunition and explosive: downloads comprehensive template from backend with all fields and VLOOKUP support
    * For weapon: uses local generation (will be updated later)
+   * Template language matches current UI language (English/Arabic)
    */
   generateAssetTemplate(type: 'ammunition' | 'weapon' | 'explosive'): void {
     // Use backend template for ammunition and explosive (comprehensive with all fields)
@@ -31,7 +34,10 @@ export class TemplateGenerationService {
       const service = type === 'ammunition' ? this.ammunitionService : this.explosiveService;
       const typeName = type.charAt(0).toUpperCase() + type.slice(1);
 
-      service.downloadImportTemplate()
+      // Get current language from TranslateService
+      const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+      service.downloadImportTemplate(currentLang)
         .pipe(
           catchError(error => {
             console.error(`Error downloading ${type} template:`, error);

@@ -274,8 +274,9 @@ export class AmmunitionService {
   }
 
   // Download import template with all fields and data validation
-  downloadImportTemplate(): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/template`, { responseType: 'blob' });
+  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+    const params = new HttpParams().set('language', language);
+    return this.http.get(`${this.baseUrl}/template`, { params, responseType: 'blob' });
   }
 }
 
