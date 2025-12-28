@@ -88,8 +88,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.depots = depots;
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          console.error('Error loading depots:', err);
+        error: () => {
+          // Silently handle error - depots loading failure
         }
       });
   }
@@ -132,8 +132,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.loadingWarehouseInventory = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error loading warehouse inventory:', error);
+        error: () => {
           this.loadingWarehouseInventory = false;
           this.toastService.error('Failed to load warehouse inventory');
           this.cdr.markForCheck();
@@ -232,10 +231,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               if (errors.length > 0 && errors.length <= 3) {
                 msg += ` Errors: ${errors.slice(0, 3).map((e: any) => e.errorMessage || e).join('; ')}`;
               } else if (errors.length > 3) {
-                msg += ` Check console for details.`;
+                msg += ` (${errors.length} errors found)`;
               }
               this.toastService.warning(msg);
-              console.warn('Import Errors:', errors);
             } else {
               this.toastService.success(`Imported ${successCount} items successfully.`);
             }
@@ -247,7 +245,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error: any) => {
-          console.error('Import error:', error);
           this.toastService.error('Failed to import inventory: ' + (error.message || 'Unknown error'));
           this.loadingWarehouseInventory = false;
           this.cdr.markForCheck();
@@ -297,10 +294,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
+        error: () => {
           this.loadingWarehouseInventory = false;
           this.toastService.error('Preview failed');
-          console.error(err);
           this.cdr.markForCheck();
         }
       });

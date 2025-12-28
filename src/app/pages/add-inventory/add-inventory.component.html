@@ -42,13 +42,14 @@
             class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
             {{ 'warehouseInventory.tabs.ammunition' | translate }}
           </button>
-          <button type="button" (click)="switchTab('weapon')" [class.border-b-3]="activeTab === 'weapon'"
+          <!-- Weapon tab button hidden (will be enabled later) -->
+          <!-- <button type="button" (click)="switchTab('weapon')" [class.border-b-3]="activeTab === 'weapon'"
             [class.border-[var(--color-brand)]="activeTab === 'weapon'" [class.bg-blue-50]="activeTab === 'weapon'"
             [class.text-[var(--color-brand)]="activeTab === 'weapon'" [class.font-semibold]="activeTab === 'weapon'"
             [class.text-gray-600]="activeTab !== 'weapon'"
             class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
             {{ 'warehouseInventory.tabs.weapon' | translate }}
-          </button>
+          </button> -->
           <button type="button" (click)="switchTab('explosive')" [class.border-b-3]="activeTab === 'explosive'"
             [class.border-[var(--color-brand)]="activeTab === 'explosive'"
             [class.bg-blue-50]="activeTab === 'explosive'" [class.text-[var(--color-brand)]="activeTab === 'explosive'"
@@ -264,10 +265,10 @@
       </div>
 
       <!-- Form Actions -->
-      <div class="flex items-center justify-end space-x-4">
+      <div class="flex items-center justify-end gap-4" [class.flex-row-reverse]="isRTL">
         <button type="button" (click)="onCancel()" [disabled]="submitting"
           class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
             <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
             <span>{{ 'addInventory.cancel' | translate }}</span>
           </div>
@@ -275,7 +276,7 @@
 
         <button *appHasPermission="'Inventory.Create'" type="submit" [disabled]="submitting"
           class="px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
             <lucide-angular [img]="Save" class="w-4 h-4"></lucide-angular>
             <span>{{ submitting ? ('addInventory.saving' | translate) : ('addInventory.saveInventory' | translate)
               }}</span>

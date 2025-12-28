@@ -23,7 +23,6 @@ export class ForecastComponent implements OnInit, AfterViewInit {
   private charts: Chart[] = [];
 
   ngOnInit(): void {
-    console.log('Forecast component initialized');
   }
 
   ngAfterViewInit(): void {

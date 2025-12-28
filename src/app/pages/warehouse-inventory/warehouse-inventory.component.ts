@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -46,7 +46,8 @@ import { ExcelExportService, ExcelColumn } from '@services/excel-export.service'
     ErrorStateComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
-  styleUrls: ['./warehouse-inventory.component.css']
+  styleUrls: ['./warehouse-inventory.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depoId: number = 0;
@@ -107,7 +108,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
-    private excelExportService: ExcelExportService
+    private excelExportService: ExcelExportService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -125,6 +127,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.currentDepot) {
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
+          this.cdr.markForCheck();
         }
       });
 
@@ -137,6 +140,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.applyFilters();
+        this.cdr.markForCheck();
       });
   }
 
@@ -160,17 +164,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
 
-          // DEBUG: Log item types
-          console.log('=== INVENTORY DEBUG ===');
-          console.log('Total items:', inventoryDetails.length);
-          inventoryDetails.forEach((detail, index) => {
-            console.log(`Item ${index + 1}:`, {
-              name: detail.item?.name,
-              itemType: detail.item?.itemType,
-              typeofItemType: typeof detail.item?.itemType
-            });
-          });
-
           // Only use real inventory data - no fake static items
           const normalizedDetails = inventoryDetails.map(detail => {
             if (detail.item) {
@@ -191,11 +184,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.inventoryDetails = normalizedDetails;
           this.applyFilters();
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('Error loading inventory data:', error);
           this.error = 'Failed to load inventory data';
           this.loading = false;
+          this.cdr.markForCheck();
+          this.translateService.get(['toast.failedToLoadInventory', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadInventory'] || 'Failed to load inventory data', translations['toast.error']);
+          });
         }
       });
   }
@@ -258,6 +255,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.currentPage = 1;
     this.applyFilters();
+    this.cdr.markForCheck();
   }
 
   /**
@@ -289,6 +287,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     this.filteredInventoryDetails = filtered;
     this.validateCurrentPage();
+    this.cdr.markForCheck();
   }
 
   /**
@@ -372,6 +371,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.cdr.markForCheck();
     }
   }
 
@@ -391,6 +391,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     if (this.isStaticItem(detail)) {
       this.selectedDetailForView = detail;
       this.showViewModal = true;
+      this.cdr.markForCheck();
     } else {
       // For inventory items, navigate to inventory detail page
       this.router.navigate(['/warehouse', this.depoId, 'inventory', detail.id]);
@@ -403,12 +404,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   closeViewModal(): void {
     this.showViewModal = false;
     this.selectedDetailForView = undefined;
+    this.cdr.markForCheck();
   }
 
   onRowsPerPageChange(newSize: number): void {
     this.rowsPerPage = newSize;
     this.currentPage = 1; // Reset to first page
     this.validateCurrentPage();
+    this.cdr.markForCheck();
   }
 
   /**
@@ -470,6 +473,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    */
   refreshInventory(): void {
     this.loadInventoryData();
+    this.cdr.markForCheck();
   }
 
   /**
@@ -492,9 +496,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         next: (inventory) => {
           this.currentInventory = inventory || undefined;
           this.showEditModal = true;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('Error loading inventory:', error);
           this.translateService.get('toast.failedToLoadDetails').subscribe(msg => {
             this.toastService.error(msg);
           });
@@ -508,6 +512,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onDeleteItem(detail: InventoryDetailDto): void {
     this.selectedDetail = detail;
     this.showDeleteDialog = true;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -552,6 +557,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           const tempSelectedDetail = this.selectedDetail;
           this.selectedDetail = undefined;
           this.currentInventory = undefined;
+          this.cdr.markForCheck();
 
           // Show success message
           this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
@@ -622,10 +628,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.inventoryDetails = normalizedDetails;
           this.applyFilters();
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('Error updating inventory:', error);
           this.loading = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
             const errorMsg = error.error?.message || translations['toast.failedToUpdate'];
             this.toastService.error(errorMsg, translations['toast.error']);
@@ -653,6 +660,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               this.toastService.error(translations['toast.inventoryNotFound'], translations['toast.error']);
             });
             this.showDeleteDialog = false;
+            this.cdr.markForCheck();
             return;
           }
 
@@ -670,14 +678,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
                   });
                   this.showDeleteDialog = false;
                   this.selectedDetail = undefined;
+                  this.cdr.markForCheck();
                   this.loadInventoryData();
                 },
                 error: (error) => {
-                  console.error('Error deleting inventory:', error);
                   this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
                     this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
                   });
                   this.showDeleteDialog = false;
+                  this.cdr.markForCheck();
                 }
               });
           } else {
@@ -711,24 +720,25 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
                   });
                   this.showDeleteDialog = false;
                   this.selectedDetail = undefined;
+                  this.cdr.markForCheck();
                   this.loadInventoryData();
                 },
                 error: (error) => {
-                  console.error('Error deleting item:', error);
                   this.translateService.get(['toast.failedToDeleteItem', 'toast.error']).subscribe(translations => {
                     this.toastService.error(translations['toast.failedToDeleteItem'], translations['toast.error']);
                   });
                   this.showDeleteDialog = false;
+                  this.cdr.markForCheck();
                 }
               });
           }
         },
         error: (error) => {
-          console.error('Error loading inventory for delete:', error);
           this.translateService.get(['toast.failedToLoad', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoad'], translations['toast.error']);
           });
           this.showDeleteDialog = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -740,6 +750,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.showEditModal = false;
     this.selectedDetail = undefined;
     this.currentInventory = undefined;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -748,6 +759,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onDeleteCancel(): void {
     this.showDeleteDialog = false;
     this.selectedDetail = undefined;
+    this.cdr.markForCheck();
   }
 
   /**

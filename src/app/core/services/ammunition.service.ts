@@ -136,9 +136,8 @@ export class AmmunitionService {
       // Delete old file first, then upload new one
       return this.deleteFile(existingFileId).pipe(
         switchMap(() => upload$),
-        catchError((deleteErr) => {
-          // If deletion fails, log it but still try to upload (maybe file doesn't exist)
-          console.warn('Failed to delete old image, proceeding with upload anyway:', deleteErr);
+        catchError(() => {
+          // If deletion fails, still try to upload (maybe file doesn't exist)
           return upload$;
         })
       );
@@ -168,14 +167,10 @@ export class AmmunitionService {
       return of(new Map());
     }
 
-    console.log('loadAssetImages called with IDs:', ammunitionIds);
-
     const imageMap$ = ammunitionIds.map(id =>
       this.getImageUrl(id).pipe(
         switchMap(url => {
-          console.log(`Ammunition ${id}: Got image URL:`, url);
           if (!url) {
-            console.log(`Ammunition ${id}: No image URL found`);
             return of({ id, url: null });
           }
 
@@ -187,29 +182,19 @@ export class AmmunitionService {
               if (blob.type && blob.type.startsWith('image/')) {
                 // Create a blob URL that the browser can use
                 const blobUrl = URL.createObjectURL(blob);
-                console.log(`Ammunition ${id}: Created blob URL for image (type: ${blob.type}, size: ${blob.size} bytes)`);
                 return { id, url: blobUrl };
               } else {
-                console.warn(`Ammunition ${id}: Blob is not an image (type: ${blob.type}), might be an error response`);
-                // Try to read as text to see if it's an error message
-                const reader = new FileReader();
-                reader.onload = () => {
-                  console.error(`Ammunition ${id}: Blob content:`, reader.result);
-                };
-                reader.readAsText(blob);
+                // Blob is not an image, return null
                 return { id, url: null };
               }
             }),
-            catchError((error) => {
-              console.error(`Failed to fetch image blob for ammunition ${id} from URL: ${url}`, error);
-              console.error(`Error status: ${error.status}, message: ${error.message}`);
+            catchError(() => {
               // Return null if fetch fails
               return of({ id, url: null });
             })
           );
         }),
-        catchError((error) => {
-          console.error(`Failed to get image URL for ammunition ${id}:`, error);
+        catchError(() => {
           return of({ id, url: null });
         })
       )
@@ -217,16 +202,13 @@ export class AmmunitionService {
 
     return forkJoin(imageMap$).pipe(
       map((results) => {
-        console.log('Image loading results:', results);
         const map = new Map<number, string | null>();
         results.forEach(({ id, url }) => {
           map.set(id, url);
-          console.log(`Setting image for asset ${id}:`, url ? `Blob URL created` : 'null');
         });
         return map;
       }),
-      catchError((err) => {
-        console.error('Failed to load asset images:', err);
+      catchError(() => {
         // Return empty map on error
         return of(new Map());
       })

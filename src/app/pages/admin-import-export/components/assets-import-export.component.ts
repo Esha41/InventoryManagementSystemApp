@@ -117,8 +117,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           this.loadingAssets = false;
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
-          console.error('Error loading assets:', err);
+        error: () => {
           this.loadingAssets = false;
           this.toastService.error('Failed to load assets');
           this.cdr.markForCheck();
@@ -215,10 +214,9 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
+        error: () => {
           this.loadingAssets = false;
           this.toastService.error('Preview failed');
-          console.error(err);
           this.cdr.markForCheck();
         }
       });
@@ -249,10 +247,9 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
+        error: () => {
           this.loadingAssets = false;
           this.toastService.error('Import failed');
-          console.error(err);
           this.cdr.markForCheck();
         }
       });
@@ -347,9 +344,11 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         'distribution', 'referenceNo', 'hazardDivision', 'classification', 'type', 'notes'
       ];
     } else if (this._activeTab === 'weapon') {
-      // Weapon template order (to be updated when backend template is ready)
+      // From WeaponService.GenerateImportTemplateAsync (matches backend template order)
       priorityOrder = [
-        'name', 'itemNo', 'partNo', 'weaponType', 'caliber', 'price', 'minimumQuantity', 'nsn'
+        'name', 'itemNo', 'partNo', 'nsn', 'price', 'minimumQuantity',
+        'caliber', 'caliberUnit', 'yearOfManufacture', 'countryOfManufacture', 'model',
+        'unNumber', 'distribution', 'referenceNo', 'classification', 'type', 'notes'
       ];
     }
 
@@ -526,7 +525,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         }
       );
     } else if (this._activeTab === 'weapon') {
-      // Keep existing weapon columns (will be updated later)
+      // Add ALL weapon fields to match template
       columns.push(
         {
           header: this.translateService.instant('assetList.table.nsn'),
@@ -535,10 +534,16 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('addAsset.weaponType'),
-          key: 'weaponType',
-          width: 20,
-          format: (value: string) => value || '-'
+          header: this.translateService.instant('assetList.table.price'),
+          key: 'price',
+          width: 12,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.minimumQuantity'),
+          key: 'minimumQuantity',
+          width: 18,
+          format: (value: number) => value ? value.toString() : '-'
         },
         {
           header: this.translateService.instant('addAsset.caliber'),
@@ -547,16 +552,64 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('assetList.table.price'),
-          key: 'price',
-          width: 15,
+          header: 'Caliber Unit',
+          key: 'caliberUnit',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Year Of Manufacture',
+          key: 'yearOfManufacture',
+          width: 20,
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: this.translateService.instant('assetList.table.minimumQuantity'),
-          key: 'minimumQuantity',
-          width: 18,
-          format: (value: number) => value ? value.toString() : '-'
+          header: 'Country Of Manufacture',
+          key: 'countryOfManufacture',
+          width: 25,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Model',
+          key: 'model',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.unNumber'),
+          key: 'unNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Distribution',
+          key: 'distribution',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Reference No',
+          key: 'referenceNo',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Classification',
+          key: 'classification',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Type',
+          key: 'type',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Notes',
+          key: 'notes',
+          width: 30,
+          format: (value: string) => value || '-'
         }
       );
     } else if (this._activeTab === 'explosive') {

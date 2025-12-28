@@ -97,8 +97,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
 
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading inventory item:', error);
+        error: () => {
           this.translateService.get('warehouseInventory.failedToLoadItem').subscribe(text => {
             this.error = text;
           });
@@ -129,8 +128,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           this.lots = lots;
           this.loadingLots = false;
         },
-        error: (error) => {
-          console.error('Error loading lots:', error);
+        error: () => {
           this.loadingLots = false;
         }
       });

@@ -40,13 +40,14 @@
 <app-card *ngIf="selectedDepotId" [shadow]="true" class="mb-6">
   <div class="p-6">
     <div class="flex items-center gap-4 flex-wrap">
-      <button (click)="onImportClick()"
+      <button *ngIf="activeTab !== 'weapon'" (click)="onImportClick()"
         class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         [class.flex-row-reverse]="isRTL">
         <lucide-angular [img]="Upload" class="w-4 h-4"></lucide-angular>
         <span>{{ 'common.import' | translate }}</span>
       </button>
-      <button (click)="downloadTemplate()"
+      <!-- Download Template button hidden for weapons (will be enabled later) -->
+      <button *ngIf="activeTab !== 'weapon'" (click)="downloadTemplate()"
         class="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm"
         [class.flex-row-reverse]="isRTL">
         <lucide-angular [img]="FileText" class="w-4 h-4"></lucide-angular>

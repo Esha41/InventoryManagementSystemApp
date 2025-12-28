@@ -208,8 +208,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.blobUrls.forEach((url: string) => {
       try {
         URL.revokeObjectURL(url);
-      } catch (e) {
-        console.warn('Error revoking blob URL:', e);
+      } catch {
+        // Silently handle blob URL revocation errors
       }
     });
     this.blobUrls.clear();
@@ -250,8 +250,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
               });
           }
         });
-    } catch (error) {
-      console.error('Error initializing asset list component:', error);
+    } catch {
       this.loading = false;
       this.cdr.markForCheck();
     }
@@ -284,8 +283,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         this.activeTab = 'ammunition';
         this.loadAmmunition();
       }
-    } catch (error) {
-      console.error('Error in loadAssets:', error);
+    } catch {
       this.loading = false;
       this.assets = [];
       this.cdr.markForCheck();
@@ -300,15 +298,13 @@ export class AssetListComponent implements OnInit, OnDestroy {
           try {
             this.assets = mapAmmunitionArrayToAssets(items || [], this.translateService);
             this.finishLoading();
-          } catch (error) {
-            console.error('Error mapping ammunition data:', error);
+          } catch {
             this.assets = [];
             this.loading = false;
             this.cdr.markForCheck();
           }
         },
-        error: (err) => {
-          console.error('Failed to load ammunitions:', err);
+        error: () => {
           this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
           this.assets = [];
           this.loading = false;
@@ -325,15 +321,13 @@ export class AssetListComponent implements OnInit, OnDestroy {
           try {
             this.assets = mapWeaponArrayToAssets(items || []);
             this.finishLoading();
-          } catch (error) {
-            console.error('Error mapping weapon data:', error);
+          } catch {
             this.assets = [];
             this.loading = false;
             this.cdr.markForCheck();
           }
         },
-        error: (err) => {
-          console.error('Failed to load weapons:', err);
+        error: () => {
           this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
           this.assets = [];
           this.loading = false;
@@ -350,15 +344,13 @@ export class AssetListComponent implements OnInit, OnDestroy {
           try {
             this.assets = mapExplosiveArrayToAssets(items || []);
             this.finishLoading();
-          } catch (error) {
-            console.error('Error mapping explosive data:', error);
+          } catch {
             this.assets = [];
             this.loading = false;
             this.cdr.markForCheck();
           }
         },
-        error: (err) => {
-          console.error('Failed to load explosives:', err);
+        error: () => {
           this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
           this.assets = [];
           this.loading = false;
@@ -440,7 +432,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           });
           this.cdr.markForCheck();
         },
-        error: (err) => console.error('Failed to load images:', err)
+        error: () => { /* Silently handle image loading errors - images are optional */ }
       });
   }
 
@@ -480,8 +472,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          console.error('Failed to load asset details', err);
+        error: () => {
           this.loading = false;
           this.cdr.markForCheck();
         }
@@ -520,8 +511,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           this.modalState.showEditModal = true;
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          console.error('Failed to load asset for edit', err);
+        error: () => {
           this.loading = false;
           this.cdr.markForCheck();
         }
@@ -546,11 +536,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
                   this.blobUrls.add(this.imageState.editImageUrl!);
                   this.cdr.markForCheck();
                 },
-                error: (err) => console.error('Failed to load image blob', err)
+                error: () => { /* Silently handle image blob loading errors - images are optional */ }
               });
           }
         },
-        error: (err) => console.error('Failed to load file info', err)
+        error: () => { /* Silently handle file info loading errors - file info is optional */ }
       });
   }
 
@@ -749,11 +739,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
                   e.errorMessage?.toLowerCase().includes('already exists')
                 );
                 if (hasDuplicates) msg += " (Duplicates found)";
-                else msg += " Check console for details.";
+                else msg += ` (${result.errors.length} errors found)`;
               }
 
               this.toastService.warning(msg);
-              console.warn('Import Validation Errors:', result.errors);
             } else {
               this.toastService.success(`Imported ${result.successCount} items successfully.`);
             }
@@ -763,10 +752,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
+        error: () => {
           this.loading = false;
           this.toastService.error('Import failed');
-          console.error(err);
           this.cdr.markForCheck();
         }
       });

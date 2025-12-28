@@ -65,8 +65,7 @@ export class WarehouseComponent implements OnInit, OnDestroy {
             .map(depot => this.mapDepotToWarehouse(depot));
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading depots:', error);
+        error: () => {
           this.translateService.get('warehouse.failedToLoad').subscribe(msg => {
             this.error = msg;
           });

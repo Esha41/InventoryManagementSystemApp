@@ -57,8 +57,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
           this.orders = orders;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Failed to load orders:', error);
+        error: () => {
           this.translateService.get(['toast.failedToLoadOrders', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadOrders'], translations['toast.error']);
           });

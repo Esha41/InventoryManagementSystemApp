@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -37,7 +37,8 @@ import { TranslationService } from '@services/translation.service';
     LoadingStateComponent
   ],
   templateUrl: './add-inventory.component.html',
-  styleUrls: ['./add-inventory.component.css']
+  styleUrls: ['./add-inventory.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddInventoryComponent implements OnInit, OnDestroy {
   readonly Save = Save;
@@ -118,7 +119,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     private explosiveService: ExplosiveService,
     private toastService: ToastService,
     private translateService: TranslateService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -130,6 +132,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       if (this.warehouseId) {
         this.loadData();
       }
+      this.cdr.markForCheck();
     });
 
     // Add initial item
@@ -171,6 +174,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   private loadData(): void {
     this.loading = true;
+    this.cdr.markForCheck();
 
     forkJoin({
       depot: this.lookupService.getDepots(),
@@ -195,11 +199,12 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           this.countries = countries;
 
           this.loading = false;
+          this.cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error loading data:', error);
+        error: () => {
           this.errorMessage = this.translateService.instant('addInventory.loadError');
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -209,15 +214,18 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     // Clear existing items when switching tabs
     this.itemsFormArray.clear();
     this.addItem();
+    this.cdr.markForCheck();
   }
 
   addItem(): void {
     this.itemsFormArray.push(this.createItemFormGroup());
+    this.cdr.markForCheck();
   }
 
   removeItem(index: number): void {
     if (this.itemsFormArray.length > 1) {
       this.itemsFormArray.removeAt(index);
+      this.cdr.markForCheck();
     }
   }
 
@@ -424,12 +432,14 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
 
     this.inventoryService.create(createDto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.submitting = false;
+          this.cdr.markForCheck();
 
           this.translateService.get(['toast.success', 'addInventory.successMessage']).subscribe(translations => {
             const message = translations['addInventory.successMessage'] || 'Inventory created successfully!';
@@ -443,11 +453,11 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           }, 800);
         },
         error: (error: unknown) => {
-          console.error('Error creating inventory:', error);
           const fallbackMessage = this.translateService.instant('addInventory.createError');
           const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
           this.errorMessage = errorMsg;
           this.submitting = false;
+          this.cdr.markForCheck();
 
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMsg, translations['toast.error']);
@@ -462,6 +472,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.itemsFormArray.clear();
     this.addItem();
     this.errorMessage = null;
+    this.cdr.markForCheck();
     this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
   }
 

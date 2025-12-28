@@ -3,6 +3,7 @@ import { ExcelExportService, ExcelColumn } from './excel-export.service';
 import { InventoryService } from './inventory.service';
 import { AmmunitionService } from './ammunition.service';
 import { ExplosiveService } from './explosive.service';
+import { WeaponService } from './weapon.service';
 import { TranslateService } from '@ngx-translate/core';
 import { saveAs } from 'file-saver';
 import { catchError } from 'rxjs/operators';
@@ -18,77 +19,47 @@ export class TemplateGenerationService {
     private inventoryService: InventoryService,
     private ammunitionService: AmmunitionService,
     private explosiveService: ExplosiveService,
+    private weaponService: WeaponService,
     private toastService: ToastService,
     private translateService: TranslateService
   ) { }
 
   /**
    * Generate asset import template based on type
-   * For ammunition and explosive: downloads comprehensive template from backend with all fields and VLOOKUP support
-   * For weapon: uses local generation (will be updated later)
+   * For ammunition, explosive, and weapon: downloads comprehensive template from backend with all fields and VLOOKUP support
    * Template language matches current UI language (English/Arabic)
    */
   generateAssetTemplate(type: 'ammunition' | 'weapon' | 'explosive'): void {
-    // Use backend template for ammunition and explosive (comprehensive with all fields)
-    if (type === 'ammunition' || type === 'explosive') {
-      const service = type === 'ammunition' ? this.ammunitionService : this.explosiveService;
-      const typeName = type.charAt(0).toUpperCase() + type.slice(1);
-
-      // Get current language from TranslateService
-      const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-
-      service.downloadImportTemplate(currentLang)
-        .pipe(
-          catchError(error => {
-            console.error(`Error downloading ${type} template:`, error);
-            this.toastService.error(`Failed to download ${type} template. Please try again.`);
-            return of(null);
-          })
-        )
-        .subscribe(blob => {
-          if (blob) {
-            const fileName = `${typeName}_Import_Template_${new Date().getTime()}.xlsx`;
-            saveAs(blob, fileName);
-            this.toastService.success(`${typeName} template downloaded successfully`);
-          }
-        });
-      return;
+    // Use backend template for all asset types (comprehensive with all fields)
+    let service: AmmunitionService | ExplosiveService | WeaponService;
+    
+    if (type === 'ammunition') {
+      service = this.ammunitionService;
+    } else if (type === 'explosive') {
+      service = this.explosiveService;
+    } else {
+      service = this.weaponService;
     }
 
-    // Keep local generation for weapons (will be updated later)
-    let headers: ExcelColumn[] = [];
-    let sampleData: any[] = [];
+    const typeName = type.charAt(0).toUpperCase() + type.slice(1);
 
-    if (type === 'weapon') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Weapon Type', key: 'weaponType' },
-        { header: 'Caliber', key: 'caliber' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'NSN', key: 'nsn' }
-      ];
-      sampleData = [{
-        name: 'AK-47',
-        itemNo: 'WPN-001',
-        partNo: 'P-AK47',
-        weaponType: 'Rifle',
-        caliber: '7.62x39mm',
-        price: 500,
-        minimumQuantity: 10,
-        nsn: '1005-12-345-6789'
-      }];
-    }
+    // Get current language from TranslateService
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    this.excelExportService.exportToExcel({
-      fileName: `${type}_import_template`,
-      columns: headers,
-      data: sampleData,
-      sheetName: 'Import Template',
-      includeTimestamp: false
-    });
+    service.downloadImportTemplate(currentLang)
+      .pipe(
+        catchError(error => {
+          this.toastService.error(`Failed to download ${type} template. Please try again.`);
+          return of(null);
+        })
+      )
+      .subscribe(blob => {
+        if (blob) {
+          const fileName = `${typeName}_Import_Template_${new Date().getTime()}.xlsx`;
+          saveAs(blob, fileName);
+          this.toastService.success(`${typeName} template downloaded successfully`);
+        }
+      });
   }
 
   /**
@@ -103,8 +74,7 @@ export class TemplateGenerationService {
 
     this.inventoryService.downloadImportTemplate(depotId)
       .pipe(
-        catchError(error => {
-          console.error('Error downloading template:', error);
+        catchError(() => {
           this.toastService.error('Failed to download template. Please try again.');
           return of(null);
         })

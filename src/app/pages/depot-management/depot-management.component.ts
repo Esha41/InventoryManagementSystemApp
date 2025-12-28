@@ -103,7 +103,6 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          console.error('Error loading depots:', error);
           this.errorMessage = error.message || 'Failed to load depots';
           this.loading = false;
         }
@@ -182,7 +181,6 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error saving depot:', error);
         this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
           this.toastService.error(
             error.message || translations['toast.failedToSaveDepot'],
@@ -231,8 +229,6 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.depotToDelete = undefined;
         },
         error: (err) => {
-          console.error('Error deleting depot:', err);
-
           // Extract the actual error message from various possible error structures
           let errorMessage = 'Failed to delete depot';
 

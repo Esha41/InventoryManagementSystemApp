@@ -127,8 +127,8 @@ export class ExplosiveService {
     if (existingFileId) {
       return this.deleteFile(existingFileId).pipe(
         switchMap(() => upload$),
-        catchError((deleteErr) => {
-          console.warn('Failed to delete old image, proceeding with upload anyway:', deleteErr);
+        catchError(() => {
+          // If deletion fails, still try to upload (maybe file doesn't exist)
           return upload$;
         })
       );
@@ -163,14 +163,12 @@ export class ExplosiveService {
               }
               return { id, url: null };
             }),
-            catchError((error) => {
-              console.error(`Failed to fetch image blob for explosive ${id}`, error);
+            catchError(() => {
               return of({ id, url: null });
             })
           );
         }),
-        catchError((error) => {
-          console.error(`Failed to get image URL for explosive ${id}:`, error);
+        catchError(() => {
           return of({ id, url: null });
         })
       )
@@ -184,8 +182,7 @@ export class ExplosiveService {
         });
         return map;
       }),
-      catchError((err) => {
-        console.error('Failed to load explosive images:', err);
+      catchError(() => {
         return of(new Map());
       })
     );

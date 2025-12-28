@@ -109,7 +109,6 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private initializeMap(): void {
     if (!this.mapContainerRef) {
-      console.error('Map container not found');
       return;
     }
 
@@ -173,7 +172,6 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
               return null; // No blob to return
             } else {
               // Offline and no cache - show transparent placeholder
-              console.warn('Tile not available offline:', url);
               imgElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
               return null;
             }
@@ -432,8 +430,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
             this.addWarehouseMarkers();
           }
         },
-        error: (error: any) => {
-          console.error('Failed to load warehouse locations:', error);
+        error: () => {
           this.loading = false;
         }
       });

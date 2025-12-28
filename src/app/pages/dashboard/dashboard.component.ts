@@ -254,9 +254,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.filterCardsByPermissionsAndRoles();
           this.cdr.markForCheck();
         },
-        error: (error) => {
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-          console.error('Failed to load dashboard requests:', errorMessage);
+        error: () => {
           this.cdr.markForCheck();
         }
       });
@@ -498,10 +496,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return this.orderService.getAllOrders().pipe(
-      catchError((error) => {
-        const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-        // Log error but don't break the flow
-        console.error('Failed to load order requests:', errorMessage);
+      catchError(() => {
+        // Return empty array on error to not break the flow
         return of([] as OrderDto[]);
       }),
       takeUntil(this.destroy$)
@@ -517,9 +513,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return this.returnService.getAllReturns().pipe(
-      catchError((error) => {
-        const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-        console.error('Failed to load return requests:', errorMessage);
+      catchError(() => {
         return of([] as ReturnDto[]);
       }),
       takeUntil(this.destroy$)
@@ -535,9 +529,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return this.discardService.getAllDiscards().pipe(
-      catchError((error) => {
-        const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-        console.error('Failed to load discard requests:', errorMessage);
+      catchError(() => {
         return of([] as DiscardDto[]);
       }),
       takeUntil(this.destroy$)
@@ -650,9 +642,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
           return order;
         }),
-        catchError((error) => {
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-          console.error('Failed to load order details:', errorMessage);
+        catchError(() => {
           // Fallback to cached data if available
           if (cachedOrder) {
             return of(cachedOrder);
@@ -675,9 +665,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.returnService.getReturnById(returnRequestId)
       .pipe(
         takeUntil(this.destroy$),
-        catchError((error) => {
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-          console.error('Failed to load return details:', errorMessage);
+        catchError(() => {
           if (cachedReturn) {
             return of(cachedReturn);
           }
@@ -699,9 +687,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.discardService.getDiscardById(discardRequestId)
       .pipe(
         takeUntil(this.destroy$),
-        catchError((error) => {
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
-          console.error('Failed to load discard details:', errorMessage);
+        catchError(() => {
           if (cachedDiscard) {
             return of(cachedDiscard);
           }

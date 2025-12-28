@@ -254,8 +254,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.countries = data.countries;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading lookup data:', error);
+        error: () => {
           this.errorMessage = 'Failed to load lookup data. Please try again.';
           this.loading = false;
         }
@@ -439,7 +438,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
         this.submitting = false;
       },
       error: (error: unknown) => {
-        console.error('Error creating asset:', error);
         let errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create asset. Please try again.');
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));

@@ -92,17 +92,17 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   private loadLookupData(): void {
     this.lookupService.getSuppliers().subscribe({
       next: (data: LookupItem[]) => this.suppliers = data,
-      error: (err: any) => console.error('Failed to load suppliers', err)
+      error: () => { /* Silently handle error - lookup data is optional */ }
     });
 
     this.lookupService.getManufacturers().subscribe({
       next: (data: LookupItem[]) => this.manufacturers = data,
-      error: (err: any) => console.error('Failed to load manufacturers', err)
+      error: () => { /* Silently handle error - lookup data is optional */ }
     });
 
     this.lookupService.getCountries().subscribe({
       next: (data: LookupItem[]) => this.countries = data,
-      error: (err: any) => console.error('Failed to load countries', err)
+      error: () => { /* Silently handle error - lookup data is optional */ }
     });
   }
 

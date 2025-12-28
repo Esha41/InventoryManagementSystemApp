@@ -115,8 +115,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     this.applyFilters();
                     this.loading = false;
                 },
-                error: (error) => {
-                    console.error('Error loading inventory summary:', error);
+                error: () => {
                     this.error = 'Failed to load inventory summary';
                     this.loading = false;
                 }
@@ -238,8 +237,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     this.lotsByItemId.set(itemId, lots);
                     this.loadingLots.delete(itemId);
                 },
-                error: (error) => {
-                    console.error(`Error loading lots for item ${itemId}:`, error);
+                error: () => {
                     this.loadingLots.delete(itemId);
                 }
             });

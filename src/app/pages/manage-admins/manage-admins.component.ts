@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,7 +41,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     DropdownComponent
   ],
   templateUrl: './manage-admins.component.html',
-  styleUrls: ['./manage-admins.component.css']
+  styleUrls: ['./manage-admins.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ManageAdminsComponent implements OnInit, OnDestroy {
   readonly UserPlus = UserPlus;
@@ -89,9 +90,6 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   isLoadingLookups = false;
   lookupErrorMessage = '';
 
-  // Placeholder for dropdown logic cleanup
-
-
   // Lookup modal states
   showLookupModal = false;
   showLookupDeleteConfirm = false;
@@ -109,7 +107,8 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -123,6 +122,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(users => {
         this.users = users;
+        this.cdr.markForCheck();
       });
   }
 
@@ -133,33 +133,40 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     this.isLoading = true;
-    this.backendUserService.getUsers().subscribe({
-      next: (users) => {
-        this.users = users;
-        this.currentPage = 1;
-        this.isLoading = false;
-        // Validate current page after loading
-        this.validateCurrentPage();
-        this.userRolesMap.clear();
-        users.forEach(user => this.cacheUserRoles(user));
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = 'Failed to load users: ' + (error.message || 'Unknown error');
-      }
-    });
+    this.backendUserService.getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (users) => {
+          this.users = users;
+          this.currentPage = 1;
+          this.isLoading = false;
+          // Validate current page after loading
+          this.validateCurrentPage();
+          this.userRolesMap.clear();
+          users.forEach(user => this.cacheUserRoles(user));
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = 'Failed to load users: ' + (error.message || 'Unknown error');
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private loadUserRolesData(userId: string): void {
-    this.backendUserService.getUserRoles(userId).subscribe({
-      next: (roles) => {
-        this.userRolesMap.set(userId, roles.map(r => r.name));
-      },
-      error: (error) => {
-        console.error(`Failed to load roles for user ${userId}:`, error);
-        this.userRolesMap.set(userId, []);
-      }
-    });
+    this.backendUserService.getUserRoles(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (roles) => {
+          this.userRolesMap.set(userId, roles.map(r => r.name));
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.userRolesMap.set(userId, []);
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private cacheUserRoles(user: BackendUserDto): void {
@@ -215,44 +222,54 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
   }
 
   loadRoles(): void {
-    this.backendUserService.getRoles().subscribe({
-      next: (roles) => {
-        this.roles = roles;
-        // Recalculate role name cache for users that rely on role IDs
-        this.users.forEach(user => {
-          if (!user.roles || user.roles.length === 0) {
-            this.userRolesMap.set(user.id, this.extractRoleNames(user));
-          }
-        });
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load roles: ' + (error.message || 'Unknown error');
-      }
-    });
+    this.backendUserService.getRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (roles) => {
+          this.roles = roles;
+          // Recalculate role name cache for users that rely on role IDs
+          this.users.forEach(user => {
+            if (!user.roles || user.roles.length === 0) {
+              this.userRolesMap.set(user.id, this.extractRoleNames(user));
+            }
+          });
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.errorMessage = 'Failed to load roles: ' + (error.message || 'Unknown error');
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   loadRanks(): void {
-    this.lookupService.getLookupItems('Rank').subscribe({
-      next: (ranks: LookupItem[]) => {
-        this.ranks = ranks || [];
-      },
-      error: (error: any) => {
-        console.error('Failed to load ranks:', error);
-        this.ranks = [];
-      }
-    });
+    this.lookupService.getLookupItems('Rank')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ranks: LookupItem[]) => {
+          this.ranks = ranks || [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.ranks = [];
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   loadDepartments(): void {
-    this.lookupService.getDepartments().subscribe({
-      next: (departments: LookupItem[]) => {
-        this.departments = departments || [];
-      },
-      error: (error: any) => {
-        console.error('Failed to load departments:', error);
-        this.departments = [];
-      }
-    });
+    this.lookupService.getDepartments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments: LookupItem[]) => {
+          this.departments = departments || [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.departments = [];
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   get filteredUsers(): BackendUserDto[] {
@@ -308,6 +325,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       return;
     }
     this.currentPage = page;
+    this.cdr.markForCheck();
   }
 
   onRowsPerPageChange(rows: number): void {
@@ -315,56 +333,65 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     // Validate after changing rows per page
     this.validateCurrentPage();
+    this.cdr.markForCheck();
   }
 
   onSearchChange(): void {
     this.currentPage = 1;
     // Validate after search in case filtered results have fewer pages
     this.validateCurrentPage();
+    this.cdr.markForCheck();
   }
 
   onAddUser(): void {
     this.userModalMode = 'create';
     this.selectedUser = undefined;
     this.showUserModal = true;
+    this.cdr.markForCheck();
   }
 
   onEdit(user: BackendUserDto): void {
     this.userModalMode = 'edit';
     this.selectedUser = user;
     this.showUserModal = true;
+    this.cdr.markForCheck();
   }
 
   onDelete(user: BackendUserDto): void {
     this.selectedUser = user;
     this.showDeleteConfirm = true;
+    this.cdr.markForCheck();
   }
 
   confirmDelete(): void {
     if (this.selectedUser) {
-      this.backendUserService.deleteUser(this.selectedUser.id).subscribe({
-        next: (success) => {
-          if (success) {
-            this.showDeleteConfirm = false;
-            const userName = this.selectedUser?.userName || this.translateService.instant('manageAdmins.user');
-            this.selectedUser = undefined;
-            this.loadUsers();
-            // Show success toast
-            this.toastService.success(
-              this.translateService.instant('manageAdmins.userDeletedSuccess', { userName }),
+      this.backendUserService.deleteUser(this.selectedUser.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (success) => {
+            if (success) {
+              this.showDeleteConfirm = false;
+              const userName = this.selectedUser?.userName || this.translateService.instant('manageAdmins.user');
+              this.selectedUser = undefined;
+              this.cdr.markForCheck();
+              this.loadUsers();
+              // Show success toast
+              this.toastService.success(
+                this.translateService.instant('manageAdmins.userDeletedSuccess', { userName }),
+                this.translateService.instant('manageAdmins.deleteUserTitle')
+              );
+            }
+          },
+          error: (error) => {
+            this.errorMessage = error.message || 'Failed to delete user';
+            this.cdr.markForCheck();
+            // Show error toast
+            this.toastService.error(
+              error.message || this.translateService.instant('manageAdmins.userDeletedError'),
               this.translateService.instant('manageAdmins.deleteUserTitle')
             );
           }
-        },
-        error: (error) => {
-          this.errorMessage = error.message || 'Failed to delete user';
-          // Show error toast
-          this.toastService.error(
-            error.message || this.translateService.instant('manageAdmins.userDeletedError'),
-            this.translateService.instant('manageAdmins.deleteUserTitle')
-          );
-        }
-      });
+        });
     }
   }
 
@@ -401,7 +428,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   getMilitaryId(user: BackendUserDto): string {
     // Handle both militaryId and militoryId (API typo)
-    return user.militaryId || (user as any)?.militoryId || '-';
+    return user.militaryId || user.militoryId || '-';
   }
 
   getRankName(user: BackendUserDto): string {
@@ -452,6 +479,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       }
       this.loadLookupItems();
     }
+    this.cdr.markForCheck();
   }
 
   private initializeTabFromQueryParams(): void {
@@ -468,6 +496,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
             }
             this.loadLookupItems();
           }
+          this.cdr.markForCheck();
         }
       });
   }
@@ -486,6 +515,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     if (table) {
       this.loadLookupItems();
     }
+    this.cdr.markForCheck();
   }
 
 
@@ -495,16 +525,20 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
     this.isLoadingLookups = true;
     this.lookupErrorMessage = '';
-    this.lookupService.getLookupItems(this.selectedTable.apiEndpoint).subscribe({
-      next: (items) => {
-        this.lookupItems = items.filter(item => !item.isDeleted);
-        this.isLoadingLookups = false;
-      },
-      error: (error) => {
-        this.isLoadingLookups = false;
-        this.lookupErrorMessage = 'Failed to load lookup items: ' + (error.message || 'Unknown error');
-      }
-    });
+    this.lookupService.getLookupItems(this.selectedTable.apiEndpoint)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items) => {
+          this.lookupItems = items.filter(item => !item.isDeleted);
+          this.isLoadingLookups = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.isLoadingLookups = false;
+          this.lookupErrorMessage = 'Failed to load lookup items: ' + (error.message || 'Unknown error');
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   get filteredLookupItems(): LookupItem[] {
@@ -524,6 +558,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.lookupModalMode = 'create';
     this.selectedLookupItem = undefined;
     this.showLookupModal = true;
+    this.cdr.markForCheck();
   }
 
   onEditLookup(item: LookupItem): void {
@@ -531,12 +566,14 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
     this.lookupModalMode = 'edit';
     this.selectedLookupItem = item;
     this.showLookupModal = true;
+    this.cdr.markForCheck();
   }
 
   onDeleteLookup(item: LookupItem): void {
     if (!this.selectedTable) return;
     this.selectedLookupItem = item;
     this.showLookupDeleteConfirm = true;
+    this.cdr.markForCheck();
   }
 
   confirmLookupDelete(): void {
@@ -552,31 +589,35 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
       this.selectedTable.apiEndpoint,
       this.selectedLookupItem.id!,
       dto
-    ).subscribe({
-      next: (success) => {
-        if (success) {
-          const itemName = getLocalizedName(this.selectedLookupItem, getCurrentLang(this.translateService)) || '';
-          this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
-            this.toastService.success(
-              `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
-              translations['toast.success']
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            const itemName = getLocalizedName(this.selectedLookupItem, getCurrentLang(this.translateService)) || '';
+            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
+              this.toastService.success(
+                `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
+                translations['toast.success']
+              );
+            });
+            this.showLookupDeleteConfirm = false;
+            this.selectedLookupItem = undefined;
+            this.cdr.markForCheck();
+            this.loadLookupItems();
+          }
+        },
+        error: (error) => {
+          this.lookupErrorMessage = error.message || 'Failed to delete lookup item';
+          this.cdr.markForCheck();
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(
+              error.message || 'Failed to delete lookup item',
+              translations['toast.error']
             );
           });
-          this.showLookupDeleteConfirm = false;
-          this.selectedLookupItem = undefined;
-          this.loadLookupItems();
         }
-      },
-      error: (error) => {
-        this.lookupErrorMessage = error.message || 'Failed to delete lookup item';
-        this.translateService.get(['toast.error']).subscribe(translations => {
-          this.toastService.error(
-            error.message || 'Failed to delete lookup item',
-            translations['toast.error']
-          );
-        });
-      }
-    });
+      });
   }
 
   onLookupSaved(dto: CreateUpdateLookupDto): void {
@@ -594,49 +635,53 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
         dto
       );
 
-    operation.subscribe({
-      next: (item) => {
-        const isCreate = this.lookupModalMode === 'create';
-        const itemName = getLocalizedName(dto, getCurrentLang(this.translateService)) || '';
+    operation
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (item) => {
+          const isCreate = this.lookupModalMode === 'create';
+          const itemName = getLocalizedName(dto, getCurrentLang(this.translateService)) || '';
 
-        this.translateService.get([
-          'toast.success',
-          'lookupManagement.addItem',
-          'lookupManagement.edit'
-        ]).subscribe(translations => {
-          const message = isCreate
-            ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
-            : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
+          this.translateService.get([
+            'toast.success',
+            'lookupManagement.addItem',
+            'lookupManagement.edit'
+          ]).subscribe(translations => {
+            const message = isCreate
+              ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
+              : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
 
-          this.toastService.success(message, translations['toast.success']);
-        });
+            this.toastService.success(message, translations['toast.success']);
+          });
 
-        this.lookupModalLoading = false;
-        this.isLoadingLookups = false;
-        this.showLookupModal = false;
-        this.selectedLookupItem = undefined;
-        this.loadLookupItems();
-      },
-      error: (error) => {
-        this.lookupModalLoading = false; // Reset modal loading state on error
-        this.isLoadingLookups = false;
-        this.lookupErrorMessage = error.message || `Failed to ${this.lookupModalMode} lookup item`;
+          this.lookupModalLoading = false;
+          this.isLoadingLookups = false;
+          this.showLookupModal = false;
+          this.selectedLookupItem = undefined;
+          this.cdr.markForCheck();
+          this.loadLookupItems();
+        },
+        error: (error) => {
+          this.lookupModalLoading = false; // Reset modal loading state on error
+          this.isLoadingLookups = false;
+          this.lookupErrorMessage = error.message || `Failed to ${this.lookupModalMode} lookup item`;
+          this.cdr.markForCheck();
 
-        this.translateService.get(['toast.error']).subscribe(translations => {
-          this.toastService.error(
-            error.message || `Failed to ${this.lookupModalMode} lookup item`,
-            translations['toast.error']
-          );
-        });
-      }
-    });
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(
+              error.message || `Failed to ${this.lookupModalMode} lookup item`,
+              translations['toast.error']
+            );
+          });
+        }
+      });
   }
 
   /**
    * Get the translated name for an ItemType enum value
    */
   getItemTypeName(item: LookupItem): string {
-    let itemType = (item as any).itemType;
+    let itemType = item.itemType;
     if (itemType === undefined || itemType === null) return '-';
 
     // Convert string enum to number if needed
@@ -666,7 +711,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
    * Get the raw ItemType enum value
    */
   getItemType(item: LookupItem): number {
-    let itemType = (item as any).itemType;
+    let itemType = item.itemType;
     if (itemType === undefined || itemType === null) return 0;
 
     if (typeof itemType === 'string') {

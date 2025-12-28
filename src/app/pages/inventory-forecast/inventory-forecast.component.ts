@@ -19,7 +19,6 @@ export class InventoryForecastComponent implements OnInit, AfterViewInit, OnDest
   private charts: Chart[] = [];
 
   ngOnInit(): void {
-    console.log('Inventory Forecast component initialized');
   }
 
   ngAfterViewInit(): void {

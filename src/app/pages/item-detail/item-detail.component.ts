@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,6 +14,11 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { TranslateService } from '@ngx-translate/core';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
+
+type ItemDto = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 
 @Component({
   selector: 'app-item-detail',
@@ -27,7 +32,8 @@ import { TranslateService } from '@ngx-translate/core';
     ErrorStateComponent
   ],
   templateUrl: './item-detail.component.html',
-  styleUrls: ['./item-detail.component.css']
+  styleUrls: ['./item-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
@@ -58,7 +64,8 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     private cartridgeMapper: CartridgeMapperService,
     private toastService: ToastService,
     private translationService: TranslationService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -84,10 +91,12 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
           } else {
             this.error = 'Invalid item ID';
             this.loading = false;
+            this.cdr.markForCheck();
           }
         } else {
           this.error = 'Item ID not provided';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -100,6 +109,7 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   private loadItemDetails(itemType?: string): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     // If itemType is provided, use the specific service
     if (itemType) {
@@ -113,15 +123,15 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
 
   private tryLoadItem(): void {
     // Try ammunition first
-    this.ammunitionService.getById<any>(this.itemId)
+    this.ammunitionService.getById<AmmunitionReadDto>(this.itemId)
       .pipe(
         takeUntil(this.destroy$),
         catchError(() => {
           // If ammunition fails, try weapon
-          return this.weaponService.getById<any>(this.itemId).pipe(
+          return this.weaponService.getById<WeaponDto>(this.itemId).pipe(
             catchError(() => {
               // If weapon fails, try explosive
-              return this.explosiveService.getById<any>(this.itemId).pipe(
+              return this.explosiveService.getById<ExplosiveDto>(this.itemId).pipe(
                 catchError((err) => {
                   // All three failed
                   throw err;
@@ -145,15 +155,17 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
               this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
             }
             this.loading = false;
+            this.cdr.markForCheck();
           } else {
             this.error = 'Item not found';
             this.loading = false;
+            this.cdr.markForCheck();
           }
         },
         error: (err) => {
-          console.error('Failed to load item details:', err);
           this.error = 'Failed to load item details. Please try again.';
           this.loading = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
           });
@@ -165,7 +177,7 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     const normalizedType = itemType.toLowerCase();
     
     if (normalizedType === 'weapon' || normalizedType === '2') {
-      this.weaponService.getById<any>(this.itemId)
+      this.weaponService.getById<WeaponDto>(this.itemId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
@@ -173,22 +185,24 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
               const currentLang = this.translationService?.getCurrentLanguage() || 'en';
               this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
               this.loading = false;
+              this.cdr.markForCheck();
             } else {
               this.error = 'Item not found';
               this.loading = false;
+              this.cdr.markForCheck();
             }
           },
           error: (err) => {
-            console.error('Failed to load weapon details:', err);
             this.error = 'Failed to load item details. Please try again.';
             this.loading = false;
+            this.cdr.markForCheck();
             this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
               this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
             });
           }
         });
     } else if (normalizedType === 'explosive' || normalizedType === '3') {
-      this.explosiveService.getById<any>(this.itemId)
+      this.explosiveService.getById<ExplosiveDto>(this.itemId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
@@ -196,15 +210,17 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
               const currentLang = this.translationService?.getCurrentLanguage() || 'en';
               this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
               this.loading = false;
+              this.cdr.markForCheck();
             } else {
               this.error = 'Item not found';
               this.loading = false;
+              this.cdr.markForCheck();
             }
           },
           error: (err) => {
-            console.error('Failed to load explosive details:', err);
             this.error = 'Failed to load item details. Please try again.';
             this.loading = false;
+            this.cdr.markForCheck();
             this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
               this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
             });
@@ -212,7 +228,7 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
         });
     } else {
       // Default to ammunition
-      this.ammunitionService.getById<any>(this.itemId)
+      this.ammunitionService.getById<AmmunitionReadDto>(this.itemId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
@@ -220,15 +236,17 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
               const currentLang = this.translationService?.getCurrentLanguage() || 'en';
               this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
               this.loading = false;
+              this.cdr.markForCheck();
             } else {
               this.error = 'Item not found';
               this.loading = false;
+              this.cdr.markForCheck();
             }
           },
           error: (err) => {
-            console.error('Failed to load item details:', err);
             this.error = 'Failed to load item details. Please try again.';
             this.loading = false;
+            this.cdr.markForCheck();
             this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
               this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
             });
@@ -237,12 +255,12 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isWeapon(data: any): boolean {
-    return data && (data.weaponType !== undefined || data.caliber !== undefined || data.actionType !== undefined);
+  private isWeapon(data: ItemDto): data is WeaponDto {
+    return data !== null && 'weaponType' in data && 'caliber' in data && 'actionType' in data;
   }
 
-  private isExplosive(data: any): boolean {
-    return data && (data.explosiveType !== undefined || data.unNumber !== undefined || data.netExplosiveQuantity !== undefined);
+  private isExplosive(data: ItemDto): data is ExplosiveDto {
+    return data !== null && ('explosiveType' in data || 'unNumber' in data || 'netExplosiveQuantity' in data);
   }
 
   goBack(): void {

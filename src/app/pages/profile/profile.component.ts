@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -31,7 +31,8 @@ import { ToastService } from '@services/toast.service';
     ChangePasswordModalComponent
   ],
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
+  styleUrls: ['./profile.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   readonly User = User;
@@ -57,7 +58,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -70,6 +72,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   loadProfile(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     // Fetch both user profile and user claims (for permissions)
     forkJoin({
@@ -98,12 +101,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
         catchError(error => {
           this.error = error?.message || this.translateService.instant('profile.errorLoadingProfile');
           this.loading = false;
+          this.cdr.markForCheck();
           // Fallback to auth service user if API fails
           this.authService.currentUser$
             .pipe(takeUntil(this.destroy$))
             .subscribe(user => {
               if (user) {
                 this.currentUser = user;
+                this.cdr.markForCheck();
               }
             });
           return of(null);
@@ -114,6 +119,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           if (user) {
             this.currentUser = user;
             this.loading = false;
+            this.cdr.markForCheck();
           }
         }
       });
@@ -162,6 +168,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
    */
   openChangePasswordModal(): void {
     this.showChangePasswordModal = true;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -169,6 +176,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
    */
   closeChangePasswordModal(): void {
     this.showChangePasswordModal = false;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -176,6 +184,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
    */
   onChangePassword(request: ChangePasswordRequest): void {
     this.changingPassword = true;
+    this.cdr.markForCheck();
 
     this.authService.changePassword(request)
       .pipe(
@@ -184,6 +193,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         switchMap(() => {
           this.changingPassword = false;
           this.showChangePasswordModal = false;
+          this.cdr.markForCheck();
 
           this.toastService.success(
             this.translateService.instant('profile.changePassword.successMessage'),
@@ -203,6 +213,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.changingPassword = false;
+          this.cdr.markForCheck();
 
           // Only show error if it's from password change, not from logout/navigation
           if (error?.message) {
