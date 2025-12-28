@@ -1,23 +1,26 @@
 <!-- Inventory Type Tabs -->
 <app-card [shadow]="true" class="mb-6">
-  <div class="p-4">
-    <nav class="flex gap-2">
+  <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)] p-2">
+    <nav class="flex gap-1">
       <button (click)="switchTab('ammunition')" [ngClass]="{
-        'bg-[var(--color-brand)] text-white': activeTab === 'ammunition',
-        'bg-gray-100 text-gray-700 hover:bg-gray-200': activeTab !== 'ammunition'
-      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.ammunition' | translate }}
       </button>
       <button (click)="switchTab('weapon')" [ngClass]="{
-        'bg-[var(--color-brand)] text-white': activeTab === 'weapon',
-        'bg-gray-100 text-gray-700 hover:bg-gray-200': activeTab !== 'weapon'
-      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.weapon' | translate }}
       </button>
       <button (click)="switchTab('explosive')" [ngClass]="{
-        'bg-[var(--color-brand)] text-white': activeTab === 'explosive',
-        'bg-gray-100 text-gray-700 hover:bg-gray-200': activeTab !== 'explosive'
-      }" class="px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.explosive' | translate }}
       </button>
     </nav>
@@ -35,7 +38,7 @@
         <span>{{ 'common.exportToExcel' | translate }}</span>
       </button>
     </div>
-    <p class="mt-4 text-sm text-gray-600">
+    <p class="mt-4 text-sm text-[var(--color-text-muted)]">
       {{ 'adminImportExport.inventorySummaryDescription' | translate }}
     </p>
   </div>
@@ -46,79 +49,92 @@
 </app-loading-state>
 
 <!-- Inventory Summary Table -->
-<app-card *ngIf="!loadingInventorySummary" [shadow]="true">
+<app-card *ngIf="!loadingInventorySummary" [shadow]="true" class="bg-[var(--color-background)]">
   <div class="p-6">
     <div class="mb-4">
-      <p class="text-sm text-gray-600">
-        {{ 'adminImportExport.totalItems' | translate }}: <strong>{{ filteredInventoryItems.length }}</strong>
+      <p class="text-sm text-[var(--color-text-muted)]">
+        {{ 'adminImportExport.totalItems' | translate }}: <strong class="text-[var(--color-text)]">{{
+          filteredInventoryItems.length }}</strong>
       </p>
     </div>
-    
-    <div *ngIf="filteredInventoryItems.length === 0" class="text-center py-12 text-gray-500">
+
+    <div *ngIf="filteredInventoryItems.length === 0" class="text-center py-12 text-[var(--color-text-muted)]">
       <p>{{ 'adminImportExport.noItemsFound' | translate }}</p>
     </div>
 
-    <div *ngIf="filteredInventoryItems.length > 0" class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div *ngIf="filteredInventoryItems.length > 0"
+      class="overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
+      <table class="min-w-full divide-y-2 divide-[var(--color-border)]">
+        <thead class="bg-[var(--color-background-muted)]">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.itemName' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.itemNo' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.partNo' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.nsn' | translate }}
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.totalQty' | translate }}
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.usedQty' | translate }}
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.reservedQty' | translate }}
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.remainingQty' | translate }}
             </th>
-            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'inventorySummary.totalLots' | translate }}
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let item of filteredInventoryItems" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <tbody class="bg-[var(--color-background)] divide-y-2 divide-[var(--color-border)]">
+          <tr *ngFor="let item of filteredInventoryItems"
+            class="hover:bg-[var(--color-background-hover)] transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
               {{ item.itemName }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ item.itemNo }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ item.partNo || '-' }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ item.nsn || '-' }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right">
               {{ item.totalQuantity | number }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right">
               {{ item.usedQuantity | number }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right">
               {{ item.reservedQuantityByOrdersOnProcessing | number }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 text-right">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[var(--color-success)] text-right">
               {{ item.remainingQuantity | number }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-center">
+              <span
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-2 border-[var(--color-border)]">
                 {{ item.totalLots }}
               </span>
             </td>
@@ -128,5 +144,3 @@
     </div>
   </div>
 </app-card>
-
-

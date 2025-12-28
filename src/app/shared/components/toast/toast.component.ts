@@ -20,27 +20,27 @@ import { ToastService, Toast } from '@services/toast.service';
           <lucide-angular 
             *ngIf="toast.type === 'success'" 
             [img]="CheckCircle" 
-            class="w-5 h-5 text-green-500"></lucide-angular>
+            class="w-5 h-5 text-[var(--color-success)]"></lucide-angular>
           <lucide-angular 
             *ngIf="toast.type === 'error'" 
             [img]="XCircle" 
-            class="w-5 h-5 text-red-500"></lucide-angular>
+            class="w-5 h-5 text-[var(--color-error)]"></lucide-angular>
           <lucide-angular 
             *ngIf="toast.type === 'warning'" 
             [img]="AlertCircle" 
-            class="w-5 h-5 text-orange-500"></lucide-angular>
+            class="w-5 h-5 text-[var(--color-warning)]"></lucide-angular>
           <lucide-angular 
             *ngIf="toast.type === 'info'" 
             [img]="Info" 
-            class="w-5 h-5 text-blue-500"></lucide-angular>
+            class="w-5 h-5 text-[var(--color-info)]"></lucide-angular>
         </div>
 
         <!-- Content -->
         <div class="flex-1 min-w-0">
-          <h4 *ngIf="toast.title" class="font-semibold text-sm text-gray-900 mb-1">
+          <h4 *ngIf="toast.title" class="font-semibold text-sm text-[var(--color-text)] mb-1">
             {{ toast.title }}
           </h4>
-          <p class="text-sm text-gray-700">
+          <p class="text-sm text-[var(--color-text-muted)]">
             {{ toast.message }}
           </p>
         </div>
@@ -48,7 +48,7 @@ import { ToastService, Toast } from '@services/toast.service';
         <!-- Close Button -->
         <button
           (click)="removeToast(toast.id)"
-          class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+          class="flex-shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
           <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
         </button>
       </div>
@@ -97,18 +97,18 @@ export class ToastComponent implements OnInit, OnDestroy {
   }
 
   getToastClass(type: Toast['type']): string {
-    const baseClasses = 'bg-white border-l-4';
+    const baseClasses = 'bg-[var(--color-background)] border-l-4';
     switch (type) {
       case 'success':
-        return `${baseClasses} border-green-500`;
+        return `${baseClasses} border-[var(--color-success)]`;
       case 'error':
-        return `${baseClasses} border-red-500`;
+        return `${baseClasses} border-[var(--color-error)]`;
       case 'warning':
-        return `${baseClasses} border-orange-500`;
+        return `${baseClasses} border-[var(--color-warning)]`;
       case 'info':
-        return `${baseClasses} border-blue-500`;
+        return `${baseClasses} border-[var(--color-info)]`;
       default:
-        return `${baseClasses} border-gray-500`;
+        return `${baseClasses} border-[var(--color-border)]`;
     }
   }
 }

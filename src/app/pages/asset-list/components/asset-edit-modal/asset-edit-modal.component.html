@@ -1,15 +1,19 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-40 overflow-y-auto">
   <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-    <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75" (click)="close()"></div>
-    <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+    <div class="fixed inset-0 transition-opacity bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div
+      class="inline-block align-bottom bg-[var(--color-background)] rounded-xl text-left overflow-hidden shadow-custom-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
       <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
         <div class="flex items-center justify-between">
           <h3 class="text-xl font-semibold text-[var(--color-text)]">
-            <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} - {{ 'common.edit' | translate }}</span>
-            <span *ngIf="activeTab === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} - {{ 'common.edit' | translate }}</span>
-            <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} - {{ 'common.edit' | translate }}</span>
+            <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} - {{ 'common.edit' |
+              translate }}</span>
+            <span *ngIf="activeTab === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} - {{ 'common.edit' |
+              translate }}</span>
+            <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} - {{ 'common.edit' |
+              translate }}</span>
           </h3>
-          <button (click)="close()" class="p-1 rounded-lg hover:bg-white transition-colors">
+          <button (click)="close()" class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
             <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
           </button>
         </div>
@@ -20,24 +24,30 @@
           <div class="space-y-6">
             <!-- Image Upload Section -->
             <div class="flex items-center justify-center gap-4 mb-6">
-              <div class="w-[81px] h-[81px] border border-dashed border-[var(--color-brand)]/50 rounded-md bg-white overflow-hidden cursor-pointer relative"
-                (click)="triggerFileInput(); $event.stopPropagation()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+              <div
+                class="w-[81px] h-[81px] border border-dashed border-[var(--color-brand)]/50 rounded-md bg-[var(--color-background)] overflow-hidden cursor-pointer relative"
+                (click)="triggerFileInput(); $event.stopPropagation()" (dragover)="onDragOver($event)"
+                (drop)="onDrop($event)">
                 <img *ngIf="editImagePreview; else placeholderIcon" [src]="editImagePreview" alt="Preview"
                   class="w-full h-full object-cover rounded-md" />
                 <ng-template #placeholderIcon>
                   <div class="w-full h-full flex items-center justify-center">
-                    <div class="w-12 h-12 bg-[#F3F4F6] rounded-lg flex items-center justify-center">
-                      <svg class="w-6 h-6 text-[#6B7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    <div
+                      class="w-12 h-12 bg-[var(--color-background-muted)] rounded-lg flex items-center justify-center">
+                      <svg class="w-6 h-6 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                       </svg>
                     </div>
                   </div>
                 </ng-template>
               </div>
               <div class="text-left">
-                <p class="text-sm text-[#6B7280]">Drag image here or <span class="text-[var(--color-brand)] cursor-pointer"
+                <p class="text-sm text-[var(--color-text-muted)]">Drag image here or <span
+                    class="text-[var(--color-brand)] cursor-pointer"
                     (click)="triggerFileInput(); $event.stopPropagation()">browse</span></p>
-                <p class="text-xs text-[#6B7280] mt-1">Only JPG, JPEG, and PNG files are allowed</p>
+                <p class="text-xs text-[var(--color-text-muted)] mt-1">Only JPG, JPEG, and PNG files are allowed</p>
               </div>
               <input type="file" id="editFileInput" #editFileInput (change)="onFileSelect($event)"
                 accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="hidden" />
@@ -47,7 +57,8 @@
             <div class="grid grid-cols-2 gap-6">
               <!-- Name -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.name' | translate }} *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.name' | translate }}
+                  *</label>
                 <input type="text" formControlName="name"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                   [placeholder]="'assetList.editModal.namePlaceholder' | translate" />
@@ -55,7 +66,8 @@
 
               <!-- Item No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.itemNo' | translate }} *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.itemNo' | translate
+                  }} *</label>
                 <input type="text" formControlName="itemNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                   [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate" />
@@ -65,7 +77,8 @@
               <ng-container *ngIf="activeTab === 'ammunition'">
                 <!-- Part No -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' | translate }} *</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' |
+                    translate }} *</label>
                   <input type="text" formControlName="partNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.partNoPlaceholder' | translate" />
@@ -73,7 +86,8 @@
 
                 <!-- NSN -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' |
+                    translate }}</label>
                   <input type="text" formControlName="nsn"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.nsnPlaceholder' | translate" />
@@ -81,7 +95,8 @@
 
                 <!-- Price -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' |
+                    translate }}</label>
                   <input type="number" formControlName="price"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" />
@@ -89,7 +104,8 @@
 
                 <!-- Minimum Quantity -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.minimumQuantity' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                    'assetList.table.minimumQuantity' | translate }}</label>
                   <input type="number" formControlName="minimumQuantity"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
@@ -98,7 +114,8 @@
 
               <!-- Expiry Date -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.expiryDate' | translate }}</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                  'assetList.viewModal.expiryDate' | translate }}</label>
                 <input type="date" formControlName="expiryDate"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none" />
               </div>
@@ -106,98 +123,113 @@
               <!-- Ammunition Specific Fields -->
               <ng-container *ngIf="activeTab === 'ammunition'">
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.armNumber' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.armNumber' |
+                    translate }}</label>
                   <input type="text" formControlName="armNumber"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterArmNumber' | translate" maxlength="100" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.bulletDiameter' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.bulletDiameter' |
+                    translate }}</label>
                   <input type="number" formControlName="bulletDiameter"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.bulletDiameterPlaceholder' | translate" step="0.01" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unit' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="bulletDiameterUnitId" [options]="units"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unit' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="bulletDiameterUnitId" [options]="units" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'assetList.editModal.bulletDiameterUnitPlaceholder' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caseType' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="caseTypeId" [options]="caseTypeList"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caseType' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" formControlName="caseTypeId" [options]="caseTypeList" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'assetList.editModal.caseTypePlaceholder' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.propellant' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.propellant' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="propellantId" [options]="propellantList"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'assetList.editModal.propellantPlaceholder' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.compatibility' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.compatibility' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="compatibilityId" [options]="compatibilityList"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectCompatibility' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.hazardDivision' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.hazardDivision' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="hazardDivisionId" [options]="hazardDivisionList"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'assetList.editModal.hazardDivisionPlaceholder' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primer' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primer' |
+                    translate }}</label>
                   <input type="text" formControlName="primer"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterPrimerType' | translate" maxlength="100" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.totalWeight' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.totalWeight' |
+                    translate }}</label>
                   <input type="number" formControlName="totalWeight"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.totalWeightPlaceholder' | translate" step="0.01" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' |
+                    translate }}</label>
                   <input type="text" formControlName="distribution"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' |
+                    translate }}</label>
                   <input type="text" formControlName="unNumber"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' |
+                    translate }}</label>
                   <input type="text" formControlName="referenceNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectClassification' | translate">
                   </app-dropdown>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
                 </div>
                 <div class="col-span-2">
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
                   <textarea formControlName="notes" rows="4"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none resize-none"
                     [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
@@ -208,7 +240,8 @@
               <ng-container *ngIf="activeTab === 'weapon'">
                 <!-- Caliber -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliber' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliber' |
+                    translate }}</label>
                   <input type="text" formControlName="caliber"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" />
@@ -216,7 +249,8 @@
 
                 <!-- Model -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.model' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.model' | translate
+                    }}</label>
                   <input type="text" formControlName="model"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterModel' | translate" maxlength="200" />
@@ -224,7 +258,8 @@
 
                 <!-- Year of Manufacture -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.yearOfManufacture' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.yearOfManufacture'
+                    | translate }}</label>
                   <input type="number" formControlName="yearOfManufacture"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterYearOfManufacture' | translate" min="1800" max="2100" />
@@ -232,7 +267,8 @@
 
                 <!-- Distribution -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' |
+                    translate }}</label>
                   <input type="text" formControlName="distribution"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
@@ -240,7 +276,8 @@
 
                 <!-- UN Number -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' |
+                    translate }}</label>
                   <input type="text" formControlName="unNumber"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
@@ -248,7 +285,8 @@
 
                 <!-- Reference No -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' |
+                    translate }}</label>
                   <input type="text" formControlName="referenceNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
@@ -256,7 +294,8 @@
 
                 <!-- Part No (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' |
+                    translate }}</label>
                   <input type="text" formControlName="partNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.partNoPlaceholder' | translate" maxlength="100" />
@@ -264,7 +303,8 @@
 
                 <!-- NSN (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' |
+                    translate }}</label>
                   <input type="text" formControlName="nsn"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.nsnPlaceholder' | translate" />
@@ -272,7 +312,8 @@
 
                 <!-- Price (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' |
+                    translate }}</label>
                   <input type="number" formControlName="price"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" />
@@ -280,7 +321,8 @@
 
                 <!-- Minimum Quantity (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.minimumQuantity' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                    'assetList.table.minimumQuantity' | translate }}</label>
                   <input type="number" formControlName="minimumQuantity"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
@@ -288,16 +330,18 @@
 
                 <!-- Caliber Unit (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliberUnit' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="caliberUnitId" [options]="units"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliberUnit' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" formControlName="caliberUnitId" [options]="units" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectUnit' | translate">
                   </app-dropdown>
                 </div>
 
                 <!-- Country of Manufacture (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.countryOfManufacture' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                    'addAsset.countryOfManufacture' | translate }}</label>
                   <app-dropdown class="w-full" formControlName="countryOfManufactureId" [options]="countries"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectCountry' | translate">
@@ -306,7 +350,8 @@
 
                 <!-- Classification (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectClassification' | translate">
@@ -315,16 +360,18 @@
 
                 <!-- Type (Right Column) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
                 </div>
 
                 <!-- Notes (Last Field) -->
                 <div class="col-span-2">
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
                   <textarea formControlName="notes" rows="4"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none resize-none"
                     [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
@@ -335,7 +382,8 @@
               <ng-container *ngIf="activeTab === 'explosive'">
                 <!-- UN Number (Required) -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' | translate }} *</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unNumber' |
+                    translate }} *</label>
                   <input type="text" formControlName="unNumber"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
@@ -343,7 +391,8 @@
 
                 <!-- Part No -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' | translate }} *</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.partNo' |
+                    translate }} *</label>
                   <input type="text" formControlName="partNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.partNoPlaceholder' | translate" />
@@ -351,7 +400,8 @@
 
                 <!-- Distribution -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.distribution' |
+                    translate }}</label>
                   <input type="text" formControlName="distribution"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
@@ -359,7 +409,8 @@
 
                 <!-- NSN -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.viewModal.nsn' |
+                    translate }}</label>
                   <input type="text" formControlName="nsn"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.nsnPlaceholder' | translate" />
@@ -367,7 +418,8 @@
 
                 <!-- Reference No -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.referenceNo' |
+                    translate }}</label>
                   <input type="text" formControlName="referenceNo"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
@@ -375,7 +427,8 @@
 
                 <!-- Price -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.price' |
+                    translate }}</label>
                   <input type="number" formControlName="price"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" />
@@ -383,7 +436,8 @@
 
                 <!-- Minimum Quantity -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'assetList.table.minimumQuantity' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                    'assetList.table.minimumQuantity' | translate }}</label>
                   <input type="number" formControlName="minimumQuantity"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
@@ -391,16 +445,18 @@
 
                 <!-- Item Type -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
                 </div>
 
                 <!-- Classification -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' |
+                    translate }}</label>
                   <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectClassification' | translate">
@@ -409,7 +465,8 @@
 
                 <!-- Notes -->
                 <div class="col-span-2">
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
                   <textarea formControlName="notes" rows="4"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none resize-none"
                     [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
@@ -420,7 +477,8 @@
         </div>
 
         <!-- Footer -->
-        <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+        <div
+          class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
           <app-button variant="outline" type="button" (click)="close()">{{ 'common.cancel' | translate }}</app-button>
           <app-button variant="primary" type="submit" [disabled]="editForm.invalid || loading">
             {{ loading ? ('common.saving' | translate) : ('assetList.editModal.saveChanges' | translate) }}

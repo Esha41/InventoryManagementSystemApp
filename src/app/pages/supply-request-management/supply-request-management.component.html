@@ -30,79 +30,77 @@
         [(ngModel)]="searchTerm"
         (input)="onSearch()"
         placeholder="{{ 'supplyRequestManagement.searchByOrderId' | translate }}"
-        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-white"
+        class="w-full pl-10 pr-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
       />
-      <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-angular>
+      <lucide-angular [img]="Search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
     </div>
 
   </div>
 
   <!-- Tabs -->
-  <div *ngIf="!loading" class="border-b border-gray-200 mb-4">
+  <div *ngIf="!loading" class="border-b border-[var(--color-border)] mb-4">
     <nav class="-mb-px flex space-x-8">
       <button
         *ngFor="let tab of tabs"
         (click)="onTabChange(tab)"
         class="py-3 px-1 border-b-2 font-medium text-sm transition-colors"
-        [class.border-blue-600]="activeTab === tab"
-        [class.text-blue-600]="activeTab === tab"
-        [class.border-transparent]="activeTab !== tab"
-        [class.text-gray-500]="activeTab !== tab"
-        [class.hover:text-gray-700]="activeTab !== tab"
-        [class.hover:border-gray-300]="activeTab !== tab">
+        [ngClass]="{
+          'border-[var(--color-brand)] text-[var(--color-brand)]': activeTab === tab,
+          'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)]': activeTab !== tab
+        }">
         {{ ('supplyRequestManagement.tabs.' + tab) | translate }}
       </button>
     </nav>
   </div>
 
   <!-- Table -->
-  <div *ngIf="!loading" class="bg-white">
+  <div *ngIf="!loading" class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
     <div class="overflow-x-auto">
       <table class="min-w-full">
-        <thead class="bg-white border-b border-gray-200">
+        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.issueNo' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.requestType' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.quantity' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.priority' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.requestDate' | translate }}
             </th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'supplyRequestManagement.status' | translate }}
             </th>
             <th class="px-6 py-3"></th>
           </tr>
         </thead>
-        <tbody class="bg-white">
-          <tr *ngFor="let request of paginatedRequests; let i = index" [class.bg-gray-50]="i % 2 === 1">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        <tbody class="bg-[var(--color-background)]">
+          <tr *ngFor="let request of paginatedRequests; let i = index" [ngClass]="{'bg-[var(--color-background-active)]': i % 2 === 1}">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
               {{ request.issueNo }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ ('common.requestTypes.' + request.requestType) | translate }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ formatNumber(request.quantity) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm" [ngClass]="getPriorityColor(request.priority)">
               {{ ('common.priorityLevels.' + request.priority) | translate }}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)]">
               {{ request.requestDate }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <button
                 type="button"
-                class="inline-flex items-center px-3 py-1 border rounded-md text-xs font-medium transition-colors"
+                class="inline-flex items-center px-3 py-1 border-2 rounded-md text-xs font-medium transition-colors"
                 [ngClass]="getStatusButtonClass(request.status)">
                 {{ ('common.statuses.' + request.status) | translate }}
                 <lucide-angular [img]="ChevronDown" class="ml-1 h-3 w-3"></lucide-angular>
@@ -111,8 +109,8 @@
             <td class="px-6 py-4 whitespace-nowrap text-right">
               <button
                 (click)="onViewDetails(request.issueNo)"
-                class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-[var(--color-accent)] transition-colors ml-auto">
-                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="w-8 h-8 rounded-full border-2 border-[var(--color-border)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors ml-auto">
+                <svg class="w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                 </svg>
               </button>
@@ -123,9 +121,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-between px-6 py-4 bg-white">
+    <div class="flex items-center justify-between px-6 py-4 bg-[var(--color-background-muted)] border-t border-[var(--color-border)]">
       <!-- Items per page info -->
-      <div class="flex items-center gap-2 text-sm text-gray-600">
+      <div class="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
         <span>{{ 'supplyRequestManagement.showing' | translate }}</span>
         <app-dropdown
           class="w-24"
@@ -142,8 +140,8 @@
         <button
           (click)="onPageChange(currentPage - 1)"
           [disabled]="currentPage === 1"
-          class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-angular [img]="previousIcon" class="h-4 w-4 text-gray-700"></lucide-angular>
+          class="p-2 hover:bg-[var(--color-background-hover)] rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-angular [img]="previousIcon" class="h-4 w-4 text-[var(--color-text)]"></lucide-angular>
         </button>
 
         <button
@@ -157,8 +155,8 @@
         <button
           (click)="onPageChange(currentPage + 1)"
           [disabled]="currentPage === totalPages"
-          class="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-          <lucide-angular [img]="nextIcon" class="h-4 w-4 text-gray-700"></lucide-angular>
+          class="p-2 hover:bg-[var(--color-background-hover)] rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <lucide-angular [img]="nextIcon" class="h-4 w-4 text-[var(--color-text)]"></lucide-angular>
         </button>
       </div>
     </div>
@@ -166,13 +164,13 @@
 
   <!-- Empty State -->
   <div *ngIf="paginatedRequests.length === 0" class="text-center py-12">
-    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="w-16 h-16 mx-auto mb-4 bg-[var(--color-background-active)] rounded-full flex items-center justify-center">
+      <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ 'supplyRequestManagement.noRequests' | translate }}</h3>
-    <p class="text-gray-500">{{ 'supplyRequestManagement.noRequestsDescription' | translate }}</p>
+    <h3 class="text-lg font-medium text-[var(--color-text)] mb-2">{{ 'supplyRequestManagement.noRequests' | translate }}</h3>
+    <p class="text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.noRequestsDescription' | translate }}</p>
   </div>
   </div>
 </div>

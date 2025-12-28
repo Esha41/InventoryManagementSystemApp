@@ -9,7 +9,7 @@
   .page-wrapper {
     @apply min-h-screen bg-[var(--color-background-muted)] pb-8;
   }
-  
+
   .page-container {
     /* 
       Global content container
@@ -24,44 +24,66 @@
 @layer base {
   :root {
     /* Brand Colors */
-    --color-brand: #D0B888; /* Primary brand color */
+    --color-brand: #D0B888;
+    /* Primary brand color */
     --color-brand-light: #DCC8A0;
     --color-brand-dark: #BEA06E;
 
     /* Accent Colors */
-    --color-accent: #0F60FF; /* Interactive elements */
+    --color-accent: #0F60FF;
+    /* Interactive elements */
     --color-accent-light: #3B82F6;
     --color-accent-dark: #0C30C8;
 
     /* Background Colors */
-    --color-background: #FFFFFF; /* Main background */
-    --color-background-muted: #F9FAFB; /* Slightly gray background */
-    --color-background-hover: #F3F4F8; /* Hover state background */
-    --color-background-active: #F1F2F6; /* Active/selected state */
+    --color-background: #FFFFFF;
+    /* Main background */
+    --color-background-muted: #F9FAFB;
+    /* Slightly gray background */
+    --color-background-hover: #F3F4F8;
+    /* Hover state background */
+    --color-background-active: #F1F2F6;
+    /* Active/selected state */
 
     /* Text Colors */
-    --color-text: #23272E; /* Primary text */
-    --color-text-muted: #8B909A; /* Secondary/muted text */
-    --color-text-light: #9CA3AF; /* Tertiary/lighter text */
-    --color-text-inverse: #FFFFFF; /* White text for dark backgrounds */
+    --color-text: #23272E;
+    /* Primary text */
+    --color-text-muted: #8B909A;
+    /* Secondary/muted text */
+    --color-text-light: #9CA3AF;
+    /* Tertiary/lighter text */
+    --color-text-inverse: #FFFFFF;
+    /* White text for dark backgrounds */
 
     /* Border Colors */
-    --color-border: #E5E7EB; /* Default border */
-    --color-border-muted: #F3F4F8; /* Subtle border */
+    --color-border: #E5E7EB;
+    /* Default border */
+    --color-border-muted: #F3F4F8;
+    /* Subtle border */
 
     /* State Colors */
-    --color-success: #22C55E; /* Success state */
-    --color-warning: #FB923C; /* Warning state */
-    --color-error: #EF4444; /* Error state */
-    --color-info: #3B82F6; /* Info state */
+    --color-success: #22C55E;
+    /* Success state */
+    --color-warning: #FB923C;
+    /* Warning state */
+    --color-error: #EF4444;
+    /* Error state */
+    --color-info: #3B82F6;
+    /* Info state */
 
     /* Border Radius */
-    --radius-sm: 0.25rem; /* 4px */
-    --radius-md: 0.375rem; /* 6px */
-    --radius-lg: 0.5rem; /* 8px */
-    --radius-xl: 0.75rem; /* 12px */
-    --radius-2xl: 1rem; /* 16px */
-    --radius-full: 9999px; /* Full rounded */
+    --radius-sm: 0.25rem;
+    /* 4px */
+    --radius-md: 0.375rem;
+    /* 6px */
+    --radius-lg: 0.5rem;
+    /* 8px */
+    --radius-xl: 0.75rem;
+    /* 12px */
+    --radius-2xl: 1rem;
+    /* 16px */
+    --radius-full: 9999px;
+    /* Full rounded */
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -71,17 +93,87 @@
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
     /* Spacing */
-    --spacing-xs: 0.25rem; /* 4px */
-    --spacing-sm: 0.5rem; /* 8px */
-    --spacing-md: 1rem; /* 16px */
-    --spacing-lg: 1.5rem; /* 24px */
-    --spacing-xl: 2rem; /* 32px */
-    --spacing-2xl: 3rem; /* 48px */
+    --spacing-xs: 0.25rem;
+    /* 4px */
+    --spacing-sm: 0.5rem;
+    /* 8px */
+    --spacing-md: 1rem;
+    /* 16px */
+    --spacing-lg: 1.5rem;
+    /* 24px */
+    --spacing-xl: 2rem;
+    /* 32px */
+    --spacing-2xl: 3rem;
+    /* 48px */
+
+    /* Navbar Background - Brand color in light mode */
+    --color-navbar-bg: var(--color-brand);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Dark Theme Variables */
+  [data-theme="dark"],
+  .dark {
+    /* Navbar Background - Black in dark mode */
+    --color-navbar-bg: #0a0a0a;
+
+    /* Brand Colors - Keep brand colors similar for consistency */
+    --color-brand: #D0B888;
+    --color-brand-light: #E5D4B0;
+    --color-brand-dark: #BEA06E;
+
+    /* Accent Colors */
+    --color-accent: #60A5FA;
+    /* Lighter blue for dark mode */
+    --color-accent-light: #93C5FD;
+    --color-accent-dark: #3B82F6;
+
+    /* Background Colors */
+    --color-background: #1A1D24;
+    /* Dark background */
+    --color-background-muted: #13161B;
+    /* Darker background */
+    --color-background-hover: #252932;
+    /* Hover state background */
+    --color-background-active: #2D3138;
+    /* Active/selected state */
+
+    /* Text Colors */
+    --color-text: #E5E7EB;
+    /* Light text for dark backgrounds */
+    --color-text-muted: #9CA3AF;
+    /* Muted text */
+    --color-text-light: #6B7280;
+    /* Lighter text */
+    --color-text-inverse: #1A1D24;
+    /* Dark text for light backgrounds */
+
+    /* Border Colors */
+    --color-border: #4B5563;
+    /* More visible borders in dark mode */
+    --color-border-muted: #6B7280;
+    /* Subtle borders */
+
+    /* State Colors - Adjusted for dark mode visibility */
+    --color-success: #34D399;
+    /* Lighter green */
+    --color-warning: #FBBF24;
+    /* Lighter orange */
+    --color-error: #F87171;
+    /* Lighter red */
+    --color-info: #60A5FA;
+    /* Lighter blue */
+
+    /* Shadows - Adjusted for dark mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
   }
 }
 
@@ -122,7 +214,12 @@
   }
 
   .pagination-page-small {
-    @apply w-8 h-8 rounded flex items-center justify-center text-sm font-medium hover:bg-gray-100 transition-colors;
+    @apply w-8 h-8 rounded flex items-center justify-center text-sm font-medium transition-colors;
+    background-color: var(--color-background-active);
+  }
+
+  .pagination-page-small:hover {
+    background-color: var(--color-background-hover);
   }
 
   .pagination-page-small-active {
@@ -131,7 +228,7 @@
   }
 
   .pagination-page-small-inactive {
-    color: #4B5563; /* gray-700 */
+    color: var(--color-text-muted);
   }
 }
 
@@ -142,10 +239,11 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 
-               'Cairo', 'Tajawal', 'Noto Sans Arabic', 'Tahoma', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Cairo', 'Tajawal', 'Noto Sans Arabic', 'Tahoma', sans-serif;
   color: var(--color-text);
   background-color: var(--color-background);
 }
@@ -168,6 +266,22 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* Transition for elements using CSS variables */
+body,
+nav,
+main,
+aside,
+footer {
+  transition: background-color var(--transition-base),
+    color var(--transition-base),
+    border-color var(--transition-base);
 }
 
 /* RTL Support */
@@ -231,4 +345,105 @@ html, body {
 input::-moz-focus-inner,
 button::-moz-focus-inner {
   border: 0;
+}
+
+/* ============================================
+   GLOBAL INPUT & AUTOFILL DARK MODE FIX
+   ============================================
+   Ensures all inputs maintain proper theming,
+   especially when browser autofill is active.
+   This is a global fix applied to all inputs.
+   ============================================ */
+
+/* Fix autofill background colors for WebKit browsers (Chrome, Safari, Edge) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  /* Use box-shadow trick to override autofill background */
+  -webkit-box-shadow: 0 0 0 1000px var(--color-background) inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  caret-color: var(--color-text) !important;
+  /* Delay background color transition to prevent flash */
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Fix for Firefox autofill */
+input:-moz-autofill,
+input:-moz-autofill-preview,
+textarea:-moz-autofill,
+textarea:-moz-autofill-preview {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+  filter: none !important;
+}
+
+/* Ensure all inputs maintain proper theming in all states */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* Focus state for inputs */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+/* Disabled state for inputs */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background-color: var(--color-background-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Placeholder text color */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-light);
+  opacity: 1;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: var(--color-text-light);
+  opacity: 1;
+}
+
+/* Global Autofill Styling Fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-background) inset !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:autofill {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
 }

@@ -15,12 +15,12 @@
           </div>
           <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
             [placeholder]="'dashboard.searchOrders' | translate"
-            class="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
+            class="w-full pl-10 pr-4 py-2.5 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
         </div>
 
         <!-- Status Filter -->
         <div
-          class="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
+          class="flex items-center gap-3 px-4 py-2.5 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
           <span class="text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{
             'dashboard.statusLabels.new' | translate }}:</span>
           <span class="text-lg font-bold text-[var(--color-brand)]">{{ filteredRequestsCount }}</span>
@@ -34,7 +34,7 @@
 
         <!-- Priority Filter -->
         <div
-          class="flex items-center gap-3 px-4 py-2.5 bg-white rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
+          class="flex items-center gap-3 px-4 py-2.5 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] flex-shrink-0 relative">
           <span class="text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{
             'requestsManagement.filterByPriority' | translate }}:</span>
           <app-dropdown class="w-40 flex-shrink-0" [(ngModel)]="selectedPriorityFilter"
@@ -47,11 +47,11 @@
     </div>
 
     <!-- Table Container -->
-    <div class="bg-white rounded-lg shadow-sm">
+    <div class="bg-[var(--color-background)] rounded-lg shadow-sm">
       <div class="overflow-hidden rounded-t-lg">
         <!-- Table -->
         <table class="w-full">
-          <thead class="bg-[#f5f5f5]">
+          <thead class="bg-[var(--color-background-muted)]">
             <tr>
               <th
                 class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">

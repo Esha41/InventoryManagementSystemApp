@@ -1,13 +1,13 @@
 <div class="page-wrapper">
   <!-- Header -->
-  <div class="bg-gray-50 border-b border-gray-200">
+  <div class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
     <div class="page-container py-4">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
             {{ 'adminImportExport.title' | translate }}
           </h1>
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-[var(--color-text-muted)]">
             {{ 'adminImportExport.subtitle' | translate }}
           </p>
         </div>
@@ -22,20 +22,23 @@
         <nav class="flex gap-1 p-2" aria-label="Sections">
           <button (click)="switchSection('assets')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'assets',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'assets'
-          }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'assets'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
             <span>{{ 'adminImportExport.sections.assets' | translate }}</span>
           </button>
           <button (click)="switchSection('inventory-summary')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'inventory-summary',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'inventory-summary'
-          }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'inventory-summary'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
             <span>{{ 'adminImportExport.sections.inventorySummary' | translate }}</span>
           </button>
           <button (click)="switchSection('warehouse-inventory')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'warehouse-inventory',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'warehouse-inventory'
-          }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'warehouse-inventory'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
             <span>{{ 'adminImportExport.sections.warehouseInventory' | translate }}</span>
           </button>
         </nav>
@@ -43,19 +46,15 @@
     </app-card>
 
     <!-- Assets Section -->
-    <app-assets-import-export 
-      *ngIf="activeSection === 'assets'"
-      [activeTab]="activeAssetTab">
+    <app-assets-import-export *ngIf="activeSection === 'assets'" [activeTab]="activeAssetTab">
     </app-assets-import-export>
 
     <!-- Inventory Summary Section -->
-    <app-inventory-summary 
-      *ngIf="activeSection === 'inventory-summary'">
+    <app-inventory-summary *ngIf="activeSection === 'inventory-summary'">
     </app-inventory-summary>
 
     <!-- Warehouse Inventory Section -->
-    <app-warehouse-inventory 
-      *ngIf="activeSection === 'warehouse-inventory'">
+    <app-warehouse-inventory *ngIf="activeSection === 'warehouse-inventory'">
     </app-warehouse-inventory>
   </div>
 </div>

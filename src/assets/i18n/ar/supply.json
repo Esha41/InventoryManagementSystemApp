@@ -137,7 +137,10 @@
     "totalSelected": "إجمالي المحدد",
     "confirmSelection": "تأكيد التحديد",
     "available": "متاح",
-    "daysRemaining": "الأيام المتبقية"
+    "daysRemaining": "الأيام المتبقية",
+    "enterLotNumber": "أدخل رقم اللوت",
+    "lotNumberPlaceholder": "أدخل رقم اللوت...",
+    "getDetails": "الحصول على التفاصيل"
   },
   "supplyOrder": {
     "title": "طلب التوريد",

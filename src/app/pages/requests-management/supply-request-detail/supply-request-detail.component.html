@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-50 p-6">
+<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
   <!-- Loading State -->
   <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
   </app-loading-state>
@@ -8,14 +8,14 @@
     <!-- Header with Back Button -->
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <button (click)="goBack()" class="p-2 hover:bg-white rounded-lg transition-colors border border-gray-200">
-          <lucide-angular [img]="backIcon" class="h-5 w-5 text-gray-600"></lucide-angular>
+        <button (click)="goBack()" class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)]">
+          <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
         </button>
         <div>
           <h1 class="text-2xl font-bold text-[var(--color-text)]">
             {{ 'supplyRequestDetail.title' | translate }} {{ requestDetail.issueNo }}
           </h1>
-          <p class="text-sm text-gray-500 mt-1">
+          <p class="text-sm text-[var(--color-text-muted)] mt-1">
             {{ 'supplyRequestDetail.requestedOn' | translate }}: {{ requestDetail.requestDate }}
           </p>
         </div>
@@ -31,85 +31,84 @@
       <!-- Left Column - Request Info, Order Items & Approval Workflow -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Request Information -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-[var(--color-background)] rounded-lg shadow-sm border border-[var(--color-border)]">
           <button (click)="isRequestInfoExpanded = !isRequestInfoExpanded"
-            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyRequestDetail.requestInformation' | translate }}
             </h2>
-            <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-gray-500">
+            <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
           <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.orderNo' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.issueNo }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.issueNo }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.requestType' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ requestDetail.requestType }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestType }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.requesterName' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveRequesterName() }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveRequesterName() }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.departmentName' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveDepartmentName() }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveDepartmentName() }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.priority' | translate }}
                 </label>
                 <p class="text-sm mt-1 font-semibold" [ngClass]="{
-                'text-red-600': requestDetail.priority === 'Critical',
-                'text-orange-600': requestDetail.priority === 'High',
-                'text-yellow-600': requestDetail.priority === 'Medium',
-                'text-green-600': requestDetail.priority === 'Low'
+                'text-[var(--color-error)]': requestDetail.priority === 'Critical',
+                'text-[var(--color-warning)]': requestDetail.priority === 'High' || requestDetail.priority === 'Medium',
+                'text-[var(--color-success)]': requestDetail.priority === 'Low'
               }">{{ ('common.priorityLevels.' + requestDetail.priority) | translate }}</p>
               </div>
 
               <div *ngIf="orderData?.reason">
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.reason' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ ('common.usagePurposes.' + orderData?.reason) | translate }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ ('common.usagePurposes.' + orderData?.reason) | translate }}</p>
               </div>
 
               <div
                 *ngIf="orderData?.usagePurpose || orderData?.requestPurposeNameEn || orderData?.requestPurposeNameAr">
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.usagePurpose' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
               </div>
 
               <div *ngIf="orderData?.usageLocation">
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.usageLocation' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">{{ orderData?.usageLocation }}</p>
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData?.usageLocation }}</p>
               </div>
 
               <div *ngIf="orderData?.usageDateFrom">
-                <label class="text-xs font-semibold text-gray-500 uppercase">
+                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.usageDate' | translate }}
                 </label>
-                <p class="text-sm text-gray-900 mt-1 font-medium">
+                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
                   {{ formatDate(orderData?.usageDateFrom) }}
                   <span *ngIf="orderData?.usageTimeFrom">{{ orderData?.usageTimeFrom }}</span>
                   <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
@@ -121,13 +120,13 @@
         </div>
 
         <!-- Order Items -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-[var(--color-background)] rounded-lg shadow-sm border border-[var(--color-border)]">
           <button (click)="isOrderItemsExpanded = !isOrderItemsExpanded"
-            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyRequestDetail.orderItems' | translate }}
             </h2>
-            <lucide-angular [img]="isOrderItemsExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-gray-500">
+            <lucide-angular [img]="isOrderItemsExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
@@ -142,9 +141,9 @@
             </div>
 
             <!-- Item Management Table -->
-            <div class="mb-6 overflow-x-auto border border-gray-200 rounded-lg">
+            <div class="mb-6 overflow-x-auto border border-[var(--color-border)] rounded-lg">
               <table class="min-w-full text-sm">
-                <thead class="bg-gray-50 text-gray-700">
+                <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
                   <tr>
                     <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
                     <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
@@ -153,19 +152,19 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let item of requestDetail.items" class="border-t border-gray-200">
-                    <td class="px-4 py-2 text-gray-900">{{ item.itemName }}</td>
-                    <td class="px-4 py-2 text-gray-600">{{ getItemProductId(item) }}</td>
-                    <td class="px-4 py-2 text-gray-900">{{ formatNumber(item.approvedQuantity) }}</td>
+                  <tr *ngFor="let item of requestDetail.items" class="border-t border-[var(--color-border)]">
+                    <td class="px-4 py-2 text-[var(--color-text)]">{{ item.itemName }}</td>
+                    <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
+                    <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.approvedQuantity) }}</td>
                     <td class="px-4 py-2">
                       <button *appHasPermission="'Order.Edit'" type="button"
                         (click)="openEditItemModal(item); $event.stopPropagation()"
-                        class="text-sm text-blue-600 hover:text-blue-700 mr-3">
+                        class="text-sm text-[var(--color-info)] hover:opacity-80 mr-3">
                         {{ 'common.edit' | translate }}
                       </button>
                       <button *appHasPermission="'Order.Delete'" type="button"
                         (click)="openRemoveItemModal(item); $event.stopPropagation()"
-                        class="text-sm text-red-600 hover:text-red-700">
+                        class="text-sm text-[var(--color-error)] hover:opacity-80">
                         {{ 'common.remove' | translate }}
                       </button>
                     </td>
@@ -177,42 +176,42 @@
             <!-- Existing Item Cards (for lot selection) -->
             <div class="space-y-3">
               <div *ngFor="let item of requestDetail.items"
-                class="border border-gray-200 rounded-lg p-4 hover:border-[var(--color-brand)] hover:shadow-md transition-all cursor-pointer"
+                class="border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-brand)] hover:shadow-md transition-all cursor-pointer"
                 (click)="openLotModal(item)">
 
                 <div class="flex items-start gap-4">
                   <!-- Item Icon -->
-                  <div class="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <div class="flex-shrink-0 w-12 h-12 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
                     <lucide-angular [img]="getItemTypeIcon(item.itemType)"
-                      class="h-6 w-6 text-blue-600"></lucide-angular>
+                      class="h-6 w-6 text-[var(--color-info)]"></lucide-angular>
                   </div>
 
                   <!-- Item Details -->
                   <div class="flex-1">
                     <div class="flex items-start justify-between mb-2">
                       <div class="flex-1">
-                        <h3 class="font-semibold text-gray-900">{{ item.itemName }}</h3>
-                        <p class="text-xs text-gray-500 mt-1">{{ item.itemType }}</p>
+                        <h3 class="font-semibold text-[var(--color-text)]">{{ item.itemName }}</h3>
+                        <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ item.itemType }}</p>
                       </div>
                       <div class="text-right ml-4">
-                        <p class="text-xs font-semibold text-gray-500 uppercase">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'supplyRequestDetail.approvedQty' | translate }}
                         </p>
-                        <p class="text-lg font-bold text-gray-900">{{ formatNumber(item.approvedQuantity) }}</p>
+                        <p class="text-lg font-bold text-[var(--color-text)]">{{ formatNumber(item.approvedQuantity) }}</p>
                       </div>
                     </div>
 
                     <!-- Progress Bar -->
                     <div class="mt-3">
-                      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <div class="flex items-center justify-between text-xs text-[var(--color-text-muted)] mb-1">
                         <span>{{ 'supplyRequestDetail.selectedForDischarge' | translate }}</span>
                         <span class="font-semibold">{{ formatNumber(item.totalSelectedForDischarge) }} / {{
                           formatNumber(item.approvedQuantity) }}</span>
                       </div>
-                      <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="w-full bg-[var(--color-background-active)] rounded-full h-2">
                         <div class="h-2 rounded-full transition-all"
-                          [class.bg-green-500]="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge <= item.approvedQuantity"
-                          [class.bg-red-500]="item.totalSelectedForDischarge > item.approvedQuantity"
+                          [class.bg-[var(--color-success)]]="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge <= item.approvedQuantity"
+                          [class.bg-[var(--color-error)]]="item.totalSelectedForDischarge > item.approvedQuantity"
                           [style.width.%]="(item.totalSelectedForDischarge / item.approvedQuantity) * 100">
                         </div>
                       </div>
@@ -221,23 +220,23 @@
                     <!-- Status Badge -->
                     <div class="mt-3 flex items-center gap-2">
                       <span *ngIf="item.totalSelectedForDischarge === 0"
-                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)] border border-[var(--color-border)]">
                         {{ 'supplyRequestDetail.clickToSelectLots' | translate }}
                       </span>
                       <span
                         *ngIf="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge < item.approvedQuantity"
-                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-warning)]/20 text-[var(--color-warning)] border border-[var(--color-warning)]/40">
                         {{ 'supplyRequestDetail.partiallySelected' | translate }}
                       </span>
                       <span *ngIf="item.totalSelectedForDischarge === item.approvedQuantity"
-                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-300"
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-success)]/20 text-[var(--color-success)] border border-[var(--color-success)]/40"
                         [class.flex-row-reverse]="isRTL">
                         <lucide-angular [img]="CheckCircle" class="h-3 w-3 flex-shrink-0" [class.mr-1]="!isRTL"
                           [class.ml-1]="isRTL"></lucide-angular>
                         {{ 'supplyRequestDetail.fullySelected' | translate }}
                       </span>
                       <span *ngIf="item.totalSelectedForDischarge > item.approvedQuantity"
-                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800 border border-red-300"
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-error)]/20 text-[var(--color-error)] border border-[var(--color-error)]/40"
                         [class.flex-row-reverse]="isRTL">
                         <lucide-angular [img]="AlertTriangle" class="h-3 w-3 flex-shrink-0" [class.mr-1]="!isRTL"
                           [class.ml-1]="isRTL"></lucide-angular>
@@ -252,13 +251,13 @@
         </div>
 
         <!-- Approval Workflow -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="bg-[var(--color-background)] rounded-lg shadow-sm border border-[var(--color-border)]">
           <button (click)="isApprovalWorkflowExpanded = !isApprovalWorkflowExpanded"
-            class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors">
+            class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyRequestDetail.approvalWorkflow' | translate }}
             </h2>
-            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-gray-500">
+            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
@@ -362,17 +361,17 @@
 
   <div class="space-y-6">
     <!-- Warning Icon and Message -->
-    <div class="flex items-start gap-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+    <div class="flex items-start gap-4 p-4 bg-[var(--color-warning)]/20 rounded-lg border border-[var(--color-warning)]/40">
       <div class="flex-shrink-0">
-        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-          <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-yellow-600"></lucide-angular>
+        <div class="w-10 h-10 rounded-full bg-[var(--color-warning)]/30 flex items-center justify-center">
+          <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-[var(--color-warning)]"></lucide-angular>
         </div>
       </div>
       <div class="flex-1">
-        <h3 class="text-base font-semibold text-yellow-900 mb-1">
+        <h3 class="text-base font-semibold text-[var(--color-warning)] mb-1">
           {{ 'supplyRequestDetail.partialFulfillmentConfirm.message' | translate }}
         </h3>
-        <p class="text-sm text-yellow-800">
+        <p class="text-sm text-[var(--color-warning)]/90">
           {{ 'supplyRequestDetail.partialFulfillmentConfirm.description' | translate }}
         </p>
       </div>
@@ -380,21 +379,21 @@
 
     <!-- Partially Fulfilled Items List -->
     <div *ngIf="partiallyFulfilledItems.length > 0" class="space-y-3">
-      <h4 class="text-sm font-semibold text-gray-900">
+      <h4 class="text-sm font-semibold text-[var(--color-text)]">
         {{ 'supplyRequestDetail.partialFulfillmentConfirm.itemsList' | translate }}:
       </h4>
       <div class="space-y-2 max-h-60 overflow-y-auto">
-        <div *ngFor="let item of partiallyFulfilledItems" class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div *ngFor="let item of partiallyFulfilledItems" class="p-3 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
           <div class="flex items-center justify-between">
             <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900">{{ item.itemName }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ item.itemType }}</p>
+              <p class="text-sm font-medium text-[var(--color-text)]">{{ item.itemName }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ item.itemType }}</p>
             </div>
             <div class="text-right ml-4">
-              <p class="text-sm font-semibold text-gray-900">
+              <p class="text-sm font-semibold text-[var(--color-text)]">
                 {{ formatNumber(item.totalSelectedForDischarge) }} / {{ formatNumber(item.approvedQuantity) }}
               </p>
-              <p class="text-xs text-yellow-600 font-medium mt-1">
+              <p class="text-xs text-[var(--color-warning)] font-medium mt-1">
                 {{ 'supplyRequestDetail.partialFulfillmentConfirm.partial' | translate }}
               </p>
             </div>
@@ -404,8 +403,8 @@
     </div>
 
     <!-- Confirmation Question -->
-    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-      <p class="text-sm font-medium text-blue-900">
+    <div class="p-4 bg-[var(--color-info)]/20 rounded-lg border border-[var(--color-info)]/40">
+      <p class="text-sm font-medium text-[var(--color-info)]">
         {{ 'supplyRequestDetail.partialFulfillmentConfirm.confirmQuestion' | translate }}
       </p>
     </div>

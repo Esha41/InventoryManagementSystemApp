@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="mb-6">
     <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'supplyOrder.pageTitle' | translate }}</h1>
-    <p class="text-sm text-gray-600 mt-1">{{ 'supplyOrder.pageSubtitle' | translate }}</p>
+    <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'supplyOrder.pageSubtitle' | translate }}</p>
   </div>
 
   <app-loading-state 
@@ -11,29 +11,29 @@
     [fullPage]="true">
   </app-loading-state>
 
-  <div *ngIf="!loading && orders.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
-    <lucide-angular [img]="Package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></lucide-angular>
-    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ 'supplyOrder.noOrdersFound' | translate }}</h3>
-    <p class="text-sm text-gray-600">{{ 'supplyOrder.noOrdersDescription' | translate }}</p>
+  <div *ngIf="!loading && orders.length === 0" class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-12 text-center border-2 border-[var(--color-border)]">
+    <lucide-angular [img]="Package" class="h-16 w-16 text-[var(--color-text-muted)] mx-auto mb-4"></lucide-angular>
+    <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'supplyOrder.noOrdersFound' | translate }}</h3>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyOrder.noOrdersDescription' | translate }}</p>
   </div>
 
-  <div *ngIf="!loading && orders.length > 0" class="bg-white rounded-lg shadow-sm">
+  <div *ngIf="!loading && orders.length > 0" class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)]">
     <div class="overflow-x-auto">
       <table class="min-w-full">
-        <thead class="bg-white border-b border-gray-200">
+        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.orderId' | translate }}</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.requestNumber' | translate }}</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.status' | translate }}</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.priority' | translate }}</th>
-            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ 'supplyOrder.items' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase">{{ 'supplyOrder.orderId' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase">{{ 'supplyOrder.requestNumber' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase">{{ 'supplyOrder.status' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase">{{ 'supplyOrder.priority' | translate }}</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text)] uppercase">{{ 'supplyOrder.items' | translate }}</th>
             <th class="px-6 py-3"></th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let order of orders" class="border-b border-gray-200 hover:bg-gray-50">
-            <td class="px-6 py-4 text-sm font-medium text-gray-900">#{{ order.id }}</td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ order.requestNo || order.orderNo || 'N/A' }}</td>
+        <tbody class="bg-[var(--color-background)]">
+          <tr *ngFor="let order of orders" class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
+            <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)]">#{{ order.id }}</td>
+            <td class="px-6 py-4 text-sm text-[var(--color-text-muted)]">{{ order.requestNo || order.orderNo || 'N/A' }}</td>
             <td class="px-6 py-4 text-sm">
               <span class="px-2 py-1 rounded-md text-xs font-medium"
                     [ngClass]="getStatusClass(order.status)">
@@ -42,11 +42,11 @@
             </td>
             <td class="px-6 py-4 text-sm">
               <span class="px-2 py-1 rounded-md text-xs font-medium"
-                    [ngClass]="order.priority === 1 ? 'bg-red-100 text-red-800' : order.priority === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'">
+                    [ngClass]="order.priority === 1 ? 'bg-[var(--color-error)]/20 text-[var(--color-error)]' : order.priority === 2 ? 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]' : 'bg-[var(--color-success)]/20 text-[var(--color-success)]'">
                 {{ getPriorityText(order.priority) | translate }}
               </span>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-700">{{ order.requestItems?.length || 0 }}</td>
+            <td class="px-6 py-4 text-sm text-[var(--color-text-muted)]">{{ order.requestItems?.length || 0 }}</td>
             <td class="px-6 py-4 text-right">
               <button
                 (click)="viewOrder(order)"

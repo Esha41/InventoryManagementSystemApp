@@ -137,7 +137,10 @@
     "totalSelected": "Total Selected",
     "confirmSelection": "Confirm Selection",
     "available": "Available",
-    "daysRemaining": "Days Remaining"
+    "daysRemaining": "Days Remaining",
+    "enterLotNumber": "Enter Lot Number",
+    "lotNumberPlaceholder": "Enter lot number...",
+    "getDetails": "Get Details"
   },
   "supplyOrder": {
     "title": "Supply Order",

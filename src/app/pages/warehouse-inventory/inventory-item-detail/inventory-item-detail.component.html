@@ -1,11 +1,11 @@
-<div class="bg-white min-h-full p-6">
+<div class="bg-[var(--color-background)] min-h-full p-6">
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center space-x-3">
-      <button (click)="onBack()" class="text-gray-700 hover:text-gray-900 transition-colors">
+      <button (click)="onBack()" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
         <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
       </button>
-      <h1 class="text-2xl font-semibold text-gray-900">
+      <h1 class="text-2xl font-semibold text-[var(--color-text)]">
         {{ getItemName() }}
       </h1>
     </div>
@@ -27,18 +27,26 @@
   <!-- Content -->
   <div *ngIf="!loading && !error && inventoryDetail">
     <!-- Tabs -->
-    <div class="border-b border-gray-300 mb-8">
+    <div class="border-b border-[var(--color-border)] mb-8">
       <nav class="flex space-x-8">
-        <button (click)="setActiveTab('overview')" [class.border-gray-800]="activeTab === 'overview'"
-          [class.text-gray-900]="activeTab === 'overview'" [class.border-transparent]="activeTab !== 'overview'"
-          [class.text-gray-400]="activeTab !== 'overview'"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-gray-700">
+        <button (click)="setActiveTab('overview')" 
+          [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'overview',
+            'text-[var(--color-text)]': activeTab === 'overview',
+            'border-transparent': activeTab !== 'overview',
+            'text-[var(--color-text-muted)]': activeTab !== 'overview'
+          }"
+          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
           {{ 'warehouseInventory.overview' | translate }}
         </button>
-        <button (click)="setActiveTab('stock')" [class.border-gray-800]="activeTab === 'stock'"
-          [class.text-gray-900]="activeTab === 'stock'" [class.border-transparent]="activeTab !== 'stock'"
-          [class.text-gray-400]="activeTab !== 'stock'"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-gray-700">
+        <button (click)="setActiveTab('stock')" 
+          [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'stock',
+            'text-[var(--color-text)]': activeTab === 'stock',
+            'border-transparent': activeTab !== 'stock',
+            'text-[var(--color-text-muted)]': activeTab !== 'stock'
+          }"
+          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
           {{ 'warehouseInventory.stock' | translate }}
         </button>
       </nav>
@@ -51,38 +59,38 @@
         <div class="space-y-8">
           <!-- Primary Details -->
           <div>
-            <h2 class="text-sm font-semibold text-gray-700 mb-6">{{ 'warehouseInventory.primaryDetails' | translate }}
+            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.primaryDetails' | translate }}
             </h2>
             <div class="space-y-4">
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.itemName' | translate }}</p>
-                <p class="text-sm font-medium text-gray-800">{{ getItemName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemName' | translate }}</p>
+                <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.itemNumberCaliber' | translate }}</p>
-                <p class="text-sm font-medium text-gray-800">{{ getItemNo() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemNumberCaliber' | translate }}</p>
+                <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.hcc' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ getHccName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.hcc' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ getHccName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.batchNumber' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ inventoryDetail.item?.batchNo || '-' }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.batchNumber' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.batchNo || '-' }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.partNumber' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ inventoryDetail.item?.partNo || '-' }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.partNumber' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.partNo || '-' }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.readyForIssue' | translate }}</p>
-                <p class="text-sm text-gray-800">
-                  <span [class]="inventoryDetail.item?.readyForIssue ? 'text-green-600' : 'text-red-600'">
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.readyForIssue' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">
+                  <span [ngClass]="inventoryDetail.item?.readyForIssue ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'">
                     {{ inventoryDetail.item?.readyForIssue ? ('warehouseInventory.yes' | translate) :
                     ('warehouseInventory.no' | translate) }}
                   </span>
@@ -93,27 +101,27 @@
 
           <!-- Inventory Information -->
           <div>
-            <h2 class="text-sm font-semibold text-gray-700 mb-6">{{ 'warehouseInventory.inventoryInformation' |
+            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.inventoryInformation' |
               translate }}</h2>
             <div class="space-y-4">
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.supplier' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ getSupplierName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.supplier' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ getSupplierName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.manufacturer' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ getManufacturerName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.manufacturer' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ getManufacturerName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.country' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ getCountryName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.country' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ getCountryName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-gray-500 mb-1.5">{{ 'warehouseInventory.expiryDate' | translate }}</p>
-                <p class="text-sm text-gray-800">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.expiryDate' | translate }}</p>
+                <p class="text-sm text-[var(--color-text)]">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
               </div>
             </div>
           </div>
@@ -135,79 +143,79 @@
       </div>
 
       <!-- Item Summary Table -->
-      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 mb-6">
+      <div class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
         <table class="min-w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
+          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.itemName' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.itemNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.type' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.nsn' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.partNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.totalQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.usedQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.reservedQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.remainingQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.totalLots' | translate }}
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+            <tr class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                 {{ getItemName() }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ getItemNo() }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 <span
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
                   {{ (inventoryDetail?.item)?.itemType === 1 ? ('warehouseInventory.tabs.ammunition' | translate) :
                   (inventoryDetail?.item)?.itemType === 2 ? ('warehouseInventory.tabs.weapon' | translate) :
                   ('warehouseInventory.tabs.explosive' | translate) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ (inventoryDetail?.item)?.nsn || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ (inventoryDetail?.item)?.partNo || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                 {{ formatNumber(getTotalQuantity()) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                 {{ formatNumber(getTotalUsedQuantity()) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                 {{ formatNumber(getTotalReservedQuantity()) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 text-end">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
                 {{ formatNumber(getTotalRemainingQuantity()) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
                 <span
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
                   {{ lots.length }}
                 </span>
               </td>
@@ -217,97 +225,97 @@
       </div>
 
       <!-- Lot Details Section -->
-      <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+      <div class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
+        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
             {{ 'inventorySummary.lotDetails' | translate }}
           </h3>
         </div>
 
         <!-- Loading State -->
         <div *ngIf="loadingLots" class="flex items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <span class="ml-3 text-sm text-gray-600">{{ 'common.loading' | translate }}</span>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-brand)]"></div>
+          <span class="ml-3 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
         </div>
 
         <!-- Lot Details Table -->
         <div *ngIf="!loadingLots">
           <div *ngIf="lots.length === 0" class="text-center py-12">
-            <p class="text-sm text-gray-500">{{ 'inventorySummary.noLots' | translate }}</p>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'inventorySummary.noLots' | translate }}</p>
           </div>
 
           <div *ngIf="lots.length > 0" class="overflow-x-auto">
             <table class="min-w-full">
-              <thead class="bg-gray-50 border-b border-gray-200">
+              <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.lotNumber' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.depot' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.supplier' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.manufacturer' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.country' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.batchNo' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.expiryDate' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.originalQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.usedQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.reservedQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.remainingQty' | translate }}
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-100">
-                <tr *ngFor="let lot of lots" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+              <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+                <tr *ngFor="let lot of lots" class="hover:bg-[var(--color-background-hover)]">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
                     {{ lot.lot }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getDepotName(lot) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getSupplierNameForLot(lot) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getManufacturerNameForLot(lot) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getCountryNameForLot(lot) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ lot.batchNo || '-' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ formatDate(lot.expiryDate) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                     {{ formatNumber(lot.originalQuantity) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                     {{ formatNumber(lot.usedQuantity) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                     {{ formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-end">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                     {{ formatNumber(lot.remainingQuantity) }}
                   </td>
                 </tr>

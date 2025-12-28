@@ -22,7 +22,7 @@
         <nav class="flex gap-1 p-2" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
           <button (click)="switchTab('ammunition')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
           }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
             [class.flex-row-reverse]="isRTL">
@@ -36,7 +36,7 @@
           </button>
           <button (click)="switchTab('weapon')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
           }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
             [class.flex-row-reverse]="isRTL">
@@ -50,7 +50,7 @@
           </button>
           <button (click)="switchTab('explosive')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
-            'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
           }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
             [class.flex-row-reverse]="isRTL">
@@ -72,7 +72,7 @@
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.filters.title' | translate }}</h3>
           <button type="button" (click)="clearFilters()"
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-white border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors">
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
             <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
             <span>{{ 'assetList.filters.clear' | translate }}</span>
           </button>
@@ -228,7 +228,7 @@
                     'assetList.table.actions' | translate }}</th>
                 </tr>
               </thead>
-              <tbody class="bg-white">
+              <tbody class="bg-[var(--color-background)]">
                 <tr *ngFor="let asset of paginatedAssets"
                   class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
                   <td class="py-4 px-6">
@@ -343,8 +343,8 @@
       [selectedAsset]="modalState.selectedAsset" [loading]="loading" [units]="units" [caseTypeList]="caseTypeList"
       [propellantList]="propellantList" [compatibilityList]="compatibilityList"
       [hazardDivisionList]="hazardDivisionList" [natureOptions]="natureOptions" [primaryPurposes]="primaryPurposes"
-      [projectileColors]="projectileColors" [projectailMaterials]="projectailMaterials" [classifications]="classifications"
-      [itemTypes]="itemTypes" [countries]="countries" [imageState]="imageState"
+      [projectileColors]="projectileColors" [projectailMaterials]="projectailMaterials"
+      [classifications]="classifications" [itemTypes]="itemTypes" [countries]="countries" [imageState]="imageState"
       (closed)="closeEditModal()" (saved)="onEditSaved($event)">
     </app-asset-edit-modal>
 

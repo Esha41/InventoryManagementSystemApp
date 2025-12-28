@@ -1,11 +1,11 @@
-<div class="rounded-lg p-4 bg-white shadow-sm border border-[var(--color-border)]">
+<div class="rounded-lg p-4 bg-[var(--color-background)] shadow-sm border border-[var(--color-border)]">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ title }}</h3>
   </div>
 
   <div *ngIf="items && items.length > 0; else emptyState" class="space-y-6">
     <div *ngFor="let it of visibleItems" class="flex items-center gap-4">
-      <div class="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
+      <div class="w-10 h-10 rounded-md bg-[var(--color-background-active)] flex items-center justify-center overflow-hidden">
         <img *ngIf="it.imageUrl" [src]="it.imageUrl" alt="" class="w-10 h-10 object-contain" />
         <div *ngIf="!it.imageUrl" class="w-10 h-10"></div>
       </div>
@@ -20,7 +20,7 @@
             {{ it.expiryDate || '' }}
           </div>
         </div>
-        <div class="mt-2 h-3 w-full rounded-full bg-pink-100 overflow-hidden">
+        <div class="mt-2 h-3 w-full rounded-full bg-[var(--color-background-active)] overflow-hidden">
           <div class="h-full rounded-full"
                [ngStyle]="{ width: (it.percentage || 0) + '%', background: 'linear-gradient(90deg,#FFB703 0%, #FB7185 100%)' }">
           </div>

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown, Moon, Sun } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
@@ -10,6 +10,7 @@ import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
+import { ThemeService } from '@services/theme.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
@@ -25,6 +26,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Globe = Globe;
   readonly LogOut = LogOut;
   readonly ChevronDown = ChevronDown;
+  readonly Moon = Moon;
+  readonly Sun = Sun;
 
   currentUser: AuthenticatedUser | null = null;
   userDetails: BackendUserDto | null = null;
@@ -39,7 +42,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private userContextService: UserContextService,
     private notificationService: NotificationService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -155,6 +159,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
   }
 
   logout(): void {

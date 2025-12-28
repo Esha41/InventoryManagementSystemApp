@@ -1,31 +1,22 @@
 <div class="min-h-screen bg-[var(--color-background-muted)] p-6">
   <!-- Loading State -->
-  <app-loading-state 
-    *ngIf="loading"
-    message="supplyRequestManagement.detail.loadingDetails"
-    size="md"
+  <app-loading-state *ngIf="loading" message="supplyRequestManagement.detail.loadingDetails" size="md"
     [fullPage]="true">
   </app-loading-state>
 
   <!-- Error State -->
-  <app-error-state
-    *ngIf="!loading && error"
-    [error]="error || ''"
-    variant="centered"
-    [title]="errorTitle"
-    actionText="common.back"
-    (action)="goBack()">
+  <app-error-state *ngIf="!loading && error" [error]="error || ''" variant="centered" [title]="errorTitle"
+    actionText="common.back" (action)="goBack()">
   </app-error-state>
 
   <!-- Content -->
   <div *ngIf="!loading && !error && requestDetail">
     <!-- Header with Back Button -->
     <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
         <div class="flex items-center justify-between flex-wrap gap-4">
           <div class="flex items-center gap-4">
-            <button
-              (click)="goBack()"
+            <button (click)="goBack()"
               class="p-2.5 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
               <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
             </button>
@@ -45,10 +36,12 @@
             </div>
           </div>
           <div class="flex items-center gap-3 flex-wrap">
-            <span class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm {{ getStatusClass(requestDetail.status) }}">
+            <span
+              class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm {{ getStatusClass(requestDetail.status) }}">
               {{ ('common.statuses.' + requestDetail.status) | translate }}
             </span>
-            <span class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm {{ getPriorityClass(requestDetail.priority) }}">
+            <span
+              class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm {{ getPriorityClass(requestDetail.priority) }}">
               {{ ('common.priorityLevels.' + requestDetail.priority) | translate }}
               {{ 'supplyRequestManagement.detail.prioritySuffix' | translate }}
             </span>
@@ -59,11 +52,11 @@
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
+
       <div class="lg:col-span-2 space-y-6">
         <!-- Request Information -->
-        <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
+          <div class="flex items-center gap-3 mb-6 pb-4 border-b-2 border-[var(--color-border)]">
             <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
               <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
             </div>
@@ -71,7 +64,7 @@
               {{ 'supplyRequestManagement.detail.requestInformation' | translate }}
             </h2>
           </div>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
@@ -79,7 +72,7 @@
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestNo }}</p>
             </div>
-            
+
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.type' | translate }}
@@ -88,14 +81,14 @@
                 {{ ('common.requestTypes.' + requestDetail.requestType) | translate }}
               </p>
             </div>
-            
+
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.requestDate' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestDate }}</p>
             </div>
-            
+
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.prioritySuffix' | translate }}
@@ -105,21 +98,27 @@
               </p>
             </div>
 
-            <div *ngIf="requestDetail.departmentName || requestDetail.departmentNameAr || requestDetail.departmentNameEn" class="space-y-1">
+            <div
+              *ngIf="requestDetail.departmentName || requestDetail.departmentNameAr || requestDetail.departmentNameEn"
+              class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.department' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ getLocalizedValue(requestDetail.departmentNameEn || requestDetail.departmentName, requestDetail.departmentNameAr) }}
+                {{ getLocalizedValue(requestDetail.departmentNameEn || requestDetail.departmentName,
+                requestDetail.departmentNameAr) }}
               </p>
             </div>
 
-            <div *ngIf="requestDetail.requestPurposeName || requestDetail.requestPurposeNameAr || requestDetail.requestPurposeNameEn" class="space-y-1">
+            <div
+              *ngIf="requestDetail.requestPurposeName || requestDetail.requestPurposeNameAr || requestDetail.requestPurposeNameEn"
+              class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.requestPurpose' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ getLocalizedValue(requestDetail.requestPurposeNameEn || requestDetail.requestPurposeName, requestDetail.requestPurposeNameAr) }}
+                {{ getLocalizedValue(requestDetail.requestPurposeNameEn || requestDetail.requestPurposeName,
+                requestDetail.requestPurposeNameAr) }}
               </p>
             </div>
 
@@ -132,7 +131,8 @@
                   <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                 </div>
                 <p class="text-sm text-[var(--color-text)] font-medium">
-                  {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName, requestDetail.requesterNameAr) }}
+                  {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName,
+                  requestDetail.requesterNameAr) }}
                   <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ml-2 font-normal">
                     ({{ requestDetail.requesterUserName }})
                   </span>
@@ -144,7 +144,7 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.notes' | translate }}
               </label>
-              <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+              <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border-2 border-[var(--color-border)]">
                 <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ requestDetail.notes }}</p>
               </div>
             </div>
@@ -152,8 +152,8 @@
         </div>
 
         <!-- Request Items -->
-        <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
+          <div class="flex items-center gap-3 mb-6 pb-4 border-b-2 border-[var(--color-border)]">
             <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
               <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
             </div>
@@ -161,37 +161,49 @@
               {{ 'supplyRequestManagement.detail.requestItems' | translate }}
             </h2>
             <div class="ml-auto flex items-center gap-3">
-              <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" 
-                    class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
-                {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ? ('supplyRequestManagement.detail.item' | translate) : ('supplyRequestManagement.detail.items' | translate) }}
+              <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0"
+                class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
+                {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ?
+                ('supplyRequestManagement.detail.item' | translate) : ('supplyRequestManagement.detail.items' |
+                translate) }}
               </span>
             </div>
           </div>
-          
-          <div *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0" class="overflow-x-auto">
+
+          <div class="mb-6 overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
             <table class="w-full">
               <thead class="bg-[var(--color-background-muted)]">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{ 'supplyRequestManagement.detail.itemName' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{ 'supplyRequestManagement.detail.itemCode' | translate }}</th>
-                  <th class="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{ 'supplyRequestManagement.detail.quantity' | translate }}</th>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    {{ 'supplyRequestManagement.detail.itemName' | translate }}</th>
+                  <th
+                    class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    {{ 'supplyRequestManagement.detail.itemCode' | translate }}</th>
+                  <th
+                    class="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    {{ 'supplyRequestManagement.detail.quantity' | translate }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--color-border)]">
-                <tr *ngFor="let item of requestDetail.requestItems" class="hover:bg-[var(--color-background-hover)] transition-colors">
+                <tr *ngFor="let item of requestDetail.requestItems"
+                  class="hover:bg-[var(--color-background-hover)] transition-colors">
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
-                  <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">{{ item.quantity }}</td>
+                  <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">{{ item.quantity }}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          
+
           <div *ngIf="!requestDetail.requestItems || requestDetail.requestItems.length === 0" class="text-center py-12">
-            <div class="w-16 h-16 rounded-full bg-[var(--color-background-muted)] flex items-center justify-center mx-auto mb-3">
+            <div
+              class="w-16 h-16 rounded-full bg-[var(--color-background-muted)] flex items-center justify-center mx-auto mb-3">
               <lucide-angular [img]="Package" class="h-8 w-8 text-[var(--color-text-muted)]"></lucide-angular>
             </div>
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.noItemsFound' | translate }}</p>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.noItemsFound' |
+              translate }}</p>
           </div>
         </div>
       </div>
@@ -199,17 +211,21 @@
       <!-- Sidebar -->
       <div class="space-y-6">
         <!-- Status Card -->
-        <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <h3 class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-4">{{ 'supplyRequestManagement.detail.status' | translate }}</h3>
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
+          <h3 class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-4">{{
+            'supplyRequestManagement.detail.status' | translate }}</h3>
           <div class="space-y-4">
-            <div class="flex items-center gap-3 p-3 bg-[var(--color-background-muted)] rounded-lg">
+            <div
+              class="flex items-center gap-3 p-3 bg-[var(--color-background-muted)] rounded-lg border-2 border-[var(--color-border)]">
               <div class="flex-1">
-                <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">{{ 'supplyRequestManagement.detail.currentStatus' | translate }}</p>
+                <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">{{
+                  'supplyRequestManagement.detail.currentStatus' | translate }}</p>
                 <p class="text-sm font-semibold text-[var(--color-text)]">
                   {{ ('common.statuses.' + requestDetail.status) | translate }}
                 </p>
               </div>
-              <div [ngClass]="getStatusClass(requestDetail.status)" class="px-3 py-1.5 rounded-lg text-xs font-medium border shadow-custom-sm">
+              <div [ngClass]="getStatusClass(requestDetail.status)"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium border shadow-custom-sm">
                 {{ ('common.statuses.' + requestDetail.status) | translate }}
               </div>
             </div>
@@ -217,28 +233,34 @@
         </div>
 
         <!-- Request Summary -->
-        <div class="bg-white rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <h3 class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-4">{{ 'supplyRequestManagement.detail.summary' | translate }}</h3>
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
+          <h3 class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-4">{{
+            'supplyRequestManagement.detail.summary' | translate }}</h3>
           <div class="space-y-4">
-            <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)] last:border-0">
-              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.requestId' | translate }}</span>
+            <div class="flex justify-between items-center py-2 border-b-2 border-[var(--color-border)] last:border-0">
+              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.requestId' |
+                translate }}</span>
               <span class="text-sm font-semibold text-[var(--color-text)]">#{{ requestDetail.id }}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)] last:border-0">
-              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.type' | translate }}</span>
+            <div class="flex justify-between items-center py-2 border-b-2 border-[var(--color-border)] last:border-0">
+              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.type' | translate
+                }}</span>
               <span class="text-sm font-semibold text-[var(--color-text)]">
                 {{ ('common.requestTypes.' + requestDetail.requestType) | translate }}
               </span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-[var(--color-border)] last:border-0">
-              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.prioritySuffix' | translate }}</span>
+            <div class="flex justify-between items-center py-2 border-b-2 border-[var(--color-border)] last:border-0">
+              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.prioritySuffix' |
+                translate }}</span>
               <span class="text-sm font-semibold text-[var(--color-text)]">
                 {{ ('common.priorityLevels.' + requestDetail.priority) | translate }}
               </span>
             </div>
             <div class="flex justify-between items-center py-2" *ngIf="requestDetail.requestItems">
-              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.itemsLabel' | translate }}</span>
-              <span class="text-sm font-semibold text-[var(--color-text)]">{{ requestDetail.requestItems.length }}</span>
+              <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.itemsLabel' |
+                translate }}</span>
+              <span class="text-sm font-semibold text-[var(--color-text)]">{{ requestDetail.requestItems.length
+                }}</span>
             </div>
           </div>
         </div>
@@ -246,4 +268,3 @@
     </div>
   </div>
 </div>
-

@@ -24,7 +24,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
       <div class="relative flex min-h-full items-center justify-center p-4 pointer-events-none">
         <!-- Modal Content -->
         <div 
-          class="relative bg-white rounded-lg shadow-custom-xl w-full transition-all pointer-events-auto"
+          class="relative bg-[var(--color-background)] rounded-lg shadow-custom-xl w-full transition-all pointer-events-auto"
           [class.max-w-md]="size === 'sm'"
           [class.max-w-2xl]="size === 'md'"
           [class.max-w-4xl]="size === 'lg'"

@@ -1,11 +1,11 @@
 /* Workflow Approval Detail Component Styles */
 
 /* Enhanced card hover effects */
-.bg-white {
+.bg-\[var\(--color-background\)\] {
   transition: all var(--transition-base);
 }
 
-.bg-white:hover {
+.bg-\[var\(--color-background\)\]:hover {
   box-shadow: var(--shadow-lg);
 }
 
@@ -62,32 +62,32 @@ span[class*="rounded"] {
 
 /* Approved status circle */
 .approval-circle.approved {
-  border-color: #10b981 !important;
-  background-color: #ffffff;
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
 }
 
 .approval-circle.approved .lucide-angular {
-  color: #10b981;
+  color: var(--color-success);
 }
 
 /* Pending status circle */
 .approval-circle.pending {
-  border-color: #f59e0b !important;
-  background-color: #ffffff;
+  border-color: var(--color-warning) !important;
+  background-color: var(--color-background);
 }
 
 .approval-circle.pending .lucide-angular {
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 /* Rejected status circle */
 .approval-circle.rejected {
-  border-color: #ef4444 !important;
-  background-color: #ffffff;
+  border-color: var(--color-error) !important;
+  background-color: var(--color-background);
 }
 
 .approval-circle.rejected .lucide-angular {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 /* Connection line styling */
@@ -95,7 +95,7 @@ span[class*="rounded"] {
   position: absolute;
   left: 1.5rem; /* 24px - aligns with circle center (w-12 = 48px, center = 24px) */
   width: 2px;
-  background: linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 50%, #d1d5db 100%);
+  background: linear-gradient(to bottom, var(--color-border) 0%, var(--color-border-muted) 50%, var(--color-border) 100%);
   z-index: 1;
   border-radius: 1px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);

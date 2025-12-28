@@ -11,12 +11,14 @@
     </div>
 
     <!-- Success Message -->
-    <div *ngIf="successMessage" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+    <div *ngIf="successMessage"
+      class="mb-4 p-4 bg-[var(--color-success)]/10 border-2 border-[var(--color-success)]/20 text-[var(--color-success)] rounded-lg">
       {{ successMessage }}
     </div>
 
     <!-- Error Message -->
-    <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+    <div *ngIf="errorMessage"
+      class="mb-4 p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 text-[var(--color-error)] rounded-lg">
       {{ errorMessage }}
     </div>
 
@@ -26,7 +28,8 @@
     </app-loading-state>
 
     <!-- Depots Table -->
-    <div *ngIf="!loading || showModal" class="bg-white rounded-xl shadow-custom-md overflow-hidden">
+    <div *ngIf="!loading || showModal"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
       <table class="w-full">
         <thead class="bg-[var(--color-background)]">
           <tr>
@@ -56,12 +59,12 @@
             <td class="px-6 py-4 text-start">
               <div class="flex gap-2">
                 <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
-                  class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                   [title]="'depot.edit' | translate">
                   <lucide-icon [img]="Edit" [size]="18"></lucide-icon>
                 </button>
                 <button *appHasPermission="'Depots.Delete'" (click)="deleteDepot(depot)"
-                  class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                   [title]="'depot.delete' | translate">
                   <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
                 </button>
@@ -78,75 +81,84 @@
     </div>
 
     <!-- Add/Edit Modal -->
-    <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl shadow-custom-lg p-6 w-full max-w-2xl">
+    <div *ngIf="showModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div
+        class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] p-6 w-full max-w-2xl">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-[var(--color-text)]">
             {{ isEditMode ? ('depot.editDepot' | translate) : ('depot.addDepot' | translate) }}
           </h2>
-          <button (click)="closeModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button (click)="closeModal()"
+            class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
             <lucide-icon [img]="X" [size]="24"></lucide-icon>
           </button>
         </div>
 
         <!-- Error Message in Modal -->
-        <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+        <div *ngIf="errorMessage"
+          class="mb-4 p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 text-[var(--color-error)] rounded-lg">
           {{ errorMessage }}
         </div>
 
         <form (ngSubmit)="saveDepot()" class="space-y-4">
           <!-- Name (English) -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.nameEn' | translate }} *</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.nameEn' | translate }}
+              *</label>
             <input type="text" [(ngModel)]="currentDepot.nameEn" name="nameEn" required
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterNameEn' | translate" />
           </div>
 
           <!-- Name (Arabic) -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.nameAr' | translate }} *</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.nameAr' | translate }}
+              *</label>
             <input type="text" [(ngModel)]="currentDepot.nameAr" name="nameAr" required
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterNameAr' | translate" />
           </div>
 
           <!-- Depot Code -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.Code' | translate }} *</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.Code' | translate }}
+              *</label>
             <input type="text" [(ngModel)]="currentDepot.Code" name="Code" required
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterCode' | translate" />
           </div>
 
           <!-- Location -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.location' | translate }} *</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.location' | translate }}
+              *</label>
             <input type="text" [(ngModel)]="currentDepot.location" name="location" required
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLocation' | translate" />
           </div>
 
           <!-- Latitude -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.latitude' | translate }}</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.latitude' | translate
+              }}</label>
             <input type="number" step="any" [(ngModel)]="currentDepot.latitude" name="latitude"
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLatitude' | translate" />
           </div>
 
           <!-- Longitude -->
           <div>
-            <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'depot.longitude' | translate }}</label>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.longitude' | translate
+              }}</label>
             <input type="number" step="any" [(ngModel)]="currentDepot.longitude" name="longitude"
-              class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLongitude' | translate" />
           </div>
 
           <!-- Form Actions -->
           <div class="flex justify-end gap-3 pt-4">
             <button type="button" (click)="closeModal()"
-              class="px-6 py-2.5 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+              class="px-6 py-2.5 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
               {{ 'common.cancel' | translate }}
             </button>
             <button type="submit" [disabled]="loading"
