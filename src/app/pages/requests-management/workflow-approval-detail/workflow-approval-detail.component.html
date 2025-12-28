@@ -152,8 +152,10 @@
               </p>
             </div>
 
-            <!-- Usage Purpose -->
-            <div *ngIf="requestDetail.usagePurpose || requestDetail.requestPurposeNameEn || requestDetail.requestPurposeNameAr" class="space-y-1">
+            <!-- Usage Purpose (Only for Order requests) -->
+            <div
+              *ngIf="requestDetail.requestType === 'Order' && (requestDetail.usagePurpose || requestDetail.requestPurposeNameEn || requestDetail.requestPurposeNameAr)"
+              class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.usagePurpose' | translate }}
               </label>
@@ -171,7 +173,8 @@
                   <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
                 </div>
                 <p class="text-sm text-[var(--color-text)] font-medium">
-                  {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName, requestDetail.requesterNameAr) }}
+                  {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName,
+                  requestDetail.requesterNameAr) }}
                   <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ml-2 font-normal">
                     ({{ requestDetail.requesterUserName }})
                   </span>
@@ -576,9 +579,9 @@
                   <div class="relative flex items-center gap-2">
                     <input type="file" #fileInput (change)="onFilesSelected($event)"
                       [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
-                      multiple accept="*/*"
-                      class="hidden">
-                    <label (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && fileInput.click()" 
+                      multiple accept="*/*" class="hidden">
+                    <label
+                      (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && fileInput.click()"
                       [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
                       [class.cursor-not-allowed]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 cursor-pointer transition-all">
@@ -586,7 +589,8 @@
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
+                        ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
 
@@ -678,9 +682,8 @@
                   <!-- File Input -->
                   <div class="relative flex items-center gap-2">
                     <input type="file" #additionalFileInput (change)="onAdditionalFilesSelected($event)"
-                      [disabled]="isUploadingAdditionalFiles" multiple accept="*/*"
-                      class="hidden">
-                    <label (click)="!isUploadingAdditionalFiles && additionalFileInput.click()" 
+                      [disabled]="isUploadingAdditionalFiles" multiple accept="*/*" class="hidden">
+                    <label (click)="!isUploadingAdditionalFiles && additionalFileInput.click()"
                       [class.opacity-50]="isUploadingAdditionalFiles"
                       [class.cursor-not-allowed]="isUploadingAdditionalFiles"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 cursor-pointer transition-all">
@@ -688,7 +691,8 @@
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="additionalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="additionalFiles.length > 0">{{ additionalFiles.length }} {{ additionalFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                      <span *ngIf="additionalFiles.length > 0">{{ additionalFiles.length }} {{ additionalFiles.length
+                        === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
 
@@ -783,17 +787,16 @@
                   <!-- File Input -->
                   <div class="relative flex items-center gap-2">
                     <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
-                      [disabled]="processing" multiple accept="*/*"
-                      class="hidden">
-                    <label (click)="!processing && approvalFileInput.click()" 
-                      [class.opacity-50]="processing"
+                      [disabled]="processing" multiple accept="*/*" class="hidden">
+                    <label (click)="!processing && approvalFileInput.click()" [class.opacity-50]="processing"
                       [class.cursor-not-allowed]="processing"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
                       {{ 'common.chooseFiles' | translate }}
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="approvalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                      <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1 ?
+                        ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
 

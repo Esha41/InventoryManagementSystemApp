@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ExcelExportService, ExcelColumn } from './excel-export.service';
 import { InventoryService } from './inventory.service';
+import { AmmunitionService } from './ammunition.service';
+import { ExplosiveService } from './explosive.service';
+import { TranslateService } from '@ngx-translate/core';
 import { saveAs } from 'file-saver';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -13,44 +16,50 @@ export class TemplateGenerationService {
   constructor(
     private excelExportService: ExcelExportService,
     private inventoryService: InventoryService,
-    private toastService: ToastService
+    private ammunitionService: AmmunitionService,
+    private explosiveService: ExplosiveService,
+    private toastService: ToastService,
+    private translateService: TranslateService
   ) { }
 
   /**
    * Generate asset import template based on type
+   * For ammunition and explosive: downloads comprehensive template from backend with all fields and VLOOKUP support
+   * For weapon: uses local generation (will be updated later)
+   * Template language matches current UI language (English/Arabic)
    */
   generateAssetTemplate(type: 'ammunition' | 'weapon' | 'explosive'): void {
+    // Use backend template for ammunition and explosive (comprehensive with all fields)
+    if (type === 'ammunition' || type === 'explosive') {
+      const service = type === 'ammunition' ? this.ammunitionService : this.explosiveService;
+      const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+
+      // Get current language from TranslateService
+      const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+      service.downloadImportTemplate(currentLang)
+        .pipe(
+          catchError(error => {
+            console.error(`Error downloading ${type} template:`, error);
+            this.toastService.error(`Failed to download ${type} template. Please try again.`);
+            return of(null);
+          })
+        )
+        .subscribe(blob => {
+          if (blob) {
+            const fileName = `${typeName}_Import_Template_${new Date().getTime()}.xlsx`;
+            saveAs(blob, fileName);
+            this.toastService.success(`${typeName} template downloaded successfully`);
+          }
+        });
+      return;
+    }
+
+    // Keep local generation for weapons (will be updated later)
     let headers: ExcelColumn[] = [];
     let sampleData: any[] = [];
 
-    if (type === 'ammunition') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Arm Number', key: 'armNumber' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'Bullet Diameter', key: 'bulletDiameter' },
-        { header: 'Is Linked', key: 'isLinked' },
-        { header: 'Primer', key: 'primer' },
-        { header: 'Total Weight', key: 'totalWeight' },
-        { header: 'NSN', key: 'nsn' }
-      ];
-      sampleData = [{
-        name: '6.5×55mm Swedish',
-        itemNo: 'AMM-111',
-        partNo: 'P-655-SWE',
-        armNumber: 'ARM-111',
-        price: 4.8,
-        minimumQuantity: 100,
-        bulletDiameter: 6.5,
-        isLinked: false,
-        primer: 'Boxer',
-        totalWeight: 12.5,
-        nsn: '1305-12-345-6789'
-      }];
-    } else if (type === 'weapon') {
+    if (type === 'weapon') {
       headers = [
         { header: 'Name', key: 'name' },
         { header: 'Item No', key: 'itemNo' },
@@ -70,27 +79,6 @@ export class TemplateGenerationService {
         price: 500,
         minimumQuantity: 10,
         nsn: '1005-12-345-6789'
-      }];
-    } else if (type === 'explosive') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Explosive Type', key: 'explosiveType' },
-        { header: 'UN Number', key: 'unNumber' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'NSN', key: 'nsn' }
-      ];
-      sampleData = [{
-        name: 'TNT',
-        itemNo: 'EXP-001',
-        partNo: 'P-TNT',
-        explosiveType: 'High Explosive',
-        unNumber: 'UN0209',
-        price: 50,
-        minimumQuantity: 5,
-        nsn: '1375-12-345-6789'
       }];
     }
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin, combineLatest, of } from 'rxjs';
+import { Subject, takeUntil, forkJoin, combineLatest, of, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
@@ -135,41 +135,38 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAll();
-      });
+    // Combine all triggers that should reload data into a single stream
+    // This is more efficient than multiple separate subscriptions
+    const userChanges$ = this.authService.currentUser$.pipe(
+      filter(user => !!user),
+      map(() => 'user-change')
+    );
 
-    this.requestStatusUpdateService.onRequestStatusUpdated$
+    const statusUpdates$ = this.requestStatusUpdateService.onRequestStatusUpdated$.pipe(
+      map(() => 'status-update')
+    );
+
+    const navigationChanges$ = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter(() => this.router.url === '/inventory-dashboard' || this.router.url.startsWith('/inventory-dashboard')),
+      map(() => 'navigation')
+    );
+
+    const languageChanges$ = this.translate.onLangChange.pipe(
+      map(() => 'language-change')
+    );
+
+    // Merge all triggers and debounce to prevent duplicate calls
+    merge(userChanges$, statusUpdates$, navigationChanges$, languageChanges$)
       .pipe(
-        debounceTime(300),
+        debounceTime(100), // Small debounce to handle rapid successive events
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
         this.loadAll();
       });
 
-    this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationEnd),
-        filter(() => this.router.url === '/inventory-dashboard' || this.router.url.startsWith('/inventory-dashboard')),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.loadAll();
-      });
-
-    // Subscribe to language changes to update all localized content
-    this.translate.onLangChange
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAll();
-      });
-
-    this.loadAll();
-
-    // Auto-refresh periodically
+    // Auto-refresh periodically (15 seconds)
     this.refreshTimer = setInterval(() => this.loadAll(), 15000);
   }
 

@@ -205,4 +205,10 @@ export class ExplosiveService {
     formData.append('file', file);
     return this.http.post<any>(`${this.baseUrl}/ImportPreview`, formData);
   }
+
+  // Download import template with all fields and data validation
+  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+    const params = new HttpParams().set('language', language);
+    return this.http.get(`${this.baseUrl}/template`, { params, responseType: 'blob' });
+  }
 }
