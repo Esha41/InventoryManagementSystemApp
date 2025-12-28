@@ -78,7 +78,7 @@
                 </div>
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-slate-500 truncate">{{ getOrderDateLabel(order) }}</span>
-                  <span class="font-bold text-slate-700 shrink-0 ml-2">{{ getPriorityLabel(order.priority) }}</span>
+                  <span class="font-bold text-slate-700 shrink-0 ml-2">{{ ('common.priorityLevels.' + getPriorityLabel(order.priority)) | translate }}</span>
                 </div>
               </button>
             </li>
@@ -230,7 +230,7 @@
                     <span class="inline-block px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3">
                       {{ 'requestsManagement.orderReport.section.orderDetails' | translate }}
                     </span>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ resolveUsagePurpose() }}</h3>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ resolveUsagePurpose() || ('requestsManagement.orderReport.subtitle' | translate:{ department: orderSummary.department }) }}</h3>
                     <p class="text-sm text-slate-600 flex items-center gap-2">
                       <span>{{ 'requestsManagement.orderReport.labels.submitted' | translate }}:</span>
                       <span class="font-semibold">{{ orderSummary.submittedOn }}</span>
@@ -243,7 +243,7 @@
                     </span>
                     <span class="inline-flex items-center gap-2 rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-2 text-sm font-bold text-slate-900">
                       <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                      {{ 'requestsManagement.orderReport.labels.priority' | translate }}: {{ orderSummary.priority }}
+                      {{ 'requestsManagement.orderReport.labels.priority' | translate }}: {{ ('common.priorityLevels.' + orderSummary.priority) | translate }}
                     </span>
                   </div>
                 </div>
@@ -361,7 +361,13 @@
                           [img]="step.status === 'approved' ? CheckCircle2 : Clock4"
                           class="h-3.5 w-3.5"
                         ></lucide-angular>
-                        {{ step.status }}
+                        <ng-container [ngSwitch]="step.status">
+                          <span *ngSwitchCase="'approved'">{{ 'common.statuses.Approved' | translate }}</span>
+                          <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
+                          <span *ngSwitchCase="'pending'">{{ 'common.statuses.Pending' | translate }}</span>
+                          <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>
+                          <span *ngSwitchDefault>{{ step.status }}</span>
+                        </ng-container>
                       </span>
                     </div>
                   </div>

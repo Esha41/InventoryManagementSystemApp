@@ -14,7 +14,6 @@ import { createAssetEditForm } from '@utils/asset-list-form.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { createInitialImageState } from '@utils/asset-list.state';
-import { getWeaponTypeOptions, getActionTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
 @Component({
@@ -46,6 +45,9 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() primaryPurposes: LookupItem[] = [];
   @Input() projectileColors: LookupItem[] = [];
   @Input() projectailMaterials: LookupItem[] = [];
+  @Input() classifications: LookupItem[] = [];
+  @Input() itemTypes: LookupItem[] = [];
+  @Input() countries: LookupItem[] = [];
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
@@ -54,8 +56,6 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Output() imageDropped = new EventEmitter<File>();
 
   readonly X = X;
-  readonly weaponTypeOptions = getWeaponTypeOptions();
-  readonly actionTypeOptions = getActionTypeOptions();
   readonly explosiveTypeOptions = getExplosiveTypeOptions();
 
   editForm!: FormGroup;
@@ -145,7 +145,11 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     } else if (this.activeTab === 'weapon') {
       dto = formData as CreateUpdateWeaponDto;
     } else {
-      dto = formData as CreateUpdateExplosiveDto;
+      // For explosives, ensure unit field is set (default to 1 = Gram)
+      dto = {
+        ...formData,
+        unit: formData.unit || 1
+      } as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

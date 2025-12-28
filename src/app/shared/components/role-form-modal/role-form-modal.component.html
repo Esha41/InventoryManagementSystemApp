@@ -1,16 +1,32 @@
 <app-modal [isOpen]="isOpen" [title]="title" (closed)="close()" [scrollable]="false">
   <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="space-y-6">
-    <!-- Role Name -->
-    <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'roleFormModal.roleName' | translate }} <span class="text-[var(--color-error)]">*</span>
-      </label>
-      <input type="text" formControlName="name" [placeholder]="'roleFormModal.roleNamePlaceholder' | translate"
-        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-        [class.border-[var(--color-error)]]="roleForm.get('name')?.invalid && roleForm.get('name')?.touched" />
-      <p *ngIf="getFieldError('name')" class="mt-2 text-sm text-[var(--color-error)]">
-        {{ getFieldError('name') }}
-      </p>
+    <!-- Role Names (Localized) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Role Name (EN) -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'roleFormModal.nameEn' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" formControlName="nameEn" [placeholder]="'roleFormModal.nameEnPlaceholder' | translate"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [class.border-[var(--color-error)]]="roleForm.get('nameEn')?.invalid && roleForm.get('nameEn')?.touched" />
+        <p *ngIf="getFieldError('nameEn')" class="mt-2 text-sm text-[var(--color-error)]">
+          {{ getFieldError('nameEn') }}
+        </p>
+      </div>
+
+      <!-- Role Name (AR) -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'roleFormModal.nameAr' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" formControlName="nameAr" [placeholder]="'roleFormModal.nameArPlaceholder' | translate"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [class.border-[var(--color-error)]]="roleForm.get('nameAr')?.invalid && roleForm.get('nameAr')?.touched" />
+        <p *ngIf="getFieldError('nameAr')" class="mt-2 text-sm text-[var(--color-error)]">
+          {{ getFieldError('nameAr') }}
+        </p>
+      </div>
     </div>
 
     <!-- Super Admin -->
@@ -25,12 +41,12 @@
     <!-- Application Entities Section -->
     <div class="pt-4 border-t border-[var(--color-border)]">
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        Application Entity
+        {{ 'roleFormModal.applicationEntity' | translate }}
       </label>
 
       <!-- Loading State -->
       <div *ngIf="isLoadingEntities" class="text-sm text-[var(--color-text-muted)] py-4">
-        Loading entities...
+        {{ 'roleFormModal.loadingEntities' | translate }}
       </div>
 
       <!-- Entity Dropdown -->
@@ -43,7 +59,7 @@
 
       <!-- Empty State -->
       <div *ngIf="!isLoadingEntities && entities.length === 0" class="text-sm text-[var(--color-text-muted)] py-4">
-        No entities available
+        {{ 'roleFormModal.noEntitiesAvailable' | translate }}
       </div>
     </div>
 

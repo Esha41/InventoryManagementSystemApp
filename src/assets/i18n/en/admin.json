@@ -113,12 +113,22 @@
   },
   "roleFormModal": {
     "roleName": "Role Name",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
     "roleNamePlaceholder": "Enter role name",
+    "nameEnPlaceholder": "Enter English name",
+    "nameArPlaceholder": "Enter Arabic name",
     "superAdmin": "Super Administrator (Full Access)",
     "defaultRole": "Default Role (Auto-assigned to new users)",
+    "applicationEntity": "Application Entity",
     "selectEntity": "Select Application Entity",
+    "loadingEntities": "Loading entities...",
+    "noEntitiesAvailable": "No entities available",
+    "failedToLoadEntities": "Failed to load entities",
     "create": "Create Role",
-    "update": "Update Role"
+    "update": "Update Role",
+    "createTitle": "Create New Role",
+    "editTitle": "Edit Role"
   },
   "lookupManagement": {
     "title": "Lookup Tables",
@@ -128,6 +138,7 @@
     "nameEn": "Name (English)",
     "nameAr": "Name (Arabic)",
     "code": "Code",
+    "itemType": "Item Type",
     "actions": "Actions",
     "edit": "Edit",
     "delete": "Delete",
@@ -144,6 +155,11 @@
     "nameArPlaceholder": "Enter Arabic name",
     "code": "Code",
     "codePlaceholder": "Enter code (optional)",
+    "itemType": "Item Type",
+    "selectItemType": "Select item type",
+    "ammunition": "Ammunition",
+    "weapon": "Weapon",
+    "explosive": "Explosive",
     "create": "Create",
     "update": "Update"
   },

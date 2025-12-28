@@ -9,7 +9,7 @@ import { authInterceptor, errorInterceptor } from './core/interceptors/index';
 import { ConfigService } from './core/services/config.service';
 
 export class JsonTranslationLoader implements TranslateLoader {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getTranslation(lang: string): Observable<any> {
     // List of translation module files to load and merge
@@ -25,8 +25,8 @@ export class JsonTranslationLoader implements TranslateLoader {
       'notifications'
     ];
 
-    // Load all translation files and merge them
-    const loadPromises = translationModules.map(module => 
+    // Load all modular translation files
+    const moduleTranslations = translationModules.map(module =>
       this.http.get(`/assets/i18n/${lang}/${module}.json`).pipe(
         catchError(error => {
           console.warn(`Failed to load translation module ${module} for ${lang}:`, error);
@@ -36,12 +36,14 @@ export class JsonTranslationLoader implements TranslateLoader {
     );
 
     // Merge all translations using forkJoin
-    return forkJoin(loadPromises).pipe(
+    return forkJoin(moduleTranslations).pipe(
       map(translations => {
         // Merge all translation objects into one
-        return translations.reduce((merged, translation) => {
-          return { ...merged, ...translation };
+        const merged = translations.reduce((acc, translation) => {
+          return { ...acc, ...translation };
         }, {});
+        console.log(`Loaded ${translationModules.length} translation modules for ${lang}:`, Object.keys(merged).length, 'top-level keys');
+        return merged;
       }),
       catchError(error => {
         console.error(`Failed to load translations for ${lang}:`, error);

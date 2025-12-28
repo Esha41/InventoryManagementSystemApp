@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Observable, forkJoin, Subject, takeUntil, timer } from 'rxjs';
+import { Observable, forkJoin, Subject, takeUntil, timer, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -23,7 +24,6 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { APIOperationResponse } from '@models/api-response.model';
-import { getWeaponTypeOptions, getActionTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import {
@@ -136,10 +136,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
   primaryPurposes: LookupItem[] = [];
   projectileColors: LookupItem[] = [];
   projectailMaterials: LookupItem[] = [];
+  classifications: LookupItem[] = [];
+  itemTypes: LookupItem[] = [];
+  countries: LookupItem[] = [];
 
   // Enum Options
-  readonly weaponTypeOptions = getWeaponTypeOptions();
-  readonly actionTypeOptions = getActionTypeOptions();
   readonly explosiveTypeOptions = getExplosiveTypeOptions();
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
@@ -378,26 +379,63 @@ export class AssetListComponent implements OnInit, OnDestroy {
   }
 
   private loadAssetImages(): void {
-    const ids = this.assets
-      .map(asset => parseInt(asset.id))
-      .filter(id => !isNaN(id) && id > 0);
+    // Extract image IDs from response and fetch as blobs for all asset types
+    this.loadImagesFromResponse();
+  }
 
-    if (ids.length === 0) return;
+  private loadImagesFromResponse(): void {
+    const imageRequests = this.assets
+      .map(asset => {
+        const originalData = asset.originalData as any;
+        if (!originalData?.images || originalData.images.length === 0) {
+          return null;
+        }
 
-    const imageService$ = this.getAssetService().loadAssetImages(ids);
+        // Get main image or first image
+        const image = originalData.images.find((img: any) => img.isMain) || originalData.images[0];
+        if (!image?.id) {
+          return null;
+        }
 
-    imageService$
+        // Get the appropriate service based on active tab
+        let fileBlob$: Observable<Blob>;
+        if (this.activeTab === 'ammunition') {
+          fileBlob$ = this.ammunitionService.getFileBlob(image.id);
+        } else if (this.activeTab === 'weapon') {
+          fileBlob$ = this.weaponService.getFileBlob(image.id);
+        } else if (this.activeTab === 'explosive') {
+          fileBlob$ = this.explosiveService.getFileBlob(image.id);
+        } else {
+          return null;
+        }
+
+        return fileBlob$.pipe(
+          map((blob: Blob) => {
+            if (blob.type && blob.type.startsWith('image/')) {
+              const blobUrl = URL.createObjectURL(blob);
+              return { assetId: asset.id, url: blobUrl };
+            }
+            return { assetId: asset.id, url: null };
+          }),
+          catchError((err) => {
+            console.error(`Failed to load image for asset ${asset.id}:`, err);
+            return of({ assetId: asset.id, url: null });
+          })
+        );
+      })
+      .filter((req): req is Observable<{ assetId: string; url: string | null }> => req !== null);
+
+    if (imageRequests.length === 0) return;
+
+    forkJoin(imageRequests)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (imageMap) => {
-          this.assets.forEach(asset => {
-            const id = parseInt(asset.id);
-            if (imageMap.has(id)) {
-              const url = imageMap.get(id);
-              if (url) {
-                asset.imageUrl = url;
-                this.blobUrls.add(url);
-              }
+        next: (results) => {
+          results.forEach(({ assetId, url }) => {
+            const asset = this.assets.find(a => a.id === assetId);
+            if (asset && url) {
+              asset.imageUrl = url;
+              this.blobUrls.add(url);
             }
           });
           this.cdr.markForCheck();
@@ -632,7 +670,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
       natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       colors: this.lookupService.getColors(),
-      materials: this.lookupService.getProjectailMaterials()
+      materials: this.lookupService.getProjectailMaterials(),
+      classifications: this.lookupService.getLookupItems('Classification'),
+      itemTypes: this.lookupService.getLookupItems('ItemType'),
+      countries: this.lookupService.getCountries()
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
@@ -645,6 +686,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
         this.primaryPurposes = data.primaryPurposes;
         this.projectileColors = data.colors;
         this.projectailMaterials = data.materials;
+        this.classifications = data.classifications;
+        this.itemTypes = data.itemTypes;
+        this.countries = data.countries;
         this.initializePropertyAccessor();
         this.cdr.markForCheck();
       });
@@ -890,13 +934,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   getHazardDivision = () => this.propertyAccessor.getHazardDivision(this.modalState.selectedAsset);
   getPrimer = () => this.propertyAccessor.getPrimer(this.modalState.selectedAsset);
   getTotalWeight = () => this.propertyAccessor.getTotalWeight(this.modalState.selectedAsset);
-  getWeaponTypeName = () => this.propertyAccessor.getWeaponTypeName(this.modalState.selectedAsset);
   getCaliber = () => this.propertyAccessor.getCaliber(this.modalState.selectedAsset);
-  getActionTypeName = () => this.propertyAccessor.getActionTypeName(this.modalState.selectedAsset);
-  getBarrelLength = () => this.propertyAccessor.getBarrelLength(this.modalState.selectedAsset);
-  getCapacity = () => this.propertyAccessor.getCapacity(this.modalState.selectedAsset);
-  getOverallLength = () => this.propertyAccessor.getOverallLength(this.modalState.selectedAsset);
-  getWeight = () => this.propertyAccessor.getWeight(this.modalState.selectedAsset);
   getExplosiveTypeName = () => this.propertyAccessor.getExplosiveTypeName(this.modalState.selectedAsset);
   getUnNumber = () => this.propertyAccessor.getUnNumber(this.modalState.selectedAsset);
   getNetExplosiveQuantity = () => this.propertyAccessor.getNetExplosiveQuantity(this.modalState.selectedAsset);

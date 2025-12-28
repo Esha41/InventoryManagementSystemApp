@@ -66,7 +66,7 @@
 
     <!-- Centered Form Container -->
     <div class="flex-1 flex items-center justify-center">
-      <div class="bg-white rounded-xl shadow-custom-md p-6 w-full max-w-2xl">
+      <div class="bg-white rounded-xl shadow-custom-md p-6 w-full max-w-5xl">
         <h2 class="text-xl font-bold text-[var(--color-text)] mb-6">
           <span *ngIf="activeTab === 'ammunition'">{{ 'addAsset.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'addAsset.addWeapon' | translate }}</span>
@@ -103,396 +103,548 @@
           </div>
 
           <!-- Form Fields -->
-          <div class="space-y-4">
-            <!-- Name (Required) -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.name' | translate }}
-                *</label>
-              <input type="text" [(ngModel)]="assetForm.name" name="name"
-                [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
-                [placeholder]="(activeTab === 'ammunition' ? 'addAsset.enterAmmunitionName' : activeTab === 'weapon' ? 'addAsset.enterWeaponName' : 'addAsset.enterExplosiveName') | translate" required maxlength="200"
-                #nameModel="ngModel" />
-            </div>
-
-            <!-- Item No (Required) -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.itemNo' | translate }}
-                *</label>
-              <input type="text" [(ngModel)]="assetForm.itemNo" name="itemNo"
-                [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
-                [placeholder]="'addAsset.enterItemNumber' | translate" required maxlength="100"
-                #itemNoModel="ngModel" />
-            </div>
-            <p class="text-xs text-[#6B7280] -mt-2 ml-40">{{ 'addAsset.itemNoMustBeUnique' | translate }}</p>
-
-            <!-- ============ WEAPON SPECIFIC REQUIRED FIELDS ============ -->
-            <ng-container *ngIf="activeTab === 'weapon'">
-              <!-- Weapon Type (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.weaponType' | translate }}
+          <div class="grid grid-cols-2 gap-6">
+            <!-- LEFT COLUMN - Text/Number Inputs -->
+            <div class="space-y-6">
+              <!-- Name (Required) -->
+              <div>
+                <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.name' | translate }}
                   *</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.weaponType" name="weaponType"
-                  [options]="weaponTypeOptions" optionValue="value" optionLabel="label" [translateLabels]="true"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectWeaponType' | translate">
-                </app-dropdown>
+                <input type="text" [(ngModel)]="assetForm.name" name="name"
+                  [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
+                  [placeholder]="(activeTab === 'ammunition' ? 'addAsset.enterAmmunitionName' : activeTab === 'weapon' ? 'addAsset.enterWeaponName' : 'addAsset.enterExplosiveName') | translate" required maxlength="200"
+                  #nameModel="ngModel" />
               </div>
 
-              <!-- Caliber (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.caliber' | translate }}
+              <!-- Item No (Required) -->
+              <div>
+                <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.itemNo' | translate }}
                   *</label>
-                <input type="text" [(ngModel)]="assetForm.caliber" name="caliber"
-                  [class]="getInputClass(caliberModel.invalid, caliberModel.dirty, caliberModel.touched)"
-                  [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" required #caliberModel="ngModel" />
+                <input type="text" [(ngModel)]="assetForm.itemNo" name="itemNo"
+                  [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
+                  [placeholder]="'addAsset.enterItemNumber' | translate" required maxlength="100"
+                  #itemNoModel="ngModel" />
+                <p class="text-xs text-[#6B7280] mt-1">{{ 'addAsset.itemNoMustBeUnique' | translate }}</p>
               </div>
 
-              <!-- Action Type (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.actionType' | translate }}
-                  *</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.actionType" name="actionType"
-                  [options]="actionTypeOptions" optionValue="value" optionLabel="label" [translateLabels]="true"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectActionType' | translate">
-                </app-dropdown>
-              </div>
-            </ng-container>
+              <!-- ============ WEAPON SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'weapon'">
+                <!-- Caliber -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.caliber' | translate }}
+                    </label>
+                  <input type="text" [(ngModel)]="assetForm.caliber" name="caliber"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" />
+                </div>
 
-            <!-- ============ EXPLOSIVE SPECIFIC REQUIRED FIELDS ============ -->
-            <ng-container *ngIf="activeTab === 'explosive'">
-              <!-- Explosive Type (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.explosiveType' | translate
-                  }} *</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.explosiveType" name="explosiveType"
-                  [options]="explosiveTypeOptions" optionValue="value" optionLabel="label" [translateLabels]="true"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectExplosiveType' | translate">
-                </app-dropdown>
-              </div>
+                <!-- Caliber Unit -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.caliberUnit' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caliberUnitId" name="caliberUnitId"
+                    [options]="units" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
+                  </app-dropdown>
+                </div>
 
-              <!-- UN Number (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.unNumber' | translate }}
-                  *</label>
-                <input type="text" [(ngModel)]="assetForm.unNumber" name="unNumber"
-                  [class]="getInputClass(unNumberModel.invalid, unNumberModel.dirty, unNumberModel.touched)"
-                  [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" required #unNumberModel="ngModel" />
-              </div>
+                <!-- Model -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.model' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.model" name="model"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterModel' | translate" maxlength="200" />
+                </div>
 
-              <!-- Net Explosive Quantity (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.netExplosiveQuantity' |
-                  translate }} *</label>
-                <input type="number" [(ngModel)]="assetForm.netExplosiveQuantity" name="netExplosiveQuantity"
-                  [class]="getInputClass(netExplosiveQuantityModel.invalid, netExplosiveQuantityModel.dirty, netExplosiveQuantityModel.touched)"
-                  [placeholder]="'addAsset.enterNetExplosiveQuantity' | translate" step="0.01" min="0" required #netExplosiveQuantityModel="ngModel" />
-              </div>
+                <!-- Year of Manufacture -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.yearOfManufacture' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.yearOfManufacture" name="yearOfManufacture"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterYearOfManufacture' | translate" min="1800" max="2100" />
+                </div>
 
-              <!-- Total Weight (Required) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.totalWeight' | translate }}
-                  *</label>
-                <input type="number" [(ngModel)]="assetForm.totalWeight" name="totalWeight"
-                  [class]="getInputClass(totalWeightModel.invalid, totalWeightModel.dirty, totalWeightModel.touched)"
-                  [placeholder]="'addAsset.enterWeightInGrams' | translate" step="0.01" min="0" required #totalWeightModel="ngModel" />
-              </div>
-            </ng-container>
+                <!-- Distribution -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.distribution' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.distribution" name="distribution"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
+                </div>
 
-            <!-- Part No -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.partNo' | translate
-                }}</label>
-              <input type="text" [(ngModel)]="assetForm.partNo" name="partNo"
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                [placeholder]="'addAsset.enterPartNumber' | translate" maxlength="100" />
+                <!-- UN Number -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unNumber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.unNumber" name="unNumber"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
+                </div>
+
+                <!-- Reference No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.referenceNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.referenceNo" name="referenceNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
+                </div>
+              </ng-container>
+
+              <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'explosive'">
+                <!-- UN Number -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unNumber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.unNumber" name="unNumber"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
+                </div>
+
+                <!-- Distribution -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.distribution' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.distribution" name="distribution"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
+                </div>
+
+                <!-- Reference No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.referenceNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.referenceNo" name="referenceNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
+                </div>
+
+                <!-- Hazard Division -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.hazardDivision' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
+                    [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectHazardDivision' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Unit (ExplosiveUnit) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unit' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.unit" name="unit"
+                    [options]="explosiveUnitOptions" optionValue="value" [optionLabelFn]="explosiveUnitOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectUnit' | translate">
+                  </app-dropdown>
+                </div>
+              </ng-container>
+
+              <!-- Part No, NSN, Price, Minimum Quantity (Ammunition only) -->
+              <ng-container *ngIf="activeTab === 'ammunition'">
+                <!-- Part No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.partNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.partNo" name="partNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterPartNumber' | translate" maxlength="100" />
+                </div>
+
+                <!-- NSN (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.nsn' | translate }}</label>
+                  <input type="text" [(ngModel)]="assetForm.nsn" name="nsn"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterNsn' | translate" />
+                </div>
+
+                <!-- Price (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.price' | translate }}</label>
+                  <input type="number" [(ngModel)]="assetForm.price" name="price"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.pricePlaceholder' | translate" step="0.01" min="0" />
+                </div>
+
+                <!-- Minimum Quantity (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.minimumQuantity' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantity"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
+                </div>
+              </ng-container>
+
+              <!-- ============ AMMUNITION SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'ammunition'">
+                <!-- Arm Number -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.armNumber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.armNumber" name="armNumber"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterArmNumber' | translate" />
+                </div>
+
+                <!-- Bullet Diameter -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.bulletDiameter' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.bulletDiameter" name="bulletDiameter"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterBulletDiameter' | translate" step="0.01" min="0" />
+                </div>
+
+                <!-- Primer -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.primer' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.primer" name="primer"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterPrimerType' | translate" maxlength="100" />
+                </div>
+
+                <!-- Total Weight -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.totalWeight' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.totalWeight" name="totalWeight"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterWeightInGrams' | translate" step="0.01" min="0" />
+                </div>
+
+                <!-- Distribution -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.distribution' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.distribution" name="distribution"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
+                </div>
+
+                <!-- UN Number -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unNumber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.unNumber" name="unNumber"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterUnNumber' | translate" maxlength="50" />
+                </div>
+
+              </ng-container>
+
             </div>
 
-            <!-- NSN (Optional) -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.nsn' | translate }}</label>
-              <input type="text" [(ngModel)]="assetForm.nsn" name="nsn"
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                [placeholder]="'addAsset.enterNsn' | translate" />
+            <!-- RIGHT COLUMN - Dropdowns -->
+            <div class="space-y-6">
+              <!-- ============ WEAPON SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'weapon'">
+                <!-- Part No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.partNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.partNo" name="partNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterPartNumber' | translate" maxlength="100" />
+                </div>
+
+                <!-- NSN (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.nsn' | translate }}</label>
+                  <input type="text" [(ngModel)]="assetForm.nsn" name="nsn"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterNsn' | translate" />
+                </div>
+
+                <!-- Price (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.price' | translate }}</label>
+                  <input type="number" [(ngModel)]="assetForm.price" name="price"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.pricePlaceholder' | translate" step="0.01" min="0" />
+                </div>
+
+                <!-- Minimum Quantity (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.minimumQuantity' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantity"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
+                </div>
+
+                <!-- Country of Manufacture -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.countryOfManufacture' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.countryOfManufactureId" name="countryOfManufactureId"
+                    [options]="countries" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectCountry' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.classification' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
+                    [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Type -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId"
+                    [options]="itemTypes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectItemType' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
+                  <textarea [(ngModel)]="assetForm.notes" name="notes" rows="4"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                    [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
+                </div>
+              </ng-container>
+
+              <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'explosive'">
+                <!-- Part No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.partNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.partNo" name="partNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterPartNumber' | translate" maxlength="100" />
+                </div>
+
+                <!-- NSN (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.nsn' | translate }}</label>
+                  <input type="text" [(ngModel)]="assetForm.nsn" name="nsn"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterNsn' | translate" />
+                </div>
+
+                <!-- Price (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.price' | translate }}</label>
+                  <input type="number" [(ngModel)]="assetForm.price" name="price"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.pricePlaceholder' | translate" step="0.01" min="0" />
+                </div>
+
+                <!-- Minimum Quantity (Optional) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.minimumQuantity' | translate
+                    }}</label>
+                  <input type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantity"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
+                </div>
+
+                <!-- Item Type -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId"
+                    [options]="itemTypes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectItemType' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.classification' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
+                    [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
+                  <textarea [(ngModel)]="assetForm.notes" name="notes" rows="4"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                    [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
+                </div>
+              </ng-container>
+
+              <!-- ============ AMMUNITION SPECIFIC FIELDS ============ -->
+              <ng-container *ngIf="activeTab === 'ammunition'">
+                <!-- Unit (formerly Bullet Diameter Unit) -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unit' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.bulletDiameterUnitId" name="bulletDiameterUnitId"
+                    [options]="units" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Case Type -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.caseType' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caseTypeId" name="caseTypeId" [options]="caseTypes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectCaseType' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Propellant -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.propellant' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.propellantId" name="propellantId"
+                    [options]="propellants" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPropellant' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Compatibility -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.compatibility' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
+                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCompatibility' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Hazard Division -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.hazardDivision' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
+                    [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectHazardDivision' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Is Linked -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.linked' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.isLinked" name="isLinked" [options]="linkedOptions"
+                    optionLabel="label" optionValue="value" [translateLabels]="true" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectLinkedOption' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Nature Option -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.nature' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.natureOptionId" name="natureOptionId"
+                    [options]="natureOptions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectNatureOption' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.primaryPurpose' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposId" name="primaryPurposId"
+                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Projectile Color -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.projectileColor' |
+                    translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
+                    [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileColor' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Projectile Material -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.projectileMaterial' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
+                    [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileMaterial' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.classification' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
+                    [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Type -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.type' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId"
+                    [options]="itemTypes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectItemType' | translate">
+                  </app-dropdown>
+                </div>
+              </ng-container>
             </div>
 
-            <!-- Price (Optional) -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.price' | translate }}</label>
-              <input type="number" [(ngModel)]="assetForm.price" name="price"
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                [placeholder]="'addAsset.pricePlaceholder' | translate" step="0.01" min="0" />
-            </div>
-
-            <!-- Minimum Quantity (Optional) -->
-            <div class="flex items-center gap-6">
-              <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.minimumQuantity' | translate
-                }}</label>
-              <input type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantity"
-                class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
-            </div>
-
-            <!-- ============ AMMUNITION SPECIFIC FIELDS ============ -->
+            <!-- Reference No and Notes - Side by Side -->
             <ng-container *ngIf="activeTab === 'ammunition'">
-              <!-- Arm Number -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.armNumber' | translate
-                  }}</label>
-                <input type="text" [(ngModel)]="assetForm.armNumber" name="armNumber"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterArmNumber' | translate" />
-              </div>
+              <div class="col-span-2 grid grid-cols-2 gap-6">
+                <!-- Reference No -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.referenceNo' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.referenceNo" name="referenceNo"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
+                </div>
 
-              <!-- Bullet Diameter -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.bulletDiameter' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.bulletDiameter" name="bulletDiameter"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterBulletDiameter' | translate" step="0.01" min="0" />
-              </div>
-
-              <!-- Unit (formerly Bullet Diameter Unit) -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.unit' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.bulletDiameterUnitId" name="bulletDiameterUnitId"
-                  [options]="units" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Case Type -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.caseType' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.caseTypeId" name="caseTypeId" [options]="caseTypes"
-                  optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectCaseType' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Propellant -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.propellant' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.propellantId" name="propellantId"
-                  [options]="propellants" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectPropellant' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Compatibility -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.compatibility' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
-                  [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectCompatibility' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Hazard Division -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.hazardDivision' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
-                  [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectHazardDivision' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Primer -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.primer' | translate
-                  }}</label>
-                <input type="text" [(ngModel)]="assetForm.primer" name="primer"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterPrimerType' | translate" maxlength="100" />
-              </div>
-
-              <!-- Total Weight -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.totalWeight' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.totalWeight" name="totalWeight"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterWeightInGrams' | translate" step="0.01" min="0" />
-              </div>
-
-              <!-- Is Linked -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.linked' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.isLinked" name="isLinked" [options]="linkedOptions"
-                  optionLabel="label" optionValue="value" [translateLabels]="true" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectLinkedOption' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Nature Option -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.nature' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.natureOptionId" name="natureOptionId"
-                  [options]="natureOptions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectNatureOption' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Primary Purpose -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.primaryPurpose' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.primaryPurposId" name="primaryPurposId"
-                  [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Projectile Color -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.projectileColor' |
-                  translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
-                  [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileColor' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Projectile Material -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.projectileMaterial' |
-                  translate }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
-                  [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileMaterial' | translate">
-                </app-dropdown>
-              </div>
-            </ng-container>
-
-            <!-- ============ WEAPON SPECIFIC FIELDS ============ -->
-            <ng-container *ngIf="activeTab === 'weapon'">
-              <!-- Capacity -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.capacity' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.capacity" name="capacity"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterCapacity' | translate" step="1" min="0" />
-              </div>
-
-              <!-- Barrel Length -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.barrelLength' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.barrelLength" name="barrelLength"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterBarrelLength' | translate" step="0.01" min="0" />
-              </div>
-
-              <!-- Barrel Length Unit -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.barrelLengthUnit' |
-                  translate }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.barrelLengthUnitId" name="barrelLengthUnitId"
-                  [options]="units" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Overall Length -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.overallLength' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.overallLength" name="overallLength"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterOverallLength' | translate" step="0.01" min="0" />
-              </div>
-
-              <!-- Overall Length Unit -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.overallLengthUnit' |
-                  translate }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.overallLengthUnitId" name="overallLengthUnitId"
-                  [options]="units" optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Weight -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.weight' | translate
-                  }}</label>
-                <input type="number" [(ngModel)]="assetForm.weight" name="weight"
-                  class="flex-1 px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.enterWeight' | translate" step="0.01" min="0" />
-              </div>
-
-              <!-- Weight Unit -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.weightUnit' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.weightUnitId" name="weightUnitId" [options]="units"
-                  optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-            </ng-container>
-
-            <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
-            <ng-container *ngIf="activeTab === 'explosive'">
-              <!-- Net Explosive Quantity Unit -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.netExplosiveQuantityUnit' |
-                  translate }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.netExplosiveQuantityUnitId"
-                  name="netExplosiveQuantityUnitId" [options]="units" optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Total Weight Unit -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.totalWeightUnit' |
-                  translate }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.weightUnitId" name="weightUnitId" [options]="units"
-                  optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                  [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Hazard Division -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.hazardDivision' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
-                  [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectHazardDivision' | translate">
-                </app-dropdown>
-              </div>
-
-              <!-- Compatibility -->
-              <div class="flex items-center gap-6">
-                <label class="text-sm font-medium text-[#6B7280] w-32 shrink-0">{{ 'addAsset.compatibility' | translate
-                  }}</label>
-                <app-dropdown class="flex-1" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
-                  [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectCompatibility' | translate">
-                </app-dropdown>
+                <!-- Notes -->
+                <div>
+                  <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.notes' | translate
+                    }}</label>
+                  <textarea [(ngModel)]="assetForm.notes" name="notes" rows="4"
+                    class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                    [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
+                </div>
               </div>
             </ng-container>
           </div>

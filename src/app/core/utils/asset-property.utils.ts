@@ -11,8 +11,8 @@ import { Asset } from '../models/asset-list.model';
 import { LookupItem } from '../models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
-import { getWeaponTypeName, getActionTypeName } from './weapon.utils';
 import { getExplosiveTypeName } from './explosive.utils';
+import { ItemType } from '../models/inventory.model';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 
@@ -24,11 +24,30 @@ export function isAmmunition(asset: AssetUnion): asset is AmmunitionReadDto {
 }
 
 export function isWeapon(asset: AssetUnion): asset is WeaponDto {
-  return asset !== null && 'weaponType' in asset;
+  return asset !== null && 'caliber' in asset && !('armNumber' in asset) && !('explosiveType' in asset);
 }
 
 export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
-  return asset !== null && 'explosiveType' in asset;
+  if (!asset) return false;
+  // Check itemType first if available (most reliable)
+  if ('itemType' in asset) {
+    const itemType = (asset as any).itemType;
+    if (typeof itemType === 'number') {
+      return itemType === ItemType.Explosive;
+    }
+    if (typeof itemType === 'string') {
+      return itemType === 'Explosive' || itemType === '3' || itemType.toLowerCase() === 'explosive';
+    }
+  }
+  // Fallback: check for explosive-specific properties
+  // If it has unNumber and is NOT ammunition or weapon, it's likely an explosive
+  if ('unNumber' in asset && !isAmmunition(asset) && !isWeapon(asset)) {
+    return true;
+  }
+  // Check for other explosive-specific properties
+  return ('explosiveType' in asset) || 
+         ('netExplosiveQuantity' in asset) ||
+         ('distribution' in asset && 'referenceNo' in asset && !isAmmunition(asset));
 }
 
 /**
@@ -104,40 +123,54 @@ export class AssetPropertyAccessor {
   }
 
   // Weapon properties
-  getWeaponTypeName(asset: AssetUnion): string {
-    return isWeapon(asset) ? getWeaponTypeName(asset.weaponType) : '-';
-  }
-
   getCaliber(asset: AssetUnion): string {
     return isWeapon(asset) ? (asset.caliber || '-') : '-';
   }
 
-  getActionTypeName(asset: AssetUnion): string {
-    return isWeapon(asset) ? getActionTypeName(asset.actionType) : '-';
+  getModel(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.model || '-') : '-';
   }
 
-  getBarrelLength(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.barrelLength == null) return '-';
-    return `${asset.barrelLength} ${this.getUnitName(asset.barrelLengthUnit)}`;
+  getYearOfManufacture(asset: AssetUnion): string {
+    return isWeapon(asset) && asset.yearOfManufacture != null ? asset.yearOfManufacture.toString() : '-';
   }
 
-  getCapacity(asset: AssetUnion): string {
-    return isWeapon(asset) && asset.capacity != null ? asset.capacity.toString() : '-';
+  getCountryOfManufacture(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.countryOfManufacture) : '-';
   }
 
-  getOverallLength(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.overallLength == null) return '-';
-    return `${asset.overallLength} ${this.getUnitName(asset.overallLengthUnit)}`;
+  getCaliberUnit(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getUnitName(asset.caliberUnit) : '-';
   }
 
-  getWeight(asset: AssetUnion): string {
-    if (!isWeapon(asset) || asset.weight == null) return '-';
-    return `${asset.weight} ${this.getUnitName(asset.weightUnit)}`;
+  getDistributionForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.distribution || '-') : '-';
+  }
+
+  getUnNumberForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.unNumber || '-') : '-';
+  }
+
+  getReferenceNoForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.referenceNo || '-') : '-';
+  }
+
+  getClassificationForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.classification) : '-';
+  }
+
+  getTypeForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? this.getLookupName(asset.type) : '-';
+  }
+
+  getNotesForWeapon(asset: AssetUnion): string {
+    return isWeapon(asset) ? (asset.notes || '-') : '-';
   }
 
   // Explosive properties
   getExplosiveTypeName(asset: AssetUnion): string {
-    return isExplosive(asset) ? getExplosiveTypeName(asset.explosiveType) : '-';
+    if (!isExplosive(asset) || asset.explosiveType == null) return '-';
+    return getExplosiveTypeName(asset.explosiveType);
   }
 
   getUnNumber(asset: AssetUnion): string {
@@ -199,5 +232,128 @@ export class AssetPropertyAccessor {
   getReadyForIssue(asset: AssetUnion): string {
     if (!asset || !('readyForIssue' in asset)) return '-';
     return asset.readyForIssue ? 'Yes' : 'No';
+  }
+
+  // New fields for ammunition and explosives
+  getDistribution(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.distribution || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.distribution || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).distribution || '-';
+      }
+    }
+    return '-';
+  }
+
+  getUnNumberForAmmunition(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.unNumber || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.unNumber || '-';
+    }
+    // Additional check: if itemType is "Explosive" (case-insensitive), treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).unNumber || '-';
+      }
+    }
+    return '-';
+  }
+
+  getReferenceNo(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.referenceNo || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.referenceNo || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).referenceNo || '-';
+      }
+    }
+    return '-';
+  }
+
+  getClassification(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return this.getLookupName(asset.classification);
+    }
+    if (isExplosive(asset)) {
+      return this.getLookupName(asset.classification);
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return this.getLookupName((asset as any).classification);
+      }
+    }
+    return '-';
+  }
+
+  getType(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return this.getLookupName(asset.type);
+    }
+    if (isExplosive(asset)) {
+      return this.getLookupName(asset.type);
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return this.getLookupName((asset as any).type);
+      }
+    }
+    return '-';
+  }
+
+  getNotes(asset: AssetUnion): string {
+    if (isAmmunition(asset)) {
+      return asset.notes || '-';
+    }
+    if (isExplosive(asset)) {
+      return asset.notes || '-';
+    }
+    // Additional check: if itemType is "Explosive", treat as explosive
+    if (asset && 'itemType' in asset) {
+      const itemType = (asset as any).itemType;
+      if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
+        return (asset as any).notes || '-';
+      }
+    }
+    return '-';
+  }
+
+  getUnit(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getUnitName(asset.bulletDiameterUnit) : '-';
+  }
+
+  getLinked(asset: AssetUnion): string {
+    return isAmmunition(asset) ? (asset.isLinked ? 'Yes' : 'No') : '-';
+  }
+
+  getNature(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.natureOption) : '-';
+  }
+
+  getPrimaryPurpose(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.primaryPurpos) : '-';
+  }
+
+  getProjectileColor(asset: AssetUnion): string {
+    return isAmmunition(asset) ? this.getLookupName(asset.projectileColor) : '-';
   }
 }

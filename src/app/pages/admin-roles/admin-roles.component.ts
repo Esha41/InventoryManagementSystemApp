@@ -21,8 +21,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
   imports: [
     CommonModule,
     FormsModule,
-    CardComponent, 
-    ButtonComponent, 
+    CardComponent,
+    ButtonComponent,
     LucideAngularModule,
     RoleFormModalComponent,
     ConfirmDialogComponent,
@@ -51,14 +51,14 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   roles: RoleDto[] = [];
   isLoading = false;
   errorMessage = '';
-  
+
   // Search
   searchTerm = '';
-  
+
   // Pagination
   currentPage = 1;
   rowsPerPage = 10;
-  
+
   showRoleModal = false;
   showDeleteConfirm = false;
   roleModalMode: 'create' | 'edit' = 'create';
@@ -70,11 +70,11 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     private backendUserService: BackendUserService,
     private toastService: ToastService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadRoles();
-    
+
     this.backendUserService.roles$
       .pipe(takeUntil(this.destroy$))
       .subscribe((roles: RoleDto[]) => {
@@ -170,9 +170,9 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   onRoleSaved(role: RoleDto): void {
     // Role was saved successfully (create or update)
     const isCreate = this.roleModalMode === 'create';
-    const roleName = role ? (getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '') : 
+    const roleName = role ? (getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '') :
       (this.selectedRole ? (getLocalizedName(this.selectedRole, getCurrentLang(this.translateService)) || this.selectedRole.name || '') : '');
-    
+
     this.translateService.get([
       'toast.success',
       isCreate ? 'toast.roleCreated' : 'toast.roleUpdated'
@@ -184,7 +184,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       }
       this.toastService.success(message, translations['toast.success']);
     });
-    
+
     this.loadRoles();
   }
 
@@ -192,7 +192,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     // Role save failed (create or update)
     const isCreate = this.roleModalMode === 'create';
     const roleName = this.selectedRole ? (getLocalizedName(this.selectedRole, getCurrentLang(this.translateService)) || this.selectedRole.name || '') : '';
-    
+
     this.translateService.get([
       'toast.error',
       isCreate ? 'toast.failedToCreateRole' : 'toast.failedToUpdateRole'
