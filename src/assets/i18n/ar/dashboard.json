@@ -52,8 +52,8 @@
       "rejected": "مرفوض",
       "cancelled": "ملغي",
       "completed": "مكتمل",
-      "returned": "مُرجع للمراجعة",
-      "returnedForReview": "مُرجع للمراجعة"
+      "returned": "مُرجع للتعديل",
+      "returnedForReview": "مُرجع للتعديل"
     },
     "filters": {
       "all": "الكل",
@@ -90,7 +90,7 @@
     "nsn": "NSN",
     "partNo": "رقم القطعة",
     "totalQty": "إجمالي الكمية",
-    "usedQty": "الكمية المستخدمة",
+    "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
     "totalLots": "إجمالي اللوتات",

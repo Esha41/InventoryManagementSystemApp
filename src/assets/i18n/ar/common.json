@@ -88,7 +88,7 @@
       "Discard": "إتلاف"
     },
     "statuses": {
-      "Pending": "قيد الانتظار",
+      "Pending": "قيد الإجراء",
       "Approved": "مقبولة",
       "Rejected": "مرفوضة",
       "Returned": "معادة",

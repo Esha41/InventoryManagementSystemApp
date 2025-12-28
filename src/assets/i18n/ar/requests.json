@@ -43,8 +43,8 @@
     "usageTimeTo": "وقت الاستخدام إلى",
     "totalReserve": "المقرر الكلي",
     "availableReserve": "المقرر المتاح",
-    "orderedQuantity": "الكمية المطلوبة",
-    "usedQuantity": "الكمية المستخدمة",
+    "orderedQuantity": "الكمية المحجوزة",
+    "usedQuantity": "الكمية المصروفة سابقا",
     "itemName": "اسم مادة",
     "itemNo": "رقم مادة",
     "orderSubmitted": "تم إرسال الطلب بنجاح!",
@@ -154,12 +154,12 @@
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
     },
     "errors": {
-      "allowanceExceeded": "الكمية المطلوبة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
+      "allowanceExceeded": "الكمية المحجوزة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
       "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى."
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
-      "message": "هل أنت متأكد أنك تريد إرسال طلب الطلب هذا؟"
+      "message": "هل تريد تأكيد إرسال الطلب؟"
     }
   },
   "returnRequest": {
@@ -265,7 +265,7 @@
     "order": "طلب",
     "return": "إرجاع",
     "discard": "إتلاف",
-    "pending": "قيد الانتظار",
+    "pending": "قيد الإجراء",
     "confirmed": "مؤكد",
     "rejected": "مرفوض",
     "orderReport": {
@@ -425,7 +425,7 @@
     "attachmentsHint": "يرجى اختيار ملف أو أكثر",
     "reject": "رفض",
     "approve": "موافقة",
-    "returnForReview": "إرجاع للمراجعة",
+    "returnForReview": "إرجاع للتعديل",
     "selectStepToReturn": "اختر خطوة للإرجاع إليها",
     "selectStep": "اختر خطوة",
     "noPreviousSteps": "لا توجد خطوات سابقة متاحة",

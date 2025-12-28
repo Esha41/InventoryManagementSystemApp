@@ -21,7 +21,7 @@
       "Completed": "مكتملة",
       "Processing": "قيد المعالجة",
       "New": "جديدة",
-      "Pending": "قيد الانتظار"
+      "Pending": "قيد الإجراء"
     },
     "detail": {
       "title": "تفاصيل طلب الإمداد",
@@ -214,7 +214,7 @@
     "getDetails": "الحصول على التفاصيل",
     "lotSelectionInfo": "اختر طريقة تحميل اللوتات لهذه المادة",
     "selectLotOption": "يرجى اختيار خيار أعلاه لتحميل اللوتات",
-    "requestedQuantity": "الكمية المطلوبة",
+    "requestedQuantity": "الكمية المحجوزة",
     "expiryDate": "تاريخ الانتهاء",
     "available": "متاح",
     "noLotsFound": "لم يتم العثور على لوتات لهذه المادة",
@@ -229,7 +229,7 @@
       "quantityMustBeGreaterThanZero": "يجب أن تكون الكمية أكبر من 0",
       "invalidLotNumber": "رقم لوت غير صحيح",
       "invalidItem": "مادة غير صحيحة",
-      "maxQuantityExceeded": "الكمية القصوى المسموح بها هي {{maxQuantity}}. الكمية المطلوبة هي {{requestedQuantity}}.",
+      "maxQuantityExceeded": "الكمية القصوى المسموح بها هي {{maxQuantity}}. الكمية المحجوزة هي {{requestedQuantity}}.",
       "itemUpdatedSuccessfully": "تم تحديث المادة بنجاح",
       "pleaseSelectItem": "يرجى اختيار مادة",
       "pleaseSelectLot": "يرجى اختيار لوت",
