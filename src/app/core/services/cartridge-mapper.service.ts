@@ -10,7 +10,8 @@ import { getExplosiveTypeName } from '@utils/explosive.utils';
 export class CartridgeMapperService {
 
   mapAmmunitionToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
-    const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit, currentLang);
+    // Bullet diameter unit values should not be translated (always use English)
+    const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit, currentLang, true);
 
     // Linked labels - Arabic and English
     const linkedLabelAr = dto.isLinked ? 'مرتبط' : 'غير مرتبط';
@@ -187,7 +188,7 @@ export class CartridgeMapperService {
     return !this.isWeapon(cartridge) && !this.isExplosive(cartridge);
   }
 
-  private buildMeasurementLabel(value: any, unit: any, currentLang: string = 'en'): string | undefined {
+  private buildMeasurementLabel(value: any, unit: any, currentLang: string = 'en', useEnglishUnit: boolean = false): string | undefined {
     if (value === null || value === undefined) {
       return undefined;
     }
@@ -195,7 +196,10 @@ export class CartridgeMapperService {
     if (Number.isNaN(numeric)) {
       return undefined;
     }
-    const unitName = getLocalizedName(unit, currentLang);
+    // If useEnglishUnit is true, always use English unit name (for bullet diameter values)
+    const unitName = useEnglishUnit 
+      ? (unit?.nameEn || unit?.nameEN || unit?.name || '')
+      : getLocalizedName(unit, currentLang);
     return unitName ? `${numeric} ${unitName}` : `${numeric}`;
   }
 }
