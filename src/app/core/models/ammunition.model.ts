@@ -6,6 +6,16 @@ export interface LookupDto {
   isDeleted?: boolean;
 }
 
+export interface ImageDto {
+  id: number;
+  fileUrl: string;
+  fileName: string;
+  originalName: string;
+  isMain: boolean;
+  entity: string;
+  entityId: number;
+}
+
 export interface AmmunitionReadDto {
   name: string;
   partNo: string;
@@ -63,15 +73,7 @@ export interface AmmunitionReadDto {
   type?: LookupDto;
   
   // Images array from response
-  images?: Array<{
-    id: number;
-    fileUrl: string;
-    fileName: string;
-    originalName: string;
-    isMain: boolean;
-    entity: string;
-    entityId: number;
-  }>;
+  images?: ImageDto[];
 }
 
 export interface AmmunitionCreateDto {
