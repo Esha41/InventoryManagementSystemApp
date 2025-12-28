@@ -151,6 +151,7 @@
     "manageAdmins": "Manage Users",
     "adminRoles": "Role Management",
     "rolePermissions": "Role Permissions",
+      "ldapSettings": "LDAP Settings",
     "emailSettings": "Email Settings",
     "adminImportExport": "Import & Export",
     "notifications": "Notifications",

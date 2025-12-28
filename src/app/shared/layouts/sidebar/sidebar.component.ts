@@ -196,6 +196,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['roles.edit', 'roles.view']
     },
     {
+      label: 'nav.ldapSettings',
+      icon: Settings,
+      route: '/ldap-settings',
+      permissions: ['systemusers.page', 'systemusers.view']
+    },
+    {
       label: 'nav.emailSettings',
       icon: Mail,
       route: '/email-settings',

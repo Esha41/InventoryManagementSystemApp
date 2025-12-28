@@ -1,0 +1,155 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'ldapSettings.title' | translate }}</h1>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'ldapSettings.subtitle' | translate }}</p>
+    </div>
+
+    <!-- Error Message -->
+    <app-error-state
+      *ngIf="errorMessage"
+      [error]="errorMessage"
+      variant="banner"
+      containerClass="mb-0">
+    </app-error-state>
+
+    <!-- LDAP Settings Card -->
+    <app-card>
+      <div class="p-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text)] mb-6">{{ 'ldapSettings.ldapSettings' | translate }}</h2>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-12">
+          <p class="text-[var(--color-text-muted)]">{{ 'ldapSettings.loading' | translate }}</p>
+        </div>
+
+        <!-- Form -->
+        <form *ngIf="!isLoading" class="space-y-6" (ngSubmit)="saveChanges()">
+          <!-- LDAP Server -->
+          <div>
+            <label for="ldapServer" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'ldapSettings.ldapServer' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="ldapServer"
+              name="ldapServer"
+              [(ngModel)]="ldapSettings.ldapServer"
+              [placeholder]="'ldapSettings.ldapServerPlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required
+            />
+          </div>
+
+          <!-- LDAP Domain -->
+          <div>
+            <label for="ldapDomain" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'ldapSettings.ldapDomain' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="ldapDomain"
+              name="ldapDomain"
+              [(ngModel)]="ldapSettings.ldapDomain"
+              [placeholder]="'ldapSettings.ldapDomainPlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required
+            />
+          </div>
+
+          <!-- LDAP Employee Attribute -->
+          <div>
+            <label for="ldapEmpAttr" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'ldapSettings.ldapEmpAttr' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="ldapEmpAttr"
+              name="ldapEmpAttr"
+              [(ngModel)]="ldapSettings.ldapEmpAttr"
+              [placeholder]="'ldapSettings.ldapEmpAttrPlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required
+            />
+          </div>
+
+          <!-- LDAP Username -->
+          <div>
+            <label for="ldapUsername" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'ldapSettings.ldapUsername' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="ldapUsername"
+              name="ldapUsername"
+              [(ngModel)]="ldapSettings.ldapUsername"
+              [placeholder]="'ldapSettings.ldapUsernamePlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required
+            />
+          </div>
+
+          <!-- LDAP Password -->
+          <div>
+            <label for="ldapPassword" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'ldapSettings.ldapPassword' | translate }}
+              <span class="text-red-500" *ngIf="!hasExistingPassword">*</span>
+              <span class="text-sm text-[var(--color-text-muted)] font-normal" *ngIf="hasExistingPassword">
+                ({{ 'ldapSettings.leaveBlankToKeep' | translate }})
+              </span>
+            </label>
+            <div class="relative">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="ldapPassword"
+                name="ldapPassword"
+                [(ngModel)]="ldapSettings.ldapPassword"
+                [placeholder]="hasExistingPassword ? ('ldapSettings.passwordPlaceholder' | translate) : ('ldapSettings.passwordRequiredPlaceholder' | translate)"
+                class="w-full px-4 py-2.5 pr-10 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+                [required]="!hasExistingPassword"
+              />
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+                [title]="showPassword ? ('ldapSettings.hidePassword' | translate) : ('ldapSettings.showPassword' | translate)"
+              >
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m13.42 13.42l-3.29-3.29M3 3l18 18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-border)] mt-6">
+            <app-button
+              [variant]="'secondary'"
+              [disabled]="isSaving || isLoading"
+              (click)="cancelChanges()"
+              class="px-4 py-2.5"
+            >
+              {{ 'common.cancel' | translate }}
+            </app-button>
+            <app-button
+              [variant]="'primary'"
+              [disabled]="isSaving || isLoading"
+              (click)="saveChanges()"
+              class="px-4 py-2.5"
+            >
+              <span *ngIf="!isSaving">{{ 'ldapSettings.saveChanges' | translate }}</span>
+              <span *ngIf="isSaving">{{ 'ldapSettings.saving' | translate }}</span>
+            </app-button>
+          </div>
+        </form>
+      </div>
+    </app-card>
+  </div>
+</div>
+
+

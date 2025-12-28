@@ -313,6 +313,36 @@
     "hidePassword": "إخفاء كلمة المرور",
     "savedSuccessfully": "تم حفظ إعدادات البريد الإلكتروني بنجاح"
   },
+  "ldapSettings": {
+    "title": "إعدادات LDAP",
+    "subtitle": "تكوين اتصال خادم LDAP وإعدادات المصادقة",
+    "ldapSettings": "إعدادات LDAP",
+    "ldapServer": "عنوان خادم LDAP",
+    "ldapServerPlaceholder": "مثال: ldaps://ldap.example.com:636",
+    "ldapDomain": "نطاق LDAP",
+    "ldapDomainPlaceholder": "مثال: example.com أو DC=EXAMPLE,DC=COM",
+    "ldapEmpAttr": "خاصية موظف LDAP",
+    "ldapEmpAttrPlaceholder": "مثال: sAMAccountName",
+    "ldapUsername": "اسم مستخدم LDAP",
+    "ldapUsernamePlaceholder": "مثال: svc_ldap_bind",
+    "ldapPassword": "كلمة مرور LDAP",
+    "passwordPlaceholder": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+    "passwordRequiredPlaceholder": "أدخل كلمة مرور LDAP",
+    "leaveBlankToKeep": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "loading": "جاري التحميل...",
+    "savedSuccessfully": "تم حفظ إعدادات LDAP بنجاح",
+    "errors": {
+      "fetchFailed": "فشل جلب إعدادات LDAP",
+      "updateFailed": "فشل تحديث إعدادات LDAP",
+      "permissionDenied": "ليس لديك صلاحية لتحديث إعدادات LDAP. يرجى الاتصال بالمسؤول.",
+      "endpointNotFound": "لم يتم العثور على نقطة نهاية إعدادات LDAP. يرجى التحقق من تكوين نقطة نهاية API بشكل صحيح.",
+      "unknownError": "حدث خطأ. يرجى المحاولة مرة أخرى."
+    }
+  },
   "adminImportExport": {
     "title": "إدارة الاستيراد والتصدير",
     "subtitle": "إدارة عمليات استيراد وتصدير البيانات للأصول وملخص المخزون ومخزون المستودع",
