@@ -334,7 +334,14 @@
     "saveChanges": "حفظ التغييرات",
     "saving": "جاري الحفظ...",
     "loading": "جاري التحميل...",
-    "savedSuccessfully": "تم حفظ إعدادات LDAP بنجاح"
+    "savedSuccessfully": "تم حفظ إعدادات LDAP بنجاح",
+    "errors": {
+      "fetchFailed": "فشل جلب إعدادات LDAP",
+      "updateFailed": "فشل تحديث إعدادات LDAP",
+      "permissionDenied": "ليس لديك صلاحية لتحديث إعدادات LDAP. يرجى الاتصال بالمسؤول.",
+      "endpointNotFound": "لم يتم العثور على نقطة نهاية إعدادات LDAP. يرجى التحقق من تكوين نقطة نهاية API بشكل صحيح.",
+      "unknownError": "حدث خطأ. يرجى المحاولة مرة أخرى."
+    }
   },
   "adminImportExport": {
     "title": "إدارة الاستيراد والتصدير",

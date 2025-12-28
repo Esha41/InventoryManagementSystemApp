@@ -338,7 +338,14 @@
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "loading": "Loading...",
-    "savedSuccessfully": "LDAP settings saved successfully"
+    "savedSuccessfully": "LDAP settings saved successfully",
+    "errors": {
+      "fetchFailed": "Failed to fetch LDAP settings",
+      "updateFailed": "Failed to update LDAP settings",
+      "permissionDenied": "You do not have permission to update LDAP settings. Please contact your administrator.",
+      "endpointNotFound": "LDAP settings endpoint not found. Please verify the API endpoint is configured correctly.",
+      "unknownError": "An error occurred. Please try again."
+    }
   },
   "adminImportExport": {
     "title": "Import & Export Management",

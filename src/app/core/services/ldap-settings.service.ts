@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
+import { ErrorHandlingService } from './error-handling.service';
 
 // API DTO matching backend LdapSettings contract
 export interface LdapSettingsApiDto {
@@ -31,7 +34,9 @@ export interface LdapSettingsDto {
 export class LdapSettingsService {
   constructor(
     private readonly apiService: ApiService,
-    private readonly config: ConfigService
+    private readonly config: ConfigService,
+    private readonly translate: TranslateService,
+    private readonly errorHandling: ErrorHandlingService
   ) {}
 
   private get endpoint(): string {
@@ -50,23 +55,27 @@ export class LdapSettingsService {
           }
           return this.apiDtoToInternalDto(response?.data);
         }),
-        catchError(error => {
-          const is404 = (error as any)?.status === 404 ||
-            error?.message?.includes('404') ||
-            error?.message?.includes('Resource not found') ||
-            error?.message?.includes('Not Found');
-
-          const is403 = (error as any)?.status === 403 ||
-            error?.message?.includes('403') ||
-            error?.message?.includes('Forbidden');
+        catchError((error: unknown) => {
+          const httpError = error instanceof HttpErrorResponse ? error : null;
+          
+          // Check for 404 or 403 status codes
+          const is404 = httpError?.status === 404;
+          const is403 = httpError?.status === 403;
 
           if (is404 || is403) {
             this.config.log('LDAP settings not found or access forbidden, returning empty settings');
             return of({} as LdapSettingsDto);
           }
 
+          // Extract error message from HttpErrorResponse
+          const errorMessage = this.errorHandling.resolveHttpErrorMessage(error);
           this.config.logError('Failed to fetch LDAP settings', error);
-          return throwError(() => error);
+          
+          // Return error with translated message
+          const translatedMessage = this.translate.instant('admin.ldapSettings.errors.fetchFailed');
+          return throwError(() => new Error(translatedMessage !== 'admin.ldapSettings.errors.fetchFailed' 
+            ? translatedMessage 
+            : errorMessage));
         })
       );
   }
@@ -81,28 +90,39 @@ export class LdapSettingsService {
       .pipe(
         map(response => {
           if (!response.succeeded) {
-            throw new Error(response.message || 'Failed to update LDAP settings');
+            const errorMsg = response.message || this.translate.instant('admin.ldapSettings.errors.updateFailed');
+            throw new Error(errorMsg);
           }
           return this.apiDtoToInternalDto(response?.data);
         }),
-        catchError(error => {
-          let errorMessage = 'Failed to update LDAP settings';
-
-          const status = (error as any)?.status;
-          const errorMsg = error instanceof Error ? error.message : String(error);
-
-          if (status === 403 || errorMsg?.includes('403') || errorMsg?.includes('Forbidden')) {
-            errorMessage = 'You do not have permission to update LDAP settings. Please contact your administrator.';
-          } else if (status === 404 || errorMsg?.includes('404') || errorMsg?.includes('Not Found')) {
-            errorMessage = 'LDAP settings endpoint not found. Please verify the API endpoint is configured correctly.';
-          } else if (error instanceof Error && error.message && error.message !== 'An unknown error occurred') {
-            errorMessage = error.message;
-          } else if (errorMsg && errorMsg !== 'An unknown error occurred') {
-            errorMessage = errorMsg;
+        catchError((error: unknown) => {
+          const httpError = error instanceof HttpErrorResponse ? error : null;
+          const status = httpError?.status;
+          
+          // Extract error message from HttpErrorResponse using ErrorHandlingService
+          let errorMessage = this.errorHandling.resolveHttpErrorMessage(error);
+          
+          // Determine translation key based on error status
+          let translationKey = 'admin.ldapSettings.errors.updateFailed';
+          
+          if (status === 403) {
+            translationKey = 'admin.ldapSettings.errors.permissionDenied';
+          } else if (status === 404) {
+            translationKey = 'admin.ldapSettings.errors.endpointNotFound';
+          } else if (!errorMessage || errorMessage === 'An error occurred. Please try again.') {
+            translationKey = 'admin.ldapSettings.errors.unknownError';
           }
+          
+          // Get translated message
+          const translatedMessage = this.translate.instant(translationKey);
+          
+          // Use translated message if available, otherwise use extracted error message
+          const finalMessage = translatedMessage !== translationKey 
+            ? translatedMessage 
+            : (errorMessage || this.translate.instant('admin.ldapSettings.errors.unknownError'));
 
           this.config.logError('Failed to update LDAP settings', error);
-          return throwError(() => new Error(errorMessage));
+          return throwError(() => new Error(finalMessage));
         })
       );
   }
