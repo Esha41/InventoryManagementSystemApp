@@ -14,7 +14,6 @@ import { createAssetEditForm } from '@utils/asset-list-form.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { createInitialImageState } from '@utils/asset-list.state';
-import { getWeaponTypeOptions, getActionTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
 @Component({
@@ -48,6 +47,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() projectailMaterials: LookupItem[] = [];
   @Input() classifications: LookupItem[] = [];
   @Input() itemTypes: LookupItem[] = [];
+  @Input() countries: LookupItem[] = [];
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
@@ -56,8 +56,6 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Output() imageDropped = new EventEmitter<File>();
 
   readonly X = X;
-  readonly weaponTypeOptions = getWeaponTypeOptions();
-  readonly actionTypeOptions = getActionTypeOptions();
   readonly explosiveTypeOptions = getExplosiveTypeOptions();
 
   editForm!: FormGroup;

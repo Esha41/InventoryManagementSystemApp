@@ -262,7 +262,13 @@
     "enterNetExplosiveQuantity": "Enter net explosive quantity",
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",
-    "addExplosive": "Add Explosive"
+    "addExplosive": "Add Explosive",
+    "model": "Model",
+    "enterModel": "Enter model",
+    "yearOfManufacture": "Year of Manufacture",
+    "enterYearOfManufacture": "Enter year of manufacture",
+    "caliberUnit": "Caliber Unit",
+    "countryOfManufacture": "Country of Manufacture"
   },
   "assetList": {
     "title": "Asset Inventory",

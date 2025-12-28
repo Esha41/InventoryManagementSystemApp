@@ -9,23 +9,34 @@ import { LookupDto } from './ammunition.model';
  * Weapon DTO (extends BaseItem)
  */
 export interface WeaponDto extends BaseItemDto {
-  weaponType: number;
-  caliber: string;
-  actionType: number;
-  barrelLength?: number;
-  barrelLengthUnitId?: number;
-  overallLength?: number;
-  overallLengthUnitId?: number;
-  weight?: number;
-  weightUnitId?: number;
-  capacity?: number;
+  caliber?: string;
+  caliberUnitId?: number;
+  yearOfManufacture?: number;
+  countryOfManufactureId?: number;
+  model?: string;
+  distribution?: string;
+  referenceNo?: string;
+  unNumber?: string;
+  notes?: string;
+  classificationId?: number;
+  typeId?: number;
 
   // Navigation properties
-  weaponTypeNav?: LookupDto; // Enum mapped to lookup if needed, usually just handled by util
-  actionTypeNav?: LookupDto; // Enum mapped to lookup if needed
-  barrelLengthUnit?: LookupDto;
-  overallLengthUnit?: LookupDto;
-  weightUnit?: LookupDto;
+  caliberUnit?: LookupDto;
+  countryOfManufacture?: LookupDto;
+  classification?: LookupDto;
+  type?: LookupDto;
+  
+  // Images array from response
+  images?: Array<{
+    id: number;
+    fileUrl: string;
+    fileName: string;
+    originalName: string;
+    isMain: boolean;
+    entity: string;
+    entityId: number;
+  }>;
 }
 
 /**
@@ -35,22 +46,18 @@ export interface CreateUpdateWeaponDto {
   name: string;
   itemNo: string;
   partNo?: string;
-  batchNo?: string; // Managed separately usually, but included in backend entity
-  hccId?: number;
-  nsn?: string;
-  readyForIssue?: boolean;
-  expiryDate?: Date | string;
-
-  weaponType: number;
-  caliber: string;
-  actionType: number;
-  barrelLength?: number;
-  barrelLengthUnitId?: number;
-  overallLength?: number;
-  overallLengthUnitId?: number;
-  weight?: number;
-  weightUnitId?: number;
-  capacity?: number;
   price?: number;
   minimumQuantity?: number;
+  nsn?: string;
+  distribution?: string;
+  referenceNo?: string;
+  unNumber?: string;
+  notes?: string;
+  classificationId?: number;
+  typeId?: number;
+  caliber?: string;
+  caliberUnitId?: number;
+  yearOfManufacture?: number;
+  countryOfManufactureId?: number;
+  model?: string;
 }

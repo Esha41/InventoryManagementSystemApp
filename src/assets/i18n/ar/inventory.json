@@ -264,7 +264,13 @@
     "enterOverallLength": "أدخل الطول الكلي",
     "enterWeight": "أدخل الوزن",
     "enterCapacity": "أدخل سعة المخزن",
-    "enterNetExplosiveQuantity": "أدخل الكمية الصافية من المتفجرات"
+    "enterNetExplosiveQuantity": "أدخل الكمية الصافية من المتفجرات",
+    "model": "الموديل",
+    "enterModel": "أدخل الموديل",
+    "yearOfManufacture": "سنة الصنع",
+    "enterYearOfManufacture": "أدخل سنة الصنع",
+    "caliberUnit": "وحدة العيار",
+    "countryOfManufacture": "بلد الصنع"
   },
     "assetList": {
     "title": "مخزون المواد",

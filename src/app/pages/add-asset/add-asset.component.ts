@@ -24,7 +24,6 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getWeaponTypeOptions, getActionTypeOptions, WeaponType } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
 interface AssetForm {
@@ -60,21 +59,17 @@ interface AssetForm {
   projectailMaterialId: string;
 
   // Weapon specific
-  weaponType: string;
   caliber: string;
-  actionType: string;
-  barrelLength: string;
-  barrelLengthUnitId: string;
-  overallLength: string;
-  overallLengthUnitId: string;
-  weight: string; // Using shared totalWeight for display? Or specific weight field? Let's use specific
-  weightUnitId: string;
-  capacity: string;
+  caliberUnitId: string;
+  yearOfManufacture: string;
+  countryOfManufactureId: string;
+  model: string;
 
   // Explosive specific
   explosiveType: string;
   netExplosiveQuantity: string;
   netExplosiveQuantityUnitId: string;
+  unit: string; // ExplosiveUnit enum: 1 = Gram, 3 = Meter
 }
 
 type AssetType = 'ammunition' | 'weapon' | 'explosive';
@@ -107,13 +102,24 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   projectailMaterials: LookupItem[] = [];
   classifications: LookupItem[] = [];
   itemTypes: LookupItem[] = [];
+  countries: LookupItem[] = [];
 
   // Enum Options
-  weaponTypeOptions = getWeaponTypeOptions();
-  actionTypeOptions = getActionTypeOptions();
   explosiveTypeOptions = getExplosiveTypeOptions();
+  
+  // ExplosiveUnit enum options: 1 = Gram, 3 = Meter
+  explosiveUnitOptions = [
+    { label: 'Gram', value: '1' },
+    { label: 'Meter', value: '3' }
+  ];
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) => this.getLocalizedName(this.unwrapOption(option));
+  readonly explosiveUnitOptionLabel = (option: DropdownOption<string> | string): string => {
+    if (typeof option === 'string') {
+      return option;
+    }
+    return (option as any).label || '';
+  };
   readonly linkedOptions = [
     { label: 'common.no', value: 'false' },
     { label: 'common.yes', value: 'true' }
@@ -176,21 +182,17 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       projectailMaterialId: '',
 
       // Weapon
-      weaponType: '',
       caliber: '',
-      actionType: '',
-      barrelLength: '',
-      barrelLengthUnitId: '',
-      overallLength: '',
-      overallLengthUnitId: '',
-      weight: '',
-      weightUnitId: '',
-      capacity: '',
+      caliberUnitId: '',
+      yearOfManufacture: '',
+      countryOfManufactureId: '',
+      model: '',
 
       // Explosive
       explosiveType: '',
       netExplosiveQuantity: '',
-      netExplosiveQuantityUnitId: ''
+      netExplosiveQuantityUnitId: '',
+      unit: '1' // Default to Gram (ExplosiveUnit enum: 1 = Gram, 3 = Meter)
     };
   }
 
@@ -232,7 +234,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       projectileColors: this.lookupService.getColors(),
       projectailMaterials: this.lookupService.getProjectailMaterials(),
       classifications: this.lookupService.getLookupItems('Classification'),
-      itemTypes: this.lookupService.getLookupItems('ItemType')
+      itemTypes: this.lookupService.getLookupItems('ItemType'),
+      countries: this.lookupService.getCountries()
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -248,6 +251,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.projectailMaterials = data.projectailMaterials;
           this.classifications = data.classifications;
           this.itemTypes = data.itemTypes;
+          this.countries = data.countries;
           this.loading = false;
         },
         error: (error) => {
@@ -345,41 +349,24 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   }
 
   private submitWeapon() {
-    // Convert enum name to numeric value
-    const weaponTypeValue = this.assetForm.weaponType && WeaponType[this.assetForm.weaponType as keyof typeof WeaponType] 
-      ? WeaponType[this.assetForm.weaponType as keyof typeof WeaponType] 
-      : null;
-    
-    const actionTypeValue = this.assetForm.actionType 
-      ? (typeof this.assetForm.actionType === 'string' ? parseInt(this.assetForm.actionType) : this.assetForm.actionType)
-      : null;
-
-    if (!weaponTypeValue) {
-      this.errorMessage = 'Weapon Type is required';
-      return;
-    }
-    if (!actionTypeValue) {
-      this.errorMessage = 'Action Type is required';
-      return;
-    }
-
     const dto: CreateUpdateWeaponDto = {
       name: this.assetForm.name.trim(),
-      itemNo: this.assetForm.itemNo.trim(),
-      weaponType: weaponTypeValue,
-      caliber: this.assetForm.caliber.trim(),
-      actionType: actionTypeValue
+      itemNo: this.assetForm.itemNo.trim()
     };
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
-    if (this.assetForm.barrelLength) dto.barrelLength = parseFloat(this.assetForm.barrelLength);
-    if (this.assetForm.barrelLengthUnitId) dto.barrelLengthUnitId = parseInt(this.assetForm.barrelLengthUnitId);
-    if (this.assetForm.overallLength) dto.overallLength = parseFloat(this.assetForm.overallLength);
-    if (this.assetForm.overallLengthUnitId) dto.overallLengthUnitId = parseInt(this.assetForm.overallLengthUnitId);
-    if (this.assetForm.weight) dto.weight = parseFloat(this.assetForm.weight); // Use specific weight field
-    if (this.assetForm.weightUnitId) dto.weightUnitId = parseInt(this.assetForm.weightUnitId);
-    if (this.assetForm.capacity) dto.capacity = parseInt(this.assetForm.capacity);
+    if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
+    if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
+    if (this.assetForm.unNumber?.trim()) dto.unNumber = this.assetForm.unNumber.trim();
+    if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
+    if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
+    if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
+    if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
+    if (this.assetForm.caliberUnitId) dto.caliberUnitId = parseInt(this.assetForm.caliberUnitId);
+    if (this.assetForm.yearOfManufacture) dto.yearOfManufacture = parseInt(this.assetForm.yearOfManufacture);
+    if (this.assetForm.countryOfManufactureId) dto.countryOfManufactureId = parseInt(this.assetForm.countryOfManufactureId);
+    if (this.assetForm.model?.trim()) dto.model = this.assetForm.model.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
 
@@ -403,9 +390,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   private submitExplosive() {
     const dto: CreateUpdateExplosiveDto = {
       name: this.assetForm.name.trim(),
-      itemNo: this.assetForm.itemNo.trim(),
-      unNumber: this.assetForm.unNumber.trim(),
-      unit: 1 // Default to Gram (ExplosiveUnit enum: 1 = Gram, 3 = Meter)
+      itemNo: this.assetForm.itemNo.trim()
     };
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
@@ -414,9 +399,12 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
     if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
+    if (this.assetForm.unNumber?.trim()) dto.unNumber = this.assetForm.unNumber.trim();
     if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
+    if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
+    if (this.assetForm.unit) dto.unit = parseInt(this.assetForm.unit);
 
     const formData = new FormData();
     Object.keys(dto).forEach(key => {
@@ -471,14 +459,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (!this.assetForm.itemNo || !this.assetForm.itemNo.trim()) {
       this.errorMessage = 'Item number is required';
       return false;
-    }
-
-    if (this.activeTab === 'weapon') {
-      if (!this.assetForm.weaponType) { this.errorMessage = 'Weapon Type is required'; return false; }
-      if (!this.assetForm.caliber) { this.errorMessage = 'Caliber is required'; return false; }
-      if (!this.assetForm.actionType) { this.errorMessage = 'Action Type is required'; return false; }
-    } else if (this.activeTab === 'explosive') {
-      if (!this.assetForm.unNumber) { this.errorMessage = 'UN Number is required'; return false; }
     }
 
     return true;
