@@ -799,11 +799,40 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get workflow step display name
+   * Get workflow step display name (localized)
+   * Uses Angular translation best practices with getLocalizedValue helper
+   * Backend returns ApplicationRoleName but not ApplicationRoleNameAr, so we check nested applicationRole object
    */
   getWorkflowStepDisplayName(step: any): string {
     if (!step) return '';
-    return `Step ${step.stepOrder}: ${step.applicationRoleName || 'Unknown Role'}`;
+    
+    // Get role name - backend only sends ApplicationRoleName (EN), not ApplicationRoleNameAr
+    // So we need to check the nested applicationRole object for Arabic name
+    let roleNameEn: string | undefined;
+    let roleNameAr: string | undefined;
+    
+    // First check nested applicationRole object (has both EN and AR)
+    if (step.applicationRole) {
+      roleNameEn = step.applicationRole.name || step.applicationRole.nameEn;
+      roleNameAr = step.applicationRole.nameAr;
+    }
+    
+    // Fallback to flat properties if nested object not available
+    if (!roleNameEn && step.applicationRoleName) {
+      roleNameEn = step.applicationRoleName;
+    }
+    if (!roleNameAr && step.applicationRoleNameAr) {
+      roleNameAr = step.applicationRoleNameAr;
+    }
+    
+    // Use getLocalizedValue helper for role name (follows Angular best practices)
+    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) || 
+                     this.translateService.instant('workflowApprovalDetail.unknownApprover');
+    
+    // Use translate service for "Step" label (Angular best practice)
+    const stepLabel = this.translateService.instant('requestsManagement.orderReport.table.step');
+    
+    return `${stepLabel} ${step.stepOrder}: ${roleName}`;
   }
 
   /**
