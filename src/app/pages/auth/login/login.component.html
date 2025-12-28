@@ -15,7 +15,7 @@
           'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
           (isLdapMode
             ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-            : 'bg-white text-[var(--color-brand)] shadow-sm')
+            : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
         ">
         {{ 'auth.login.passwordLogin' | translate }}
       </button>
@@ -23,7 +23,7 @@
           'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
           (!isLdapMode
             ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-            : 'bg-white text-[var(--color-brand)] shadow-sm')
+            : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
         ">
         {{ 'auth.login.ldapLogin' | translate }}
       </button>
@@ -45,7 +45,7 @@
         </div>
         <input id="username" type="text" formControlName="username" autocomplete="username" class="block w-full py-3.5 text-base
                  border-2 border-[var(--color-border)] rounded-xl
-                 bg-white
+                 bg-[var(--color-background)] text-[var(--color-text)]
                  outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200
@@ -75,7 +75,7 @@
         <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
           autocomplete="current-password" class="block w-full py-3.5 text-base
                  border-2 border-[var(--color-border)] rounded-xl
-                 bg-white
+                 bg-[var(--color-background)] text-[var(--color-text)]
                  outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
                  placeholder:text-[var(--color-text-light)]
                  transition-all duration-200

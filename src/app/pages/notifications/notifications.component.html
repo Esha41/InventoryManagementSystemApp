@@ -29,8 +29,8 @@
     <div class="grid gap-6 xl:grid-cols-[380px_1fr]">
       <!-- List -->
       <div
-        class="flex h-full min-h-[480px] flex-col rounded-2xl border border-[var(--color-border)] bg-white shadow-sm">
-        <div class="border-b border-[var(--color-border)] p-4 space-y-4">
+        class="flex h-full min-h-[480px] flex-col rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm">
+        <div class="border-b-2 border-[var(--color-border)] p-4 space-y-4">
           <label class="search-field">
             <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
             <input type="search" class="search-field__input" [placeholder]="'common.search' | translate"
@@ -125,7 +125,7 @@
       </div>
 
       <!-- Detail -->
-      <div class="rounded-2xl border border-[var(--color-border)] bg-white shadow-sm">
+      <div class="rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm">
         <ng-container *ngIf="selectedNotification as notification; else noSelection">
           <div class="flex flex-col gap-6 p-6">
             <div class="flex flex-col gap-4 border-b border-[var(--color-border)] pb-6">

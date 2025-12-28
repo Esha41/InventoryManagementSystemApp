@@ -28,3 +28,4 @@ export * from './email.service';
 export * from './email-configuration.service';
 export * from './notification-detail.service';
 export * from './file-upload.service';
+export * from './theme.service';

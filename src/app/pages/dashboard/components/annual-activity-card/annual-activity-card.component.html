@@ -1,4 +1,4 @@
-<div class="rounded-lg p-4 bg-white shadow-sm border border-[var(--color-border)] relative">
+<div class="rounded-lg p-4 bg-[var(--color-background)] shadow-sm border border-[var(--color-border)] relative">
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ title }}</h3>
     <div>
@@ -55,7 +55,7 @@
     </svg>
     <!-- Tooltip -->
     <div
-      class="absolute px-2 py-1 rounded bg-white shadow-md text-xs text-[var(--color-text)] pointer-events-none"
+      class="absolute px-2 py-1 rounded bg-[var(--color-background)] shadow-md text-xs text-[var(--color-text)] pointer-events-none border border-[var(--color-border)]"
       *ngIf="hoveredIndex !== null"
       [ngStyle]="{ left: tooltipX + 'px', top: tooltipY + 'px' }">
       <div class="font-semibold">{{ labels[hoveredIndex!] }}</div>

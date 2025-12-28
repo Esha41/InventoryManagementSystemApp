@@ -3,182 +3,137 @@
     <!-- Header -->
     <div>
       <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'emailSettings.title' | translate }}</h1>
-    <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'emailSettings.subtitle' | translate }}</p>
-  </div>
-
-  <!-- Error Message -->
-  <app-error-state
-    *ngIf="errorMessage"
-    [error]="errorMessage"
-    variant="banner"
-    containerClass="mb-0">
-  </app-error-state>
-
-  <!-- Email Settings Card -->
-  <app-card>
-    <div class="p-6">
-      <h2 class="text-xl font-semibold text-[var(--color-text)] mb-6">{{ 'emailSettings.emailSettings' | translate }}</h2>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="text-center py-12">
-        <p class="text-[var(--color-text-muted)]">{{ 'emailSettings.loading' | translate }}</p>
-      </div>
-
-      <!-- Form -->
-      <form *ngIf="!isLoading" class="space-y-6" (ngSubmit)="saveChanges()">
-        <!-- Enable E-mail Notifications -->
-        <div class="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="enableEmailNotifications"
-            [(ngModel)]="enableEmailNotifications"
-            name="enableEmailNotifications"
-            class="w-4 h-4 text-[var(--color-brand)] bg-gray-100 border-gray-300 rounded focus:ring-[var(--color-brand)] focus:ring-2"
-          />
-          <label for="enableEmailNotifications" class="text-sm font-medium text-[var(--color-text)]">
-            {{ 'emailSettings.enableEmailNotifications' | translate }}
-          </label>
-        </div>
-
-        <!-- Host -->
-        <div>
-          <label for="host" class="block text-sm font-medium text-[var(--color-text)] mb-2">
-            {{ 'emailSettings.host' | translate }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="host"
-            name="host"
-            [(ngModel)]="host"
-            [placeholder]="'emailSettings.hostPlaceholder' | translate"
-            class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
-            required
-          />
-        </div>
-
-        <!-- Port -->
-        <div>
-          <label for="port" class="block text-sm font-medium text-[var(--color-text)] mb-2">
-            {{ 'emailSettings.port' | translate }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            id="port"
-            name="port"
-            [(ngModel)]="port"
-            [placeholder]="'emailSettings.portPlaceholder' | translate"
-            min="1"
-            max="65535"
-            class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
-            required
-          />
-        </div>
-
-        <!-- Enable SSL -->
-        <div class="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="enableSsl"
-            [(ngModel)]="enableSsl"
-            name="enableSsl"
-            class="w-4 h-4 text-[var(--color-brand)] bg-gray-100 border-gray-300 rounded focus:ring-[var(--color-brand)] focus:ring-2"
-          />
-          <label for="enableSsl" class="text-sm font-medium text-[var(--color-text)]">
-            {{ 'emailSettings.enableSsl' | translate }} <span class="text-red-500">*</span>
-          </label>
-        </div>
-
-        <!-- Sender Name -->
-        <div>
-          <label for="senderName" class="block text-sm font-medium text-[var(--color-text)] mb-2">
-            {{ 'emailSettings.senderName' | translate }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="senderName"
-            name="senderName"
-            [(ngModel)]="senderName"
-            [placeholder]="'emailSettings.senderNamePlaceholder' | translate"
-            class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
-            required
-          />
-        </div>
-
-        <!-- Account Username -->
-        <div>
-          <label for="accountUsername" class="block text-sm font-medium text-[var(--color-text)] mb-2">
-            {{ 'emailSettings.accountUsername' | translate }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="accountUsername"
-            name="accountUsername"
-            [(ngModel)]="accountUsername"
-            [placeholder]="'emailSettings.accountUsernamePlaceholder' | translate"
-            class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
-            required
-          />
-        </div>
-
-        <!-- Account Password -->
-        <div>
-          <label for="accountPassword" class="block text-sm font-medium text-[var(--color-text)] mb-2">
-            {{ 'emailSettings.accountPassword' | translate }} 
-            <span class="text-red-500" *ngIf="!hasExistingPassword">*</span>
-            <span class="text-sm text-[var(--color-text-muted)] font-normal" *ngIf="hasExistingPassword">
-              ({{ 'emailSettings.leaveBlankToKeep' | translate }})
-            </span>
-          </label>
-          <div class="relative">
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="accountPassword"
-              name="accountPassword"
-              [(ngModel)]="accountPassword"
-              [placeholder]="hasExistingPassword ? ('emailSettings.passwordPlaceholder' | translate) : ('emailSettings.passwordRequiredPlaceholder' | translate)"
-              class="w-full px-4 py-2.5 pr-10 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
-              [required]="!hasExistingPassword"
-            />
-            <button
-              type="button"
-              (click)="togglePasswordVisibility()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-              [title]="showPassword ? ('emailSettings.hidePassword' | translate) : ('emailSettings.showPassword' | translate)"
-            >
-              <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m13.42 13.42l-3.29-3.29M3 3l18 18" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Action Buttons at Bottom -->
-        <div class="flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-border)] mt-6">
-          <app-button
-            [variant]="'secondary'"
-            [disabled]="isSaving || isLoading"
-            (click)="cancelChanges()"
-            class="px-4 py-2.5"
-          >
-            {{ 'common.cancel' | translate }}
-          </app-button>
-          <app-button
-            [variant]="'primary'"
-            [disabled]="isSaving || isLoading"
-            (click)="saveChanges()"
-            class="px-4 py-2.5"
-          >
-            <span *ngIf="!isSaving">{{ 'emailSettings.saveChanges' | translate }}</span>
-            <span *ngIf="isSaving">{{ 'emailSettings.saving' | translate }}</span>
-          </app-button>
-        </div>
-      </form>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'emailSettings.subtitle' | translate }}</p>
     </div>
-  </app-card>
+
+    <!-- Error Message -->
+    <app-error-state *ngIf="errorMessage" [error]="errorMessage" variant="banner" containerClass="mb-0">
+    </app-error-state>
+
+    <!-- Email Settings Card -->
+    <app-card>
+      <div class="p-6">
+        <h2 class="text-xl font-semibold text-[var(--color-text)] mb-6">{{ 'emailSettings.emailSettings' | translate }}
+        </h2>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="text-center py-12">
+          <p class="text-[var(--color-text-muted)]">{{ 'emailSettings.loading' | translate }}</p>
+        </div>
+
+        <!-- Form -->
+        <form *ngIf="!isLoading" class="space-y-6" (ngSubmit)="saveChanges()">
+          <!-- Enable E-mail Notifications -->
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="enableEmailNotifications" [(ngModel)]="enableEmailNotifications"
+              name="enableEmailNotifications"
+              class="w-4 h-4 text-[var(--color-brand)] bg-[var(--color-background)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)] focus:ring-2" />
+            <label for="enableEmailNotifications" class="text-sm font-medium text-[var(--color-text)]">
+              {{ 'emailSettings.enableEmailNotifications' | translate }}
+            </label>
+          </div>
+
+          <!-- Host -->
+          <div>
+            <label for="host" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'emailSettings.host' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="text" id="host" name="host" [(ngModel)]="host"
+              [placeholder]="'emailSettings.hostPlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required />
+          </div>
+
+          <!-- Port -->
+          <div>
+            <label for="port" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'emailSettings.port' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="number" id="port" name="port" [(ngModel)]="port"
+              [placeholder]="'emailSettings.portPlaceholder' | translate" min="1" max="65535"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required />
+          </div>
+
+          <!-- Enable SSL -->
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="enableSsl" [(ngModel)]="enableSsl" name="enableSsl"
+              class="w-4 h-4 text-[var(--color-brand)] bg-[var(--color-background)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)] focus:ring-2" />
+            <label for="enableSsl" class="text-sm font-medium text-[var(--color-text)]">
+              {{ 'emailSettings.enableSsl' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+          </div>
+
+          <!-- Sender Name -->
+          <div>
+            <label for="senderName" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'emailSettings.senderName' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="text" id="senderName" name="senderName" [(ngModel)]="senderName"
+              [placeholder]="'emailSettings.senderNamePlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required />
+          </div>
+
+          <!-- Account Username -->
+          <div>
+            <label for="accountUsername" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'emailSettings.accountUsername' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="text" id="accountUsername" name="accountUsername" [(ngModel)]="accountUsername"
+              [placeholder]="'emailSettings.accountUsernamePlaceholder' | translate"
+              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+              required />
+          </div>
+
+          <!-- Account Password -->
+          <div>
+            <label for="accountPassword" class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'emailSettings.accountPassword' | translate }}
+              <span class="text-[var(--color-error)]" *ngIf="!hasExistingPassword">*</span>
+              <span class="text-sm text-[var(--color-text-muted)] font-normal" *ngIf="hasExistingPassword">
+                ({{ 'emailSettings.leaveBlankToKeep' | translate }})
+              </span>
+            </label>
+            <div class="relative">
+              <input [type]="showPassword ? 'text' : 'password'" id="accountPassword" name="accountPassword"
+                [(ngModel)]="accountPassword"
+                [placeholder]="hasExistingPassword ? ('emailSettings.passwordPlaceholder' | translate) : ('emailSettings.passwordRequiredPlaceholder' | translate)"
+                class="w-full px-4 py-2.5 pr-10 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
+                [required]="!hasExistingPassword" />
+              <button type="button" (click)="togglePasswordVisibility()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+                [title]="showPassword ? ('emailSettings.hidePassword' | translate) : ('emailSettings.showPassword' | translate)">
+                <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m13.42 13.42l-3.29-3.29M3 3l18 18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons at Bottom -->
+          <div class="flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-border)] mt-6">
+            <app-button [variant]="'secondary'" [disabled]="isSaving || isLoading" (click)="cancelChanges()"
+              class="px-4 py-2.5">
+              {{ 'common.cancel' | translate }}
+            </app-button>
+            <app-button [variant]="'primary'" [disabled]="isSaving || isLoading" (click)="saveChanges()"
+              class="px-4 py-2.5">
+              <span *ngIf="!isSaving">{{ 'emailSettings.saveChanges' | translate }}</span>
+              <span *ngIf="isSaving">{{ 'emailSettings.saving' | translate }}</span>
+            </app-button>
+          </div>
+        </form>
+      </div>
+    </app-card>
   </div>
 </div>
-

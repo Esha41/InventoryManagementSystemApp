@@ -1,80 +1,80 @@
 <app-modal [isOpen]="isOpen" [title]="'editInventoryDetail.title' | translate" (closed)="close()">
   <form [formGroup]="detailForm" (ngSubmit)="onSubmit()" class="space-y-6">
     <!-- Error Message -->
-    <div *ngIf="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-800">{{ errorMessage }}</p>
+    <div *ngIf="errorMessage" class="p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)] rounded-lg">
+      <p class="text-sm text-[var(--color-error)]">{{ errorMessage }}</p>
     </div>
 
     <!-- Item Info (Read-only) -->
-    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <h3 class="text-sm font-semibold text-gray-700 mb-2">{{ 'editInventoryDetail.itemInformation' | translate }}</h3>
+    <div class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'editInventoryDetail.itemInformation' | translate }}</h3>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <p class="text-xs text-gray-500">{{ 'editInventoryDetail.itemName' | translate }}</p>
-          <p class="text-sm font-medium text-gray-900">{{ inventoryDetail?.item?.name || '-' }}</p>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ 'editInventoryDetail.itemName' | translate }}</p>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.item?.name || '-' }}</p>
         </div>
         <div>
-          <p class="text-xs text-gray-500">{{ 'editInventoryDetail.itemNo' | translate }}</p>
-          <p class="text-sm font-medium text-gray-900">{{ inventoryDetail?.item?.itemNo || '-' }}</p>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ 'editInventoryDetail.itemNo' | translate }}</p>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.item?.itemNo || '-' }}</p>
         </div>
       </div>
     </div>
 
     <!-- Lot Number -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
-        {{ 'editInventoryDetail.lotNumber' | translate }} <span class="text-red-500">*</span>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'editInventoryDetail.lotNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <input
         type="number"
         formControlName="lot"
         min="1"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-        [class.border-red-500]="detailForm.get('lot')?.invalid && detailForm.get('lot')?.touched"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        [class.border-[var(--color-error)]]="detailForm.get('lot')?.invalid && detailForm.get('lot')?.touched"
         [placeholder]="'editInventoryDetail.enterLotNumber' | translate" />
-      <p *ngIf="getFieldError('lot')" class="mt-2 text-sm text-red-500">
+      <p *ngIf="getFieldError('lot')" class="mt-2 text-sm text-[var(--color-error)]">
         {{ getFieldError('lot') }}
       </p>
     </div>
 
     <!-- Item Quantity -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
-        {{ 'editInventoryDetail.itemQuantity' | translate }} <span class="text-red-500">*</span>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'editInventoryDetail.itemQuantity' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <input
         type="number"
         formControlName="originalQuantity"
         min="1"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-        [class.border-red-500]="detailForm.get('originalQuantity')?.invalid && detailForm.get('originalQuantity')?.touched"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        [class.border-[var(--color-error)]]="detailForm.get('originalQuantity')?.invalid && detailForm.get('originalQuantity')?.touched"
         [placeholder]="'editInventoryDetail.totalQuantity' | translate" />
-      <p *ngIf="getFieldError('originalQuantity')" class="mt-2 text-sm text-red-500">
+      <p *ngIf="getFieldError('originalQuantity')" class="mt-2 text-sm text-[var(--color-error)]">
         {{ getFieldError('originalQuantity') }}
       </p>
     </div>
 
     <!-- Batch No -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.batchNo' | translate }}
       </label>
       <input
         type="text"
         formControlName="batchNo"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [placeholder]="'editInventoryDetail.enterBatchNo' | translate" />
     </div>
 
     <!-- Expiry Date -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.expiryDate' | translate }}
       </label>
       <input
         type="date"
         formControlName="expiryDate"
-        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
     </div>
 
     <!-- Ready For Issue -->
@@ -83,14 +83,14 @@
         <input 
           type="checkbox" 
           formControlName="readyForIssue"
-          class="w-4 h-4 text-[var(--color-brand)] border-gray-300 rounded focus:ring-[var(--color-brand)]">
-        <span class="text-sm font-medium text-gray-700">{{ 'editInventoryDetail.readyForIssue' | translate }}</span>
+          class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)]">
+        <span class="text-sm font-medium text-[var(--color-text)]">{{ 'editInventoryDetail.readyForIssue' | translate }}</span>
       </label>
     </div>
 
     <!-- Supplier -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.supplier' | translate }}
       </label>
       <app-dropdown
@@ -107,7 +107,7 @@
 
     <!-- Manufacturer -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.manufacturer' | translate }}
       </label>
       <app-dropdown
@@ -124,7 +124,7 @@
 
     <!-- Country -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.country' | translate }}
       </label>
       <app-dropdown

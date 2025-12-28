@@ -1,16 +1,23 @@
-<div class="min-h-screen bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F8] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 relative">
-  <!-- Language Switcher - Fixed Top Right -->
-  <div class="fixed top-6 right-6 z-50" [style.direction]="isRTL ? 'rtl' : 'ltr'">
-    <button
-      (click)="toggleLanguage()"
-      class="group flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
-      aria-label="Change language"
-    >
-      <lucide-angular 
-        [img]="Globe" 
-        class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200 flex-shrink-0"
-      ></lucide-angular>
-      <span class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200 min-w-[2rem] text-center">
+<div
+  class="min-h-screen bg-gradient-to-br from-[var(--color-background-muted)] to-[var(--color-background-hover)] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 relative">
+  <!-- Language Switcher & Theme Toggle - Fixed Top Right -->
+  <div class="fixed top-6 right-6 z-50 flex items-center gap-3" [style.direction]="isRTL ? 'rtl' : 'ltr'">
+    <!-- Theme Toggle Button -->
+    <button type="button" (click)="themeService.toggleTheme()"
+      class="group flex items-center justify-center p-2.5 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
+      [attr.aria-label]="(themeService.isDarkMode() ? 'common.switchToLightMode' : 'common.switchToDarkMode') | translate">
+      <lucide-angular [img]="themeService.isDarkMode() ? Sun : Moon"
+        class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200"></lucide-angular>
+    </button>
+
+    <!-- Language Switcher Button -->
+    <button (click)="toggleLanguage()"
+      class="group flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
+      aria-label="Change language">
+      <lucide-angular [img]="Globe"
+        class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200 flex-shrink-0"></lucide-angular>
+      <span
+        class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200 min-w-[2rem] text-center">
         {{ getCurrentLanguage() }}
       </span>
     </button>
@@ -20,17 +27,14 @@
     <!-- Logo and Header Section -->
     <div class="text-center mb-8">
       <div class="inline-block mb-6">
-        <img 
-          src="assets/logo.png" 
-          alt="Barzan Holdings" 
-          class="h-16 w-auto drop-shadow-sm"
-          style="transform: scaleX(1); direction: ltr;"
-        />
+        <img src="assets/logo.png" alt="Barzan Holdings" class="h-16 w-auto drop-shadow-sm"
+          style="transform: scaleX(1); direction: ltr;" />
       </div>
     </div>
 
     <!-- Auth Content Card -->
-    <div class="bg-white rounded-2xl shadow-custom-xl border border-[var(--color-border)] overflow-hidden">
+    <div
+      class="bg-[var(--color-background)] rounded-2xl shadow-custom-xl border border-[var(--color-border)] overflow-hidden">
       <div class="px-8 py-10 sm:px-10 sm:py-12">
         <router-outlet />
       </div>

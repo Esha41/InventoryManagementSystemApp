@@ -233,10 +233,10 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   getStockStatusClass(): string {
     const status = this.getStockStatus();
     switch (status) {
-      case 'New': return 'bg-green-50 text-green-700 border border-green-200';
-      case 'Good': return 'bg-blue-50 text-blue-700 border border-blue-200';
-      case 'Used': return 'bg-gray-50 text-gray-700 border border-gray-200';
-      default: return 'bg-gray-50 text-gray-700 border border-gray-200';
+      case 'New': return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-2 border-[var(--color-success)]/30';
+      case 'Good': return 'bg-[var(--color-info)]/20 text-[var(--color-info)] border-2 border-[var(--color-info)]/30';
+      case 'Used': return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
+      default: return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
     }
   }
 

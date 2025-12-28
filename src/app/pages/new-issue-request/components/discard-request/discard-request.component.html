@@ -6,18 +6,18 @@
       </div>
 
       <!-- Item Type Selection Buttons -->
-      <div class="bg-white rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
+      <div class="bg-[var(--color-background)] rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
         <nav class="flex gap-1" aria-label="Item Type Tabs">
           <button 
             (click)="onItemTypeChange('Ammunition')" 
             [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Ammunition',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
             }" 
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-                'bg-white': selectedItemType === 'Ammunition',
+                'bg-[var(--color-background)]': selectedItemType === 'Ammunition',
                 'bg-[var(--color-brand)]': selectedItemType !== 'Ammunition'
               }"></div>
               <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
@@ -30,12 +30,12 @@
             (click)="onItemTypeChange('Weapon')" 
             [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Weapon',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
             }" 
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-                'bg-white': selectedItemType === 'Weapon',
+                'bg-[var(--color-background)]': selectedItemType === 'Weapon',
                 'bg-[var(--color-brand)]': selectedItemType !== 'Weapon'
               }"></div>
               <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
@@ -48,12 +48,12 @@
             (click)="onItemTypeChange('Explosive')" 
             [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Explosive',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
             }" 
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-                'bg-white': selectedItemType === 'Explosive',
+                'bg-[var(--color-background)]': selectedItemType === 'Explosive',
                 'bg-[var(--color-brand)]': selectedItemType !== 'Explosive'
               }"></div>
               <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
@@ -65,12 +65,12 @@
         </nav>
       </div>
 
-      <div class="bg-[#F5F5F5] rounded-xl p-8">
+      <div class="bg-[var(--color-background-muted)] rounded-xl p-8">
         <form #discardForm="ngForm" (ngSubmit)="onSendRequest(discardForm)">
           <div class="space-y-6 max-w-3xl">
             <!-- Reason -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
                 {{ 'discardRequest.reason' | translate }}
               </label>
               <div class="flex-1">
@@ -79,15 +79,15 @@
                   [(ngModel)]="reason"
                   name="reason"
                   [placeholder]="'discardRequest.reasonPlaceholder' | translate"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                 />
               </div>
             </div>
 
             <!-- Priority -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.priority' | translate }} <span class="text-red-500">*</span>
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.priority' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <div class="flex-1">
                 <app-dropdown
@@ -102,7 +102,7 @@
                   [error]="hasError('priority')"
                   placeholder="{{ 'discardRequest.priority' | translate }}">
                 </app-dropdown>
-                <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-red-500">
+                <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-[var(--color-error)]">
                   {{ getError('priority') }}
                 </p>
               </div>
@@ -110,7 +110,7 @@
 
             <!-- Notes -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
                 {{ 'discardRequest.notes' | translate }}
               </label>
               <div class="flex-1">
@@ -119,22 +119,22 @@
                   name="notes"
                   rows="3"
                   [placeholder]="'discardRequest.notesPlaceholder' | translate"
-                  class="w-full px-4 py-2.5 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
                 ></textarea>
               </div>
             </div>
 
             <!-- Department -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.department' | translate }} <span class="text-red-500">*</span>
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.department' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <div class="flex-1">
                 <ng-container *ngIf="isDepartmentLocked; else discardDepartmentSelect">
                   <input
                     type="text"
                     [value]="lockedDepartmentName || ('discardRequest.selectDepartment' | translate)"
-                    class="w-full px-4 py-2.5 bg-gray-100 rounded-lg border border-dashed text-sm text-[#23272E] cursor-not-allowed"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed text-sm text-[var(--color-text)] cursor-not-allowed"
                     readonly
                   />
                 </ng-container>
@@ -152,7 +152,7 @@
                     [placeholder]="isLoadingDepartments ? ('common.loading' | translate) : ('discardRequest.selectDepartment' | translate)">
                   </app-dropdown>
                 </ng-template>
-                <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-red-500">
+                <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-[var(--color-error)]">
                   {{ getError('departmentId') }}
                 </p>
               </div>
@@ -160,7 +160,7 @@
 
             <!-- Requester -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
                 {{ 'discardRequest.requester' | translate }}
               </label>
               <div class="flex-1">
@@ -168,7 +168,7 @@
                   <input
                     type="text"
                     [value]="lockedRequesterName || currentUserDetails?.userName || ''"
-                    class="w-full px-4 py-2.5 bg-gray-100 rounded-lg border border-dashed text-sm text-[#23272E] cursor-not-allowed"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed text-sm text-[var(--color-text)] cursor-not-allowed"
                     readonly
                   />
                 </ng-container>
@@ -189,8 +189,8 @@
 
             <!-- Request Purpose -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
-                {{ 'discardRequest.requestPurpose' | translate }} <span class="text-red-500">*</span>
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
+                {{ 'discardRequest.requestPurpose' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <div class="flex-1">
                 <app-dropdown
@@ -205,7 +205,7 @@
                   [optionLabelFn]="requestPurposeOptionLabel"
                   [placeholder]="isLoadingRequestPurposes ? ('common.loading' | translate) : ('discardRequest.selectRequestPurpose' | translate)">
                 </app-dropdown>
-                <p *ngIf="hasError('requestPurposeId')" class="mt-1.5 text-xs text-red-500">
+                <p *ngIf="hasError('requestPurposeId')" class="mt-1.5 text-xs text-[var(--color-error)]">
                   {{ getError('requestPurposeId') }}
                 </p>
               </div>
@@ -213,9 +213,9 @@
 
             <!-- File Upload -->
             <div class="flex items-start gap-8">
-              <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <label class="text-sm font-medium text-[var(--color-text-muted)] w-40 shrink-0 pt-2.5">
                 {{ 'common.attachments' | translate }}
-                <span class="text-xs text-[#9CA3AF]">({{ 'common.optional' | translate }})</span>
+                <span class="text-xs text-[var(--color-text-muted)]">({{ 'common.optional' | translate }})</span>
               </label>
               <div class="flex-1">
                 <!-- File Input -->
@@ -232,7 +232,7 @@
                       class="px-4 py-2 rounded-lg border-0 text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                       {{ 'common.chooseFiles' | translate }}
                     </label>
-                    <span class="text-sm text-[#6B7280] flex-1">
+                    <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
                       <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
@@ -241,26 +241,26 @@
                   <!-- Selected Files List -->
                   <div *ngIf="selectedFiles.length > 0" class="space-y-2">
                     <div *ngFor="let file of selectedFiles; let i = index" 
-                         class="flex items-center justify-between p-2 bg-[#F5F5F5] rounded-lg border border-[#E5E7EB]">
+                         class="flex items-center justify-between p-2 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
                       <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-[#23272E] truncate">{{ file.name }}</p>
-                        <p class="text-xs text-[#6B7280]">{{ getFileSize(file) }}</p>
+                        <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+                        <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
                       </div>
                       <button
                         type="button"
                         (click)="removeFile(i)"
                         [disabled]="isLoading"
-                        class="ml-3 p-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        class="ml-3 p-1 text-[var(--color-error)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
                       </button>
                     </div>
                   </div>
                   
                   <!-- Helper Text -->
-                  <p class="text-xs text-[#6B7280]">
+                  <p class="text-xs text-[var(--color-text-muted)]">
                     {{ 'common.attachmentsHintOptional' | translate }}
                   </p>
-                  <p class="text-xs text-[#6B7280] font-medium">
+                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
                     {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
                   </p>
                 </div>
@@ -270,8 +270,8 @@
             <!-- Discard Items -->
             <div class="border-t border-[var(--color-border)] pt-6">
               <div class="flex items-center justify-between mb-4">
-                <label class="text-sm font-medium text-[#6B7280]">
-                  {{ 'discardRequest.discardItems' | translate }} <span class="text-red-500">*</span>
+                <label class="text-sm font-medium text-[var(--color-text-muted)]">
+                  {{ 'discardRequest.discardItems' | translate }} <span class="text-[var(--color-error)]">*</span>
                 </label>
                 <button
                   type="button"
@@ -283,14 +283,14 @@
                 </button>
               </div>
 
-              <div *ngIf="hasError('discardItems')" class="mb-4 text-xs text-red-500">
+              <div *ngIf="hasError('discardItems')" class="mb-4 text-xs text-[var(--color-error)]">
                 {{ getError('discardItems') }}
               </div>
 
               <div class="space-y-4">
                 <div
                   *ngFor="let item of discardItems; let i = index"
-                  class="bg-white rounded-lg p-4 border border-[var(--color-border)]"
+                  class="bg-[var(--color-background)] rounded-lg p-4 border border-[var(--color-border)]"
                 >
                   <div class="flex items-start justify-between mb-4">
                     <h4 class="text-sm font-medium text-[var(--color-text)]">{{ 'discardRequest.item' | translate }} {{ i + 1 }}</h4>
@@ -298,17 +298,17 @@
                       *ngIf="discardItems.length > 1"
                       type="button"
                       (click)="removeDiscardItem(i)"
-                      class="p-1 hover:bg-red-50 rounded transition-colors"
+                      class="p-1 hover:bg-[var(--color-error)]/20 rounded transition-colors"
                     >
-                      <lucide-angular [img]="X" class="h-4 w-4 text-red-500"></lucide-angular>
+                      <lucide-angular [img]="X" class="h-4 w-4 text-[var(--color-error)]"></lucide-angular>
                     </button>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Item -->
                     <div>
-                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
-                        {{ 'discardRequest.item' | translate }} <span class="text-red-500">*</span>
+                      <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
+                        {{ 'discardRequest.item' | translate }} <span class="text-[var(--color-error)]">*</span>
                       </label>
                       <div class="relative" #itemDropdown>
                         <input
@@ -320,8 +320,8 @@
                           type="button"
                           (click)="toggleItemDropdown(i); $event.stopPropagation()"
                           [disabled]="isLoadingItems"
-                          class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-gray-100 flex items-center justify-between transition-all hover:border-[var(--color-brand)]/60"
-                          [class.border-red-500]="hasError('discardItems.' + i + '.itemId')"
+                          class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-[var(--color-background-active)] flex items-center justify-between transition-all hover:border-[var(--color-brand)]/60"
+                          [class.border-[var(--color-error)]]="hasError('discardItems.' + i + '.itemId')"
                           [class.opacity-60]="isLoadingItems"
                         >
                           <span class="truncate text-left">
@@ -339,7 +339,7 @@
 
                         <div
                           *ngIf="itemDropdownOpen[i]"
-                          class="absolute z-50 mt-2 w-full bg-white rounded-lg shadow-lg border border-[var(--color-border)] overflow-hidden"
+                          class="absolute z-50 mt-2 w-full bg-[var(--color-background)] rounded-lg shadow-lg border border-[var(--color-border)] overflow-hidden"
                         >
                           <div class="p-3 border-b border-[var(--color-border)]">
                             <div class="relative">
@@ -380,15 +380,15 @@
                           </div>
                         </div>
                       </div>
-                      <p *ngIf="hasError('discardItems.' + i + '.itemId')" class="mt-1 text-xs text-red-500">
+                      <p *ngIf="hasError('discardItems.' + i + '.itemId')" class="mt-1 text-xs text-[var(--color-error)]">
                         {{ getError('discardItems.' + i + '.itemId') }}
                       </p>
                     </div>
 
                     <!-- Quantity -->
                     <div>
-                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
-                        {{ 'discardRequest.quantity' | translate }} <span class="text-red-500">*</span>
+                      <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
+                        {{ 'discardRequest.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
                       </label>
                       <input
                         type="number"
@@ -397,17 +397,17 @@
                         (ngModelChange)="onQuantityChange(i)"
                         min="1"
                         [placeholder]="'discardRequest.quantityPlaceholder' | translate"
-                        [class.border-red-500]="hasError('discardItems.' + i + '.quantity')"
-                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                        [class.border-[var(--color-error)]]="hasError('discardItems.' + i + '.quantity')"
+                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                       />
-                      <p *ngIf="hasError('discardItems.' + i + '.quantity')" class="mt-1 text-xs text-red-500">
+                      <p *ngIf="hasError('discardItems.' + i + '.quantity')" class="mt-1 text-xs text-[var(--color-error)]">
                         {{ getError('discardItems.' + i + '.quantity') }}
                       </p>
                     </div>
 
                     <!-- Notes -->
                     <div>
-                      <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                      <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
                         {{ 'discardRequest.itemNotes' | translate }}
                       </label>
                       <input
@@ -415,7 +415,7 @@
                         [(ngModel)]="item.notes"
                         [name]="'itemNotes_' + i"
                         [placeholder]="'discardRequest.itemNotesPlaceholder' | translate"
-                        class="w-full px-3 py-2 bg-white rounded-lg border text-sm text-[#23272E] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                       />
                     </div>
                   </div>

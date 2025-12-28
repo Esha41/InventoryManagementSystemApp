@@ -1,13 +1,13 @@
 <div class="page-wrapper">
     <!-- Header -->
-    <div class="bg-gray-50 border-b border-gray-200">
+    <div class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
         <div class="page-container py-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
                         {{ 'inventorySummary.title' | translate }}
                     </h1>
-                    <p class="text-sm text-gray-600">
+                    <p class="text-sm text-[var(--color-text-muted)]">
                         {{ 'inventorySummary.subtitle' | translate }}
                     </p>
                 </div>
@@ -22,7 +22,7 @@
                 <nav class="flex gap-1 p-2" aria-label="Tabs">
                     <button (click)="switchTab('ammunition')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
             }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
                         <div class="flex items-center gap-2 relative z-10">
                             <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -37,7 +37,7 @@
                     </button>
                     <button (click)="switchTab('weapon')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
             }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
                         <div class="flex items-center gap-2 relative z-10">
                             <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -52,7 +52,7 @@
                     </button>
                     <button (click)="switchTab('explosive')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
-              'bg-white text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
             }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
                         <div class="flex items-center gap-2 relative z-10">
                             <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -165,7 +165,8 @@
                             <tr class="accordion-row hover:bg-[var(--color-background-muted)] transition-colors"
                                 [class.expanded]="isExpanded(item.itemId)" (click)="toggleRow(item.itemId)">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                    <button class="expand-btn p-1 rounded hover:bg-gray-100 transition-colors"
+                                    <button
+                                        class="expand-btn p-1 rounded hover:bg-[var(--color-background-hover)] transition-colors"
                                         type="button">
                                         <lucide-icon [img]="getExpandIcon(isExpanded(item.itemId))" class="h-4 w-4">
                                         </lucide-icon>
@@ -179,7 +180,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                                     <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
                                         {{ getItemTypeName(item.itemType) }}
                                     </span>
                                 </td>
@@ -198,19 +199,20 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                                     {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 text-end">
+                                <td
+                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
                                     {{ formatNumber(item.remainingQuantity) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
                                     <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
                                         {{ item.totalLots }}
                                     </span>
                                 </td>
                             </tr>
 
                             <!-- Expanded Details Row -->
-                            <tr *ngIf="isExpanded(item.itemId)" class="detail-row bg-gray-50">
+                            <tr *ngIf="isExpanded(item.itemId)" class="detail-row bg-[var(--color-background-muted)]">
                                 <td colspan="11">
                                     <div class="lot-details-container">
                                         <!-- Loading lots -->
@@ -229,10 +231,11 @@
                                                 {{ 'inventorySummary.lotDetails' | translate }}
                                             </h3>
 
-                                            <div class="bg-white rounded-lg border border-[var(--color-border)] overflow-hidden"
+                                            <div class="bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] overflow-hidden"
                                                 *ngIf="getLotsForItem(item.itemId).length > 0">
                                                 <table class="lot-details-table">
-                                                    <thead class="bg-gray-50 border-b border-[var(--color-border)]">
+                                                    <thead
+                                                        class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
                                                         <tr>
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -282,7 +285,7 @@
                                                     </thead>
                                                     <tbody class="divide-y divide-[var(--color-border)]">
                                                         <tr *ngFor="let lot of getLotsForItem(item.itemId)"
-                                                            class="hover:bg-gray-50 transition-colors">
+                                                            class="hover:bg-[var(--color-background-hover)] transition-colors">
                                                             <td
                                                                 class="px-4 py-3 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
                                                                 {{ lot.lot }}

@@ -40,7 +40,7 @@
   overflow-x: visible;
 }
 
-/* Priority Badge Colors */
+/* Priority Badge Colors - Light Mode */
 .bg-red-100 {
   background-color: #fee2e2;
 }
@@ -99,4 +99,80 @@
 
 .border-gray-200 {
   border-color: #e5e7eb;
+}
+
+/* Priority Badge Colors - Dark Mode */
+[data-theme="dark"] .bg-red-100,
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+[data-theme="dark"] .text-red-800,
+.dark .text-red-800 {
+  color: #FCA5A5;
+}
+
+[data-theme="dark"] .border-red-200,
+.dark .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .bg-orange-100,
+.dark .bg-orange-100 {
+  background-color: rgba(251, 146, 60, 0.2);
+}
+
+[data-theme="dark"] .text-orange-800,
+.dark .text-orange-800 {
+  color: #FBBF24;
+}
+
+[data-theme="dark"] .border-orange-200,
+.dark .border-orange-200 {
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+[data-theme="dark"] .bg-yellow-100,
+.dark .bg-yellow-100 {
+  background-color: rgba(251, 191, 36, 0.2);
+}
+
+[data-theme="dark"] .text-yellow-800,
+.dark .text-yellow-800 {
+  color: #FCD34D;
+}
+
+[data-theme="dark"] .border-yellow-200,
+.dark .border-yellow-200 {
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .bg-green-100,
+.dark .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="dark"] .text-green-800,
+.dark .text-green-800 {
+  color: #6EE7B7;
+}
+
+[data-theme="dark"] .border-green-200,
+.dark .border-green-200 {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="dark"] .bg-gray-100,
+.dark .bg-gray-100 {
+  background-color: var(--color-background-active);
+}
+
+[data-theme="dark"] .text-gray-800,
+.dark .text-gray-800 {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .border-gray-200,
+.dark .border-gray-200 {
+  border-color: var(--color-border);
 }

@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { TranslationService } from '@services/translation.service';
-import { LucideAngularModule, Globe } from 'lucide-angular';
+import { ThemeService } from '@services/theme.service';
+import { LucideAngularModule, Globe, Moon, Sun } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
@@ -19,9 +20,14 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class AuthLayoutComponent {
   readonly Globe = Globe;
+  readonly Moon = Moon;
+  readonly Sun = Sun;
   readonly currentYear = new Date().getFullYear();
 
-  constructor(public translationService: TranslationService) {}
+  constructor(
+    public translationService: TranslationService,
+    public themeService: ThemeService
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();

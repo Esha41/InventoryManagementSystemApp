@@ -2,7 +2,7 @@
   <div class="page-container">
     <!-- Header -->
     <div class="mb-12 flex items-center justify-between">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+      <h1 class="text-4xl font-bold text-[var(--color-text)] mb-4">
         {{ 'warehouse.title' | translate }}
       </h1>
       <button
@@ -35,7 +35,7 @@
     <div *ngIf="!loading && !error" class="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
       <div 
         *ngFor="let warehouse of warehouses" 
-        class="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8">
+        class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-xl shadow-custom-md hover:shadow-custom-lg transition-all duration-300 p-8">
         
         <!-- Warehouse Emblem and Name -->
         <div class="flex items-center mb-6">
@@ -48,8 +48,8 @@
               loading="lazy">
           </div>
           <div class="flex-1">
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ warehouse.name }}</h3>
-            <p class="text-gray-600 text-sm">{{ warehouse.code }}</p>
+            <h3 class="text-2xl font-bold text-[var(--color-text)] mb-2">{{ warehouse.name }}</h3>
+            <p class="text-[var(--color-text-muted)] text-sm">{{ warehouse.code }}</p>
           </div>
         </div>
 
@@ -58,10 +58,10 @@
           <!-- NEQ Progress Bar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ 'warehouse.neq' | translate }}</span>
-              <span class="text-sm font-bold text-gray-900">{{ warehouse.neqPercentage }}%</span>
+              <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'warehouse.neq' | translate }}</span>
+              <span class="text-sm font-bold text-[var(--color-text)]">{{ warehouse.neqPercentage }}%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div class="w-full bg-[var(--color-background-active)] rounded-full h-4 overflow-hidden">
               <div 
                 class="progress-fill-orange h-full rounded-full transition-all duration-500 ease-out"
                 [style.width.%]="warehouse.neqPercentage">
@@ -72,10 +72,10 @@
           <!-- Consumed Progress Bar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-700">{{ 'warehouse.consumed' | translate }}</span>
-              <span class="text-sm font-bold text-gray-900">{{ warehouse.consumedPercentage }}%</span>
+              <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'warehouse.consumed' | translate }}</span>
+              <span class="text-sm font-bold text-[var(--color-text)]">{{ warehouse.consumedPercentage }}%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div class="w-full bg-[var(--color-background-active)] rounded-full h-4 overflow-hidden">
               <div 
                 class="progress-fill-green h-full rounded-full transition-all duration-500 ease-out"
                 [style.width.%]="warehouse.consumedPercentage">
@@ -85,14 +85,14 @@
         </div>
 
         <!-- Warehouse Info and Actions -->
-        <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+        <div class="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
           <!-- Warehouse Info -->
           <div class="space-y-1">
-            <div class="text-xs text-gray-500">
+            <div class="text-xs text-[var(--color-text-muted)]">
               <span class="font-medium">{{ 'warehouse.location' | translate }}:</span>
               <span class="ml-2">{{ warehouse.code }}</span>
             </div>
-            <div class="text-xs text-gray-500">
+            <div class="text-xs text-[var(--color-text-muted)]">
               <span class="font-medium">{{ 'warehouse.capacity' | translate }}:</span>
               <span class="ml-2">{{ warehouse.currentStock | number }} / {{ warehouse.totalCapacity | number }}</span>
             </div>
@@ -112,13 +112,13 @@
 
     <!-- Empty State -->
     <div *ngIf="!loading && !error && warehouses.length === 0" class="text-center py-20">
-      <div class="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-        <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-32 h-32 mx-auto mb-6 bg-[var(--color-background-active)] rounded-full flex items-center justify-center">
+        <svg class="w-16 h-16 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
         </svg>
       </div>
-      <h3 class="text-2xl font-medium text-gray-900 mb-4">{{ 'warehouse.noWarehouses' | translate }}</h3>
-      <p class="text-gray-500 text-lg">{{ 'warehouse.noWarehousesDescription' | translate }}</p>
+      <h3 class="text-2xl font-medium text-[var(--color-text)] mb-4">{{ 'warehouse.noWarehouses' | translate }}</h3>
+      <p class="text-[var(--color-text-muted)] text-lg">{{ 'warehouse.noWarehousesDescription' | translate }}</p>
     </div>
   </div>
 </div>

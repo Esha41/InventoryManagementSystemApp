@@ -26,7 +26,7 @@ input[type="number"].no-spinner {
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 0.5rem;
   position: relative;
-  background-color: #ffffff;
+  background-color: var(--color-background);
   max-height: 500px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -42,14 +42,14 @@ input[type="number"].no-spinner {
 }
 
 .steps-table-header {
-  background-color: #f9fafb;
+  background-color: var(--color-background-muted);
   position: sticky;
   top: 0;
   z-index: 5;
 }
 
 .steps-table-header th {
-  background-color: #f9fafb;
+  background-color: var(--color-background-muted);
   position: sticky;
   top: 0;
   z-index: 5;

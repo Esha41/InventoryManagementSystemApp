@@ -152,13 +152,13 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     }
 
     const classMap: { [key: number]: string } = {
-      1: 'bg-blue-100 text-blue-800',
-      2: 'bg-yellow-100 text-yellow-800',
-      3: 'bg-green-100 text-green-800',
-      4: 'bg-red-100 text-red-800',
-      5: 'bg-gray-100 text-gray-800'
+      1: 'bg-[var(--color-info)]/20 text-[var(--color-info)]',
+      2: 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]',
+      3: 'bg-[var(--color-success)]/20 text-[var(--color-success)]',
+      4: 'bg-[var(--color-error)]/20 text-[var(--color-error)]',
+      5: 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]'
     };
-    return classMap[statusNum] || 'bg-gray-100 text-gray-800';
+    return classMap[statusNum] || 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
   }
 
   /**

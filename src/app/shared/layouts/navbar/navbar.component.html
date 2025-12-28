@@ -1,4 +1,4 @@
-<nav class="bg-[var(--color-brand)] shadow-custom-md h-16 flex items-center px-6 z-40">
+<nav class="navbar-theme shadow-custom-md h-16 flex items-center px-6 z-40 border-b border-[var(--color-border)]">
   <div class="flex items-center justify-between w-full">
     <!-- Left side - Logo -->
     <div class="flex items-center">
@@ -12,6 +12,19 @@
 
     <!-- Right side - Actions -->
     <div class="flex items-center gap-4">
+      <!-- Theme Toggle -->
+      <button
+        (click)="toggleTheme()"
+        class="navbar-button-hover p-2 rounded-lg transition-colors duration-200"
+        [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <lucide-angular 
+          [img]="isDarkMode ? Sun : Moon" 
+          class="h-5 w-5 text-[var(--color-text)]"
+        ></lucide-angular>
+      </button>
+
       <!-- Language Toggle -->
       <button
         (click)="toggleLanguage()"
@@ -43,7 +56,7 @@
           aria-label="User profile"
         >
           <!-- User Avatar with Initials -->
-          <div class="h-9 w-9 rounded-full bg-white flex items-center justify-center shadow-sm">
+          <div class="h-9 w-9 rounded-full bg-[var(--color-background)] flex items-center justify-center shadow-sm border border-[var(--color-border)]">
             <span class="text-sm font-bold text-[var(--color-brand)]">{{ getUserInitials() }}</span>
           </div>
           
@@ -55,7 +68,7 @@
           <!-- Chevron -->
           <lucide-angular 
             [img]="ChevronDown" 
-            class="h-4 w-4 text-white/80 transition-transform duration-200"
+            class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
             [class.rotate-180]="showUserMenu"
           ></lucide-angular>
         </button>
@@ -63,7 +76,7 @@
         <!-- Dropdown Menu -->
         <div 
           *ngIf="showUserMenu"
-          class="absolute mt-2 w-64 bg-white rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
+          class="absolute mt-2 w-64 bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
           [class.right-0]="!isRTL" [class.left-0]="isRTL"
           (click)="$event.stopPropagation()"
         >
