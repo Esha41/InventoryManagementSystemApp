@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -44,7 +44,8 @@ import { TranslationService } from '@services/translation.service';
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './order-report.component.html',
-  styleUrls: ['./order-report.component.css']
+  styleUrls: ['./order-report.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderReportComponent implements OnInit, OnDestroy {
   @ViewChild('reportContent') reportContent?: ElementRef<HTMLDivElement>;
@@ -98,7 +99,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get isRTL(): boolean {
@@ -110,6 +112,29 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Subscribe to language changes to refresh data when language changes
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Reload roles to update roleMap with new language
+        this.loadRoles().subscribe({
+          next: () => {
+            // Reload current order data with new language
+            if (this.selectedOrderId) {
+              this.loadOrder(this.selectedOrderId);
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            // Even if roles fail to load, reload current order
+            if (this.selectedOrderId) {
+              this.loadOrder(this.selectedOrderId);
+            }
+            this.cdr.markForCheck();
+          }
+        });
+      });
+
     // Load roles first, then load orders to ensure roleMap is populated before use
     this.loadRoles().subscribe({
       next: () => {
@@ -238,12 +263,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             this.selectedOrderId = null;
             this.resetReportData();
           }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load requests', error);
           this.ordersError = 'Failed to load request list. Please try again.';
           this.toastService.error(this.ordersError);
           this.ordersLoading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -263,6 +290,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
+    this.cdr.markForCheck();
 
     // Find the request in the loaded list to determine its type
     const request = this.orders.find(r => r.id === id);
@@ -300,12 +328,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           this.mapOrderToReport(order);
           this.generateQrCode();
           this.detailsLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load request', error);
           this.errorMessage = 'Failed to load request details. Please try again.';
           this.toastService.error(this.errorMessage);
           this.detailsLoading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -313,6 +343,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   private mapOrderToReport(order: OrderDto): void {
     this.orderSummary = mapOrderToSummary(order, undefined, this.translate);
     this.orderItems = mapOrderItems(order);
+    this.cdr.markForCheck();
 
     this.loadApprovalWorkflow(order.id);
     this.loadWorkflowDetails(order);
@@ -353,6 +384,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
                 this.orderSummary = updatedSummary;
                 this.generateQrCode();
+                this.cdr.markForCheck();
               }
             }
           }
@@ -360,29 +392,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Get requester info - always show requester as first step
           // Use API-provided role name if available, otherwise use translation key
           const currentLang = getCurrentLang(this.translate);
-          let requesterRoleName: string;
-          if (currentLang === 'ar') {
-            // For Arabic: prefer API Arabic name, otherwise use translation key
-            requesterRoleName = (baseRequest as any)['requesterNameAr'] || 
-                                this.translate.instant('requestsManagement.orderReport.table.requester');
-          } else {
-            // For English: prefer API English name, otherwise use translation key
-            requesterRoleName = (baseRequest as any)['requesterName'] || 
-                                (baseRequest as any)['requesterNameEn'] || 
-                                this.translate.instant('requestsManagement.orderReport.table.requester');
-          }
+          const requesterRoleName: string = currentLang === 'ar'
+            ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
+            : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
           
           // Get localized requester name (approver field)
-          let requesterApproverName: string;
-          if (currentLang === 'ar' && (baseRequest as any)['requesterNameAr']) {
-            requesterApproverName = (baseRequest as any)['requesterNameAr'];
-          } else if ((baseRequest as any)['requesterNameEn']) {
-            requesterApproverName = (baseRequest as any)['requesterNameEn'];
-          } else if (baseRequest?.requesterName) {
-            requesterApproverName = baseRequest.requesterName;
-          } else {
-            requesterApproverName = this.orderSummary.requester || 'N/A';
-          }
+          const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
+            ? baseRequest.requesterNameAr
+            : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
           
           const requesterStep: OrderReportApprovalStep = {
             step: '1',
@@ -434,16 +451,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
             // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
-            let requesterApproverName: string;
-            if (order.requester) {
-              requesterApproverName = getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A';
-            } else if (currentLang === 'ar' && (order as any)['requesterNameAr']) {
-              requesterApproverName = (order as any)['requesterNameAr'];
-            } else if ((order as any)['requesterNameEn']) {
-              requesterApproverName = (order as any)['requesterNameEn'];
-            } else {
-              requesterApproverName = order.requesterName || this.orderSummary.requester || 'N/A';
-            }
+            const requesterApproverName: string = order.requester
+              ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+              : (currentLang === 'ar' && order.requesterNameAr
+                  ? order.requesterNameAr
+                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
               role: requesterRoleName,
@@ -485,16 +497,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
             // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
-            let requesterApproverName: string;
-            if (order.requester) {
-              requesterApproverName = getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A';
-            } else if (currentLang === 'ar' && (order as any)['requesterNameAr']) {
-              requesterApproverName = (order as any)['requesterNameAr'];
-            } else if ((order as any)['requesterNameEn']) {
-              requesterApproverName = (order as any)['requesterNameEn'];
-            } else {
-              requesterApproverName = order.requesterName || this.orderSummary.requester || 'N/A';
-            }
+            const requesterApproverName: string = order.requester
+              ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+              : (currentLang === 'ar' && order.requesterNameAr
+                  ? order.requesterNameAr
+                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
               role: requesterRoleName,
@@ -504,8 +511,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               notes: 'Request submitted'
             };
             this.approvalWorkflow = [requesterStep, ...adjustedFallbackSteps];
+            this.cdr.markForCheck();
           } else {
             this.approvalWorkflow = [];
+            this.cdr.markForCheck();
           }
         }
       });
@@ -710,29 +719,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       // Get requester info - always show requester as first step
       // Use API-provided role name if available, otherwise use translation key
       const currentLang = getCurrentLang(this.translate);
-      let requesterRoleName: string;
-      if (currentLang === 'ar') {
-        // For Arabic: prefer API Arabic name, otherwise use translation key
-        requesterRoleName = (baseRequest as any)['requesterNameAr'] || 
-                            this.translate.instant('requestsManagement.orderReport.table.requester');
-      } else {
-        // For English: prefer API English name, otherwise use translation key
-        requesterRoleName = (baseRequest as any)['requesterName'] || 
-                            (baseRequest as any)['requesterNameEn'] || 
-                            this.translate.instant('requestsManagement.orderReport.table.requester');
-      }
+      const requesterRoleName: string = currentLang === 'ar'
+        ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
+        : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
       
       // Get localized requester name (approver field)
-      let requesterApproverName: string;
-      if (currentLang === 'ar' && (baseRequest as any)['requesterNameAr']) {
-        requesterApproverName = (baseRequest as any)['requesterNameAr'];
-      } else if ((baseRequest as any)['requesterNameEn']) {
-        requesterApproverName = (baseRequest as any)['requesterNameEn'];
-      } else if (baseRequest?.requesterName) {
-        requesterApproverName = baseRequest.requesterName;
-      } else {
-        requesterApproverName = summary.requester || 'N/A';
-      }
+      const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
+        ? baseRequest.requesterNameAr
+        : baseRequest?.requesterNameEn || baseRequest?.requesterName || summary.requester || 'N/A';
       
       const requesterStep: OrderReportApprovalStep = {
         step: '1',
@@ -772,16 +766,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
       // Get localized requester name (approver field)
       const currentLang = getCurrentLang(this.translate);
-      let requesterApproverName: string;
-      if (order.requester) {
-        requesterApproverName = getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A';
-      } else if (currentLang === 'ar' && (order as any)['requesterNameAr']) {
-        requesterApproverName = (order as any)['requesterNameAr'];
-      } else if ((order as any)['requesterNameEn']) {
-        requesterApproverName = (order as any)['requesterNameEn'];
-      } else {
-        requesterApproverName = order.requesterName || summary.requester || 'N/A';
-      }
+      const requesterApproverName: string = order.requester
+        ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+        : (currentLang === 'ar' && order.requesterNameAr
+            ? order.requesterNameAr
+            : order.requesterNameEn || order.requesterName || summary.requester || 'N/A');
       const requesterStep: OrderReportApprovalStep = {
         step: '1',
         role: requesterRoleName,
