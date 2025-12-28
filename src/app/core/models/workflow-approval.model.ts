@@ -150,6 +150,8 @@ export interface BaseRequestDto {
   creationDate?: string | Date; // Actual creation date from backend audit fields
   departmentName?: string;
   requesterName?: string;
+  requesterNameEn?: string;
+  requesterNameAr?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
   requestItems?: any[];

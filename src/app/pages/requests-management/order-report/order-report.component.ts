@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -44,7 +44,8 @@ import { TranslationService } from '@services/translation.service';
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './order-report.component.html',
-  styleUrls: ['./order-report.component.css']
+  styleUrls: ['./order-report.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderReportComponent implements OnInit, OnDestroy {
   @ViewChild('reportContent') reportContent?: ElementRef<HTMLDivElement>;
@@ -98,7 +99,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get isRTL(): boolean {
@@ -110,6 +112,29 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Subscribe to language changes to refresh data when language changes
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Reload roles to update roleMap with new language
+        this.loadRoles().subscribe({
+          next: () => {
+            // Reload current order data with new language
+            if (this.selectedOrderId) {
+              this.loadOrder(this.selectedOrderId);
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            // Even if roles fail to load, reload current order
+            if (this.selectedOrderId) {
+              this.loadOrder(this.selectedOrderId);
+            }
+            this.cdr.markForCheck();
+          }
+        });
+      });
+
     // Load roles first, then load orders to ensure roleMap is populated before use
     this.loadRoles().subscribe({
       next: () => {
@@ -152,6 +177,52 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return this.roleMap.get(roleId) || roleId;
   }
 
+  /**
+   * Get localized role name based on current language
+   * Uses applicationRoleNameAr for Arabic, applicationRoleName for English
+   */
+  private getLocalizedRoleName(step: any): string {
+    const currentLang = getCurrentLang(this.translate);
+    
+    if (currentLang === 'ar' && step.applicationRoleNameAr) {
+      return step.applicationRoleNameAr;
+    } else if (step.applicationRoleName) {
+      return step.applicationRoleName;
+    } else if (step.applicationRoleId) {
+      return this.getRoleName(step.applicationRoleId);
+    }
+    
+    return 'N/A';
+  }
+
+  /**
+   * Get localized approver name based on current language
+   * Uses approverNameAr for Arabic, approverNameEn or approverName for English
+   */
+  private getLocalizedApproverName(step: any): string {
+    const currentLang = getCurrentLang(this.translate);
+    
+    // For pending steps, use role name (not user name)
+    if (step.isPending) {
+      if (currentLang === 'ar' && step.applicationRoleNameAr) {
+        return step.applicationRoleNameAr;
+      } else if (step.applicationRoleName) {
+        return step.applicationRoleName;
+      }
+    }
+    
+    // For completed steps, use user name
+    if (currentLang === 'ar' && step.approverNameAr) {
+      return step.approverNameAr;
+    } else if (step.approverNameEn) {
+      return step.approverNameEn;
+    } else if (step.approverName) {
+      return step.approverName;
+    }
+    
+    return 'N/A';
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -192,12 +263,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             this.selectedOrderId = null;
             this.resetReportData();
           }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load requests', error);
           this.ordersError = 'Failed to load request list. Please try again.';
           this.toastService.error(this.ordersError);
           this.ordersLoading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -217,6 +290,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
+    this.cdr.markForCheck();
 
     // Find the request in the loaded list to determine its type
     const request = this.orders.find(r => r.id === id);
@@ -254,12 +328,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           this.mapOrderToReport(order);
           this.generateQrCode();
           this.detailsLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load request', error);
           this.errorMessage = 'Failed to load request details. Please try again.';
           this.toastService.error(this.errorMessage);
           this.detailsLoading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -267,6 +343,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   private mapOrderToReport(order: OrderDto): void {
     this.orderSummary = mapOrderToSummary(order, undefined, this.translate);
     this.orderItems = mapOrderItems(order);
+    this.cdr.markForCheck();
 
     this.loadApprovalWorkflow(order.id);
     this.loadWorkflowDetails(order);
@@ -307,15 +384,27 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
                 this.orderSummary = updatedSummary;
                 this.generateQrCode();
+                this.cdr.markForCheck();
               }
             }
           }
 
           // Get requester info - always show requester as first step
+          // Use API-provided role name if available, otherwise use translation key
+          const currentLang = getCurrentLang(this.translate);
+          const requesterRoleName: string = currentLang === 'ar'
+            ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
+            : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
+          
+          // Get localized requester name (approver field)
+          const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
+            ? baseRequest.requesterNameAr
+            : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
+          
           const requesterStep: OrderReportApprovalStep = {
             step: '1',
-            role: 'Requester',
-            approver: baseRequest?.requesterName || this.orderSummary.requester || 'N/A',
+            role: requesterRoleName,
+            approver: requesterApproverName,
             status: 'approved',
             date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (this.orderSummary.requestDate || 'N/A'),
             notes: 'Request submitted'
@@ -336,8 +425,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           // Start numbering from 2 since requester is step 1
           const approvalSteps = workflowSteps.map((step, index) => ({
             step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
-            role: step.applicationRoleName || this.getRoleName(step.applicationRoleId) || 'N/A',
-            approver: step.approverName || 'N/A',
+            role: this.getLocalizedRoleName(step),
+            approver: this.getLocalizedApproverName(step),
             status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
             date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
             notes: step.comments || ''
@@ -358,10 +447,19 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               ...step,
               step: (index + 2).toString()
             }));
+            // Use translation key as fallback when no API data available
+            const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
+            // Get localized requester name (approver field)
+            const currentLang = getCurrentLang(this.translate);
+            const requesterApproverName: string = order.requester
+              ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+              : (currentLang === 'ar' && order.requesterNameAr
+                  ? order.requesterNameAr
+                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
-              role: 'Requester',
-              approver: order.requesterName || this.orderSummary.requester || 'N/A',
+              role: requesterRoleName,
+              approver: requesterApproverName,
               status: 'approved',
               date: this.orderSummary.requestDate || this.orderSummary.submittedOn || 'N/A',
               notes: 'Request submitted'
@@ -395,17 +493,28 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               ...step,
               step: (index + 2).toString()
             }));
+            // Use translation key as fallback when no API data available
+            const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
+            // Get localized requester name (approver field)
+            const currentLang = getCurrentLang(this.translate);
+            const requesterApproverName: string = order.requester
+              ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+              : (currentLang === 'ar' && order.requesterNameAr
+                  ? order.requesterNameAr
+                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
-              role: 'Requester',
-              approver: order.requesterName || this.orderSummary.requester || 'N/A',
+              role: requesterRoleName,
+              approver: requesterApproverName,
               status: 'approved',
               date: this.orderSummary.requestDate || this.orderSummary.submittedOn || 'N/A',
               notes: 'Request submitted'
             };
             this.approvalWorkflow = [requesterStep, ...adjustedFallbackSteps];
+            this.cdr.markForCheck();
           } else {
             this.approvalWorkflow = [];
+            this.cdr.markForCheck();
           }
         }
       });
@@ -608,10 +717,21 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       const baseRequest = data.find(r => r.id === orderId);
 
       // Get requester info - always show requester as first step
+      // Use API-provided role name if available, otherwise use translation key
+      const currentLang = getCurrentLang(this.translate);
+      const requesterRoleName: string = currentLang === 'ar'
+        ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
+        : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
+      
+      // Get localized requester name (approver field)
+      const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
+        ? baseRequest.requesterNameAr
+        : baseRequest?.requesterNameEn || baseRequest?.requesterName || summary.requester || 'N/A';
+      
       const requesterStep: OrderReportApprovalStep = {
         step: '1',
-        role: 'Requester',
-        approver: baseRequest?.requesterName || summary.requester || 'N/A',
+        role: requesterRoleName,
+        approver: requesterApproverName,
         status: 'approved',
         date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (summary.requestDate || 'N/A'),
         notes: 'Request submitted'
@@ -626,8 +746,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
       const approvalSteps = workflowSteps.map((step, index) => ({
         step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
-        role: step.applicationRoleName || this.getRoleName(step.applicationRoleId) || 'N/A',
-        approver: step.approverName || 'N/A',
+        role: this.getLocalizedRoleName(step),
+        approver: this.getLocalizedApproverName(step),
         status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
         date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
         notes: step.comments || ''
@@ -642,10 +762,19 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         ...step,
         step: (index + 2).toString()
       }));
+      // Use translation key as fallback when no API data available
+      const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
+      // Get localized requester name (approver field)
+      const currentLang = getCurrentLang(this.translate);
+      const requesterApproverName: string = order.requester
+        ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
+        : (currentLang === 'ar' && order.requesterNameAr
+            ? order.requesterNameAr
+            : order.requesterNameEn || order.requesterName || summary.requester || 'N/A');
       const requesterStep: OrderReportApprovalStep = {
         step: '1',
-        role: 'Requester',
-        approver: order.requesterName || summary.requester || 'N/A',
+        role: requesterRoleName,
+        approver: requesterApproverName,
         status: 'approved',
         date: summary.requestDate || summary.submittedOn || 'N/A',
         notes: 'Request submitted'
@@ -775,6 +904,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       : '<div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">QR Code</div>';
 
     const statusLabel = this.getStatusLabel(data.order.status);
+    
+    // Get translated labels
+    const requesterLabel = this.translate.instant('requestsManagement.orderReport.table.requester');
 
     return `
       <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; display: flex; flex-direction: column; direction: ${direction};">
@@ -793,7 +925,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
                 </div>
                 <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Requester</p>
+                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">${requesterLabel}</p>
                   <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.requester}</p>
                 </div>
                 <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
@@ -905,6 +1037,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const textAlignReverse = isRTL ? 'left' : 'right';
     // Invert column order for RTL
     const gridColumns = isRTL ? '100px 140px 2fr 2fr 50px' : '50px 2fr 2fr 140px 100px';
+    
+    // Get translated labels
+    const approverLabel = this.translate.instant('requestsManagement.orderReport.table.approver');
+    const stepLabel = this.translate.instant('requestsManagement.orderReport.table.step');
+    const roleLabel = this.translate.instant('requestsManagement.orderReport.table.role');
+    const dateLabel = this.translate.instant('requestsManagement.orderReport.table.date');
+    const statusLabel = this.translate.instant('requestsManagement.orderReport.table.status');
 
     const workflowHtml = data.workflow.length > 0
       ? data.workflow.map(step => {
@@ -936,11 +1075,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           <h3 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem; text-align: ${textAlign};">Approval Workflow</h3>
           <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
             <div style="background: linear-gradient(${isRTL ? 'to left' : 'to right'}, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; direction: ${direction};">
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Step</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Role</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Approver</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Date</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">Status</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${stepLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${roleLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${approverLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${dateLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">${statusLabel}</span>
             </div>
             <div>
               ${workflowHtml}
@@ -965,6 +1104,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
     const statusLabel = this.getStatusLabel(data.order.status);
     const priorityLabel = this.getPriorityLabel(data.order.priority);
+    
+    // Get translated labels
+    const approverLabel = this.translate.instant('requestsManagement.orderReport.table.approver');
+    const stepLabel = this.translate.instant('requestsManagement.orderReport.table.step');
+    const roleLabel = this.translate.instant('requestsManagement.orderReport.table.role');
+    const dateLabel = this.translate.instant('requestsManagement.orderReport.table.date');
+    const statusLabelTranslated = this.translate.instant('requestsManagement.orderReport.table.status');
+    const requesterLabel = this.translate.instant('requestsManagement.orderReport.table.requester');
 
     const itemsHtml = data.items.length > 0
       ? data.items.map(item => `
@@ -1016,7 +1163,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
                   <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
                 </div>
                 <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Requester</p>
+                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">${requesterLabel}</p>
                   <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.requester}</p>
                 </div>
                 <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
@@ -1066,11 +1213,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Approval Workflow</h3>
           <div style="border: 2px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;">
             <div style="background: linear-gradient(to right, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem;">
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Step</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Role</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Approver</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Date</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">Status</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${stepLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${roleLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${approverLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${dateLabel}</span>
+              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${statusLabelTranslated}</span>
             </div>
             <div>
               ${workflowHtml}

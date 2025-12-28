@@ -77,6 +77,8 @@ export interface OrderDto {
   departmentNameAr?: string;
   departmentNameEn?: string;
   requesterName?: string;
+  requesterNameEn?: string;
+  requesterNameAr?: string;
   recieverName?: string;
   depotNameAr?: string;
   depotNameEn?: string;

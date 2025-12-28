@@ -322,6 +322,7 @@
         "step": "Step",
         "role": "Role",
         "approver": "Approver",
+        "requester": "Requester",
         "date": "Date",
         "itemName": "Item Name",
         "itemNo": "Item No",
