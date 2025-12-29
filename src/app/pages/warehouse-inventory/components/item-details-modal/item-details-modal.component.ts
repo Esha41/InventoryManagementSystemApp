@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { WarehouseInventoryItem } from '@models/warehouse-inventory.model';
-import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-item-details-modal',
@@ -30,7 +29,11 @@ export class ItemDetailsModalComponent {
   }
 
   formatDate(date: Date): string {
-    return formatDateTimeMilitary(date, true);
+    return new Date(date).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
   }
 
   formatNumber(num: number): string {

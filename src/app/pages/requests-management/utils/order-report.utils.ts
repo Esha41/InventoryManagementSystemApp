@@ -11,7 +11,7 @@ import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
-import { formatDate, formatDateShort } from '@utils/format.utils';
+import { formatDate } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -70,40 +70,34 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
 
-  // Format date/time range in military format: "dd MM yyyy HH mm"
+  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
   const formatTime = (timeStr: string | null | undefined): string => {
     if (!timeStr) return '';
-    // Military format (HHMM - 4 digits) - convert to "HH mm"
+    // Military format (HHMM - 4 digits) - display as-is
     if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-      return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+      return timeStr;
     }
-    // Legacy format (HH:mm) - convert to "HH mm"
+    // Legacy format (HH:mm) - convert to military
     if (timeStr.includes(':')) {
       const parts = timeStr.split(':');
       const hours = parts[0].padStart(2, '0');
       const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      return `${hours} ${minutes}`;
+      return hours + minutes;
     }
     return timeStr;
   };
 
-  // Format dates in military format: "dd MM yyyy"
-  const formatDateOnly = (dateStr: string | null | undefined): string => {
-    if (!dateStr) return '';
-    return formatDateShort(dateStr);
-  };
-
-  // Format submitted date with time in military format: "dd MM yyyy HH mm"
-  const fromDate = formatDateOnly(order.usageDateFrom);
-  const toDate = formatDateOnly(order.usageDateTo);
+  // Format submitted date with time (for submittedOn field)
+  const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : '';
+  const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
 
   const submittedDateTime = toDate
-    ? `${fromDate}${fromTime ? ' ' + fromTime : ''} - ${toDate}${toTime ? ' ' + toTime : ''}`.trim()
-    : `${fromDate}${fromTime ? ' ' + fromTime : ''}`;
+    ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
+    : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
 
-  // Format usage date without time (for lastUpdated/usageDate field) in military format: "dd MM yyyy"
+  // Format usage date without time (for lastUpdated/usageDate field)
   const usageDateOnly = fromDate
     ? (toDate ? `${fromDate} - ${toDate}` : fromDate)
     : '';
@@ -234,19 +228,17 @@ export function mapApprovalRecordsToSteps(
     const role = item.applicationRoleName || 'N/A';
     const approver = item.changedBy || 'N/A';
 
-    // Format date in military format: "dd MM yyyy HH mm"
+    // Format date - handle both date-only and datetime strings
     let date = 'Pending';
     if (item.changedAt) {
       try {
         const dateObj = new Date(item.changedAt);
         if (!isNaN(dateObj.getTime())) {
-          // Format in military format: "dd MM yyyy HH mm"
-          const day = String(dateObj.getDate()).padStart(2, '0');
-          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-          const year = dateObj.getFullYear();
-          const hours = String(dateObj.getHours()).padStart(2, '0');
-          const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-          date = `${day} ${month} ${year} ${hours} ${minutes}`;
+          // Extract time if it's a datetime string
+          const timeStr = item.changedAt.includes('T')
+            ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : '';
+          date = formatDateTime(item.changedAt, timeStr);
         }
       } catch {
         date = item.changedAt;
@@ -273,37 +265,31 @@ export function generateApprovalWorkflowFallback(
   order: OrderDto,
   formatDateTime: (date?: string, time?: string) => string
 ): OrderReportApprovalStep[] {
-  // Format date/time range in military format: "dd MM yyyy HH mm"
+  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
   const formatTime = (timeStr: string | null | undefined): string => {
     if (!timeStr) return '';
-    // Military format (HHMM - 4 digits) - convert to "HH mm"
+    // Military format (HHMM - 4 digits) - display as-is
     if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-      return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+      return timeStr;
     }
-    // Legacy format (HH:mm) - convert to "HH mm"
+    // Legacy format (HH:mm) - convert to military
     if (timeStr.includes(':')) {
       const parts = timeStr.split(':');
       const hours = parts[0].padStart(2, '0');
       const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      return `${hours} ${minutes}`;
+      return hours + minutes;
     }
     return timeStr;
   };
 
-  // Format dates in military format: "dd MM yyyy"
-  const formatDateOnly = (dateStr: string | null | undefined): string => {
-    if (!dateStr) return 'N/A';
-    return formatDateShort(dateStr);
-  };
-
-  const fromDate = formatDateOnly(order.usageDateFrom);
-  const toDate = formatDateOnly(order.usageDateTo);
+  const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : 'N/A';
+  const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
   const fromTime = formatTime(order.usageTimeFrom);
   const toTime = formatTime(order.usageTimeTo);
 
   const formattedDateTime = toDate
-    ? `${fromDate} ${fromTime ? fromTime : ''} - ${toDate} ${toTime ? toTime : ''}`.trim()
-    : `${fromDate}${fromTime ? ' ' + fromTime : ''}`;
+    ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()
+    : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
 
   // Get requester name with fallback
   let requesterName = 'N/A';

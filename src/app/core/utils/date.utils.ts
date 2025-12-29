@@ -2,14 +2,16 @@
  * Date utility functions
  */
 
-import { formatDateTimeMilitary } from './format.utils';
-
 export class DateUtils {
   /**
-   * Format date in military format: "dd MM yyyy"
+   * Format date to DD/MM/YYYY
    */
   static formatDate(date: Date | string): string {
-    return formatDateTimeMilitary(date, false);
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 
   /**
@@ -45,30 +47,22 @@ export class DateUtils {
 }
 
 /**
- * Format date and time for order display in military format: "dd MM yyyy HH mm"
- * If time string is provided separately, it will be appended (handles military time format HHMM)
- * Example: "15 01 2024 14 30"
+ * Format date and time for order display
+ * Format: "DD Month YYYY · HH:MM" (e.g., "15 January 2024 · 14:30")
  */
 export function formatOrderDateTime(date?: string, time?: string): string {
   if (!date) return 'N/A';
   try {
-    const formattedDate = formatDateTimeMilitary(date, false);
-    
-    // If time is provided separately, use it; otherwise use time from date
-    if (time) {
-      // Handle military time format (HHMM) - add space between hours and minutes
-      let formattedTime = time;
-      if (time.length === 4 && /^\d{4}$/.test(time)) {
-        formattedTime = `${time.substring(0, 2)} ${time.substring(2, 4)}`;
-      } else if (time.includes(':')) {
-        formattedTime = time.replace(':', ' ');
-      }
-      return `${formattedDate} ${formattedTime}`;
-    } else {
-      return formatDateTimeMilitary(date, true);
-    }
+    const d = new Date(date);
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const timeStr = time || '';
+    return `${day} ${month} ${year}${timeStr ? ' · ' + timeStr : ''}`;
   } catch {
-    return 'N/A';
+    return date;
   }
 }
 
