@@ -1,5 +1,6 @@
 import { BaseItemDto, ItemInventorySummaryDto } from '@models/inventory.model';
 import { getLocalizedName } from './localization.utils';
+import { formatDateTimeMilitary } from './format.utils';
 
 /**
  * Utility class for transforming inventory data
@@ -61,16 +62,6 @@ export class InventorySummaryUtils {
      * Format date in military format: "dd MM yyyy HH mm"
      */
     static formatDate(date?: string): string {
-        if (!date) return '-';
-        const dateObj = new Date(date);
-        if (isNaN(dateObj.getTime())) return '-';
-        
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const year = dateObj.getFullYear();
-        const hours = String(dateObj.getHours()).padStart(2, '0');
-        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-        
-        return `${day} ${month} ${year} ${hours} ${minutes}`;
+        return formatDateTimeMilitary(date, true);
     }
 }

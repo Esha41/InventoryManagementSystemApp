@@ -5,6 +5,7 @@ import { ExplosiveDto } from '../models/explosive.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { formatDateTimeMilitary } from './format.utils';
 
 /**
  * Maps AmmunitionReadDto to Asset
@@ -27,16 +28,7 @@ export function mapAmmunitionToAsset(
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',
-    expiryDate: dto.expiryDate ? (() => {
-      const d = new Date(dto.expiryDate);
-      if (isNaN(d.getTime())) return '-';
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${year} ${hours} ${minutes}`;
-    })() : '-',
+    expiryDate: dto.expiryDate ? formatDateTimeMilitary(dto.expiryDate, true) : '-',
     expiryDateRaw: dto.expiryDate
       ? typeof dto.expiryDate === 'string'
         ? dto.expiryDate
@@ -65,16 +57,7 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     caliber: dto.caliber,
-    expiryDate: dto.expiryDate ? (() => {
-      const d = new Date(dto.expiryDate);
-      if (isNaN(d.getTime())) return '-';
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${year} ${hours} ${minutes}`;
-    })() : '-',
+    expiryDate: dto.expiryDate ? formatDateTimeMilitary(dto.expiryDate, true) : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
@@ -105,16 +88,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
     totalWeightUnit: dto.totalWeightUnit,
     hazardDivision: dto.hazardDivision,
     compatibility: dto.compatibility,
-    expiryDate: dto.expiryDate ? (() => {
-      const d = new Date(dto.expiryDate);
-      if (isNaN(d.getTime())) return '-';
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${year} ${hours} ${minutes}`;
-    })() : '-',
+    expiryDate: dto.expiryDate ? formatDateTimeMilitary(dto.expiryDate, true) : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,

@@ -2,17 +2,14 @@
  * Date utility functions
  */
 
+import { formatDateTimeMilitary } from './format.utils';
+
 export class DateUtils {
   /**
    * Format date in military format: "dd MM yyyy"
    */
   static formatDate(date: Date | string): string {
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return 'N/A';
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day} ${month} ${year}`;
+    return formatDateTimeMilitary(date, false);
   }
 
   /**
@@ -55,12 +52,7 @@ export class DateUtils {
 export function formatOrderDateTime(date?: string, time?: string): string {
   if (!date) return 'N/A';
   try {
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return 'N/A';
-    
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
+    const formattedDate = formatDateTimeMilitary(date, false);
     
     // If time is provided separately, use it; otherwise use time from date
     if (time) {
@@ -71,11 +63,9 @@ export function formatOrderDateTime(date?: string, time?: string): string {
       } else if (time.includes(':')) {
         formattedTime = time.replace(':', ' ');
       }
-      return `${day} ${month} ${year} ${formattedTime}`;
+      return `${formattedDate} ${formattedTime}`;
     } else {
-      const hours = String(d.getHours()).padStart(2, '0');
-      const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${year} ${hours} ${minutes}`;
+      return formatDateTimeMilitary(date, true);
     }
   } catch {
     return 'N/A';

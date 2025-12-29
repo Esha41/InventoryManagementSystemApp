@@ -30,7 +30,7 @@ export function formatDateTimeMilitary(dateString?: string | Date | null, includ
 
 /**
  * Format a date string or Date object in military format: "dd MM yyyy HH mm"
- * Example: "15 01 2024 14 30"
+
  */
 export function formatDate(dateString?: string | Date | null): string {
   return formatDateTimeMilitary(dateString, true);

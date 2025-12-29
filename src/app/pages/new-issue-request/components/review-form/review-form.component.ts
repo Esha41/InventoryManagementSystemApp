@@ -7,6 +7,7 @@ import { HasPermissionDirective } from '../../../../core/directives/has-permissi
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -75,13 +76,7 @@ export class ReviewFormComponent {
 
   getFormattedUsageDateFrom(): string {
     if (!this.usageDateFrom) return '';
-    const date = new Date(this.usageDateFrom);
-    if (isNaN(date.getTime())) return '';
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const dateStr = `${day} ${month} ${year}`;
+    const dateStr = formatDateTimeMilitary(this.usageDateFrom, false);
     
     // Format time - convert HHMM to "HH mm"
     if (this.usageTimeFrom) {
@@ -97,13 +92,7 @@ export class ReviewFormComponent {
 
   getFormattedUsageDateTo(): string {
     if (!this.usageDateTo) return '';
-    const date = new Date(this.usageDateTo);
-    if (isNaN(date.getTime())) return '';
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const dateStr = `${day} ${month} ${year}`;
+    const dateStr = formatDateTimeMilitary(this.usageDateTo, false);
     
     // Format time - convert HHMM to "HH mm"
     if (this.usageTimeTo) {

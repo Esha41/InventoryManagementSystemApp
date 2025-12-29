@@ -36,6 +36,7 @@ import {
   CardStatus
 } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 import { separateRequestsByType, mapToOrderDto, mapToReturnDto, mapToDiscardDto } from '@utils/request-type-mapper.utils';
 
 @Component({
@@ -779,24 +780,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(source?: string | Date): string {
-    let date: Date;
-    if (source instanceof Date) {
-      date = source;
-    } else if (typeof source === 'string') {
-      const parsed = new Date(source);
-      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    } else {
-      date = new Date();
-    }
-    if (isNaN(date.getTime())) return 'N/A';
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    
-    return `${day} ${month} ${year} ${hours} ${minutes}`;
+    return formatDateTimeMilitary(source, true);
   }
 
   resolveOrderDepartmentName(order: OrderDto): string {
@@ -987,12 +971,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     // Format date in military format: "dd MM yyyy"
     const formatDateOnly = (dateStr: string | null | undefined): string | null => {
       if (!dateStr) return null;
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return null;
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day} ${month} ${year}`;
+      const formatted = formatDateTimeMilitary(dateStr, false);
+      return formatted !== 'N/A' ? formatted : null;
     };
 
     // Format time helper - convert to "HH mm" format
@@ -1073,13 +1053,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   formatOrderUsageDateTo(order: OrderDto | null): string {
     if (!order || !order.usageDateTo) return 'N/A';
 
-    const d = new Date(order.usageDateTo);
-    if (isNaN(d.getTime())) return 'N/A';
-    
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const toDate = `${day} ${month} ${year}`;
+    const toDate = formatDateTimeMilitary(order.usageDateTo, false);
     
     // Format time - convert HHMM to "HH mm"
     const formatTime = (timeStr: string | null | undefined): string => {

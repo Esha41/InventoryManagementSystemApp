@@ -32,6 +32,7 @@ import { isDisplayableRequestStatus } from '@utils/status.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -727,8 +728,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   formatOrderDate(order: OrderDto): string {
     if (!order.usageDateFrom) return 'N/A';
 
-    const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
-    const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+    const fromDate = formatDateTimeMilitary(order.usageDateFrom, false);
+    const toDate = order.usageDateTo ? formatDateTimeMilitary(order.usageDateTo, false) : '';
 
     return toDate ? `${fromDate} - ${toDate}` : fromDate;
   }
@@ -959,12 +960,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Format date in military format: "dd MM yyyy"
     const formatDateMilitary = (dateStr: string | null | undefined): string | null => {
       if (!dateStr) return null;
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return null;
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day} ${month} ${year}`;
+      const formatted = formatDateTimeMilitary(dateStr, false);
+      return formatted !== 'N/A' ? formatted : null;
     };
 
     // Format time helper - convert to "HH mm" format
@@ -1053,7 +1050,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   formatOrderUsageDateTo(order: OrderDto | null): string {
     if (!order || !order.usageDateTo) return 'N/A';
 
-    const toDate = new Date(order.usageDateTo).toLocaleDateString();
+    const toDate = formatDateTimeMilitary(order.usageDateTo, false);
     const timeRange = this.formatOrderUsageTime(order);
 
     // Extract just the "to" time (after the dash)

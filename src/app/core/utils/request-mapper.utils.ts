@@ -4,6 +4,7 @@
  */
 
 import { RequestType, Priority, RequestStatus, RequestItem, WorkflowApprovalStep, RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 /**
  * Request Type enum values (matching backend)
@@ -304,16 +305,9 @@ export function getApproverName(changedBy?: string): string {
  */
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
-
   const utc = new Date(date);
   const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
-  if (isNaN(qatarTime.getTime())) return '';
-
-  const day = String(qatarTime.getDate()).padStart(2, '0');
-  const month = String(qatarTime.getMonth() + 1).padStart(2, '0');
-  const year = qatarTime.getFullYear();
-
-  return `${day} ${month} ${year}`;
+  return formatDateTimeMilitary(qatarTime, false);
 }
 
 /**
@@ -322,18 +316,9 @@ export function formatApprovalDate(date: string | Date | undefined): string {
  */
 export function formatApprovalDateTime(date: string | Date | undefined): string {
   if (!date) return '';
-
   const utc = new Date(date);
   const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
-  if (isNaN(qatarTime.getTime())) return '';
-
-  const day = String(qatarTime.getDate()).padStart(2, '0');
-  const month = String(qatarTime.getMonth() + 1).padStart(2, '0');
-  const year = qatarTime.getFullYear();
-  const hours = String(qatarTime.getHours()).padStart(2, '0');
-  const minutes = String(qatarTime.getMinutes()).padStart(2, '0');
-
-  return `${day} ${month} ${year} ${hours} ${minutes}`;
+  return formatDateTimeMilitary(qatarTime, true);
 }
 
 /**
@@ -341,15 +326,7 @@ export function formatApprovalDateTime(date: string | Date | undefined): string 
  */
 export function formatRequestDate(date: string | Date | undefined): string {
   if (!date) return '';
-
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-
-  return `${day} ${month} ${year}`;
+  return formatDateTimeMilitary(date, false);
 }
 
 /**
@@ -358,17 +335,7 @@ export function formatRequestDate(date: string | Date | undefined): string {
  */
 export function formatRequestDateTime(date: string | Date | undefined): string {
   if (!date) return '';
-
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-
-  return `${day} ${month} ${year} ${hours} ${minutes}`;
+  return formatDateTimeMilitary(date, true);
 }
 
 /**

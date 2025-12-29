@@ -13,6 +13,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { ItemType } from '../models/inventory.model';
+import { formatDateTimeMilitary } from './format.utils';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 
@@ -222,16 +223,8 @@ export class AssetPropertyAccessor {
     if (!asset || !('expiryDate' in asset)) return '-';
     if (!asset.expiryDate) return '-';
     try {
-      const date = typeof asset.expiryDate === 'string' ? new Date(asset.expiryDate) : asset.expiryDate;
-      if (isNaN(date.getTime())) return '-';
-      
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      
-      return `${day} ${month} ${year} ${hours} ${minutes}`;
+      const date = typeof asset.expiryDate === 'string' ? asset.expiryDate : asset.expiryDate;
+      return formatDateTimeMilitary(date, true);
     } catch {
       return '-';
     }

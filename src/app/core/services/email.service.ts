@@ -5,6 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 export interface SendEmailRequest {
   to: string;
@@ -272,14 +273,6 @@ export class EmailService {
       html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(order.requestPurposeNameEn || order.requestPurposeNameAr)}</span></div>`;
     }
     if (order.usageDateFrom) {
-      const formatDateMilitary = (dateStr: string): string => {
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${day} ${month} ${year}`;
-      };
       const formatTime = (timeStr: string | null | undefined): string => {
         if (!timeStr) return '';
         if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
@@ -291,8 +284,8 @@ export class EmailService {
         }
         return timeStr;
       };
-      const fromDate = formatDateMilitary(order.usageDateFrom);
-      const toDate = order.usageDateTo ? formatDateMilitary(order.usageDateTo) : '';
+      const fromDate = formatDateTimeMilitary(order.usageDateFrom, false);
+      const toDate = order.usageDateTo ? formatDateTimeMilitary(order.usageDateTo, false) : '';
       const fromTime = formatTime(order.usageTimeFrom);
       const toTime = formatTime(order.usageTimeTo);
       const dateRange = toDate 

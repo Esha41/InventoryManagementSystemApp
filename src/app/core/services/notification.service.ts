@@ -15,6 +15,7 @@ import { EmailConfigurationService, EmailConfigurationDto } from './email-config
 import { OrderService, OrderDto } from './order.service';
 import { ReturnService, ReturnDto } from './return.service';
 import { DiscardService, DiscardDto } from './discard.service';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 interface NotificationDto {
   id?: number;
@@ -628,14 +629,6 @@ export class NotificationService implements OnDestroy {
           emailDetails['Request Purpose'] = details.requestPurposeNameEn || details.requestPurposeNameAr;
         }
         if (details.usageDateFrom) {
-          const formatDateMilitary = (dateStr: string): string => {
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return '';
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            return `${day} ${month} ${year}`;
-          };
           const formatTime = (timeStr: string | null | undefined): string => {
             if (!timeStr) return '';
             if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
@@ -647,8 +640,8 @@ export class NotificationService implements OnDestroy {
             }
             return timeStr;
           };
-          const fromDate = formatDateMilitary(details.usageDateFrom);
-          const toDate = details.usageDateTo ? formatDateMilitary(details.usageDateTo) : '';
+          const fromDate = formatDateTimeMilitary(details.usageDateFrom, false);
+          const toDate = details.usageDateTo ? formatDateTimeMilitary(details.usageDateTo, false) : '';
           const fromTime = formatTime(details.usageTimeFrom);
           const toTime = formatTime(details.usageTimeTo);
           emailDetails['Usage Date'] = toDate
