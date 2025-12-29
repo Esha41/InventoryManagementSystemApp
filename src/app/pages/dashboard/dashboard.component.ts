@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, EMPTY, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
-import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search } from 'lucide-angular';
+import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { ReturnDetailsModalComponent } from './components/return-details-modal/return-details-modal.component';
 import { DiscardDetailsModalComponent } from './components/discard-details-modal/discard-details-modal.component';
@@ -70,9 +70,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly XIcon = X;
   readonly ShieldAlert = ShieldAlert;
   readonly Search = Search;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly ArrowUpDown = ArrowUpDown;
 
   // Search functionality
   searchQuery: string = '';
+
+  // Sort state
+  sortState: { column: string | null; direction: 'asc' | 'desc' } = {
+    column: null,
+    direction: 'asc'
+  };
 
   // All dashboard cards with their permission/role requirements
   allCards: DashboardCard[] = [];
@@ -372,6 +381,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Apply sorting
+    if (this.sortState.column) {
+      filteredCards = this.sortCards(filteredCards, this.sortState.column, this.sortState.direction);
+    }
+
     this.visibleCards = filteredCards;
     this.currentPage = 1;
 
@@ -387,6 +401,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onSearchChange(): void {
     this.filterCardsByPermissionsAndRoles();
     this.currentPage = 1; // Reset to first page when searching
+    this.cdr.markForCheck();
+  }
+
+  sortByColumn(column: string): void {
+    if (this.sortState.column === column) {
+      this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortState.column = column;
+      this.sortState.direction = 'asc';
+    }
+    this.filterCardsByPermissionsAndRoles();
     this.cdr.markForCheck();
   }
 
@@ -1036,6 +1061,104 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return timePart !== 'N/A' ? `${toDate} (${timePart})` : toDate;
+  }
+
+  /**
+   * Sort cards based on column and direction
+   */
+  private sortCards(cards: DashboardCard[], column: string, direction: 'asc' | 'desc'): DashboardCard[] {
+    const sorted = [...cards];
+    sorted.sort((a, b) => {
+      let valA: any;
+      let valB: any;
+
+      switch (column) {
+        case 'orderNumber':
+          valA = a.orders[0]?.orderId || a.title || '';
+          valB = b.orders[0]?.orderId || b.title || '';
+          break;
+        case 'usageDate':
+          valA = a.orders[0]?.requestDate || '';
+          valB = b.orders[0]?.requestDate || '';
+          // Try to parse as date for proper date sorting
+          const dateA = this.parseDate(valA);
+          const dateB = this.parseDate(valB);
+          if (dateA && dateB) {
+            return direction === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+          }
+          // Fallback to string comparison if dates can't be parsed
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+          break;
+        case 'department':
+          valA = a.orders[0]?.departmentName || 'N/A';
+          valB = b.orders[0]?.departmentName || 'N/A';
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+          break;
+        case 'requester':
+          valA = a.orders[0]?.requesterName || 'N/A';
+          valB = b.orders[0]?.requesterName || 'N/A';
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+          break;
+        case 'status':
+          valA = a.status || '';
+          valB = b.status || '';
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (valA < valB) return direction === 'asc' ? -1 : 1;
+      if (valA > valB) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }
+
+  /**
+   * Parse date string to Date object
+   * Handles various date formats including DD/MM/YYYY, MM/DD/YYYY, and ISO formats
+   */
+  private parseDate(dateStr: string): Date | null {
+    if (!dateStr || dateStr === 'N/A') return null;
+    
+    // Try parsing as ISO date first
+    let date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+    
+    // Try parsing DD/MM/YYYY or MM/DD/YYYY format
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      // Try DD/MM/YYYY format (common in many locales)
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const year = parseInt(parts[2], 10);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        date = new Date(year, month, day);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+      // Try MM/DD/YYYY format
+      const month2 = parseInt(parts[0], 10) - 1;
+      const day2 = parseInt(parts[1], 10);
+      const year2 = parseInt(parts[2], 10);
+      if (!isNaN(day2) && !isNaN(month2) && !isNaN(year2)) {
+        date = new Date(year2, month2, day2);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      }
+    }
+    
+    return null;
   }
 }
 
