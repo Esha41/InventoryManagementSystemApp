@@ -63,8 +63,9 @@ export interface BackendWorkflowStepDto {
   mustApprove?: boolean;
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string | null;
+  higherApplicationEntityId?: number | null;
   reserveQty?: boolean;
- 
+  canReturn?: boolean;
 }
 
 export interface BackendCreateWorkflowDto {
@@ -127,6 +128,7 @@ export interface WorkflowStepDto {
   higherApplicationEntityId?: number | null;
   reserveQty?: boolean;
   canSkip?: boolean;
+  canReturn?: boolean;
   allowedSkipTargetIds?: number[];
 }
 

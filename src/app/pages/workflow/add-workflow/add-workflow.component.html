@@ -98,6 +98,8 @@
                   <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
                     'workflow.higherApprovalEntity'
                     | translate }}</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+                    'workflow.canReturn' | translate }}</th>
                   <th class="px-4 py-2"></th>
                 </tr>
               </thead>
@@ -139,6 +141,13 @@
                       [disabled]="!step.requireHigherApproval" [options]="allApplicationEntities" optionLabel="name"
                       optionValue="id" placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
                     </app-dropdown>
+                  </td>
+                  <td class="px-3 py-2">
+                    <label class="inline-flex items-center gap-2 text-sm">
+                      <input type="checkbox" [(ngModel)]="step.canReturn"
+                        (ngModelChange)="onStepFieldBlur(i)" name="canReturn-{{i}}" class="h-4 w-4" />
+                      <span>{{ 'workflow.canReturn' | translate }}</span>
+                    </label>
                   </td>
                   <td class="px-4 py-2 text-right">
                     <button type="button" (click)="removeStep(i)"

@@ -243,6 +243,7 @@
     "higherApprovalRole": "Higher Approval Role",
     "higherApprovalEntity": "Higher Approval Entity",
     "skipTo": "Skip To",
+    "canReturn": "Can Return",
     "rolesToBeNotified": "Roles to be Notified",
     "usersToBeNotified": "Users to be Notified",
     "whenApproveRejectReturn": "(when approve/reject/return)",

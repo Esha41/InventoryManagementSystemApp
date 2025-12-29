@@ -94,6 +94,10 @@
                     style="min-width: 200px;">{{
                     'workflow.higherApprovalEntity' | translate }}</th>
                   <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 120px;">
+                    {{ 'workflow.canReturn' | translate }}
+                  </th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 180px;">
                     {{ 'workflow.skipTo' | translate }}
                   </th>
@@ -146,6 +150,12 @@
                       [disabled]="!s.requireHigherApproval" [options]="allApplicationEntities" optionLabel="name"
                       optionValue="id" placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
                     </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <label class="inline-flex items-center gap-2 text-sm">
+                      <input type="checkbox" [(ngModel)]="s.canReturn" name="ecanReturn-{{i}}" class="h-4 w-4" />
+                      <span>{{ 'workflow.canReturn' | translate }}</span>
+                    </label>
                   </td>
                   <td class="px-4 py-3">
                     <app-dropdown class="w-full" [(ngModel)]="s.skipToStepIds" (ngModelChange)="onSkipToStepChange(i)"
