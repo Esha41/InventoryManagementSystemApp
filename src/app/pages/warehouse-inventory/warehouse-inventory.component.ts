@@ -24,6 +24,7 @@ import { HasPermissionDirective } from '../../core/directives/has-permission.dir
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -448,16 +449,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format date for display
+   * Format date in military format: "dd MM yyyy HH mm"
    */
   formatDate(date?: Date | string): string {
-    if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    return formatDateTimeMilitary(date, true);
   }
 
   /**

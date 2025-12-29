@@ -15,6 +15,7 @@ import { EmailConfigurationService, EmailConfigurationDto } from './email-config
 import { OrderService, OrderDto } from './order.service';
 import { ReturnService, ReturnDto } from './return.service';
 import { DiscardService, DiscardDto } from './discard.service';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 interface NotificationDto {
   id?: number;
@@ -583,7 +584,16 @@ export class NotificationService implements OnDestroy {
     const emailDetails: Record<string, any> = {
       'Notification ID': notification.id,
       'Type': notification.type || notification.entityType || 'General',
-      'Created At': new Date(notification.createdAt).toLocaleString(),
+      'Created At': (() => {
+        const d = new Date(notification.createdAt);
+        if (isNaN(d.getTime())) return 'N/A';
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        return `${day} ${month} ${year} ${hours} ${minutes}`;
+      })(),
     };
     if (notification.title) {
       emailDetails['Title'] = notification.title;
@@ -619,10 +629,21 @@ export class NotificationService implements OnDestroy {
           emailDetails['Request Purpose'] = details.requestPurposeNameEn || details.requestPurposeNameAr;
         }
         if (details.usageDateFrom) {
-          const fromDate = new Date(details.usageDateFrom).toLocaleString();
-          const toDate = details.usageDateTo ? new Date(details.usageDateTo).toLocaleString() : '';
-          const fromTime = details.usageTimeFrom || '';
-          const toTime = details.usageTimeTo || '';
+          const formatTime = (timeStr: string | null | undefined): string => {
+            if (!timeStr) return '';
+            if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+              return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+            }
+            if (timeStr.includes(':')) {
+              const parts = timeStr.split(':');
+              return `${parts[0].padStart(2, '0')} ${parts[1] ? parts[1].padStart(2, '0') : '00'}`;
+            }
+            return timeStr;
+          };
+          const fromDate = formatDateTimeMilitary(details.usageDateFrom, false);
+          const toDate = details.usageDateTo ? formatDateTimeMilitary(details.usageDateTo, false) : '';
+          const fromTime = formatTime(details.usageTimeFrom);
+          const toTime = formatTime(details.usageTimeTo);
           emailDetails['Usage Date'] = toDate
             ? `${fromDate} ${fromTime} - ${toDate} ${toTime}`
             : `${fromDate} ${fromTime}`;

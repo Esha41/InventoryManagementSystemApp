@@ -14,6 +14,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-admin-roles',
@@ -214,11 +215,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       const translation = this.translateService.instant('common.never');
       return translation !== 'common.never' ? translation : 'Never';
     }
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateTimeMilitary(date, true);
   }
 
   getTotalRoles(): number {

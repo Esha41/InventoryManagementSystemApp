@@ -3,6 +3,7 @@ import { Observable, forkJoin, of, firstValueFrom } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ToastService } from './toast.service';
 import { ExcelExportService, ExcelColumn } from './excel-export.service';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -31,16 +32,10 @@ export class ImportExportService {
   }
 
   /**
-   * Format date for display
+   * Format date in military format: "dd MM yyyy HH mm"
    */
   formatDate(date?: Date | string): string {
-    if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    return formatDateTimeMilitary(date, true);
   }
 
   /**

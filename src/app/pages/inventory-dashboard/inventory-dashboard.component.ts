@@ -36,6 +36,7 @@ import {
   CardStatus
 } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 import { separateRequestsByType, mapToOrderDto, mapToReturnDto, mapToDiscardDto } from '@utils/request-type-mapper.utils';
 
 @Component({
@@ -787,18 +788,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(source?: string | Date): string {
-    let date: Date;
-    if (source instanceof Date) {
-      date = source;
-    } else if (typeof source === 'string') {
-      const parsed = new Date(source);
-      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    } else {
-      date = new Date();
-    }
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    return formatDateTimeMilitary(source, true);
   }
 
   resolveOrderDepartmentName(order: OrderDto): string {
@@ -980,45 +970,50 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format order usage date and time together
+   * Format order usage date and time together in military format: "dd MM yyyy HH mm"
    * Combines usage date range with usage time range in one line
-   * Format: "From Date (From Time) - To Date (To Time)"
    */
   formatOrderUsageDateAndTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
 
-    const fromDate = order.usageDateFrom ? this.formatDate(order.usageDateFrom) : null;
-    const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : null;
+    // Format date in military format: "dd MM yyyy"
+    const formatDateOnly = (dateStr: string | null | undefined): string | null => {
+      if (!dateStr) return null;
+      const formatted = formatDateTimeMilitary(dateStr, false);
+      return formatted !== 'N/A' ? formatted : null;
+    };
 
-    // Format time helper
+    // Format time helper - convert to "HH mm" format
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
-      // Military format (HHMM - 4 digits) - already in correct format
+      // Military format (HHMM - 4 digits) - convert to "HH mm"
       if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        return timeStr;
+        return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
       }
-      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to military
+      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to "HH mm"
       if (timeStr.includes(':')) {
         const parts = timeStr.split(':');
         const hours = parts[0].padStart(2, '0');
         const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-        return hours + minutes;
+        return `${hours} ${minutes}`;
       }
       return timeStr;
     };
 
+    const fromDate = formatDateOnly(order.usageDateFrom);
+    const toDate = formatDateOnly(order.usageDateTo);
     const fromTime = formatTime(order.usageTimeFrom);
     const toTime = formatTime(order.usageTimeTo);
 
-    // Build the combined string
+    // Build the combined string in military format: "dd MM yyyy HH mm"
     let result = '';
 
     if (fromDate) {
-      result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
+      result = fromTime ? `${fromDate} ${fromTime}` : fromDate;
     }
 
     if (toDate) {
-      const toPart = toTime ? `${toDate} (${toTime})` : toDate;
+      const toPart = toTime ? `${toDate} ${toTime}` : toDate;
       if (result) {
         result = `${result} - ${toPart}`;
       } else {
@@ -1030,44 +1025,59 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format usage date from with time
+   * Format usage date from with time in military format: "dd MM yyyy HH mm"
    */
   formatOrderUsageDateFrom(order: OrderDto | null): string {
     if (!order || !order.usageDateFrom) return 'N/A';
 
-    const fromDate = this.formatDate(order.usageDateFrom);
-    const timeRange = this.formatOrderUsageTime(order);
+    const d = new Date(order.usageDateFrom);
+    if (isNaN(d.getTime())) return 'N/A';
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const fromDate = `${day} ${month} ${year}`;
+    
+    // Format time - convert HHMM to "HH mm"
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+      }
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        return `${parts[0].padStart(2, '0')} ${parts[1] ? parts[1].padStart(2, '0') : '00'}`;
+      }
+      return timeStr;
+    };
+    const fromTime = formatTime(order.usageTimeFrom);
 
-    // Extract just the "from" time (before the dash)
-    let timePart = 'N/A';
-    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
-      timePart = timeRange.split(' - ')[0];
-    } else if (timeRange !== 'N/A') {
-      timePart = timeRange;
-    }
-
-    return timePart !== 'N/A' ? `${fromDate} (${timePart})` : fromDate;
+    return fromTime ? `${fromDate} ${fromTime}` : fromDate;
   }
 
   /**
-   * Format usage date to with time
+   * Format usage date to with time in military format: "dd MM yyyy HH mm"
    */
   formatOrderUsageDateTo(order: OrderDto | null): string {
     if (!order || !order.usageDateTo) return 'N/A';
 
-    const toDate = this.formatDate(order.usageDateTo);
-    const timeRange = this.formatOrderUsageTime(order);
+    const toDate = formatDateTimeMilitary(order.usageDateTo, false);
+    
+    // Format time - convert HHMM to "HH mm"
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+      }
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        return `${parts[0].padStart(2, '0')} ${parts[1] ? parts[1].padStart(2, '0') : '00'}`;
+      }
+      return timeStr;
+    };
+    const toTime = formatTime(order.usageTimeTo);
 
-    // Extract just the "to" time (after the dash)
-    let timePart = 'N/A';
-    if (timeRange !== 'N/A' && timeRange.includes(' - ')) {
-      timePart = timeRange.split(' - ')[1];
-    } else if (timeRange !== 'N/A' && !order.usageTimeFrom) {
-      // If there's only one time and no from time, it might be the to time
-      timePart = timeRange;
-    }
-
-    return timePart !== 'N/A' ? `${toDate} (${timePart})` : toDate;
+    return toTime ? `${toDate} ${toTime}` : toDate;
   }
 
   // Statistics getters

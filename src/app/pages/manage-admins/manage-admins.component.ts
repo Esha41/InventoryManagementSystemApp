@@ -19,6 +19,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-manage-admins',
@@ -402,11 +403,7 @@ export class ManageAdminsComponent implements OnInit, OnDestroy {
 
   formatDate(date: Date | undefined): string {
     if (!date) return 'Never';
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateTimeMilitary(date, true);
   }
 
   getTotalUsers(): number {

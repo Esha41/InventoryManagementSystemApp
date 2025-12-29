@@ -6,6 +6,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
 import { DiscardDto } from '@services/discard.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { Subject, takeUntil } from 'rxjs';
+import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-discard-details-modal',
@@ -89,24 +90,7 @@ export class DiscardDetailsModalComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(source?: string | Date): string {
-    let date: Date;
-
-    if (source instanceof Date) {
-      date = source;
-    } else if (typeof source === 'string') {
-      const parsed = new Date(source);
-      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    } else {
-      date = new Date();
-    }
-
-    const day = date.getDate();
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-
-    return `${day} ${month} ${year}`;
+    return formatDateTimeMilitary(source, true);
   }
 
   resolveDepartmentName(request: DiscardDto | null): string {
