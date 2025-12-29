@@ -299,67 +299,76 @@ export function getApproverName(changedBy?: string): string {
 }
 
 /**
- * Format date for approval display assuming backend stores UTC
- * and we want to show Qatar local time (UTC+3), independent of browser time zone.
+ * Format date for approval display in military format: "dd MM yyyy"
+ * Assumes backend stores UTC and converts to Qatar local time (UTC+3)
  */
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
 
   const utc = new Date(date);
   const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+  if (isNaN(qatarTime.getTime())) return '';
 
-  return qatarTime.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  const day = String(qatarTime.getDate()).padStart(2, '0');
+  const month = String(qatarTime.getMonth() + 1).padStart(2, '0');
+  const year = qatarTime.getFullYear();
+
+  return `${day} ${month} ${year}`;
 }
+
+/**
+ * Format date and time for approval display in military format: "dd MM yyyy HH mm"
+ * Assumes backend stores UTC and converts to Qatar local time (UTC+3)
+ */
 export function formatApprovalDateTime(date: string | Date | undefined): string {
   if (!date) return '';
 
   const utc = new Date(date);
   const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+  if (isNaN(qatarTime.getTime())) return '';
 
-  return qatarTime.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  const day = String(qatarTime.getDate()).padStart(2, '0');
+  const month = String(qatarTime.getMonth() + 1).padStart(2, '0');
+  const year = qatarTime.getFullYear();
+  const hours = String(qatarTime.getHours()).padStart(2, '0');
+  const minutes = String(qatarTime.getMinutes()).padStart(2, '0');
+
+  return `${day} ${month} ${year} ${hours} ${minutes}`;
 }
 
 /**
- * Format date for request display
+ * Format date for request display in military format: "dd MM yyyy"
  */
 export function formatRequestDate(date: string | Date | undefined): string {
   if (!date) return '';
 
   const d = new Date(date);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  if (isNaN(d.getTime())) return '';
+
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+
+  return `${day} ${month} ${year}`;
 }
 
 /**
- * Format date and time for request display
- * Format: "DD Month YYYY HH:MM" (e.g., "7 December 2025 14:30")
- * Handles UTC dates and converts to local time
+ * Format date and time for request display in military format: "dd MM yyyy HH mm"
+ * Example: "07 12 2025 14 30"
  */
 export function formatRequestDateTime(date: string | Date | undefined): string {
   if (!date) return '';
 
   const d = new Date(date);
-  // Check if date is valid
   if (isNaN(d.getTime())) return '';
 
-  const months = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
-  const day = d.getDate();
-  const month = months[d.getMonth()];
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
-  const hours = d.getHours().toString().padStart(2, '0');
-  const minutes = d.getMinutes().toString().padStart(2, '0');
-  return `${day} ${month} ${year} ${hours}:${minutes}`;
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+
+  return `${day} ${month} ${year} ${hours} ${minutes}`;
 }
 
 /**

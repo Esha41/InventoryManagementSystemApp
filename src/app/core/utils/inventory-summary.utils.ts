@@ -58,15 +58,19 @@ export class InventorySummaryUtils {
     }
 
     /**
-     * Format date to display format
+     * Format date in military format: "dd MM yyyy HH mm"
      */
     static formatDate(date?: string): string {
         if (!date) return '-';
         const dateObj = new Date(date);
-        return dateObj.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
+        if (isNaN(dateObj.getTime())) return '-';
+        
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        
+        return `${day} ${month} ${year} ${hours} ${minutes}`;
     }
 }

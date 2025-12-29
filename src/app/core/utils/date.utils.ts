@@ -4,14 +4,15 @@
 
 export class DateUtils {
   /**
-   * Format date to DD/MM/YYYY
+   * Format date in military format: "dd MM yyyy"
    */
   static formatDate(date: Date | string): string {
     const d = new Date(date);
+    if (isNaN(d.getTime())) return 'N/A';
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${day} ${month} ${year}`;
   }
 
   /**
@@ -47,22 +48,37 @@ export class DateUtils {
 }
 
 /**
- * Format date and time for order display
- * Format: "DD Month YYYY · HH:MM" (e.g., "15 January 2024 · 14:30")
+ * Format date and time for order display in military format: "dd MM yyyy HH mm"
+ * If time string is provided separately, it will be appended (handles military time format HHMM)
+ * Example: "15 01 2024 14 30"
  */
 export function formatOrderDateTime(date?: string, time?: string): string {
   if (!date) return 'N/A';
   try {
     const d = new Date(date);
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-    const day = d.getDate();
-    const month = months[d.getMonth()];
+    if (isNaN(d.getTime())) return 'N/A';
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
-    const timeStr = time || '';
-    return `${day} ${month} ${year}${timeStr ? ' · ' + timeStr : ''}`;
+    
+    // If time is provided separately, use it; otherwise use time from date
+    if (time) {
+      // Handle military time format (HHMM) - add space between hours and minutes
+      let formattedTime = time;
+      if (time.length === 4 && /^\d{4}$/.test(time)) {
+        formattedTime = `${time.substring(0, 2)} ${time.substring(2, 4)}`;
+      } else if (time.includes(':')) {
+        formattedTime = time.replace(':', ' ');
+      }
+      return `${day} ${month} ${year} ${formattedTime}`;
+    } else {
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year} ${hours} ${minutes}`;
+    }
   } catch {
-    return date;
+    return 'N/A';
   }
 }
 

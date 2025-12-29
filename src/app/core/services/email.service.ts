@@ -272,10 +272,29 @@ export class EmailService {
       html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(order.requestPurposeNameEn || order.requestPurposeNameAr)}</span></div>`;
     }
     if (order.usageDateFrom) {
-      const fromDate = new Date(order.usageDateFrom).toLocaleString();
-      const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleString() : '';
-      const fromTime = order.usageTimeFrom || '';
-      const toTime = order.usageTimeTo || '';
+      const formatDateMilitary = (dateStr: string): string => {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day} ${month} ${year}`;
+      };
+      const formatTime = (timeStr: string | null | undefined): string => {
+        if (!timeStr) return '';
+        if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+          return `${timeStr.substring(0, 2)} ${timeStr.substring(2, 4)}`;
+        }
+        if (timeStr.includes(':')) {
+          const parts = timeStr.split(':');
+          return `${parts[0].padStart(2, '0')} ${parts[1] ? parts[1].padStart(2, '0') : '00'}`;
+        }
+        return timeStr;
+      };
+      const fromDate = formatDateMilitary(order.usageDateFrom);
+      const toDate = order.usageDateTo ? formatDateMilitary(order.usageDateTo) : '';
+      const fromTime = formatTime(order.usageTimeFrom);
+      const toTime = formatTime(order.usageTimeTo);
       const dateRange = toDate 
         ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
         : `${fromDate} ${fromTime}`;

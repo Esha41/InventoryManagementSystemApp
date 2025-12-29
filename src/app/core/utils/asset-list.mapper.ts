@@ -27,7 +27,16 @@ export function mapAmmunitionToAsset(
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (() => {
+      const d = new Date(dto.expiryDate);
+      if (isNaN(d.getTime())) return '-';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year} ${hours} ${minutes}`;
+    })() : '-',
     expiryDateRaw: dto.expiryDate
       ? typeof dto.expiryDate === 'string'
         ? dto.expiryDate
@@ -56,7 +65,16 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     caliber: dto.caliber,
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (() => {
+      const d = new Date(dto.expiryDate);
+      if (isNaN(d.getTime())) return '-';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year} ${hours} ${minutes}`;
+    })() : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
@@ -87,7 +105,16 @@ export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
     totalWeightUnit: dto.totalWeightUnit,
     hazardDivision: dto.hazardDivision,
     compatibility: dto.compatibility,
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (() => {
+      const d = new Date(dto.expiryDate);
+      if (isNaN(d.getTime())) return '-';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year} ${hours} ${minutes}`;
+    })() : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,

@@ -76,17 +76,45 @@ export class ReviewFormComponent {
   getFormattedUsageDateFrom(): string {
     if (!this.usageDateFrom) return '';
     const date = new Date(this.usageDateFrom);
-    const dateStr = date.toLocaleDateString('en-GB');
-    // Display time in military format (HHMM)
-    return this.usageTimeFrom ? `${dateStr} ${this.usageTimeFrom}` : dateStr;
+    if (isNaN(date.getTime())) return '';
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const dateStr = `${day} ${month} ${year}`;
+    
+    // Format time - convert HHMM to "HH mm"
+    if (this.usageTimeFrom) {
+      const timeStr = this.usageTimeFrom.length === 4 && /^\d{4}$/.test(this.usageTimeFrom)
+        ? `${this.usageTimeFrom.substring(0, 2)} ${this.usageTimeFrom.substring(2, 4)}`
+        : this.usageTimeFrom.includes(':')
+        ? this.usageTimeFrom.replace(':', ' ')
+        : this.usageTimeFrom;
+      return `${dateStr} ${timeStr}`;
+    }
+    return dateStr;
   }
 
   getFormattedUsageDateTo(): string {
     if (!this.usageDateTo) return '';
     const date = new Date(this.usageDateTo);
-    const dateStr = date.toLocaleDateString('en-GB');
-    // Display time in military format (HHMM)
-    return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo}` : dateStr;
+    if (isNaN(date.getTime())) return '';
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const dateStr = `${day} ${month} ${year}`;
+    
+    // Format time - convert HHMM to "HH mm"
+    if (this.usageTimeTo) {
+      const timeStr = this.usageTimeTo.length === 4 && /^\d{4}$/.test(this.usageTimeTo)
+        ? `${this.usageTimeTo.substring(0, 2)} ${this.usageTimeTo.substring(2, 4)}`
+        : this.usageTimeTo.includes(':')
+        ? this.usageTimeTo.replace(':', ' ')
+        : this.usageTimeTo;
+      return `${dateStr} ${timeStr}`;
+    }
+    return dateStr;
   }
 
   getFileSize = getFileSizeFromFile;
