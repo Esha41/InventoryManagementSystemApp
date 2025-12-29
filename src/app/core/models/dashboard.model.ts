@@ -18,5 +18,6 @@ export interface DashboardCard {
   orderRequestId?: number;
   returnRequestId?: number;
   discardRequestId?: number;
+  isMyTurn?: boolean;
 }
 

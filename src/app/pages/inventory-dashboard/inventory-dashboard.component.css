@@ -6,7 +6,8 @@
 ::ng-deep app-status-card {
   display: block;
   height: 100%;
-  max-height: 750px; /* Increased card height for better scrolling */
+  max-height: 750px;
+  /* Increased card height for better scrolling */
 }
 
 ::ng-deep app-status-card .status-card-container {
@@ -34,8 +35,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 150px; /* Increased minimum height */
-  max-height: 450px; /* Increased max height for more scrollable space */
+  min-height: 150px;
+  /* Increased minimum height */
+  max-height: 450px;
+  /* Increased max height for more scrollable space */
   overflow: hidden;
 }
 
@@ -121,3 +124,29 @@
   min-width: 0;
 }
 
+/* Action Required styles */
+.action-required-row {
+  border-left: 4px solid var(--color-brand) !important;
+  background-color: rgba(37, 99, 235, 0.05);
+  /* Subtle blue tint */
+}
+
+.action-required-row:hover {
+  background-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -73,9 +73,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   visibleCards: InventoryDashboardCard[] = [];
 
   // Status filter
-  selectedStatusFilter: CardStatus | 'all' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
+  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
     { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'requestsManagement.actionRequired', value: 'action-required' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
     { label: 'dashboard.statusLabels.approved', value: 'completed' },
@@ -291,7 +292,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     // Apply status filter
     if (this.selectedStatusFilter !== 'all') {
-      filtered = filtered.filter(card => card.status === this.selectedStatusFilter);
+      if (this.selectedStatusFilter === 'action-required') {
+        filtered = filtered.filter(card => card.isMyTurn);
+      } else {
+        filtered = filtered.filter(card => card.status === this.selectedStatusFilter);
+      }
     }
 
     // Apply search filter
@@ -401,7 +406,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this.visibleCards.length;
   }
 
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }
@@ -494,7 +499,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         }],
         permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
         departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
-        orderRequestId: order.id
+        orderRequestId: order.id,
+        isMyTurn: order.isMyTurn
       };
       this.allCards.push(card);
     });
@@ -519,7 +525,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         }],
         permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
         departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
-        returnRequestId: ret.id
+        returnRequestId: ret.id,
+        isMyTurn: ret.isMyTurn
       };
       this.allCards.push(card);
     });
@@ -544,7 +551,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         }],
         permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
         departmentIds: (!isAdmin && userDepartmentId != null) ? [userDepartmentId] : undefined,
-        discardRequestId: discard.id
+        discardRequestId: discard.id,
+        isMyTurn: discard.isMyTurn
       };
       this.allCards.push(card);
     });

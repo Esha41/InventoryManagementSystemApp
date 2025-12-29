@@ -18,7 +18,8 @@ export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
     creationDate: formatRequestDate(dto.creationDate || dto.requestDate), // Use creationDate if available, fallback to requestDate
     priority: mapPriority(dto.priority),
     requestType: mapRequestType(dto.requestType),
-    status: mapStatus(dto.status)
+    status: mapStatus(dto.status),
+    isMyTurn: !!dto.isMyTurn
   };
 }
 

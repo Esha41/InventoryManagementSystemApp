@@ -1,77 +1,71 @@
 <div class="space-y-6">
   <!-- Requester Details -->
-  <div class="bg-[#F5F5F5] rounded-lg p-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.requesterDetails' | translate }}</h2>
-    
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
+    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.requesterDetails' | translate }}
+    </h2>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Name -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.name' | translate }}</label>
-        <input
-          type="text"
-          [ngModel]="requesterName"
-          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate"
-          readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.name' | translate
+          }}</label>
+        <input type="text" [ngModel]="requesterName"
+          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate" readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Comments -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.comments' | translate }}</label>
-        <input
-          type="text"
-          [ngModel]="requesterComments"
-          [placeholder]="'newIssueRequest.commentsNonePlaceholder' | translate"
-          readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.comments' |
+          translate }}</label>
+        <input type="text" [ngModel]="requesterComments"
+          [placeholder]="'newIssueRequest.commentsNonePlaceholder' | translate" readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
     </div>
   </div>
 
   <!-- Order Details -->
-  <div class="bg-[#F5F5F5] rounded-lg p-6">
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
     <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderDetails' | translate }}</h2>
-    
+
     <div class="space-y-6">
       <!-- Order Type -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderType' | translate }}</label>
-        <input
-          type="text"
-          [ngModel]="orderType"
-          [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderType' |
+          translate }}</label>
+        <input type="text" [ngModel]="orderType" [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
           readonly
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
- 
+
       <!-- Order Priority -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderPriority' | translate }}</label>
-        <input
-          type="text"
-          [ngModel]="getTranslatedPriority()"
-          [placeholder]="'newIssueRequest.priorityPlaceholder' | translate"
-          readonly
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderPriority' |
+          translate }}</label>
+        <input type="text" [ngModel]="getTranslatedPriority()"
+          [placeholder]="'newIssueRequest.priorityPlaceholder' | translate" readonly
+          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Order Document -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' | translate }}</label>
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' |
+          translate }}</label>
         <div class="flex-1 max-w-xs">
           <div *ngIf="files && files.length > 0" class="space-y-2">
-            <div *ngFor="let file of files" class="flex items-center gap-2 px-4 py-2.5 bg-[#EBEBEB] rounded-lg border border-[var(--color-border)]">
+            <div *ngFor="let file of files"
+              class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
               <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
-              <button 
-                type="button" 
-                (click)="viewFile(file)"
+              <button type="button" (click)="viewFile(file)"
                 class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
                 [title]="'newIssueRequest.view' | translate">
                 <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
               </button>
             </div>
           </div>
-          <div *ngIf="!files || files.length === 0" class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed">
+          <div *ngIf="!files || files.length === 0"
+            class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
             {{ 'newIssueRequest.noFilesAttached' | translate }}
           </div>
         </div>
@@ -80,10 +74,11 @@
   </div>
 
   <!-- Selected Cartridges Summary -->
-  <div *ngIf="selectedCartridges.length > 0" class="bg-[#F5F5F5] rounded-lg p-6 mb-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectedCartridges' | translate }}</h2>
-    
-    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-white">
+  <div *ngIf="selectedCartridges.length > 0" class="bg-[var(--color-background-muted)] rounded-lg p-6 mb-6">
+    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectedCartridges' | translate }}
+    </h2>
+
+    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
       <table class="min-w-full text-sm">
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
@@ -104,11 +99,13 @@
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">
-              <span *ngIf="isArabic">{{ cartridge.natureLabelAr || cartridge.natureLabelEn || cartridge.natureLabel || '-' }}</span>
+              <span *ngIf="isArabic">{{ cartridge.natureLabelAr || cartridge.natureLabelEn || cartridge.natureLabel ||
+                '-' }}</span>
               <span *ngIf="!isArabic">{{ cartridge.natureLabelEn || cartridge.natureLabel || '-' }}</span>
             </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">
-              <span *ngIf="isArabic">{{ cartridge.linkedLabelAr || cartridge.linkedLabelEn || cartridge.linkedLabel || '-' }}</span>
+              <span *ngIf="isArabic">{{ cartridge.linkedLabelAr || cartridge.linkedLabelEn || cartridge.linkedLabel ||
+                '-' }}</span>
               <span *ngIf="!isArabic">{{ cartridge.linkedLabelEn || cartridge.linkedLabel || '-' }}</span>
             </td>
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
@@ -119,44 +116,35 @@
   </div>
 
   <!-- Usage Details -->
-  <div class="bg-[#F5F5F5] rounded-lg p-6">
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
     <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.usageDetails' | translate }}</h2>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
       <!-- Left Column -->
       <div class="space-y-6">
         <!-- From Reserve -->
         <div class="flex items-center">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.fromReserve' | translate }}</label>
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.fromReserve' |
+            translate }}</label>
           <div class="flex gap-6 ml-4">
             <label class="flex items-center cursor-pointer">
-              <div class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center mr-2"
-                   [class.bg-[#D0B888]]="fromReserve === 'Yes'"
-                   [class.border-[#D0B888]]="fromReserve === 'Yes'">
+              <div
+                class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center mr-2"
+                [class.bg-[var(--color-brand)]]="fromReserve === 'Yes'"
+                [class.border-[var(--color-brand)]]="fromReserve === 'Yes'">
                 <span *ngIf="fromReserve === 'Yes'" class="text-white text-xs">✓</span>
               </div>
-              <input 
-                type="radio" 
-                name="fromReserveReview" 
-                value="Yes" 
-                [ngModel]="fromReserve"
-                disabled
-                class="sr-only">
+              <input type="radio" name="fromReserveReview" value="Yes" [ngModel]="fromReserve" disabled class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.yes' | translate }}</span>
             </label>
             <label class="flex items-center cursor-pointer">
-              <div class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center mr-2"
-                   [class.bg-[#D0B888]]="fromReserve === 'No'"
-                   [class.border-[#D0B888]]="fromReserve === 'No'">
+              <div
+                class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center mr-2"
+                [class.bg-[var(--color-brand)]]="fromReserve === 'No'"
+                [class.border-[var(--color-brand)]]="fromReserve === 'No'">
                 <span *ngIf="fromReserve === 'No'" class="text-white text-xs">✓</span>
               </div>
-              <input 
-                type="radio" 
-                name="fromReserveReview" 
-                value="No" 
-                [ngModel]="fromReserve"
-                disabled
-                class="sr-only">
+              <input type="radio" name="fromReserveReview" value="No" [ngModel]="fromReserve" disabled class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.no' | translate }}</span>
             </label>
           </div>
@@ -164,44 +152,36 @@
 
         <!-- Use purpose -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usePurpose' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="usePurpose"
-            [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usePurpose' |
+            translate }}</label>
+          <input type="text" [ngModel]="usePurpose" [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
             readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Usage Location -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageLocation' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="usageLocation"
-            [placeholder]="'newIssueRequest.usageLocationPlaceholder' | translate"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageLocation' |
+            translate }}</label>
+          <input type="text" [ngModel]="usageLocation"
+            [placeholder]="'newIssueRequest.usageLocationPlaceholder' | translate" readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Number of Officers -->
         <div class="flex items-center gap-4" *ngIf="numberOfOfficers !== null && numberOfOfficers !== undefined">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOfficers' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="numberOfOfficers"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOfficers'
+            | translate }}</label>
+          <input type="text" [ngModel]="numberOfOfficers" readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Number of Other Ranks -->
         <div class="flex items-center gap-4" *ngIf="numberOfOtherRanks !== null && numberOfOtherRanks !== undefined">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOtherRanks' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="numberOfOtherRanks"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{
+            'newIssueRequest.numberOfOtherRanks' | translate }}</label>
+          <input type="text" [ngModel]="numberOfOtherRanks" readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
       </div>
 
@@ -209,24 +189,20 @@
       <div class="space-y-6">
         <!-- Usage Date From -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateFrom' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="getFormattedUsageDateFrom()"
-            [placeholder]="'newIssueRequest.usageDatePlaceholder' | translate"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateFrom' |
+            translate }}</label>
+          <input type="text" [ngModel]="getFormattedUsageDateFrom()"
+            [placeholder]="'newIssueRequest.usageDatePlaceholder' | translate" readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
-        
+
         <!-- Usage Date To -->
         <div class="flex items-center gap-4" *ngIf="usageDateTo">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateTo' | translate }}</label>
-          <input
-            type="text"
-            [ngModel]="getFormattedUsageDateTo()"
-            [placeholder]="'newIssueRequest.usageDateToPlaceholder' | translate"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[#EBEBEB] cursor-not-allowed focus:outline-none">
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateTo' |
+            translate }}</label>
+          <input type="text" [ngModel]="getFormattedUsageDateTo()"
+            [placeholder]="'newIssueRequest.usageDateToPlaceholder' | translate" readonly
+            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
       </div>
     </div>
@@ -234,18 +210,12 @@
 
   <!-- Navigation Buttons -->
   <div class="flex justify-between items-center">
-    <app-button
-      variant="outline"
-      (clicked)="onPrevious()">
+    <app-button variant="outline" (clicked)="onPrevious()">
       {{ 'newIssueRequest.previous' | translate }}
     </app-button>
-    <app-button 
-      *appHasPermission="'Order.Create'"
-      variant="primary" 
-      (clicked)="onNext()"
-      class="bg-[#D0B888] text-white hover:bg-[#BEA06E]">
+    <app-button *appHasPermission="'Order.Create'" variant="primary" (clicked)="onNext()"
+      class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)]">
       {{ 'newIssueRequest.submit' | translate }}
     </app-button>
   </div>
 </div>
-

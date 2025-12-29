@@ -36,7 +36,7 @@ export function getApprovalStatusIcon(status: string): any {
     case 'Approved': return CheckCircle;
     case 'Rejected': return AlertTriangle;
     case 'Returned':
-    case 'ReturnedForReview': return Clock;
+    case 'ReturnedForReview': return CheckCircle;
     case 'Pending': return Clock;
     default: return Clock;
   }

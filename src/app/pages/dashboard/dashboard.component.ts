@@ -81,9 +81,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   visibleCards: DashboardCard[] = [];
 
   // Status filter
-  selectedStatusFilter: CardStatus | 'all' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
+  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
     { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'requestsManagement.actionRequired', value: 'action-required' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
     { label: 'dashboard.statusLabels.approved', value: 'completed' },
@@ -351,7 +352,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Apply status filter
     if (this.selectedStatusFilter !== 'all') {
-      filteredCards = filteredCards.filter(card => card.status === this.selectedStatusFilter);
+      if (this.selectedStatusFilter === 'action-required') {
+        filteredCards = filteredCards.filter(card => card.isMyTurn);
+      } else {
+        filteredCards = filteredCards.filter(card => card.status === this.selectedStatusFilter);
+      }
     }
 
     // Apply search filter
@@ -443,7 +448,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   /**
    * Translate function for dropdown labels
    */
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }
@@ -559,7 +564,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           items: mapRequestItems(order.requestItems)
         }],
         permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
-        orderRequestId: order.id
+        orderRequestId: order.id,
+        isMyTurn: order.isMyTurn
       }),
       storeInMap: (order) => this.orderRequestsMap.set(order.id, order)
     });
@@ -588,7 +594,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           items: mapRequestItems(ret.requestItems)
         }],
         permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
-        returnRequestId: ret.id
+        returnRequestId: ret.id,
+        isMyTurn: ret.isMyTurn
       }),
       storeInMap: (ret) => this.returnRequestsMap.set(ret.id, ret)
     });
@@ -617,7 +624,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           items: mapRequestItems(discard.requestItems)
         }],
         permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
-        discardRequestId: discard.id
+        discardRequestId: discard.id,
+        isMyTurn: discard.isMyTurn
       }),
       storeInMap: (discard) => this.discardRequestsMap.set(discard.id, discard)
     });

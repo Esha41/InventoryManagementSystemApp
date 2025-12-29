@@ -36,9 +36,10 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
 
   // Status filter
-  selectedStatusFilter: CardStatus | 'all' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all'>[] = [
+  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
+  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
     { label: 'dashboard.filters.all', value: 'all' },
+    { label: 'requestsManagement.actionRequired', value: 'action-required' },
     { label: 'dashboard.statusLabels.new', value: 'new' },
     { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
     { label: 'dashboard.statusLabels.approved', value: 'completed' },
@@ -131,6 +132,9 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
         return 'completed';
       case 'rejected':
         return 'declined';
+      case 'returned':
+      case 'returnedforreview':
+        return 'returned';
       default:
         return 'new';
     }
@@ -141,10 +145,14 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
     // Apply status filter
     if (this.selectedStatusFilter !== 'all') {
-      filtered = filtered.filter(request => {
-        const cardStatus = this.mapRequestStatusToCardStatus(request.status);
-        return cardStatus === this.selectedStatusFilter;
-      });
+      if (this.selectedStatusFilter === 'action-required') {
+        filtered = filtered.filter(request => request.isMyTurn);
+      } else {
+        filtered = filtered.filter(request => {
+          const cardStatus = this.mapRequestStatusToCardStatus(request.status);
+          return cardStatus === this.selectedStatusFilter;
+        });
+      }
     }
 
     // Apply priority filter
@@ -218,7 +226,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     return this.filteredRequests.length;
   }
 
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all'> | CardStatus | 'all'): string => {
+  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }

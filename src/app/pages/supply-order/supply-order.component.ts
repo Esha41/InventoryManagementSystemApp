@@ -1105,6 +1105,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       case 'Approved': return this.CheckCircle;
       case 'Rejected': return this.AlertTriangle;
       case 'Pending': return this.Clock;
+      case 'Returned':
+      case 'ReturnedForReview': return this.CheckCircle;
       default: return this.Clock;
     }
   }

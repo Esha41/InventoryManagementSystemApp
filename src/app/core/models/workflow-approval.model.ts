@@ -157,6 +157,7 @@ export interface BaseRequestDto {
   requestItems?: any[];
   approvalHistory?: any[];
   files?: FileUploadDto[];
+  isMyTurn?: boolean;
   [key: string]: any;
 }
 

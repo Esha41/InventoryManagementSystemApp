@@ -86,7 +86,7 @@
               <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{
                 'dashboard.noOrders' | translate }}</td>
             </tr>
-            <tr *ngFor="let request of paginatedRequests"
+            <tr *ngFor="let request of paginatedRequests" [class.action-required-highlight]="request.isMyTurn"
               class="hover:bg-[var(--color-background-muted)] transition-colors">
               <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
               <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.creationDate }}</td>
@@ -96,12 +96,18 @@
                   {{ getPriorityText(request.priority) | translate }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ getRequestTypeText(request.requestType) | translate }}</td>
+              <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{
+                getRequestTypeText(request.requestType) | translate }}</td>
               <td class="px-6 py-4 text-start">
-                <span
-                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(request.status) }}">
-                  {{ getStatusText(request.status) | translate }}
-                </span>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(request.status) }}">
+                    {{ getStatusText(request.status) | translate }}
+                  </span>
+                  <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow">
+                    {{ 'requestsManagement.actionRequired' | translate }}
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 text-end">
                 <button (click)="openOrderDetails(request)"

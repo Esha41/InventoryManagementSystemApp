@@ -8,6 +8,7 @@ export interface Request {
   priority: 'High' | 'Medium' | 'Low' | 'Critical';
   requestType: 'Order' | 'Return' | 'Discard';
   status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview';
+  isMyTurn: boolean;
 }
 
 

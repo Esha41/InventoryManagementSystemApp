@@ -108,7 +108,8 @@ function normalizeBaseRequestDto(request: BaseRequestDto): BaseRequestDto {
         requestItems: request.requestItems?.map(item => ({
             ...item,
             itemType: normalizeItemType(item.itemType)
-        }))
+        })),
+        isMyTurn: request.isMyTurn
     };
 }
 
@@ -188,7 +189,8 @@ export function mapToOrderDto(base: BaseRequestDto): OrderDto {
         depotId: normalized.depotId,
 
         // Audit fields from BaseRequestDto
-        creationDate: normalized.creationDate
+        creationDate: normalized.creationDate,
+        isMyTurn: normalized.isMyTurn
     } as OrderDto;
 }
 
@@ -253,7 +255,8 @@ export function mapToReturnDto(base: BaseRequestDto): ReturnDto {
         })),
 
         // Audit fields from BaseRequestDto
-        creationDate: normalized.creationDate
+        creationDate: normalized.creationDate,
+        isMyTurn: normalized.isMyTurn
     } as ReturnDto;
 }
 
@@ -318,7 +321,8 @@ export function mapToDiscardDto(base: BaseRequestDto): DiscardDto {
         })),
 
         // Audit fields from BaseRequestDto
-        creationDate: normalized.creationDate
+        creationDate: normalized.creationDate,
+        isMyTurn: normalized.isMyTurn
     } as DiscardDto;
 }
 

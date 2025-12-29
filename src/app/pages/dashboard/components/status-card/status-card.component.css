@@ -288,3 +288,37 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
+/* Action Required styles */
+.action-required-card {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 15px rgba(208, 184, 136, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-required-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-brand);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

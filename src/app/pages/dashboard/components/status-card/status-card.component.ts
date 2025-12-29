@@ -20,7 +20,7 @@ export interface ReturnItem {
   notes?: string;
 }
 
-export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined' | 'returned';
+export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined' | 'returned' | 'action-required';
 
 @Component({
   selector: 'app-status-card',
@@ -36,6 +36,7 @@ export class StatusCardComponent {
   @Input() orderRequestId: number | null = null;
   @Input() returnRequestId: number | null = null;
   @Input() discardRequestId: number | null = null;
+  @Input() isMyTurn: boolean = false;
   @Output() viewOrderDetails = new EventEmitter<number>();
   @Output() viewDetails = new EventEmitter<number>();
   @Output() viewDiscardDetails = new EventEmitter<number>();

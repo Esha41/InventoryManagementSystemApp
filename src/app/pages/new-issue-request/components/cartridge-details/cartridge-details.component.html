@@ -1,157 +1,160 @@
-<div *ngIf="cartridge" class="bg-white rounded-lg p-8 shadow-sm mb-6">
-  <h2 class="text-2xl font-bold text-[var(--color-text)] text-center mb-8">{{ 'newIssueRequest.reviewYourSelection' | translate }}</h2>
-  
+<div *ngIf="cartridge" class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm mb-6">
+  <h2 class="text-2xl font-bold text-[var(--color-text)] text-center mb-8">{{ 'newIssueRequest.reviewYourSelection' |
+    translate }}</h2>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- Left Side - Details -->
     <div class="space-y-6">
       <h3 class="text-xl font-bold text-[var(--color-text)] mb-4">{{ cartridge.name }}</h3>
-      
+
       <!-- Primary Details -->
       <div class="space-y-4">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.primaryDetails' | translate }}</h4>
-        
+
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productName' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.name }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productId' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.productId || cartridge.itemNo }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.ncn }}</p>
           </div>
-          
+
           <!-- Ammunition specific fields -->
           <div *ngIf="isAmmunition">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primaryPurpose' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.primaryPurpose }}</p>
           </div>
-          
+
           <!-- Weapon specific fields -->
           <div *ngIf="isWeapon">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weaponType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.weaponType }}</p>
           </div>
-          
+
           <!-- Explosive specific fields -->
           <div *ngIf="isExplosive">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.explosiveType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.explosiveType }}</p>
           </div>
-          
+
           <div class="col-span-2" *ngIf="isAmmunition">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileColor' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.projectileColor }}</p>
           </div>
         </div>
       </div>
-      
+
       <!-- Ammunition Specifications -->
       <div class="space-y-4" *ngIf="isAmmunition">
-        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate }}</h4>
-        
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate
+          }}</h4>
+
         <div class="space-y-3 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.totalWeight }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileMaterial' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.projectileMaterial }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.caseType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.caseType }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primer' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.primer }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.propellant' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.propellant }}</p>
           </div>
         </div>
       </div>
-      
+
       <!-- Weapon Specifications -->
       <div class="space-y-4" *ngIf="isWeapon">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'weapon.specifications' | translate }}</h4>
-        
+
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliber' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.caliber }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.actionType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.actionType }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.barrelLength' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.barrelLengthLabel }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.overallLength' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.overallLengthLabel }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weight' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.weightLabel }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.capacity' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.capacity }}</p>
           </div>
         </div>
       </div>
-      
+
       <!-- Explosive Specifications -->
       <div class="space-y-4" *ngIf="isExplosive">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'explosive.specifications' | translate }}</h4>
-        
+
         <div class="space-y-3 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.unNumber }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.netExplosiveQuantity' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.netExplosiveQuantityLabel }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.totalWeightLabel }}</p>
           </div>
         </div>
       </div>
-      
+
       <!-- Classifications (Ammunition and Explosive) -->
       <div class="space-y-4" *ngIf="isAmmunition || isExplosive">
-        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}</h4>
-        
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}
+        </h4>
+
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.hazardDivision' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.hazardDivision }}</p>
           </div>
-          
+
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.capabilityGroup' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ cartridge.capabilityGroup }}</p>
@@ -159,19 +162,20 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Right Side - Image -->
     <div class="flex items-center justify-center">
-      <img *ngIf="imageUrl; else placeholderImage" 
-           [src]="imageUrl" 
-           [alt]="cartridge.name || 'Cartridge'" 
-           class="max-w-full h-auto rounded-lg shadow-sm"
-           (error)="imageUrl = null">
+      <img *ngIf="imageUrl; else placeholderImage" [src]="imageUrl" [alt]="cartridge.name || 'Cartridge'"
+        class="max-w-full h-auto rounded-lg shadow-sm" (error)="imageUrl = null">
       <ng-template #placeholderImage>
-        <div class="flex items-center justify-center w-full h-64 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+        <div
+          class="flex items-center justify-center w-full h-64 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
           <div class="text-center">
-            <svg class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <svg class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-2" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+              </path>
             </svg>
             <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.noImage' | translate }}</p>
           </div>
@@ -179,14 +183,12 @@
       </ng-template>
     </div>
   </div>
-  
+
   <!-- Action Buttons -->
   <div class="flex justify-center gap-4 mt-8" *ngIf="showActions">
-    <button 
-      (click)="onCancel()"
+    <button (click)="onCancel()"
       class="px-8 py-3 border-2 border-[var(--color-border)] text-[var(--color-text)] text-sm font-medium rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
       {{ 'common.goBack' | translate }}
     </button>
   </div>
 </div>
-

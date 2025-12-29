@@ -292,7 +292,8 @@
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'workflowApprovalDetail.approvalWorkflow' | translate }}
             </h2>
-            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
+            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown"
+              class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
@@ -315,7 +316,8 @@
                         'rejected': approval.status === 'Rejected',
                         'border-[var(--color-success)]': approval.status === 'Approved',
                         'border-amber-300': approval.status === 'Pending',
-                        'border-red-300': approval.status === 'Rejected'
+                        'border-red-300': approval.status === 'Rejected',
+                        'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
                       }">
                       <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
                       </lucide-angular>
@@ -346,6 +348,9 @@
                             </span>
                             <span *ngIf="approval.status === 'Rejected'">
                               {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime }}
+                            </span>
+                            <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
+                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime }}
                             </span>
                           </p>
                         </div>
@@ -451,7 +456,8 @@
               <div>
                 <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                   {{ 'workflowApprovalDetail.pickupDateSetByManager' | translate }}
-                  <span *ngIf="pickupDate" class="ml-2 text-xs font-normal text-[var(--color-info)] bg-[var(--color-info)]/20 px-2 py-1 rounded">
+                  <span *ngIf="pickupDate"
+                    class="ml-2 text-xs font-normal text-[var(--color-info)] bg-[var(--color-info)]/20 px-2 py-1 rounded">
                     {{ 'workflowApprovalDetail.readyForConfirmation' | translate }}
                   </span>
                 </label>
@@ -507,7 +513,8 @@
                   <p class="text-sm text-[var(--color-warning)]/90 mb-3" *ngIf="!supplyId">
                     {{ 'workflowApprovalDetail.supplyNotCreatedMessage' | translate }}
                   </p>
-                  <p class="text-sm text-[var(--color-warning)]/90" *ngIf="supplyId && supplyData?.submissionStatus === 2">
+                  <p class="text-sm text-[var(--color-warning)]/90"
+                    *ngIf="supplyId && supplyData?.submissionStatus === 2">
                     {{ 'workflowApprovalDetail.alreadySubmittedMessage' | translate }}
                   </p>
                   <button *ngIf="!supplyId && canUpdateRequestAndSupply()" (click)="navigateToSupplyOrder()"

@@ -76,7 +76,7 @@
               <a
                 [routerLink]="child.route"
                 routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
-                [routerLinkActiveOptions]="{ exact: child.route === '/warehouse' }"
+                [routerLinkActiveOptions]="{ exact: true }"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm"
               >
                 <span class="font-medium">{{ child.label | translate }}</span>

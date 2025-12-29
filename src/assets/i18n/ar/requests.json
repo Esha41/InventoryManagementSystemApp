@@ -245,6 +245,7 @@
   },
   "requestsManagement": {
     "title": "إدارة الطلبات",
+    "actionRequired": "إجراء مطلوب",
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",
     "priority": "الأولوية",
@@ -355,6 +356,7 @@
     "unknownApprover": "موافق غير معروف",
     "approvedAt": "تاريخ ووقت الموافقة",
     "rejectedAt": "تاريخ ووقت الرفض",
+    "returnedAt": "تاريخ ووقت الإرجاع",
     "noApprovalWorkflowData": "لا توجد بيانات سير عمل الموافقة متاحة",
     "requestItems": "مواد الطلب",
     "item": "عنصر",

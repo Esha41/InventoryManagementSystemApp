@@ -249,6 +249,7 @@
   },
   "requestsManagement": {
     "title": "Requests Management",
+    "actionRequired": "Action Required",
     "orderId": "Order ID",
     "requestDate": "Request Date",
     "priority": "Priority",
@@ -359,6 +360,7 @@
     "unknownApprover": "Unknown Approver",
     "approvedAt": "Approved at",
     "rejectedAt": "Rejected at",
+    "returnedAt": "Returned at",
     "noApprovalWorkflowData": "No approval workflow data available",
     "requestItems": "Request Items",
     "item": "item",

@@ -5,11 +5,14 @@
   </div>
 
   <!-- Individual Order Cards -->
-  <div *ngFor="let order of orders" class="status-card">
+  <div *ngFor="let order of orders" class="status-card" [class.action-required-highlight]="isMyTurn">
     <!-- Header -->
     <div class="status-card__header">
-      <div class="status-card__headline">
+      <div class="status-card__headline flex items-center gap-2">
         <span class="status-card__dot {{ getDotColor() }}"></span>
+        <span *ngIf="isMyTurn" class="action-required-badge animate-action-glow">
+          {{ 'requestsManagement.actionRequired' | translate }}
+        </span>
       </div>
       <span class="status-card__badge">{{ getStatusTranslationKey() | translate }}</span>
     </div>
@@ -45,9 +48,7 @@
 
       <!-- View Details Button -->
       <div class="status-card__action" *ngIf="hasDetailsButton()">
-        <button
-          (click)="emitOrderDetails(order.requestId); $event.stopPropagation()"
-          class="status-card__button">
+        <button (click)="emitOrderDetails(order.requestId); $event.stopPropagation()" class="status-card__button">
           {{ 'dashboard.viewDetails' | translate }}
         </button>
       </div>

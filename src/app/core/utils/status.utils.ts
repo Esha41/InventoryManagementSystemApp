@@ -67,7 +67,7 @@ const REQUEST_STATUS_REJECTED = 4;
 const REQUEST_STATUS_CANCELLED = 5;
 const REQUEST_STATUS_RETURNED_FOR_REVIEW = 6;
 
-export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'returned';
+export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'returned' | 'action-required';
 export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED | typeof REQUEST_STATUS_REJECTED;
 
 /**

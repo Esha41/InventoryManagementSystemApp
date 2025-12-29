@@ -69,6 +69,7 @@ export interface BaseRequestDto {
     depotNameEn?: string;
     receiverId?: string;
     receiverName?: string;
+    isMyTurn?: boolean;
 }
 
 /**

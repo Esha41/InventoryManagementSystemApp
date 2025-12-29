@@ -11,6 +11,7 @@ export interface InventoryDashboardCard {
   orderRequestId?: number;
   returnRequestId?: number;
   discardRequestId?: number;
+  isMyTurn?: boolean;
 }
 
 export interface StatisticsData {

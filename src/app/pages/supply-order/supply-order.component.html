@@ -9,7 +9,8 @@
       <!-- Header with Back Button -->
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button (click)="goBack()" class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border-2 border-[var(--color-border)]">
+          <button (click)="goBack()"
+            class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border-2 border-[var(--color-border)]">
             <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
           </button>
           <div>
@@ -36,7 +37,8 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                 {{ 'supplyOrder.orderNo' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo
+                }}</p>
             </div>
 
             <div>
@@ -151,7 +153,8 @@
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyOrder.approvalWorkflow' | translate }}
             </h2>
-            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
+            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown"
+              class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
@@ -174,7 +177,8 @@
                       'rejected': approval.status === 'Rejected',
                       'border-[var(--color-success)]/50': approval.status === 'Approved',
                       'border-[var(--color-warning)]/50': approval.status === 'Pending',
-                      'border-[var(--color-error)]/50': approval.status === 'Rejected'
+                      'border-[var(--color-error)]/50': approval.status === 'Rejected',
+                      'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
                     }">
                       <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
                       </lucide-angular>
@@ -196,7 +200,7 @@
                           <span
                             class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
                             [ngClass]="getApprovalStatusClass(approval.status)">
-                            {{ getApprovalStatusText(approval.status) | translate }}
+                            {{ ('common.statuses.' + approval.status) | translate }}
                           </span>
                           <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
                             <span *ngIf="approval.status === 'Approved'">
@@ -204,6 +208,9 @@
                             </span>
                             <span *ngIf="approval.status === 'Rejected'">
                               {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime }}
+                            </span>
+                            <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
+                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime }}
                             </span>
                           </p>
                         </div>
@@ -243,7 +250,8 @@
 
               <div class="flex items-start gap-4">
                 <!-- Item Icon -->
-                <div class="flex-shrink-0 w-12 h-12 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
+                <div
+                  class="flex-shrink-0 w-12 h-12 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
                   <lucide-angular [img]="Package" class="h-6 w-6 text-[var(--color-info)]"></lucide-angular>
                 </div>
 
@@ -347,7 +355,8 @@
 
           <div class="mt-4 p-4 bg-[var(--color-info)]/10 rounded-lg border-2 border-[var(--color-info)]/30">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-semibold text-[var(--color-info)]">{{ 'supplyOrder.totalItems' | translate }}:</span>
+              <span class="text-sm font-semibold text-[var(--color-info)]">{{ 'supplyOrder.totalItems' | translate
+                }}:</span>
               <span class="text-lg font-bold text-[var(--color-info)]">{{ formatNumber(getTotalQuantity()) }}</span>
             </div>
           </div>
@@ -379,7 +388,8 @@
       </div>
 
       <!-- Item Info Header (when item is selected) -->
-      <div *ngIf="selectedItemForLot" class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+      <div *ngIf="selectedItemForLot"
+        class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
             <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-info)]"></lucide-angular>
@@ -433,21 +443,20 @@
         </div>
 
         <!-- Info Message -->
-        <div class="flex items-center gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
+        <div
+          class="flex items-center gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
           <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
           <span>{{ 'supplyOrder.lotSelectionInfo' | translate }}</span>
         </div>
 
         <!-- Lots List -->
         <div *ngIf="availableLots.length > 0" class="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-          <div *ngFor="let lot of availableLots"
-            class="border-2 rounded-lg p-4 transition-all cursor-pointer"
+          <div *ngFor="let lot of availableLots" class="border-2 rounded-lg p-4 transition-all cursor-pointer"
             [ngClass]="{
               'border-[var(--color-error)]/50 bg-[var(--color-error)]/10': lot.condition === 'Near Expiry',
               'border-[var(--color-brand)]/50 bg-[var(--color-brand)]/10': selectedLotNumber === lot.lotNumber,
               'border-[var(--color-border)] bg-[var(--color-background-active)]': lot.condition !== 'Near Expiry' && selectedLotNumber !== lot.lotNumber
-            }"
-            (click)="onSelectLot(lot.lotNumber)">
+            }" (click)="onSelectLot(lot.lotNumber)">
 
             <div class="flex items-start justify-between">
               <div class="flex-1">
@@ -623,7 +632,8 @@
   <app-modal [isOpen]="isEditItemModalOpen" [title]="'supplyOrder.editItemQuantity' | translate" size="md"
     (closed)="closeEditOrderItemModal()">
 
-    <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+    <div *ngIf="selectedItemForEdit"
+      class="mb-4 p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
       <p class="text-sm font-semibold text-[var(--color-text)] mb-1">{{ 'supplyOrder.item' | translate }}:</p>
       <p class="text-base text-[var(--color-text)]">{{ selectedItemForEdit.itemName }}</p>
       <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'supplyOrder.productId' | translate }}: {{

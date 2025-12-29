@@ -144,7 +144,8 @@
             </tr>
           </thead>
           <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let card of paginatedCards" class="hover:bg-[var(--color-background-hover)] transition-colors">
+            <tr *ngFor="let card of paginatedCards" [class.action-required-highlight]="card.isMyTurn"
+              class="hover:bg-[var(--color-background-hover)] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                 {{ card.orders[0].orderId || card.title }}
               </td>
@@ -158,10 +159,15 @@
                 {{ card.orders[0].requesterName || 'N/A' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  [ngClass]="getStatusBadgeClass(card.status)">
-                  {{ getStatusTranslationKey(card.status) | translate }}
-                </span>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getStatusBadgeClass(card.status)">
+                    {{ getStatusTranslationKey(card.status) | translate }}
+                  </span>
+                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow">
+                    {{ 'requestsManagement.actionRequired' | translate }}
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
                 <button (click)="onTableAction(card)"
@@ -194,7 +200,8 @@
     <!-- No Cards Message -->
     <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
       <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
-        <div class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">
+        <div
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">
           <div class="flex flex-col items-center gap-6 text-center">
             <div
               class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
@@ -212,7 +219,8 @@
       </div>
       <ng-template #noOrdersMessage>
         <div class="text-center">
-          <div class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
+          <div
+            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
             <div class="flex flex-col items-center gap-4">
               <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
                 <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
@@ -249,7 +257,8 @@
       class="relative bg-[var(--color-background)] rounded-2xl shadow-custom-2xl max-w-5xl w-full my-8 animate-in fade-in slide-in-from-bottom-4 duration-300"
       (click)="$event.stopPropagation()">
       <!-- Modal Header -->
-      <div class="sticky top-0 bg-[var(--color-background)] border-b border-[var(--color-border)] rounded-t-2xl px-6 py-4 z-10">
+      <div
+        class="sticky top-0 bg-[var(--color-background)] border-b border-[var(--color-border)] rounded-t-2xl px-6 py-4 z-10">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div
@@ -280,28 +289,33 @@
               <h3 class="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">{{
                 'dashboard.orderDetails' | translate }}</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.orderNumber' | translate }}</p>
                   <p class="text-lg font-bold text-[var(--color-text)]">{{ order.requestNo || order.orderNo || 'N/A' }}
                   </p>
                 </div>
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.requestDate' | translate }}</p>
                   <p class="text-lg font-bold text-[var(--color-text)]">{{ formatCreationDate(order) }}</p>
                 </div>
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.department' | translate }}</p>
                   <p class="text-lg font-bold text-[var(--color-text)]">{{ resolveOrderDepartmentName(order) }}</p>
                 </div>
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.requester' | translate }}</p>
                   <p class="text-lg font-bold text-[var(--color-text)]">{{ resolveRequesterName(order) }}</p>
                 </div>
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.priority' | translate }}</p>
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" [ngClass]="{
@@ -312,7 +326,8 @@
                     {{ getOrderPriorityKey(order.priority) | translate }}
                   </span>
                 </div>
-                <div class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
+                <div
+                  class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)] shadow-custom-sm">
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.status' | translate }}</p>
                   <span
@@ -324,7 +339,8 @@
             </div>
 
             <!-- Usage Information Card -->
-            <div class="bg-[var(--color-background-active)] rounded-xl p-6 border-2 border-[var(--color-border)] shadow-custom-md">
+            <div
+              class="bg-[var(--color-background-active)] rounded-xl p-6 border-2 border-[var(--color-border)] shadow-custom-md">
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
                   <svg class="w-4 h-4 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,7 +395,8 @@
             <div *ngIf="order.reason || order.notes"
               class="bg-[var(--color-background-active)] rounded-xl p-6 border-2 border-[var(--color-border)] shadow-custom-md">
               <div class="space-y-4">
-                <div *ngIf="order.reason" class="bg-[var(--color-warning)]/10 border-l-4 border-[var(--color-warning)] rounded-r-lg p-4 border-t border-r border-b border-[var(--color-border)]/20">
+                <div *ngIf="order.reason"
+                  class="bg-[var(--color-warning)]/10 border-l-4 border-[var(--color-warning)] rounded-r-lg p-4 border-t border-r border-b border-[var(--color-border)]/20">
                   <p class="text-xs font-semibold text-[var(--color-warning)] uppercase tracking-wider mb-2">
                     {{ 'dashboard.reason' | translate }}
                   </p>
@@ -388,8 +405,10 @@
                     {{ ('common.usagePurposes.' + (order.reason || '')) | translate }}
                   </p>
                 </div>
-                <div *ngIf="order.notes" class="bg-[var(--color-info)]/10 border-l-4 border-[var(--color-info)] rounded-r-lg p-4 border-t border-r border-b border-[var(--color-border)]/20">
-                  <p class="text-xs font-semibold text-[var(--color-info)] uppercase tracking-wider mb-2">{{ 'dashboard.notes' |
+                <div *ngIf="order.notes"
+                  class="bg-[var(--color-info)]/10 border-l-4 border-[var(--color-info)] rounded-r-lg p-4 border-t border-r border-b border-[var(--color-border)]/20">
+                  <p class="text-xs font-semibold text-[var(--color-info)] uppercase tracking-wider mb-2">{{
+                    'dashboard.notes' |
                     translate }}</p>
                   <p class="text-sm text-[var(--color-text)] font-medium">{{ order.notes }}</p>
                 </div>
@@ -397,7 +416,8 @@
             </div>
 
             <!-- Items Card -->
-            <div class="bg-[var(--color-background-active)] rounded-xl p-6 border-2 border-[var(--color-border)] shadow-custom-md">
+            <div
+              class="bg-[var(--color-background-active)] rounded-xl p-6 border-2 border-[var(--color-border)] shadow-custom-md">
               <div class="flex items-center gap-3 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
                   <svg class="w-4 h-4 text-[var(--color-brand)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

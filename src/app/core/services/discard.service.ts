@@ -64,6 +64,7 @@ export interface DiscardDto {
   };
   requestItems?: DiscardItemDto[];
   creationDate?: string | Date; // From BaseRequestDto
+  isMyTurn?: boolean;
 }
 
 export interface DiscardItemDto {

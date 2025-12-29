@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg p-8 shadow-sm">
+<div class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
   <!-- Selected Cartridges Summary -->
   <div *ngIf="selectedCartridges.length > 0" class="mb-8">
     <div class="flex items-center justify-between mb-4">
@@ -91,9 +91,9 @@
             translate }} <span class="text-red-500">*</span></label>
           <input name="usageLocation" type="text" [ngModel]="usageLocation"
             (ngModelChange)="onUsageLocationChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageLocation'),
+              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageLocation'),
               'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageLocation')
             }">
           <p *ngIf="hasError('usageLocation')" class="mt-1 text-xs text-red-600">
@@ -106,7 +106,7 @@
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.numberOfOfficers'
             | translate }}</label>
           <input type="number" [ngModel]="numberOfOfficers" (ngModelChange)="onNumberOfOfficersChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent transition-all">
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-all">
         </div>
 
         <!-- No. of Other Ranks -->
@@ -114,7 +114,7 @@
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{
             'newIssueRequest.numberOfOtherRanks' | translate }}</label>
           <input type="number" [ngModel]="numberOfOtherRanks" (ngModelChange)="onNumberOfOtherRanksChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 focus:ring-[#D0B888] focus:border-transparent transition-all">
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-all">
         </div>
 
         <!-- File Upload -->
@@ -126,15 +126,15 @@
           <div class="space-y-3">
             <!-- File Input -->
             <div class="relative flex items-center gap-2">
-              <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept="*/*"
-                class="hidden">
-              <label (click)="fileInput.click()" 
-                class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[#D0B888]/10 text-[#D0B888] hover:bg-[#D0B888]/20 cursor-pointer transition-all">
+              <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept="*/*" class="hidden">
+              <label (click)="fileInput.click()"
+                class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
                 {{ 'common.chooseFiles' | translate }}
               </label>
               <span class="text-sm text-[var(--color-text-muted)] flex-1">
                 <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
+                  ('common.file' | translate) : ('common.files' | translate) }}</span>
               </span>
             </div>
 
@@ -175,9 +175,9 @@
             translate }} <span class="text-red-500">*</span></label>
           <input name="usageDateFrom" type="date" [ngModel]="usageDateFrom"
             (ngModelChange)="onUsageDateFromChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageDateFrom'),
+              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageDateFrom'),
               'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateFrom')
             }">
           <p *ngIf="hasError('usageDateFrom')" class="mt-1 text-xs text-red-600">
@@ -190,9 +190,9 @@
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateTo' |
             translate }} <span class="text-red-500">*</span></label>
           <input name="usageDateTo" type="date" [ngModel]="usageDateTo" (ngModelChange)="onUsageDateToChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('usageDateTo'),
+              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageDateTo'),
               'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateTo')
             }">
           <p *ngIf="hasError('usageDateTo')" class="mt-1 text-xs text-red-600">
@@ -237,9 +237,9 @@
           <textarea name="requesterComments" [ngModel]="requesterComments"
             (ngModelChange)="onRequesterCommentsChange($event)" rows="4"
             placeholder="{{ 'newIssueRequest.commentsPlaceholder' | translate }}"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all resize-none"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all resize-none"
             [ngClass]="{
-              'focus:ring-[#D0B888] focus:border-transparent': !hasError('requesterComments'),
+              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('requesterComments'),
               'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('requesterComments')
             }"></textarea>
           <p *ngIf="hasError('requesterComments')" class="mt-1 text-xs text-red-600">
@@ -279,10 +279,10 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of reserveDetailsByItem" class="border-t border-[var(--color-border)] transition-colors"
-            [ngClass]="{'bg-[#D0B888]/10 border-l-4 border-l-[#D0B888]': isItemSelected(item.itemId)}">
+            [ngClass]="{'bg-[var(--color-brand)]/10 border-l-4 border-l-[var(--color-brand)]': isItemSelected(item.itemId)}">
             <td class="px-4 py-2 text-[var(--color-text)]">
               <div class="flex items-center gap-2">
-                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 rounded-full bg-[#D0B888]"></span>
+                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
                 {{ item.itemName }}
               </div>
             </td>

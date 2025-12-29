@@ -86,6 +86,7 @@ export interface OrderDto {
   requestPurposeNameEn?: string;
   requestItems?: OrderRequestItemDto[];
   creationDate?: string | Date;
+  isMyTurn?: boolean;
   // Nested objects for localization (similar to ReturnDto and DiscardDto)
   department?: {
     id: number;

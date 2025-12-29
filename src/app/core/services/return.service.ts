@@ -64,6 +64,7 @@ export interface ReturnDto {
   };
   requestItems?: ReturnItemDto[];
   creationDate?: string | Date; // From BaseRequestDto
+  isMyTurn?: boolean;
 }
 
 export interface ReturnItemDto {
