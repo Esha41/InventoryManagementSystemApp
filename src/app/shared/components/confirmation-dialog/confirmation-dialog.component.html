@@ -63,7 +63,7 @@
             <!-- Footer with Actions -->
             <div class="flex items-center justify-end gap-3 px-6 pb-6">
                 <button (click)="onCancel()" type="button"
-                    class="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]">
+                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-red-600 rounded-lg hover:bg-red-700 hover:border-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600">
                     {{ cancelText || ('common.cancel' | translate) }}
                 </button>
                 <button (click)="onConfirm()" type="button" [disabled]="isConfirmDisabled()"

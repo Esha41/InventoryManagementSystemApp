@@ -77,20 +77,70 @@
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'dashboard.orderNumber' | translate }}</th>
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn('orderNumber')">
+                <div class="flex items-center gap-2">
+                  {{ 'dashboard.orderNumber' | translate }}
+                  <lucide-angular *ngIf="sortState.column !== 'orderNumber'" [img]="ArrowUpDown"
+                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'asc'"
+                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'desc'"
+                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+              </th>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'dashboard.usageDate' | translate }}</th>
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn('usageDate')">
+                <div class="flex items-center gap-2">
+                  {{ 'dashboard.usageDate' | translate }}
+                  <lucide-angular *ngIf="sortState.column !== 'usageDate'" [img]="ArrowUpDown"
+                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'asc'"
+                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'desc'"
+                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+              </th>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'dashboard.department' | translate }}</th>
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn('department')">
+                <div class="flex items-center gap-2">
+                  {{ 'dashboard.department' | translate }}
+                  <lucide-angular *ngIf="sortState.column !== 'department'" [img]="ArrowUpDown"
+                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'asc'"
+                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'desc'"
+                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+              </th>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'dashboard.requester' | translate }}</th>
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn('requester')">
+                <div class="flex items-center gap-2">
+                  {{ 'dashboard.requester' | translate }}
+                  <lucide-angular *ngIf="sortState.column !== 'requester'" [img]="ArrowUpDown"
+                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'asc'"
+                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'desc'"
+                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+              </th>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'dashboard.status' | translate }}</th>
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn('status')">
+                <div class="flex items-center gap-2">
+                  {{ 'dashboard.status' | translate }}
+                  <lucide-angular *ngIf="sortState.column !== 'status'" [img]="ArrowUpDown"
+                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'asc'"
+                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'desc'"
+                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                </div>
+              </th>
               <th
                 class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 {{ 'common.actions' | translate }}</th>
