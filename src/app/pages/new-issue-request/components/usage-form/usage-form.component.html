@@ -126,7 +126,7 @@
           <div class="space-y-3">
             <!-- File Input -->
             <div class="relative flex items-center gap-2">
-              <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept="*/*" class="hidden">
+              <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
               <label (click)="fileInput.click()"
                 class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
                 {{ 'common.chooseFiles' | translate }}

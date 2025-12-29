@@ -586,7 +586,7 @@
                   <div class="relative flex items-center gap-2">
                     <input type="file" #fileInput (change)="onFilesSelected($event)"
                       [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
-                      multiple accept="*/*" class="hidden">
+                      multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
                     <label
                       (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && fileInput.click()"
                       [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
@@ -794,7 +794,7 @@
                   <!-- File Input -->
                   <div class="relative flex items-center gap-2">
                     <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
-                      [disabled]="processing" multiple accept="*/*" class="hidden">
+                      [disabled]="processing" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
                     <label (click)="!processing && approvalFileInput.click()" [class.opacity-50]="processing"
                       [class.cursor-not-allowed]="processing"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">

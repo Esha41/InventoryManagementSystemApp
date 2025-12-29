@@ -26,7 +26,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
-import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -887,9 +887,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       const newFiles = Array.from(input.files);
       const invalidFiles: string[] = [];
 
-      // Validate file sizes
+      // Validate file types and sizes
       newFiles.forEach(file => {
-        const validation = validateFileSize(file);
+        const validation = validateFile(file);
         if (!validation.isValid) {
           invalidFiles.push(validation.errorMessage);
         }
@@ -1628,9 +1628,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       const invalidFiles: string[] = [];
       const validFiles: File[] = [];
 
-      // Validate file sizes and separate valid/invalid files
+      // Validate file types and sizes, separate valid/invalid files
       newFiles.forEach(file => {
-        const validation = validateFileSize(file);
+        const validation = validateFile(file);
         if (!validation.isValid) {
           invalidFiles.push(validation.errorMessage);
         } else {
@@ -1687,9 +1687,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       const invalidFiles: string[] = [];
       const validFiles: File[] = [];
 
-      // Validate file sizes and separate valid/invalid files
+      // Validate file types and sizes, separate valid/invalid files
       newFiles.forEach(file => {
-        const validation = validateFileSize(file);
+        const validation = validateFile(file);
         if (!validation.isValid) {
           invalidFiles.push(validation.errorMessage);
         } else {
