@@ -74,6 +74,54 @@ export const MAX_FILE_SIZE_BYTES = 30 * 1024 * 1024; // 30 MB
 export const MAX_FILE_SIZE_MB = 30;
 
 /**
+ * Allowed file types/extensions
+ */
+export const ALLOWED_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.pdf', '.xlsx', '.docx'];
+
+/**
+ * Allowed MIME types
+ */
+export const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
+/**
+ * Validates if a file type is allowed
+ * @param file File object to validate
+ * @returns Object with isValid boolean and errorMessage string
+ */
+export function validateFileType(file: File): { isValid: boolean; errorMessage: string } {
+  if (!file) {
+    return { isValid: false, errorMessage: 'No file provided' };
+  }
+
+  const fileName = file.name.toLowerCase();
+  const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+  
+  // Check by extension
+  const isValidExtension = ALLOWED_FILE_EXTENSIONS.some(ext => 
+    fileName.endsWith(ext.toLowerCase())
+  );
+
+  // Check by MIME type (if available)
+  const isValidMimeType = !file.type || ALLOWED_MIME_TYPES.includes(file.type.toLowerCase());
+
+  if (!isValidExtension && !isValidMimeType) {
+    return {
+      isValid: false,
+      errorMessage: `File "${file.name}" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX.`
+    };
+  }
+
+  return { isValid: true, errorMessage: '' };
+}
+
+/**
  * Validates if a file size is within the maximum allowed size
  * @param file File object to validate
  * @returns Object with isValid boolean and errorMessage string
@@ -89,6 +137,31 @@ export function validateFileSize(file: File): { isValid: boolean; errorMessage: 
       isValid: false,
       errorMessage: `File "${file.name}" is too large (${fileSizeMB} MB). Maximum file size is ${MAX_FILE_SIZE_MB} MB.`
     };
+  }
+
+  return { isValid: true, errorMessage: '' };
+}
+
+/**
+ * Validates both file type and file size
+ * @param file File object to validate
+ * @returns Object with isValid boolean and errorMessage string
+ */
+export function validateFile(file: File): { isValid: boolean; errorMessage: string } {
+  if (!file) {
+    return { isValid: false, errorMessage: 'No file provided' };
+  }
+
+  // First validate file type
+  const typeValidation = validateFileType(file);
+  if (!typeValidation.isValid) {
+    return typeValidation;
+  }
+
+  // Then validate file size
+  const sizeValidation = validateFileSize(file);
+  if (!sizeValidation.isValid) {
+    return sizeValidation;
   }
 
   return { isValid: true, errorMessage: '' };

@@ -5,7 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 
 // Export MAX_FILE_SIZE_MB for template use
@@ -235,9 +235,9 @@ export class UsageFormComponent {
       const invalidFiles: string[] = [];
       const validFiles: File[] = [];
 
-      // Validate file sizes and separate valid/invalid files
+      // Validate file types and sizes, separate valid/invalid files
       newFiles.forEach(file => {
-        const validation = validateFileSize(file);
+        const validation = validateFile(file);
         if (!validation.isValid) {
           invalidFiles.push(validation.errorMessage);
         } else {

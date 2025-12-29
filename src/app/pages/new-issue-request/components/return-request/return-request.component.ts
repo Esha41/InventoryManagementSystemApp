@@ -24,7 +24,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getFileSizeFromFile, removeFile, validateFileSize, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 interface ReturnItemForm {
@@ -723,9 +723,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       const invalidFiles: string[] = [];
       const validFiles: File[] = [];
 
-      // Validate file sizes and separate valid/invalid files
+      // Validate file types and sizes, separate valid/invalid files
       newFiles.forEach(file => {
-        const validation = validateFileSize(file);
+        const validation = validateFile(file);
         if (!validation.isValid) {
           invalidFiles.push(validation.errorMessage);
         } else {
