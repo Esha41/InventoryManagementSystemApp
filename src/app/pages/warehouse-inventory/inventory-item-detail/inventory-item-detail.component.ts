@@ -11,7 +11,6 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
-import { formatDateTimeMilitary } from '@utils/format.utils';
 
 type TabType = 'overview' | 'stock';
 
@@ -188,10 +187,16 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format date in military format: "dd MM yyyy HH mm"
+   * Format date for display
    */
   formatDate(date?: Date | string): string {
-    return formatDateTimeMilitary(date, true);
+    if (!date) return '-';
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
   }
 
   /**

@@ -6,7 +6,6 @@ import { LucideAngularModule, X } from 'lucide-angular';
 import { ReturnDto } from '@services/return.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { Subject, takeUntil } from 'rxjs';
-import { formatDateTimeMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-return-details-modal',
@@ -90,7 +89,24 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
   }
 
   private formatDate(source?: string | Date): string {
-    return formatDateTimeMilitary(source, true);
+    let date: Date;
+
+    if (source instanceof Date) {
+      date = source;
+    } else if (typeof source === 'string') {
+      const parsed = new Date(source);
+      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    } else {
+      date = new Date();
+    }
+
+    const day = date.getDate();
+    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
   }
 
   resolveDepartmentName(request: ReturnDto | null): string {
