@@ -55,6 +55,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     skipToStepIds?: number[];
     availableNextSteps?: WorkflowStepDto[];
     canSkip?: boolean; // Preserve canSkip to maintain normal sequential flow
+    canReturn?: boolean;
   }> = [];
   
   roles: RoleDto[] = [];
@@ -187,7 +188,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             availableUsers: [],
             skipToStepIds: skipToStepIds, // Transition steps - only for dropdown display, doesn't affect step identity
             availableNextSteps: [], // Will be populated for dropdown options
-            canSkip: (s as any).canSkip === true // Preserve canSkip - false by default to maintain normal sequential flow
+            canSkip: (s as any).canSkip === true, // Preserve canSkip - false by default to maintain normal sequential flow
+            canReturn: (s as any).canReturn === true // Load canReturn from backend
           };
         });
         
@@ -397,16 +399,29 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       skipToStepIds: Array.isArray(s.skipToStepIds) ? [...s.skipToStepIds] : []
     }));
     
-    // IMPORTANT: Only send workflow metadata (name, type, status) - do NOT send workflowSteps
-    // This prevents backend from checking if steps are in approval history
-    // We only want to update skip steps (transitions), not modify workflow steps themselves
+    // Build workflow steps payload with all properties including canReturn
+    const workflowStepsPayload = this.editSteps.map((s, idx) => ({
+      id: s.workflowStepId || 0,
+      workflowId: editId,
+      stepOrder: idx + 1,
+      applicationRoleId: s.roleId as string,
+      applicationEntityId: (s.applicationEntityId as number) || 0,
+      mustApprove: false,
+      requireHigherApproval: !!s.requireHigherApproval,
+      higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
+      higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
+      reserveQty: false,
+      canReturn: !!s.canReturn
+    }));
+
+    // Build backend payload with workflow steps including canReturn
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,
       workflowType: this.editWorkflowType,
       isActive: this.editForm.status === 'Active',
       isSpecialOrReserved: false,
-      workflowSteps: [] // Send empty array to avoid backend validation on steps in approval history
+      workflowSteps: workflowStepsPayload
     } as any;
 
     const updateNotifiers = (workflowSteps?: any[]): Observable<boolean> => {
@@ -533,13 +548,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
     this.submitting = true;
     
-    // IMPORTANT: Only update skip steps (transitions) - do NOT update workflow steps
-    // This prevents backend from checking if steps are in approval history
-    // Workflow steps remain unchanged, only transitions are updated
-    // If workflow metadata (name, type, status) needs to be updated, that should be done separately
-    
-    // Chain: first update transitions, then update notifiers
-    updateTransitions().pipe(
+    // First update workflow with steps (including canReturn), then update transitions and notifiers
+    this.workflowService.updateBackendWorkflow(backendPayload).pipe(
+      switchMap(() => updateTransitions()),
       switchMap(() => updateNotifiers())
     ).subscribe({
       next: () => {

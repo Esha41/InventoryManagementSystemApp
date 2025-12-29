@@ -239,6 +239,7 @@
     "higherApprovalRole": "دور الموافقة العليا",
     "higherApprovalEntity": "كيان الموافقة العليا",
     "skipTo": "التخطي إلى",
+    "canReturn": "يمكن الإرجاع",
     "rolesToBeNotified": "الأدوار المراد إشعارها",
     "usersToBeNotified": "المستخدمون المراد إشعارهم",
     "whenApproveRejectReturn": "(عند الموافقة/الرفض/الإرجاع)",

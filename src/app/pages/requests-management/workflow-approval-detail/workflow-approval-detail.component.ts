@@ -797,7 +797,21 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     // User must be able to approve/reject to return
-    return this.canApproveOrReject();
+    if (!this.canApproveOrReject()) {
+      return false;
+    }
+
+    // Check if the current workflow step allows returning (canReturn must be true)
+    const currentPendingStep = this.requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending
+    );
+
+    if (!currentPendingStep) {
+      return false;
+    }
+
+    // Only show return button if canReturn is true for the current step
+    return currentPendingStep.canReturn === true;
   }
 
   /**

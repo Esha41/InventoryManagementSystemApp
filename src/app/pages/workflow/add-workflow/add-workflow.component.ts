@@ -56,6 +56,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     requireHigherApproval?: boolean;
     higherApprovalRoleId?: string | null;
     higherApplicationEntityId?: number | null;
+    canReturn?: boolean;
     errors?: { role?: boolean; entity?: boolean; higherRole?: boolean; higherEntity?: boolean };
   }>=[];
 
@@ -246,7 +247,8 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         requireHigherApproval: !!s.requireHigherApproval,
         higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
         higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
-        reserveQty: false
+        reserveQty: false,
+        canReturn: !!s.canReturn
       }))
     };
 
@@ -307,6 +309,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       requireHigherApproval: false,
       higherApprovalRoleId: null,
       higherApplicationEntityId: null,
+      canReturn: false,
       errors: { role: true, entity: true, higherRole: false, higherEntity: false }
     });
 
