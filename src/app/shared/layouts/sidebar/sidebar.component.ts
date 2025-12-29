@@ -84,12 +84,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.department',
       icon: Building2,
-      permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create'],
+      permissions: ['allowanceitem.page'],
       children: [
         {
           label: 'nav.allowance',
           route: '/allowance',
-          permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create']
+          permissions: ['allowanceitem.page']
         }
       ]
     },
@@ -300,11 +300,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
           }
 
           // Check if user has required permissions for child
+          // If user doesn't have permission (e.g., 'allowanceitem.page'), child will be filtered out
           const hasChildPermission = child.requireAll
             ? this.authService.hasAllPermissions(child.permissions)
             : this.authService.hasAnyPermission(child.permissions);
-
-
 
           return hasChildPermission;
         });
@@ -341,9 +340,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
 
 
-      // If item has children, show it if user has permission OR if any child is visible
+      // If item has children, only show it if at least one child is visible
+      // This ensures parent menus (like "Department") are hidden when all children 
+      // (like "Allowance") are filtered out due to missing permissions
       if (item.children && item.children.length > 0) {
-        const shouldShow = hasPermission || item.children.length > 0;
+        // Only show parent if at least one child is visible (regardless of parent permissions)
+        // Example: If user doesn't have 'allowanceitem.page', the "Allowance" child is filtered out,
+        // and the "Department" parent will also be hidden since children.length === 0
+        const shouldShow = item.children.length > 0;
         if (item.label === 'nav.warehouse') {
           // Auto-expand warehouse menu if it has visible children
           if (shouldShow && item.children.length > 0) {
