@@ -17,7 +17,7 @@ import { ToastService } from '@services/toast.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { SupplyItemDisplay, LotItem } from '@models/supply-order.model';
-import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { formatDate as formatDateUtil, formatNumber as formatNumberUtil, formatTimeToMilitary } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -767,6 +767,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   formatDate = formatDateUtil;
   formatNumber = formatNumberUtil;
+  formatTimeToMilitary = formatTimeToMilitary;
   getPriorityClass = getPriorityClass;
 
   /**

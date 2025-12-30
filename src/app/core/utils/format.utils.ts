@@ -46,3 +46,80 @@ export function formatDateShort(dateString?: string | null): string {
   }
 }
 
+/**
+ * Format time to military format (HHmm - 4 digits)
+ * Converts various time formats to military time format (e.g., "1430" for 2:30 PM)
+ * 
+ * Supports input formats:
+ * - Military format (HHmm): "1430" -> "1430"
+ * - Time with colons (HH:mm:ss or HH:mm): "14:30:00" or "14:30" -> "1430"
+ * - Date object: extracts hours and minutes -> "1430"
+ * - Empty/null/undefined: returns empty string
+ * 
+ * @param time - Time value in various formats (string, Date, null, undefined)
+ * @returns Time in military format (HHmm) or empty string if invalid
+ * 
+ * @example
+ * formatTimeToMilitary("14:30:00") // returns "1430"
+ * formatTimeToMilitary("14:30") // returns "1430"
+ * formatTimeToMilitary("1430") // returns "1430"
+ * formatTimeToMilitary(new Date(2024, 0, 1, 14, 30)) // returns "1430"
+ * formatTimeToMilitary(null) // returns ""
+ */
+export function formatTimeToMilitary(time?: string | Date | null): string {
+  if (!time) return '';
+
+  // If it's already in military format (HHmm - 4 digits)
+  if (typeof time === 'string' && time.length === 4 && /^\d{4}$/.test(time)) {
+    return time;
+  }
+
+  // Handle Date object
+  if (time instanceof Date) {
+    if (isNaN(time.getTime())) return '';
+    const hours = time.getHours().toString().padStart(2, '0');
+    const minutes = time.getMinutes().toString().padStart(2, '0');
+    return hours + minutes;
+  }
+
+  // Handle string formats
+  if (typeof time === 'string') {
+    // Check if it's an ISO date string (contains 'T' or is a full date-time string)
+    // Examples: "2024-01-15T14:30:00Z", "2024-01-15T14:30:00.000Z", etc.
+    if (time.includes('T') || /^\d{4}-\d{2}-\d{2}/.test(time)) {
+      try {
+        const dateObj = new Date(time);
+        if (!isNaN(dateObj.getTime())) {
+          const hours = dateObj.getHours().toString().padStart(2, '0');
+          const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+          return hours + minutes;
+        }
+      } catch {
+        // If Date parsing fails, continue to other string format checks
+      }
+    }
+
+    // Time with colons (HH:mm:ss or HH:mm) - convert to military
+    // Only process if it looks like a time string (not a date string)
+    if (time.includes(':') && !time.includes('-') && !time.includes('T')) {
+      const parts = time.split(':');
+      const hours = parts[0]?.trim().padStart(2, '0') || '00';
+      const minutes = parts[1]?.trim().padStart(2, '0') || '00';
+      // Validate hours (00-23) and minutes (00-59)
+      const hoursNum = parseInt(hours, 10);
+      const minutesNum = parseInt(minutes, 10);
+      if (hoursNum >= 0 && hoursNum <= 23 && minutesNum >= 0 && minutesNum <= 59) {
+        return hours + minutes;
+      }
+      return '';
+    }
+
+    // If it's a valid 4-digit number string, return as-is
+    if (/^\d{4}$/.test(time)) {
+      return time;
+    }
+  }
+
+  return '';
+}
+

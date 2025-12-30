@@ -27,6 +27,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { formatTimeToMilitary } from '@utils/format.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -1954,12 +1955,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return en || ar || '';
   }
 
+  /**
+   * Format time to military format (HHmm)
+   * Uses centralized formatTimeToMilitary function for consistency
+   */
   formatTime(time: string | undefined): string {
-    if (!time) return '';
-    if (time.length === 4 && !time.includes(':')) {
-      return `${time.substring(0, 2)}:${time.substring(2, 4)}`;
-    }
-    return time;
+    return formatTimeToMilitary(time);
   }
 
   /**
