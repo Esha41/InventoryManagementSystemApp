@@ -330,7 +330,8 @@
         "date": "Date",
         "itemName": "Item Name",
         "itemNo": "Item No",
-        "quantity": "Quantity"
+        "quantity": "Quantity",
+        "notes": "Notes"
       },
       "noApprovalHistory": "No approval history available yet.",
       "list": {

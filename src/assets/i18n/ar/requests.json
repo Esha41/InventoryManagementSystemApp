@@ -326,7 +326,8 @@
         "date": "التاريخ",
         "itemName": "اسم مادة",
         "itemNo": "رقم مادة",
-        "quantity": "الكمية"
+        "quantity": "الكمية",
+        "notes": "ملاحظات"
       },
       "noApprovalHistory": "لا يوجد تاريخ موافقات متاح حتى الآن.",
       "list": {

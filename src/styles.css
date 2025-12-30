@@ -402,6 +402,22 @@ select {
   border-color: var(--color-border);
 }
 
+/* Calendar icon styling for date inputs */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+/* Ensure calendar icon is visible in dark mode */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.2);
+  opacity: 0.8;
+}
+
 /* Focus state for inputs */
 input:focus,
 textarea:focus,

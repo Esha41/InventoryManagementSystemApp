@@ -28,8 +28,11 @@
                 </label>
                 <div class="flex-1">
                   <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" name="department"
-                    (ngModelChange)="onDepartmentChange()" [disabled]="isLoadingDepartments"
-                    [error]="hasError('department')" [options]="departments" optionValue="id"
+                    (ngModelChange)="onDepartmentChange()" 
+                    [disabled]="isLoadingDepartments || !isAdminUser"
+                    [error]="hasError('department')" 
+                    [options]="filteredDepartments" 
+                    optionValue="id"
                     [optionLabelFn]="departmentOptionLabel"
                     placeholder="{{ 'allowance.selectDepartment' | translate }}">
                   </app-dropdown>

@@ -85,7 +85,8 @@
       "quantityRequired": "الكمية مطلوبة",
       "quantityInvalid": "يجب أن تكون الكمية رقماً صحيحاً",
       "failedToSend": "فشل إرسال طلب المقرر",
-      "failedToLoad": "فشل تحميل المقررات"
+      "failedToLoad": "فشل تحميل المقررات",
+      "unauthorizedAccess": "ليس لديك صلاحية للوصول إلى هذا المقرر. يمكنك فقط عرض المقررات الخاصة بقسمك."
     },
     "success": {
       "sentSuccessfully": "تم إرسال طلب المقرر بنجاح!"

@@ -112,7 +112,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Set current date and user for print footer
     this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
       year: 'numeric',
       month: 'long',
@@ -122,21 +121,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     });
     const user = this.authService.getCurrentUser();
     this.currentUser = user?.userName || user?.email || 'N/A';
-    // Subscribe to language changes to refresh data when language changes
+
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Reload roles to update roleMap with new language
         this.loadRoles().subscribe({
           next: () => {
-            // Reload current order data with new language
             if (this.selectedOrderId) {
               this.loadOrder(this.selectedOrderId);
             }
             this.cdr.markForCheck();
           },
           error: () => {
-            // Even if roles fail to load, reload current order
             if (this.selectedOrderId) {
               this.loadOrder(this.selectedOrderId);
             }
@@ -145,14 +141,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         });
       });
 
-    // Load roles first, then load orders to ensure roleMap is populated before use
     this.loadRoles().subscribe({
       next: () => {
-        // Roles loaded successfully, now load orders
         this.loadOrders();
       },
       error: () => {
-        // Even if roles fail to load, continue with orders (will show IDs if needed)
         this.loadOrders();
       }
     });
@@ -164,7 +157,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((roles: RoleDto[]) => {
           this.roles = roles;
-          // Create a map of role ID to localized role name for quick lookup
           const currentLang = getCurrentLang(this.translate);
           this.roleMap = new Map(
             roles.map(role => [
@@ -173,10 +165,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             ])
           );
         }),
-        map(() => void 0), // Convert to Observable<void>
+        map(() => void 0),
         catchError((error) => {
           console.error('Failed to load roles', error);
-          // Continue without roles - will show IDs if names not available
           return of(void 0);
         })
       );
@@ -187,10 +178,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return this.roleMap.get(roleId) || roleId;
   }
 
-  /**
-   * Get localized role name based on current language
-   * Uses applicationRoleNameAr for Arabic, applicationRoleName for English
-   */
   private getLocalizedRoleName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
 
@@ -205,14 +192,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return 'N/A';
   }
 
-  /**
-   * Get localized approver name based on current language
-   * Uses approverNameAr for Arabic, approverNameEn or approverName for English
-   */
   private getLocalizedApproverName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
 
-    // For pending steps, use role name (not user name)
     if (step.isPending) {
       if (currentLang === 'ar' && step.applicationRoleNameAr) {
         return step.applicationRoleNameAr;
@@ -221,7 +203,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       }
     }
 
-    // For completed steps, use user name
     if (currentLang === 'ar' && step.approverNameAr) {
       return step.approverNameAr;
     } else if (step.approverNameEn) {
@@ -242,7 +223,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.ordersLoading = true;
     this.ordersError = null;
 
-    // Load all request types: Order, Return, and Discard
     forkJoin({
       orders: this.orderService.getAllOrders().pipe(catchError(() => of([] as OrderDto[]))),
       returns: this.returnService.getAllReturns().pipe(catchError(() => of([] as ReturnDto[]))),
@@ -253,17 +233,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         next: ({ orders, returns, discards }) => {
           const currentUser = this.authService.getCurrentUser();
 
-          // Convert ReturnDto and DiscardDto to OrderDto format
           const convertedReturns = returns.map(ret => this.convertReturnToOrderDto(ret));
           const convertedDiscards = discards.map(disc => this.convertDiscardToOrderDto(disc));
 
-          // Combine all requests
           const allRequests = [...orders, ...convertedReturns, ...convertedDiscards];
-
-          // Filter by user's department
           const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
-
-          // Sort by ID in ascending order (#1, #2, #3, etc.)
           this.orders = filteredRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
 
           this.ordersLoading = false;
@@ -296,13 +270,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   loadOrder(id: number): void {
     this.detailsLoading = true;
     this.errorMessage = null;
-    // Clear previous data while loading
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
     this.cdr.markForCheck();
 
-    // Find the request in the loaded list to determine its type
     const request = this.orders.find(r => r.id === id);
     if (!request) {
       this.errorMessage = 'Request not found.';
@@ -311,7 +283,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Determine request type and load accordingly
     const requestType = typeof request.requestType === 'number'
       ? request.requestType
       : (request.requestType === 'Return' ? RequestTypeEnum.Return :
@@ -367,26 +338,48 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         map((response: any) => {
-          // Handle both wrapped response and direct array response
           const data: BaseRequestDto[] = Array.isArray(response)
             ? response
             : (response?.data || []);
 
-          // Find the base request that matches the order ID
+          data.forEach(baseRequest => {
+            const order = this.orders.find(o => o.id === baseRequest.id);
+            if (order && (!order.department && !order.departmentNameEn && !order.departmentNameAr)) {
+              if (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName']) {
+                order.departmentNameEn = baseRequest['departmentNameEn'] || baseRequest['departmentName'];
+                order.departmentNameAr = baseRequest['departmentNameAr'];
+              }
+              if (baseRequest['department']) {
+                order.department = baseRequest['department'];
+              }
+            }
+          });
+
+          this.cdr.markForCheck();
+
           const baseRequest = data.find(r => r.id === orderId);
 
-          // Update order summary status and requestDate with baseRequest data if available (authoritative source)
           if (baseRequest) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
               const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
 
-              // Set requestDate from baseRequest (with time)
               if (baseRequest.requestDate) {
-                updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
+                updatedSummary.requestDate = formatRequestDate(baseRequest.requestDate);
               }
 
-              // If usage date (lastUpdated) is empty, use requestDate as fallback (date only, no time)
+              if ((!updatedSummary.department || updatedSummary.department === 'N/A') &&
+                (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName'])) {
+                const currentLang = getCurrentLang(this.translate);
+                updatedSummary.department = getLocalizedName(
+                  {
+                    nameEn: baseRequest['departmentNameEn'] || baseRequest['departmentName'],
+                    nameAr: baseRequest['departmentNameAr']
+                  },
+                  currentLang
+                ) || 'N/A';
+              }
+
               if (!updatedSummary.lastUpdated || updatedSummary.lastUpdated.trim() === '') {
                 updatedSummary.lastUpdated = formatRequestDate(baseRequest.requestDate) || 'N/A';
               }
@@ -399,14 +392,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             }
           }
 
-          // Get requester info - always show requester as first step
-          // Use API-provided role name if available, otherwise use translation key
           const currentLang = getCurrentLang(this.translate);
           const requesterRoleName: string = currentLang === 'ar'
             ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
             : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
 
-          // Get localized requester name (approver field)
           const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
             ? baseRequest.requesterNameAr
             : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
@@ -421,18 +411,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           };
 
           if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
-            // Return only requester step if no approval history
             return [requesterStep];
           }
 
-          // Use the same mapping function as other components
-          // Pass the request status to filter out pending steps if approved
-          // Convert numeric status to RequestStatus string type using mapRequestStatus
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
 
-          // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
-          // Start numbering from 2 since requester is step 1
           const approvalSteps = workflowSteps.map((step, index) => ({
             step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
             role: this.getLocalizedRoleName(step),
@@ -442,24 +426,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             notes: step.comments || ''
           }));
 
-          // Prepend requester step as the first step
           return [requesterStep, ...approvalSteps];
         }),
         catchError(error => {
           console.error('Failed to load approval workflow', error);
-          // Fallback to mock data if API fails
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
             const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
-            // Add requester step as first step (step 1)
-            // Adjust fallback steps to start from step 2
             const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
               ...step,
               step: (index + 2).toString()
             }));
-            // Use translation key as fallback when no API data available
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
-            // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
@@ -482,30 +460,23 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (steps) => {
           this.approvalWorkflow = steps;
-          // If lastUpdated is still empty after loading workflow, try to use requestDate (date only, no time)
           if (!this.orderSummary.lastUpdated || this.orderSummary.lastUpdated.trim() === '') {
-            // Extract date only from requestDate (remove time if present)
             const requestDateOnly = this.orderSummary.requestDate
-              ? this.orderSummary.requestDate.split(' ').slice(0, 3).join(' ') // Take only first 3 parts (day month year)
+              ? this.orderSummary.requestDate.split(' ').slice(0, 3).join(' ')
               : 'N/A';
             this.orderSummary.lastUpdated = requestDateOnly;
           }
         },
         error: (error) => {
           console.error('Error loading approval workflow', error);
-          // Only use fallback if API call fails completely
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
             const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
-            // Add requester step as first step (step 1)
-            // Adjust fallback steps to start from step 2
             const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
               ...step,
               step: (index + 2).toString()
             }));
-            // Use translation key as fallback when no API data available
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
-            // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
@@ -544,7 +515,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      // QR code contains only the Order ID for simplicity
       const qrData = this.orderSummary.orderId;
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
@@ -552,7 +522,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           width: 320,
           margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
-          errorCorrectionLevel: 'H' // High error correction for better reliability
+          errorCorrectionLevel: 'H'
         }
       );
     } catch (error) {
@@ -563,7 +533,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
 
   getStatusLabel(status: number | string): string {
-    // mapOrderStatusFromApi already handles both number and string types
     return mapOrderStatusFromApi(status);
   }
 
@@ -571,8 +540,42 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return mapOrderPriorityToString(priority);
   }
 
+  getDepartmentName(order: OrderDto): string {
+    if (!order) return this.translate.instant('requestsManagement.orderReport.list.unknown');
+    const currentLang = getCurrentLang(this.translate);
+
+    if (order.department) {
+      const localized = getLocalizedName(order.department, currentLang);
+      if (localized) return localized;
+    }
+
+    if (order.departmentNameEn || order.departmentNameAr) {
+      const localized = getLocalizedName(
+        { nameEn: order.departmentNameEn, nameAr: order.departmentNameAr },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+
+    return this.translate.instant('requestsManagement.orderReport.list.unknown');
+  }
+
   getOrderDateLabel(order: OrderDto): string {
     if (!order.usageDateFrom) return '-';
+
+    const formatTime = (timeStr: string | null | undefined): string => {
+      if (!timeStr) return '';
+      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
+        return timeStr;
+      }
+      if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        const hours = parts[0].padStart(2, '0');
+        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+        return hours + minutes;
+      }
+      return timeStr;
+    };
 
     const fromDate = formatDate(order.usageDateFrom);
     const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
@@ -609,9 +612,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.qrCodeDataUrl = null;
   }
 
-  /**
-   * Convert ReturnDto to OrderDto format for unified handling
-   */
   private convertReturnToOrderDto(returnDto: ReturnDto): OrderDto {
     return {
       id: returnDto.id,
@@ -648,9 +648,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Convert DiscardDto to OrderDto format for unified handling
-   */
   private convertDiscardToOrderDto(discardDto: DiscardDto): OrderDto {
     return {
       id: discardDto.id,
@@ -703,11 +700,25 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       <html>
         <head>
           <meta charset="UTF-8">
+          <base href="/">
+          <meta name="url" content="">
           <title>Request Report - ${this.orderSummary.orderId}</title>
           <style>
             @page {
               size: A4;
-              margin: 1.5cm;
+              margin: 0.8cm 1.5cm 1.5cm 1.5cm;
+            }
+            
+            @page {
+              @bottom-left {
+                content: none;
+              }
+              @bottom-center {
+                content: none;
+              }
+              @bottom-right {
+                content: none;
+              }
             }
             
             * {
@@ -774,10 +785,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             .print-qr-container {
               position: absolute !important;
               right: 0 !important;
-              top: 0 !important;
+              top: -10px !important;
               text-align: center !important;
-              border: 2px solid #000 !important;
-              padding: 10px !important;
+              border: none !important;
+              padding: 0 !important;
               background: #ffffff !important;
             }
             
@@ -787,7 +798,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               height: 100px !important;
               display: block !important;
               margin: 0 auto 5px auto !important;
-              border: 1px solid #ddd !important;
+              border: none !important;
               padding: 5px !important;
               background: #ffffff !important;
             }
@@ -801,7 +812,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             }
             
             .print-divider {
-              border-bottom: 3px solid #000 !important;
+              border-bottom: none !important;
               margin-top: 10px !important;
               margin-bottom: 15px !important;
             }
@@ -813,8 +824,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               page-break-inside: avoid;
               border: 2px solid #000 !important;
               border-radius: 0 !important;
-              padding: 15px !important;
-              margin-bottom: 20px !important;
+              padding: 12px !important;
+              margin-bottom: 15px !important;
               background: #ffffff !important;
               box-shadow: none !important;
             }
@@ -823,9 +834,36 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               font-size: 14pt !important;
               font-weight: bold !important;
               color: #000 !important;
-              margin: 0 0 12px 0 !important;
-              padding-bottom: 8px !important;
-              border-bottom: 2px solid #333 !important;
+              margin: 0 0 8px 0 !important;
+              padding-bottom: 6px !important;
+            }
+            
+            .print-info-grid {
+              display: grid !important;
+              grid-template-columns: 1fr 1fr !important;
+              gap: 8px 15px !important;
+              margin-bottom: 0 !important;
+              margin-top: 0 !important;
+            }
+            
+            .print-info-item {
+              display: flex !important;
+              padding: 6px 0 !important;
+              border-bottom: 1px solid #ddd !important;
+              margin: 0 !important;
+            }
+            
+            .print-info-label {
+              font-weight: bold !important;
+              color: #333 !important;
+              min-width: 120px !important;
+              font-size: 9pt !important;
+            }
+            
+            .print-info-value {
+              color: #000 !important;
+              font-size: 9pt !important;
+              flex: 1 !important;
             }
             
             /* Professional Tables */
@@ -844,14 +882,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               color: #ffffff !important;
               font-weight: bold !important;
               font-size: 10pt !important;
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               text-align: left !important;
               border: 1px solid #000 !important;
             }
             
             .print-table-cell,
             table tbody td {
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               border: 1px solid #333 !important;
               font-size: 10pt !important;
               color: #000 !important;
@@ -870,11 +908,118 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             
             .print-table-footer-cell,
             table tfoot td {
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               border: 1px solid #000 !important;
               font-size: 10pt !important;
               font-weight: bold !important;
               color: #000 !important;
+            }
+            
+            /* Approval Workflow Cards */
+            .approval-workflow-cards {
+              display: grid !important;
+              grid-template-columns: repeat(4, 1fr) !important;
+              gap: 6px !important;
+              margin-top: 8px !important;
+            }
+            
+            .approval-card {
+              border: 1px solid #333 !important;
+              border-radius: 0 !important;
+              background: #ffffff !important;
+              page-break-inside: avoid !important;
+              overflow: hidden !important;
+              font-size: 7pt !important;
+            }
+            
+            .approval-card-header {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 4px 6px !important;
+              background: #f5f5f5 !important;
+              border-bottom: 1px solid #333 !important;
+            }
+            
+            .approval-step-number {
+              font-weight: bold !important;
+              font-size: 7pt !important;
+              color: #000 !important;
+              background: #fff !important;
+              border: 1px solid #333 !important;
+              padding: 1px 5px !important;
+              border-radius: 0 !important;
+            }
+            
+            .approval-status {
+              font-size: 6.5pt !important;
+              font-weight: bold !important;
+              padding: 2px 5px !important;
+              border-radius: 0 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.2px !important;
+            }
+            
+            .approval-status.status-approved {
+              background: #d4edda !important;
+              color: #155724 !important;
+              border: 1px solid #155724 !important;
+            }
+            
+            .approval-status.status-rejected {
+              background: #f8d7da !important;
+              color: #721c24 !important;
+              border: 1px solid #721c24 !important;
+            }
+            
+            .approval-status.status-pending {
+              background: #fff3cd !important;
+              color: #856404 !important;
+              border: 1px solid #856404 !important;
+            }
+            
+            .approval-status.status-in-progress {
+              background: #d1ecf1 !important;
+              color: #0c5460 !important;
+              border: 1px solid #0c5460 !important;
+            }
+            
+            .approval-card-body {
+              padding: 5px 6px !important;
+            }
+            
+            .approval-role {
+              font-weight: bold !important;
+              font-size: 7pt !important;
+              color: #000 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-approver {
+              font-size: 6.5pt !important;
+              color: #333 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-date {
+              font-size: 6pt !important;
+              color: #666 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-notes {
+              font-size: 6pt !important;
+              color: #444 !important;
+              margin-top: 3px !important;
+              padding-top: 3px !important;
+              border-top: 1px dashed #ccc !important;
+              line-height: 1.2 !important;
+            }
+            
+            .approval-notes .notes-label {
+              font-weight: bold !important;
+              color: #000 !important;
+              font-size: 6pt !important;
             }
             
             /* Headers */
@@ -994,9 +1139,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }, 250);
   }
 
-  /**
-   * Resolve usage purpose with proper localization
-   */
   resolveUsagePurpose(): string {
     const currentLang = getCurrentLang(this.translate);
     return getLocalizedName(
