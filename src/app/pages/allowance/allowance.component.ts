@@ -22,6 +22,8 @@ import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { UserContextService } from '@services/user-context.service';
 
 export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 
@@ -64,7 +66,10 @@ export class AllowanceComponent implements OnInit {
   items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
 
   departments: DepartmentDto[] = [];
+  filteredDepartments: DepartmentDto[] = []; // Filtered departments based on user permissions
   isLoadingDepartments = false;
+  isAdminUser = false;
+  userDepartmentId: number | null = null;
   readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
 
@@ -93,11 +98,28 @@ export class AllowanceComponent implements OnInit {
     private translationService: TranslationService,
     private router: Router,
     private toastService: ToastService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private backendAuthService: BackendAuthService,
+    private userContextService: UserContextService
   ) {
     // Set default year to current year
     const currentYear = new Date().getFullYear();
     this.selectedYear = currentYear.toString();
+    
+    // Initialize user context
+    this.initializeUserContext();
+  }
+
+  private initializeUserContext(): void {
+    // Check if user can view all departments (admin or has permission)
+    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
+    this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
+    
+    // Get user's department ID
+    const currentUser = this.backendAuthService.getCurrentUser();
+    if (currentUser?.departmentId) {
+      this.userDepartmentId = currentUser.departmentId;
+    }
   }
 
   ngOnInit(): void {
@@ -255,6 +277,21 @@ export class AllowanceComponent implements OnInit {
     this.lookupService.getDepartments().subscribe({
       next: (departments: DepartmentDto[]) => {
         this.departments = departments;
+        
+        // Filter departments for non-admin users
+        if (!this.isAdminUser && this.userDepartmentId !== null) {
+          // Non-admin users can only see their own department
+          this.filteredDepartments = departments.filter(dept => dept.id === this.userDepartmentId);
+          
+          // Pre-select user's department if not already selected
+          if (!this.selectedDepartment && this.filteredDepartments.length > 0) {
+            this.selectedDepartment = this.userDepartmentId;
+          }
+        } else {
+          // Admin users can see all departments
+          this.filteredDepartments = departments;
+        }
+        
         this.isLoadingDepartments = false;
       },
       error: (error: any) => {
@@ -463,6 +500,16 @@ export class AllowanceComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
 
+        // Handle 403 Forbidden (authorization errors)
+        if (error?.status === 403) {
+          const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(forbiddenMessage, translations['toast.error']);
+          });
+          this.errors['submit'] = forbiddenMessage;
+          return;
+        }
+
         // Extract error message from various possible locations
         let errorMessage = this.translateService.instant('allowance.errors.failedToSend');
         if (error?.error?.message) {
@@ -533,6 +580,19 @@ export class AllowanceComponent implements OnInit {
         }
       },
       error: (error) => {
+        // Handle 403 Forbidden (authorization errors)
+        if (error?.status === 403) {
+          const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(forbiddenMessage, translations['toast.error']);
+          });
+          // Redirect back to list if unauthorized
+          setTimeout(() => {
+            this.router.navigate(['/allowance']);
+          }, 2000);
+          return;
+        }
+
         this.translateService.get(['toast.error', 'allowance.errors.failedToLoad']).subscribe(translations => {
           this.toastService.error(
             translations['allowance.errors.failedToLoad'] || 'Failed to load allowance data',

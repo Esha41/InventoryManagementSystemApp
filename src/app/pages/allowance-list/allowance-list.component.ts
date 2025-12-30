@@ -24,6 +24,8 @@ import { processAllowanceData } from '@utils/allowance.mapper';
 import { filterAllowances } from '@utils/allowance.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { UserContextService } from '@services/user-context.service';
 
 @Component({
   selector: 'app-allowance-list',
@@ -61,7 +63,10 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   // Filter dropdowns
   departments: LookupItem[] = [];
+  filteredDepartments: LookupItem[] = []; // Filtered departments based on user permissions
   selectedDepartment: number | string | null = null;
+  isAdminUser = false;
+  userDepartmentId: number | null = null;
   allItems: AmmunitionReadDto[] = []; // All items from API
   filteredItems: AmmunitionReadDto[] = []; // Items filtered by selected department
   selectedItem: number | string | null = null;
@@ -94,8 +99,30 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private router: Router,
     private translateService: TranslateService,
     private translationService: TranslationService,
-    private toastService: ToastService
-  ) { }
+    private toastService: ToastService,
+    private backendAuthService: BackendAuthService,
+    private userContextService: UserContextService
+  ) {
+    // Initialize user context
+    this.initializeUserContext();
+  }
+
+  private initializeUserContext(): void {
+    // Check if user can view all departments (admin or has permission)
+    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
+    this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
+    
+    // Get user's department ID
+    const currentUser = this.backendAuthService.getCurrentUser();
+    if (currentUser?.departmentId) {
+      this.userDepartmentId = currentUser.departmentId;
+      
+      // Pre-select user's department for non-admin users
+      if (!this.isAdminUser) {
+        this.selectedDepartment = currentUser.departmentId;
+      }
+    }
+  }
 
   ngOnInit(): void {
     this.loadAllowances();
@@ -139,7 +166,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this.error = this.translateService.instant('allowance.errors.failedToLoad');
+          // Handle 403 Forbidden (authorization errors)
+          if (error?.status === 403) {
+            this.error = this.translateService.instant('allowance.errors.unauthorizedAccess');
+          } else {
+            this.error = this.translateService.instant('allowance.errors.failedToLoad');
+          }
           this.loading = false;
         }
       });
@@ -150,6 +182,16 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     const processed = processAllowanceData(items, departments, ammunitionItems, currentLang);
 
     this.departments = processed.departments;
+    
+    // Filter departments for non-admin users
+    if (!this.isAdminUser && this.userDepartmentId !== null) {
+      // Non-admin users can only see their own department in the filter
+      this.filteredDepartments = processed.departments.filter(dept => dept.id === this.userDepartmentId);
+    } else {
+      // Admin users can see all departments
+      this.filteredDepartments = processed.departments;
+    }
+    
     this.allItems = processed.allItems;
     this.filteredItems = [...processed.allItems];
     this.allAllowances = processed.allAllowances;
@@ -189,6 +231,11 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   clearDepartmentFilter(): void {
+    // Prevent non-admin users from clearing department filter
+    if (!this.isAdminUser && this.userDepartmentId !== null) {
+      return;
+    }
+    
     this.selectedDepartment = null;
     this.currentPage = 1;
     this.updateFilteredItems();
@@ -266,6 +313,14 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
 
   onEdit(allowance: AllowanceTableRow): void {
+    // Verify user has permission to edit this allowance
+    if (!this.isAdminUser && this.userDepartmentId !== null && allowance.departmentId !== this.userDepartmentId) {
+      this.translateService.get(['toast.error', 'allowance.errors.unauthorizedAccess']).subscribe(translations => {
+        this.toastService.error(translations['allowance.errors.unauthorizedAccess'], translations['toast.error']);
+      });
+      return;
+    }
+
     this.router.navigate(['/allowance/add'], {
       queryParams: {
         departmentId: allowance.departmentId,

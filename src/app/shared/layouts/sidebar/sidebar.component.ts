@@ -57,30 +57,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/inventory-dashboard',
       permissions: ['InventoryDashboard']
     },
-    {
-      label: 'nav.supplyManagement',
-      icon: ClipboardList,
-      route: '/supply-request-management',
-      permissions: ['inventory.page', 'inventory.view']
-    },
-    {
-      label: 'nav.supplyOrder',
-      icon: Package,
-      route: '/supply-order',
-      permissions: ['supply.page', 'supply.view']
-    },
-    {
-      label: 'nav.warehouse',
-      icon: Warehouse,
-      route: '/warehouse',
-      permissions: ['warehousepage.page', 'warehousepage.view']
-    },
-    {
-      label: 'nav.workflow',
-      icon: GitBranch,
-      route: '/workflow',
-      permissions: ['workflowtype.page', 'workflowtype.view']
-    },
+    // Temporarily commented out - not needed for now but accessible from other routes
+    // {
+    //   label: 'nav.supplyManagement',
+    //   icon: ClipboardList,
+    //   route: '/supply-request-management',
+    //   permissions: ['inventory.page', 'inventory.view']
+    // },
+    // {
+    //   label: 'nav.supplyOrder',
+    //   icon: Package,
+    //   route: '/supply-order',
+    //   permissions: ['supply.page', 'supply.view']
+    // },
     {
       label: 'nav.department',
       icon: Building2,
@@ -132,12 +121,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
         }
       ]
     },
-    {
-      label: 'nav.forecast',
-      icon: TrendingUp,
-      route: '/forecast',
-      permissions: ['Forecast_view']
-    },
+    // Temporarily commented out - contains dummy data, will be implemented later
+    // {
+    //   label: 'nav.forecast',
+    //   icon: TrendingUp,
+    //   route: '/forecast',
+    //   permissions: ['Forecast_view']
+    // },
     {
       label: 'nav.inventory',
       isHeader: true
@@ -154,17 +144,24 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/asset-list',
       permissions: ['ammunition.page']
     },
-    {
-      label: 'nav.inventoryForecast',
-      icon: TrendingUp,
-      route: '/inventory-forecast',
-      permissions: ['inventorypage.page', 'inventorypage.view']
-    },
+    // Temporarily commented out - contains dummy data, will be implemented later
+    // {
+    //   label: 'nav.inventoryForecast',
+    //   icon: TrendingUp,
+    //   route: '/inventory-forecast',
+    //   permissions: ['inventorypage.page', 'inventorypage.view']
+    // },
     {
       label: 'nav.inventorySummary',
       icon: Package,
       route: '/inventory-summary',
       permissions: ['inventorypage.page', 'inventorypage.view']
+    },
+    {
+      label: 'nav.warehouse',
+      icon: Warehouse,
+      route: '/warehouse',
+      permissions: ['warehousepage.page', 'warehousepage.view']
     },
     {
       label: 'nav.depotManagement',
@@ -212,6 +209,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: Upload,
       route: '/admin-import-export',
       permissions: ['systemusers.page', 'systemusers.view']
+    },
+    {
+      label: 'nav.workflow',
+      icon: GitBranch,
+      route: '/workflow',
+      permissions: ['workflowtype.page', 'workflowtype.view']
     }
   ];
 

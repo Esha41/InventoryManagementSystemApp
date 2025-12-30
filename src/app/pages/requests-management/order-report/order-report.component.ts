@@ -112,7 +112,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Set current date and user for print footer
     this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
       year: 'numeric',
       month: 'long',
@@ -122,21 +121,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     });
     const user = this.authService.getCurrentUser();
     this.currentUser = user?.userName || user?.email || 'N/A';
-    // Subscribe to language changes to refresh data when language changes
+    
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        // Reload roles to update roleMap with new language
         this.loadRoles().subscribe({
           next: () => {
-            // Reload current order data with new language
             if (this.selectedOrderId) {
               this.loadOrder(this.selectedOrderId);
             }
             this.cdr.markForCheck();
           },
           error: () => {
-            // Even if roles fail to load, reload current order
             if (this.selectedOrderId) {
               this.loadOrder(this.selectedOrderId);
             }
@@ -145,14 +141,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         });
       });
 
-    // Load roles first, then load orders to ensure roleMap is populated before use
     this.loadRoles().subscribe({
       next: () => {
-        // Roles loaded successfully, now load orders
         this.loadOrders();
       },
       error: () => {
-        // Even if roles fail to load, continue with orders (will show IDs if needed)
         this.loadOrders();
       }
     });
@@ -164,7 +157,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((roles: RoleDto[]) => {
           this.roles = roles;
-          // Create a map of role ID to localized role name for quick lookup
           const currentLang = getCurrentLang(this.translate);
           this.roleMap = new Map(
             roles.map(role => [
@@ -173,10 +165,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             ])
           );
         }),
-        map(() => void 0), // Convert to Observable<void>
+        map(() => void 0),
         catchError((error) => {
           console.error('Failed to load roles', error);
-          // Continue without roles - will show IDs if names not available
           return of(void 0);
         })
       );
@@ -187,10 +178,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return this.roleMap.get(roleId) || roleId;
   }
 
-  /**
-   * Get localized role name based on current language
-   * Uses applicationRoleNameAr for Arabic, applicationRoleName for English
-   */
   private getLocalizedRoleName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
 
@@ -205,14 +192,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return 'N/A';
   }
 
-  /**
-   * Get localized approver name based on current language
-   * Uses approverNameAr for Arabic, approverNameEn or approverName for English
-   */
   private getLocalizedApproverName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
 
-    // For pending steps, use role name (not user name)
     if (step.isPending) {
       if (currentLang === 'ar' && step.applicationRoleNameAr) {
         return step.applicationRoleNameAr;
@@ -221,7 +203,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       }
     }
 
-    // For completed steps, use user name
     if (currentLang === 'ar' && step.approverNameAr) {
       return step.approverNameAr;
     } else if (step.approverNameEn) {
@@ -242,7 +223,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.ordersLoading = true;
     this.ordersError = null;
 
-    // Load all request types: Order, Return, and Discard
     forkJoin({
       orders: this.orderService.getAllOrders().pipe(catchError(() => of([] as OrderDto[]))),
       returns: this.returnService.getAllReturns().pipe(catchError(() => of([] as ReturnDto[]))),
@@ -253,17 +233,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         next: ({ orders, returns, discards }) => {
           const currentUser = this.authService.getCurrentUser();
 
-          // Convert ReturnDto and DiscardDto to OrderDto format
           const convertedReturns = returns.map(ret => this.convertReturnToOrderDto(ret));
           const convertedDiscards = discards.map(disc => this.convertDiscardToOrderDto(disc));
 
-          // Combine all requests
           const allRequests = [...orders, ...convertedReturns, ...convertedDiscards];
-
-          // Filter by user's department
           const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
-
-          // Sort by ID in ascending order (#1, #2, #3, etc.)
           this.orders = filteredRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
 
           this.ordersLoading = false;
@@ -296,13 +270,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   loadOrder(id: number): void {
     this.detailsLoading = true;
     this.errorMessage = null;
-    // Clear previous data while loading
     this.approvalWorkflow = [];
     this.workflowDetails = [];
     this.approvalWorkflowStatus = '';
     this.cdr.markForCheck();
 
-    // Find the request in the loaded list to determine its type
     const request = this.orders.find(r => r.id === id);
     if (!request) {
       this.errorMessage = 'Request not found.';
@@ -311,7 +283,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Determine request type and load accordingly
     const requestType = typeof request.requestType === 'number'
       ? request.requestType
       : (request.requestType === 'Return' ? RequestTypeEnum.Return :
@@ -367,26 +338,48 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         map((response: any) => {
-          // Handle both wrapped response and direct array response
           const data: BaseRequestDto[] = Array.isArray(response)
             ? response
             : (response?.data || []);
 
-          // Find the base request that matches the order ID
+          data.forEach(baseRequest => {
+            const order = this.orders.find(o => o.id === baseRequest.id);
+            if (order && (!order.department && !order.departmentNameEn && !order.departmentNameAr)) {
+              if (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName']) {
+                order.departmentNameEn = baseRequest['departmentNameEn'] || baseRequest['departmentName'];
+                order.departmentNameAr = baseRequest['departmentNameAr'];
+              }
+              if (baseRequest['department']) {
+                order.department = baseRequest['department'];
+              }
+            }
+          });
+
+          this.cdr.markForCheck();
+
           const baseRequest = data.find(r => r.id === orderId);
 
-          // Update order summary status and requestDate with baseRequest data if available (authoritative source)
           if (baseRequest) {
             const order = this.orders.find(o => o.id === orderId);
             if (order) {
               const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
 
-              // Set requestDate from baseRequest (with time)
               if (baseRequest.requestDate) {
                 updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
               }
 
-              // If usage date (lastUpdated) is empty, use requestDate as fallback (date only, no time)
+              if ((!updatedSummary.department || updatedSummary.department === 'N/A') && 
+                  (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName'])) {
+                const currentLang = getCurrentLang(this.translate);
+                updatedSummary.department = getLocalizedName(
+                  { 
+                    nameEn: baseRequest['departmentNameEn'] || baseRequest['departmentName'], 
+                    nameAr: baseRequest['departmentNameAr'] 
+                  },
+                  currentLang
+                ) || 'N/A';
+              }
+
               if (!updatedSummary.lastUpdated || updatedSummary.lastUpdated.trim() === '') {
                 updatedSummary.lastUpdated = formatRequestDate(baseRequest.requestDate) || 'N/A';
               }
@@ -399,14 +392,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             }
           }
 
-          // Get requester info - always show requester as first step
-          // Use API-provided role name if available, otherwise use translation key
           const currentLang = getCurrentLang(this.translate);
           const requesterRoleName: string = currentLang === 'ar'
             ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
             : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
 
-          // Get localized requester name (approver field)
           const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
             ? baseRequest.requesterNameAr
             : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
@@ -421,18 +411,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           };
 
           if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
-            // Return only requester step if no approval history
             return [requesterStep];
           }
 
-          // Use the same mapping function as other components
-          // Pass the request status to filter out pending steps if approved
-          // Convert numeric status to RequestStatus string type using mapRequestStatus
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
 
-          // Convert WorkflowApprovalStep[] to OrderReportApprovalStep[]
-          // Start numbering from 2 since requester is step 1
           const approvalSteps = workflowSteps.map((step, index) => ({
             step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
             role: this.getLocalizedRoleName(step),
@@ -442,24 +426,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             notes: step.comments || ''
           }));
 
-          // Prepend requester step as the first step
           return [requesterStep, ...approvalSteps];
         }),
         catchError(error => {
           console.error('Failed to load approval workflow', error);
-          // Fallback to mock data if API fails
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
             const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
-            // Add requester step as first step (step 1)
-            // Adjust fallback steps to start from step 2
             const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
               ...step,
               step: (index + 2).toString()
             }));
-            // Use translation key as fallback when no API data available
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
-            // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
@@ -482,30 +460,23 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (steps) => {
           this.approvalWorkflow = steps;
-          // If lastUpdated is still empty after loading workflow, try to use requestDate (date only, no time)
           if (!this.orderSummary.lastUpdated || this.orderSummary.lastUpdated.trim() === '') {
-            // Extract date only from requestDate (remove time if present)
             const requestDateOnly = this.orderSummary.requestDate
-              ? this.orderSummary.requestDate.split(' ').slice(0, 3).join(' ') // Take only first 3 parts (day month year)
+              ? this.orderSummary.requestDate.split(' ').slice(0, 3).join(' ')
               : 'N/A';
             this.orderSummary.lastUpdated = requestDateOnly;
           }
         },
         error: (error) => {
           console.error('Error loading approval workflow', error);
-          // Only use fallback if API call fails completely
           const order = this.orders.find(o => o.id === orderId);
           if (order) {
             const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
-            // Add requester step as first step (step 1)
-            // Adjust fallback steps to start from step 2
             const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
               ...step,
               step: (index + 2).toString()
             }));
-            // Use translation key as fallback when no API data available
             const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
-            // Get localized requester name (approver field)
             const currentLang = getCurrentLang(this.translate);
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
@@ -544,7 +515,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      // QR code contains only the Order ID for simplicity
       const qrData = this.orderSummary.orderId;
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
@@ -552,7 +522,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           width: 320,
           margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
-          errorCorrectionLevel: 'H' // High error correction for better reliability
+          errorCorrectionLevel: 'H'
         }
       );
     } catch (error) {
@@ -563,7 +533,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
 
   getStatusLabel(status: number | string): string {
-    // mapOrderStatusFromApi already handles both number and string types
     return mapOrderStatusFromApi(status);
   }
 
@@ -571,17 +540,34 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return mapOrderPriorityToString(priority);
   }
 
+  getDepartmentName(order: OrderDto): string {
+    if (!order) return this.translate.instant('requestsManagement.orderReport.list.unknown');
+    const currentLang = getCurrentLang(this.translate);
+    
+    if (order.department) {
+      const localized = getLocalizedName(order.department, currentLang);
+      if (localized) return localized;
+    }
+    
+    if (order.departmentNameEn || order.departmentNameAr) {
+      const localized = getLocalizedName(
+        { nameEn: order.departmentNameEn, nameAr: order.departmentNameAr },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+    
+    return this.translate.instant('requestsManagement.orderReport.list.unknown');
+  }
+
   getOrderDateLabel(order: OrderDto): string {
     if (!order.usageDateFrom) return '-';
 
-    // Format time - handle military format (HHMM) and legacy format (HH:mm)
     const formatTime = (timeStr: string | null | undefined): string => {
       if (!timeStr) return '';
-      // Military format (HHMM - 4 digits) - display as-is
       if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
         return timeStr;
       }
-      // Legacy format (HH:mm) - convert to military
       if (timeStr.includes(':')) {
         const parts = timeStr.split(':');
         const hours = parts[0].padStart(2, '0');
@@ -626,9 +612,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     this.qrCodeDataUrl = null;
   }
 
-  /**
-   * Convert ReturnDto to OrderDto format for unified handling
-   */
   private convertReturnToOrderDto(returnDto: ReturnDto): OrderDto {
     return {
       id: returnDto.id,
@@ -665,9 +648,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * Convert DiscardDto to OrderDto format for unified handling
-   */
   private convertDiscardToOrderDto(discardDto: DiscardDto): OrderDto {
     return {
       id: discardDto.id,
@@ -1011,9 +991,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }, 250);
   }
 
-  /**
-   * Resolve usage purpose with proper localization
-   */
   resolveUsagePurpose(): string {
     const currentLang = getCurrentLang(this.translate);
     return getLocalizedName(
