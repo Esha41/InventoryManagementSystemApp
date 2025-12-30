@@ -470,7 +470,13 @@ input:autofill {
   background-color: rgba(208, 184, 136, 0.04) !important;
 }
 
-.action-required-highlight::before {
+/* For table rows, use box-shadow instead of ::before to avoid layout issues */
+tr.action-required-highlight {
+  box-shadow: inset 4px 0 0 0 var(--color-brand), inset 0 0 0 1px rgba(208, 184, 136, 0.1);
+}
+
+/* For non-table elements, keep the ::before approach */
+.action-required-highlight:not(tr)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -479,6 +485,7 @@ input:autofill {
   height: 100%;
   background: var(--color-brand);
   box-shadow: 2px 0 10px rgba(208, 184, 136, 0.3);
+  pointer-events: none;
 }
 
 @keyframes action-pulse {

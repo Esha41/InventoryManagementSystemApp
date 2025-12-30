@@ -66,9 +66,9 @@
                 class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
                 {{ 'requestsManagement.requestType' | translate }}</th>
               <th
-                class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider min-w-[280px]">
                 {{ 'requestsManagement.status' | translate }}</th>
-              <th class="px-6 py-4 text-end"></th>
+              <th class="px-6 py-4 text-end w-16"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
@@ -99,12 +99,12 @@
               <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{
                 getRequestTypeText(request.requestType) | translate }}</td>
               <td class="px-6 py-4 text-start">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col items-start gap-1.5">
                   <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getStatusClass(request.status) }}">
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap {{ getStatusClass(request.status) }}">
                     {{ getStatusText(request.status) | translate }}
                   </span>
-                  <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow">
+                  <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
                     {{ 'requestsManagement.actionRequired' | translate }}
                   </span>
                 </div>

@@ -298,7 +298,7 @@
         "rounds": "rounds",
         "currentStatus": "Current status",
         "workflowOwner": "Workflow Details",
-        "orderId": "Order ID",
+        "orderId": "Request Number",
         "scanHeading": "Scan to track this order",
         "scanDescription": "Authorized personnel can scan the QR code to view live issuance status and custody trail.",
         "qrGenerating": "Generating QR code...",
@@ -312,7 +312,10 @@
         "requestDate": "Request Date",
         "noItemsFound": "No items found in this order.",
         "item": "item",
-        "items": "items"
+        "items": "items",
+        "orderInformation": "Request Information",
+        "generatedOn": "Generated On",
+        "printedBy": "Printed By"
       },
       "table": {
         "phase": "Phase",

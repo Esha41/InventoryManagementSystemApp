@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft } from 'lucide-angular';
-import { Subject, takeUntil, forkJoin, of, Observable, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil, forkJoin, of, Observable } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { OrderService, OrderDto } from '@services/order.service';
 import { ReturnService, ReturnDto } from '@services/return.service';
@@ -59,7 +57,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   readonly QrCode = QrCode;
 
   private destroy$ = new Subject<void>();
-  isExportingPdf = false;
   ordersLoading = false;
   detailsLoading = false;
   ordersError: string | null = null;
@@ -88,6 +85,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   approvalWorkflowStatus: string = '';
   roles: RoleDto[] = [];
   roleMap: Map<string, string> = new Map();
+  currentDate: string = '';
+  currentUser: string = '';
+  logoDataUrl: string = '/assets/organization-logo.png'; // Organization logo - absolute path from root
 
   constructor(
     private router: Router,
@@ -112,6 +112,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Set current date and user for print footer
+    this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    const user = this.authService.getCurrentUser();
+    this.currentUser = user?.userName || user?.email || 'N/A';
     // Subscribe to language changes to refresh data when language changes
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
@@ -183,7 +193,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
    */
   private getLocalizedRoleName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
-    
+
     if (currentLang === 'ar' && step.applicationRoleNameAr) {
       return step.applicationRoleNameAr;
     } else if (step.applicationRoleName) {
@@ -191,7 +201,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     } else if (step.applicationRoleId) {
       return this.getRoleName(step.applicationRoleId);
     }
-    
+
     return 'N/A';
   }
 
@@ -201,7 +211,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
    */
   private getLocalizedApproverName(step: any): string {
     const currentLang = getCurrentLang(this.translate);
-    
+
     // For pending steps, use role name (not user name)
     if (step.isPending) {
       if (currentLang === 'ar' && step.applicationRoleNameAr) {
@@ -210,7 +220,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         return step.applicationRoleName;
       }
     }
-    
+
     // For completed steps, use user name
     if (currentLang === 'ar' && step.approverNameAr) {
       return step.approverNameAr;
@@ -219,7 +229,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     } else if (step.approverName) {
       return step.approverName;
     }
-    
+
     return 'N/A';
   }
 
@@ -395,12 +405,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           const requesterRoleName: string = currentLang === 'ar'
             ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
             : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
-          
+
           // Get localized requester name (approver field)
           const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
             ? baseRequest.requesterNameAr
             : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
-          
+
           const requesterStep: OrderReportApprovalStep = {
             step: '1',
             role: requesterRoleName,
@@ -454,8 +464,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
               : (currentLang === 'ar' && order.requesterNameAr
-                  ? order.requesterNameAr
-                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
+                ? order.requesterNameAr
+                : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
               role: requesterRoleName,
@@ -500,8 +510,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             const requesterApproverName: string = order.requester
               ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
               : (currentLang === 'ar' && order.requesterNameAr
-                  ? order.requesterNameAr
-                  : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
+                ? order.requesterNameAr
+                : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
             const requesterStep: OrderReportApprovalStep = {
               step: '1',
               role: requesterRoleName,
@@ -534,16 +544,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
     try {
-      // Use the same localized usage purpose that we show in the UI
-      const localizedUsagePurpose = this.resolveUsagePurpose();
-      const qrData = generateQrCodeData(this.orderSummary, localizedUsagePurpose);
+      // QR code contains only the Order ID for simplicity
+      const qrData = this.orderSummary.orderId;
       this.qrCodeDataUrl = await QRCode.toDataURL(
         qrData,
         {
           width: 320,
           margin: 2,
           color: { dark: '#000000', light: '#FFFFFF' },
-          errorCorrectionLevel: 'M'
+          errorCorrectionLevel: 'H' // High error correction for better reliability
         }
       );
     } catch (error) {
@@ -552,713 +561,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
   }
 
-  async exportToPdf(): Promise<void> {
-    if (this.isExportingPdf || !this.selectedOrderId) {
-      return;
-    }
-
-    this.isExportingPdf = true;
-    this.translate.get(['toast.exportingOrderToPdf', 'toast.info']).subscribe((translations: Record<string, string>) => {
-      this.toastService.info(translations['toast.exportingOrderToPdf'], translations['toast.info']);
-    });
-
-    try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-
-      // Load order details for selected order
-      const orderData = await this.loadOrderDataForExport(this.selectedOrderId);
-      if (!orderData) {
-        this.translate.get(['toast.failedToLoadOrderData', 'toast.error']).subscribe((translations: Record<string, string>) => {
-          this.toastService.error(translations['toast.failedToLoadOrderData'], translations['toast.error']);
-        });
-        this.isExportingPdf = false;
-        return;
-      }
-
-      // Generate separate HTML sections
-      const qrSectionHtml = this.generateQrCodeSectionHtml(orderData);
-      const orderDetailsHtml = this.generateOrderDetailsSectionHtml(orderData);
-      const approvalWorkflowHtml = this.generateApprovalWorkflowSectionHtml(orderData);
-
-      // Page 1: QR Code Section
-      await this.addSectionToPdf(pdf, qrSectionHtml, pdfWidth);
-
-      // Page 2: Order Details Section
-      pdf.addPage();
-      await this.addSectionToPdf(pdf, orderDetailsHtml, pdfWidth);
-
-      // Page 3: Approval Workflow Section
-      pdf.addPage();
-      await this.addSectionToPdf(pdf, approvalWorkflowHtml, pdfWidth);
-
-      // Save PDF
-      const orderId = orderData.summary.orderId.replace('#', '');
-      const fileName = `order-report-${orderId}.pdf`;
-      pdf.save(fileName);
-      this.translate.get(['toast.orderExportedToPdfSuccessfully', 'toast.success']).subscribe((translations: Record<string, string>) => {
-        this.toastService.success(translations['toast.orderExportedToPdfSuccessfully'], translations['toast.success']);
-      });
-    } catch (error) {
-      console.error('Failed to export PDF', error);
-      this.translate.get(['toast.failedToExportPdf', 'toast.error']).subscribe((translations: Record<string, string>) => {
-        this.toastService.error(translations['toast.failedToExportPdf'], translations['toast.error']);
-      });
-    } finally {
-      this.isExportingPdf = false;
-    }
-  }
-
-  private async loadOrderDataForExport(orderId: number): Promise<{
-    order: OrderDto;
-    summary: OrderSummary;
-    items: OrderReportItem[];
-    workflow: OrderReportApprovalStep[];
-    qrCode: string | null;
-  } | null> {
-    try {
-      // Find the request in the loaded list to determine its type
-      const request = this.orders.find(r => r.id === orderId);
-      if (!request) {
-        return null;
-      }
-
-      // Determine request type and load accordingly
-      const requestType = typeof request.requestType === 'number'
-        ? request.requestType
-        : (request.requestType === 'Return' ? RequestTypeEnum.Return :
-          request.requestType === 'Discard' ? RequestTypeEnum.Discard : RequestTypeEnum.Order);
-
-      let order$: Observable<OrderDto>;
-
-      if (requestType === RequestTypeEnum.Return) {
-        order$ = this.returnService.getReturnById(orderId).pipe(
-          map(ret => this.convertReturnToOrderDto(ret))
-        );
-      } else if (requestType === RequestTypeEnum.Discard) {
-        order$ = this.discardService.getDiscardById(orderId).pipe(
-          map(disc => this.convertDiscardToOrderDto(disc))
-        );
-      } else {
-        order$ = this.orderService.getOrderById(orderId);
-      }
-
-      const order = await firstValueFrom(order$.pipe(takeUntil(this.destroy$)));
-      if (!order) {
-        return null;
-      }
-
-      // Map order to report data
-      const summary = mapOrderToSummary(order, undefined, this.translate);
-      const items = mapOrderItems(order);
-
-      // Load approval workflow
-      const workflow = await this.loadApprovalWorkflowForExport(orderId, order, summary);
-
-      // Generate QR code
-      const qrCode = await this.generateQrCodeForExport(summary);
-
-      // Update summary with base request data if available
-      try {
-        const baseRequests = await firstValueFrom(
-          this.apiService.getWithAuth<any>(API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS)
-            .pipe(takeUntil(this.destroy$))
-        );
-
-        const data: BaseRequestDto[] = Array.isArray(baseRequests)
-          ? baseRequests
-          : (baseRequests?.data || []);
-
-        const baseRequest = data.find(r => r.id === orderId);
-        if (baseRequest) {
-          const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
-          if (baseRequest.requestDate) {
-            updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
-          }
-          if (!updatedSummary.lastUpdated || updatedSummary.lastUpdated.trim() === '') {
-            updatedSummary.lastUpdated = formatRequestDate(baseRequest.requestDate) || 'N/A';
-          }
-          if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
-            Object.assign(summary, updatedSummary);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load base request data', error);
-      }
-
-      return {
-        order,
-        summary,
-        items,
-        workflow,
-        qrCode
-      };
-    } catch (error) {
-      console.error(`Failed to load order data for export: ${orderId}`, error);
-      return null;
-    }
-  }
-
-  private async loadApprovalWorkflowForExport(
-    orderId: number,
-    order: OrderDto,
-    summary: OrderSummary
-  ): Promise<OrderReportApprovalStep[]> {
-    try {
-      const response = await firstValueFrom(
-        this.apiService.getWithAuth<any>(API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS)
-          .pipe(takeUntil(this.destroy$))
-      );
-
-      const data: BaseRequestDto[] = Array.isArray(response)
-        ? response
-        : (response?.data || []);
-
-      const baseRequest = data.find(r => r.id === orderId);
-
-      // Get requester info - always show requester as first step
-      // Use API-provided role name if available, otherwise use translation key
-      const currentLang = getCurrentLang(this.translate);
-      const requesterRoleName: string = currentLang === 'ar'
-        ? (baseRequest?.requesterNameAr || this.translate.instant('requestsManagement.orderReport.table.requester'))
-        : (baseRequest?.requesterName || baseRequest?.requesterNameEn || this.translate.instant('requestsManagement.orderReport.table.requester'));
-      
-      // Get localized requester name (approver field)
-      const requesterApproverName: string = currentLang === 'ar' && baseRequest?.requesterNameAr
-        ? baseRequest.requesterNameAr
-        : baseRequest?.requesterNameEn || baseRequest?.requesterName || summary.requester || 'N/A';
-      
-      const requesterStep: OrderReportApprovalStep = {
-        step: '1',
-        role: requesterRoleName,
-        approver: requesterApproverName,
-        status: 'approved',
-        date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (summary.requestDate || 'N/A'),
-        notes: 'Request submitted'
-      };
-
-      if (!baseRequest || !baseRequest.approvalHistory || baseRequest.approvalHistory.length === 0) {
-        return [requesterStep];
-      }
-
-      const requestStatus = mapRequestStatus(baseRequest.status);
-      const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
-
-      const approvalSteps = workflowSteps.map((step, index) => ({
-        step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
-        role: this.getLocalizedRoleName(step),
-        approver: this.getLocalizedApproverName(step),
-        status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
-        date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
-        notes: step.comments || ''
-      }));
-
-      return [requesterStep, ...approvalSteps];
-    } catch (error) {
-      console.error('Failed to load approval workflow', error);
-      // Fallback to mock data
-      const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t));
-      const adjustedFallbackSteps = fallbackSteps.map((step, index) => ({
-        ...step,
-        step: (index + 2).toString()
-      }));
-      // Use translation key as fallback when no API data available
-      const requesterRoleName = this.translate.instant('requestsManagement.orderReport.table.requester');
-      // Get localized requester name (approver field)
-      const currentLang = getCurrentLang(this.translate);
-      const requesterApproverName: string = order.requester
-        ? (getLocalizedName(order.requester, currentLang) || order.requester.userName || 'N/A')
-        : (currentLang === 'ar' && order.requesterNameAr
-            ? order.requesterNameAr
-            : order.requesterNameEn || order.requesterName || summary.requester || 'N/A');
-      const requesterStep: OrderReportApprovalStep = {
-        step: '1',
-        role: requesterRoleName,
-        approver: requesterApproverName,
-        status: 'approved',
-        date: summary.requestDate || summary.submittedOn || 'N/A',
-        notes: 'Request submitted'
-      };
-      return [requesterStep, ...adjustedFallbackSteps];
-    }
-  }
-
-  private async generateQrCodeForExport(summary: OrderSummary): Promise<string | null> {
-    try {
-      if (!summary.orderId) {
-        return null;
-      }
-      // For export, also use a localized usage purpose if available on the summary
-      const currentLang = getCurrentLang(this.translate);
-      const localizedUsagePurpose =
-        getLocalizedName(
-          {
-            nameEn: summary.requestPurposeNameEn,
-            nameAr: summary.requestPurposeNameAr
-          },
-          currentLang
-        ) || summary.usagePurpose;
-
-      const qrData = generateQrCodeData(summary, localizedUsagePurpose);
-      return await QRCode.toDataURL(qrData, {
-        width: 320,
-        margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' },
-        errorCorrectionLevel: 'M'
-      });
-    } catch (error) {
-      console.error('Failed to generate QR code', error);
-      return null;
-    }
-  }
-
-  private async addSectionToPdf(pdf: jsPDF, sectionHtml: string, pdfWidth: number): Promise<void> {
-    // Create temporary container
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.width = '210mm'; // A4 width
-    tempContainer.innerHTML = sectionHtml;
-    document.body.appendChild(tempContainer);
-
-    // Wait for images to load
-    await this.waitForImages(tempContainer);
-
-    // Capture as canvas
-    const canvas = await html2canvas(tempContainer, {
-      background: '#ffffff',
-      scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
-      useCORS: true,
-      width: tempContainer.scrollWidth,
-      height: tempContainer.scrollHeight
-    } as any);
-
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const pdfHeight = (imgHeight * pdfWidth) / imgWidth;
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    // Clean up temporary container
-    document.body.removeChild(tempContainer);
-
-    // If content fits on one page, add it directly
-    if (pdfHeight <= pageHeight) {
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    } else {
-      // Split content across multiple pages if needed
-      let heightLeft = pdfHeight;
-      let yPosition = 0;
-
-      while (heightLeft > 0) {
-        if (yPosition !== 0) {
-          pdf.addPage();
-        }
-
-        // Calculate how much of the image to show on this page
-        const pageContentHeight = Math.min(pageHeight, heightLeft);
-        const sourceY = (yPosition / pdfHeight) * imgHeight;
-        const sourceHeight = (pageContentHeight / pdfHeight) * imgHeight;
-
-        // Create a temporary canvas for this page's content
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = imgWidth;
-        pageCanvas.height = sourceHeight;
-        const pageCtx = pageCanvas.getContext('2d');
-
-        if (pageCtx) {
-          pageCtx.drawImage(
-            canvas,
-            0, sourceY,
-            imgWidth, sourceHeight,
-            0, 0,
-            imgWidth, sourceHeight
-          );
-          const pageImgData = pageCanvas.toDataURL('image/png');
-          pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, pageContentHeight);
-        } else {
-          // Fallback: use negative positioning (may clip some content)
-          pdf.addImage(imgData, 'PNG', 0, -yPosition, pdfWidth, pdfHeight);
-        }
-
-        heightLeft -= pageHeight;
-        yPosition += pageHeight;
-      }
-    }
-  }
-
-  private generateQrCodeSectionHtml(data: {
-    order: OrderDto;
-    summary: OrderSummary;
-    items: OrderReportItem[];
-    workflow: OrderReportApprovalStep[];
-    qrCode: string | null;
-  }): string {
-    const isRTL = this.isRTL;
-    const direction = isRTL ? 'rtl' : 'ltr';
-    const textAlign = isRTL ? 'right' : 'left';
-    const flexDirection = isRTL ? 'row-reverse' : 'row';
-
-    const qrCodeImg = data.qrCode
-      ? `<img src="${data.qrCode}" alt="Order QR Code" style="width: 100px; height: 100px; display: block; margin: 0 auto;" />`
-      : '<div style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.6rem;">QR Code</div>';
-
-    const statusLabel = this.getStatusLabel(data.order.status);
-    
-    // Get translated labels
-    const requesterLabel = this.translate.instant('requestsManagement.orderReport.table.requester');
-
-    return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; display: flex; flex-direction: column; direction: ${direction};">
-        <!-- QR Code Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 1rem; flex: 1; display: flex; flex-direction: column;">
-          <div style="display: flex; flex-direction: ${flexDirection}; gap: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
-            <div style="flex: 1;">
-              <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Order Report - QR Code</h3>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Order ID</p>
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.orderId}</p>
-                </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Department</p>
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
-                </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">${requesterLabel}</p>
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.requester}</p>
-                </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Status</p>
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${statusLabel}</p>
-                </div>
-                <div style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.5rem; text-align: ${textAlign};">
-                  <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Usage Date</p>
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.lastUpdated || data.summary.requestDate || 'N/A'}</p>
-                </div>
-              </div>
-            </div>
-            <div style="width: 120px; border: 1px solid #000; padding: 0.5rem; text-align: center; display: flex; align-items: center; justify-content: center;">
-              ${qrCodeImg}
-            </div>
-          </div>
-        </section>
-      </div>
-    `;
-  }
-
-  private generateOrderDetailsSectionHtml(data: {
-    order: OrderDto;
-    summary: OrderSummary;
-    items: OrderReportItem[];
-    workflow: OrderReportApprovalStep[];
-    qrCode: string | null;
-  }): string {
-    const isRTL = this.isRTL;
-    const direction = isRTL ? 'rtl' : 'ltr';
-    const textAlign = isRTL ? 'right' : 'left';
-    const textAlignReverse = isRTL ? 'left' : 'right';
-    const flexDirection = isRTL ? 'row-reverse' : 'row';
-
-    const statusLabel = this.getStatusLabel(data.order.status);
-    const priorityLabel = this.getPriorityLabel(data.order.priority);
-
-    const itemsHtml = data.items.length > 0
-      ? data.items.map(item => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; direction: ${direction};">
-            <div style="font-weight: bold; color: #111827; font-size: 0.7rem; text-align: ${textAlign};">${item.name}</div>
-            <div style="color: #4b5563; font-weight: 500; font-size: 0.7rem; text-align: ${textAlign};">${item.caliber}</div>
-            <div style="color: #374151; font-weight: 600; text-align: ${textAlignReverse}; font-size: 0.7rem;">${item.quantity}</div>
-          </div>
-        `).join('')
-      : `<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.7rem;">No items found</div>`;
-
-    return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; direction: ${direction};">
-        <!-- Order Details Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 1rem;">
-          <h3 style="font-size: 0.9rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Order Details - ${data.summary.usagePurpose}</h3>
-          <div style="display: flex; flex-direction: ${flexDirection}; gap: 0.5rem; margin-bottom: 0.75rem;">
-            <span style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.65rem; font-weight: bold; color: #374151;">
-              Status: ${statusLabel}
-            </span>
-            <span style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.65rem; font-weight: bold; color: #111827;">
-              Priority: ${priorityLabel}
-            </span>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
-              <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Department</p>
-              <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
-            </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
-              <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Total Items</p>
-              <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.totalItems}</p>
-            </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
-              <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Total Quantity</p>
-              <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.totalQuantity}</p>
-            </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
-              <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Request Date</p>
-              <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.requestDate || 'N/A'}</p>
-            </div>
-            <div style="border: 1px solid #e5e7eb; padding: 0.6rem; border-radius: 0.5rem; text-align: ${textAlign};">
-              <p style="font-size: 0.6rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Usage Date</p>
-              <p style="font-size: 0.75rem; font-weight: bold; color: #111827;">${data.summary.lastUpdated || data.summary.requestDate || 'N/A'}</p>
-            </div>
-          </div>
-          <h4 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; text-align: ${textAlign};">Items Included (${data.items.length})</h4>
-          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
-            <div style="background: linear-gradient(${isRTL ? 'to left' : 'to right'}, #1e293b, #334155); padding: 0.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; direction: ${direction};">
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Item Name</span>
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">Item No</span>
-              <span style="font-size: 0.65rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">Quantity</span>
-            </div>
-            <div>
-              ${itemsHtml}
-            </div>
-          </div>
-        </section>
-      </div>
-    `;
-  }
-
-  private generateApprovalWorkflowSectionHtml(data: {
-    order: OrderDto;
-    summary: OrderSummary;
-    items: OrderReportItem[];
-    workflow: OrderReportApprovalStep[];
-    qrCode: string | null;
-  }): string {
-    const isRTL = this.isRTL;
-    const direction = isRTL ? 'rtl' : 'ltr';
-    const textAlign = isRTL ? 'right' : 'left';
-    const textAlignReverse = isRTL ? 'left' : 'right';
-    // Invert column order for RTL
-    const gridColumns = isRTL ? '100px 140px 2fr 2fr 50px' : '50px 2fr 2fr 140px 100px';
-    
-    // Get translated labels
-    const approverLabel = this.translate.instant('requestsManagement.orderReport.table.approver');
-    const stepLabel = this.translate.instant('requestsManagement.orderReport.table.step');
-    const roleLabel = this.translate.instant('requestsManagement.orderReport.table.role');
-    const dateLabel = this.translate.instant('requestsManagement.orderReport.table.date');
-    const statusLabel = this.translate.instant('requestsManagement.orderReport.table.status');
-
-    const workflowHtml = data.workflow.length > 0
-      ? data.workflow.map(step => {
-        const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
-          step.status === 'rejected' ? 'bg-red-100 text-red-800' :
-            step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-              step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                'bg-slate-100 text-slate-700';
-        return `
-            <div style="display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb; direction: ${direction};">
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; text-align: ${textAlign};">${step.step}</div>
-              <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal; text-align: ${textAlign};">${step.role}</div>
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; word-wrap: break-word; white-space: normal; text-align: ${textAlign};">${step.approver}</div>
-              <div style="color: #4b5563; font-size: 0.6rem; white-space: normal; text-align: ${textAlign};">${step.date}</div>
-              <div style="text-align: ${textAlignReverse};">
-                <span style="display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.6rem; font-weight: bold; ${statusClass}">
-                  ${step.status}
-                </span>
-              </div>
-            </div>
-          `;
-      }).join('')
-      : `<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>`;
-
-    return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 1rem; min-height: 100vh; direction: ${direction};">
-        <!-- Approval Workflow Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 1rem;">
-          <h3 style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.4rem; text-align: ${textAlign};">Approval Workflow</h3>
-          <div style="border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden;">
-            <div style="background: linear-gradient(${isRTL ? 'to left' : 'to right'}, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: ${gridColumns}; gap: 0.5rem; direction: ${direction};">
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${stepLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${roleLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${approverLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlign};">${dateLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: ${textAlignReverse};">${statusLabel}</span>
-            </div>
-            <div>
-              ${workflowHtml}
-            </div>
-          </div>
-        </section>
-      </div>
-    `;
-  }
-
-  private async generateReportHtml(data: {
-    order: OrderDto;
-    summary: OrderSummary;
-    items: OrderReportItem[];
-    workflow: OrderReportApprovalStep[];
-    qrCode: string | null;
-  }): Promise<string> {
-    // Generate HTML similar to the template but without Angular bindings
-    const qrCodeImg = data.qrCode
-      ? `<img src="${data.qrCode}" alt="Order QR Code" style="width: 140px; height: 140px; display: block; margin: 0 auto;" />`
-      : '<div style="width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; color: #999;">QR Code</div>';
-
-    const statusLabel = this.getStatusLabel(data.order.status);
-    const priorityLabel = this.getPriorityLabel(data.order.priority);
-    
-    // Get translated labels
-    const approverLabel = this.translate.instant('requestsManagement.orderReport.table.approver');
-    const stepLabel = this.translate.instant('requestsManagement.orderReport.table.step');
-    const roleLabel = this.translate.instant('requestsManagement.orderReport.table.role');
-    const dateLabel = this.translate.instant('requestsManagement.orderReport.table.date');
-    const statusLabelTranslated = this.translate.instant('requestsManagement.orderReport.table.status');
-    const requesterLabel = this.translate.instant('requestsManagement.orderReport.table.requester');
-
-    const itemsHtml = data.items.length > 0
-      ? data.items.map(item => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-            <div style="font-weight: bold; color: #111827;">${item.name}</div>
-            <div style="color: #4b5563; font-weight: 500;">${item.caliber}</div>
-            <div style="color: #374151; font-weight: 600; text-align: right;">${item.quantity}</div>
-          </div>
-        `).join('')
-      : '<div style="padding: 3rem; text-align: center; color: #6b7280;">No items found</div>';
-
-    const workflowHtml = data.workflow.length > 0
-      ? data.workflow.map(step => {
-        const statusClass = step.status === 'approved' ? 'bg-green-100 text-green-800' :
-          step.status === 'rejected' ? 'bg-red-100 text-red-800' :
-            step.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-              step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                'bg-slate-100 text-slate-700';
-        return `
-            <div style="display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem;">${step.step}</div>
-              <div style="color: #4b5563; font-size: 0.65rem; word-wrap: break-word; white-space: normal;">${step.role}</div>
-              <div style="font-weight: bold; color: #111827; font-size: 0.65rem; word-wrap: break-word; white-space: normal;">${step.approver}</div>
-              <div style="color: #4b5563; font-size: 0.6rem; white-space: normal;">${step.date}</div>
-              <div>
-                <span style="display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.6rem; font-weight: bold; ${statusClass}">
-                  ${step.status}
-                </span>
-              </div>
-            </div>
-          `;
-      }).join('')
-      : '<div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.65rem;">No approval history</div>';
-
-    return `
-      <div style="font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: #000; background: #fff; padding: 2rem;">
-        <!-- QR Code Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 2rem; margin-bottom: 1.5rem; page-break-after: always;">
-          <div style="display: flex; gap: 2rem; border-bottom: 3px solid #000; padding-bottom: 1rem; margin-bottom: 1.5rem;">
-            <div style="flex: 1;">
-              <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Order Report</h3>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Order ID</p>
-                  <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.orderId}</p>
-                </div>
-                <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Department</p>
-                  <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
-                </div>
-                <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">${requesterLabel}</p>
-                  <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.requester}</p>
-                </div>
-                <div style="border: 2px solid #e5e7eb; padding: 1rem; border-radius: 0.75rem;">
-                  <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Status</p>
-                  <p style="font-size: 1rem; font-weight: bold; color: #111827;">${statusLabel}</p>
-                </div>
-              </div>
-            </div>
-            <div style="width: 180px; border: 2px solid #000; padding: 0.75rem; text-align: center;">
-              ${qrCodeImg}
-            </div>
-          </div>
-        </section>
-
-        <!-- Order Details Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 2rem; margin-bottom: 1.5rem;">
-          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">${data.summary.usagePurpose}</h3>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="border: 2px solid #e5e7eb; padding: 1.25rem; border-radius: 0.75rem;">
-              <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Department</p>
-              <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.department}</p>
-            </div>
-            <div style="border: 2px solid #e5e7eb; padding: 1.25rem; border-radius: 0.75rem;">
-              <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Total Items</p>
-              <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.totalItems}</p>
-            </div>
-            <div style="border: 2px solid #e5e7eb; padding: 1.25rem; border-radius: 0.75rem;">
-              <p style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem;">Total Quantity</p>
-              <p style="font-size: 1rem; font-weight: bold; color: #111827;">${data.summary.totalQuantity}</p>
-            </div>
-          </div>
-          <h4 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 1rem;">Items Included (${data.items.length})</h4>
-          <div style="border: 2px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;">
-            <div style="background: linear-gradient(to right, #1e293b, #334155); padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-              <span style="font-size: 0.75rem; font-weight: bold; color: #fff; text-transform: uppercase;">Item Name</span>
-              <span style="font-size: 0.75rem; font-weight: bold; color: #fff; text-transform: uppercase;">Item No</span>
-              <span style="font-size: 0.75rem; font-weight: bold; color: #fff; text-transform: uppercase; text-align: right;">Quantity</span>
-            </div>
-            <div>
-              ${itemsHtml}
-            </div>
-          </div>
-        </section>
-
-        <!-- Approval Workflow Section -->
-        <section style="border: 1px solid #000; border-radius: 0; padding: 2rem;">
-          <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Approval Workflow</h3>
-          <div style="border: 2px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;">
-            <div style="background: linear-gradient(to right, #1e293b, #334155); padding: 0.4rem; display: grid; grid-template-columns: 50px 2fr 2fr 140px 100px; gap: 0.5rem;">
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${stepLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${roleLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${approverLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${dateLabel}</span>
-              <span style="font-size: 0.6rem; font-weight: bold; color: #fff; text-transform: uppercase;">${statusLabelTranslated}</span>
-            </div>
-            <div>
-              ${workflowHtml}
-            </div>
-          </div>
-        </section>
-      </div>
-    `;
-  }
-
-  private waitForImages(container: HTMLElement): Promise<void> {
-    return new Promise((resolve) => {
-      const images = container.querySelectorAll('img');
-      if (images.length === 0) {
-        resolve();
-        return;
-      }
-
-      let loadedCount = 0;
-      const totalImages = images.length;
-
-      const checkComplete = () => {
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          resolve();
-        }
-      };
-
-      images.forEach((img) => {
-        if (img.complete) {
-          checkComplete();
-        } else {
-          img.onload = checkComplete;
-          img.onerror = checkComplete;
-        }
-      });
-
-      // Timeout after 5 seconds
-      setTimeout(() => resolve(), 5000);
-    });
-  }
 
   getStatusLabel(status: number | string): string {
     // mapOrderStatusFromApi already handles both number and string types
@@ -1418,7 +720,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       <html>
         <head>
           <meta charset="UTF-8">
-          <title>Order Report - ${this.orderSummary.orderId}</title>
+          <title>Request Report - ${this.orderSummary.orderId}</title>
           <style>
             @page {
               size: A4;
@@ -1454,60 +756,142 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               padding: 0;
             }
             
-            /* Header section with QR */
-            .print-header-section {
+            /* Header section with Logo centered and QR on right */
+            .print-header {
+              margin-bottom: 20px;
+              page-break-after: avoid;
+            }
+            
+            .print-header-content {
               display: flex !important;
-              flex-direction: row !important;
-              justify-content: space-between !important;
+              justify-content: center !important;
               align-items: flex-start !important;
-              border-bottom: 3px solid #000 !important;
-              padding-bottom: 1rem !important;
-              margin-bottom: 1.5rem !important;
-              page-break-after: always;
+              margin-bottom: 15px !important;
+              position: relative !important;
+              min-height: 120px !important;
             }
             
-            .print-header-section > div {
-              display: flex !important;
-              flex-direction: row !important;
-              width: 100% !important;
-              gap: 2rem !important;
-            }
-            
-            .print-header-section > div > div:first-child {
+            .print-logo-center {
               flex: 1 !important;
+              display: flex !important;
+              justify-content: center !important;
+              align-items: center !important;
             }
             
-            .print-header-section > div > div:last-child {
-              flex-shrink: 0 !important;
-              width: 180px !important;
+            .print-logo,
+            img[alt="Organization Logo"] {
+              display: block !important;
+              visibility: visible !important;
+              max-width: 200px !important;
+              max-height: 100px !important;
+              height: auto !important;
+              object-fit: contain !important;
+            }
+            
+            .print-qr-container {
+              position: absolute !important;
+              right: 0 !important;
+              top: 0 !important;
+              text-align: center !important;
               border: 2px solid #000 !important;
-              padding: 0.75rem !important;
+              padding: 10px !important;
               background: #ffffff !important;
+            }
+            
+            .print-qr-code,
+            img[alt="Order QR Code"] {
+              width: 100px !important;
+              height: 100px !important;
+              display: block !important;
+              margin: 0 auto 5px auto !important;
+              border: 1px solid #ddd !important;
+              padding: 5px !important;
+              background: #ffffff !important;
+            }
+            
+            .print-qr-label {
+              font-size: 9pt !important;
+              font-weight: bold !important;
+              color: #000 !important;
+              margin: 0 !important;
               text-align: center !important;
             }
             
-            /* QR Code */
-            img[alt="Order QR Code"] {
-              width: 140px !important;
-              height: 140px !important;
-              max-width: 140px !important;
-              border: 1px solid #000 !important;
-              padding: 0.5rem !important;
-              background: #ffffff !important;
-              display: block !important;
-              margin: 0 auto !important;
+            .print-divider {
+              border-bottom: 3px solid #000 !important;
+              margin-top: 10px !important;
+              margin-bottom: 15px !important;
             }
             
             /* Sections */
+            .print-section,
             section {
               break-inside: avoid;
               page-break-inside: avoid;
-              border: 1px solid #000 !important;
+              border: 2px solid #000 !important;
               border-radius: 0 !important;
-              padding: 1rem !important;
-              margin-bottom: 1rem !important;
+              padding: 15px !important;
+              margin-bottom: 20px !important;
               background: #ffffff !important;
               box-shadow: none !important;
+            }
+            
+            .print-section-title {
+              font-size: 14pt !important;
+              font-weight: bold !important;
+              color: #000 !important;
+              margin: 0 0 12px 0 !important;
+              padding-bottom: 8px !important;
+              border-bottom: 2px solid #333 !important;
+            }
+            
+            /* Professional Tables */
+            .print-table,
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              margin-top: 10px !important;
+              page-break-inside: avoid !important;
+              border: 2px solid #000 !important;
+            }
+            
+            .print-table-header,
+            table thead th {
+              background-color: #333 !important;
+              color: #ffffff !important;
+              font-weight: bold !important;
+              font-size: 10pt !important;
+              padding: 10px 12px !important;
+              text-align: left !important;
+              border: 1px solid #000 !important;
+            }
+            
+            .print-table-cell,
+            table tbody td {
+              padding: 10px 12px !important;
+              border: 1px solid #333 !important;
+              font-size: 10pt !important;
+              color: #000 !important;
+            }
+            
+            .print-table-row:nth-child(even),
+            table tbody tr:nth-child(even) {
+              background-color: #f9f9f9 !important;
+            }
+            
+            .print-table-footer,
+            table tfoot tr {
+              background-color: #e8e8e8 !important;
+              font-weight: bold !important;
+            }
+            
+            .print-table-footer-cell,
+            table tfoot td {
+              padding: 10px 12px !important;
+              border: 1px solid #000 !important;
+              font-size: 10pt !important;
+              font-weight: bold !important;
+              color: #000 !important;
             }
             
             /* Headers */
@@ -1547,17 +931,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             .bg-gradient-to-r.from-slate-800 {
               background: #000000 !important;
               color: #ffffff !important;
-            }
-            
-            /* Tables */
-            .grid {
-              width: 100% !important;
-              display: grid !important;
-            }
-            
-            .divide-y > div {
-              border-bottom: 1px solid #ccc !important;
-              page-break-inside: avoid;
             }
             
             /* Text colors */

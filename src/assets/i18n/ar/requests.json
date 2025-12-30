@@ -308,7 +308,10 @@
         "requestDate": "تاريخ الطلب",
         "noItemsFound": "لم يتم العثور على مواد في هذا الطلب.",
         "item": "عنصر",
-        "items": "مواد"
+        "items": "مواد",
+        "orderInformation": "معلومات الطلب",
+        "generatedOn": "تم الإنشاء في",
+        "printedBy": "طبع بواسطة"
       },
       "table": {
         "phase": "المرحلة",

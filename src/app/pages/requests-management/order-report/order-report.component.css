@@ -27,18 +27,10 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
   }
 }
 
@@ -46,32 +38,22 @@ section {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Enhanced Table Styling */
-.grid {
-  transition: all 0.2s ease;
-}
-
-/* Professional Hover Effects */
-.hover\:bg-slate-50:hover {
-  background-color: #f8fafc;
-}
-
-.hover\:bg-blue-50\/50:hover {
-  background-color: rgba(239, 246, 255, 0.5);
-}
-
 /* QR Code Enhancement */
 img[alt="Order QR Code"] {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  border-radius: 8px;
 }
 
-/* Print Styles */
+/* ============================================
+   PROFESSIONAL PRINT STYLES
+   ============================================ */
+
 @media print {
+
+  /* Page Setup */
   @page {
-    size: A4;
-    margin: 1.5cm;
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
   }
 
   * {
@@ -82,203 +64,483 @@ img[alt="Order QR Code"] {
   body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 12pt;
-    line-height: 1.5;
+    font-size: 10pt;
+    line-height: 1.4;
   }
 
-  /* Hide non-essential elements */
-  button,
+  /* Hide Screen-Only Elements */
+  .screen-only,
   aside,
-  .bg-gradient-to-r.from-slate-900,
-  .bg-gradient-to-r.from-slate-800 {
+  button,
+  nav,
+  .no-print {
     display: none !important;
   }
 
-  /* Report container */
-  #reportContent {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  /* Report Container */
+  .print-report-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
-  /* Header section - QR Code and Order Info */
-  section:first-of-type {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 2rem !important;
-    page-break-after: always;
-    border-bottom: 2px solid #000 !important;
-    padding-bottom: 1.5rem !important;
-    margin-bottom: 1.5rem !important;
-  }
-
-  /* QR Code positioning for print */
-  section:first-of-type > div > div:last-child {
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    width: 180px !important;
-    border: 2px solid #000 !important;
-    padding: 1rem !important;
-    background: #ffffff !important;
-  }
-
-  section:first-of-type > div > div:first-child {
-    flex: 1 !important;
-    margin-right: 200px !important;
-  }
-
-  /* QR Code image */
-  img[alt="Order QR Code"] {
-    width: 150px !important;
-    height: 150px !important;
-    max-width: 150px !important;
-    border: 1px solid #000 !important;
-    padding: 0.5rem !important;
-    background: #ffffff !important;
-  }
-
-  /* Sections */
-  section {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    box-shadow: none !important;
-    border: 1px solid #000 !important;
-    border-radius: 0 !important;
-    padding: 1rem !important;
-    margin-bottom: 1rem !important;
-    background: #ffffff !important;
-  }
-
-  /* Remove gradients and backgrounds */
-  .bg-gradient-to-br,
-  .bg-gradient-to-r,
-  .bg-white,
-  .bg-slate-50,
-  .bg-blue-50,
-  .bg-indigo-100,
-  .bg-green-100 {
-    background: #ffffff !important;
-  }
-
-  /* Headers */
-  h1, h2, h3, h4 {
-    color: #000000 !important;
-    margin: 0.5rem 0 !important;
+  /* ============================================
+     PRINT HEADER WITH LOGO AND QR CODE
+     ============================================ */
+  .print-header {
+    margin-bottom: 20px;
     page-break-after: avoid;
   }
 
-  h2 {
-    font-size: 18pt !important;
-    font-weight: bold !important;
+  .print-header-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    position: relative;
+    min-height: 120px;
   }
 
-  h3 {
-    font-size: 14pt !important;
-    font-weight: bold !important;
+  .print-logo-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  h4 {
-    font-size: 12pt !important;
-    font-weight: bold !important;
+  .print-logo {
+    display: block !important;
+    visibility: visible !important;
+    max-width: 200px;
+    max-height: 100px;
+    height: auto;
+    object-fit: contain;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  /* Tables */
-  table,
-  .grid {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    page-break-inside: avoid;
-  }
-
-  /* Table headers */
-  .bg-gradient-to-r.from-slate-900,
-  .bg-gradient-to-r.from-slate-800 {
-    background: #000000 !important;
-    color: #ffffff !important;
-  }
-
-  /* Table rows */
-  .divide-y > div {
-    border-bottom: 1px solid #ccc !important;
-    page-break-inside: avoid;
-  }
-
-  /* Text colors */
-  .text-slate-900,
-  .text-slate-700,
-  .text-slate-600,
-  .text-slate-500 {
-    color: #000000 !important;
-  }
-
-  .text-white {
-    color: #ffffff !important;
-  }
-
-  /* Badges and labels */
-  span[class*="bg-"],
-  div[class*="bg-"] {
-    background: #f0f0f0 !important;
-    border: 1px solid #000 !important;
-    color: #000000 !important;
-  }
-
-  /* Remove shadows and effects */
-  .shadow-lg,
-  .shadow-xl,
-  .shadow-sm {
-    box-shadow: none !important;
-  }
-
-  /* Spacing */
-  .space-y-6 > * + * {
-    margin-top: 1rem !important;
-  }
-
-  .gap-4 {
-    gap: 0.5rem !important;
-  }
-
-  .p-8,
-  .p-6,
-  .p-5,
-  .p-4 {
-    padding: 0.75rem !important;
-  }
-
-  /* Ensure proper page breaks */
-  .page-break-before {
-    page-break-before: always;
-  }
-
-  .page-break-after {
-    page-break-after: always;
-  }
-
-  /* Approval workflow section */
-  section:last-of-type {
-    page-break-before: always;
-  }
-
-  /* Hide icons in print */
-  lucide-angular {
-    display: none !important;
-  }
-
-  /* Print-specific QR section layout */
-  .print-qr-section {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
+  .print-qr-container {
+    position: absolute;
+    right: 0;
+    top: 0;
+    text-align: center;
+    border: 2px solid #000;
+    padding: 10px;
+    background: #ffffff;
   }
 
   .print-qr-code {
-    position: fixed !important;
-    top: 1.5cm !important;
-    right: 1.5cm !important;
-    width: 150px !important;
-    text-align: center !important;
+    width: 100px !important;
+    height: 100px !important;
+    display: block;
+    margin: 0 auto 5px auto;
+    border: 1px solid #ddd;
+    padding: 5px;
+    background: #ffffff;
+  }
+
+  .print-qr-label {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    text-align: center;
+  }
+
+  .print-divider {
+    border-bottom: 3px solid #000;
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
+  /* ============================================
+     SECTIONS
+     ============================================ */
+  .print-section {
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+    border: 2px solid #000;
+    padding: 15px;
+    background: #ffffff;
+  }
+
+  .print-section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #333;
+  }
+
+  .print-item-count {
+    font-size: 11pt;
+    font-weight: normal;
+    color: #666;
+  }
+
+  /* ============================================
+     INFORMATION GRID
+     ============================================ */
+  .print-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 15px;
+    margin-bottom: 15px;
+  }
+
+  .print-info-item {
+    display: flex;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .print-info-label {
+    font-weight: bold;
+    color: #333;
+    min-width: 120px;
+    font-size: 9pt;
+  }
+
+  .print-info-value {
+    color: #000;
+    font-size: 9pt;
+    flex: 1;
+  }
+
+  /* ============================================
+     PROFESSIONAL TABLES
+     ============================================ */
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    page-break-inside: avoid;
+    border: 2px solid #000;
+  }
+
+  .print-table-header {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    font-size: 10pt;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #000;
+  }
+
+  .print-table-header-right {
+    text-align: right;
+  }
+
+  .print-table-row {
+    page-break-inside: avoid;
+  }
+
+  .print-table-row:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+
+  .print-table-cell {
+    padding: 10px 12px;
+    border: 1px solid #333;
+    font-size: 10pt;
+    color: #000;
+  }
+
+  .print-table-cell-right {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .print-table-empty {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+    border: 1px solid #333;
+  }
+
+  .print-table-footer {
+    background-color: #e8e8e8 !important;
+    font-weight: bold;
+  }
+
+  .print-table-footer-cell {
+    padding: 10px 12px;
+    border: 1px solid #000;
+    font-size: 10pt;
+    font-weight: bold;
+    color: #000;
+  }
+
+  /* ============================================
+     PRINT FOOTER
+     ============================================ */
+  .print-footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+    page-break-inside: avoid;
+  }
+
+  .print-footer-text {
+    font-size: 8pt;
+    color: #666;
+    margin: 0;
+  }
+
+  /* ============================================
+     PAGE BREAKS
+     ============================================ */
+  .print-section:last-of-type {
+    page-break-before: auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+  }
+
+  table,
+  figure {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Ensure all images in print report are visible */
+  .print-report-content img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ============================================
+     REMOVE SCREEN STYLING
+     ============================================ */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br,
+  .shadow-custom-sm,
+  .shadow-custom-md,
+  .shadow-custom-lg,
+  .shadow-custom-xl,
+  .rounded-xl,
+  .rounded-2xl,
+  .border-2 {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  /* Hide Lucide Icons */
+  lucide-angular {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   SCREEN-ONLY STYLES (Non-Print)
+   ============================================ */
+@media screen {
+
+  .print-header,
+  .print-section,
+  .print-table,
+  .print-footer {
+    background: var(--color-background);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    border: 2px solid var(--color-border);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .print-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .print-logo-center {
+    display: flex;
+    align-items: center;
+  }
+
+  .print-logo {
+    max-width: 200px;
+    height: auto;
+  }
+
+  .print-qr-container {
+    text-align: center;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--color-background-muted);
+  }
+
+  .print-qr-code {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 8px auto;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 8px;
+    background: white;
+  }
+
+  .print-qr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .print-divider {
+    border-bottom: 2px solid var(--color-border);
+    margin: 16px 0;
+  }
+
+  .print-section-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--color-text);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-primary);
+  }
+
+  .print-item-count {
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--color-text-muted);
+  }
+
+  .print-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .print-info-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: var(--color-background-muted);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  .print-info-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .print-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  .print-table-header {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 12px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .print-table-header-right {
+    text-align: right;
+  }
+
+  .print-table-row:nth-child(even) {
+    background-color: var(--color-background-muted);
+  }
+
+  .print-table-row:hover {
+    background-color: var(--color-background-hover);
+  }
+
+  .print-table-cell {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-text);
+  }
+
+  .print-table-cell-right {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .print-table-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .print-table-footer {
+    background-color: var(--color-background-active);
+    font-weight: bold;
+  }
+
+  .print-table-footer-cell {
+    padding: 12px;
+    border-top: 2px solid var(--color-border);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--color-text);
+  }
+
+  .print-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .print-footer-text {
+    font-size: 12px;
+    color: var(--color-text-muted);
   }
 }
