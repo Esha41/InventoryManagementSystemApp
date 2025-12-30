@@ -26,7 +26,7 @@ import { ItemManagementModalsComponent } from './components/item-management-moda
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 // Utils
-import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
+import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import {
   getLotConditionClass,
@@ -645,6 +645,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   formatNumber(num: number): string {
     return formatNumberUtil(num);
+  }
+
+  formatTimeToMilitary(time: string | Date | null | undefined): string {
+    return formatTimeToMilitaryUtil(time);
   }
 
   getDepartmentName(): string {

@@ -11,7 +11,7 @@ import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
-import { formatDate } from '@utils/format.utils';
+import { formatDate, formatTimeToMilitary } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -70,28 +70,11 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
 
-  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
-  const formatTime = (timeStr: string | null | undefined): string => {
-    if (!timeStr) return '';
-    // Military format (HHMM - 4 digits) - display as-is
-    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-      return timeStr;
-    }
-    // Legacy format (HH:mm) - convert to military
-    if (timeStr.includes(':')) {
-      const parts = timeStr.split(':');
-      const hours = parts[0].padStart(2, '0');
-      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      return hours + minutes;
-    }
-    return timeStr;
-  };
-
   // Format submitted date with time (for submittedOn field)
   const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : '';
   const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
-  const fromTime = formatTime(order.usageTimeFrom);
-  const toTime = formatTime(order.usageTimeTo);
+  const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+  const toTime = formatTimeToMilitary(order.usageTimeTo);
 
   const submittedDateTime = toDate
     ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
@@ -234,9 +217,9 @@ export function mapApprovalRecordsToSteps(
       try {
         const dateObj = new Date(item.changedAt);
         if (!isNaN(dateObj.getTime())) {
-          // Extract time if it's a datetime string
+          // Extract time in military format if it's a datetime string
           const timeStr = item.changedAt.includes('T')
-            ? dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            ? formatTimeToMilitary(dateObj)
             : '';
           date = formatDateTime(item.changedAt, timeStr);
         }
@@ -265,27 +248,10 @@ export function generateApprovalWorkflowFallback(
   order: OrderDto,
   formatDateTime: (date?: string, time?: string) => string
 ): OrderReportApprovalStep[] {
-  // Format date/time range - handle military format (HHMM) and legacy format (HH:mm)
-  const formatTime = (timeStr: string | null | undefined): string => {
-    if (!timeStr) return '';
-    // Military format (HHMM - 4 digits) - display as-is
-    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-      return timeStr;
-    }
-    // Legacy format (HH:mm) - convert to military
-    if (timeStr.includes(':')) {
-      const parts = timeStr.split(':');
-      const hours = parts[0].padStart(2, '0');
-      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      return hours + minutes;
-    }
-    return timeStr;
-  };
-
   const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : 'N/A';
   const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
-  const fromTime = formatTime(order.usageTimeFrom);
-  const toTime = formatTime(order.usageTimeTo);
+  const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+  const toTime = formatTimeToMilitary(order.usageTimeTo);
 
   const formattedDateTime = toDate
     ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()

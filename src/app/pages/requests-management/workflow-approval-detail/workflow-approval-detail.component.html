@@ -29,7 +29,8 @@
                 </p>
                 <span class="text-[var(--color-text-muted)]">•</span>
                 <p class="text-sm text-[var(--color-text-muted)]">
-                  {{ requestDetail.requestDate }}
+                  {{ requestDetail.requestDate | date:'dd/MM/yyyy' }}
+                  <span *ngIf="requestDetail.requestDate" class="ml-1">{{ formatTime(requestDetail.requestDate) }}</span>
                 </p>
               </div>
             </div>
@@ -81,8 +82,10 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'common.requestDate' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestDate |
-                date:'dd/MM/yyyy' }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+                {{ requestDetail.requestDate | date:'dd/MM/yyyy' }}
+                <span *ngIf="requestDetail.requestDate" class="ml-2">{{ formatTime(requestDetail.requestDate) }}</span>
+              </p>
             </div>
 
             <div *ngIf="requestDetail.departmentName || requestDetail.departmentNameAr" class="space-y-1">

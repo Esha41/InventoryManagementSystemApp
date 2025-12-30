@@ -21,7 +21,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { formatDate } from '@utils/format.utils';
+import { formatDate, formatTimeToMilitary } from '@utils/format.utils';
 import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime, formatRequestDate } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -574,27 +574,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   getOrderDateLabel(order: OrderDto): string {
     if (!order.usageDateFrom) return '-';
 
-    // Format time - handle military format (HHMM) and legacy format (HH:mm)
-    const formatTime = (timeStr: string | null | undefined): string => {
-      if (!timeStr) return '';
-      // Military format (HHMM - 4 digits) - display as-is
-      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        return timeStr;
-      }
-      // Legacy format (HH:mm) - convert to military
-      if (timeStr.includes(':')) {
-        const parts = timeStr.split(':');
-        const hours = parts[0].padStart(2, '0');
-        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-        return hours + minutes;
-      }
-      return timeStr;
-    };
-
     const fromDate = formatDate(order.usageDateFrom);
     const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
-    const fromTime = formatTime(order.usageTimeFrom);
-    const toTime = formatTime(order.usageTimeTo);
+    const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+    const toTime = formatTimeToMilitary(order.usageTimeTo);
 
     return toDate
       ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()

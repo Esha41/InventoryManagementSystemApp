@@ -2,6 +2,8 @@
  * Date utility functions
  */
 
+import { formatTimeToMilitary } from './format.utils';
+
 export class DateUtils {
   /**
    * Format date to DD/MM/YYYY
@@ -48,7 +50,8 @@ export class DateUtils {
 
 /**
  * Format date and time for order display
- * Format: "DD Month YYYY · HH:MM" (e.g., "15 January 2024 · 14:30")
+ * Format: "DD Month YYYY · HHmm" (e.g., "15 January 2024 · 1430")
+ * Uses military time format (HHmm) for consistency across the application
  */
 export function formatOrderDateTime(date?: string, time?: string): string {
   if (!date) return 'N/A';
@@ -59,7 +62,7 @@ export function formatOrderDateTime(date?: string, time?: string): string {
     const day = d.getDate();
     const month = months[d.getMonth()];
     const year = d.getFullYear();
-    const timeStr = time || '';
+    const timeStr = time ? formatTimeToMilitary(time) : '';
     return `${day} ${month} ${year}${timeStr ? ' · ' + timeStr : ''}`;
   } catch {
     return date;
