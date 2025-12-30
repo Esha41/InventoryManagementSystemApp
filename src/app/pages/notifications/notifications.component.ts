@@ -38,6 +38,7 @@ import {
   getPriorityLabelTranslation,
   getStatusLabelTranslation
 } from '@utils/notification.utils';
+import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@services/notification-detail.service';
 import { TranslationService } from '@services/translation.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -262,25 +263,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Formats time for display - converts HH:mm:ss or HH:mm to military format (HHMM)
+   * Formats time for display - converts to military format (HHMM)
+   * Uses centralized formatTimeToMilitary function for consistency
+   * Handles both string time values and Date objects
    */
-  formatTimeForDisplay(timeStr: string | null | undefined): string {
-    if (!timeStr) return '';
-
-    // Already in military format (HHMM - 4 digits)
-    if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-      return timeStr;
-    }
-
-    // Convert from HH:mm:ss or HH:mm format to military format (HHMM)
-    if (timeStr.includes(':')) {
-      const parts = timeStr.split(':');
-      const hours = parts[0].padStart(2, '0');
-      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      return hours + minutes;
-    }
-
-    return timeStr;
+  formatTimeForDisplay(timeStr: string | Date | null | undefined): string {
+    return formatTimeToMilitary(timeStr);
   }
 
   formatMilitaryTime(event: Event): void {

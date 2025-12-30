@@ -37,6 +37,7 @@ import {
 } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { separateRequestsByType, mapToOrderDto, mapToReturnDto, mapToDiscardDto } from '@utils/request-type-mapper.utils';
+import { formatTimeToMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -952,28 +953,15 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return !!items && items.length > 0;
   }
 
+  /**
+   * Format order usage time to military format (HHMM)
+   * Uses centralized formatTimeToMilitary function for consistency
+   */
   formatOrderUsageTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
 
-    // Handle military format (HHMM) and legacy format (HH:mm)
-    const formatTime = (timeStr: string | null | undefined): string => {
-      if (!timeStr) return '';
-      // Military format (HHMM - 4 digits)
-      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        return timeStr;
-      }
-      // Legacy format (HH:mm) - convert to military
-      if (timeStr.includes(':')) {
-        const parts = timeStr.split(':');
-        const hours = parts[0].padStart(2, '0');
-        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-        return hours + minutes;
-      }
-      return timeStr;
-    };
-
-    const fromTime = formatTime(order.usageTimeFrom);
-    const toTime = formatTime(order.usageTimeTo);
+    const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+    const toTime = formatTimeToMilitary(order.usageTimeTo);
 
     if (!fromTime) return 'N/A';
     return toTime ? `${fromTime} - ${toTime}` : fromTime;
@@ -983,6 +971,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Format order usage date and time together
    * Combines usage date range with usage time range in one line
    * Format: "From Date (From Time) - To Date (To Time)"
+   * Uses centralized formatTimeToMilitary function for consistency
    */
   formatOrderUsageDateAndTime(order: OrderDto | null): string {
     if (!order) return 'N/A';
@@ -990,25 +979,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const fromDate = order.usageDateFrom ? this.formatDate(order.usageDateFrom) : null;
     const toDate = order.usageDateTo ? this.formatDate(order.usageDateTo) : null;
 
-    // Format time helper
-    const formatTime = (timeStr: string | null | undefined): string => {
-      if (!timeStr) return '';
-      // Military format (HHMM - 4 digits) - already in correct format
-      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        return timeStr;
-      }
-      // Backend TimeOnly format (HH:mm:ss or HH:mm) - convert to military
-      if (timeStr.includes(':')) {
-        const parts = timeStr.split(':');
-        const hours = parts[0].padStart(2, '0');
-        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-        return hours + minutes;
-      }
-      return timeStr;
-    };
-
-    const fromTime = formatTime(order.usageTimeFrom);
-    const toTime = formatTime(order.usageTimeTo);
+    const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+    const toTime = formatTimeToMilitary(order.usageTimeTo);
 
     // Build the combined string
     let result = '';

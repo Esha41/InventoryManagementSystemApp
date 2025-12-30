@@ -21,7 +21,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { formatDate } from '@utils/format.utils';
+import { formatDate, formatTimeToMilitary } from '@utils/format.utils';
 import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime, formatRequestDate } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -579,8 +579,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
     const fromDate = formatDate(order.usageDateFrom);
     const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
-    const fromTime = formatTime(order.usageTimeFrom);
-    const toTime = formatTime(order.usageTimeTo);
+    const fromTime = formatTimeToMilitary(order.usageTimeFrom);
+    const toTime = formatTimeToMilitary(order.usageTimeTo);
 
     return toDate
       ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()

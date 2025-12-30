@@ -4,6 +4,7 @@
  */
 
 import { RequestType, Priority, RequestStatus, RequestItem, WorkflowApprovalStep, RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
+import { formatTimeToMilitary } from '@utils/format.utils';
 
 /**
  * Request Type enum values (matching backend)
@@ -315,20 +316,28 @@ export function formatApprovalDate(date: string | Date | undefined): string {
     year: 'numeric'
   });
 }
+/**
+ * Format approval date and time for display
+ * Format: "DD MMM YYYY HHmm" (e.g., "15 Jan 2024 1430")
+ * Uses military time format (HHmm) for consistency across the application
+ */
 export function formatApprovalDateTime(date: string | Date | undefined): string {
   if (!date) return '';
 
   const utc = new Date(date);
   const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
 
-  return qatarTime.toLocaleString('en-GB', {
+  // Format date portion
+  const dateStr = qatarTime.toLocaleString('en-GB', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
+    year: 'numeric'
   });
+
+  // Format time in military format (HHmm)
+  const timeStr = formatTimeToMilitary(qatarTime);
+
+  return `${dateStr} ${timeStr}`;
 }
 
 /**
@@ -343,8 +352,9 @@ export function formatRequestDate(date: string | Date | undefined): string {
 
 /**
  * Format date and time for request display
- * Format: "DD Month YYYY HH:MM" (e.g., "7 December 2025 14:30")
+ * Format: "DD Month YYYY HHmm" (e.g., "7 December 2025 1430")
  * Handles UTC dates and converts to local time
+ * Uses military time format (HHmm) for consistency across the application
  */
 export function formatRequestDateTime(date: string | Date | undefined): string {
   if (!date) return '';
@@ -358,9 +368,8 @@ export function formatRequestDateTime(date: string | Date | undefined): string {
   const day = d.getDate();
   const month = months[d.getMonth()];
   const year = d.getFullYear();
-  const hours = d.getHours().toString().padStart(2, '0');
-  const minutes = d.getMinutes().toString().padStart(2, '0');
-  return `${day} ${month} ${year} ${hours}:${minutes}`;
+  const time = formatTimeToMilitary(d);
+  return `${day} ${month} ${year}${time ? ' ' + time : ''}`;
 }
 
 /**
