@@ -121,7 +121,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     });
     const user = this.authService.getCurrentUser();
     this.currentUser = user?.userName || user?.email || 'N/A';
-    
+
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -365,16 +365,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
 
               if (baseRequest.requestDate) {
-                updatedSummary.requestDate = formatRequestDateTime(baseRequest.requestDate);
+                updatedSummary.requestDate = formatRequestDate(baseRequest.requestDate);
               }
 
-              if ((!updatedSummary.department || updatedSummary.department === 'N/A') && 
-                  (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName'])) {
+              if ((!updatedSummary.department || updatedSummary.department === 'N/A') &&
+                (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName'])) {
                 const currentLang = getCurrentLang(this.translate);
                 updatedSummary.department = getLocalizedName(
-                  { 
-                    nameEn: baseRequest['departmentNameEn'] || baseRequest['departmentName'], 
-                    nameAr: baseRequest['departmentNameAr'] 
+                  {
+                    nameEn: baseRequest['departmentNameEn'] || baseRequest['departmentName'],
+                    nameAr: baseRequest['departmentNameAr']
                   },
                   currentLang
                 ) || 'N/A';
@@ -543,12 +543,12 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   getDepartmentName(order: OrderDto): string {
     if (!order) return this.translate.instant('requestsManagement.orderReport.list.unknown');
     const currentLang = getCurrentLang(this.translate);
-    
+
     if (order.department) {
       const localized = getLocalizedName(order.department, currentLang);
       if (localized) return localized;
     }
-    
+
     if (order.departmentNameEn || order.departmentNameAr) {
       const localized = getLocalizedName(
         { nameEn: order.departmentNameEn, nameAr: order.departmentNameAr },
@@ -556,7 +556,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       );
       if (localized) return localized;
     }
-    
+
     return this.translate.instant('requestsManagement.orderReport.list.unknown');
   }
 
@@ -700,11 +700,25 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       <html>
         <head>
           <meta charset="UTF-8">
+          <base href="/">
+          <meta name="url" content="">
           <title>Request Report - ${this.orderSummary.orderId}</title>
           <style>
             @page {
               size: A4;
-              margin: 1.5cm;
+              margin: 0.8cm 1.5cm 1.5cm 1.5cm;
+            }
+            
+            @page {
+              @bottom-left {
+                content: none;
+              }
+              @bottom-center {
+                content: none;
+              }
+              @bottom-right {
+                content: none;
+              }
             }
             
             * {
@@ -771,10 +785,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             .print-qr-container {
               position: absolute !important;
               right: 0 !important;
-              top: 0 !important;
+              top: -10px !important;
               text-align: center !important;
-              border: 2px solid #000 !important;
-              padding: 10px !important;
+              border: none !important;
+              padding: 0 !important;
               background: #ffffff !important;
             }
             
@@ -784,7 +798,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               height: 100px !important;
               display: block !important;
               margin: 0 auto 5px auto !important;
-              border: 1px solid #ddd !important;
+              border: none !important;
               padding: 5px !important;
               background: #ffffff !important;
             }
@@ -798,7 +812,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             }
             
             .print-divider {
-              border-bottom: 3px solid #000 !important;
+              border-bottom: none !important;
               margin-top: 10px !important;
               margin-bottom: 15px !important;
             }
@@ -810,8 +824,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               page-break-inside: avoid;
               border: 2px solid #000 !important;
               border-radius: 0 !important;
-              padding: 15px !important;
-              margin-bottom: 20px !important;
+              padding: 12px !important;
+              margin-bottom: 15px !important;
               background: #ffffff !important;
               box-shadow: none !important;
             }
@@ -820,9 +834,36 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               font-size: 14pt !important;
               font-weight: bold !important;
               color: #000 !important;
-              margin: 0 0 12px 0 !important;
-              padding-bottom: 8px !important;
-              border-bottom: 2px solid #333 !important;
+              margin: 0 0 8px 0 !important;
+              padding-bottom: 6px !important;
+            }
+            
+            .print-info-grid {
+              display: grid !important;
+              grid-template-columns: 1fr 1fr !important;
+              gap: 8px 15px !important;
+              margin-bottom: 0 !important;
+              margin-top: 0 !important;
+            }
+            
+            .print-info-item {
+              display: flex !important;
+              padding: 6px 0 !important;
+              border-bottom: 1px solid #ddd !important;
+              margin: 0 !important;
+            }
+            
+            .print-info-label {
+              font-weight: bold !important;
+              color: #333 !important;
+              min-width: 120px !important;
+              font-size: 9pt !important;
+            }
+            
+            .print-info-value {
+              color: #000 !important;
+              font-size: 9pt !important;
+              flex: 1 !important;
             }
             
             /* Professional Tables */
@@ -841,14 +882,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               color: #ffffff !important;
               font-weight: bold !important;
               font-size: 10pt !important;
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               text-align: left !important;
               border: 1px solid #000 !important;
             }
             
             .print-table-cell,
             table tbody td {
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               border: 1px solid #333 !important;
               font-size: 10pt !important;
               color: #000 !important;
@@ -867,11 +908,118 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             
             .print-table-footer-cell,
             table tfoot td {
-              padding: 10px 12px !important;
+              padding: 6px 12px !important;
               border: 1px solid #000 !important;
               font-size: 10pt !important;
               font-weight: bold !important;
               color: #000 !important;
+            }
+            
+            /* Approval Workflow Cards */
+            .approval-workflow-cards {
+              display: grid !important;
+              grid-template-columns: repeat(4, 1fr) !important;
+              gap: 6px !important;
+              margin-top: 8px !important;
+            }
+            
+            .approval-card {
+              border: 1px solid #333 !important;
+              border-radius: 0 !important;
+              background: #ffffff !important;
+              page-break-inside: avoid !important;
+              overflow: hidden !important;
+              font-size: 7pt !important;
+            }
+            
+            .approval-card-header {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 4px 6px !important;
+              background: #f5f5f5 !important;
+              border-bottom: 1px solid #333 !important;
+            }
+            
+            .approval-step-number {
+              font-weight: bold !important;
+              font-size: 7pt !important;
+              color: #000 !important;
+              background: #fff !important;
+              border: 1px solid #333 !important;
+              padding: 1px 5px !important;
+              border-radius: 0 !important;
+            }
+            
+            .approval-status {
+              font-size: 6.5pt !important;
+              font-weight: bold !important;
+              padding: 2px 5px !important;
+              border-radius: 0 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.2px !important;
+            }
+            
+            .approval-status.status-approved {
+              background: #d4edda !important;
+              color: #155724 !important;
+              border: 1px solid #155724 !important;
+            }
+            
+            .approval-status.status-rejected {
+              background: #f8d7da !important;
+              color: #721c24 !important;
+              border: 1px solid #721c24 !important;
+            }
+            
+            .approval-status.status-pending {
+              background: #fff3cd !important;
+              color: #856404 !important;
+              border: 1px solid #856404 !important;
+            }
+            
+            .approval-status.status-in-progress {
+              background: #d1ecf1 !important;
+              color: #0c5460 !important;
+              border: 1px solid #0c5460 !important;
+            }
+            
+            .approval-card-body {
+              padding: 5px 6px !important;
+            }
+            
+            .approval-role {
+              font-weight: bold !important;
+              font-size: 7pt !important;
+              color: #000 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-approver {
+              font-size: 6.5pt !important;
+              color: #333 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-date {
+              font-size: 6pt !important;
+              color: #666 !important;
+              margin-bottom: 2px !important;
+            }
+            
+            .approval-notes {
+              font-size: 6pt !important;
+              color: #444 !important;
+              margin-top: 3px !important;
+              padding-top: 3px !important;
+              border-top: 1px dashed #ccc !important;
+              line-height: 1.2 !important;
+            }
+            
+            .approval-notes .notes-label {
+              font-weight: bold !important;
+              color: #000 !important;
+              font-size: 6pt !important;
             }
             
             /* Headers */

@@ -181,6 +181,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   selectNotification(notification: Notification): void {
     this.selectedNotification = notification;
     this.loadNotificationDetail(notification);
+
+    // Automatically mark as read when opening/selecting a notification
+    if (!notification.isRead) {
+      this.markAsRead(notification);
+    }
   }
 
   trackByNotification(_: number, notification: Notification): number {
@@ -376,12 +381,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       if (existing) {
         this.selectedNotification = existing;
         this.loadNotificationDetail(existing);
+        // Mark as read if it's unread
+        if (!existing.isRead) {
+          this.markAsRead(existing);
+        }
         return;
       }
     }
 
     this.selectedNotification = notifications[0];
     this.loadNotificationDetail(this.selectedNotification);
+    // Mark as read if it's unread
+    if (!this.selectedNotification.isRead) {
+      this.markAsRead(this.selectedNotification);
+    }
   }
 
   private loadNotificationDetail(notification: Notification | null): void {
@@ -636,8 +649,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    return !notification.isRead ||
-      this.canConfirmPickup(notification) ||
+    return this.canConfirmPickup(notification) ||
       this.canProposeNewTime(notification);
   }
 

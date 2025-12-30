@@ -70,7 +70,8 @@
                   : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/30 bg-[var(--color-background)]'">
                 <div class="flex items-start justify-between gap-3 mb-2">
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-[var(--color-text)] break-words mb-0.5" [title]="order.requestNo || order.orderNo || ('#' + order.id)">{{ order.requestNo ||
+                    <p class="text-sm font-bold text-[var(--color-text)] break-words mb-0.5"
+                      [title]="order.requestNo || order.orderNo || ('#' + order.id)">{{ order.requestNo ||
                       order.orderNo || ('#' + order.id) }}</p>
                     <p class="text-xs text-[var(--color-text-muted)] break-words" [title]="getDepartmentName(order)">
                       {{ getDepartmentName(order) }}
@@ -193,9 +194,7 @@
             <section class="print-section">
               <h2 class="print-section-title">
                 {{ 'requestsManagement.orderReport.labels.itemsIncluded' | translate }}
-                <span class="print-item-count">({{ orderItems.length }} {{ orderItems.length === 1 ?
-                  ('requestsManagement.orderReport.labels.item' | translate) :
-                  ('requestsManagement.orderReport.labels.items' | translate) }})</span>
+                <span class="print-item-count">{{ orderItems.length }}</span>
               </h2>
 
               <table class="print-table">
@@ -238,24 +237,11 @@
               <h2 class="print-section-title">{{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate
                 }}</h2>
 
-              <table class="print-table">
-                <thead>
-                  <tr>
-                    <th class="print-table-header">{{ 'requestsManagement.orderReport.table.step' | translate }}</th>
-                    <th class="print-table-header">{{ 'requestsManagement.orderReport.table.role' | translate }}</th>
-                    <th class="print-table-header">{{ 'requestsManagement.orderReport.table.approver' | translate }}
-                    </th>
-                    <th class="print-table-header">{{ 'requestsManagement.orderReport.table.date' | translate }}</th>
-                    <th class="print-table-header">{{ 'requestsManagement.orderReport.table.status' | translate }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let step of approvalWorkflow" class="print-table-row">
-                    <td class="print-table-cell">{{ step.step }}</td>
-                    <td class="print-table-cell">{{ step.role }}</td>
-                    <td class="print-table-cell">{{ step.approver }}</td>
-                    <td class="print-table-cell">{{ step.date }}</td>
-                    <td class="print-table-cell">
+              <div class="approval-workflow-cards">
+                <div *ngFor="let step of approvalWorkflow; let i = index" class="approval-card">
+                  <div class="approval-card-header">
+                    <span class="approval-step-number">{{ step.step }}</span>
+                    <span class="approval-status" [ngClass]="'status-' + step.status">
                       <ng-container [ngSwitch]="step.status">
                         <span *ngSwitchCase="'approved'">{{ 'common.statuses.Approved' | translate }}</span>
                         <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
@@ -263,10 +249,20 @@
                         <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>
                         <span *ngSwitchDefault>{{ step.status }}</span>
                       </ng-container>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    </span>
+                  </div>
+                  <div class="approval-card-body">
+                    <div class="approval-role">{{ step.role }}</div>
+                    <div class="approval-approver">{{ step.approver }}</div>
+                    <div class="approval-date" *ngIf="step.date">{{ step.date }}</div>
+                    <div class="approval-notes"
+                      *ngIf="step.notes && step.notes.trim() !== '' && step.notes !== 'Request submitted'">
+                      <span class="notes-label">{{ 'requestsManagement.orderReport.table.notes' | translate }}:</span>
+                      {{ step.notes }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <!-- Print Footer -->
