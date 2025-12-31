@@ -135,7 +135,13 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+    // Preserve tab query parameter when navigating back
+    const tabParam = this.route.snapshot.queryParams['tab'];
+    const queryParams = tabParam ? { tab: tabParam } : {};
+    
+    this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+      queryParams
+    });
   }
 
   onMapView(): void {

@@ -1,0 +1,84 @@
+{
+    "addWeaponAsset": {
+        "title": "إضافة أصول الأسلحة إلى {{name}}",
+        "subtitle": "إضافة أصول أسلحة فردية مع أرقام تسلسلية وتتبع RFID",
+        "backToInventory": "العودة إلى المخزون",
+        "weaponAssets": "أصول الأسلحة",
+        "addAsset": "إضافة أصل",
+        "asset": "أصل",
+        "weapon": "السلاح",
+        "selectWeapon": "اختر السلاح",
+        "serialNumber": "الرقم التسلسلي",
+        "enterSerialNumber": "أدخل الرقم التسلسلي",
+        "rfidTag": "علامة RFID",
+        "enterRfidTag": "أدخل علامة RFID",
+        "assetTag": "علامة الأصل",
+        "enterAssetTag": "أدخل علامة الأصل",
+        "condition": "الحالة",
+        "enterCondition": "أدخل الحالة (مثال: ممتاز، جيد، مقبول)",
+        "purchaseDate": "تاريخ الشراء",
+        "warrantyExpiryDate": "تاريخ انتهاء الضمان",
+        "purchasePrice": "سعر الشراء",
+        "enterPurchasePrice": "أدخل سعر الشراء",
+        "notes": "ملاحظات",
+        "notesPlaceholder": "أدخل أي ملاحظات إضافية",
+        "cancel": "إلغاء",
+        "saveAssets": "حفظ الأصول",
+        "saving": "جاري الحفظ...",
+        "required": "هذا الحقل مطلوب",
+        "maxLength": "الحد الأقصى للطول هو {{max}} حرف",
+        "minValue": "الحد الأدنى للقيمة هو {{min}}",
+        "validationError": "يرجى إصلاح أخطاء التحقق قبل الإرسال",
+        "loadError": "فشل تحميل البيانات. يرجى المحاولة مرة أخرى.",
+        "createError": "فشل إنشاء أصل السلاح. يرجى المحاولة مرة أخرى.",
+        "successMessage": "تم إنشاء أصول الأسلحة بنجاح!",
+        "noWeaponsAvailable": "لا توجد أسلحة متاحة في الكتالوج",
+        "warehouse": "مستودع",
+        "serialNumberTaken": "هذا الرقم التسلسلي مستخدم بالفعل لأصل آخر",
+        "rfidTaken": "هذه علامة RFID مستخدمة بالفعل لأصل آخر",
+        "assetTagTaken": "هذه علامة الأصل مستخدمة بالفعل لأصل آخر",
+        "identificationDetails": "تفاصيل التعريف",
+        "additionalDetails": "تفاصيل إضافية",
+        "mode": {
+            "single": "إدخال فردي",
+            "bulk": "إدخال جماعي"
+        },
+        "bulk": {
+            "setup": "إعداد الإدخال الجماعي",
+            "quantity": "الكمية",
+            "fillIdentifiers": "ملء أرقام RFID/التسلسلية",
+            "fillIdentifiersDescription": "قم بتمكين هذا الخيار لملء الأرقام التسلسلية وعلامات RFID لكل عنصر بشكل فردي في الصفحة التالية",
+            "generationType": "استراتيجية الأرقام التسلسلية",
+            "types": {
+                "none": "بدون أرقام تسلسلية",
+                "pattern": "توليد نمط",
+                "manual": "لصق قائمة"
+            },
+            "pattern": {
+                "prefix": "البادئة",
+                "startNumber": "رقم البداية",
+                "suffix": "اللاحقة",
+                "preview": "معاينة: {{start}} ... {{end}}"
+            },
+            "manual": {
+                "serialsPlaceholder": "الصق الأرقام التسلسلية هنا (واحد في كل سطر)",
+                "rfidsPlaceholder": "الصق علامات RFID هنا (واحدة في كل سطر)",
+                "countMatch": "عدد الأسطر: {{count}}",
+                "countMismatch": "تحذير: عدد الأرقام التسلسلية ({{serialCount}}) لا يطابق عدد علامات RFID ({{rfidCount}})"
+            },
+            "commonDetails": "تفاصيل مشتركة (تطبق على الكل)",
+            "summary": "جاهز لإنشاء {{count}} أصل لـ {{weapon}}",
+            "backToSetup": "العودة إلى الإعداد",
+            "entryTitle": "الإدخال الجماعي - ملء المعرفات",
+            "entrySubtitle": "املأ الأرقام التسلسلية وعلامات RFID وعلامات الأصول لـ {{quantity}} عنصر",
+            "itemsList": "قائمة العناصر",
+            "noDataFound": "لم يتم العثور على بيانات الإدخال الجماعي. يرجى البدء من جديد.",
+            "invalidData": "بيانات الإدخال الجماعي غير صالحة. يرجى البدء من جديد."
+        },
+        "next": "التالي",
+        "progress": {
+            "title": "جاري إنشاء الأصول...",
+            "status": "تمت معالجة {{current}} من {{total}}"
+        }
+    }
+}

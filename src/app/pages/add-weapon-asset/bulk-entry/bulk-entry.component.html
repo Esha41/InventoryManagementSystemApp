@@ -1,0 +1,140 @@
+<div class="page-wrapper">
+    <!-- Header -->
+    <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+        <div class="page-container py-4">
+            <div class="flex items-center space-x-4">
+                <button (click)="onBack()"
+                    class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                    <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+                    <span class="font-medium">{{ 'addWeaponAsset.bulk.backToSetup' | translate }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="page-container">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+                {{ 'addWeaponAsset.bulk.entryTitle' | translate }}
+            </h1>
+            <p class="text-sm text-[var(--color-text-muted)]">
+                {{ 'addWeaponAsset.bulk.entrySubtitle' | translate: { quantity: bulkData?.quantity || 0 } }}
+            </p>
+        </div>
+
+        <!-- Loading State -->
+        <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+        </app-loading-state>
+
+        <!-- Error State -->
+        <app-error-state *ngIf="errorMessage && !loading" [error]="errorMessage || ''" variant="inline">
+        </app-error-state>
+
+        <!-- Bulk Progress Overlay -->
+        <div *ngIf="isProcessingBulk" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div class="bg-[var(--color-background)] p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <h3 class="text-lg font-bold mb-4">{{ 'addWeaponAsset.progress.title' | translate }}</h3>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="bg-[var(--color-brand)] h-2.5 rounded-full transition-all duration-300"
+                        [style.width.%]="(bulkProgress.current / bulkProgress.total) * 100"></div>
+                </div>
+                <p class="text-sm text-[var(--color-text-muted)] text-center">
+                    {{ 'addWeaponAsset.progress.status' | translate: { current: bulkProgress.current, total:
+                    bulkProgress.total } }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form *ngIf="!loading && bulkData && bulkEntryForm" [formGroup]="bulkEntryForm" (ngSubmit)="onSubmit()"
+            class="space-y-6">
+            <!-- Items List -->
+            <div
+                class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
+                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">
+                    {{ 'addWeaponAsset.bulk.itemsList' | translate }}
+                </h2>
+
+                <div class="space-y-4" formArrayName="items">
+                    <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i"
+                        class="p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background-active)]">
+                        <div class="mb-4">
+                            <h3 class="text-sm font-medium text-[var(--color-text)]">
+                                {{ 'addWeaponAsset.asset' | translate }} {{ i + 1 }}
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Serial Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.serialNumber' | translate }}
+                                </label>
+                                <input type="text" formControlName="serialNumber"
+                                    (input)="onFieldChange('serialNumber', i)"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('serialNumber', i)"
+                                    [placeholder]="'addWeaponAsset.enterSerialNumber' | translate">
+                                <p *ngIf="isFieldInvalid('serialNumber', i)"
+                                    class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('serialNumber', i) }}
+                                </p>
+                            </div>
+
+                            <!-- RFID Tag -->
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.rfidTag' | translate }}
+                                </label>
+                                <input type="text" formControlName="rfid" (input)="onFieldChange('rfid', i)"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('rfid', i)"
+                                    [placeholder]="'addWeaponAsset.enterRfidTag' | translate">
+                                <p *ngIf="isFieldInvalid('rfid', i)" class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('rfid', i) }}
+                                </p>
+                            </div>
+
+                            <!-- Asset Tag -->
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assetTag' | translate }}
+                                </label>
+                                <input type="text" formControlName="assetTag" (input)="onFieldChange('assetTag', i)"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('assetTag', i)"
+                                    [placeholder]="'addWeaponAsset.enterAssetTag' | translate">
+                                <p *ngIf="isFieldInvalid('assetTag', i)" class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('assetTag', i) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-4" [class.flex-row-reverse]="isRTL">
+                <button type="button" (click)="onCancel()" [disabled]="submitting"
+                    class="px-6 py-2 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+                        <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+                        <span>{{ 'addWeaponAsset.cancel' | translate }}</span>
+                    </div>
+                </button>
+
+                <button *appHasPermission="'Asset.Create'" type="submit" [disabled]="submitting"
+                    class="px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+                        <lucide-angular [img]="Save" class="w-4 h-4"></lucide-angular>
+                        <span>{{ submitting ? ('addWeaponAsset.saving' | translate) : ('addWeaponAsset.saveAssets' |
+                            translate) }}</span>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+

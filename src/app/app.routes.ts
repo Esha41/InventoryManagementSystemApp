@@ -98,6 +98,18 @@ export const routes: Routes = [
         data: { permissions: ['inventorypage.page', 'inventory.create'] }
       },
       {
+        path: 'warehouse/:id/assets/add',
+        loadComponent: () => import('@pages/add-weapon-asset/add-weapon-asset.component').then(m => m.AddWeaponAssetComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.create'] }
+      },
+      {
+        path: 'warehouse/:id/assets/add/bulk-entry',
+        loadComponent: () => import('@pages/add-weapon-asset/bulk-entry/bulk-entry.component').then(m => m.BulkEntryComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.create'] }
+      },
+      {
         path: 'warehouse/:id/inventory',
         loadComponent: () => import('@pages/warehouse-inventory/warehouse-inventory.component').then(m => m.WarehouseInventoryComponent),
         canActivate: [permissionGuard],
@@ -114,6 +126,18 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/warehouse-inventory/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventory.view'] }
+      },
+      {
+        path: 'warehouse/:warehouseId/assets/:id',
+        loadComponent: () => import('@pages/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.view'] }
+      },
+      {
+        path: 'warehouse/:warehouseId/assets/:id/edit',
+        loadComponent: () => import('./pages/edit-asset/edit-asset.component').then(m => m.EditAssetComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.edit'] }
       },
       {
         path: 'workflow',

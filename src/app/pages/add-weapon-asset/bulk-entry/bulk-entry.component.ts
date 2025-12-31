@@ -1,0 +1,281 @@
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
+
+// Services
+import { AssetService } from '@services/asset.service';
+import { ToastService } from '@services/toast.service';
+import { TranslationService } from '@services/translation.service';
+
+// Models
+import { CreateAssetDto } from '@models/asset.model';
+
+// Components
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+
+// Utils
+import { ErrorHandler } from '@utils/error-handler.utils';
+
+interface BulkAssetData {
+    warehouseId: number;
+    itemId: number;
+    quantity: number;
+    purchaseDate?: string;
+    warrantyExpiryDate?: string;
+    condition?: string;
+    purchasePrice?: number;
+    notes?: string;
+}
+
+@Component({
+    selector: 'app-bulk-entry',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule,
+        TranslateModule,
+        LucideAngularModule,
+        LoadingStateComponent,
+        ErrorStateComponent,
+        HasPermissionDirective
+    ],
+    templateUrl: './bulk-entry.component.html',
+    styleUrls: ['./bulk-entry.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class BulkEntryComponent implements OnInit, OnDestroy {
+    // Icons
+    readonly Save = Save;
+    readonly X = X;
+    readonly ArrowLeft = ArrowLeft;
+    readonly ArrowRight = ArrowRight;
+
+    // Form
+    bulkEntryForm!: FormGroup;
+
+    // Data
+    bulkData!: BulkAssetData;
+    warehouseId!: number;
+    loading = false;
+    submitting = false;
+    errorMessage: string | null = null;
+    bulkProgress = { current: 0, total: 0 };
+    isProcessingBulk = false;
+
+    private destroy$ = new Subject<void>();
+
+    constructor(
+        private fb: FormBuilder,
+        private router: Router,
+        private route: ActivatedRoute,
+        private assetService: AssetService,
+        private toastService: ToastService,
+        private translateService: TranslateService,
+        private translationService: TranslationService,
+        private cdr: ChangeDetectorRef
+    ) { }
+
+    get isRTL(): boolean {
+        return this.translationService?.isRTL() ?? false;
+    }
+
+    get backIcon() {
+        return this.isRTL ? ArrowRight : ArrowLeft;
+    }
+
+    get itemsFormArray(): FormArray {
+        return this.bulkEntryForm.get('items') as FormArray;
+    }
+
+    ngOnInit(): void {
+        // Get warehouse ID from route
+        this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
+            const id = params['id'];
+            if (id) {
+                this.warehouseId = parseInt(id, 10);
+                this.loadBulkData();
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    private loadBulkData(): void {
+        const storedData = sessionStorage.getItem('bulkAssetData');
+        if (!storedData) {
+            this.errorMessage = this.translateService.instant('addWeaponAsset.bulk.noDataFound');
+            this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
+            return;
+        }
+
+        try {
+            this.bulkData = JSON.parse(storedData);
+            this.initializeForm();
+        } catch (error) {
+            this.errorMessage = this.translateService.instant('addWeaponAsset.bulk.invalidData');
+            this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
+        }
+    }
+
+    private initializeForm(): void {
+        const itemsArray = this.fb.array<FormGroup>([]);
+        
+        // Create a form group for each item
+        for (let i = 0; i < this.bulkData.quantity; i++) {
+            itemsArray.push(this.createItemFormGroup(i + 1));
+        }
+
+        this.bulkEntryForm = this.fb.group({
+            items: itemsArray
+        });
+    }
+
+    private createItemFormGroup(index: number): FormGroup {
+        return this.fb.group({
+            serialNumber: ['', [Validators.maxLength(200)]],
+            rfid: ['', [Validators.maxLength(500)]],
+            assetTag: ['', [Validators.maxLength(100)]]
+        });
+    }
+
+    getItemFormGroup(index: number): FormGroup {
+        return this.itemsFormArray.at(index) as FormGroup;
+    }
+
+    isFieldInvalid(fieldPath: string, index: number): boolean {
+        const group = this.getItemFormGroup(index);
+        const control = group.get(fieldPath);
+        return !!(control && control.invalid && (control.dirty || control.touched));
+    }
+
+    getFieldError(fieldPath: string, index: number): string | null {
+        const group = this.getItemFormGroup(index);
+        const control = group.get(fieldPath);
+
+        if (!control || !control.errors) return null;
+
+        if (control.errors['maxlength']) {
+            return this.translateService.instant('addWeaponAsset.maxLength', {
+                max: control.errors['maxlength'].requiredLength
+            });
+        }
+
+        return null;
+    }
+
+    onFieldChange(fieldPath: string, index: number): void {
+        const group = this.getItemFormGroup(index);
+        const control = group.get(fieldPath);
+        if (control) {
+            control.markAsTouched();
+            control.updateValueAndValidity();
+        }
+    }
+
+    onSubmit(): void {
+        this.bulkEntryForm.markAllAsTouched();
+        this.itemsFormArray.controls.forEach(itemGroup => {
+            (itemGroup as FormGroup).markAllAsTouched();
+        });
+
+        if (this.bulkEntryForm.invalid) {
+            const title = this.translateService.instant('toast.error');
+            const message = this.translateService.instant('addWeaponAsset.validationError');
+            this.toastService.error(message, title);
+            return;
+        }
+
+        const formValue = this.bulkEntryForm.value;
+        const createDtos: CreateAssetDto[] = formValue.items.map((item: any, index: number) => ({
+            itemId: this.bulkData.itemId,
+            depotId: this.warehouseId,
+            serialNumber: item.serialNumber?.trim() || undefined,
+            rfid: item.rfid?.trim() || undefined,
+            assetTag: item.assetTag?.trim() || undefined,
+            purchaseDate: this.bulkData.purchaseDate || undefined,
+            warrantyExpiryDate: this.bulkData.warrantyExpiryDate || undefined,
+            condition: this.bulkData.condition?.trim() || undefined,
+            purchasePrice: this.bulkData.purchasePrice || undefined,
+            notes: this.bulkData.notes?.trim() || undefined
+        }));
+
+        if (createDtos.length === 0) return;
+
+        this.submitting = true;
+        this.isProcessingBulk = true;
+        this.bulkProgress = { current: 0, total: createDtos.length };
+        this.errorMessage = null;
+        this.cdr.markForCheck();
+
+        // Create assets sequentially
+        this.createAssetsSequentially(createDtos, 0);
+    }
+
+    private createAssetsSequentially(dtos: CreateAssetDto[], index: number): void {
+        this.bulkProgress = { current: index, total: dtos.length };
+        this.cdr.markForCheck();
+
+        if (index >= dtos.length) {
+            // All assets created successfully
+            this.submitting = false;
+            this.isProcessingBulk = false;
+            this.cdr.markForCheck();
+
+            // Clear session storage
+            sessionStorage.removeItem('bulkAssetData');
+
+            this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
+                const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
+                const title = translations['toast.success'];
+                this.toastService.success(message, title);
+            });
+
+            // Redirect after a short delay
+            setTimeout(() => {
+                this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+            }, 800);
+            return;
+        }
+
+        // Create current asset
+        this.assetService.create(dtos[index])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    // Move to next asset
+                    this.createAssetsSequentially(dtos, index + 1);
+                },
+                error: (error: unknown) => {
+                    const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
+                    const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
+                    this.errorMessage = errorMsg;
+                    this.submitting = false;
+                    this.isProcessingBulk = false;
+                    this.cdr.markForCheck();
+
+                    this.translateService.get(['toast.error']).subscribe(translations => {
+                        this.toastService.error(errorMsg, translations['toast.error']);
+                    });
+                }
+            });
+    }
+
+    onCancel(): void {
+        sessionStorage.removeItem('bulkAssetData');
+        this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
+    }
+
+    onBack(): void {
+        this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
+    }
+}
+

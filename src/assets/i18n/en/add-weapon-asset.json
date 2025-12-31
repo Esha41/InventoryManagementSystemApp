@@ -1,0 +1,84 @@
+{
+    "addWeaponAsset": {
+        "title": "Add Weapon Assets to {{name}}",
+        "subtitle": "Add individual weapon assets with serial numbers and RFID tracking",
+        "backToInventory": "Back to Inventory",
+        "weaponAssets": "Weapon Assets",
+        "addAsset": "Add Asset",
+        "asset": "Asset",
+        "weapon": "Weapon",
+        "selectWeapon": "Select weapon",
+        "serialNumber": "Serial Number",
+        "enterSerialNumber": "Enter serial number",
+        "rfidTag": "RFID Tag",
+        "enterRfidTag": "Enter RFID tag",
+        "assetTag": "Asset Tag",
+        "enterAssetTag": "Enter asset tag",
+        "condition": "Condition",
+        "enterCondition": "Enter condition (e.g., Excellent, Good, Fair)",
+        "purchaseDate": "Purchase Date",
+        "warrantyExpiryDate": "Warranty Expiry Date",
+        "purchasePrice": "Purchase Price",
+        "enterPurchasePrice": "Enter purchase price",
+        "notes": "Notes",
+        "notesPlaceholder": "Enter any additional notes",
+        "cancel": "Cancel",
+        "saveAssets": "Save Assets",
+        "saving": "Saving...",
+        "required": "This field is required",
+        "maxLength": "Maximum length is {{max}} characters",
+        "minValue": "Minimum value is {{min}}",
+        "validationError": "Please fix the validation errors before submitting",
+        "loadError": "Failed to load data. Please try again.",
+        "createError": "Failed to create weapon asset. Please try again.",
+        "successMessage": "Weapon assets created successfully!",
+        "noWeaponsAvailable": "No weapons available in catalog",
+        "warehouse": "Warehouse",
+        "serialNumberTaken": "This serial number is already assigned to another asset",
+        "rfidTaken": "This RFID tag is already assigned to another asset",
+        "assetTagTaken": "This asset tag is already assigned to another asset",
+        "identificationDetails": "Identification Details",
+        "additionalDetails": "Additional Details",
+        "mode": {
+            "single": "Single Entry",
+            "bulk": "Bulk Entry"
+        },
+        "bulk": {
+            "setup": "Bulk Entry Setup",
+            "quantity": "Quantity",
+            "fillIdentifiers": "Fill RFID/Serial Numbers",
+            "fillIdentifiersDescription": "Enable this option to fill serial numbers and RFID tags for each item individually on the next page",
+            "generationType": "Serial Number Strategy",
+            "types": {
+                "none": "No Serial Numbers",
+                "pattern": "Generate Pattern",
+                "manual": "Paste List"
+            },
+            "pattern": {
+                "prefix": "Prefix",
+                "startNumber": "Start Number",
+                "suffix": "Suffix",
+                "preview": "Preview: {{start}} ... {{end}}"
+            },
+            "manual": {
+                "serialsPlaceholder": "Paste serial numbers here (one per line)",
+                "rfidsPlaceholder": "Paste RFID tags here (one per line)",
+                "countMatch": "Lines found: {{count}}",
+                "countMismatch": "Warning: Serial count ({{serialCount}}) does not match RFID count ({{rfidCount}})"
+            },
+            "commonDetails": "Common Details (Applied to all)",
+            "summary": "Ready to create {{count}} assets for {{weapon}}",
+            "backToSetup": "Back to Setup",
+            "entryTitle": "Bulk Entry - Fill Identifiers",
+            "entrySubtitle": "Fill serial numbers, RFID tags, and asset tags for {{quantity}} items",
+            "itemsList": "Items List",
+            "noDataFound": "No bulk entry data found. Please start over.",
+            "invalidData": "Invalid bulk entry data. Please start over."
+        },
+        "next": "Next",
+        "progress": {
+            "title": "Creating Assets...",
+            "status": "Processed {{current}} of {{total}}"
+        }
+    }
+}

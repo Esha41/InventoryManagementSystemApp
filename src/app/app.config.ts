@@ -22,14 +22,15 @@ export class JsonTranslationLoader implements TranslateLoader {
       'admin',
       'auth',
       'allowance',
-      'notifications'
+      'notifications',
+      'add-weapon-asset'
     ];
 
     // Load all modular translation files
     const moduleTranslations = translationModules.map(module =>
       this.http.get(`/assets/i18n/${lang}/${module}.json`).pipe(
-        catchError(error => {
-          console.warn(`Failed to load translation module ${module} for ${lang}:`, error);
+        catchError(() => {
+          // Silently handle missing translation files
           return of({});
         })
       )
@@ -42,11 +43,10 @@ export class JsonTranslationLoader implements TranslateLoader {
         const merged = translations.reduce((acc, translation) => {
           return { ...acc, ...translation };
         }, {});
-        console.log(`Loaded ${translationModules.length} translation modules for ${lang}:`, Object.keys(merged).length, 'top-level keys');
         return merged;
       }),
-      catchError(error => {
-        console.error(`Failed to load translations for ${lang}:`, error);
+      catchError(() => {
+        // Silently handle translation loading errors
         return of({});
       })
     );
