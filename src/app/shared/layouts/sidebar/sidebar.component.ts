@@ -202,7 +202,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.emailSettings',
       icon: Mail,
       route: '/email-settings',
-      permissions: ['systemusers.page', 'systemusers.view']
+      permissions: ['emailsettings.page', 'emailsettings.view']
     },
     {
       label: 'nav.adminImportExport',
@@ -214,7 +214,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.workflow',
       icon: GitBranch,
       route: '/workflow',
-      permissions: ['workflowtype.page', 'workflowtype.view']
+      permissions: ['workflow.page', 'workflow.view']
     },
     {
       label: 'nav.stockNotificationSettings', 
