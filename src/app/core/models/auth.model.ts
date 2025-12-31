@@ -10,6 +10,16 @@ export interface LoginRequest {
   username: string;
   password: string;
   isLdap?: boolean;
+  captchaId?: string;
+  captchaCode?: string;
+}
+
+/**
+ * Captcha response from backend
+ */
+export interface CaptchaResponse {
+  captchaId: string; // ID to fetch/validate captcha
+  captchaCode: string; // The captcha text code (for reference, not for display)
 }
 
 /**

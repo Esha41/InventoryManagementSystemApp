@@ -27,6 +27,9 @@ export const API_ENDPOINTS = {
     PROFILE: '/account/profile',
     FORGOT_PASSWORD: '/account/forgot-password',
     RESET_PASSWORD: '/account/reset-password',
+    GENERATE_CAPTCHA: '/Account/generate-captcha',
+    CAPTCHA_IMAGE: (captchaId: string) => `/Account/captcha-image/${captchaId}`,
+    CAPTCHA_IMAGE_ALT: (captchaId: string) => `/Account/get-captcha-image/${captchaId}`,
   },
 
   // user management
