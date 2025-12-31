@@ -1,0 +1,146 @@
+/**
+ * Asset models for individual item tracking (primarily weapons)
+ * Matches backend DTOs from Ettad.Inventory.Services.Assets
+ */
+
+import { WeaponDto } from './weapon.model';
+import { DepotDto } from './depot.model';
+
+/**
+ * Asset Status Enum
+ */
+export enum AssetStatus {
+    Available = 1,
+    InUse = 2,
+    UnderMaintenance = 3,
+    Retired = 4
+}
+
+/**
+ * Department DTO
+ */
+export interface DepartmentDto {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+}
+
+/**
+ * Employee DTO (Custodian)
+ */
+export interface EmployeeDto {
+    id: number;
+    nameAr?: string;
+    nameEn?: string;
+    name?: string;
+    employeeNumber?: string;
+}
+
+/**
+ * File Upload DTO
+ */
+export interface FileUploadDto {
+    id: number;
+    fileUrl: string;
+    fileName: string;
+    originalName: string;
+    isMain: boolean;
+    entity: string;
+    entityId: number;
+}
+
+/**
+ * Asset DTO (Read)
+ */
+export interface AssetDto {
+    id: number;
+    itemId: number;
+    serialNumber?: string;
+    rfid?: string;
+    depotId: number;
+    departmentId?: number;
+    custodianId?: number;
+    location?: string;
+    status?: AssetStatus;
+    assetTag?: string;
+    purchaseDate?: Date | string;
+    warrantyExpiryDate?: Date | string;
+    condition?: string;
+    purchasePrice?: number;
+    notes?: string;
+    isDeleted: boolean;
+
+    // Navigation properties
+    item?: WeaponDto;
+    depot?: DepotDto;
+    department?: DepartmentDto;
+    custodian?: EmployeeDto;
+    images?: FileUploadDto[];
+}
+
+/**
+ * Create Asset DTO
+ */
+export interface CreateAssetDto {
+    itemId: number;
+    serialNumber?: string;
+    rfid?: string;
+    depotId: number;
+    assetTag?: string;
+    purchaseDate?: Date | string;
+    warrantyExpiryDate?: Date | string;
+    condition?: string;
+    purchasePrice?: number;
+    notes?: string;
+}
+
+/**
+ * Update Asset DTO
+ */
+export interface UpdateAssetDto {
+    itemId: number;
+    serialNumber?: string;
+    rfid?: string;
+    assetTag?: string;
+    purchaseDate?: Date | string;
+    warrantyExpiryDate?: Date | string;
+    condition?: string;
+    purchasePrice?: number;
+    notes?: string;
+}
+
+/**
+ * Asset Status Label Helper
+ */
+export function getAssetStatusLabel(status?: AssetStatus): string {
+    switch (status) {
+        case AssetStatus.Available:
+            return 'Available';
+        case AssetStatus.InUse:
+            return 'In Use';
+        case AssetStatus.UnderMaintenance:
+            return 'Under Maintenance';
+        case AssetStatus.Retired:
+            return 'Retired';
+        default:
+            return 'Unknown';
+    }
+}
+
+/**
+ * Asset Status Color Helper (for badges)
+ */
+export function getAssetStatusColor(status?: AssetStatus): string {
+    switch (status) {
+        case AssetStatus.Available:
+            return 'success';
+        case AssetStatus.InUse:
+            return 'info';
+        case AssetStatus.UnderMaintenance:
+            return 'warning';
+        case AssetStatus.Retired:
+            return 'error';
+        default:
+            return 'default';
+    }
+}

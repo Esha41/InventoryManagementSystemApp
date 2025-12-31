@@ -21,19 +21,32 @@
             {{ depoName }} {{ 'warehouseInventory.inventory' | translate }}
           </h1>
           <p class="text-sm text-[var(--color-text-muted)]">
-            {{ 'warehouseInventory.totalItems' | translate }}: {{ filteredInventoryDetails.length }}
+            {{ 'warehouseInventory.totalItems' | translate }}: {{ activeTab === 'weapon' ? filteredWeaponAssets.length :
+            filteredInventoryDetails.length }}
           </p>
         </div>
         <div class="flex items-center gap-3">
-          <button *appHasPermission="'Inventory.Create'" (click)="onAddInventory()"
-            class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
-            + {{ 'warehouseInventory.addInventory' | translate }}
-          </button>
+          <!-- Add Inventory Button (for Ammunition & Explosives) -->
+          <ng-container *ngIf="activeTab !== 'weapon'">
+            <button *appHasPermission="'Inventory.Create'" (click)="onAddInventory()"
+              class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
+              + {{ 'warehouseInventory.addInventory' | translate }}
+            </button>
+          </ng-container>
+
+          <!-- Add Weapon Asset Button (for Weapons) -->
+          <ng-container *ngIf="activeTab === 'weapon'">
+            <button *appHasPermission="'Asset.Create'" (click)="onAddWeaponAsset()"
+              class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
+              + {{ 'warehouseInventory.addWeaponAsset' | translate }}
+            </button>
+          </ng-container>
         </div>
       </div>
 
       <!-- Enhanced Tabs -->
-      <div class="mb-6 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm overflow-hidden">
+      <div
+        class="mb-6 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm overflow-hidden">
         <div class="bg-[var(--color-background-muted)]">
           <nav class="flex gap-1 p-2" aria-label="Tabs">
             <button (click)="switchTab('ammunition')" [ngClass]="{
@@ -109,7 +122,91 @@
       <!-- Inventory Table -->
       <app-card *ngIf="!loading && !error" [shadow]="true">
         <div class="overflow-x-auto">
-          <table class="w-full">
+          <!-- Weapon Assets Table -->
+          <table *ngIf="activeTab === 'weapon'" class="w-full">
+            <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+              <tr>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.itemName' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.serialNumber' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.rfidTag' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.assetTag' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.condition' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                  {{ 'warehouseInventory.actions' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
+              <!-- Empty State -->
+              <tr *ngIf="paginatedAssets.length === 0">
+                <td colspan="7" class="px-6 py-12 text-center bg-[var(--color-background)]">
+                  <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noAssets' | translate }}</p>
+                </td>
+              </tr>
+              <!-- Weapon Assets -->
+              <tr *ngFor="let asset of paginatedAssets"
+                class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
+                  {{ getAssetItemName(asset) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  {{ asset.serialNumber || '-' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  {{ asset.rfid || '-' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  {{ asset.assetTag || '-' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  {{ asset.condition || '-' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <div class="flex items-center justify-center space-x-2">
+                    <!-- Edit Button -->
+                    <button *appHasPermission="'Asset.Edit'" (click)="onEditAsset(asset)"
+                      class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+                      [title]="'warehouseInventory.edit' | translate">
+                      <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                    </button>
+
+                    <!-- Delete Button -->
+                    <button *appHasPermission="'Asset.Delete'" (click)="onDeleteAsset(asset)"
+                      class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                      [title]="'warehouseInventory.delete' | translate">
+                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    </button>
+
+                    <!-- View Details Button -->
+                    <button (click)="onViewAsset(asset)"
+                      class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] rounded-lg transition-colors"
+                      [title]="'warehouseInventory.viewDetails' | translate">
+                      <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Inventory Items Table (Ammunition & Explosives) -->
+          <table *ngIf="activeTab !== 'weapon'" class="w-full">
             <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
               <tr>
                 <th
@@ -207,12 +304,15 @@
         </div>
 
         <!-- Pagination Footer - Outside table overflow container -->
-        <div *ngIf="filteredInventoryDetails.length > 0 && !loading"
+        <div
+          *ngIf="(activeTab === 'weapon' ? filteredWeaponAssets.length : filteredInventoryDetails.length) > 0 && !loading"
           class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
           <div class="flex items-center justify-between w-full flex-nowrap">
             <!-- Rows Per Page Selector -->
-            <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredInventoryDetails.length"
-              [visibleItems]="paginatedItems.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+            <app-rows-per-page [rowsPerPage]="rowsPerPage"
+              [totalItems]="activeTab === 'weapon' ? filteredWeaponAssets.length : filteredInventoryDetails.length"
+              [visibleItems]="activeTab === 'weapon' ? paginatedAssets.length : paginatedItems.length"
+              (rowsPerPageChange)="onRowsPerPageChange($event)">
             </app-rows-per-page>
 
             <!-- Pagination Controls -->
@@ -243,6 +343,28 @@
     (cancelled)="onDeleteCancel()">
   </app-confirm-dialog>
 
+  <!-- Edit Asset Modal -->
+  <app-edit-asset-modal 
+    [isOpen]="showEditAssetModal" 
+    [asset]="selectedAsset || null" 
+    [loading]="loadingAsset"
+    (closed)="onEditAssetModalClosed()"
+    (saved)="onEditAssetModalSaved()">
+  </app-edit-asset-modal>
+
+  <!-- Delete Asset Confirmation Dialog -->
+  <app-confirm-dialog 
+    [isOpen]="showDeleteAssetDialog" 
+    [title]="'warehouseInventory.deleteAssetConfirm' | translate"
+    [message]="('warehouseInventory.deleteAssetConfirm' | translate) + ': ' + getDeleteAssetMessage()"
+    [description]="'warehouseInventory.deleteAssetWarning' | translate"
+    [confirmText]="'common.delete' | translate"
+    [cancelText]="'common.cancel' | translate"
+    confirmVariant="danger"
+    (confirmed)="onDeleteAssetConfirm()"
+    (cancelled)="onDeleteAssetCancel()">
+  </app-confirm-dialog>
+
   <!-- View Details Modal for Static Items (Weapons/Explosives) -->
   <div *ngIf="showViewModal" class="fixed inset-0 z-40 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -257,7 +379,8 @@
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.viewDetails' | translate
               }}</h3>
-            <button (click)="closeViewModal()" class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+            <button (click)="closeViewModal()"
+              class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
               <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
             </button>
           </div>

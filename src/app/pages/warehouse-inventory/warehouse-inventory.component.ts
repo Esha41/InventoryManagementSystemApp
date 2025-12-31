@@ -10,20 +10,25 @@ import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
+import { AssetService } from '@services/asset.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, BaseItemDto, ItemType } from '@models/inventory.model';
+import { AssetDto } from '@models/asset.model';
 import { DepotDto } from '@models/depot.model';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
+import { EditAssetModalComponent } from '../edit-asset/components/edit-asset-modal/edit-asset-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { WarehouseInventoryFilterService } from './services/warehouse-inventory-filter.service';
+import { WarehouseInventoryFormatterService } from './services/warehouse-inventory-formatter.service';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -38,6 +43,7 @@ import { ExcelExportService, ExcelColumn } from '@services/excel-export.service'
     CardComponent,
     ConfirmDialogComponent,
     EditInventoryDetailModalComponent,
+    EditAssetModalComponent,
     DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent,
@@ -55,6 +61,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   currentDepot: LookupItem | null = null;
   inventoryDetails: InventoryDetailDto[] = [];
   filteredInventoryDetails: InventoryDetailDto[] = [];
+  weaponAssets: AssetDto[] = [];
+  filteredWeaponAssets: AssetDto[] = [];
   loading = true;
   error: string | null = null;
 
@@ -95,6 +103,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   selectedDetail?: InventoryDetailDto;
   selectedDetailForView?: InventoryDetailDto;
   currentInventory?: InventoryDto;
+  
+  // Asset modal states
+  showEditAssetModal = false;
+  showDeleteAssetDialog = false;
+  selectedAsset: AssetDto | null = null;
+  loadingAsset = false;
 
   private destroy$ = new Subject<void>();
 
@@ -103,16 +117,42 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
+    private assetService: AssetService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
     private excelExportService: ExcelExportService,
+    private filterService: WarehouseInventoryFilterService,
+    private formatterService: WarehouseInventoryFormatterService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
+    // Initialize tab from query params first (synchronously read initial value)
+    const initialQueryParams = this.route.snapshot.queryParams;
+    const tabParam = initialQueryParams['tab'];
+    if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+      this.activeTab = tabParam;
+    }
+
+    // Subscribe to query params changes for tab updates
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const tab = params['tab'];
+        if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
+          if (this.activeTab !== tab) {
+            this.activeTab = tab;
+            this.currentPage = 1;
+            this.applyFilters();
+            this.cdr.markForCheck();
+          }
+        }
+      });
+
+    // Subscribe to route params for depot ID
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
       if (id) {
@@ -155,33 +195,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     forkJoin({
       depot: this.lookupService.getDepots(),
-      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
+      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
+      weaponAssets: this.assetService.getByDepotId<AssetDto>(this.depoId)
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depot, inventoryDetails }) => {
+        next: ({ depot, inventoryDetails, weaponAssets }) => {
           // Find the specific depot
           this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
 
-          // Only use real inventory data - no fake static items
-          const normalizedDetails = inventoryDetails.map(detail => {
-            if (detail.item) {
-              const normalizedType = this.normalizeItemType(detail.item.itemType);
-              if (normalizedType !== undefined) {
-                return {
-                  ...detail,
-                  item: {
-                    ...detail.item,
-                    itemType: normalizedType as ItemType
-                  }
-                };
-              }
-            }
-            return detail;
-          });
-
-          this.inventoryDetails = normalizedDetails;
+          // Normalize inventory details using filter service
+          this.inventoryDetails = this.filterService.normalizeInventoryDetails(inventoryDetails);
+          this.weaponAssets = weaponAssets || [];
           this.applyFilters();
           this.loading = false;
           this.cdr.markForCheck();
@@ -197,154 +223,65 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Convert BaseItemDto to InventoryDetailDto format for static display
-   */
-  private convertBaseItemToInventoryDetail(item: BaseItemDto, itemType: ItemType): InventoryDetailDto {
-    const normalizedItemType = this.normalizeItemType(item.itemType);
-    const finalItemType = normalizedItemType !== undefined ? normalizedItemType : itemType;
-
-    return {
-      id: item.id * -1,
-      itemId: item.id,
-      lot: 0,
-      inventoryId: 0,
-      supplierId: undefined,
-      manufacturerId: undefined,
-      countryId: undefined,
-      originalQuantity: 0,
-      currentQuantity: 0,
-      batchNo: undefined,
-      expiryDate: undefined,
-      readyForIssue: true,
-      usedQuantity: 0,
-      reservedQuantityByOrdersOnProcessing: 0,
-      remainingQuantity: 0,
-      isLotEmpty: false,
-      item: {
-        ...item,
-        itemType: finalItemType as ItemType
-      }
-    };
-  }
-
-  /**
-   * Remove duplicate items, keeping inventory items over static items
-   */
-  private removeDuplicateItems(details: InventoryDetailDto[]): InventoryDetailDto[] {
-    const itemIdMap = new Map<number, InventoryDetailDto>();
-
-    // First, add all inventory items (positive IDs)
-    details.forEach(detail => {
-      if (detail.id > 0) {
-        itemIdMap.set(detail.itemId, detail);
-      }
-    });
-
-    // Then, add static items only if they don't exist in inventory
-    details.forEach(detail => {
-      if (detail.id < 0 && !itemIdMap.has(detail.itemId)) {
-        itemIdMap.set(detail.itemId, detail);
-      }
-    });
-
-    return Array.from(itemIdMap.values());
-  }
 
   switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+    if (this.activeTab === tab) {
+      return; // Already on this tab, no need to update
+    }
+    
     this.activeTab = tab;
     this.currentPage = 1;
+    this.updateQueryParams(tab);
     this.applyFilters();
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Update query parameters with current tab
+   * Uses merge to preserve other query params (like search, pagination, etc.)
+   */
+  private updateQueryParams(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: false // Allow browser back/forward to work properly
+    });
   }
 
   /**
    * Apply both tab filter and search filter
    */
   private applyFilters(): void {
-    let filtered = this.inventoryDetails;
-
-    // Apply tab filter
-    filtered = this.filterByTab(filtered);
-
-    // Apply search filter
-    const searchTerm = this.searchControl.value.trim().toLowerCase();
-    if (searchTerm) {
-      filtered = filtered.filter(detail => {
-        const itemName = this.getItemName(detail).toLowerCase();
-        const itemNo = this.getItemNo(detail).toLowerCase();
-        const supplierName = this.getSupplierName(detail).toLowerCase();
-        const lot = detail.lot?.toString().toLowerCase() || '';
-        const batchNo = detail.batchNo?.toLowerCase() || '';
-
-        return itemName.includes(searchTerm) ||
-          itemNo.includes(searchTerm) ||
-          supplierName.includes(searchTerm) ||
-          lot.includes(searchTerm) ||
-          batchNo.includes(searchTerm);
-      });
+    // For weapon tab, filter weapon assets
+    if (this.activeTab === 'weapon') {
+      this.filteredWeaponAssets = this.filterService.filterAssetsBySearch(
+        this.weaponAssets,
+        this.searchControl.value,
+        (asset) => this.formatterService.getAssetItemName(asset)
+      );
+    } else {
+      // For ammunition and explosive tabs, filter inventory items
+      let filtered = this.filterService.filterByTab(this.inventoryDetails, this.activeTab);
+      filtered = this.filterService.filterInventoryBySearch(
+        filtered,
+        this.searchControl.value,
+        (detail) => this.formatterService.getItemName(detail),
+        (detail) => this.formatterService.getItemNo(detail),
+        (detail) => this.formatterService.getSupplierName(detail)
+      );
+      this.filteredInventoryDetails = filtered;
     }
 
-    this.filteredInventoryDetails = filtered;
     this.validateCurrentPage();
     this.cdr.markForCheck();
   }
 
-  /**
-   * Filter inventory by active tab
-   */
-  private filterByTab(details: InventoryDetailDto[]): InventoryDetailDto[] {
-    if (this.activeTab === 'ammunition') {
-      return details.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        const isAmmunition = itemType === 1;
-        const isUndefinedAndNotStatic = itemType === undefined && !this.isStaticItem(d);
-        return isAmmunition || isUndefinedAndNotStatic;
-      });
-    } else if (this.activeTab === 'weapon') {
-      return details.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        return itemType === 2;
-      });
-    } else if (this.activeTab === 'explosive') {
-      return details.filter(d => {
-        const itemType = this.normalizeItemType(d.item?.itemType);
-        return itemType === 3;
-      });
-    }
-    return details;
-  }
-
-  private normalizeItemType(itemType: ItemType | string | number | undefined): number | undefined {
-    if (itemType === undefined || itemType === null) {
-      return undefined;
-    }
-    if (typeof itemType === 'number') {
-      return itemType;
-    }
-    if (typeof itemType === 'string') {
-      // Handle enum string names from backend (e.g., "Ammunition", "Weapon", "Explosive")
-      const enumMap: { [key: string]: number } = {
-        'Ammunition': 1,
-        'Weapon': 2,
-        'Explosive': 3,
-        'Accessory': 4
-      };
-
-      if (enumMap[itemType] !== undefined) {
-        return enumMap[itemType];
-      }
-
-      // Try parsing as number (e.g., "1", "2", "3")
-      const parsed = parseInt(itemType, 10);
-      return isNaN(parsed) ? undefined : parsed;
-    }
-    return Number(itemType);
-  }
-
 
   get totalPages(): number {
-    const totalItems = this.filteredInventoryDetails.length;
+    const totalItems = this.activeTab === 'weapon'
+      ? this.filteredWeaponAssets.length
+      : this.filteredInventoryDetails.length;
     if (totalItems === 0) {
       return 1;
     }
@@ -356,6 +293,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.validateCurrentPage();
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
     return this.filteredInventoryDetails.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  get paginatedAssets(): AssetDto[] {
+    // Ensure currentPage is valid before slicing
+    this.validateCurrentPage();
+    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredWeaponAssets.slice(startIndex, startIndex + this.rowsPerPage);
   }
 
   private validateCurrentPage(): void {
@@ -383,7 +327,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Check if an item is static (weapon/explosive dummy data)
    */
   isStaticItem(detail: InventoryDetailDto): boolean {
-    return detail.id < 0; // Static items have negative IDs
+    return this.filterService.isStaticItem(detail);
   }
 
   onViewItem(detail: InventoryDetailDto): void {
@@ -393,8 +337,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.showViewModal = true;
       this.cdr.markForCheck();
     } else {
-      // For inventory items, navigate to inventory detail page
-      this.router.navigate(['/warehouse', this.depoId, 'inventory', detail.id]);
+      // For inventory items, navigate to inventory detail page with tab query param
+      this.router.navigate(['/warehouse', this.depoId, 'inventory', detail.id], {
+        queryParams: { tab: this.activeTab },
+        queryParamsHandling: 'merge'
+      });
     }
   }
 
@@ -414,58 +361,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /**
-   * Get item name from inventory detail
-   */
-  getItemName(detail: InventoryDetailDto | null | undefined): string {
-    if (!detail) return 'Unknown Item';
-    const lang = getCurrentLang(this.translateService);
-    const localized = getLocalizedName(detail.item, lang);
-    return localized || detail.item?.itemNo || 'Unknown Item';
-  }
-
-  /**
-   * Get caliber/item number
-   */
-  getItemNo(detail: InventoryDetailDto): string {
-    return detail.item?.itemNo || '-';
-  }
-
-  /**
-   * Get supplier name
-   */
-  getSupplierName(detail: InventoryDetailDto): string {
-    const lang = getCurrentLang(this.translateService);
-    return getLocalizedName(detail.supplier, lang) || '-';
-  }
-
-  /**
-   * Get HCC name
-   */
-  getHccName(detail: InventoryDetailDto): string {
-    const lang = getCurrentLang(this.translateService);
-    return getLocalizedName(detail.item?.hcc, lang) || '-';
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(date?: Date | string): string {
-    if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  }
-
-  /**
-   * Format number with thousands separator
-   */
-  formatNumber(num: number): string {
-    return num.toLocaleString();
-  }
+  // Delegate formatting methods to formatter service
+  getItemName = (detail: InventoryDetailDto | null | undefined) => this.formatterService.getItemName(detail);
+  getItemNo = (detail: InventoryDetailDto) => this.formatterService.getItemNo(detail);
+  getSupplierName = (detail: InventoryDetailDto) => this.formatterService.getSupplierName(detail);
+  getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
+  getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
+  getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
+  getAssetStatusLabel = (asset: AssetDto) => this.formatterService.getAssetStatusLabel(asset);
+  formatDate = (date?: Date | string) => this.formatterService.formatDate(date);
+  formatNumber = (num: number) => this.formatterService.formatNumber(num);
 
 
   /**
@@ -476,11 +381,130 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+
   /**
    * Navigate to add inventory page
    */
   onAddInventory(): void {
     this.router.navigate(['/warehouse', this.depoId, 'inventory', 'add']);
+  }
+
+  /**
+   * Navigate to add weapon asset page
+   */
+  onAddWeaponAsset(): void {
+    this.router.navigate(['/warehouse', this.depoId, 'assets', 'add']);
+  }
+
+  /**
+   * View asset details
+   */
+  onViewAsset(asset: AssetDto): void {
+    this.router.navigate(['/warehouse', this.depoId, 'assets', asset.id], {
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  /**
+   * Edit asset
+   */
+  onEditAsset(asset: AssetDto): void {
+    // Reload asset to ensure we have latest data
+    this.loadingAsset = true;
+    this.selectedAsset = asset;
+    this.cdr.markForCheck();
+    this.assetService.getById<AssetDto>(asset.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedAsset) => {
+          this.selectedAsset = updatedAsset || null;
+          this.loadingAsset = false;
+          this.showEditAssetModal = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingAsset = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
+   * Delete asset
+   */
+  onDeleteAsset(asset: AssetDto): void {
+    this.selectedAsset = asset;
+    this.showDeleteAssetDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Handle edit asset modal closed
+   */
+  onEditAssetModalClosed(): void {
+    this.showEditAssetModal = false;
+    this.selectedAsset = null;
+    // Reload weapon assets after edit
+    this.loadInventoryData();
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Handle edit asset modal saved
+   */
+  onEditAssetModalSaved(): void {
+    // Data will be reloaded in onEditAssetModalClosed
+  }
+
+  /**
+   * Handle delete asset confirmation
+   */
+  onDeleteAssetConfirm(): void {
+    if (!this.selectedAsset) return;
+
+    this.assetService.delete(this.selectedAsset.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.translateService.get(['toast.success', 'warehouseInventory.assetDeleted']).subscribe(translations => {
+            this.toastService.success(
+              translations['warehouseInventory.assetDeleted'] || 'Asset deleted successfully',
+              translations['toast.success']
+            );
+          });
+          this.showDeleteAssetDialog = false;
+          this.selectedAsset = null;
+          this.loadInventoryData(); // Reload data
+        },
+        error: (error) => {
+          console.error('Error deleting asset:', error);
+          this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(translations => {
+            this.toastService.error(
+              translations['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
+              translations['toast.error']
+            );
+          });
+          this.showDeleteAssetDialog = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
+   * Handle delete asset cancellation
+   */
+  onDeleteAssetCancel(): void {
+    this.showDeleteAssetDialog = false;
+    this.selectedAsset = null;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get delete asset message
+   */
+  getDeleteAssetMessage(): string {
+    return this.formatterService.getDeleteAssetMessage(this.selectedAsset);
   }
 
   /**
@@ -607,25 +631,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
             : `Depot ${this.depoId}`;
 
-          // Only use real inventory data - no fake static items
-          const normalizedDetails = inventoryDetails.map(detail => {
-            if (detail.item?.itemType !== undefined) {
-              const normalizedType = this.normalizeItemType(detail.item.itemType);
-              if (normalizedType !== undefined && detail.item) {
-                return {
-                  ...detail,
-                  item: {
-                    ...detail.item,
-                    itemType: normalizedType as ItemType
-                  }
-                };
-              }
-            }
-            return detail;
-          });
-
-          // Update inventory details with fresh data
-          this.inventoryDetails = normalizedDetails;
+          // Update inventory details with fresh data using filter service
+          this.inventoryDetails = this.filterService.normalizeInventoryDetails(inventoryDetails);
           this.applyFilters();
           this.loading = false;
           this.cdr.markForCheck();
