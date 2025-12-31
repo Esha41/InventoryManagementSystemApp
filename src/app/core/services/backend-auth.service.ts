@@ -13,7 +13,8 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ClaimDto,
-  AuthState
+  AuthState,
+  CaptchaResponse
 } from '@models/auth.model';
 import { ChangePasswordRequest } from '@models/change-password.model';
 import { ApiResponse } from '@models/api-response.model';
@@ -92,6 +93,74 @@ export class BackendAuthService {
       this.configService.logError('Failed to restore session', error);
       this.clearAuthData();
     }
+  }
+
+  /**
+   * Generate captcha
+   */
+  generateCaptcha(): Observable<CaptchaResponse> {
+    const endpoint = API_ENDPOINTS.AUTH.GENERATE_CAPTCHA;
+    this.configService.log('Generating captcha', { endpoint, fullUrl: `${this.configService.apiUrl}${endpoint}` });
+    return this.apiService.get<any>(
+      endpoint
+    ).pipe(
+      map(response => {
+        this.configService.log('Captcha response received', response);
+        
+        // Handle wrapped response (ApiResponse)
+        if (response && typeof response === 'object' && 'succeeded' in response) {
+          const apiResponse = response as ApiResponse<CaptchaResponse>;
+          if (!apiResponse.succeeded) {
+            throw new Error(apiResponse.message || 'Failed to generate captcha');
+          }
+          if (!apiResponse.data || !apiResponse.data.captchaId) {
+            throw new Error('Invalid captcha response: missing captchaId');
+          }
+          return apiResponse.data;
+        }
+        
+        // Handle direct response
+        if (response && typeof response === 'object' && 'captchaId' in response) {
+          const directResponse = response as CaptchaResponse;
+          if (!directResponse.captchaId) {
+            throw new Error('Invalid captcha response: missing captchaId');
+          }
+          return directResponse;
+        }
+        
+        // Unexpected response format
+        this.configService.logError('Unexpected captcha response format', response);
+        throw new Error('Invalid captcha response format');
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to generate captcha', error);
+        const errorMessage = error?.error?.message || 
+                            error?.message || 
+                            error?.error?.data?.message ||
+                            'Failed to generate captcha. Please try again.';
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
+   * Get captcha image URL with cache-busting parameter
+   */
+  getCaptchaImageUrl(captchaId: string): string {
+    // Try the primary endpoint first
+    const baseUrl = `${this.configService.apiUrl}${API_ENDPOINTS.AUTH.CAPTCHA_IMAGE(captchaId)}`;
+    // Add cache-busting parameter to ensure fresh image on refresh
+    const timestamp = new Date().getTime();
+    return `${baseUrl}?t=${timestamp}`;
+  }
+
+  /**
+   * Get alternative captcha image URL
+   */
+  getAlternativeCaptchaImageUrl(captchaId: string): string {
+    const baseUrl = `${this.configService.apiUrl}${API_ENDPOINTS.AUTH.CAPTCHA_IMAGE_ALT(captchaId)}`;
+    const timestamp = new Date().getTime();
+    return `${baseUrl}?t=${timestamp}`;
   }
 
   /**
