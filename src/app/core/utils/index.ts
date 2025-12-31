@@ -59,4 +59,5 @@ export {
 export * from './asset-list.state';
 export * from './asset-list-form.utils';
 export * from './asset-property.utils';
+export * from './issue-request.utils';
 

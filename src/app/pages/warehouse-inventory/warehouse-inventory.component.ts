@@ -3,20 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin, switchMap, timer } from 'rxjs';
-import { debounceTime, startWith, map, combineLatest } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, Edit2, Trash2, Eye, X, Search, Download } from 'lucide-angular';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { debounceTime, startWith } from 'rxjs/operators';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
 import { AssetService } from '@services/asset.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, BaseItemDto, ItemType } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
-import { DepotDto } from '@models/depot.model';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
@@ -26,9 +23,13 @@ import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, Error
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { WarehouseInventoryFilterService } from './services/warehouse-inventory-filter.service';
 import { WarehouseInventoryFormatterService } from './services/warehouse-inventory-formatter.service';
+import { WarehouseInventoryCrudService } from './services/warehouse-inventory-crud.service';
+import { WarehouseInventoryExportService } from './services/warehouse-inventory-export.service';
+import { InventoryTableComponent } from './components/inventory-table/inventory-table.component';
+import { AssetTableComponent } from './components/asset-table/asset-table.component';
+import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -49,7 +50,10 @@ import { WarehouseInventoryFormatterService } from './services/warehouse-invento
     RowsPerPageComponent,
     HasPermissionDirective,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    InventoryTableComponent,
+    AssetTableComponent,
+    InventoryFiltersComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css'],
@@ -75,15 +79,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
-  readonly ChevronLeft = ChevronLeft;
-  readonly ChevronRight = ChevronRight;
-  readonly ChevronDown = ChevronDown;
-  readonly Edit2 = Edit2;
-  readonly Trash2 = Trash2;
-  readonly Eye = Eye;
   readonly X = X;
-  readonly Search = Search;
-  readonly Download = Download;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -115,17 +111,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   constructor(
     private inventoryService: InventoryService,
     private lookupService: LookupService,
-    private weaponService: WeaponService,
-    private explosiveService: ExplosiveService,
     private assetService: AssetService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
-    private excelExportService: ExcelExportService,
     private filterService: WarehouseInventoryFilterService,
     private formatterService: WarehouseInventoryFormatterService,
+    private crudService: WarehouseInventoryCrudService,
+    private exportService: WarehouseInventoryExportService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -252,7 +247,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Apply both tab filter and search filter
    */
-  private applyFilters(): void {
+  applyFilters(): void {
     // For weapon tab, filter weapon assets
     if (this.activeTab === 'weapon') {
       this.filteredWeaponAssets = this.filterService.filterAssetsBySearch(
@@ -414,7 +409,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loadingAsset = true;
     this.selectedAsset = asset;
     this.cdr.markForCheck();
-    this.assetService.getById<AssetDto>(asset.id)
+    this.crudService.loadAssetForEdit(asset.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updatedAsset) => {
@@ -463,30 +458,33 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onDeleteAssetConfirm(): void {
     if (!this.selectedAsset) return;
 
-    this.assetService.delete(this.selectedAsset.id)
+    this.showDeleteAssetDialog = false;
+    const assetToDelete = this.selectedAsset;
+    this.selectedAsset = null;
+    this.cdr.markForCheck();
+
+    this.crudService.deleteAsset(assetToDelete.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.translateService.get(['toast.success', 'warehouseInventory.assetDeleted']).subscribe(translations => {
-            this.toastService.success(
-              translations['warehouseInventory.assetDeleted'] || 'Asset deleted successfully',
-              translations['toast.success']
-            );
-          });
-          this.showDeleteAssetDialog = false;
-          this.selectedAsset = null;
-          this.loadInventoryData(); // Reload data
+        next: (result) => {
+          if (result.success) {
+            this.loadInventoryData();
+          } else {
+            this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(translations => {
+              this.toastService.error(
+                result.error || translations['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
+                translations['toast.error']
+              );
+            });
+          }
         },
         error: (error) => {
-          console.error('Error deleting asset:', error);
           this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(translations => {
             this.toastService.error(
               translations['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
               translations['toast.error']
             );
           });
-          this.showDeleteAssetDialog = false;
-          this.cdr.markForCheck();
         }
       });
   }
@@ -545,101 +543,30 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onEditSave(updateDetailDto: UpdateInventoryDetailDto): void {
     if (!this.currentInventory || !this.selectedDetail) return;
 
-    // Update the inventory with modified detail
-    const updateInventoryDto: UpdateInventoryDto = {
-      depoId: this.currentInventory.depoId,
-      invoiceNumber: this.currentInventory.invoiceNumber,
-      invoiceDate: this.currentInventory.invoiceDate,
-      recievedDate: this.currentInventory.recievedDate,
-      notes: this.currentInventory.notes,
-      inventoryDetails: (this.currentInventory.inventoryDetails || []).map((d: InventoryDetailDto) =>
-        d.id === this.selectedDetail!.id ? updateDetailDto : {
-          id: d.id,
-          itemId: d.itemId,
-          lot: d.lot,
-          supplierId: d.supplierId,
-          manufacturerId: d.manufacturerId,
-          countryId: d.countryId,
-          originalQuantity: d.originalQuantity,
-          batchNo: d.batchNo,
-          expiryDate: d.expiryDate,
-          readyForIssue: d.readyForIssue ?? true
-        }
-      )
-    };
+    // Store references before clearing
+    const detailToEdit = this.selectedDetail;
+    const inventoryToUpdate = this.currentInventory;
 
-    // Store the detail ID before we clear it
-    const detailIdToUpdate = this.selectedDetail?.id;
+    // Close modal immediately for better UX
+    this.showEditModal = false;
+    this.selectedDetail = undefined;
+    this.currentInventory = undefined;
+    this.cdr.markForCheck();
 
-    this.inventoryService.update(this.currentInventory.id, updateInventoryDto)
-      .pipe(
-        takeUntil(this.destroy$),
-        // Use the update response to optimistically update the UI
-        switchMap((updatedInventory: InventoryDto) => {
-          // Close modal immediately for better UX
-          this.showEditModal = false;
-          const tempSelectedDetail = this.selectedDetail;
-          this.selectedDetail = undefined;
-          this.currentInventory = undefined;
-          this.cdr.markForCheck();
-
-          // Show success message
-          this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
-            this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
-          });
-
-          // Update the specific detail in the local array optimistically
-          if (updatedInventory.inventoryDetails && detailIdToUpdate) {
-            const updatedDetail = updatedInventory.inventoryDetails.find(
-              d => d.id === detailIdToUpdate
-            );
-            if (updatedDetail && tempSelectedDetail) {
-              const index = this.inventoryDetails.findIndex(d => d.id === detailIdToUpdate);
-              if (index !== -1) {
-                // Merge the updated detail with existing data to preserve computed fields
-                this.inventoryDetails[index] = {
-                  ...this.inventoryDetails[index],
-                  ...updatedDetail,
-                  // Preserve computed fields that might not be in the update response
-                  currentQuantity: this.inventoryDetails[index].currentQuantity,
-                  usedQuantity: this.inventoryDetails[index].usedQuantity,
-                  reservedQuantityByOrdersOnProcessing: this.inventoryDetails[index].reservedQuantityByOrdersOnProcessing,
-                  remainingQuantity: this.inventoryDetails[index].remainingQuantity
-                };
-                this.applyFilters();
-              }
-            }
-          }
-
-          // Wait a bit to ensure backend transaction is committed, then reload fresh data
-          return timer(500).pipe(
-            switchMap(() => {
-              this.loading = true;
-              return forkJoin({
-                depot: this.lookupService.getDepots(),
-                inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId)
-              });
-            })
-          );
-        })
-      )
+    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, updateDetailDto)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depot, inventoryDetails }) => {
-          // Find the specific depot
-          this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
-          this.depoName = this.currentDepot
-            ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
-            : `Depot ${this.depoId}`;
-
-          // Update inventory details with fresh data using filter service
-          this.inventoryDetails = this.filterService.normalizeInventoryDetails(inventoryDetails);
-          this.applyFilters();
-          this.loading = false;
-          this.cdr.markForCheck();
+        next: (result) => {
+          if (result.success && result.updatedInventory) {
+            // Reload inventory data
+            this.loadInventoryData();
+          } else {
+            this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
+              this.toastService.error(result.error || translations['toast.failedToUpdate'], translations['toast.error']);
+            });
+          }
         },
         error: (error) => {
-          this.loading = false;
-          this.cdr.markForCheck();
           this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
             const errorMsg = error.error?.message || translations['toast.failedToUpdate'];
             this.toastService.error(errorMsg, translations['toast.error']);
@@ -654,98 +581,27 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onDeleteConfirm(): void {
     if (!this.selectedDetail) return;
 
-    // For simplicity, we'll remove the item from the inventory
-    // In a real scenario, you might want to delete the entire inventory if it's the last item
-    // or just mark the detail as deleted
+    this.showDeleteDialog = false;
+    const detailToDelete = this.selectedDetail;
+    this.selectedDetail = undefined;
+    this.cdr.markForCheck();
 
-    this.inventoryService.getById(this.selectedDetail.inventoryId)
+    this.crudService.deleteInventoryDetail(detailToDelete)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (inventory) => {
-          if (!inventory) {
-            this.translateService.get(['toast.inventoryNotFound', 'toast.error']).subscribe(translations => {
-              this.toastService.error(translations['toast.inventoryNotFound'], translations['toast.error']);
-            });
-            this.showDeleteDialog = false;
-            this.cdr.markForCheck();
-            return;
-          }
-
-          // Filter out the detail to delete
-          const remainingDetails = inventory.inventoryDetails?.filter(d => d.id !== this.selectedDetail!.id) || [];
-
-          if (remainingDetails.length === 0) {
-            // If no details left, delete the entire inventory
-            this.inventoryService.delete(inventory.id)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: () => {
-                  this.translateService.get(['toast.inventoryDeleted', 'toast.success']).subscribe(translations => {
-                    this.toastService.success(translations['toast.inventoryDeleted'], translations['toast.success']);
-                  });
-                  this.showDeleteDialog = false;
-                  this.selectedDetail = undefined;
-                  this.cdr.markForCheck();
-                  this.loadInventoryData();
-                },
-                error: (error) => {
-                  this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
-                    this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
-                  });
-                  this.showDeleteDialog = false;
-                  this.cdr.markForCheck();
-                }
-              });
+        next: (result) => {
+          if (result.success) {
+            this.loadInventoryData();
           } else {
-            // Update inventory without this detail
-            const updateDto: UpdateInventoryDto = {
-              depoId: inventory.depoId,
-              invoiceNumber: inventory.invoiceNumber || undefined,
-              invoiceDate: inventory.invoiceDate,
-              recievedDate: inventory.recievedDate,
-              notes: inventory.notes,
-              inventoryDetails: remainingDetails.map(d => ({
-                id: d.id,
-                itemId: d.itemId,
-                lot: d.lot,
-                supplierId: d.supplierId,
-                manufacturerId: d.manufacturerId,
-                countryId: d.countryId,
-                originalQuantity: d.originalQuantity,
-                batchNo: d.batchNo,
-                expiryDate: d.expiryDate,
-                readyForIssue: d.readyForIssue ?? true
-              }))
-            };
-
-            this.inventoryService.update(inventory.id, updateDto)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: () => {
-                  this.translateService.get(['toast.inventoryItemDeleted', 'toast.success']).subscribe(translations => {
-                    this.toastService.success(translations['toast.inventoryItemDeleted'], translations['toast.success']);
-                  });
-                  this.showDeleteDialog = false;
-                  this.selectedDetail = undefined;
-                  this.cdr.markForCheck();
-                  this.loadInventoryData();
-                },
-                error: (error) => {
-                  this.translateService.get(['toast.failedToDeleteItem', 'toast.error']).subscribe(translations => {
-                    this.toastService.error(translations['toast.failedToDeleteItem'], translations['toast.error']);
-                  });
-                  this.showDeleteDialog = false;
-                  this.cdr.markForCheck();
-                }
-              });
+            this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
+              this.toastService.error(result.error || translations['toast.failedToDelete'], translations['toast.error']);
+            });
           }
         },
         error: (error) => {
-          this.translateService.get(['toast.failedToLoad', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToLoad'], translations['toast.error']);
+          this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
           });
-          this.showDeleteDialog = false;
-          this.cdr.markForCheck();
         }
       });
   }
@@ -773,75 +629,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Export filtered inventory to Excel
    */
   exportToExcel(): void {
-    const columns: ExcelColumn[] = [
-      {
-        header: this.translateService.instant('warehouseInventory.itemName'),
-        key: 'item',
-        width: 30,
-        format: (item) => this.getItemName({ item } as InventoryDetailDto)
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.itemNo'),
-        key: 'item.itemNo',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('common.supplier'),
-        key: 'supplier',
-        width: 20,
-        format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.lot'),
-        key: 'lot',
-        width: 10
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.batchNo'),
-        key: 'batchNo',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.originalQty'),
-        key: 'originalQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.currentQty'),
-        key: 'currentQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.usedQty'),
-        key: 'usedQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.remainingQty'),
-        key: 'remainingQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.expiryDate'),
-        key: 'expiryDate',
-        width: 15,
-        format: (date) => this.formatDate(date)
-      }
-    ];
-
-    const fileName = `${this.depoName}_Inventory_${this.activeTab}`;
-
-    this.excelExportService.exportToExcel({
-      fileName: fileName,
-      sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
-      columns: columns,
-      data: this.filteredInventoryDetails,
-      includeTimestamp: true
-    });
-
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
-      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-    });
+    this.exportService.exportInventoryToExcel(
+      this.filteredInventoryDetails,
+      this.depoName,
+      this.activeTab,
+      this.getItemName,
+      this.formatDate
+    );
   }
 }

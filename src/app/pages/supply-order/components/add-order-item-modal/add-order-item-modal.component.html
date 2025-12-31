@@ -1,0 +1,64 @@
+<app-modal [isOpen]="isOpen" [title]="'supplyOrder.addItem' | translate" size="md" (closed)="closeModal()">
+  <form [formGroup]="addItemForm" class="space-y-4">
+    <!-- Item Selection -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.selectItem' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <app-dropdown class="w-full" formControlName="itemId" [options]="availableItems" optionValue="id"
+        [optionLabelFn]="itemManagementOptionLabel" [disabled]="loadingItems" [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
+        placeholder="{{ 'supplyOrder.selectItemPlaceholder' | translate }}">
+      </app-dropdown>
+      <p *ngIf="addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.itemRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <input type="number" formControlName="quantity" min="1"
+        class="w-full px-3 py-2 border-2 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+        [ngClass]="{
+          'border-[var(--color-error)]': addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched,
+          'border-[var(--color-border)]': !(addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched)
+        }" />
+      <p *ngIf="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.notes' | translate }}
+      </label>
+      <textarea formControlName="notes" rows="3"
+        class="w-full px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+        placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="closeModal()"
+      class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onSaveAddOrderItem()" [disabled]="addItemForm.invalid || savingItem || loadingItems"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingItems,
+        'bg-[var(--color-text-muted)]': addItemForm.invalid || savingItem || loadingItems
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
