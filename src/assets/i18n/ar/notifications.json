@@ -95,5 +95,25 @@
       "Return": "إرجاع",
       "Discard": "إتلاف"
     }
+  },
+  "toast": {
+    "success": "نجاح",
+    "error": "خطأ"
+  },
+  "stockNotificationSettings": {
+    "title": "إعدادات إشعارات المخزون",
+    "subtitle": "تكوين المستلمين والجدولة لإشعارات المخزون المنخفض",
+    "recipientsSettings": "إعدادات المستلمين",
+    "roles": "الأدوار",
+    "rolesPlaceholder": "اختر الأدوار",
+    "users": "المستخدمون",
+    "usersPlaceholder": "اختر المستخدمين",
+    "dateTimeSettings": "إعدادات التاريخ والوقت",
+    "dateAndTime": "التاريخ والوقت",
+    "dateTimeNote": "حدد التاريخ والوقت لجدولة إشعارات المخزون",
+    "recipientsSavedSuccess": "تم حفظ المستلمين بنجاح",
+    "recipientsSaveFailed": "فشل حفظ المستلمين",
+    "scheduleSavedSuccess": "تم حفظ الجدولة بنجاح",
+    "scheduleSaveFailed": "فشل حفظ الجدولة"
   }
 }

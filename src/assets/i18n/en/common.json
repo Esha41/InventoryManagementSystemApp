@@ -156,7 +156,8 @@
     "adminImportExport": "Import & Export",
     "notifications": "Notifications",
     "integratedInventoryManagement": "Integrated Armament System",
-    "supplyOrder": "Supply Order"
+    "supplyOrder": "Supply Order",
+    "stockNotificationSettings": "Stock Notification Settings"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"

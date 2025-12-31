@@ -260,6 +260,12 @@ export const routes: Routes = [
         data: { permissions: ['systemusers.page', 'systemusers.view'] }
       },
       {
+        path: 'stock-notification-settings',
+        loadComponent: () => import('@pages/stock-notification-settings/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
+        canActivate: [permissionGuard], 
+        data: { permissions: ['inventory.edit', 'inventory.view'] } 
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@pages/notifications/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],

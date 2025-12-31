@@ -1,0 +1,128 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6 space-x-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">
+        {{ "stockNotificationSettings.title" | translate }}
+      </h1>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">
+        {{ "stockNotificationSettings.subtitle" | translate }}
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <app-error-state
+      *ngIf="errorMessage"
+      [error]="errorMessage"
+      variant="banner"
+      containerClass="mb-0"
+    >
+    </app-error-state>
+
+    <!-- Roles and Users Settings Card -->
+    <app-card>
+      <form [formGroup]="recipientsForm" (ngSubmit)="onSubmitRecipientsForm()">
+        <div class="p-6">
+          <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+            {{ "stockNotificationSettings.recipientsSettings" | translate }}
+          </h4>
+          <!-- Roles -->
+          <div class="mb-4">
+            <label
+              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+            >
+              {{ "stockNotificationSettings.roles" | translate }}
+            </label>
+            <app-dropdown
+              class="w-full"
+              formControlName="rolesIds"
+              [options]="roles"
+              [multiple]="true"
+              [required]="false"
+              optionValue="id"
+              optionLabel="name"
+              [placeholderSelectable]="false"
+              placeholder="{{
+                isLoadingRoles
+                  ? ('common.loading' | translate)
+                  : ('stockNotificationSettings.rolesPlaceholder' | translate)
+              }}"
+            >
+            </app-dropdown>
+          </div>
+
+          <!-- Users -->
+          <div>
+            <label
+              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+            >
+              {{ "stockNotificationSettings.users" | translate }}
+            </label>
+            <app-dropdown
+              class="w-full"
+              formControlName="usersIds"
+              optionValue="id"
+              optionLabel="userName"
+              [options]="users"
+              [multiple]="true"
+              [required]="false"
+              placeholder="{{
+                isLoadingUsers
+                  ? ('common.loading' | translate)
+                  : ('stockNotificationSettings.usersPlaceholder' | translate)
+              }}"
+            >
+            </app-dropdown>
+          </div>
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+            <app-button type="submit" variant="primary">
+              {{ "common.save" | translate }}
+            </app-button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+
+    <!-- Date and Time Settings Card -->
+    <app-card>
+      <!-- Loading State -->
+      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmitScheduleForm()">
+        <div *ngIf="isLoadingSchedule" class="text-center py-12">
+          <p class="text-[var(--color-text-muted)]">
+            {{ "common.loading" | translate }}
+          </p>
+        </div>
+        <div class="p-6" *ngIf="!isLoadingSchedule">
+          <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+            {{ "stockNotificationSettings.dateTimeSettings" | translate }}
+          </h4>
+
+          <!-- Date and Time -->
+          <div class="mb-4">
+            <label
+              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+            >
+              {{ "stockNotificationSettings.dateAndTime" | translate }}
+            </label>
+            <input
+              name="usageDateTo"
+              type="datetime-local"
+              formControlName="dateTime"
+              class="w-full px-3 py-2 border-2 border-[var(--color-border)] rounded-xl text-sm text-[var(--color-text)] bg-white focus:outline-none focus:ring-2 transition-all"
+            />
+            <span>
+              {{ "stockNotificationSettings.dateTimeNote" | translate }}
+            </span>
+          </div>
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+            <app-button type="submit" variant="primary">
+              {{ "common.save" | translate }}
+            </app-button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>
