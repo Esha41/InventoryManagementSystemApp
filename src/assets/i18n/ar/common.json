@@ -156,7 +156,8 @@
     "adminImportExport": "الاستيراد والتصدير",
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "نظام التسلح المتكامل",
-    "supplyOrder": "طلب التوريد"
+    "supplyOrder": "طلب التوريد",
+    "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"

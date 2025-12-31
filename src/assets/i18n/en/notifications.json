@@ -95,5 +95,25 @@
       "Return": "Return",
       "Discard": "Discard"
     }
+  },
+  "toast": {
+    "success": "Success",
+    "error": "Error"
+  },
+  "stockNotificationSettings": {
+    "title": "Stock Notification Settings",
+    "subtitle": "Configure recipients and schedule for low stock notifications",
+    "recipientsSettings": "Recipients Settings",
+    "roles": "Roles",
+    "rolesPlaceholder": "Select roles",
+    "users": "Users",
+    "usersPlaceholder": "Select users",
+    "dateTimeSettings": "Date and Time Settings",
+    "dateAndTime": "Date and Time",
+    "dateTimeNote": "Select the date and time for stock notification scheduling",
+    "recipientsSavedSuccess": "Recipients saved successfully",
+    "recipientsSaveFailed": "Failed to save recipients",
+    "scheduleSavedSuccess": "Schedule saved successfully",
+    "scheduleSaveFailed": "Failed to save schedule"
   }
 }
