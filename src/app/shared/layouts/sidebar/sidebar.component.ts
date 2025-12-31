@@ -215,6 +215,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: GitBranch,
       route: '/workflow',
       permissions: ['workflowtype.page', 'workflowtype.view']
+    },
+    {
+      label: 'nav.stockNotificationSettings', 
+      icon: Mail, 
+      route: '/stock-notification-settings',
+      permissions: ['inventory.edit', 'inventory.view']
     }
   ];
 

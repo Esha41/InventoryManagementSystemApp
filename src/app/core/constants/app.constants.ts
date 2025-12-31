@@ -193,6 +193,13 @@ export const API_ENDPOINTS = {
     SUBMIT: (id: number) => `/Supply/${id}/submit`,
   },
 
+  //Low stock notification settings
+  STOCK_NOTIFICATION: {
+    BASE: '/ItemNotification',
+    SETTINGS: '/ItemNotification/settings',
+    SCHEDULE: '/ItemNotification/schedule',
+  },
+
   // File Upload Management
   FILE_UPLOAD: {
     BASE: '/FileUpload',
