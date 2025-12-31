@@ -82,6 +82,7 @@
             </label>
             <input type="text" id="accountUsername" name="accountUsername" [(ngModel)]="accountUsername"
               [placeholder]="'emailSettings.accountUsernamePlaceholder' | translate"
+              autocomplete="off"
               class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
               required />
           </div>
@@ -99,6 +100,7 @@
               <input [type]="showPassword ? 'text' : 'password'" id="accountPassword" name="accountPassword"
                 [(ngModel)]="accountPassword"
                 [placeholder]="hasExistingPassword ? ('emailSettings.passwordPlaceholder' | translate) : ('emailSettings.passwordRequiredPlaceholder' | translate)"
+                autocomplete="new-password"
                 class="w-full px-4 py-2.5 pr-10 border-2 border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all hover:border-[var(--color-brand)]/50"
                 [required]="!hasExistingPassword" />
               <button type="button" (click)="togglePasswordVisibility()"
@@ -122,11 +124,11 @@
 
           <!-- Action Buttons at Bottom -->
           <div class="flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-border)] mt-6">
-            <app-button [variant]="'secondary'" [disabled]="isSaving || isLoading" (click)="cancelChanges()"
-              class="px-4 py-2.5">
-              {{ 'common.cancel' | translate }}
-            </app-button>
-            <app-button [variant]="'primary'" [disabled]="isSaving || isLoading" (click)="saveChanges()"
+            <app-button 
+              *appHasPermission="'emailsettings.edit'"
+              [variant]="'primary'" 
+              [disabled]="isSaving || isLoading" 
+              (click)="saveChanges()"
               class="px-4 py-2.5">
               <span *ngIf="!isSaving">{{ 'emailSettings.saveChanges' | translate }}</span>
               <span *ngIf="isSaving">{{ 'emailSettings.saving' | translate }}</span>

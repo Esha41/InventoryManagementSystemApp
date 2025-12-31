@@ -17,6 +17,17 @@ export interface EmailSettingsApiDto {
   accountPassword?: string;
 }
 
+// Backend EmailConfiguration model structure
+export interface EmailConfigurationApiDto {
+  port: number;
+  ssl: boolean;
+  disableAuthentication: boolean;
+  hostIp: string;
+  username: string;
+  password: string;
+  displayName: string;
+}
+
 // Internal DTO for component usage
 export interface EmailConfigurationDto {
   id?: number;
@@ -49,14 +60,14 @@ export class EmailConfigurationService {
     this.config.log('Fetching email configuration');
 
     return this.apiService
-      .getWithAuth<APIOperationResponse<EmailSettingsApiDto>>(this.endpoint)
+      .getWithAuth<APIOperationResponse<EmailConfigurationApiDto>>(this.endpoint)
       .pipe(
         map(response => {
           // If response succeeded but no data, return empty config
           if (response.succeeded && !response.data) {
             return {};
           }
-          return this.apiDtoToInternalDto(response?.data);
+          return this.backendApiDtoToInternalDto(response?.data);
         }),
         catchError(error => {
           // If 404, return empty config (settings don't exist yet)
@@ -127,7 +138,27 @@ export class EmailConfigurationService {
   }
 
   /**
-   * Convert API DTO to internal DTO for component usage
+   * Convert Backend EmailConfiguration API DTO to internal DTO for component usage
+   */
+  private backendApiDtoToInternalDto(apiDto?: EmailConfigurationApiDto | null): EmailConfigurationDto {
+    if (!apiDto) {
+      return {};
+    }
+
+    return {
+      hostIp: apiDto.hostIp || null,
+      port: apiDto.port ?? null,
+      enableSsl: apiDto.ssl ?? false,
+      senderDisplayName: apiDto.displayName || null,
+      username: apiDto.username || null,
+      enableEmailNotifications: !apiDto.disableAuthentication,
+      // Password is typically not returned in GET responses, so we check if it exists
+      hasPassword: apiDto.password !== undefined && apiDto.password !== null && apiDto.password !== '' && apiDto.password.length > 0
+    };
+  }
+
+  /**
+   * Convert API DTO to internal DTO for component usage (for POST requests)
    */
   private apiDtoToInternalDto(apiDto?: EmailSettingsApiDto | null): EmailConfigurationDto {
     if (!apiDto) {

@@ -143,25 +143,25 @@ export const routes: Routes = [
         path: 'workflow',
         loadComponent: () => import('@pages/workflow/workflow.component').then(m => m.WorkflowComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['workflowtype.page', 'workflowtype.view'] }
+        data: { permissions: ['workflow.page', 'workflow.view'] }
       },
       {
         path: 'workflow/add',
         loadComponent: () => import('@pages/workflow/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['workflowtype.create'] }
+        data: { permissions: ['workflow.create'] }
       },
       {
         path: 'workflow/:id',
         loadComponent: () => import('@pages/workflow/workflow-detail/workflow-detail.component').then(m => m.WorkflowDetailComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['workflowtype.view'] }
+        data: { permissions: ['workflow.view', 'workflow.page'] }
       },
       {
         path: 'workflow/:id/edit',
         loadComponent: () => import('@pages/workflow/edit-workflow/edit-workflow.component').then(m => m.EditWorkflowComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['workflowtype.edit'] }
+        data: { permissions: ['workflow.edit'] }
       },
       {
         path: 'new-issue-request',
@@ -275,7 +275,7 @@ export const routes: Routes = [
         path: 'email-settings',
         loadComponent: () => import('@pages/email-settings/email-settings.component').then(m => m.EmailSettingsComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+        data: { permissions: ['emailsettings.page', 'emailsettings.view'] }
       },
       {
         path: 'admin-import-export',

@@ -8,6 +8,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmailConfigurationService, EmailConfigurationDto } from '@services/email-configuration.service';
 import { ToastService } from '@services/toast.service';
+import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-email-settings',
@@ -18,7 +19,8 @@ import { ToastService } from '@services/toast.service';
     CardComponent,
     ButtonComponent,
     TranslateModule,
-    ErrorStateComponent
+    ErrorStateComponent,
+    HasPermissionDirective
   ],
   templateUrl: './email-settings.component.html',
   styleUrls: ['./email-settings.component.css']
@@ -77,12 +79,22 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
   loadEmailConfiguration(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    
+    // Reset form fields to empty to prevent showing any pre-filled values
+    this.accountUsername = '';
+    this.accountPassword = '';
+    this.host = '';
+    this.port = null;
+    this.senderName = '';
+    this.enableEmailNotifications = false;
+    this.enableSsl = false;
 
     this.emailConfigService.getEmailConfiguration()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (config) => {
           this.emailConfig = config;
+          // Only populate fields if config has actual values (not empty)
           this.enableEmailNotifications = config.enableEmailNotifications ?? false;
           this.host = config.hostIp || '';
           this.port = config.port ?? null;
@@ -90,7 +102,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
           this.senderName = config.senderDisplayName || '';
           this.accountUsername = config.username || '';
           this.hasExistingPassword = config.hasPassword ?? false;
-          this.accountPassword = ''; // Don't load password
+          this.accountPassword = ''; // Never load password, always keep empty
           
           // Store original values for cancel
           this.originalValues = {
