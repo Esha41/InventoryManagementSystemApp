@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,16 +9,21 @@ import { CartridgeDetailsComponent } from './components/cartridge-details/cartri
 import { CartridgeListComponent, Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { UsageFormComponent } from './components/usage-form/usage-form.component';
 import { ReviewFormComponent } from './components/review-form/review-form.component';
-import { UserContextService } from '@services/user-context.service';
-import { BackendUserDto } from '@models/backend-user.model';
-import { BackendAuthService } from '@services/backend-auth.service';
-import { AuthenticatedUser } from '@models/auth.model';
+import { AllowanceSelectionComponent } from './components/allowance-selection/allowance-selection.component';
+import { OrderSuccessComponent } from './components/order-success/order-success.component';
+import { ErrorBannerComponent } from './components/error-banner/error-banner.component';
 import { Subject, takeUntil } from 'rxjs';
-import { ApiService } from '@services/api.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
 import { CartridgeDataService } from '@services/cartridge-data.service';
 import { OrderSubmissionService } from '@services/order-submission.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { IssueRequestFilterService } from '@services/issue-request-filter.service';
+import { IssueRequestStateService } from '@services/issue-request-state.service';
+import { IssueRequestDataService } from '@services/issue-request-data.service';
+import { IssueRequestNavigationService } from '@services/issue-request-navigation.service';
+import { IssueRequestUserContextService } from '@services/issue-request-user-context.service';
+import { IssueRequestCartridgeLoaderService } from '@services/issue-request-cartridge-loader.service';
+import { IssueRequestCartridgeManagementService } from '@services/issue-request-cartridge-management.service';
+import { IssueRequestSubmissionService } from '@services/issue-request-submission.service';
 import {
   RequestPurposeDto,
   FilterState,
@@ -31,12 +36,24 @@ import {
   OrderSubmissionState,
   ReviewFormData
 } from './new-issue-request.state';
-import { toNumber, normalizeArrayResponse, getLocalizedNameFromItem, resolveUserDisplayName, getAmmunitionTypeId } from '@utils/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import {
+  mapSelectedEntriesToCartridges,
+  filterReserveDetailsBySelectedItems,
+  computeTotalReserve,
+  computeAvailableReserve,
+  computeOrderedQuantity,
+  computeUsedQuantity,
+  resolveCurrentRequesterName,
+  syncRequesterNameFromUserDetails as syncRequesterNameUtil,
+  applyUserContext as applyUserContextUtil,
+  applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil,
+  getDepartmentIdForRequest as getDepartmentIdForRequestUtil
+} from '@utils/issue-request.utils';
 
 interface ExtendedFilterState extends FilterState {
   selectedWeaponType?: string;
@@ -63,11 +80,17 @@ interface ExtendedFilterOptions extends FilterOptions {
     CartridgeListComponent,
     UsageFormComponent,
     ReviewFormComponent,
+    AllowanceSelectionComponent,
+    OrderSuccessComponent,
+    ErrorBannerComponent,
+    LoadingStateComponent,
+    ErrorStateComponent,
     HasPermissionDirective,
     ConfirmationDialogComponent
   ],
   templateUrl: './new-issue-request.component.html',
-  styleUrls: ['./new-issue-request.component.css']
+  styleUrls: ['./new-issue-request.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -84,12 +107,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private userContextService: UserContextService,
-    private backendAuthService: BackendAuthService,
-    private apiService: ApiService,
     private translate: TranslateService,
     private cartridgeDataService: CartridgeDataService,
-    private orderSubmissionService: OrderSubmissionService
+    private orderSubmissionService: OrderSubmissionService,
+    private filterService: IssueRequestFilterService,
+    private stateService: IssueRequestStateService,
+    private dataService: IssueRequestDataService,
+    private navigationService: IssueRequestNavigationService,
+    private issueRequestUserContextService: IssueRequestUserContextService,
+    private cartridgeLoaderService: IssueRequestCartridgeLoaderService,
+    private cartridgeManagementService: IssueRequestCartridgeManagementService,
+    private submissionService: IssueRequestSubmissionService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   // Grouped state objects
@@ -177,11 +206,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   // Confirmation dialog state
   showConfirmDialog = false;
-  confirmDialogTitle = '';
-  confirmDialogMessage = '';
-  confirmDialogType: ConfirmationType = 'success';
-  confirmDialogConfirmText = '';
-  confirmDialogCancelText = '';
+  confirmDialogConfig = {
+    title: '',
+    message: '',
+    type: 'success' as ConfirmationType,
+    confirmText: '',
+    cancelText: ''
+  };
 
   reviewFormData: ReviewFormData = {
     requesterName: '', // Will be populated from /Users/me API
@@ -199,19 +230,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private readonly DEFAULT_REQUEST_TYPE_ID = 1;
 
   get selectedCartridges(): Cartridge[] {
-    return this.cartridgeState.selectedEntries
-      .map(entry => {
-        const cartridge = this.cartridgeState.allCartridges.find(c => c.id === entry.id);
-        if (cartridge) {
-          return { ...cartridge, quantity: entry.quantity };
-        }
-        return {
-          id: entry.id,
-          name: `#${entry.id}`,
-          selected: true,
-          quantity: entry.quantity
-        } as Cartridge;
-      });
+    return mapSelectedEntriesToCartridges(
+      this.cartridgeState.selectedEntries,
+      this.cartridgeState.allCartridges
+    );
   }
 
   get canProceedFromSelection(): boolean {
@@ -221,12 +243,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   get currentRequesterName(): string {
-
-    return resolveUserDisplayName(
-      this.userContextState.currentUserDetails?.nameEn,
-      this.userContextState.currentUserDetails?.nameAr,
-      this.userContextState.currentUserDetails?.userName
-    ) || this.userContextState.fallbackRequesterName || this.reviewFormData.requesterName || '';
+    return resolveCurrentRequesterName(
+      this.userContextState.currentUserDetails,
+      this.userContextState.fallbackRequesterName,
+      this.reviewFormData.requesterName
+    );
   }
 
   ngOnInit(): void {
@@ -236,21 +257,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.rebuildOrderPriorities();
 
     // Load static options from Utils
-    // Note: getWeaponTypeOptions returns objects {label, value}. We might need to map them or use as is if dropdown supports objects.
-    // CartridgeList uses simple string array input currently or I updated it? I updated it to accept objects or strings?
-    // Checking CartridgeList: it accepts string[] for weaponTypeOptions.
-    // getWeaponTypeOptions returns DropdownOption[] (label/value).
-    // I should probably map them to labels or use a smarter dropdown in cartridge list.
-    // In CartridgeList HTML I used [options] which supports objects if I used app-dropdown correctly.
-    // I used `[optionLabel]="'label'"` so passing the full object array is better.
-    // I need to update filterOptions type to any[] for these specific ones or map to strings if I want simple strings.
-    // The previous implementation used strings.
-    // The new HTML implementation uses `[options]="weaponTypeOptions" [optionLabel]="'label'"`.
-    // So passing the object array is correct. I should cast or facilitate this.
-
     this.filterOptions.weaponTypeOptions = getWeaponTypeOptions() as any;
     this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions() as any;
-
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
@@ -267,72 +275,51 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private initializeUserContext(): void {
-    this.userContextState.isAdminUser = this.userContextService.isAdminUser();
-    this.userContextState.lockRequesterName = !this.userContextState.isAdminUser;
-
-    this.backendAuthService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => this.applyAuthenticatedUserContext(user));
-
-    this.userContextService
-      .getCurrentUserDetails()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(details => {
-        this.userContextState.currentUserDetails = details;
-        this.applyBackendUserDetails(details);
-      });
+    this.issueRequestUserContextService.initializeUserContext(
+      this.userContextState,
+      this.destroy$,
+      () => this.syncRequesterNameFromUserDetails()
+    );
   }
 
   private loadCartridges(): void {
     this.cartridgeState.loadingCartridges = true;
     this.cartridgeState.cartridgeError = null;
+    this.cdr.markForCheck();
 
     const type = this.filterState.selectedItemType;
     const isAllowance = this.fromReserve === 'Yes';
     const deptId = this.userContextState.currentUserDepartmentId;
 
-    if (isAllowance && !deptId) {
-      this.cartridgeState.cartridgeError = 'Department not found for current user.';
-      this.cartridgeState.loadingCartridges = false;
-      return;
-    }
+    this.cartridgeLoaderService
+      .loadCartridges(type, isAllowance, deptId)
+      .subscribe({
+        next: (result: any) => {
+          this.cartridgeState.allCartridges = result.cartridges;
+          this.buildFilterOptions(); // rebuilds dynamic filters like Diameter/Nature
+          this.filterCartridges();
 
-    let load$: any;
+          // Load reserve details if from allowance
+          if (isAllowance && deptId) {
+            this.loadReserveDetails();
+          }
 
-    if (type === 'Weapon') {
-      load$ = isAllowance ? this.cartridgeDataService.loadAllowanceWeapons(deptId!) : this.cartridgeDataService.loadAllWeapons();
-    } else if (type === 'Explosive') {
-      load$ = isAllowance ? this.cartridgeDataService.loadAllowanceExplosives(deptId!) : this.cartridgeDataService.loadAllExplosives();
-    } else {
-      // Ammunition
-      load$ = isAllowance ? this.cartridgeDataService.loadAllowanceAmmunition(deptId!) : this.cartridgeDataService.loadAllAmmunition();
-    }
-
-    load$.subscribe({
-      next: (result: any) => {
-        this.cartridgeState.allCartridges = result.cartridges;
-        this.buildFilterOptions(); // rebuilds dynamic filters like Diameter/Nature
-        this.filterCartridges();
-
-        // Load reserve details if from allowance
-        if (isAllowance && deptId) {
-          this.loadReserveDetails();
+          this.cartridgeState.loadingCartridges = false;
+          if (result.error) {
+            this.cartridgeState.cartridgeError = result.error;
+          } else {
+            this.restoreSelections();
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: any) => {
+          this.cartridgeState.allCartridges = [];
+          this.cartridgeState.filteredCartridges = [];
+          this.cartridgeState.loadingCartridges = false;
+          this.cartridgeState.cartridgeError = error.error || 'Failed to load items. Please try again.';
+          this.cdr.markForCheck();
         }
-
-        this.cartridgeState.loadingCartridges = false;
-        if (result.error) {
-          this.cartridgeState.cartridgeError = result.error;
-        } else {
-          this.restoreSelections();
-        }
-      },
-      error: (error: any) => {
-        this.cartridgeState.allCartridges = [];
-        this.cartridgeState.filteredCartridges = [];
-        this.cartridgeState.loadingCartridges = false;
-        this.cartridgeState.cartridgeError = error.error || 'Failed to load items. Please try again.';
-      }
-    });
+      });
   }
 
   // Kept for compatibility but Refactored logic is in loadCartridges now
@@ -345,6 +332,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     }
 
     this.reserveDetailsState.loadingReserveDetails = true;
+    this.cdr.markForCheck();
     this.cartridgeDataService.loadReserveDetails(this.userContextState.currentUserDepartmentId).subscribe({
       next: (result) => {
         this.reserveDetailsState.totalReserve = result.totalReserve;
@@ -353,36 +341,38 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.reserveDetailsState.usedQuantity = result.usedQuantity;
         this.reserveDetailsState.reserveDetailsByItem = result.reserveDetailsByItem;
         this.reserveDetailsState.loadingReserveDetails = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.reserveDetailsState.loadingReserveDetails = false;
         // Keep default values of 0
         this.reserveDetailsState.reserveDetailsByItem = [];
+        this.cdr.markForCheck();
       }
     });
   }
 
   private loadRequestPurposes(): void {
     this.requestPurposeState.loadingRequestPurposes = true;
+    this.cdr.markForCheck();
 
-    this.apiService
-      .getWithAuth<APIOperationResponse<RequestPurposeDto[]>>(
-        API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER
-      )
+    this.dataService
+      .loadRequestPurposes()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          const purposes = normalizeArrayResponse<RequestPurposeDto>(response);
+        next: (purposes) => {
           this.requestPurposeState.requestPurposesSource = purposes;
           this.rebuildRequestPurposeOptions();
           this.requestPurposeState.loadingRequestPurposes = false;
           this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
+          this.cdr.markForCheck();
         },
         error: () => {
           this.requestPurposeState.requestPurposesSource = [];
           this.requestPurposeState.requestPurposeOptions = [];
           this.requestPurposeState.loadingRequestPurposes = false;
           this.updateUsePurposeFromSelection(null);
+          this.cdr.markForCheck();
         }
       });
   }
@@ -395,22 +385,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   onCartridgeAdded(event: { cartridge: Cartridge; quantity: number }): void {
     const { cartridge, quantity } = event;
-    const existingIndex = this.cartridgeState.selectedEntries.findIndex(entry => entry.id === cartridge.id);
-    if (existingIndex >= 0) {
-      this.cartridgeState.selectedEntries[existingIndex].quantity = quantity;
-    } else {
-      this.cartridgeState.selectedEntries.push({ id: cartridge.id, quantity });
-    }
-
-    const target = this.cartridgeState.allCartridges.find(c => c.id === cartridge.id);
-    if (target) {
-      target.added = true;
-      target.selected = true;
-      target.quantity = quantity;
-    }
-
-    // Persist selections to query params
-    this.persistSelections();
+    this.cartridgeManagementService.addCartridge(cartridge, quantity, this.cartridgeState);
+    this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
+    this.cdr.markForCheck();
   }
 
   private buildFilterOptions(): void {
@@ -421,161 +398,58 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private initializeStepFromQueryParams(): void {
-    this.route.queryParams.subscribe(params => {
-      const stepParam = params['step'];
-      if (stepParam !== undefined) {
-        const step = parseInt(stepParam, 10);
-        if (!isNaN(step) && step >= 0 && step < this.steps.length) {
-          this.currentStep = step;
+    this.stateService
+      .getQueryParamsState(this.steps.length)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.currentStep = params.step;
+        this.fromReserve = params.fromReserve;
+        this.pendingSelections = params.pendingSelections;
 
-          // Restore fromReserve from query params if available
-          if (params['fromReserve'] !== undefined) {
-            this.fromReserve = params['fromReserve'];
-          }
-
-          // Store pending selections from query params to restore after cartridges load
-          const selectionsParam = params['selections'];
-          if (selectionsParam) {
-            try {
-              this.pendingSelections = JSON.parse(selectionsParam);
-            } catch (error) {
-              console.error('Failed to parse selections from query params:', error);
-              this.pendingSelections = null;
-            }
-          } else {
-            this.pendingSelections = null;
-          }
-
-          // If we're on step 1 or later, we need to load cartridges
-          // (step 0 is allowance selection, step 1 is cartridge selection)
-          if (step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
-            this.loadCartridges();
-          }
-
-          // Ensure requester name is synced when navigating to review step (step 3)
-          if (step === 3) {
-            this.syncRequesterNameFromUserDetails();
-          }
+        // If we're on step 1 or later, we need to load cartridges
+        // (step 0 is allowance selection, step 1 is cartridge selection)
+        if (params.step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
+          this.loadCartridges();
         }
-      }
-    });
+
+        // Ensure requester name is synced when navigating to review step (step 3)
+        if (params.step === 3) {
+          this.syncRequesterNameFromUserDetails();
+        }
+        this.cdr.markForCheck();
+      });
   }
 
   private updateQueryParams(step: number): void {
-    const queryParams: any = {
-      step: step,
-      fromReserve: this.fromReserve
-    };
-
-    // Persist selected entries if there are any
-    if (this.cartridgeState.selectedEntries.length > 0) {
-      queryParams.selections = JSON.stringify(this.cartridgeState.selectedEntries);
-    }
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: queryParams,
-      queryParamsHandling: 'merge'
-    });
+    this.stateService.updateQueryParams(step, this.fromReserve, this.cartridgeState.selectedEntries);
   }
 
   /**
    * Persists selected entries to query params
    */
   private persistSelections(): void {
-    const queryParams: any = {};
-    if (this.cartridgeState.selectedEntries.length > 0) {
-      queryParams.selections = JSON.stringify(this.cartridgeState.selectedEntries);
-    } else {
-      // Remove selections param if no selections
-      queryParams.selections = null;
-    }
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: queryParams,
-      queryParamsHandling: 'merge'
-    });
+    this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
   }
 
   /**
    * Restores selected entries from pending selections and updates cartridge state
    */
   private restoreSelections(): void {
-    if (!this.pendingSelections || !Array.isArray(this.pendingSelections) || this.pendingSelections.length === 0) {
+    if (!this.pendingSelections) {
       return;
     }
 
-    // Restore selected entries
-    this.cartridgeState.selectedEntries = this.pendingSelections;
-
-    // Update cartridge state to reflect selections
-    this.pendingSelections.forEach(entry => {
-      const cartridge = this.cartridgeState.allCartridges.find(c => c.id === entry.id);
-      if (cartridge) {
-        cartridge.selected = true;
-        cartridge.added = true;
-        cartridge.quantity = entry.quantity;
-      }
-    });
-
+    this.stateService.restoreSelections(this.pendingSelections, this.cartridgeState);
     // Clear pending selections after restoration
     this.pendingSelections = null;
   }
 
   filterCartridges(): void {
-    this.cartridgeState.filteredCartridges = this.cartridgeState.allCartridges.filter(cartridge => {
-      // Common Search
-      const searchLower = this.filterState.searchTerm.toLowerCase();
-      const bySearch = !this.filterState.searchTerm ||
-        (cartridge.name?.toLowerCase().includes(searchLower)) ||
-        (cartridge.itemNo?.toLowerCase().includes(searchLower)) ||
-        (cartridge.productId?.toLowerCase().includes(searchLower)) ||
-        (cartridge.ncn?.toLowerCase().includes(searchLower));
-
-      if (this.filterState.selectedItemType === 'Ammunition') {
-        const diameterLabel = cartridge.bulletDiameterLabel ?? '';
-        const linkedLabel = cartridge.linkedLabel ?? '';
-        const natureLabel = cartridge.natureLabel ?? '';
-        const nsn = cartridge.ncn ?? '';
-
-        const byDiameter = !this.filterState.selectedBulletDiameter || this.filterState.selectedBulletDiameter === diameterLabel;
-        const byLinked = !this.filterState.selectedLinked || this.filterState.selectedLinked === linkedLabel;
-        const byNature = !this.filterState.selectedNature || this.filterState.selectedNature === natureLabel;
-
-        const nsnFilterLower = this.filterState.selectedNSN?.toLowerCase() ?? '';
-        const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
-
-        const byAmmunitionType = !this.filterState.selectedAmmunitionType ||
-          (cartridge.ammunitionType !== undefined &&
-            String(cartridge.ammunitionType).toLowerCase() === this.filterState.selectedAmmunitionType.toLowerCase());
-
-        return byDiameter && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
-
-      } else if (this.filterState.selectedItemType === 'Weapon') {
-        const byWeaponType = !this.filterState.selectedWeaponType || cartridge.weaponType === this.filterState.selectedWeaponType;
-
-        // Caliber might be numeric or string, loosely matching or contains
-        const caliberFilter = this.filterState.selectedCaliber?.toLowerCase() ?? '';
-        const byCaliber = !caliberFilter || (cartridge.caliber && String(cartridge.caliber).toLowerCase().includes(caliberFilter));
-
-        const nsn = cartridge.ncn ?? '';
-        const nsnFilterLower = this.filterState.selectedNSN?.toLowerCase() ?? '';
-        const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
-
-        return byWeaponType && byCaliber && byNSN && bySearch;
-
-      } else if (this.filterState.selectedItemType === 'Explosive') {
-        const byExplosiveType = !this.filterState.selectedExplosiveType || cartridge.explosiveType === this.filterState.selectedExplosiveType;
-
-        const unfilter = this.filterState.selectedUNNumber?.toLowerCase() ?? '';
-        const byUN = !unfilter || (cartridge.unNumber && String(cartridge.unNumber).toLowerCase().includes(unfilter));
-
-        return byExplosiveType && byUN && bySearch;
-      }
-
-      return bySearch;
-    });
+    this.cartridgeState.filteredCartridges = this.filterService.filterCartridges(
+      this.cartridgeState.allCartridges,
+      this.filterState
+    );
+    this.cdr.markForCheck();
   }
 
   // Handlers invoked from child component outputs
@@ -583,7 +457,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.filterState.selectedBulletDiameter = value;
     this.filterCartridges();
   }
-
 
   onLinkedChange(value: string): void {
     this.filterState.selectedLinked = value;
@@ -608,11 +481,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeState.selectedCartridgeForView = cartridge;
     this.cartridgeState.showCartridgeDetails = true;
+    this.cdr.markForCheck();
   }
 
   onCloseCartridgeDetails(): void {
     this.cartridgeState.showCartridgeDetails = false;
     this.cartridgeState.selectedCartridgeForView = null;
+    this.cdr.markForCheck();
   }
 
   onSelectCartridge(): void {
@@ -626,45 +501,27 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
     this.cartridgeState.showCartridgeDetails = false;
     this.cartridgeState.selectedCartridgeForView = null;
+    this.cdr.markForCheck();
   }
 
   onRemoveSelectedCartridge(cartridgeId: number): void {
-    this.cartridgeState.selectedEntries = this.cartridgeState.selectedEntries.filter(entry => entry.id !== cartridgeId);
-    const target = this.cartridgeState.allCartridges.find(c => c.id === cartridgeId);
-    if (target) {
-      target.selected = false;
-      target.added = false;
-      target.quantity = null;
-    }
-
-    // Persist selections to query params
-    this.persistSelections();
+    this.cartridgeManagementService.removeCartridge(cartridgeId, this.cartridgeState);
+    this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
+    this.cdr.markForCheck();
   }
 
   onAllowanceError(errorMessage: string): void {
     this.allowanceError = errorMessage;
+    this.cdr.markForCheck();
     // Clear error after 5 seconds
     setTimeout(() => {
       this.allowanceError = null;
+      this.cdr.markForCheck();
     }, 5000);
   }
 
   onClearFilters(): void {
-    // Reset based on current type or all? Usually clear resets filters for current view.
-    this.filterState.selectedAmmunitionType = '';
-    this.filterState.selectedBulletDiameter = '';
-    this.filterState.selectedLinked = '';
-    this.filterState.selectedNature = '';
-
-    this.filterState.selectedWeaponType = '';
-    this.filterState.selectedCaliber = '';
-
-    this.filterState.selectedExplosiveType = '';
-    this.filterState.selectedUNNumber = '';
-
-    this.filterState.selectedNSN = '';
-    this.filterState.searchTerm = '';
-
+    this.filterService.clearFilters(this.filterState, this.filterState.selectedItemType);
     this.filterCartridges();
   }
 
@@ -712,6 +569,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   onStepChange(step: number): void {
     this.currentStep = step;
     this.updateQueryParams(step);
+    this.cdr.markForCheck();
   }
 
   onFromReserveChange(value: string): void {
@@ -719,6 +577,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     if (prev !== value) {
       this.fromReserve = value;
       this.updateQueryParams(this.currentStep);
+      this.cdr.markForCheck();
       // Force reload because switching from/to reserve changes data source
       // Only if we are past step 1
       if (this.currentStep >= 1) {
@@ -731,7 +590,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.steps[0].completed = true;
     this.currentStep = 1;
     this.updateQueryParams(1);
-
+    this.cdr.markForCheck();
     this.loadCartridges();
   }
 
@@ -740,11 +599,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       this.steps[1].completed = true;
       this.currentStep = 2;
       this.updateQueryParams(2);
+      this.cdr.markForCheck();
     }
   }
 
   onNext(): void {
-    if (this.orderSubmissionState.submittingOrder) {
+    const navigationResult = this.navigationService.canProceedToNextStep(
+      this.currentStep,
+      this.canProceedFromSelection,
+      this.orderSubmissionState.submittingOrder
+    );
+
+    if (!navigationResult.canProceed) {
       return;
     }
 
@@ -754,21 +620,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Step 1: Cartridge selection
-    if (this.currentStep === 1 && !this.canProceedFromSelection) {
-      return;
-    }
-
     // Step 3: Review -> Submit
     if (this.currentStep === 3) {
       this.onSubmitOrder();
       return;
     }
 
-    if (this.currentStep < this.steps.length - 1) {
+    if (navigationResult.nextStep !== undefined && this.currentStep < this.steps.length - 1) {
       this.steps[this.currentStep].completed = true;
-      this.currentStep++;
+      this.currentStep = navigationResult.nextStep;
       this.updateQueryParams(this.currentStep);
+      this.cdr.markForCheck();
     }
   }
 
@@ -778,36 +640,37 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   onPrevious(): void {
-    if (this.currentStep > 0) {
-      this.currentStep--;
+    const previousStep = this.navigationService.canGoToPreviousStep(this.currentStep);
+    if (previousStep !== null) {
+      this.currentStep = previousStep;
       this.updateQueryParams(this.currentStep);
+      this.cdr.markForCheck();
     }
   }
 
   // Computed reserve details based on selected items
   get selectedItemsReserveDetails(): any[] {
-    if (this.cartridgeState.selectedEntries.length === 0) {
-      return this.reserveDetailsState.reserveDetailsByItem;
-    }
-
     const selectedItemIds = this.cartridgeState.selectedEntries.map(entry => entry.id);
-    return this.reserveDetailsState.reserveDetailsByItem.filter(item => selectedItemIds.includes(item.itemId));
+    return filterReserveDetailsBySelectedItems(
+      this.reserveDetailsState.reserveDetailsByItem,
+      selectedItemIds
+    );
   }
 
   get selectedTotalReserve(): number {
-    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.totalReserve || 0), 0);
+    return computeTotalReserve(this.selectedItemsReserveDetails);
   }
 
   get selectedAvailableReserve(): number {
-    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.availableReserve || 0), 0);
+    return computeAvailableReserve(this.selectedItemsReserveDetails);
   }
 
   get selectedOrderedQuantity(): number {
-    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0);
+    return computeOrderedQuantity(this.selectedItemsReserveDetails);
   }
 
   get selectedUsedQuantity(): number {
-    return this.selectedItemsReserveDetails.reduce((sum, item) => sum + (item.usedQuantity || 0), 0);
+    return computeUsedQuantity(this.selectedItemsReserveDetails);
   }
 
   onSubmitOrder(): void {
@@ -815,113 +678,87 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const submissionData = {
-      selectedEntries: this.cartridgeState.selectedEntries,
-      selectedRequestPurposeId: this.requestPurposeState.selectedRequestPurposeId,
-      usePurpose: this.usageFormData.usePurpose,
-      usageDateFrom: this.usageFormData.usageDateFrom,
-      usageTimeFrom: this.usageFormData.usageTimeFrom,
-      usageDateTo: this.usageFormData.usageDateTo,
-      usageTimeTo: this.usageFormData.usageTimeTo,
-      usageLocation: this.usageFormData.usageLocation,
-      orderPriority: this.usageFormData.orderPriority,
-      numberOfOfficers: this.usageFormData.numberOfOfficers,
-      numberOfOtherRanks: this.usageFormData.numberOfOtherRanks,
-      requesterComments: this.reviewFormData.requesterComments,
-      fromReserve: this.fromReserve,
-      departmentId: this.getDepartmentIdForRequest(),
-      defaultRequestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
-      defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
-      orderType: this.reviewFormData.orderType
-    };
+    const submissionData = this.submissionService.buildSubmissionData(
+      this.cartridgeState,
+      this.requestPurposeState,
+      this.usageFormData,
+      this.reviewFormData,
+      this.fromReserve,
+      this.userContextState.currentUserDepartmentId,
+      this.DEFAULT_DEPARTMENT_ID,
+      this.DEFAULT_REQUEST_PURPOSE_ID,
+      this.DEFAULT_REQUEST_TYPE_ID
+    );
 
     const validation = this.orderSubmissionService.validateOrder(submissionData);
     if (!validation.isValid) {
       this.orderSubmissionState.orderSubmitError = validation.error ?? 'Validation failed';
       this.currentStep = 3;
       this.updateQueryParams(3);
+      this.cdr.markForCheck();
       return;
     }
 
     // Show confirmation dialog
-    this.translate.get([
-      'newIssueRequest.confirmDialog.title',
-      'newIssueRequest.confirmDialog.message',
-      'common.yes',
-      'common.cancel'
-    ]).subscribe((translations: any) => {
-      this.confirmDialogTitle = translations['newIssueRequest.confirmDialog.title'] || 'Confirm Request';
-      this.confirmDialogMessage = translations['newIssueRequest.confirmDialog.message'] || 'Are you sure you want to submit this order request?';
-      this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
-      this.confirmDialogCancelText = translations['common.cancel'] || 'Cancel';
-      this.confirmDialogType = 'success';
+    this.submissionService.loadConfirmationDialogConfig().subscribe(config => {
+      this.confirmDialogConfig = config;
       this.showConfirmDialog = true;
+      this.cdr.markForCheck();
     });
   }
 
   onConfirmSubmit(): void {
     this.showConfirmDialog = false;
+    this.cdr.markForCheck();
     this.submitOrderRequest();
   }
 
   onCancelConfirm(): void {
     this.showConfirmDialog = false;
+    this.cdr.markForCheck();
   }
 
   private submitOrderRequest(): void {
-    const submissionData = {
-      selectedEntries: this.cartridgeState.selectedEntries,
-      selectedRequestPurposeId: this.requestPurposeState.selectedRequestPurposeId,
-      usePurpose: this.usageFormData.usePurpose,
-      usageDateFrom: this.usageFormData.usageDateFrom,
-      usageTimeFrom: this.usageFormData.usageTimeFrom,
-      usageDateTo: this.usageFormData.usageDateTo,
-      usageTimeTo: this.usageFormData.usageTimeTo,
-      usageLocation: this.usageFormData.usageLocation,
-      orderPriority: this.usageFormData.orderPriority,
-      numberOfOfficers: this.usageFormData.numberOfOfficers,
-      numberOfOtherRanks: this.usageFormData.numberOfOtherRanks,
-      requesterComments: this.reviewFormData.requesterComments,
-      fromReserve: this.fromReserve,
-      departmentId: this.getDepartmentIdForRequest(),
-      defaultRequestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
-      defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
-      orderType: this.reviewFormData.orderType
-    };
+    const submissionData = this.submissionService.buildSubmissionData(
+      this.cartridgeState,
+      this.requestPurposeState,
+      this.usageFormData,
+      this.reviewFormData,
+      this.fromReserve,
+      this.userContextState.currentUserDepartmentId,
+      this.DEFAULT_DEPARTMENT_ID,
+      this.DEFAULT_REQUEST_PURPOSE_ID,
+      this.DEFAULT_REQUEST_TYPE_ID
+    );
 
-    const payload = this.orderSubmissionService.buildOrderPayload(submissionData);
-    this.orderSubmissionState.submittingOrder = true;
-    this.orderSubmissionState.orderSubmitError = null;
-
-    // Pass files to submitOrder
-    const filesToUpload = this.usageFormFiles && this.usageFormFiles.length > 0
-      ? this.usageFormFiles
-      : undefined;
-
-    this.orderSubmissionService.submitOrder(payload, filesToUpload).subscribe({
-      next: (result) => {
-        this.orderSubmissionState.submittingOrder = false;
-        if (result.success) {
-          this.orderSubmissionState.createdOrderId = result.orderId ?? null;
-          this.orderSubmissionState.orderNumber = result.orderNumber ?? null;
-          this.orderSubmissionState.orderSubmitted = true;
-          this.steps[3].completed = true;
-          this.steps[4].completed = true;
-          this.currentStep = 4;
-          this.updateQueryParams(4);
-        } else {
-          this.orderSubmissionState.orderSubmitError = result.error || 'Failed to submit order. Please try again.';
+    this.submissionService
+      .submitOrder(submissionData, this.usageFormFiles, this.orderSubmissionState)
+      .subscribe({
+        next: (result) => {
+          this.orderSubmissionState.submittingOrder = false;
+          if (result.success) {
+            this.orderSubmissionState.createdOrderId = result.orderId ?? null;
+            this.orderSubmissionState.orderNumber = result.orderNumber ?? null;
+            this.orderSubmissionState.orderSubmitted = true;
+            this.steps[3].completed = true;
+            this.steps[4].completed = true;
+            this.currentStep = 4;
+            this.updateQueryParams(4);
+          } else {
+            this.orderSubmissionState.orderSubmitError = result.error || 'Failed to submit order. Please try again.';
+            this.currentStep = 3;
+            this.updateQueryParams(3);
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.orderSubmissionState.submittingOrder = false;
+          this.orderSubmissionState.orderSubmitError = error.error || 'Failed to submit order. Please try again.';
           this.currentStep = 3;
           this.updateQueryParams(3);
+          this.cdr.markForCheck();
         }
-      },
-      error: (error) => {
-        this.orderSubmissionState.submittingOrder = false;
-        this.orderSubmissionState.orderSubmitError = error.error || 'Failed to submit order. Please try again.';
-        this.currentStep = 3;
-        this.updateQueryParams(3);
-      }
-    });
+      });
   }
 
   onTrackOrder(): void {
@@ -930,78 +767,29 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard']);
   }
 
-  private applyAuthenticatedUserContext(user: AuthenticatedUser | null): void {
-    if (!user) {
-      return;
-    }
-
-    this.applyUserContext({
-      nameEn: user.nameEn,
-      nameAr: user.nameAr,
-      userName: user.userName,
-      departmentId: user.departmentId
-    });
-
-    // Update requester name if backend details not yet available (fallback)
-    if (!this.userContextState.currentUserDetails) {
-      this.syncRequesterNameFromUserDetails();
-    }
-  }
-
-  private applyBackendUserDetails(details: BackendUserDto | null): void {
-    // implementation implied from previous checks, just need to ensure methods exist
-    // I will leave existing helper methods that were not shown in truncated file but are usually there.
-    // To be safe I will implement them if they were part of the previous file, but I don't see them in Line 600+.
-    // I'll add them to be safe if they are missing from my write.
-    if (!details) return;
-    this.syncRequesterNameFromUserDetails();
-  }
-
-  private applyUserContext(context: { nameEn?: string; nameAr?: string; userName?: string; departmentId?: number }): void {
-    if (context.departmentId) {
-      this.userContextState.currentUserDepartmentId = context.departmentId;
-    }
-  }
-
   private syncRequesterNameFromUserDetails(): void {
-    this.reviewFormData.requesterName = resolveUserDisplayName(
-      this.userContextState.currentUserDetails?.nameEn,
-      this.userContextState.currentUserDetails?.nameAr,
-      this.userContextState.currentUserDetails?.userName
-    ) || '';
+    this.reviewFormData.requesterName = syncRequesterNameUtil(this.userContextState.currentUserDetails);
   }
 
   private requestPurposeOptionsMap: Map<number, { usePurpose: string }> = new Map();
 
   private rebuildRequestPurposeOptions(): void {
-    const currentLang = getCurrentLang(this.translate);
-    this.requestPurposeState.requestPurposeOptions = this.requestPurposeState.requestPurposesSource.map(p => ({
-      label: getLocalizedName(p, currentLang),
-      value: p.id
-    }));
-
-    // Also update map for auto-fill
-    this.requestPurposeState.requestPurposesSource.forEach(p => {
-      this.requestPurposeOptionsMap.set(p.id, { usePurpose: getLocalizedName(p, currentLang) });
-    });
+    this.requestPurposeOptionsMap = this.dataService.rebuildRequestPurposeOptions(this.requestPurposeState);
   }
 
   private rebuildOrderPriorities(): void {
-    this.filterOptions.orderPriorities = [
-      { label: 'newIssueRequest.highPriority', value: 'High' },
-      { label: 'newIssueRequest.mediumPriority', value: 'Medium' },
-      { label: 'newIssueRequest.lowPriority', value: 'Low' }
-    ];
+    this.filterOptions.orderPriorities = this.dataService.rebuildOrderPriorities();
   }
 
   private updateUsePurposeFromSelection(id: number | null): void {
-    if (id && this.requestPurposeOptionsMap.has(id)) {
-      this.usageFormData.usePurpose = this.requestPurposeOptionsMap.get(id)?.usePurpose || '';
-    }
+    this.dataService.updateUsePurposeFromSelection(id, this.requestPurposeOptionsMap, this.usageFormData);
   }
 
   private getDepartmentIdForRequest(): number {
-    return this.userContextState.currentUserDepartmentId || this.DEFAULT_DEPARTMENT_ID;
+    return getDepartmentIdForRequestUtil(
+      this.userContextState.currentUserDepartmentId,
+      this.DEFAULT_DEPARTMENT_ID
+    );
   }
 
   private resetForm(): void {

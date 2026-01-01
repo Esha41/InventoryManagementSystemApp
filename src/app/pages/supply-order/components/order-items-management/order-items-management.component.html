@@ -1,0 +1,46 @@
+<div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
+  <div class="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border)]">
+    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+      {{ 'supplyOrder.orderItemsManagement' | translate }}
+    </h2>
+    <button *appHasPermission="'Order.Edit'" (click)="onAddItemClick()"
+      class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
+      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+      {{ 'supplyOrder.addItem' | translate }}
+    </button>
+  </div>
+
+  <!-- Item Management Table -->
+  <div class="overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
+    <table class="min-w-full text-sm">
+      <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
+        <tr>
+          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+          <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody class="bg-[var(--color-background)]">
+        <tr *ngFor="let item of orderItems" class="border-t border-[var(--color-border)]">
+          <td class="px-4 py-2 text-[var(--color-text)]">{{ item.itemName }}</td>
+          <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
+          <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
+          <td class="px-4 py-2">
+            <button *appHasPermission="'Order.Edit'" type="button"
+              (click)="onEditItemClick(item, $event)"
+              class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 mr-3">
+              {{ 'common.edit' | translate }}
+            </button>
+            <button *appHasPermission="'Order.Delete'" type="button"
+              (click)="onRemoveItemClick(item, $event)"
+              class="text-sm text-[var(--color-error)] hover:text-[var(--color-error)]/80">
+              {{ 'common.remove' | translate }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

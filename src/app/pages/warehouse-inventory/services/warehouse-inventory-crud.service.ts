@@ -1,0 +1,209 @@
+import { Injectable } from '@angular/core';
+import { Observable, forkJoin, timer, switchMap, of } from 'rxjs';
+import { InventoryService } from '@services/inventory.service';
+import { AssetService } from '@services/asset.service';
+import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto } from '@models/inventory.model';
+import { AssetDto } from '@models/asset.model';
+import { ToastService } from '@services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
+
+export interface EditInventoryDetailResult {
+  success: boolean;
+  updatedInventory?: InventoryDto;
+  error?: string;
+}
+
+export interface DeleteInventoryDetailResult {
+  success: boolean;
+  error?: string;
+}
+
+export interface EditAssetResult {
+  success: boolean;
+  updatedAsset?: AssetDto;
+  error?: string;
+}
+
+export interface DeleteAssetResult {
+  success: boolean;
+  error?: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class WarehouseInventoryCrudService {
+
+  constructor(
+    private inventoryService: InventoryService,
+    private assetService: AssetService,
+    private toastService: ToastService,
+    private translateService: TranslateService
+  ) {}
+
+  /**
+   * Edit inventory detail
+   * Returns an observable that emits the result after updating and reloading data
+   */
+  editInventoryDetail(
+    detail: InventoryDetailDto,
+    inventory: InventoryDto,
+    updateDetailDto: UpdateInventoryDetailDto
+  ): Observable<EditInventoryDetailResult> {
+    // Update the inventory with modified detail
+    const updateInventoryDto: UpdateInventoryDto = {
+      depoId: inventory.depoId,
+      invoiceNumber: inventory.invoiceNumber,
+      invoiceDate: inventory.invoiceDate,
+      recievedDate: inventory.recievedDate,
+      notes: inventory.notes,
+      inventoryDetails: (inventory.inventoryDetails || []).map((d: InventoryDetailDto) =>
+        d.id === detail.id ? updateDetailDto : {
+          id: d.id,
+          itemId: d.itemId,
+          lot: d.lot,
+          supplierId: d.supplierId,
+          manufacturerId: d.manufacturerId,
+          countryId: d.countryId,
+          originalQuantity: d.originalQuantity,
+          batchNo: d.batchNo,
+          expiryDate: d.expiryDate,
+          readyForIssue: d.readyForIssue ?? true
+        }
+      )
+    };
+
+    const detailIdToUpdate = detail.id;
+
+    return this.inventoryService.update(inventory.id, updateInventoryDto)
+      .pipe(
+        switchMap((updatedInventory: InventoryDto) => {
+          // Show success message
+          this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
+          });
+
+          // Wait a bit to ensure backend transaction is committed, then reload fresh data
+          return timer(500).pipe(
+            switchMap(() => {
+              return this.inventoryService.getById(inventory.id);
+            })
+          );
+        })
+      )
+      .pipe(
+        switchMap((reloadedInventory: InventoryDto | null) => {
+          if (reloadedInventory) {
+            return of({
+              success: true,
+              updatedInventory: reloadedInventory
+            } as EditInventoryDetailResult);
+          }
+          return of({
+            success: false,
+            error: 'Failed to reload inventory'
+          } as EditInventoryDetailResult);
+        })
+      );
+  }
+
+  /**
+   * Delete inventory detail
+   * Handles both deleting a single detail and deleting the entire inventory if it's the last item
+   */
+  deleteInventoryDetail(detail: InventoryDetailDto): Observable<DeleteInventoryDetailResult> {
+    return this.inventoryService.getById(detail.inventoryId)
+      .pipe(
+        switchMap((inventory) => {
+          if (!inventory) {
+            this.translateService.get(['toast.inventoryNotFound', 'toast.error']).subscribe(translations => {
+              this.toastService.error(translations['toast.inventoryNotFound'], translations['toast.error']);
+            });
+            return of({
+              success: false,
+              error: 'Inventory not found'
+            } as DeleteInventoryDetailResult);
+          }
+
+          // Filter out the detail to delete
+          const remainingDetails = inventory.inventoryDetails?.filter(d => d.id !== detail.id) || [];
+
+          if (remainingDetails.length === 0) {
+            // If no details left, delete the entire inventory
+            return this.inventoryService.delete(inventory.id)
+              .pipe(
+                switchMap(() => {
+                  this.translateService.get(['toast.inventoryDeleted', 'toast.success']).subscribe(translations => {
+                    this.toastService.success(translations['toast.inventoryDeleted'], translations['toast.success']);
+                  });
+                  return of({
+                    success: true
+                  } as DeleteInventoryDetailResult);
+                })
+              );
+          } else {
+            // Update inventory without this detail
+            const updateDto: UpdateInventoryDto = {
+              depoId: inventory.depoId,
+              invoiceNumber: inventory.invoiceNumber || undefined,
+              invoiceDate: inventory.invoiceDate,
+              recievedDate: inventory.recievedDate,
+              notes: inventory.notes,
+              inventoryDetails: remainingDetails.map(d => ({
+                id: d.id,
+                itemId: d.itemId,
+                lot: d.lot,
+                supplierId: d.supplierId,
+                manufacturerId: d.manufacturerId,
+                countryId: d.countryId,
+                originalQuantity: d.originalQuantity,
+                batchNo: d.batchNo,
+                expiryDate: d.expiryDate,
+                readyForIssue: d.readyForIssue ?? true
+              }))
+            };
+
+            return this.inventoryService.update(inventory.id, updateDto)
+              .pipe(
+                switchMap(() => {
+                  this.translateService.get(['toast.inventoryItemDeleted', 'toast.success']).subscribe(translations => {
+                    this.toastService.success(translations['toast.inventoryItemDeleted'], translations['toast.success']);
+                  });
+                  return of({
+                    success: true
+                  } as DeleteInventoryDetailResult);
+                })
+              );
+          }
+        })
+      );
+  }
+
+  /**
+   * Load asset for editing
+   */
+  loadAssetForEdit(assetId: number): Observable<AssetDto | null> {
+    return this.assetService.getById<AssetDto>(assetId);
+  }
+
+  /**
+   * Delete asset
+   */
+  deleteAsset(assetId: number): Observable<DeleteAssetResult> {
+    return this.assetService.delete(assetId)
+      .pipe(
+        switchMap(() => {
+          this.translateService.get(['toast.success', 'warehouseInventory.assetDeleted']).subscribe(translations => {
+            this.toastService.success(
+              translations['warehouseInventory.assetDeleted'] || 'Asset deleted successfully',
+              translations['toast.success']
+            );
+          });
+          return of({
+            success: true
+          } as DeleteAssetResult);
+        })
+      );
+  }
+}
+

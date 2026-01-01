@@ -7,535 +7,56 @@
     <!-- Content -->
     <div *ngIf="!loading && orderData && supplyData">
       <!-- Header with Back Button -->
-      <div class="mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <button (click)="goBack()"
-            class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border-2 border-[var(--color-border)]">
-            <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-          </button>
-          <div>
-            <h1 class="text-2xl font-bold text-[var(--color-text)]">
-              {{ 'supplyOrder.title' | translate }} - {{ orderData.requestNo || orderData.orderNo }}
-            </h1>
-            <p class="text-sm text-[var(--color-text-muted)] mt-1">
-              {{ 'supplyOrder.supplyId' | translate }}: #{{ supplyData.id }}
-            </p>
-          </div>
-        </div>
-      </div>
+      <app-supply-order-header
+        [orderData]="orderData"
+        [supplyData]="supplyData"
+        (backClick)="goBack()">
+      </app-supply-order-header>
 
       <!-- Main Content -->
       <div class="space-y-6">
         <!-- Request Information -->
-        <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
-          <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 pb-2 border-b border-[var(--color-border)]">
-            {{ 'supplyOrder.requestInformation' | translate }}
-          </h2>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.orderNo' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo
-                }}</p>
-            </div>
-
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.departmentName' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveDepartmentName() }}</p>
-            </div>
-
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.requesterName' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveRequesterName() }}</p>
-            </div>
-
-            <div>
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.priority' | translate }}
-              </label>
-              <p class="text-sm mt-1 font-semibold" [ngClass]="getPriorityClass(orderData.priority)">
-                {{ getPriorityText(orderData.priority) | translate }}
-              </p>
-            </div>
-
-            <div *ngIf="orderData.reason">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.reason' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.reason }}</p>
-            </div>
-
-            <div *ngIf="orderData.usagePurpose || orderData.requestPurposeNameEn || orderData.requestPurposeNameAr">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.usagePurpose' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
-            </div>
-
-            <div *ngIf="orderData.usageLocation">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.usageLocation' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.usageLocation }}</p>
-            </div>
-
-            <div *ngIf="orderData.usageDateFrom">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                {{ 'supplyOrder.usageDate' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ formatDate(orderData.usageDateFrom) }}
-                <span *ngIf="orderData.usageTimeFrom" class="ml-2">{{ formatTimeToMilitary(orderData.usageTimeFrom) }}</span>
-                <span *ngIf="orderData.usageDateTo"> - {{ formatDate(orderData.usageDateTo) }}</span>
-                <span *ngIf="orderData.usageTimeTo" class="ml-2">{{ formatTimeToMilitary(orderData.usageTimeTo) }}</span>
-              </p>
-            </div>
-          </div>
-        </div>
+        <app-supply-order-info [orderData]="orderData"></app-supply-order-info>
 
         <!-- Order Items Management Table -->
-        <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
-          <div class="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border)]">
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'supplyOrder.orderItemsManagement' | translate }}
-            </h2>
-            <button *appHasPermission="'Order.Edit'" (click)="openAddOrderItemModal()"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
-              <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-              {{ 'supplyOrder.addItem' | translate }}
-            </button>
-          </div>
-
-          <!-- Item Management Table -->
-          <div class="overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
-            <table class="min-w-full text-sm">
-              <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
-                <tr>
-                  <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-                  <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
-                  <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-                  <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody class="bg-[var(--color-background)]">
-                <tr *ngFor="let item of orderItems" class="border-t border-[var(--color-border)]">
-                  <td class="px-4 py-2 text-[var(--color-text)]">{{ item.itemName }}</td>
-                  <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
-                  <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
-                  <td class="px-4 py-2">
-                    <button *appHasPermission="'Order.Edit'" type="button"
-                      (click)="openEditOrderItemModal(item); $event.stopPropagation()"
-                      class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 mr-3">
-                      {{ 'common.edit' | translate }}
-                    </button>
-                    <button *appHasPermission="'Order.Delete'" type="button"
-                      (click)="openRemoveOrderItemModal(item); $event.stopPropagation()"
-                      class="text-sm text-[var(--color-error)] hover:text-[var(--color-error)]/80">
-                      {{ 'common.remove' | translate }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <app-order-items-management
+          [orderItems]="orderItems"
+          (addItemClick)="openAddOrderItemModal()"
+          (editItemClick)="openEditOrderItemModal($event)"
+          (removeItemClick)="openRemoveOrderItemModal($event)">
+        </app-order-items-management>
 
         <!-- Approval Workflow -->
-        <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)]">
-          <button (click)="isApprovalWorkflowExpanded = !isApprovalWorkflowExpanded"
-            class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'supplyOrder.approvalWorkflow' | translate }}
-            </h2>
-            <lucide-angular [img]="isApprovalWorkflowExpanded ? ChevronUp : ChevronDown"
-              class="h-5 w-5 text-[var(--color-text-muted)]">
-            </lucide-angular>
-          </button>
-
-          <div *ngIf="isApprovalWorkflowExpanded" class="px-6 pb-6">
-            <div *ngIf="displayApprovalHistory && displayApprovalHistory.length > 0"
-              class="relative approval-workflow-container">
-              <div *ngFor="let approval of displayApprovalHistory; let i = index; let isLast = last" class="relative">
-                <!-- Connection Line - connects from bottom of current circle to top of next circle -->
-                <div *ngIf="!isLast" class="approval-connector-line" style="top: 3rem; height: calc(100% - 1.5rem);">
-                </div>
-
-                <div class="flex gap-4 relative z-10 mb-6">
-                  <!-- Status Icon -->
-                  <div class="flex-shrink-0">
-                    <div
-                      class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-md bg-[var(--color-background)] approval-circle"
-                      [ngClass]="{
-                      'approved': approval.status === 'Approved',
-                      'pending': approval.status === 'Pending',
-                      'rejected': approval.status === 'Rejected',
-                      'border-[var(--color-success)]/50': approval.status === 'Approved',
-                      'border-[var(--color-warning)]/50': approval.status === 'Pending',
-                      'border-[var(--color-error)]/50': approval.status === 'Rejected',
-                      'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
-                    }">
-                      <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
-                      </lucide-angular>
-                    </div>
-                  </div>
-
-                  <!-- Approval Details -->
-                  <div class="flex-1 pb-6">
-                    <div class="bg-[var(--color-background-muted)] rounded-lg p-4 border border-[var(--color-border)]">
-                      <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                          <p class="font-semibold text-[var(--color-text)] mb-1">{{ getApproverName(approval) ||
-                            ('workflowApprovalDetail.unknownApprover' | translate) }}</p>
-                          <p class="text-xs text-[var(--color-text-muted)]" *ngIf="approval.applicationRoleName">
-                            {{ approval.applicationRoleName }}
-                          </p>
-                        </div>
-                        <div class="text-right ml-4">
-                          <span
-                            class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
-                            [ngClass]="getApprovalStatusClass(approval.status)">
-                            {{ ('common.statuses.' + approval.status) | translate }}
-                          </span>
-                          <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
-                            <span *ngIf="approval.status === 'Approved'">
-                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{ approval.approvedDateTime }}
-                            </span>
-                            <span *ngIf="approval.status === 'Rejected'">
-                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime }}
-                            </span>
-                            <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
-                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime }}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                      <p *ngIf="approval.comments"
-                        class="text-sm text-[var(--color-text)] mt-3 pt-3 border-t border-[var(--color-border)] italic">
-                        "{{ approval.comments }}"
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="!displayApprovalHistory || displayApprovalHistory.length === 0" class="text-center py-8">
-              <p class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.noApprovalWorkflowData' |
-                translate }}</p>
-            </div>
-          </div>
-        </div>
+        <app-approval-workflow
+          [approvalHistory]="displayApprovalHistory"
+          [isExpanded]="isApprovalWorkflowExpanded">
+        </app-approval-workflow>
 
         <!-- Order Items (Pre-filled from Supply Details) -->
-        <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
-          <div class="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border)]">
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'supplyOrder.orderItems' | translate }}
-            </h2>
-            <button *appHasPermission="'Order.Edit'" (click)="openAddLotModal()"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
-              <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-              {{ 'supplyOrder.addLot' | translate }}
-            </button>
-          </div>
-
-          <div class="space-y-3">
-            <div *ngFor="let item of supplyItems"
-              class="border-2 border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-brand)]/50 transition-all bg-[var(--color-background-active)]">
-
-              <div class="flex items-start gap-4">
-                <!-- Item Icon -->
-                <div
-                  class="flex-shrink-0 w-12 h-12 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
-                  <lucide-angular [img]="Package" class="h-6 w-6 text-[var(--color-info)]"></lucide-angular>
-                </div>
-
-                <!-- Item Details -->
-                <div class="flex-1">
-                  <div class="flex items-start justify-between mb-2">
-                    <div class="flex-1">
-                      <h3 class="font-semibold text-[var(--color-text)]">{{ item.itemName }}</h3>
-                      <p class="text-xs text-[var(--color-text-muted)] mt-1">LOT-{{ item.lot }}</p>
-                    </div>
-
-                    <!-- Editable Quantity or Display -->
-                    <div class="text-right ml-4" *ngIf="!item.isEditing">
-                      <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                        {{ 'supplyOrder.quantity' | translate }}
-                      </p>
-                      <p class="text-lg font-bold text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</p>
-                    </div>
-
-                    <div class="ml-4" *ngIf="item.isEditing">
-                      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase block mb-1">
-                        {{ 'supplyOrder.quantity' | translate }}
-                        <span class="text-xs font-normal text-[var(--color-text-muted)] normal-case">
-                          (Max: {{ formatNumber(getMaxAllowedQuantity(item)) }})
-                        </span>
-                      </label>
-                      <input type="number" [(ngModel)]="item.quantity" [min]="1" [max]="getMaxAllowedQuantity(item)"
-                        (blur)="item.quantityError = undefined"
-                        class="w-32 px-3 py-2 border-2 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 transition-colors"
-                        [ngClass]="{
-                        'border-[var(--color-error)] focus:ring-[var(--color-error)]': item.quantityError,
-                        'border-[var(--color-border)] focus:ring-[var(--color-brand)]': !item.quantityError
-                      }" />
-                      <p *ngIf="item.quantityError" class="mt-1 text-xs text-[var(--color-error)] max-w-xs">
-                        {{ item.quantityError }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Notes (Editable) -->
-                  <div *ngIf="item.isEditing" class="mb-3">
-                    <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase block mb-1">
-                      {{ 'supplyOrder.notes' | translate }}
-                    </label>
-                    <input type="text" [(ngModel)]="item.notes"
-                      [placeholder]="'supplyOrder.notesPlaceholder' | translate"
-                      class="w-full px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
-                  </div>
-
-                  <!-- Fulfillment Status -->
-                  <div class="flex items-center gap-2 mt-3 flex-wrap">
-                    <span class="text-xs text-[var(--color-text-muted)]">
-                      {{ 'supplyOrder.requested' | translate }}: {{ formatNumber(item.requestedQuantity) }}
-                    </span>
-                    <span class="text-xs text-[var(--color-text-muted)]/50">|</span>
-                    <span class="text-xs text-[var(--color-text-muted)]">
-                      {{ 'supplyOrder.totalSupplied' | translate }}: {{ formatNumber(item.totalSuppliedQuantity) }}
-                    </span>
-                    <span *ngIf="item.isFullyFulfilled"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--color-success)]/20 text-[var(--color-success)] border border-[var(--color-success)]/30"
-                      [class.flex-row-reverse]="isRTL">
-                      <lucide-angular [img]="CheckCircle" class="h-3 w-3 flex-shrink-0"></lucide-angular>
-                      <span>{{ 'supplyOrder.fullyFulfilled' | translate }}</span>
-                    </span>
-                    <span *ngIf="isPartiallyFulfilled(item)"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--color-warning)]/20 text-[var(--color-warning)] border border-[var(--color-warning)]/30"
-                      [class.flex-row-reverse]="isRTL">
-                      <lucide-angular [img]="Clock" class="h-3 w-3 flex-shrink-0"></lucide-angular>
-                      <span>{{ 'supplyOrder.partiallyFulfilled' | translate }}</span>
-                    </span>
-                  </div>
-
-                  <!-- Action Buttons -->
-                  <div class="flex gap-2 mt-3">
-                    <div *ngIf="!item.isEditing" class="flex gap-2">
-                      <button *appHasPermission="'Order.Edit'" (click)="onEditItem(item)"
-                        class="px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg hover:bg-[var(--color-accent)]/20 transition-colors">
-                        {{ 'common.edit' | translate }}
-                      </button>
-                      <button *appHasPermission="'Order.Delete'" (click)="onDeleteItem(item)" [disabled]="deletingItem"
-                        class="px-3 py-1.5 text-xs font-medium text-[var(--color-error)] bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 rounded-lg hover:bg-[var(--color-error)]/20 transition-colors disabled:opacity-50">
-                        {{ 'common.delete' | translate }}
-                      </button>
-                    </div>
-
-                    <div *ngIf="item.isEditing" class="flex gap-2">
-                      <button (click)="onUpdateItem(item)" [disabled]="updatingItem"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-[var(--color-success)] rounded-lg hover:bg-[var(--color-success)]/90 transition-colors disabled:opacity-50">
-                        {{ 'common.save' | translate }}
-                      </button>
-                      <button (click)="onCancelEdit(item)"
-                        class="px-3 py-1.5 text-xs font-medium text-[var(--color-text)] bg-[var(--color-background-hover)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-active)] transition-colors">
-                        {{ 'common.cancel' | translate }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 p-4 bg-[var(--color-info)]/10 rounded-lg border-2 border-[var(--color-info)]/30">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-semibold text-[var(--color-info)]">{{ 'supplyOrder.totalItems' | translate
-                }}:</span>
-              <span class="text-lg font-bold text-[var(--color-info)]">{{ formatNumber(getTotalQuantity()) }}</span>
-            </div>
-          </div>
-        </div>
+        <app-supply-items-list
+          [supplyItems]="supplyItems"
+          [supplyId]="supplyId"
+          [updatingItem]="updatingItem"
+          [deletingItem]="deletingItem"
+          (addLotClick)="openAddLotModal()"
+          (editItem)="onEditItem($event)"
+          (updateItem)="onUpdateItem($event)"
+          (cancelEdit)="onCancelEdit($event)"
+          (deleteItem)="onDeleteItem($event)">
+        </app-supply-items-list>
 
       </div>
     </div>
   </div>
 
   <!-- Add Lot Modal -->
-  <app-modal [isOpen]="isAddLotModalOpen" [title]="'supplyOrder.addLot' | translate" size="lg"
-    (closed)="closeAddLotModal()">
-
-    <form [formGroup]="addLotForm" class="space-y-4">
-      <!-- Item Selection Dropdown -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.itemId' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
-        <app-dropdown class="w-full" formControlName="itemId" (selectionChange)="onItemSelected($event)"
-          [options]="orderItems" optionValue="id" [optionLabelFn]="itemOptionLabel" [placeholderSelectable]="false"
-          [placeholderValue]="null" [error]="!!(addLotForm.get('itemId')?.invalid && addLotForm.get('itemId')?.touched)"
-          placeholder="{{ 'supplyOrder.selectItem' | translate }}">
-        </app-dropdown>
-        <p *ngIf="addLotForm.get('itemId')?.invalid && addLotForm.get('itemId')?.touched"
-          class="mt-1 text-sm text-[var(--color-error)]">
-          {{ 'supplyOrder.itemIdRequired' | translate }}
-        </p>
-      </div>
-
-      <!-- Item Info Header (when item is selected) -->
-      <div *ngIf="selectedItemForLot"
-        class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
-            <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-info)]"></lucide-angular>
-          </div>
-          <div>
-            <h3 class="font-semibold text-[var(--color-text)]">{{ getSelectedItemDisplayName() }}</h3>
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyOrder.requestedQuantity' | translate }}: {{
-              formatNumber(selectedItemForLot.quantity) }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lot Loading Options (only when item is selected) -->
-      <div *ngIf="selectedItemForLot" class="space-y-3">
-        <!-- Two Buttons -->
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" (click)="onShowAvailableLots()" [disabled]="loadingAllLots"
-            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/30 hover:bg-[var(--color-success)]/20">
-            <span *ngIf="!loadingAllLots">{{ 'supplyOrder.showAvailableLots' | translate }}</span>
-            <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
-          </button>
-
-          <button type="button" (click)="onAddLotManually()" [disabled]="loadingAllLots || loadingManualLot"
-            class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            [ngClass]="{
-            'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border-[var(--color-accent)]/50': showManualLotEntry,
-            'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)]/20': !showManualLotEntry
-          }">
-            {{ 'supplyOrder.addLotManually' | translate }}
-          </button>
-        </div>
-
-        <!-- Manual Lot Entry (Only shows when button is clicked) -->
-        <div *ngIf="showManualLotEntry"
-          class="flex items-center gap-2 p-3 bg-[var(--color-accent)]/10 rounded-lg border-2 border-[var(--color-accent)]/30">
-          <div class="flex-1">
-            <label class="text-xs font-semibold text-[var(--color-accent)] mb-1 block">
-              {{ 'supplyOrder.enterLotNumber' | translate }}
-            </label>
-            <input type="text" [(ngModel)]="manualLotNumber" [ngModelOptions]="{standalone: true}"
-              [disabled]="loadingManualLot" (keyup.enter)="onGetManualLotDetails()"
-              placeholder="{{ 'supplyOrder.lotNumberPlaceholder' | translate }}"
-              class="w-full px-3 py-2 border-2 border-[var(--color-accent)]/30 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] disabled:opacity-50" />
-          </div>
-          <button type="button" (click)="onGetManualLotDetails()"
-            [disabled]="!manualLotNumber || !manualLotNumber.trim() || loadingManualLot"
-            class="mt-6 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
-            <span *ngIf="!loadingManualLot">{{ 'supplyOrder.getDetails' | translate }}</span>
-            <span *ngIf="loadingManualLot">{{ 'common.loading' | translate }}...</span>
-          </button>
-        </div>
-
-        <!-- Info Message -->
-        <div
-          class="flex items-center gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
-          <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
-          <span>{{ 'supplyOrder.lotSelectionInfo' | translate }}</span>
-        </div>
-
-        <!-- Lots List -->
-        <div *ngIf="availableLots.length > 0" class="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-          <div *ngFor="let lot of availableLots" class="border-2 rounded-lg p-4 transition-all cursor-pointer"
-            [ngClass]="{
-              'border-[var(--color-error)]/50 bg-[var(--color-error)]/10': lot.condition === 'Near Expiry',
-              'border-[var(--color-brand)]/50 bg-[var(--color-brand)]/10': selectedLotNumber === lot.lotNumber,
-              'border-[var(--color-border)] bg-[var(--color-background-active)]': lot.condition !== 'Near Expiry' && selectedLotNumber !== lot.lotNumber
-            }" (click)="onSelectLot(lot.lotNumber)">
-
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="font-semibold text-[var(--color-text)]">LOT-{{ lot.lotNumber }}</span>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border-2" [ngClass]="{
-                        'bg-[var(--color-error)]/20 text-[var(--color-error)] border-[var(--color-error)]/30': lot.condition === 'Near Expiry',
-                        'bg-[var(--color-warning)]/20 text-[var(--color-warning)] border-[var(--color-warning)]/30': lot.condition === 'Fair',
-                        'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30': lot.condition === 'Good'
-                      }">
-                    {{ lot.condition }}
-                  </span>
-                </div>
-                <p class="text-sm text-[var(--color-text-muted)]">{{ lot.location }}</p>
-                <p *ngIf="lot.expiryDate" class="text-xs text-[var(--color-text-muted)] mt-1">
-                  {{ 'supplyOrder.expiryDate' | translate }}: {{ formatDate(lot.expiryDate) }}
-                </p>
-              </div>
-
-              <div class="text-right">
-                <p class="text-sm font-semibold text-[var(--color-text)]">
-                  {{ formatNumber(lot.quantity) }} {{ 'supplyOrder.available' | translate }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p *ngIf="selectedItemForLot && availableLots.length === 0 && !loadingAllLots && !showManualLotEntry"
-          class="text-sm text-[var(--color-text-muted)] text-center py-4">
-          {{ 'supplyOrder.selectLotOption' | translate }}
-        </p>
-      </div>
-
-      <!-- Quantity -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
-        <input type="number" formControlName="quantity" min="1"
-          placeholder="{{ 'supplyOrder.quantityPlaceholder' | translate }}"
-          class="w-full px-4 py-2.5 border-2 rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
-          [ngClass]="{
-            'border-[var(--color-error)]': addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched,
-            'border-[var(--color-border)]': !(addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched)
-          }" />
-        <p *ngIf="addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched"
-          class="mt-1 text-sm text-[var(--color-error)]">
-          {{ 'supplyOrder.quantityRequired' | translate }}
-        </p>
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.notes' | translate }}
-        </label>
-        <textarea formControlName="notes" rows="3" placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"
-          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"></textarea>
-      </div>
-    </form>
-
-    <div modal-footer class="flex gap-3">
-      <button (click)="closeAddLotModal()"
-        class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button (click)="onAddLot()"
-        [disabled]="addLotForm.invalid || loadingLotDetails || !selectedItemForLot || !selectedLotNumber"
-        class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-        <span *ngIf="!loadingLotDetails">{{ 'common.add' | translate }}</span>
-        <span *ngIf="loadingLotDetails">{{ 'common.loading' | translate }}...</span>
-      </button>
-      <p *ngIf="(!selectedItemForLot || !selectedLotNumber) && !loadingLotDetails"
-        class="text-xs text-[var(--color-text-muted)] text-center mt-2">
-        {{ 'supplyOrder.selectItemAndLot' | translate }}
-      </p>
-    </div>
-  </app-modal>
+  <app-add-lot-modal
+    [isOpen]="isAddLotModalOpen"
+    [supplyId]="supplyId"
+    [orderItems]="orderItems"
+    (closed)="closeAddLotModal()"
+    (lotAdded)="onLotAdded()">
+  </app-add-lot-modal>
 
   <!-- Confirmation Modal -->
   <app-modal [isOpen]="isConfirmModalOpen" [title]="confirmModalTitle" size="sm" (closed)="onCancelConfirmation()">
@@ -562,129 +83,22 @@
   </app-modal>
 
   <!-- Add Order Item Modal -->
-  <app-modal [isOpen]="isAddItemModalOpen" [title]="'supplyOrder.addItem' | translate" size="md"
-    (closed)="closeAddOrderItemModal()">
-
-    <form [formGroup]="addItemForm" class="space-y-4">
-      <!-- Item Selection -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.selectItem' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
-        <app-dropdown class="w-full" formControlName="itemId" [options]="availableItems" optionValue="id"
-          [optionLabelFn]="itemManagementOptionLabel" [disabled]="loadingItems" [placeholderSelectable]="false"
-          [placeholderValue]="null"
-          [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
-          placeholder="{{ 'supplyOrder.selectItemPlaceholder' | translate }}">
-        </app-dropdown>
-        <p *ngIf="addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched"
-          class="mt-1 text-sm text-[var(--color-error)]">
-          {{ 'supplyOrder.itemRequired' | translate }}
-        </p>
-      </div>
-
-      <!-- Quantity -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
-        <input type="number" formControlName="quantity" min="1"
-          class="w-full px-3 py-2 border-2 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          [ngClass]="{
-            'border-[var(--color-error)]': addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched,
-            'border-[var(--color-border)]': !(addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched)
-          }" />
-        <p *ngIf="addItemForm.get('quantity')?.invalid && addItemForm.get('quantity')?.touched"
-          class="mt-1 text-sm text-[var(--color-error)]">
-          {{ 'supplyOrder.quantityRequired' | translate }}
-        </p>
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.notes' | translate }}
-        </label>
-        <textarea formControlName="notes" rows="3"
-          class="w-full px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"></textarea>
-      </div>
-    </form>
-
-    <div modal-footer class="flex gap-3">
-      <button (click)="closeAddOrderItemModal()"
-        class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button (click)="onSaveAddOrderItem()" [disabled]="addItemForm.invalid || savingItem || loadingItems"
-        class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        [ngClass]="{
-        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingItems,
-        'bg-[var(--color-text-muted)]': addItemForm.invalid || savingItem || loadingItems
-      }">
-        <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
-        <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
-      </button>
-    </div>
-  </app-modal>
+  <app-add-order-item-modal
+    [isOpen]="isAddItemModalOpen"
+    [orderId]="orderId"
+    [orderItems]="orderItems"
+    (closed)="closeAddOrderItemModal()"
+    (itemAdded)="onOrderItemAdded()">
+  </app-add-order-item-modal>
 
   <!-- Edit Order Item Quantity Modal -->
-  <app-modal [isOpen]="isEditItemModalOpen" [title]="'supplyOrder.editItemQuantity' | translate" size="md"
-    (closed)="closeEditOrderItemModal()">
-
-    <div *ngIf="selectedItemForEdit"
-      class="mb-4 p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
-      <p class="text-sm font-semibold text-[var(--color-text)] mb-1">{{ 'supplyOrder.item' | translate }}:</p>
-      <p class="text-base text-[var(--color-text)]">{{ selectedItemForEdit.itemName }}</p>
-      <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'supplyOrder.productId' | translate }}: {{
-        getItemProductId(selectedItemForEdit) }}</p>
-    </div>
-
-    <form [formGroup]="editItemForm" class="space-y-4">
-      <!-- Quantity -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
-        <input type="number" formControlName="quantity" min="1"
-          class="w-full px-3 py-2 border-2 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          [ngClass]="{
-            'border-[var(--color-error)]': editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched,
-            'border-[var(--color-border)]': !(editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched)
-          }" />
-        <p *ngIf="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched"
-          class="mt-1 text-sm text-[var(--color-error)]">
-          {{ 'supplyOrder.quantityRequired' | translate }}
-        </p>
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-          {{ 'supplyOrder.notes' | translate }}
-        </label>
-        <textarea formControlName="notes" rows="3"
-          class="w-full px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-          placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"></textarea>
-      </div>
-    </form>
-
-    <div modal-footer class="flex gap-3">
-      <button (click)="closeEditOrderItemModal()"
-        class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
-        {{ 'common.cancel' | translate }}
-      </button>
-      <button (click)="onSaveEditOrderItem()" [disabled]="editItemForm.invalid || savingItem"
-        class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        [ngClass]="{
-        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
-        'bg-[var(--color-text-muted)]': editItemForm.invalid || savingItem
-      }">
-        <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
-        <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
-      </button>
-    </div>
-  </app-modal>
+  <app-edit-order-item-modal
+    [isOpen]="isEditItemModalOpen"
+    [orderId]="orderId"
+    [selectedItem]="selectedItemForEdit"
+    (closed)="closeEditOrderItemModal()"
+    (itemUpdated)="onOrderItemUpdated()">
+  </app-edit-order-item-modal>
 
   <!-- Remove Order Item Confirmation Modal -->
   <app-confirm-dialog [isOpen]="isRemoveItemModalOpen" [title]="'supplyOrder.removeItem' | translate"

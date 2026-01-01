@@ -9,112 +9,97 @@
     <app-stepper [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
     </app-stepper>
 
-    <div *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
-      class="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 text-[var(--color-error)] text-sm rounded-lg p-4">
-      {{ orderSubmissionState.orderSubmitError }}
-    </div>
+    <app-error-banner
+      *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
+      [error]="orderSubmissionState.orderSubmitError">
+    </app-error-banner>
 
     <!-- Step 0: Allowance Selection -->
-    <div *ngIf="currentStep === 0" class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
-      <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectOrderSource' | translate }}
-      </h2>
-
-      <div class="mb-8">
-        <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' |
-          translate }}</p>
-
-        <div class="flex flex-col space-y-4">
-          <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-            [ngClass]="fromReserve === 'Yes' ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5' : 'border-[var(--color-border)] hover:border-[var(--color-brand)]/50'">
-            <input type="radio" name="fromReserve" value="Yes" [(ngModel)]="fromReserve"
-              (ngModelChange)="onFromReserveChange($event)"
-              class="w-5 h-5 mt-0.5 text-[var(--color-brand)] border-[var(--color-border)] focus:ring-[var(--color-brand)] focus:ring-2">
-            <div class="ml-4">
-              <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' |
-                translate }}</span>
-              <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
-                'newIssueRequest.fromAllowanceDescription' | translate }}</span>
-            </div>
-          </label>
-
-          <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all"
-            [ngClass]="fromReserve === 'No' ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/5' : 'border-[var(--color-border)] hover:border-[var(--color-brand)]/50'">
-            <input type="radio" name="fromReserve" value="No" [(ngModel)]="fromReserve"
-              (ngModelChange)="onFromReserveChange($event)"
-              class="w-5 h-5 mt-0.5 text-[var(--color-brand)] border-[var(--color-border)] focus:ring-[var(--color-brand)] focus:ring-2">
-            <div class="ml-4">
-              <span class="block text-base font-semibold text-[var(--color-text)]">{{
-                'newIssueRequest.fromAllAmmunition' | translate }}</span>
-              <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
-                'newIssueRequest.fromAllAmmunitionDescription' | translate }}</span>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <div class="flex justify-end">
-        <app-button variant="primary" (clicked)="onNext()">
-          {{ 'newIssueRequest.next' | translate }}
-        </app-button>
-      </div>
-    </div>
+    <app-allowance-selection
+      *ngIf="currentStep === 0"
+      [fromReserve]="fromReserve"
+      (fromReserveChange)="onFromReserveChange($event)"
+      (next)="onNext()">
+    </app-allowance-selection>
 
     <!-- Step 1: Selection -->
     <div *ngIf="currentStep === 1">
-      <ng-container
-        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError; else cartridgeLoadingTemplate">
-        <!-- Cartridge Details View -->
-        <app-cartridge-details *ngIf="cartridgeState.showCartridgeDetails"
-          [cartridge]="cartridgeState.selectedCartridgeForView" (select)="onSelectCartridge()"
-          (cancel)="onCloseCartridgeDetails()">
-        </app-cartridge-details>
+      <!-- Loading State -->
+      <app-loading-state
+        *ngIf="cartridgeState.loadingCartridges"
+        message="common.loading"
+        containerClass="bg-[var(--color-background)] rounded-lg p-6 border border-dashed border-[var(--color-border)]">
+      </app-loading-state>
 
-        <!-- Cartridge List View -->
-        <app-cartridge-list *ngIf="!cartridgeState.showCartridgeDetails"
-          [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="filterOptions.itemTypeOptions"
-          [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions"
-          [bulletDiameters]="filterOptions.bulletDiameters" [linkedOptions]="filterOptions.linkedOptions"
-          [natureOptions]="filterOptions.natureOptions" [weaponTypeOptions]="filterOptions.weaponTypeOptions || []"
-          [explosiveTypeOptions]="filterOptions.explosiveTypeOptions || []"
-          [selectedItemType]="filterState.selectedItemType"
-          [selectedAmmunitionType]="filterState.selectedAmmunitionType"
-          [selectedBulletDiameter]="filterState.selectedBulletDiameter" [selectedLinked]="filterState.selectedLinked"
-          [selectedNature]="filterState.selectedNature" [selectedWeaponType]="filterState.selectedWeaponType || ''"
-          [selectedCaliber]="filterState.selectedCaliber || ''"
-          [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
-          [selectedUNNumber]="filterState.selectedUNNumber || ''" [selectedNSN]="filterState.selectedNSN"
-          [canProceed]="canProceedFromSelection" [fromReserve]="fromReserve" (cartridgeClick)="onCartridgeClick($event)"
-          (allowanceError)="onAllowanceError($event)" (addSelection)="onCartridgeAdded($event)"
-          (filterChange)="filterCartridges()" (clearFilters)="onClearFilters()" (next)="onNext()"
-          (previous)="onPrevious()" (searchChange)="onSearchChange($event)" (itemTypeChange)="onItemTypeChange($event)"
-          (ammunitionTypeChange)="onAmmunitionTypeChange($event)"
-          (bulletDiameterChange)="onBulletDiameterChange($event)" (linkedChange)="onLinkedChange($event)"
-          (natureChange)="onNatureChange($event)" (weaponTypeChange)="onWeaponTypeChange($event)"
-          (caliberChange)="onCaliberChange($event)" (explosiveTypeChange)="onExplosiveTypeChange($event)"
-          (unNumberChange)="onUnNumberChange($event)" (nsnChange)="onNSNChange($event)"
-          (removeSelection)="onRemoveSelectedCartridge($event)">
-        </app-cartridge-list>
+      <!-- Error State -->
+      <app-error-state
+        *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
+        [error]="cartridgeState.cartridgeError || ''"
+        variant="inline"
+        [actionText]="'common.retry'"
+        containerClass="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 rounded-lg p-4"
+        messageClass="text-sm text-[var(--color-error)]"
+        (action)="retryLoadCartridges()">
+      </app-error-state>
 
-        <!-- Allowance Error Banner -->
-        <div *ngIf="allowanceError" class="mt-4 bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 text-[var(--color-error)] text-sm rounded-lg p-4">
-          {{ allowanceError }}
-        </div>
-      </ng-container>
+      <!-- Cartridge Details View -->
+      <app-cartridge-details
+        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails"
+        [cartridge]="cartridgeState.selectedCartridgeForView"
+        (select)="onSelectCartridge()"
+        (cancel)="onCloseCartridgeDetails()">
+      </app-cartridge-details>
 
-      <ng-template #cartridgeLoadingTemplate>
-        <div *ngIf="cartridgeState.loadingCartridges"
-          class="bg-[var(--color-background)] rounded-lg p-6 text-sm text-[var(--color-text-muted)] border border-dashed border-[var(--color-border)]">
-          {{ 'common.loading' | translate }}...
-        </div>
-        <div *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
-          class="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 text-[var(--color-error)] text-sm rounded-lg p-4 flex items-center justify-between">
-          <span>{{ cartridgeState.cartridgeError }}</span>
-          <button type="button" class="px-3 py-1 border border-[var(--color-error)]/60 rounded hover:bg-[var(--color-error)]/30"
-            (click)="retryLoadCartridges()">
-            {{ 'common.retry' | translate }}
-          </button>
-        </div>
-      </ng-template>
+      <!-- Cartridge List View -->
+      <app-cartridge-list
+        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
+        [cartridges]="cartridgeState.filteredCartridges"
+        [itemTypeOptions]="filterOptions.itemTypeOptions"
+        [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions"
+        [bulletDiameters]="filterOptions.bulletDiameters"
+        [linkedOptions]="filterOptions.linkedOptions"
+        [natureOptions]="filterOptions.natureOptions"
+        [weaponTypeOptions]="filterOptions.weaponTypeOptions || []"
+        [explosiveTypeOptions]="filterOptions.explosiveTypeOptions || []"
+        [selectedItemType]="filterState.selectedItemType"
+        [selectedAmmunitionType]="filterState.selectedAmmunitionType"
+        [selectedBulletDiameter]="filterState.selectedBulletDiameter"
+        [selectedLinked]="filterState.selectedLinked"
+        [selectedNature]="filterState.selectedNature"
+        [selectedWeaponType]="filterState.selectedWeaponType || ''"
+        [selectedCaliber]="filterState.selectedCaliber || ''"
+        [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
+        [selectedUNNumber]="filterState.selectedUNNumber || ''"
+        [selectedNSN]="filterState.selectedNSN"
+        [canProceed]="canProceedFromSelection"
+        [fromReserve]="fromReserve"
+        (cartridgeClick)="onCartridgeClick($event)"
+        (allowanceError)="onAllowanceError($event)"
+        (addSelection)="onCartridgeAdded($event)"
+        (filterChange)="filterCartridges()"
+        (clearFilters)="onClearFilters()"
+        (next)="onNext()"
+        (previous)="onPrevious()"
+        (searchChange)="onSearchChange($event)"
+        (itemTypeChange)="onItemTypeChange($event)"
+        (ammunitionTypeChange)="onAmmunitionTypeChange($event)"
+        (bulletDiameterChange)="onBulletDiameterChange($event)"
+        (linkedChange)="onLinkedChange($event)"
+        (natureChange)="onNatureChange($event)"
+        (weaponTypeChange)="onWeaponTypeChange($event)"
+        (caliberChange)="onCaliberChange($event)"
+        (explosiveTypeChange)="onExplosiveTypeChange($event)"
+        (unNumberChange)="onUnNumberChange($event)"
+        (nsnChange)="onNSNChange($event)"
+        (removeSelection)="onRemoveSelectedCartridge($event)">
+      </app-cartridge-list>
+
+      <!-- Allowance Error Banner -->
+      <app-error-banner
+        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && allowanceError"
+        [error]="allowanceError"
+        class="mt-4">
+      </app-error-banner>
     </div>
 
     <!-- Step 2: Usage -->
@@ -154,33 +139,22 @@
     </app-review-form>
 
     <!-- Step 4: Send -->
-    <div *ngIf="currentStep === 4" class="bg-[var(--color-background-muted)] rounded-lg py-24 px-12 text-center">
-      <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderSentSuccessfully' |
-        translate }}</h2>
-
-      <div class="space-y-2 text-sm text-[var(--color-text)] mb-8">
-        <div *ngIf="orderSubmissionState.orderNumber">
-          <span class="font-semibold">{{ 'newIssueRequest.orderNumber' | translate }}:</span>
-          <span>{{ orderSubmissionState.orderNumber }}</span>
-        </div>
-      </div>
-
-      <button
-        class="px-8 py-3 bg-[var(--color-brand)] text-white text-sm font-medium rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-        (click)="onTrackOrder()" [disabled]="orderSubmissionState.createdOrderId === null">
-        {{ 'newIssueRequest.trackOrder' | translate }}
-      </button>
-    </div>
+    <app-order-success
+      *ngIf="currentStep === 4"
+      [orderNumber]="orderSubmissionState.orderNumber"
+      [createdOrderId]="orderSubmissionState.createdOrderId"
+      (trackOrder)="onTrackOrder()">
+    </app-order-success>
   </div>
 
   <!-- Confirmation Dialog -->
   <app-confirmation-dialog
     [isOpen]="showConfirmDialog"
-    [title]="confirmDialogTitle"
-    [message]="confirmDialogMessage"
-    [type]="confirmDialogType"
-    [confirmText]="confirmDialogConfirmText"
-    [cancelText]="confirmDialogCancelText"
+    [title]="confirmDialogConfig.title"
+    [message]="confirmDialogConfig.message"
+    [type]="confirmDialogConfig.type"
+    [confirmText]="confirmDialogConfig.confirmText"
+    [cancelText]="confirmDialogConfig.cancelText"
     [closeOnBackdrop]="true"
     (confirmed)="onConfirmSubmit()"
     (cancelled)="onCancelConfirm()"

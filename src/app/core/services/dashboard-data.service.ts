@@ -1,0 +1,329 @@
+import { Injectable } from '@angular/core';
+import { Observable, of, EMPTY } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { UnifiedRequestService, BaseRequestDto } from './unified-request.service';
+import { OrderService, OrderDto } from './order.service';
+import { ReturnService, ReturnDto } from './return.service';
+import { DiscardService, DiscardDto } from './discard.service';
+import { BackendAuthService } from './backend-auth.service';
+import { DashboardCard } from '@models/dashboard.model';
+import {
+  mapRequestStatusToCardStatus,
+  getRequestTitle,
+  mapRequestItems,
+  filterDisplayableRequests,
+  filterRequestsByDepartment,
+  DisplayableRequest
+} from '@utils/dashboard.utils';
+import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
+
+/**
+ * Dashboard Data Service
+ * Handles data loading and transformation for dashboard cards
+ * Extracted from dashboard.component.ts to follow single responsibility principle
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class DashboardDataService {
+  constructor(
+    private readonly unifiedRequestService: UnifiedRequestService,
+    private readonly orderService: OrderService,
+    private readonly returnService: ReturnService,
+    private readonly discardService: DiscardService,
+    private readonly authService: BackendAuthService,
+    private readonly translate: TranslateService
+  ) {}
+
+  /**
+   * Load all dashboard cards from unified endpoint
+   * Returns Observable of DashboardCard array
+   */
+  loadAllDashboardCards(): Observable<DashboardCard[]> {
+    return this.unifiedRequestService.getUserActionRequests().pipe(
+      map(requests => separateRequestsByType(requests)),
+      map(({ orders, returns, discards }) => {
+        const allCards: DashboardCard[] = [];
+
+        // Process each request type
+        if (orders && orders.length > 0) {
+          const orderDtos = orders.map(order => mapToOrderDto(order));
+          allCards.push(...this.processOrderRequests(orderDtos));
+        }
+
+        if (returns && returns.length > 0) {
+          const returnDtos = returns.map(ret => mapToReturnDto(ret));
+          allCards.push(...this.processReturnRequests(returnDtos));
+        }
+
+        if (discards && discards.length > 0) {
+          const discardDtos = discards.map(discard => mapToDiscardDto(discard));
+          allCards.push(...this.processDiscardRequests(discardDtos));
+        }
+
+        return allCards;
+      }),
+      catchError(() => {
+        // Return empty array on error to not break the flow
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Process order requests and convert to dashboard cards
+   */
+  private processOrderRequests(orders: OrderDto[]): DashboardCard[] {
+    if (!orders || orders.length === 0) {
+      return [];
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    const displayableRequests = filterDisplayableRequests(orders);
+    const filtered = filterRequestsByDepartment(
+      displayableRequests,
+      currentUser?.departmentId
+    );
+
+    return filtered.map(order => ({
+      title: getRequestTitle(order, order.orderNo),
+      status: mapRequestStatusToCardStatus(order.status),
+      orders: [{
+        orderId: getRequestTitle(order, order.orderNo),
+        requestDate: this.formatCreationDate(order),
+        departmentName: this.resolveOrderDepartmentName(order),
+        requesterName: this.resolveRequesterName(order),
+        items: mapRequestItems(order.requestItems)
+      }],
+      permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+      orderRequestId: order.id,
+      isMyTurn: order.isMyTurn
+    }));
+  }
+
+  /**
+   * Process return requests and convert to dashboard cards
+   */
+  private processReturnRequests(returns: ReturnDto[]): DashboardCard[] {
+    if (!returns || returns.length === 0) {
+      return [];
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    const displayableRequests = filterDisplayableRequests(returns);
+    const filtered = filterRequestsByDepartment(
+      displayableRequests,
+      currentUser?.departmentId
+    );
+
+    return filtered.map(ret => ({
+      title: getRequestTitle(ret),
+      status: mapRequestStatusToCardStatus(ret.status),
+      orders: [{
+        orderId: getRequestTitle(ret),
+        requestDate: this.formatCreationDate(ret),
+        departmentName: this.resolveReturnDepartmentName(ret),
+        requesterName: this.resolveRequesterName(ret),
+        items: mapRequestItems(ret.requestItems)
+      }],
+      permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+      returnRequestId: ret.id,
+      isMyTurn: ret.isMyTurn
+    }));
+  }
+
+  /**
+   * Process discard requests and convert to dashboard cards
+   */
+  private processDiscardRequests(discards: DiscardDto[]): DashboardCard[] {
+    if (!discards || discards.length === 0) {
+      return [];
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    const displayableRequests = filterDisplayableRequests(discards);
+    const filtered = filterRequestsByDepartment(
+      displayableRequests,
+      currentUser?.departmentId
+    );
+
+    return filtered.map(discard => ({
+      title: getRequestTitle(discard),
+      status: mapRequestStatusToCardStatus(discard.status),
+      orders: [{
+        orderId: getRequestTitle(discard),
+        requestDate: this.formatCreationDate(discard),
+        departmentName: this.resolveDiscardDepartmentName(discard),
+        requesterName: this.resolveRequesterName(discard),
+        items: mapRequestItems(discard.requestItems)
+      }],
+      permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+      discardRequestId: discard.id,
+      isMyTurn: discard.isMyTurn
+    }));
+  }
+
+  /**
+   * Format creation date for display
+   */
+  private formatCreationDate(request: OrderDto | ReturnDto | DiscardDto | any): string {
+    const creationDate = request.creationDate;
+    if (!creationDate) return 'N/A';
+    return new Date(creationDate).toLocaleDateString();
+  }
+
+  /**
+   * Resolve department name with localization for orders
+   */
+  private resolveOrderDepartmentName(order: OrderDto): string {
+    if (!order) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    
+    // Use nested department object if available (for proper localization)
+    if (order.department) {
+      const localized = getLocalizedName(order.department, currentLang);
+      if (localized) return localized;
+    }
+    
+    // Fallback to flattened properties
+    if (order.departmentNameEn || order.departmentNameAr) {
+      const localized = getLocalizedName(
+        {
+          nameEn: order.departmentNameEn,
+          nameAr: order.departmentNameAr
+        },
+        currentLang
+      );
+      if (localized) return localized;
+    }
+    
+    return 'N/A';
+  }
+
+  /**
+   * Resolve requester name with localization
+   * Works for OrderDto, ReturnDto, and DiscardDto
+   */
+  private resolveRequesterName(request: OrderDto | ReturnDto | DiscardDto | any): string {
+    if (!request) return 'N/A';
+    const currentLang = getCurrentLang(this.translate);
+    
+    // Use nested requester object if available (for proper localization)
+    if (request.requester) {
+      const localized = getLocalizedName(request.requester, currentLang);
+      if (localized) return localized;
+      if (request.requester.userName) return request.requester.userName;
+    }
+    
+    // Fallback to flattened property (for OrderDto compatibility)
+    if (request.requesterName) return request.requesterName;
+    
+    return 'N/A';
+  }
+
+  /**
+   * Resolve return department name with localization
+   */
+  private resolveReturnDepartmentName(ret: ReturnDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(ret.department, currentLang) || 'N/A';
+  }
+
+  /**
+   * Resolve discard department name with localization
+   */
+  private resolveDiscardDepartmentName(discard: DiscardDto): string {
+    const currentLang = getCurrentLang(this.translate);
+    return getLocalizedName(discard.department, currentLang) || 'N/A';
+  }
+
+  /**
+   * Get order by ID with fallback to cached data
+   */
+  getOrderById(orderRequestId: number, cachedOrder?: OrderDto | null): Observable<OrderDto> {
+    return this.orderService.getOrderById(orderRequestId).pipe(
+      map((order) => {
+        // Ensure nested objects are preserved for localization
+        if (order && !order.department && (order as any).Department) {
+          order.department = (order as any).Department;
+        }
+        if (order && !order.requester && (order as any).Requester) {
+          order.requester = (order as any).Requester;
+        }
+        if (order && !order.requestPurpose && (order as any).RequestPurpose) {
+          order.requestPurpose = (order as any).RequestPurpose;
+        }
+
+        // Ensure flat properties are populated from nested objects if not already present
+        if (order) {
+          // Copy department name properties from nested object if flat properties are missing
+          if (!order.departmentNameEn && order.department?.nameEn) {
+            order.departmentNameEn = order.department.nameEn;
+          }
+          if (!order.departmentNameAr && order.department?.nameAr) {
+            order.departmentNameAr = order.department.nameAr;
+          }
+
+          // Copy requester name properties from nested object if flat properties are missing
+          if (!order.requesterName && order.requester) {
+            order.requesterName = order.requester.fullNameEN || order.requester.fullNameAR || order.requester.userName;
+          }
+          if (!order.requesterNameEn && order.requester?.fullNameEN) {
+            order.requesterNameEn = order.requester.fullNameEN;
+          }
+          if (!order.requesterNameAr && order.requester?.fullNameAR) {
+            order.requesterNameAr = order.requester.fullNameAR;
+          }
+
+          // Copy request purpose name properties from nested object if flat properties are missing
+          if (!order.requestPurposeNameEn && order.requestPurpose?.nameEn) {
+            order.requestPurposeNameEn = order.requestPurpose.nameEn;
+          }
+          if (!order.requestPurposeNameAr && order.requestPurpose?.nameAr) {
+            order.requestPurposeNameAr = order.requestPurpose.nameAr;
+          }
+        }
+
+        return order;
+      }),
+      catchError(() => {
+        // Fallback to cached data if available
+        if (cachedOrder) {
+          return of(cachedOrder);
+        }
+        return EMPTY;
+      })
+    );
+  }
+
+  /**
+   * Get return by ID with fallback to cached data
+   */
+  getReturnById(returnRequestId: number, cachedReturn?: ReturnDto | null): Observable<ReturnDto> {
+    return this.returnService.getReturnById(returnRequestId).pipe(
+      catchError(() => {
+        if (cachedReturn) {
+          return of(cachedReturn);
+        }
+        return EMPTY;
+      })
+    );
+  }
+
+  /**
+   * Get discard by ID with fallback to cached data
+   */
+  getDiscardById(discardRequestId: number, cachedDiscard?: DiscardDto | null): Observable<DiscardDto> {
+    return this.discardService.getDiscardById(discardRequestId).pipe(
+      catchError(() => {
+        if (cachedDiscard) {
+          return of(cachedDiscard);
+        }
+        return EMPTY;
+      })
+    );
+  }
+}
+
