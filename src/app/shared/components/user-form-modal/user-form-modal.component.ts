@@ -11,6 +11,7 @@ import { ToastService } from '@services/toast.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { Subscription } from 'rxjs';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -49,6 +50,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   // Ranks
   ranks: LookupItem[] = [];
   isLoadingRanks = false;
+  // Super admin check
+  isCurrentUserSuperAdmin = false;
   readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
   readonly rankOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
@@ -63,8 +66,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     private backendUserService: BackendUserService,
     private lookupService: LookupService,
     private toastService: ToastService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private authService: BackendAuthService
   ) {
+    this.isCurrentUserSuperAdmin = this.authService.isSuperAdmin();
     this.initializeForm();
   }
 
@@ -95,10 +100,21 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     // Get all role IDs if user has roles (for multiple selection)
     const roleIds = this.user?.roleIds && this.user.roleIds.length > 0 ? this.user.roleIds : [];
 
+    // For non-super-admin users, automatically set IsLdapUser to true
+    const isLdapUser = !this.isCurrentUserSuperAdmin ? true : (this.user?.isLdapUser || false);
+
+    // For non-super-admin users, userName and password are optional
+    const userNameValidators = this.isCurrentUserSuperAdmin 
+      ? [Validators.required, Validators.minLength(3)]
+      : [];
+    const passwordValidators = this.isCurrentUserSuperAdmin 
+      ? [Validators.required, Validators.minLength(6)]
+      : [];
+
     this.userForm = this.fb.group({
-      userName: [this.user?.userName || '', [Validators.required, Validators.minLength(3)]],
+      userName: [this.user?.userName || '', userNameValidators],
       email: [this.user?.email || '', [Validators.required, Validators.email]],
-      isLdapUser: [this.user?.isLdapUser || false],
+      isLdapUser: [{ value: isLdapUser, disabled: !this.isCurrentUserSuperAdmin }],
       ldapUserName: [this.user?.ldapUserName || ''],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
       departmentId: [this.user?.departmentId ?? null],
@@ -111,7 +127,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     });
 
     if (this.mode === 'create') {
-      this.userForm.addControl('password', this.fb.control('', [Validators.required, Validators.minLength(6)]));
+      this.userForm.addControl('password', this.fb.control('', passwordValidators));
     }
 
     this.setupLdapUserControls();
@@ -299,11 +315,14 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     if (this.mode === 'create') {
       const formValue = this.userForm.getRawValue();
 
+      // For non-super-admin users, ensure isLdapUser is true
+      const isLdapUser = !this.isCurrentUserSuperAdmin ? true : (formValue.isLdapUser || false);
+
       const dto: CreateUserDto = {
-        userName: formValue.userName,
+        userName: formValue.userName || undefined,
         email: formValue.email,
-        password: formValue.password,
-        isLdapUser: formValue.isLdapUser || false,
+        password: formValue.password || undefined,
+        isLdapUser: isLdapUser,
         ldapUserName: formValue.ldapUserName || undefined,
         extraEmployeesView: formValue.extraEmployeesView || undefined,
         organizationId: 1,
@@ -349,12 +368,15 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         ? String(formValue.militaryId).trim()
         : undefined;
 
+      // For non-super-admin users, ensure isLdapUser is true
+      const isLdapUser = !this.isCurrentUserSuperAdmin ? true : (formValue.isLdapUser || false);
+
       const dto: UpdateUserDto = {
         id: this.user.id,
         userName: formValue.userName,
         email: formValue.email,
         password: formValue.password || undefined,
-        isLdapUser: formValue.isLdapUser || false,
+        isLdapUser: isLdapUser,
         ldapUserName: formValue.ldapUserName || undefined,
         extraEmployeesView: formValue.extraEmployeesView || undefined,
         organizationId: this.user.organizationId,
@@ -442,6 +464,15 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       return;
     }
 
+    // For non-super-admin users, ldapUserName is always required
+    if (!this.isCurrentUserSuperAdmin) {
+      ldapUserNameControl.enable({ emitEvent: false });
+      ldapUserNameControl.setValidators([Validators.required]);
+      ldapUserNameControl.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    // For super-admin users, handle LDAP toggle behavior
     const applyState = (isLdap: boolean) => {
       if (isLdap) {
         ldapUserNameControl.enable({ emitEvent: false });

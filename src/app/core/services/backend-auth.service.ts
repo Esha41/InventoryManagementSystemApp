@@ -785,6 +785,23 @@ export class BackendAuthService {
   }
 
   /**
+   * Check if current user is a super admin
+   */
+  isSuperAdmin(): boolean {
+    const token = this.storageService.get<string>('auth_token');
+    if (token) {
+      try {
+        const payload = this.decodeToken(token);
+        return payload?.IsSuperAdmin === 'true';
+      } catch (error) {
+        // If token decoding fails, return false
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Clear authentication data
    */
   private clearAuthData(): void {
