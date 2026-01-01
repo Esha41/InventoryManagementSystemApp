@@ -10,16 +10,20 @@ import { ImportDialogComponent } from '@components/import-dialog/import-dialog.c
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent } from '@components/index';
 import { InventoryService } from '@services/inventory.service';
+import { AssetService } from '@services/asset.service';
 import { LookupService } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { ImportExportService } from '@services/import-export.service';
 import { TemplateGenerationService } from '@services/template-generation.service';
 import { InventoryDetailDto } from '@models/inventory.model';
+import { AssetDto } from '@models/asset.model';
 import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
 import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -43,6 +47,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   selectedDepotId: number | null = null;
   warehouseInventoryDetails: InventoryDetailDto[] = [];
   filteredWarehouseInventory: InventoryDetailDto[] = [];
+  warehouseAssets: AssetDto[] = [];
+  filteredWarehouseAssets: AssetDto[] = [];
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
   loadingWarehouseInventory = false;
   showImportModal = false;
@@ -57,6 +63,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private inventoryService: InventoryService,
+    private assetService: AssetService,
     private lookupService: LookupService,
     private toastService: ToastService,
     private excelExportService: ExcelExportService,
@@ -114,7 +121,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
     this.activeTab = tab;
-    this.applyFilters();
+    // Reload data when switching tabs to ensure we have the right data type
+    if (this.selectedDepotId) {
+      this.loadWarehouseInventory();
+    } else {
+      this.applyFilters();
+    }
   }
 
   loadWarehouseInventory(): void {
@@ -123,44 +135,68 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
 
-    this.inventoryService.getWarehouseInventoryItems(this.selectedDepotId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (inventoryDetails) => {
-          this.warehouseInventoryDetails = inventoryDetails;
-          this.applyFilters();
-          this.loadingWarehouseInventory = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loadingWarehouseInventory = false;
-          this.toastService.error('Failed to load warehouse inventory');
-          this.cdr.markForCheck();
-        }
-      });
+    // For weapons, load assets; for ammunition/explosives, load inventory
+    if (this.activeTab === 'weapon') {
+      this.assetService.getByDepotId(this.selectedDepotId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (assets) => {
+            // Filter assets to only include weapons (itemType === 2)
+            this.warehouseAssets = assets.filter(asset => {
+              const type = this.normalizeItemType(asset.item?.itemType);
+              return type === 2;
+            });
+            this.applyFilters();
+            this.loadingWarehouseInventory = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.loadingWarehouseInventory = false;
+            this.toastService.error('Failed to load warehouse assets');
+            this.cdr.markForCheck();
+          }
+        });
+    } else {
+      this.inventoryService.getWarehouseInventoryItems(this.selectedDepotId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (inventoryDetails) => {
+            this.warehouseInventoryDetails = inventoryDetails;
+            this.applyFilters();
+            this.loadingWarehouseInventory = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.loadingWarehouseInventory = false;
+            this.toastService.error('Failed to load warehouse inventory');
+            this.cdr.markForCheck();
+          }
+        });
+    }
   }
 
   private applyFilters(): void {
-    let filtered = [...this.warehouseInventoryDetails];
+    if (this.activeTab === 'weapon') {
+      // For weapons, use assets (already filtered by weapon type in loadWarehouseInventory)
+      this.filteredWarehouseAssets = [...this.warehouseAssets];
+    } else {
+      // For ammunition/explosives, use inventory
+      let filtered = [...this.warehouseInventoryDetails];
 
-    if (this.activeTab === 'ammunition') {
-      filtered = filtered.filter(d => {
-        const type = this.normalizeItemType(d.item?.itemType);
-        return type === 1;
-      });
-    } else if (this.activeTab === 'weapon') {
-      filtered = filtered.filter(d => {
-        const type = this.normalizeItemType(d.item?.itemType);
-        return type === 2;
-      });
-    } else if (this.activeTab === 'explosive') {
-      filtered = filtered.filter(d => {
-        const type = this.normalizeItemType(d.item?.itemType);
-        return type === 3;
-      });
+      if (this.activeTab === 'ammunition') {
+        filtered = filtered.filter(d => {
+          const type = this.normalizeItemType(d.item?.itemType);
+          return type === 1;
+        });
+      } else if (this.activeTab === 'explosive') {
+        filtered = filtered.filter(d => {
+          const type = this.normalizeItemType(d.item?.itemType);
+          return type === 3;
+        });
+      }
+
+      this.filteredWarehouseInventory = filtered;
     }
-
-    this.filteredWarehouseInventory = filtered;
   }
 
   private normalizeItemType(itemType: any): number | undefined {
@@ -213,8 +249,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.closeImportModal();
     this.cdr.markForCheck();
 
-    // Call backend import endpoint - Excel parsing is now done on the backend
-    this.inventoryService.importData(file, this.selectedDepotId)
+    // For weapons, use asset import (includes serial number, RFID, asset tag, etc.)
+    // For ammunition/explosives, use inventory import (includes lots, batches, quantities)
+    const importService = this.activeTab === 'weapon' 
+      ? this.assetService.importData(file, this.selectedDepotId)
+      : this.inventoryService.importData(file, this.selectedDepotId);
+
+    importService
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -245,7 +286,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error: any) => {
-          this.toastService.error('Failed to import inventory: ' + (error.message || 'Unknown error'));
+          const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
+          this.toastService.error(`Failed to import ${entityType}: ` + (error.message || 'Unknown error'));
           this.loadingWarehouseInventory = false;
           this.cdr.markForCheck();
         }
@@ -262,7 +304,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.closeImportModal();
     this.cdr.markForCheck();
 
-    this.inventoryService.importPreview(file, this.selectedDepotId)
+    // For weapons, use asset preview (includes serial number, RFID, asset tag, etc.)
+    // For ammunition/explosives, use inventory preview (includes lots, batches, quantities)
+    const previewService = this.activeTab === 'weapon'
+      ? this.assetService.importPreview(file, this.selectedDepotId)
+      : this.inventoryService.importPreview(file, this.selectedDepotId);
+
+    previewService
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -321,8 +369,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   /**
    * Get ordered columns for preview dialog
-   * Matches the exact column order from backend InventoryService.GetColumnMappings (line 1580-1600)
-   * This ensures consistency between downloaded templates and import preview
+   * Matches the exact column order from backend GetColumnMappings
+   * For weapons: Uses AssetService.GetColumnMappings (serial number, RFID, asset tag, etc.)
+   * For ammunition/explosives: Uses InventoryService.GetColumnMappings (lots, batches, quantities)
    */
   private getOrderedColumns(record: any): string[] {
     if (!record) return [];
@@ -330,24 +379,43 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     const allKeys = Object.keys(record);
 
     // Define column order based on backend GetColumnMappings
-    // From InventoryService.GetColumnMappings
-    const priorityOrder = [
-      'itemName',
-      'itemNo',
-      'itemId',
-      'lot',
-      'supplier',
-      'manufacturer',
-      'country',
-      'originalQuantity',
-      'batchNo',
-      'expiryDate',
-      'readyForIssue',
-      'invoiceNumber',
-      'invoiceDate',
-      'receivedDate',
-      'notes'
-    ];
+    let priorityOrder: string[];
+
+    if (this.activeTab === 'weapon') {
+      // Asset import columns (from AssetService.GetColumnMappings)
+      priorityOrder = [
+        'itemName',
+        'itemNo',
+        'itemId',
+        'serialNumber',
+        'rfid',
+        'assetTag',
+        'purchaseDate',
+        'warrantyExpiryDate',
+        'condition',
+        'purchasePrice',
+        'notes'
+      ];
+    } else {
+      // Inventory import columns (from InventoryService.GetColumnMappings)
+      priorityOrder = [
+        'itemName',
+        'itemNo',
+        'itemId',
+        'lot',
+        'supplier',
+        'manufacturer',
+        'country',
+        'originalQuantity',
+        'batchNo',
+        'expiryDate',
+        'readyForIssue',
+        'invoiceNumber',
+        'invoiceDate',
+        'receivedDate',
+        'notes'
+      ];
+    }
 
     // Separate keys into priority (matching template) and remaining
     const priorityKeys = priorityOrder.filter(key => allKeys.includes(key));
@@ -362,7 +430,26 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Please select a depot first');
       return;
     }
-    this.templateGenerationService.generateWarehouseInventoryTemplate(this.selectedDepotId);
+
+    // For weapons, use asset template (includes serial number, RFID, asset tag, etc.)
+    // For ammunition/explosives, use inventory template (includes lots, batches, quantities)
+    if (this.activeTab === 'weapon') {
+      const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+      this.assetService.downloadImportTemplate(this.selectedDepotId, currentLang)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (blob) => {
+            const fileName = `Asset_Import_Template_Depot_${this.selectedDepotId}_${new Date().getTime()}.xlsx`;
+            saveAs(blob, fileName);
+            this.toastService.success('Asset template downloaded successfully');
+          },
+          error: () => {
+            this.toastService.error('Failed to download asset template. Please try again.');
+          }
+        });
+    } else {
+      this.templateGenerationService.generateWarehouseInventoryTemplate(this.selectedDepotId);
+    }
   }
 
   exportToExcel(): void {
@@ -376,72 +463,240 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       ? getLocalizedName(selectedDepot, getCurrentLang(this.translateService)) || `Depot ${this.selectedDepotId}`
       : `Depot ${this.selectedDepotId}`;
 
-    const columns: ExcelColumn[] = [
-      {
-        header: this.translateService.instant('warehouseInventory.itemName'),
-        key: 'item',
-        width: 30,
-        format: (item) => this.getItemName({ item } as InventoryDetailDto)
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.itemNo'),
-        key: 'item.itemNo',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('common.supplier'),
-        key: 'supplier',
-        width: 20,
-        format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.lot'),
-        key: 'lot',
-        width: 10
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.batchNo'),
-        key: 'batchNo',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.originalQty'),
-        key: 'originalQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.currentQty'),
-        key: 'currentQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.usedQty'),
-        key: 'usedQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.remainingQty'),
-        key: 'remainingQuantity',
-        width: 15
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.expiryDate'),
-        key: 'expiryDate',
-        width: 15,
-        format: (date) => this.importExportService.formatDate(date)
-      }
-    ];
+    // For weapons, export assets with serial numbers, RFID, etc.
+    // For ammunition/explosives, export inventory with lots, batches, quantities
+    if (this.activeTab === 'weapon') {
+      const columns: ExcelColumn[] = [
+        {
+          header: this.translateService.instant('warehouseInventory.itemName') || 'Item Name',
+          key: 'item',
+          width: 30,
+          format: (item: any) => {
+            if (!item) return '-';
+            const lang = getCurrentLang(this.translateService);
+            return getLocalizedName(item, lang) || item.itemNo || '-';
+          }
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.itemNo') || 'Item No',
+          key: 'item.itemNo',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Serial Number',
+          key: 'serialNumber',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'RFID',
+          key: 'rfid',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Asset Tag',
+          key: 'assetTag',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Purchase Date',
+          key: 'purchaseDate',
+          width: 15,
+          format: (date) => this.importExportService.formatDate(date)
+        },
+        {
+          header: 'Warranty Expiry Date',
+          key: 'warrantyExpiryDate',
+          width: 20,
+          format: (date) => this.importExportService.formatDate(date)
+        },
+        {
+          header: 'Condition',
+          key: 'condition',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Purchase Price',
+          key: 'purchasePrice',
+          width: 15,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.nsn') || 'NSN',
+          key: 'item.nsn',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.caliber') || 'Caliber',
+          key: 'item.caliber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Caliber Unit',
+          key: 'item.caliberUnit',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Year Of Manufacture',
+          key: 'item.yearOfManufacture',
+          width: 20,
+          format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: 'Country Of Manufacture',
+          key: 'item.countryOfManufacture',
+          width: 25,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: 'Model',
+          key: 'item.model',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.unNumber') || 'UN Number',
+          key: 'item.unNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Distribution',
+          key: 'item.distribution',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Reference No',
+          key: 'item.referenceNo',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Location',
+          key: 'location',
+          width: 20,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: 'Status',
+          key: 'status',
+          width: 15,
+          format: (status: number) => {
+            const statusMap: { [key: number]: string } = {
+              1: 'Available',
+              2: 'In Use',
+              3: 'Under Maintenance',
+              4: 'Retired'
+            };
+            return status ? (statusMap[status] || '-') : '-';
+          }
+        },
+        {
+          header: 'Notes',
+          key: 'notes',
+          width: 30,
+          format: (value: string) => value || '-'
+        }
+      ];
 
-    const fileName = `${depotName}_Inventory_${this.activeTab}`;
+      const fileName = `${depotName}_Assets_Weapons`;
 
-    this.importExportService.exportToExcel({
-      fileName,
-      sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
-      columns,
-      data: this.filteredWarehouseInventory,
-      includeTimestamp: true
-    });
+      this.importExportService.exportToExcel({
+        fileName,
+        sheetName: 'Weapons',
+        columns,
+        data: this.filteredWarehouseAssets,
+        includeTimestamp: true
+      });
+    } else {
+      // Export inventory for ammunition/explosives
+      const columns: ExcelColumn[] = [
+        {
+          header: this.translateService.instant('warehouseInventory.itemName'),
+          key: 'item',
+          width: 30,
+          format: (item) => this.getItemName({ item } as InventoryDetailDto)
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.itemNo'),
+          key: 'item.itemNo',
+          width: 15
+        },
+        {
+          header: this.translateService.instant('common.supplier'),
+          key: 'supplier',
+          width: 20,
+          format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.lot'),
+          key: 'lot',
+          width: 10
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.batchNo'),
+          key: 'batchNo',
+          width: 15,
+          format: (value) => value || '-'
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.originalQty'),
+          key: 'originalQuantity',
+          width: 15
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.currentQty'),
+          key: 'currentQuantity',
+          width: 15
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.usedQty'),
+          key: 'usedQuantity',
+          width: 15
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.remainingQty'),
+          key: 'remainingQuantity',
+          width: 15
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.expiryDate'),
+          key: 'expiryDate',
+          width: 15,
+          format: (date) => this.importExportService.formatDate(date)
+        },
+        {
+          header: this.translateService.instant('common.manufacturer') || 'Manufacturer',
+          key: 'manufacturer',
+          width: 20,
+          format: (manufacturer) => getLocalizedName(manufacturer, getCurrentLang(this.translateService)) || '-'
+        },
+        {
+          header: this.translateService.instant('common.country') || 'Country',
+          key: 'country',
+          width: 20,
+          format: (country) => getLocalizedName(country, getCurrentLang(this.translateService)) || '-'
+        }
+      ];
+
+      const fileName = `${depotName}_Inventory_${this.activeTab}`;
+
+      this.importExportService.exportToExcel({
+        fileName,
+        sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
+        columns,
+        data: this.filteredWarehouseInventory,
+        includeTimestamp: true
+      });
+    }
 
     this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);

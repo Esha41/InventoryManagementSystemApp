@@ -1,8 +1,10 @@
 <div class="mb-6">
-  <label class="search-field">
-    <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
-    <input type="search" class="search-field__input"
-      [placeholder]="'warehouseInventory.searchPlaceholder' | translate" [formControl]="searchControl" />
+  <label class="group flex items-center gap-3 border-2 border-[var(--color-border)] rounded-xl bg-[var(--color-background)] py-3 px-4 md:py-3.5 md:px-[1.125rem] transition-all duration-200 ease-in-out shadow-sm w-full max-w-[600px] relative hover:border-[var(--color-brand)] hover:shadow-md focus-within:border-[var(--color-brand)] focus-within:shadow-[0_0_0_4px_var(--color-brand-soft),0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] focus-within:outline-none">
+    <lucide-angular [img]="Search" class="w-[1.125rem] h-[1.125rem] md:w-5 md:h-5 text-[var(--color-text-muted)] flex-shrink-0 transition-colors duration-200 group-focus-within:text-[var(--color-brand)]"></lucide-angular>
+    <input type="search" 
+      class="flex-1 border-none bg-transparent text-sm md:text-[0.9375rem] font-normal text-[var(--color-text)] p-0 min-w-0 leading-6 placeholder:text-[var(--color-text-muted)] placeholder:opacity-70 placeholder:font-normal focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+      [placeholder]="'warehouseInventory.searchPlaceholder' | translate" 
+      [formControl]="searchControl" />
   </label>
 </div>
 

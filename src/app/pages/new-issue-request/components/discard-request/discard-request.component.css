@@ -23,7 +23,7 @@ button:hover lucide-angular {
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--color-text);
-  background: #fff;
+  background: var(--color-background);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -34,7 +34,7 @@ button:hover lucide-angular {
 }
 
 .search-input__field::placeholder {
-  color: #9da5b5;
+  color: var(--color-text-muted);
   opacity: 1;
 }
 

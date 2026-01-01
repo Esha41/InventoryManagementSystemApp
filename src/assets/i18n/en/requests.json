@@ -453,12 +453,18 @@
     "enterReturnComment": "Enter reason for returning...",
     "commentRequired": "Comment is required",
     "success": {
+      "pickupDateSet": "Pickup date set successfully and locked for confirmation",
+      "pickupDateConfirmed": "Pickup date confirmed successfully",
       "supplySubmitted": "Supply submitted successfully"
     },
     "selectSkipToStepRequired": "Please select a step to skip to from the \"Skip To Step\" dropdown before approving this request.",
     "errors": {
       "invalidRequestData": "Invalid request data",
       "failedToLoadRanks": "Failed to load ranks",
+      "selectPickupDate": "Please select a pickup date",
+      "pickupDateAlreadySet": "Pickup date has already been set and cannot be modified",
+      "failedToSetPickupDate": "Failed to set pickup date",
+      "failedToConfirmPickupDate": "Failed to confirm pickup date",
       "receiverNameRequired": "Receiver name is required",
       "receiverRankRequired": "Receiver rank is required",
       "militaryIdRequired": "Military ID is required",

@@ -1473,8 +1473,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.loadRequestDetail();
         },
         error: (error) => {
-          this.translateService.get(['toast.error', 'toast.failedToConfirmPickupDate']).subscribe(translations => {
-            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['toast.failedToConfirmPickupDate']);
+          this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToConfirmPickupDate']).subscribe(translations => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToConfirmPickupDate'] || 'Failed to confirm pickup date');
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.confirmPickupDateProcessing = false;

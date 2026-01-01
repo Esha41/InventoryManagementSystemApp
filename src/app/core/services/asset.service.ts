@@ -165,4 +165,51 @@ export class AssetService {
             })
         );
     }
+
+    /**
+     * Import assets from Excel file
+     */
+    importData(file: File, depotId: number): Observable<APIOperationResponse<any>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('depotId', depotId.toString());
+
+        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData).pipe(
+            catchError(error => {
+                console.error('Error importing assets:', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    /**
+     * Preview asset import from Excel file (validation only)
+     */
+    importPreview(file: File, depotId: number): Observable<APIOperationResponse<any>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('depotId', depotId.toString());
+
+        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData).pipe(
+            catchError(error => {
+                console.error('Error previewing asset import:', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    /**
+     * Download asset import template
+     */
+    downloadImportTemplate(depotId: number, language: string = 'en'): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/template?depotId=${depotId}&language=${language}`, {
+            responseType: 'blob',
+            observe: 'body'
+        }).pipe(
+            catchError(error => {
+                console.error('Error downloading template:', error);
+                return throwError(() => error);
+            })
+        );
+    }
 }
