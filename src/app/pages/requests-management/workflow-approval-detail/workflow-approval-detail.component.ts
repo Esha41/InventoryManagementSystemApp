@@ -1522,6 +1522,31 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if the last approval is completed (all approvals are done)
+   */
+  isLastApprovalCompleted(): boolean {
+    if (!this.requestDetail) {
+      return false;
+    }
+
+    // Check if request status is Approved
+    const requestStatus = this.requestDetail.status;
+    if (requestStatus === 'Approved') {
+      return true;
+    }
+
+    // Check if there are no pending steps in the approval history
+    if (this.requestDetail.approvalHistory && this.requestDetail.approvalHistory.length > 0) {
+      const hasPendingStep = this.requestDetail.approvalHistory.some(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+      return !hasPendingStep;
+    }
+
+    return false;
+  }
+
+  /**
    * Submit supply with receiver information
    */
   submitSupply(): void {

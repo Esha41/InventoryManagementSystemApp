@@ -402,6 +402,15 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       .getQueryParamsState(this.steps.length)
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
+        // If we're on step 4 (success page) but order is not actually submitted, reset to step 0
+        // This handles the case where user navigates back after order creation or from sidebar
+        if (params.step === 4 && !this.orderSubmissionState.orderSubmitted) {
+          this.resetForm();
+          this.clearQueryParams();
+          this.cdr.markForCheck();
+          return;
+        }
+
         this.currentStep = params.step;
         this.fromReserve = params.fromReserve;
         this.pendingSelections = params.pendingSelections;
@@ -767,6 +776,15 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.router.navigate(['/dashboard']);
   }
 
+  private clearQueryParams(): void {
+    // Navigate to the same route without query params to reset state
+    // Use replaceUrl to avoid adding to browser history
+    this.router.navigate(['/new-issue-request'], { 
+      queryParams: {},
+      replaceUrl: true 
+    });
+  }
+
   private syncRequesterNameFromUserDetails(): void {
     this.reviewFormData.requesterName = syncRequesterNameUtil(this.userContextState.currentUserDetails);
   }
@@ -811,5 +829,20 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderPriority: ''
     };
     this.usageFormFiles = [];
+    // Reset order submission state
+    this.orderSubmissionState = {
+      submittingOrder: false,
+      orderSubmitError: null,
+      createdOrderId: null,
+      orderNumber: null,
+      orderSubmitted: false
+    };
+    this.reviewFormData = {
+      requesterName: '',
+      requesterComments: '',
+      orderType: 'New Issue Request',
+      orderDocument: ''
+    };
+    this.pendingSelections = null;
   }
 }

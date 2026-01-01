@@ -536,7 +536,7 @@
                     {{ 'workflowApprovalDetail.receiverName' | translate }} <span
                       class="text-[var(--color-error)]">*</span>
                   </label>
-                  <input type="text" [(ngModel)]="receiverInfo.recieverName" [disabled]="isSubmittingSupply"
+                  <input type="text" [(ngModel)]="receiverInfo.recieverName" [disabled]="isSubmittingSupply || isLastApprovalCompleted()"
                     [placeholder]="'workflowApprovalDetail.enterReceiverName' | translate"
                     class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                 </div>
@@ -550,7 +550,7 @@
                   <app-dropdown [(ngModel)]="receiverInfo.receiverRankId" [options]="ranks"
                     [optionLabelFn]="getRankDisplayNameFn" optionValue="id"
                     [placeholder]="'workflowApprovalDetail.selectRank' | translate"
-                    [disabled]="isSubmittingSupply || isLoadingRanks" class="w-full">
+                    [disabled]="isSubmittingSupply || isLoadingRanks || isLastApprovalCompleted()" class="w-full">
                   </app-dropdown>
                 </div>
 
@@ -560,7 +560,7 @@
                     {{ 'workflowApprovalDetail.militaryId' | translate }} <span
                       class="text-[var(--color-error)]">*</span>
                   </label>
-                  <input type="text" [(ngModel)]="receiverInfo.recieverMilitaryId" [disabled]="isSubmittingSupply"
+                  <input type="text" [(ngModel)]="receiverInfo.recieverMilitaryId" [disabled]="isSubmittingSupply || isLastApprovalCompleted()"
                     [placeholder]="'workflowApprovalDetail.enterMilitaryId' | translate"
                     class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                 </div>
@@ -572,7 +572,7 @@
                   {{ 'workflowApprovalDetail.notes' | translate }} <span
                     class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
                 </label>
-                <textarea [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply" rows="3"
+                <textarea [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply || isLastApprovalCompleted()" rows="3"
                   [placeholder]="'workflowApprovalDetail.enterAdditionalNotes' | translate"
                   class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
             </textarea>
@@ -588,12 +588,12 @@
                   <!-- File Input -->
                   <div class="relative flex items-center gap-2">
                     <input type="file" #fileInput (change)="onFilesSelected($event)"
-                      [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
+                      [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted()"
                       multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
                     <label
-                      (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && fileInput.click()"
-                      [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
-                      [class.cursor-not-allowed]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2"
+                      (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && !isLastApprovalCompleted() && fileInput.click()"
+                      [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted()"
+                      [class.cursor-not-allowed]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted()"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 cursor-pointer transition-all">
                       {{ 'common.chooseFiles' | translate }}
                     </label>
@@ -612,7 +612,7 @@
                         <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
                         <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
                       </div>
-                      <button type="button" (click)="removeFile(i)" [disabled]="isSubmittingSupply"
+                      <button type="button" (click)="removeFile(i)" [disabled]="isSubmittingSupply || isLastApprovalCompleted()"
                         class="ml-3 p-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
