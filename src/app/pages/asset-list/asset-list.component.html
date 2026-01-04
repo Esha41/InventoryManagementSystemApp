@@ -232,13 +232,19 @@
                 <tr *ngFor="let asset of paginatedAssets"
                   class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
                   <td class="py-4 px-6">
-                    <div class="flex items-center justify-center w-16 h-16">
-                      <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name"
-                        (error)="onImageError(asset)"
-                        class="max-w-full max-h-full object-contain rounded border border-[var(--color-border)]">
-                      <div *ngIf="!asset.imageUrl"
-                        class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
-                        {{ 'common.noImage' | translate }}
+                    <div class="image-preview-container">
+                      <div class="flex items-center justify-center w-16 h-16 relative">
+                        <img *ngIf="asset.imageUrl" 
+                          [src]="asset.imageUrl" 
+                          [alt]="asset.name"
+                          (error)="onImageError(asset)"
+                          (mouseenter)="showImagePreview($event, asset)"
+                          (mouseleave)="hideImagePreview()"
+                          class="max-w-full max-h-full object-contain rounded-lg border border-[var(--color-border)] cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-[var(--color-brand)]">
+                        <div *ngIf="!asset.imageUrl"
+                          class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
+                          {{ 'common.noImage' | translate }}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -355,3 +361,6 @@
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmDelete()"
       (cancelled)="closeDeleteModal()">
     </app-confirm-dialog>
+
+    <!-- Image Preview Tooltip -->
+    <app-image-preview-tooltip></app-image-preview-tooltip>

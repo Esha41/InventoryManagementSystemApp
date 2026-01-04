@@ -106,7 +106,7 @@ export class BackendAuthService {
     ).pipe(
       map(response => {
         this.configService.log('Captcha response received', response);
-        
+
         // Handle wrapped response (ApiResponse)
         if (response && typeof response === 'object' && 'succeeded' in response) {
           const apiResponse = response as ApiResponse<CaptchaResponse>;
@@ -118,7 +118,7 @@ export class BackendAuthService {
           }
           return apiResponse.data;
         }
-        
+
         // Handle direct response
         if (response && typeof response === 'object' && 'captchaId' in response) {
           const directResponse = response as CaptchaResponse;
@@ -127,17 +127,17 @@ export class BackendAuthService {
           }
           return directResponse;
         }
-        
+
         // Unexpected response format
         this.configService.logError('Unexpected captcha response format', response);
         throw new Error('Invalid captcha response format');
       }),
       catchError(error => {
         this.configService.logError('Failed to generate captcha', error);
-        const errorMessage = error?.error?.message || 
-                            error?.message || 
-                            error?.error?.data?.message ||
-                            'Failed to generate captcha. Please try again.';
+        const errorMessage = error?.error?.message ||
+          error?.message ||
+          error?.error?.data?.message ||
+          'Failed to generate captcha. Please try again.';
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -712,12 +712,19 @@ export class BackendAuthService {
     const userNorm = this.normalizePermission(userPermission);
     const requiredNorm = this.normalizePermission(requiredPermission);
 
-    // Exact match after normalization
+
     if (userNorm === requiredNorm) return true;
 
-    // Also check if normalized user permission contains required (or vice versa)
-    // This handles edge cases where formats differ slightly
-    return userNorm.includes(requiredNorm) || requiredNorm.includes(userNorm);
+
+    if (!requiredPermission.includes('.') && !userPermission.includes('.')) {
+      return false;
+    }
+
+    if (userPermission.includes('.') || requiredPermission.includes('.')) {
+      return userNorm === requiredNorm || userNorm.includes(requiredNorm);
+    }
+
+    return false;
   }
 
   /**
@@ -729,7 +736,7 @@ export class BackendAuthService {
       return false;
     }
 
-    // Check if user has IsSuperAdmin claim from token
+
     const token = this.storageService.get<string>('auth_token');
     if (token) {
       try {
@@ -755,7 +762,6 @@ export class BackendAuthService {
       return this.permissionMatches(permissionId, permission) ||
         this.permissionMatches(claimType, permission);
     });
-
 
     return hasPermission;
   }

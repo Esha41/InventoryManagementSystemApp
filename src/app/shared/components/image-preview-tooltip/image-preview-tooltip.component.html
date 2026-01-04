@@ -1,0 +1,23 @@
+<div *ngIf="show && imageUrl" 
+  class="image-preview-tooltip-fixed"
+  [style.left.px]="left"
+  [style.top.px]="top"
+  [attr.aria-label]="altText"
+  [attr.role]="'tooltip'"
+  [attr.aria-hidden]="!show"
+  (mouseenter)="keepVisible()"
+  (mouseleave)="hide()">
+  <div class="image-preview-content">
+    <img [src]="imageUrl" 
+      [alt]="altText"
+      class="preview-image"
+      (error)="hide()"
+      loading="lazy">
+    <div class="preview-arrow"
+      [class.arrow-top]="arrowPosition === 'top'"
+      [class.arrow-bottom]="arrowPosition === 'bottom'"
+      [style.left.px]="arrowLeft"
+      [attr.aria-hidden]="true"></div>
+  </div>
+</div>
+

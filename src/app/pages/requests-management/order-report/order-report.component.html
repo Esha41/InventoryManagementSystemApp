@@ -194,7 +194,7 @@
             <section class="print-section">
               <h2 class="print-section-title">
                 {{ 'requestsManagement.orderReport.labels.itemsIncluded' | translate }}
-                <span class="print-item-count">{{ orderItems.length }}</span>
+                <span class="print-item-count">({{ orderItems.length }})</span>
               </h2>
 
               <table class="print-table">
@@ -247,6 +247,9 @@
                         <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
                         <span *ngSwitchCase="'pending'">{{ 'common.statuses.Pending' | translate }}</span>
                         <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>
+                        <span *ngSwitchCase="'returned'">{{ 'common.statuses.Returned' | translate }}</span>
+                        <span *ngSwitchCase="'returnedforreview'">{{ 'common.statuses.ReturnedForReview' | translate
+                          }}</span>
                         <span *ngSwitchDefault>{{ step.status }}</span>
                       </ng-container>
                     </span>

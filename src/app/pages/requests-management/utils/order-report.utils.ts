@@ -182,7 +182,7 @@ export function mapItemStatus(orderStatus: number | string): string {
 /**
  * Map approval status from API response
  */
-export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' {
+export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' {
   if (!status) return 'pending';
 
   const statusStr = String(status).toLowerCase();
@@ -191,6 +191,12 @@ export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'reject
   }
   if (statusStr.includes('rejected') || statusStr === '2' || statusStr === 'false') {
     return 'rejected';
+  }
+  if (statusStr.includes('returned') || statusStr.includes('return')) {
+    if (statusStr.includes('review')) {
+      return 'returnedforreview';
+    }
+    return 'returned';
   }
   if (statusStr.includes('progress') || statusStr.includes('processing')) {
     return 'in-progress';

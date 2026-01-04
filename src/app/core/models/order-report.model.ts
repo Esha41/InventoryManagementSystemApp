@@ -39,7 +39,7 @@ export interface OrderReportApprovalStep {
   step: string;
   role: string;
   approver: string;
-  status: 'pending' | 'approved' | 'rejected' | 'in-progress';
+  status: 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview';
   date: string;
   notes: string;
 }

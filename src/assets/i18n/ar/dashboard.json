@@ -47,13 +47,13 @@
     },
     "statusLabels": {
       "new": "جديد",
-      "underProcess": "قيد المعالجة",
+      "underProcess": "قيد الإجراء",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
       "cancelled": "ملغي",
       "completed": "مكتمل",
-      "returned": "مُرجع للتعديل",
-      "returnedForReview": "مُرجع للتعديل"
+      "returned": "أرجاع للمعاينة",
+      "returnedForReview": "أرجاع للمعاينة"
     },
     "filters": {
       "all": "الكل",

@@ -421,8 +421,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
             step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
             role: this.getLocalizedRoleName(step),
             approver: this.getLocalizedApproverName(step),
-            status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' || 'pending',
-            date: step.approvedDate || formatOrderDateTime(step.changedAt?.toString(), undefined),
+            status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' || 'pending',
+            date: step.approvedDateTime || formatOrderDateTime(step.changedAt?.toString(), undefined),
             notes: step.comments || ''
           }));
 

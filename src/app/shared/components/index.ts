@@ -15,3 +15,4 @@ export * from './pagination/pagination.component';
 export * from './rows-per-page/rows-per-page.component';
 export * from './loading-state/loading-state.component';
 export * from './error-state/error-state.component';
+export * from './image-preview-tooltip/image-preview-tooltip.component';

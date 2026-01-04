@@ -154,13 +154,13 @@
     },
     "statusLabels": {
       "new": "جديد",
-      "underProcess": "قيد المعالجة",
+      "underProcess": "قيد الإجراء",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
       "cancelled": "ملغي",
       "completed": "مكتمل",
-      "returned": "مُرجع للمراجعة",
-      "returnedForReview": "مُرجع للمراجعة"
+      "returned": "أرجاع للمعاينة",
+      "returnedForReview": "أرجاع للمعاينة"
     },
     "filters": {
       "all": "الكل",
@@ -1501,7 +1501,7 @@
   "stockNotificationSettings": {
     "title": "إعدادات إشعار انخفاض المخزون",
     "subtitle": "اختر المستلمين ووقت الإشعار",
-    "recipientsSettings":"إعدادات المستلمين",
+    "recipientsSettings": "إعدادات المستلمين",
     "roles": "الأدوار",
     "users": "المستخدمون",
     "rolesPlaceholder": "اختر الأدوار",
@@ -1510,9 +1510,9 @@
     "dateAndTime": "التاريخ والوقت",
     "dateTimeNote": "ملاحظة: حالياً، الوقت فقط مطلوب. سيتم إرسال إشعار يومي.",
     "recipientsSavedSuccess": "تم حفظ المستلمين بنجاح",
-    "recipientsSaveFailed":"فشل حفظ المستلمين",
-    "scheduleSavedSuccess":"تم حفظ التاريخ والوقت بنجاح",
-    "scheduleSaveFailed":"فشل حفظ التاريخ والوقت"
+    "recipientsSaveFailed": "فشل حفظ المستلمين",
+    "scheduleSavedSuccess": "تم حفظ التاريخ والوقت بنجاح",
+    "scheduleSaveFailed": "فشل حفظ التاريخ والوقت"
   },
   "accessDenied": {
     "title": "تم رفض الوصول",

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,7 +21,7 @@ import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { LookupItem } from '@models/lookup.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ImagePreviewTooltipComponent, ImagePreviewData } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
@@ -83,7 +83,8 @@ import { ImportDialogComponent } from '@components/import-dialog/import-dialog.c
     LoadingStateComponent,
     AssetViewModalComponent,
     AssetEditModalComponent,
-    ImportDialogComponent
+    ImportDialogComponent,
+    ImagePreviewTooltipComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -123,6 +124,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   // Image state
   imageState: AssetImageState = createInitialImageState();
+
+  // Image preview tooltip reference
+  @ViewChild(ImagePreviewTooltipComponent) imagePreviewTooltip!: ImagePreviewTooltipComponent;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -204,6 +208,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
 
+    // Hide preview on destroy
+    if (this.imagePreviewTooltip) {
+      this.imagePreviewTooltip.hide();
+    }
+
     // Clean up all blob URLs to prevent memory leaks
     this.blobUrls.forEach((url: string) => {
       try {
@@ -229,6 +238,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
           // Reload dropdowns to get new localized lookup values
           this.loadDropdowns();
         });
+
 
       // Check for viewItemId query parameter to auto-open view modal
       this.route.queryParams
@@ -950,6 +960,31 @@ export class AssetListComponent implements OnInit, OnDestroy {
   onImageError(asset: Asset): void {
     asset.imageUrl = undefined;
     this.cdr.markForCheck();
+  }
+
+  showImagePreview(event: MouseEvent, asset: Asset): void {
+    if (!asset.imageUrl || !this.imagePreviewTooltip) {
+      return;
+    }
+
+    const previewData: ImagePreviewData = {
+      imageUrl: asset.imageUrl,
+      altText: this.getAssetName(asset)
+    };
+
+    this.imagePreviewTooltip.showPreview(event, previewData);
+  }
+
+  hideImagePreview(): void {
+    if (this.imagePreviewTooltip) {
+      this.imagePreviewTooltip.hide();
+    }
+  }
+
+  keepPreviewVisible(): void {
+    if (this.imagePreviewTooltip) {
+      this.imagePreviewTooltip.keepVisible();
+    }
   }
 
   /**

@@ -108,15 +108,16 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   private initializeUserContext(): void {
-    // Check if user can view all departments (admin or has permission)
+    // Check if user can view all departments (SuperAdmin or has permission)
     const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
-    this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
-    
+    // Align with backend: Only SuperAdmin or explicit permission grants view all
+    this.isAdminUser = this.backendAuthService.isSuperAdmin() || hasPermission;
+
     // Get user's department ID
     const currentUser = this.backendAuthService.getCurrentUser();
     if (currentUser?.departmentId) {
       this.userDepartmentId = currentUser.departmentId;
-      
+
       // Pre-select user's department for non-admin users
       if (!this.isAdminUser) {
         this.selectedDepartment = currentUser.departmentId;
@@ -148,6 +149,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
+    // The backend service automatically checks AllowanceItemViewAllDepartments permission
+    // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
       allowances: this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(
         API_ENDPOINTS.ALLOWANCE.BASE
@@ -182,7 +185,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     const processed = processAllowanceData(items, departments, ammunitionItems, currentLang);
 
     this.departments = processed.departments;
-    
+
     // Filter departments for non-admin users
     if (!this.isAdminUser && this.userDepartmentId !== null) {
       // Non-admin users can only see their own department in the filter
@@ -191,7 +194,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       // Admin users can see all departments
       this.filteredDepartments = processed.departments;
     }
-    
+
     this.allItems = processed.allItems;
     this.filteredItems = [...processed.allItems];
     this.allAllowances = processed.allAllowances;
@@ -235,7 +238,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     if (!this.isAdminUser && this.userDepartmentId !== null) {
       return;
     }
-    
+
     this.selectedDepartment = null;
     this.currentPage = 1;
     this.updateFilteredItems();
