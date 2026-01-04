@@ -16,6 +16,7 @@ export interface LdapSettingsApiDto {
   ldapEmpAttr: string;
   ldapUsername: string;
   ldapPassword?: string;
+  isActive?: boolean;
 }
 
 // Internal DTO used by components
@@ -26,6 +27,7 @@ export interface LdapSettingsDto {
   ldapUsername?: string | null;
   ldapPassword?: string | null;
   hasPassword?: boolean | null;
+  isActive?: boolean | null;
 }
 
 @Injectable({
@@ -140,7 +142,8 @@ export class LdapSettingsService {
       // Password is typically not returned; use presence as indicator
       hasPassword: apiDto.ldapPassword !== undefined &&
         apiDto.ldapPassword !== null &&
-        apiDto.ldapPassword !== ''
+        apiDto.ldapPassword !== '',
+      isActive: true
     };
   }
 
@@ -154,6 +157,10 @@ export class LdapSettingsService {
 
     if (internalDto.ldapPassword) {
       apiDto.ldapPassword = internalDto.ldapPassword;
+    }
+
+    if (internalDto.isActive !== undefined && internalDto.isActive !== null) {
+      apiDto.isActive = true
     }
 
     return apiDto;
