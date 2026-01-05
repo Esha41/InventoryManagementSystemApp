@@ -25,9 +25,9 @@
     "linked": "Linked",
     "nature": "Nature",
     "orderPriority": "Order Priority",
-    "highPriority": "High Priority",
-    "mediumPriority": "Medium Priority",
-    "lowPriority": "Low Priority",
+    "normalPriority": "Normal Priority",
+    "urgentPriority": "Urgent Priority",
+    "veryUrgentPriority": "Very Urgent Priority",
     "quantity": "Quantity",
     "confirmSelection": "Confirm Selection",
     "fromReserve": "From Reserve",
@@ -57,7 +57,7 @@
     "orderDetails": "Order Details",
     "orderType": "Order Type",
     "orderTypePlaceholder": "New Issue Request",
-    "priorityPlaceholder": "High Priority",
+    "priorityPlaceholder": "Urgent Priority",
     "usePurposePlaceholder": "Training",
     "usageLocationPlaceholder": "Location",
     "usageDatePlaceholder": "20/7/2025 10:00",
@@ -316,7 +316,9 @@
         "items": "items",
         "orderInformation": "Request Information",
         "generatedOn": "Generated On",
-        "printedBy": "Printed By"
+        "printedBy": "Printed By",
+        "isFromAllowance": "From Allowance",
+        "requestType": "Request Type"
       },
       "table": {
         "phase": "Phase",

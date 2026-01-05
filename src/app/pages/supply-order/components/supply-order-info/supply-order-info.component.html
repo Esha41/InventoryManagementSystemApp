@@ -61,11 +61,12 @@
       </label>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ formatDate(orderData?.usageDateFrom) }}
-        <span *ngIf="orderData?.usageTimeFrom" class="ml-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom) }}</span>
+        <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom) }}</span>
         <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
-        <span *ngIf="orderData?.usageTimeTo" class="ml-2">{{ formatTimeToMilitary(orderData?.usageTimeTo) }}</span>
+        <span *ngIf="orderData?.usageTimeTo" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeTo) }}</span>
       </p>
     </div>
   </div>
 </div>
+
 

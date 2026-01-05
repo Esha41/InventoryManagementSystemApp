@@ -12,12 +12,12 @@
           class="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <!-- Search Bar -->
           <div class="relative flex items-center flex-1 min-w-[250px] max-w-[400px]">
-            <div class="absolute left-3 pointer-events-none z-10">
+            <div class="absolute start-3 pointer-events-none z-10">
               <lucide-angular [img]="Search" class="w-5 h-5 text-[var(--color-text-muted)]"></lucide-angular>
             </div>
             <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
               [placeholder]="'dashboard.searchOrders' | translate"
-              class="dashboard-search-input w-full pl-10 pr-4 py-2.5 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
+              class="dashboard-search-input w-full ps-10 pe-4 py-2.5 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
           </div>
 
           <!-- Status Filter -->

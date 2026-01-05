@@ -76,9 +76,9 @@
     "attachments": "المرفقات",
     "attachmentsHintOptional": "اختر ملفاً واحداً أو أكثر للإرفاق. المرفقات اختيارية.",
     "priorityLevels": {
-      "High": "عالية",
-      "Medium": "متوسطة",
-      "Low": "منخفضة",
+      "Normal": "عادية",
+      "Urgent": "مستعجل",
+      "VeryUrgent": "مستعجل جداً",
       "Critical": "حرجة"
     },
     "requestTypes": {

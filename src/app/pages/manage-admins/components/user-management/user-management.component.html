@@ -154,7 +154,7 @@
         </app-rows-per-page>
 
         <!-- Pagination Controls -->
-        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
@@ -179,4 +179,5 @@
   [message]="('manageAdmins.deleteUserConfirm' | translate) + ' ' + (selectedUser?.userName || ('manageAdmins.thisUser' | translate)) + '?'"
   [confirmText]="'common.delete' | translate" confirmColor="error" (confirmed)="confirmDelete()"
   (cancelled)="showDeleteConfirm = false" />
+
 

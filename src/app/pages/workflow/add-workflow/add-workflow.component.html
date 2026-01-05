@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="mb-6 relative flex items-center justify-center">
     <button (click)="onCancel()"
-      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute left-0"
+      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute start-0"
       title="{{ 'common.back' | translate }}">
       <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
     </button>
@@ -82,23 +82,23 @@
             <table class="steps-table">
               <thead class="steps-table-header">
                 <tr>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">#</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">#</th>
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
                     {{ 'workflow.roleName' | translate }} <span class="text-[var(--color-error)]">*</span>
                   </th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
                     {{ 'workflow.applicationEntity' | translate }} <span class="text-[var(--color-error)]">*</span>
                   </th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                     'workflow.higherApproval' |
                     translate }}</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                     'workflow.higherApprovalRole' |
                     translate }}</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                     'workflow.higherApprovalEntity'
                     | translate }}</th>
-                  <th class="px-3 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+                  <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                     'workflow.canReturn' | translate }}</th>
                   <th class="px-4 py-2"></th>
                 </tr>
@@ -149,7 +149,7 @@
                       <span>{{ 'workflow.canReturn' | translate }}</span>
                     </label>
                   </td>
-                  <td class="px-4 py-2 text-right">
+                  <td class="px-4 py-2 text-end">
                     <button type="button" (click)="removeStep(i)"
                       class="px-3 py-2 text-sm border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] text-[var(--color-text)] transition-colors">{{
                       'common.delete' | translate }}</button>

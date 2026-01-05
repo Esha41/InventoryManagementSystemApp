@@ -236,6 +236,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     );
   }
 
+  get displayedItemTypeOptions(): string[] {
+    if (this.fromReserve === 'Yes') {
+      return this.filterOptions.itemTypeOptions.filter(opt => opt !== 'Weapon');
+    }
+    return this.filterOptions.itemTypeOptions;
+  }
+
   get canProceedFromSelection(): boolean {
     const hasSelection = this.cartridgeState.selectedEntries.length > 0;
     const quantitiesValid = this.cartridgeState.selectedEntries.every(entry => entry.quantity > 0);
@@ -585,6 +592,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     const prev = this.fromReserve;
     if (prev !== value) {
       this.fromReserve = value;
+
+      // If switching to reserve and weapon is selected, switch to ammunition
+      if (value === 'Yes' && this.filterState.selectedItemType === 'Weapon') {
+        this.filterState.selectedItemType = 'Ammunition';
+        this.onClearFilters();
+      }
+
       this.updateQueryParams(this.currentStep);
       this.cdr.markForCheck();
       // Force reload because switching from/to reserve changes data source

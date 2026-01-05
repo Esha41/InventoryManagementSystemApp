@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="mb-6 relative flex items-center justify-center">
     <button (click)="onCancel()"
-      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute left-0"
+      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute start-0"
       title="{{ 'common.back' | translate }}">
       <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
     </button>
@@ -76,45 +76,45 @@
             <table class="edit-steps-table min-w-full border text-sm">
               <thead class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
                 <tr>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 60px;">#</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.role' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.applicationEntity' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 150px;">{{
                     'workflow.higherApproval' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.higherApprovalRole' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.higherApprovalEntity' | translate }}</th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 120px;">
                     {{ 'workflow.canReturn' | translate }}
                   </th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 180px;">
                     {{ 'workflow.skipTo' | translate }}
                   </th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 220px;">
                     {{ 'workflow.rolesToBeNotified' | translate }}
                     <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
                       'workflow.whenApproveRejectReturn' |
                       translate }}</span>
                   </th>
-                  <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text-muted)]"
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 220px;">
                     {{ 'workflow.usersToBeNotified' | translate }}
                     <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
                       'workflow.whenApproveRejectReturn' | translate }}</span>
                   </th>
-                  <th class="px-4 py-3 text-right" style="min-width: 100px;"></th>
+                  <th class="px-4 py-3 text-end" style="min-width: 100px;"></th>
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +179,7 @@
                       placeholder="{{ (s.availableUsers && s.availableUsers.length > 0) ? ('workflow.selectUsers' | translate) : ('common.loadingUsers' | translate) }}">
                     </app-dropdown>
                   </td>
-                  <td class="px-4 py-3 text-right">
+                  <td class="px-4 py-3 text-end">
                     <button type="button"
                       class="px-3 py-2 border-2 border-[var(--color-border)] rounded text-sm hover:bg-[var(--color-background-hover)] text-[var(--color-text)] transition-colors"
                       (click)="removeEditStep(i)">{{ 'workflow.delete' | translate }}</button>

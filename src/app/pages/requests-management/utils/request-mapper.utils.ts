@@ -38,30 +38,32 @@ function formatRequestDate(date: string | Date | undefined | null): string {
 
 /**
  * Map priority enum to display string
- * RequestPriority enum: High = 1, Medium = 2, Low = 3
+ * RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
  * Handles both number and string priority values for robustness
  */
-function mapPriority(priority: number | string | null | undefined): 'High' | 'Medium' | 'Low' | 'Critical' {
+function mapPriority(priority: number | string | null | undefined): 'Normal' | 'Urgent' | 'VeryUrgent' | 'Very Urgent' | 'Critical' {
   // Handle null/undefined
   if (priority === null || priority === undefined) {
-    return 'Low';
+    return 'Urgent';
   }
 
   // Convert to number if it's a string
   let priorityNum: number;
   if (typeof priority === 'string') {
-    const lowerPriority = priority.toLowerCase().trim();
-    if (lowerPriority === 'high' || lowerPriority === '1') {
+    const lowerPriority = priority.toLowerCase().trim().replace(/\s+/g, '');
+    if (lowerPriority === 'normal' || lowerPriority === '1') {
       priorityNum = 1;
-    } else if (lowerPriority === 'medium' || lowerPriority === 'normal' || lowerPriority === '2') {
+    } else if (lowerPriority === 'urgent' || lowerPriority === '2') {
       priorityNum = 2;
-    } else if (lowerPriority === 'low' || lowerPriority === '3') {
+    } else if (lowerPriority === 'veryurgent' || lowerPriority === '3') {
       priorityNum = 3;
+    } else if (lowerPriority === 'critical' || lowerPriority === '4') {
+      priorityNum = 4;
     } else {
       // Try to parse as number
       priorityNum = parseInt(priority, 10);
       if (isNaN(priorityNum)) {
-        return 'Low'; // Default to 'Low' if can't parse
+        return 'Urgent'; // Default to 'Urgent' if can't parse
       }
     }
   } else {
@@ -69,10 +71,11 @@ function mapPriority(priority: number | string | null | undefined): 'High' | 'Me
   }
 
   switch (priorityNum) {
-    case 1: return 'High';
-    case 2: return 'Medium';
-    case 3: return 'Low';
-    default: return 'Low';
+    case 1: return 'Normal';
+    case 2: return 'Urgent';
+    case 3: return 'Very Urgent';
+    case 4: return 'Critical';
+    default: return 'Urgent';
   }
 }
 

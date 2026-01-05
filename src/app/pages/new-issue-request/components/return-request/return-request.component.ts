@@ -81,9 +81,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   requestPurposes: RequestPurpose[] = [];
   items: any[] = [];
   priorityOptions = [
-    { value: 1, labelKey: 'returnRequest.high' },
-    { value: 2, labelKey: 'returnRequest.medium' },
-    { value: 3, labelKey: 'returnRequest.low' }
+    { value: 1, labelKey: 'common.priorityLevels.Normal' },
+    { value: 2, labelKey: 'common.priorityLevels.Urgent' },
+    { value: 3, labelKey: 'common.priorityLevels.VeryUrgent' }
   ];
 
   isLoading = false;
@@ -736,7 +736,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translate.get(['toast.error', 'returnRequest.errors.fileSizeExceeded']).subscribe((translations: any) => {
-          const errorMessage = translations['returnRequest.errors.fileSizeExceeded'] 
+          const errorMessage = translations['returnRequest.errors.fileSizeExceeded']
             ? `${translations['returnRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');

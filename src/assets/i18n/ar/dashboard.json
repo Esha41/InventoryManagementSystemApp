@@ -41,9 +41,9 @@
     "itemName": "اسم مادة",
     "itemNo": "رقم مادة",
     "priorityLabels": {
-      "high": "عالية",
-      "medium": "متوسطة",
-      "low": "منخفضة"
+      "normal": "عادية",
+      "urgent": "مستعجل",
+      "veryUrgent": "مستعجل جداً"
     },
     "statusLabels": {
       "new": "جديد",

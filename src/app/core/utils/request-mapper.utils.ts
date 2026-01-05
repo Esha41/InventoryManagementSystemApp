@@ -17,12 +17,12 @@ export enum RequestTypeEnum {
 
 /**
  * Priority enum values (matching backend)
- * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
+ * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
  */
 export enum PriorityEnum {
-  High = 1,
-  Medium = 2,
-  Low = 3
+  Normal = 1,
+  Urgent = 2,
+  VeryUrgent = 3
 }
 
 /**
@@ -74,39 +74,39 @@ export function mapRequestType(type: number | string): RequestType {
 
 /**
  * Map numeric or string priority to string
- * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
+ * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
  */
 export function mapPriority(priority: number | string): Priority {
   // Handle numeric type
   if (typeof priority === 'number') {
     switch (priority) {
-      case PriorityEnum.High:
-        return 'High';
-      case PriorityEnum.Medium:
-        return 'Medium';
-      case PriorityEnum.Low:
-        return 'Low';
+      case PriorityEnum.Normal:
+        return 'Normal';
+      case PriorityEnum.Urgent:
+        return 'Urgent';
+      case PriorityEnum.VeryUrgent:
+        return 'VeryUrgent';
       default:
-        return 'Low';
+        return 'Urgent';
     }
   }
 
   // Handle string type (case-insensitive)
   if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim();
-    if (priorityLower === 'high' || priorityLower === '1') {
-      return 'High';
+    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
+    if (priorityLower === 'normal' || priorityLower === '1') {
+      return 'Normal';
     }
-    if (priorityLower === 'medium' || priorityLower === '2') {
-      return 'Medium';
+    if (priorityLower === 'veryurgent' || priorityLower === '3') {
+      return 'VeryUrgent';
     }
-    if (priorityLower === 'low' || priorityLower === '3') {
-      return 'Low';
+    if (priorityLower === 'urgent' || priorityLower === '2') {
+      return 'Urgent';
     }
   }
 
   // Default fallback
-  return 'Low';
+  return 'Urgent';
 }
 
 /**

@@ -113,9 +113,9 @@
                 </label>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
                   {{ formatDate(orderData?.usageDateFrom) }}
-                  <span *ngIf="orderData?.usageTimeFrom" class="ml-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom) }}</span>
+                  <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom) }}</span>
                   <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
-                  <span *ngIf="orderData?.usageTimeTo" class="ml-2">{{ formatTimeToMilitary(orderData?.usageTimeTo) }}</span>
+                  <span *ngIf="orderData?.usageTimeTo" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeTo) }}</span>
                 </p>
               </div>
             </div>
@@ -149,10 +149,10 @@
               <table class="min-w-full text-sm">
                 <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
                   <tr>
-                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
-                    <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-                    <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+                    <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -163,7 +163,7 @@
                     <td class="px-4 py-2">
                       <button *appHasPermission="'Order.Edit'" type="button"
                         (click)="openEditItemModal(item); $event.stopPropagation()"
-                        class="text-sm text-[var(--color-info)] hover:opacity-80 mr-3">
+                        class="text-sm text-[var(--color-info)] hover:opacity-80 me-3">
                         {{ 'common.edit' | translate }}
                       </button>
                       <button *appHasPermission="'Order.Delete'" type="button"
@@ -198,7 +198,7 @@
                         <h3 class="font-semibold text-[var(--color-text)]">{{ item.itemName }}</h3>
                         <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ item.itemType }}</p>
                       </div>
-                      <div class="text-right ml-4">
+                      <div class="text-end ms-4">
                         <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'supplyRequestDetail.approvedQty' | translate }}
                         </p>
@@ -237,15 +237,15 @@
                       <span *ngIf="item.totalSelectedForDischarge === item.approvedQuantity"
                         class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-success)]/20 text-[var(--color-success)] border border-[var(--color-success)]/40"
                         [class.flex-row-reverse]="isRTL">
-                        <lucide-angular [img]="CheckCircle" class="h-3 w-3 flex-shrink-0" [class.mr-1]="!isRTL"
-                          [class.ml-1]="isRTL"></lucide-angular>
+                        <lucide-angular [img]="CheckCircle" class="h-3 w-3 flex-shrink-0" [class.me-1]="!isRTL"
+                          [class.ms-1]="isRTL"></lucide-angular>
                         {{ 'supplyRequestDetail.fullySelected' | translate }}
                       </span>
                       <span *ngIf="item.totalSelectedForDischarge > item.approvedQuantity"
                         class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-error)]/20 text-[var(--color-error)] border border-[var(--color-error)]/40"
                         [class.flex-row-reverse]="isRTL">
-                        <lucide-angular [img]="AlertTriangle" class="h-3 w-3 flex-shrink-0" [class.mr-1]="!isRTL"
-                          [class.ml-1]="isRTL"></lucide-angular>
+                        <lucide-angular [img]="AlertTriangle" class="h-3 w-3 flex-shrink-0" [class.me-1]="!isRTL"
+                          [class.ms-1]="isRTL"></lucide-angular>
                         {{ 'supplyRequestDetail.exceedsApproved' | translate }}
                       </span>
                     </div>
@@ -273,7 +273,7 @@
               <div *ngFor="let approval of requestDetail.approvalWorkflow; let i = index; let isLast = last"
                 class="relative">
                 <!-- Connection Line -->
-                <div *ngIf="!isLast" class="absolute left-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
+                <div *ngIf="!isLast" class="absolute start-6 top-14 w-0.5 h-full bg-[var(--color-border)]"></div>
 
                 <div class="flex gap-4 relative z-10">
                   <!-- Status Icon -->
@@ -301,7 +301,7 @@
                             {{ approval.applicationRoleName }}
                           </p>
                         </div>
-                        <div class="text-right ml-4">
+                        <div class="text-end ms-4">
                           <span
                             class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium border shadow-custom-sm"
                             [ngClass]="getApprovalStatusClass(approval.status)">
@@ -414,7 +414,7 @@
               <p class="text-sm font-medium text-[var(--color-text)]">{{ item.itemName }}</p>
               <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ item.itemType }}</p>
             </div>
-            <div class="text-right ml-4">
+            <div class="text-end ms-4">
               <p class="text-sm font-semibold text-[var(--color-text)]">
                 {{ formatNumber(item.totalSelectedForDischarge) }} / {{ formatNumber(item.approvedQuantity) }}
               </p>

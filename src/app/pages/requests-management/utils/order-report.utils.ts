@@ -118,6 +118,35 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     usagePurpose = order.usagePurpose;
   }
 
+  // Map request type to string
+  let requestType = 'Order'; // Default
+  if (order.requestType !== undefined && order.requestType !== null) {
+    if (typeof order.requestType === 'number') {
+      switch (order.requestType) {
+        case 1:
+          requestType = 'Order';
+          break;
+        case 2:
+          requestType = 'Return';
+          break;
+        case 3:
+          requestType = 'Discard';
+          break;
+        default:
+          requestType = 'Order';
+      }
+    } else if (typeof order.requestType === 'string') {
+      const typeLower = order.requestType.toLowerCase().trim();
+      if (typeLower === 'return' || typeLower === '2') {
+        requestType = 'Return';
+      } else if (typeLower === 'discard' || typeLower === '3') {
+        requestType = 'Discard';
+      } else {
+        requestType = 'Order';
+      }
+    }
+  }
+
   return {
     orderId: orderId,
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
@@ -131,7 +160,9 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     requestPurposeNameAr: order.requestPurpose?.nameAr || order.requestPurposeNameAr,
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    lastUpdated: usageDateOnly // Usage date without time
+    lastUpdated: usageDateOnly, // Usage date without time
+    isFromAllowance: order.isFromAllowance || false,
+    requestType: requestType
   };
 }
 

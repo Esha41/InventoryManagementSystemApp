@@ -17,7 +17,7 @@
         class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
     </div>
 
-    <div class="space-y-2 overflow-y-auto pr-2 flex-1 min-h-0">
+    <div class="space-y-2 overflow-y-auto pe-2 flex-1 min-h-0">
       <div *ngFor="let cartridge of cartridges" class="p-4 border rounded-lg transition-colors text-sm" [ngClass]="{
           'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
           'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !(cartridge.selected || pendingCartridgeId === cartridge.id)

@@ -1,8 +1,9 @@
 <div class="bg-[var(--color-background)] min-h-full p-6">
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
-    <div class="flex items-center space-x-3">
-      <button (click)="onBack()" class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+    <div class="flex items-center gap-3">
+      <button (click)="onBack()"
+        class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
         <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
       </button>
       <h1 class="text-2xl font-semibold text-[var(--color-text)]">
@@ -28,25 +29,21 @@
   <div *ngIf="!loading && !error && inventoryDetail">
     <!-- Tabs -->
     <div class="border-b border-[var(--color-border)] mb-8">
-      <nav class="flex space-x-8">
-        <button (click)="setActiveTab('overview')" 
-          [ngClass]="{
+      <nav class="flex gap-8">
+        <button (click)="setActiveTab('overview')" [ngClass]="{
             'border-[var(--color-brand)]': activeTab === 'overview',
             'text-[var(--color-text)]': activeTab === 'overview',
             'border-transparent': activeTab !== 'overview',
             'text-[var(--color-text-muted)]': activeTab !== 'overview'
-          }"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
           {{ 'warehouseInventory.overview' | translate }}
         </button>
-        <button (click)="setActiveTab('stock')" 
-          [ngClass]="{
+        <button (click)="setActiveTab('stock')" [ngClass]="{
             'border-[var(--color-brand)]': activeTab === 'stock',
             'text-[var(--color-text)]': activeTab === 'stock',
             'border-transparent': activeTab !== 'stock',
             'text-[var(--color-text-muted)]': activeTab !== 'stock'
-          }"
-          class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
           {{ 'warehouseInventory.stock' | translate }}
         </button>
       </nav>
@@ -59,16 +56,19 @@
         <div class="space-y-8">
           <!-- Primary Details -->
           <div>
-            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.primaryDetails' | translate }}
+            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.primaryDetails' |
+              translate }}
             </h2>
             <div class="space-y-4">
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemName' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemName' | translate }}
+                </p>
                 <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemNumberCaliber' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemNumberCaliber' |
+                  translate }}</p>
                 <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
               </div>
 
@@ -78,19 +78,23 @@
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.batchNumber' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.batchNumber' | translate
+                  }}</p>
                 <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.batchNo || '-' }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.partNumber' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.partNumber' | translate
+                  }}</p>
                 <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.partNo || '-' }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.readyForIssue' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.readyForIssue' |
+                  translate }}</p>
                 <p class="text-sm text-[var(--color-text)]">
-                  <span [ngClass]="inventoryDetail.item?.readyForIssue ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'">
+                  <span
+                    [ngClass]="inventoryDetail.item?.readyForIssue ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'">
                     {{ inventoryDetail.item?.readyForIssue ? ('warehouseInventory.yes' | translate) :
                     ('warehouseInventory.no' | translate) }}
                   </span>
@@ -101,26 +105,31 @@
 
           <!-- Inventory Information -->
           <div>
-            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.inventoryInformation' |
+            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.inventoryInformation'
+              |
               translate }}</h2>
             <div class="space-y-4">
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.supplier' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.supplier' | translate }}
+                </p>
                 <p class="text-sm text-[var(--color-text)]">{{ getSupplierName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.manufacturer' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.manufacturer' |
+                  translate }}</p>
                 <p class="text-sm text-[var(--color-text)]">{{ getManufacturerName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.country' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.country' | translate }}
+                </p>
                 <p class="text-sm text-[var(--color-text)]">{{ getCountryName() }}</p>
               </div>
 
               <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.expiryDate' | translate }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.expiryDate' | translate
+                  }}</p>
                 <p class="text-sm text-[var(--color-text)]">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
               </div>
             </div>
@@ -143,23 +152,24 @@
       </div>
 
       <!-- Item Summary Table -->
-      <div class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
+      <div
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
         <table class="min-w-full">
           <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.itemName' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.itemNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.type' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.nsn' | translate }}
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                 {{ 'inventorySummary.partNo' | translate }}
               </th>
               <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
@@ -225,7 +235,8 @@
       </div>
 
       <!-- Lot Details Section -->
-      <div class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
+      <div
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
         <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
             {{ 'inventorySummary.lotDetails' | translate }}
@@ -235,7 +246,7 @@
         <!-- Loading State -->
         <div *ngIf="loadingLots" class="flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-brand)]"></div>
-          <span class="ml-3 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
+          <span class="ms-3 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
         </div>
 
         <!-- Lot Details Table -->
@@ -248,25 +259,25 @@
             <table class="min-w-full">
               <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.lotNumber' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.depot' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.supplier' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.manufacturer' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.country' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.batchNo' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.expiryDate' | translate }}
                   </th>
                   <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">

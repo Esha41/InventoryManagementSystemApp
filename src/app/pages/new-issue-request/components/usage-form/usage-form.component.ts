@@ -49,7 +49,7 @@ export class UsageFormComponent {
   @Input() reserveDetailsByItem: any[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
-  @Input() orderPriorities: any[] = ['newIssueRequest.highPriority', 'newIssueRequest.mediumPriority', 'newIssueRequest.lowPriority'];
+  @Input() orderPriorities: any[] = ['newIssueRequest.normalPriority', 'newIssueRequest.urgentPriority', 'newIssueRequest.veryUrgentPriority'];
   @Input() requesterComments: string = '';
   @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();

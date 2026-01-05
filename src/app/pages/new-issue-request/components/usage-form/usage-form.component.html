@@ -9,13 +9,13 @@
       <table class="min-w-full text-sm">
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -126,7 +126,8 @@
           <div class="space-y-3">
             <!-- File Input -->
             <div class="relative flex items-center gap-2">
-              <input type="file" #fileInput (change)="onFileSelected($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+              <input type="file" #fileInput (change)="onFileSelected($event)" multiple
+                accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
               <label (click)="fileInput.click()"
                 class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
                 {{ 'common.chooseFiles' | translate }}
@@ -147,7 +148,7 @@
                   <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
                 </div>
                 <button type="button" (click)="removeFile(i)"
-                  class="ml-3 p-1 text-red-600 hover:text-red-700 transition-colors">
+                  class="ms-3 p-1 text-red-600 hover:text-red-700 transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
@@ -269,17 +270,17 @@
       <table class="min-w-full text-sm">
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.itemName' | translate }}</th>
-            <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
-            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.totalReserve' | translate }}</th>
-            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.availableReserve' | translate }}</th>
-            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.orderedQuantity' | translate }}</th>
-            <th class="px-4 py-2 text-right font-semibold">{{ 'newIssueRequest.usedQuantity' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemName' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
+            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.totalReserve' | translate }}</th>
+            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.availableReserve' | translate }}</th>
+            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.orderedQuantity' | translate }}</th>
+            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.usedQuantity' | translate }}</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of reserveDetailsByItem" class="border-t border-[var(--color-border)] transition-colors"
-            [ngClass]="{'bg-[var(--color-brand)]/10 border-l-4 border-l-[var(--color-brand)]': isItemSelected(item.itemId)}">
+            [ngClass]="{'bg-[var(--color-brand)]/10 border-s-4 border-s-[var(--color-brand)]': isItemSelected(item.itemId)}">
             <td class="px-4 py-2 text-[var(--color-text)]">
               <div class="flex items-center gap-2">
                 <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
@@ -287,10 +288,10 @@
               </div>
             </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ item.itemNo }}</td>
-            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.totalReserve | number }}</td>
-            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.availableReserve | number }}</td>
-            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.orderedQuantity | number }}</td>
-            <td class="px-4 py-2 text-right text-[var(--color-text)]">{{ item.usedQuantity | number }}</td>
+            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.totalReserve | number }}</td>
+            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.availableReserve | number }}</td>
+            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.orderedQuantity | number }}</td>
+            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.usedQuantity | number }}</td>
           </tr>
         </tbody>
       </table>

@@ -84,9 +84,9 @@
     "attachments": "Attachments",
     "attachmentsHintOptional": "Select one or more files to attach. Files are optional.",
     "priorityLevels": {
-      "High": "High",
-      "Medium": "Medium",
-      "Low": "Low",
+      "Normal": "Normal",
+      "Urgent": "Urgent",
+      "VeryUrgent": "Very Urgent",
       "Critical": "Critical"
     },
     "requestTypes": {
@@ -151,7 +151,7 @@
     "manageAdmins": "Manage Users",
     "adminRoles": "Role Management",
     "rolePermissions": "Role Permissions",
-      "ldapSettings": "LDAP Settings",
+    "ldapSettings": "LDAP Settings",
     "emailSettings": "Email Settings",
     "adminImportExport": "Import & Export",
     "notifications": "Notifications",

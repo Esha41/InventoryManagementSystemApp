@@ -3,9 +3,9 @@
   <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <div class="page-container py-4">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-4">
           <button (click)="onBackToWarehouses()"
-            class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+            class="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
             <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
             <span class="font-medium">{{ 'warehouseInventory.backToWarehouses' | translate }}</span>
           </button>
@@ -118,27 +118,16 @@
       <app-card *ngIf="!loading && !error" [shadow]="true">
         <div class="overflow-x-auto">
           <!-- Weapon Assets Table -->
-          <app-asset-table
-            *ngIf="activeTab === 'weapon'"
-            [assets]="paginatedAssets"
-            [getAssetItemName]="getAssetItemName"
-            (editAsset)="onEditAsset($event)"
-            (deleteAsset)="onDeleteAsset($event)"
-            (viewAsset)="onViewAsset($event)">
+          <app-asset-table *ngIf="activeTab === 'weapon'" [assets]="paginatedAssets"
+            [getAssetItemName]="getAssetItemName" (editAsset)="onEditAsset($event)"
+            (deleteAsset)="onDeleteAsset($event)" (viewAsset)="onViewAsset($event)">
           </app-asset-table>
 
           <!-- Inventory Items Table (Ammunition & Explosives) -->
-          <app-inventory-table
-            *ngIf="activeTab !== 'weapon'"
-            [items]="paginatedItems"
-            [isStaticItem]="isStaticItem.bind(this)"
-            [getItemName]="getItemName"
-            [getSupplierName]="getSupplierName"
-            [formatNumber]="formatNumber"
-            [formatDate]="formatDate"
-            (editItem)="onEditItem($event)"
-            (deleteItem)="onDeleteItem($event)"
-            (viewItem)="onViewItem($event)">
+          <app-inventory-table *ngIf="activeTab !== 'weapon'" [items]="paginatedItems"
+            [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
+            [formatNumber]="formatNumber" [formatDate]="formatDate" (editItem)="onEditItem($event)"
+            (deleteItem)="onDeleteItem($event)" (viewItem)="onViewItem($event)">
           </app-inventory-table>
         </div>
 
@@ -155,7 +144,7 @@
             </app-rows-per-page>
 
             <!-- Pagination Controls -->
-            <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+            <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
               <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
               </app-pagination>
               <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
@@ -183,24 +172,15 @@
   </app-confirm-dialog>
 
   <!-- Edit Asset Modal -->
-  <app-edit-asset-modal 
-    [isOpen]="showEditAssetModal" 
-    [asset]="selectedAsset || null" 
-    [loading]="loadingAsset"
-    (closed)="onEditAssetModalClosed()"
-    (saved)="onEditAssetModalSaved()">
+  <app-edit-asset-modal [isOpen]="showEditAssetModal" [asset]="selectedAsset || null" [loading]="loadingAsset"
+    (closed)="onEditAssetModalClosed()" (saved)="onEditAssetModalSaved()">
   </app-edit-asset-modal>
 
   <!-- Delete Asset Confirmation Dialog -->
-  <app-confirm-dialog 
-    [isOpen]="showDeleteAssetDialog" 
-    [title]="'warehouseInventory.deleteAssetConfirm' | translate"
+  <app-confirm-dialog [isOpen]="showDeleteAssetDialog" [title]="'warehouseInventory.deleteAssetConfirm' | translate"
     [message]="('warehouseInventory.deleteAssetConfirm' | translate) + ': ' + getDeleteAssetMessage()"
-    [description]="'warehouseInventory.deleteAssetWarning' | translate"
-    [confirmText]="'common.delete' | translate"
-    [cancelText]="'common.cancel' | translate"
-    confirmVariant="danger"
-    (confirmed)="onDeleteAssetConfirm()"
+    [description]="'warehouseInventory.deleteAssetWarning' | translate" [confirmText]="'common.delete' | translate"
+    [cancelText]="'common.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteAssetConfirm()"
     (cancelled)="onDeleteAssetCancel()">
   </app-confirm-dialog>
 
@@ -212,7 +192,7 @@
 
       <!-- Modal panel -->
       <div
-        class="inline-block align-bottom bg-[var(--color-background)] rounded-xl text-left overflow-hidden shadow-custom-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        class="inline-block align-bottom bg-[var(--color-background)] rounded-xl text-start overflow-hidden shadow-custom-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
         <!-- Header -->
         <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
           <div class="flex items-center justify-between">

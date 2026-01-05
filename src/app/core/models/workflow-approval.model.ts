@@ -77,7 +77,7 @@ export type RequestType = 'Order' | 'Return' | 'Discard';
 /**
  * Priority levels
  */
-export type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type Priority = 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical';
 
 /**
  * Request status options

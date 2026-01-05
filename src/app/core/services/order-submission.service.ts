@@ -52,7 +52,7 @@ export class OrderSubmissionService {
   constructor(
     private orderService: OrderService,
     private errorHandlingService: ErrorHandlingService
-  ) {}
+  ) { }
 
   /**
    * Validates order data before submission
@@ -96,9 +96,9 @@ export class OrderSubmissionService {
       };
     }
 
-    
-    if (data.usageTimeFrom === null || data.usageTimeFrom === undefined || 
-        (typeof data.usageTimeFrom === 'string' && data.usageTimeFrom.trim().length === 0)) {
+
+    if (data.usageTimeFrom === null || data.usageTimeFrom === undefined ||
+      (typeof data.usageTimeFrom === 'string' && data.usageTimeFrom.trim().length === 0)) {
       return {
         isValid: false,
         error: 'Usage time from is required.'
@@ -113,8 +113,8 @@ export class OrderSubmissionService {
     }
 
     // Validate usageTimeTo - "0000" is a valid military time
-    if (data.usageTimeTo === null || data.usageTimeTo === undefined || 
-        (typeof data.usageTimeTo === 'string' && data.usageTimeTo.trim().length === 0)) {
+    if (data.usageTimeTo === null || data.usageTimeTo === undefined ||
+      (typeof data.usageTimeTo === 'string' && data.usageTimeTo.trim().length === 0)) {
       return {
         isValid: false,
         error: 'Usage time to is required.'
@@ -144,7 +144,7 @@ export class OrderSubmissionService {
   buildOrderPayload(data: OrderSubmissionData): CreateOrderRequest {
     const usageDateTimeFrom = this.combineDateAndTime(data.usageDateFrom, data.usageTimeFrom);
     const usageDateTimeTo = this.combineDateAndTime(data.usageDateTo, data.usageTimeTo);
-    
+
     const requestItems = data.selectedEntries.map(entry => ({
       itemId: entry.id,
       quantity: entry.quantity,
@@ -255,7 +255,7 @@ export class OrderSubmissionService {
   private combineDateAndTime(dateStr: string, timeStr: string): Date {
     const datePart = dateStr || new Date().toISOString().substring(0, 10);
     let timePart = '00:00';
-    
+
     if (timeStr) {
       // Handle military format (HHMM - 4 digits)
       if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
@@ -268,7 +268,7 @@ export class OrderSubmissionService {
         timePart = timeStr.substring(0, 5);
       }
     }
-    
+
     const isoString = `${datePart}T${timePart}:00`;
     return new Date(isoString);
   }
@@ -281,14 +281,14 @@ export class OrderSubmissionService {
     if (!timeStr) {
       return '00:00:00';
     }
-    
+
     // Military format (HHMM - 4 digits) - convert to HH:mm:ss
     if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
       const hours = timeStr.substring(0, 2);
       const minutes = timeStr.substring(2, 4);
       return `${hours}:${minutes}:00`;
     }
-    
+
     // Legacy format (HH:mm) - convert to HH:mm:ss
     if (timeStr.includes(':')) {
       const parts = timeStr.split(':');
@@ -297,7 +297,7 @@ export class OrderSubmissionService {
       const seconds = parts[2] ? parts[2].padStart(2, '0') : '00';
       return `${hours}:${minutes}:${seconds}`;
     }
-    
+
     // Default fallback
     return '00:00:00';
   }
@@ -312,17 +312,17 @@ export class OrderSubmissionService {
     return `${hours}:${minutes}:${seconds}`;
   }
 
-
   /**
    * Maps priority label to enum value
-   * Backend RequestPriority enum: High = 1, Medium = 2, Low = 3
+   * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
    */
   private mapPriorityToEnum(priorityLabel: string): number {
-    const normalized = (priorityLabel || '').toLowerCase();
-    if (normalized.includes('high')) return 1; 
-    if (normalized.includes('medium')) return 2; 
-    if (normalized.includes('low')) return 3; 
-    return 3; // default to Low
+    const normalized = (priorityLabel || '').toLowerCase().replace(/\s+/g, '');
+    if (normalized.includes('normal')) return 1;
+    if (normalized.includes('urgent') && normalized.includes('very')) return 3;
+    if (normalized.includes('veryurgent')) return 3;
+    if (normalized.includes('urgent')) return 2;
+    return 2; // default to Urgent
   }
 }
 

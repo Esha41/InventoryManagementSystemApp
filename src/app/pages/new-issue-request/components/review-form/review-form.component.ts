@@ -36,12 +36,12 @@ export class ReviewFormComponent {
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
 
-  constructor(public translateService: TranslateService) {}
-  
+  constructor(public translateService: TranslateService) { }
+
   get currentLang(): string {
     return this.translateService.currentLang || 'en';
   }
-  
+
   get isArabic(): boolean {
     return this.currentLang === 'ar';
   }
@@ -62,16 +62,18 @@ export class ReviewFormComponent {
     }
     // Map the actual values to translation keys
     const priorityMap: { [key: string]: string } = {
-      'High': 'newIssueRequest.highPriority',
-      'Normal': 'newIssueRequest.mediumPriority',
-      'Low': 'newIssueRequest.lowPriority',
-      'High Priority': 'newIssueRequest.highPriority',
-      'Medium Priority': 'newIssueRequest.mediumPriority',
-      'Low Priority': 'newIssueRequest.lowPriority'
+      'Normal': 'newIssueRequest.normalPriority',
+      'Urgent': 'newIssueRequest.urgentPriority',
+      'VeryUrgent': 'newIssueRequest.veryUrgentPriority',
+      'Very Urgent': 'newIssueRequest.veryUrgentPriority',
+      'Normal Priority': 'newIssueRequest.normalPriority',
+      'Urgent Priority': 'newIssueRequest.urgentPriority',
+      'Very Urgent Priority': 'newIssueRequest.veryUrgentPriority'
     };
     const translationKey = priorityMap[this.orderPriority];
     return translationKey ? this.translateService.instant(translationKey) : this.orderPriority;
   }
+
 
   getFormattedUsageDateFrom(): string {
     if (!this.usageDateFrom) return '';

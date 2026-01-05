@@ -21,7 +21,7 @@ export class IssueRequestDataService {
   constructor(
     private apiService: ApiService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Loads request purposes from API
@@ -81,9 +81,9 @@ export class IssueRequestDataService {
    */
   rebuildOrderPriorities(): DropdownOption<string>[] {
     return [
-      { label: 'newIssueRequest.highPriority', value: 'High' },
-      { label: 'newIssueRequest.mediumPriority', value: 'Medium' },
-      { label: 'newIssueRequest.lowPriority', value: 'Low' }
+      { label: 'newIssueRequest.normalPriority', value: 'Normal' },
+      { label: 'newIssueRequest.urgentPriority', value: 'Urgent' },
+      { label: 'newIssueRequest.veryUrgentPriority', value: 'Very Urgent' }
     ];
   }
 }

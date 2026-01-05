@@ -61,10 +61,10 @@
           </div>
 
           <ul *ngIf="!ordersLoading && !ordersError && orders.length > 0"
-            class="space-y-2.5 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 custom-scrollbar">
+            class="space-y-2.5 max-h-[calc(100vh-16rem)] overflow-y-auto pe-2 custom-scrollbar">
             <li *ngFor="let order of orders; trackBy: trackByOrderId">
               <button (click)="selectOrder(order)"
-                class="w-full group rounded-xl border-2 px-4 py-3.5 text-left transition-all duration-200 hover:shadow-custom-md"
+                class="w-full group rounded-xl border-2 px-4 py-3.5 text-start transition-all duration-200 hover:shadow-custom-md"
                 [ngClass]="order.id === selectedOrderId 
                   ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-custom-md' 
                   : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/30 bg-[var(--color-background)]'">
@@ -84,7 +84,7 @@
                 </div>
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-[var(--color-text-muted)] truncate">{{ getOrderDateLabel(order) }}</span>
-                  <span class="font-bold text-[var(--color-text)] shrink-0 ml-2">{{ ('common.priorityLevels.' +
+                  <span class="font-bold text-[var(--color-text)] shrink-0 ms-2">{{ ('common.priorityLevels.' +
                     getPriorityLabel(order.priority)) | translate }}</span>
                 </div>
               </button>
@@ -156,6 +156,12 @@
 
               <div class="print-info-grid">
                 <div class="print-info-item">
+                  <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requestType' | translate
+                    }}:</span>
+                  <span class="print-info-value">{{ ('requestsManagement.' + (orderSummary.requestType?.toLowerCase() ||
+                    'order')) | translate }}</span>
+                </div>
+                <div class="print-info-item">
                   <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.department' | translate
                     }}:</span>
                   <span class="print-info-value">{{ orderSummary.department }}</span>
@@ -186,6 +192,12 @@
                     }}:</span>
                   <span class="print-info-value">{{ orderSummary.lastUpdated || orderSummary.requestDate || 'N/A'
                     }}</span>
+                </div>
+                <div class="print-info-item">
+                  <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.isFromAllowance' | translate
+                    }}:</span>
+                  <span class="print-info-value">{{ (orderSummary.isFromAllowance ? 'common.yes' : 'common.no') |
+                    translate }}</span>
                 </div>
               </div>
             </section>

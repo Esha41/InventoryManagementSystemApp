@@ -47,7 +47,7 @@
         {{ asset.condition || '-' }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-        <div class="flex items-center justify-center space-x-2">
+        <div class="flex items-center justify-center gap-2">
           <!-- Edit Button -->
           <button *appHasPermission="'Asset.Edit'" (click)="editAsset.emit(asset)"
             class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
@@ -73,4 +73,3 @@
     </tr>
   </tbody>
 </table>
-

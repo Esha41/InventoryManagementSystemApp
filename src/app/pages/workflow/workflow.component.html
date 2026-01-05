@@ -9,9 +9,9 @@
     <!-- Search Input -->
     <div class="flex-1 relative">
       <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="{{ 'workflow.search' | translate }}"
-        class="w-full pl-10 pr-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-[var(--color-background)] text-[var(--color-text)]" />
+        class="w-full ps-10 pe-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-[var(--color-background)] text-[var(--color-text)]" />
       <lucide-angular [img]="Search"
-        class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+        class="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
     </div>
 
     <!-- Add Work Flow Button -->
@@ -39,19 +39,19 @@
         <thead class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
           <tr>
             <th
-              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'workflow.name' | translate }}
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'workflow.workflowType' | translate }}
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'workflow.approvalStages' | translate }}
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'workflow.status' | translate }}
             </th>
             <th class="px-6 py-3">
@@ -113,7 +113,7 @@
           [visibleItems]="paginatedWorkflows.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 
-        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
@@ -159,23 +159,23 @@
         <table class="min-w-full">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">#</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.role' |
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">#</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.role' |
                 translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                 'workflow.applicationEntity' | translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                 'workflow.higherApprovalRole' | translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
                 'workflow.higherApprovalEntity' | translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.skipTo'
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.skipTo'
                 | translate }}</th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
                 {{ 'workflow.rolesToBeNotified' | translate }}
                 <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
                   'workflow.whenApproveRejectReturn' | translate }}</span>
               </th>
-              <th class="px-4 py-2 text-left text-xs font-semibold text-[var(--color-text-muted)]">
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
                 {{ 'workflow.usersToBeNotified' | translate }}
                 <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
                   'workflow.whenApproveRejectReturn' | translate }}</span>
@@ -206,7 +206,7 @@
           </tbody>
         </table>
       </div>
-      <div class="mt-6 text-right">
+      <div class="mt-6 text-end">
         <button
           class="px-5 py-2 border-2 border-[var(--color-border)] rounded hover:bg-[var(--color-background-hover)] transition-colors"
           (click)="closeModals()">{{ 'common.close' | translate }}</button>

@@ -20,6 +20,8 @@ export interface OrderSummary {
   totalItems: number;
   totalQuantity: number;
   lastUpdated: string;
+  isFromAllowance?: boolean;
+  requestType?: string;
 }
 
 /**

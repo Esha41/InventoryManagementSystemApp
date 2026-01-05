@@ -286,8 +286,8 @@ export const routes: Routes = [
       {
         path: 'stock-notification-settings',
         loadComponent: () => import('@pages/stock-notification-settings/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
-        canActivate: [permissionGuard], 
-        data: { permissions: ['inventory.edit', 'inventory.view'] } 
+        canActivate: [permissionGuard],
+        data: { permissions: ['inventory.edit', 'inventory.view'] }
       },
       {
         path: 'notifications',

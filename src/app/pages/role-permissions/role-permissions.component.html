@@ -27,9 +27,9 @@
             <!-- Role Search -->
             <div class="relative">
               <lucide-angular [img]="Search"
-                class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                class="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
               <input type="text" [(ngModel)]="roleSearchTerm" [placeholder]="'common.search' | translate"
-                class="w-full pl-10 pr-3 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
+                class="w-full ps-11 pe-3 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
             </div>
 
             <!-- Roles Table -->
@@ -133,14 +133,14 @@
             <div class="p-3">
               <div class="relative">
                 <lucide-angular [img]="Search"
-                  class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]">
+                  class="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]">
                 </lucide-angular>
                 <input type="text" [(ngModel)]="permissionSearchTerm" (ngModelChange)="onPermissionSearchChange()"
                   [ngModelOptions]="{standalone: true}" [placeholder]="'rolePermissions.searchPlaceholder' | translate"
-                  class="w-full pl-9 pr-9 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] text-sm" />
+                  class="w-full ps-11 pe-9 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/20 focus:border-[var(--color-brand)] text-sm" />
                 <button *ngIf="permissionSearchTerm" (click)="permissionSearchTerm = ''; onPermissionSearchChange()"
                   type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                  class="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
                   <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
                 </button>
               </div>
@@ -215,7 +215,7 @@
                       <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                         <tr>
                           <th
-                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider sticky left-0 bg-[var(--color-background-muted)] z-10 min-w-[180px]">
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider sticky start-0 bg-[var(--color-background-muted)] z-10 min-w-[180px]">
                             Entity / Permission
                           </th>
                           <th *ngFor="let permType of getUniquePermissionTypes(category)"
@@ -235,7 +235,7 @@
                         <tr *ngFor="let group of category.permissions"
                           class="hover:bg-[var(--color-background-muted)] transition-colors">
                           <td
-                            class="px-4 py-3 font-medium text-sm text-[var(--color-text)] sticky left-0 bg-[var(--color-background)] hover:bg-[var(--color-background-muted)] z-10">
+                            class="px-4 py-3 font-medium text-sm text-[var(--color-text)] sticky start-0 bg-[var(--color-background)] hover:bg-[var(--color-background-muted)] z-10">
                             <div class="flex items-center gap-2">
                               <label class="inline-flex items-center cursor-pointer flex-shrink-0">
                                 <input type="checkbox" [checked]="isRowFullySelected(group)"

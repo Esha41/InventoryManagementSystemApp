@@ -14,13 +14,13 @@
         <div class="flex-1 relative">
           <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()"
             [options]="filteredDepartments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
-            [disabled]="!isAdminUser"
-            placeholder="{{ 'allowance.selectDepartment' | translate }}">
+            [disabled]="!isAdminUser" placeholder="{{ 'allowance.selectDepartment' | translate }}">
           </app-dropdown>
           <!-- Clear Department Filter Button - Only show for admin users -->
-          <button *ngIf="isAdminUser && selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
+          <button
+            *ngIf="isAdminUser && selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
             type="button" (click)="clearDepartmentFilter(); $event.stopPropagation()"
-            class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
             style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
             title="{{ 'allowance.clearFilter' | translate }}">
             <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
@@ -34,13 +34,13 @@
           <!-- Clear Item Filter Button -->
           <button *ngIf="selectedItem !== null && selectedItem !== undefined && selectedItem !== ''" type="button"
             (click)="clearItemFilter(); $event.stopPropagation()"
-            class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
             style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
             title="{{ 'allowance.clearFilter' | translate }}">
             <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
           </button>
         </div>
-        <app-button *appHasPermission="'Allowance.Create'" variant="primary" (click)="onAddAllowance()">
+        <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()">
           <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
             <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
             <span>{{ 'allowance.addAllowance' | translate }}</span>
@@ -70,25 +70,32 @@
                   class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.department' | translate }}
                 </th>
-                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.date' | translate }}
                 </th>
-                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.item' | translate }}
                 </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.totalQuantity' | translate }}
                 </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.usedQuantity' | translate }}
                 </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.reservedQuantity' | translate }}
                 </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th
+                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.remainingQuantity' | translate }}
                 </th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
+                <th
+                  class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
                   style="text-align: center;">
                   {{ 'allowance.table.actions' | translate }}
                 </th>
@@ -116,29 +123,29 @@
                       }}</span>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-end">
                   {{ allowance.quantity | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                   {{ allowance.usedQuantityFromAllowance | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                   {{ allowance.reservedQuantityByDraftSupplies | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-end">
                   {{ allowance.remainingQuantityFromAllowance | number }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                     <!-- Edit Button -->
-                    <button *appHasPermission="'Allowance.Edit'" (click)="onEdit(allowance)"
+                    <button *appHasPermission="'AllowanceItem.Edit'" (click)="onEdit(allowance)"
                       class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                       [title]="'allowance.edit' | translate">
                       <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
                     </button>
 
                     <!-- Delete Button -->
-                    <button *appHasPermission="'Allowance.Delete'" (click)="onDelete(allowance)"
+                    <button *appHasPermission="'AllowanceItem.Delete'" (click)="onDelete(allowance)"
                       class="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                       [title]="'allowance.delete' | translate">
                       <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -161,7 +168,7 @@
         <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'allowance.noAllowances' | translate }}</h3>
         <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'allowance.noAllowancesDescription' | translate }}</p>
         <div class="mt-6">
-          <app-button *appHasPermission="'Allowance.Create'" variant="primary" (click)="onAddAllowance()">
+          <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()">
             {{ 'allowance.addAllowance' | translate }}
           </app-button>
         </div>
@@ -179,7 +186,7 @@
         </app-rows-per-page>
 
         <!-- Pagination Controls -->
-        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">

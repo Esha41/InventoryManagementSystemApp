@@ -83,9 +83,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   requestPurposes: RequestPurpose[] = [];
   items: any[] = [];
   priorityOptions = [
-    { value: 1, labelKey: 'discardRequest.high' },
-    { value: 2, labelKey: 'discardRequest.medium' },
-    { value: 3, labelKey: 'discardRequest.low' }
+    { value: 1, labelKey: 'common.priorityLevels.Normal' },
+    { value: 2, labelKey: 'common.priorityLevels.Urgent' },
+    { value: 3, labelKey: 'common.priorityLevels.VeryUrgent' }
   ];
 
   isLoading = false;
@@ -656,7 +656,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
       // Show error message if any files exceed the limit
       if (invalidFiles.length > 0) {
         this.translate.get(['toast.error', 'discardRequest.errors.fileSizeExceeded']).subscribe((translations: any) => {
-          const errorMessage = translations['discardRequest.errors.fileSizeExceeded'] 
+          const errorMessage = translations['discardRequest.errors.fileSizeExceeded']
             ? `${translations['discardRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
             : invalidFiles.join('\n');
           this.toastService.error(errorMessage, translations['toast.error'] || 'Error');

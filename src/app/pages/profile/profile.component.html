@@ -44,7 +44,7 @@
                 <span class="text-2xl font-bold text-white">{{ getUserInitials() }}</span>
               </div>
               <div
-                class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white border-2 border-[var(--color-background-muted)] flex items-center justify-center shadow-custom-sm">
+                class="absolute -bottom-1 -end-1 w-8 h-8 rounded-full bg-white border-2 border-[var(--color-background-muted)] flex items-center justify-center shadow-custom-sm">
                 <lucide-angular [img]="Shield" class="h-4 w-4 text-[var(--color-brand)]"
                   *ngIf="currentUser.isLdapUser"></lucide-angular>
                 <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-text-muted)]"

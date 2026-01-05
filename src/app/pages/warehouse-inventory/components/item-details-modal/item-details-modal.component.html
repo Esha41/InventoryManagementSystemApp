@@ -49,7 +49,7 @@
 
           <!-- Right Column -->
           <div class="space-y-4">
-            <div class="bg-[var(--color-info)]/10 rounded-lg p-4 border-l-4 border-[var(--color-info)] border-t border-r border-b border-[var(--color-border)]/20">
+            <div class="bg-[var(--color-info)]/10 rounded-lg p-4 border-s-4 border-[var(--color-info)] border-t border-r border-b border-[var(--color-border)]/20">
               <p class="text-sm text-[var(--color-info)] mb-1">{{ 'warehouseInventory.quantity' | translate }}</p>
               <p class="text-2xl font-bold text-[var(--color-info)]">{{ formatNumber(item.quantity) }}</p>
             </div>
@@ -59,7 +59,7 @@
               <p class="text-base font-semibold text-[var(--color-text)]">{{ formatDate(item.expiryDate) }}</p>
             </div>
             
-            <div class="bg-[var(--color-warning)]/10 rounded-lg p-4 border-l-4 border-[var(--color-warning)] border-t border-r border-b border-[var(--color-border)]/20">
+            <div class="bg-[var(--color-warning)]/10 rounded-lg p-4 border-s-4 border-[var(--color-warning)] border-t border-r border-b border-[var(--color-border)]/20">
               <p class="text-sm text-[var(--color-warning)] mb-1">{{ 'warehouseInventory.neq' | translate }}</p>
               <p class="text-lg font-bold text-[var(--color-warning)]">{{ item.netExplosiveQuantity }} kg</p>
             </div>
@@ -120,4 +120,5 @@
     </div>
   </div>
 </div>
+
 

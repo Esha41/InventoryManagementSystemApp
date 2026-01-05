@@ -28,11 +28,8 @@
                 </label>
                 <div class="flex-1">
                   <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" name="department"
-                    (ngModelChange)="onDepartmentChange()" 
-                    [disabled]="isLoadingDepartments || !isAdminUser"
-                    [error]="hasError('department')" 
-                    [options]="filteredDepartments" 
-                    optionValue="id"
+                    (ngModelChange)="onDepartmentChange()" [disabled]="isLoadingDepartments || !isAdminUser"
+                    [error]="hasError('department')" [options]="filteredDepartments" optionValue="id"
                     [optionLabelFn]="departmentOptionLabel"
                     placeholder="{{ 'allowance.selectDepartment' | translate }}">
                   </app-dropdown>
@@ -158,8 +155,8 @@
 
               <!-- Submit Button -->
               <div class="flex justify-center pt-6">
-                <app-button *appHasPermission="'Allowance.Create'" type="submit" variant="primary" size="md"
-                  class="px-12" [disabled]="isLoading">
+                <app-button *appHasPermission="['AllowanceItem.Create', 'AllowanceItem.Edit']" appPermissionMode="any"
+                  type="submit" variant="primary" size="md" class="px-12" [disabled]="isLoading">
                   {{ isLoading ? ('allowance.sending' | translate) : ('allowance.send' | translate) }}
                 </app-button>
               </div>

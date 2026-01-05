@@ -58,14 +58,17 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
 
   getPriorityKey(priority?: number | null): string {
     switch (priority) {
+      case 1:
+        return 'dashboard.priorityLabels.normal';
       case 2:
-        return 'dashboard.priorityLabels.medium';
+        return 'dashboard.priorityLabels.urgent';
       case 3:
-        return 'dashboard.priorityLabels.low';
+        return 'dashboard.priorityLabels.veryUrgent';
       default:
-        return 'dashboard.priorityLabels.high';
+        return 'dashboard.priorityLabels.urgent';
     }
   }
+
 
   getStatusKey(status?: number | null): string {
     switch (status) {

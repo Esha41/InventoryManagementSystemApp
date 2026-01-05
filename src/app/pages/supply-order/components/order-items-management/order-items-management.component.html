@@ -15,10 +15,10 @@
     <table class="min-w-full text-sm">
       <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
         <tr>
-          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
-          <th class="px-4 py-2 text-left font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-          <th class="px-4 py-2 text-left font-semibold">{{ 'common.actions' | translate }}</th>
+          <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+          <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+          <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+          <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
         </tr>
       </thead>
       <tbody class="bg-[var(--color-background)]">
@@ -29,7 +29,7 @@
           <td class="px-4 py-2">
             <button *appHasPermission="'Order.Edit'" type="button"
               (click)="onEditItemClick(item, $event)"
-              class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 mr-3">
+              class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 me-3">
               {{ 'common.edit' | translate }}
             </button>
             <button *appHasPermission="'Order.Delete'" type="button"
@@ -43,4 +43,5 @@
     </table>
   </div>
 </div>
+
 

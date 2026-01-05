@@ -42,9 +42,9 @@
     "itemName": "Item Name",
     "itemNo": "Item Number",
     "priorityLabels": {
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low"
+      "normal": "Normal",
+      "urgent": "Urgent",
+      "veryUrgent": "Very Urgent"
     },
     "statusLabels": {
       "new": "New",

@@ -8,12 +8,10 @@
       <!-- Item Type Selection Buttons -->
       <div class="bg-[var(--color-background)] rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
         <nav class="flex gap-1" aria-label="Item Type Tabs">
-          <button 
-            (click)="onItemTypeChange('Ammunition')" 
-            [ngClass]="{
+          <button (click)="onItemTypeChange('Ammunition')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Ammunition',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
-            }" 
+            }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -26,12 +24,10 @@
               class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
             </div>
           </button>
-          <button 
-            (click)="onItemTypeChange('Weapon')" 
-            [ngClass]="{
+          <button (click)="onItemTypeChange('Weapon')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Weapon',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
-            }" 
+            }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -44,12 +40,10 @@
               class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
             </div>
           </button>
-          <button 
-            (click)="onItemTypeChange('Explosive')" 
-            [ngClass]="{
+          <button (click)="onItemTypeChange('Explosive')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': selectedItemType === 'Explosive',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
-            }" 
+            }"
             class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
             <div class="flex items-center gap-2 relative z-10">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -74,13 +68,9 @@
                 {{ 'discardRequest.reason' | translate }}
               </label>
               <div class="flex-1">
-                <input
-                  type="text"
-                  [(ngModel)]="reason"
-                  name="reason"
+                <input type="text" [(ngModel)]="reason" name="reason"
                   [placeholder]="'discardRequest.reasonPlaceholder' | translate"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                />
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
               </div>
             </div>
 
@@ -90,17 +80,9 @@
                 {{ 'discardRequest.priority' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <div class="flex-1">
-                <app-dropdown
-                  class="w-full"
-                  [(ngModel)]="priority"
-                  name="priority"
-                  (ngModelChange)="onPriorityChange()"
-                  [options]="priorityOptions"
-                  optionLabel="labelKey"
-                  optionValue="value"
-                  [translateLabels]="true"
-                  [error]="hasError('priority')"
-                  placeholder="{{ 'discardRequest.priority' | translate }}">
+                <app-dropdown class="w-full" [(ngModel)]="priority" name="priority" (ngModelChange)="onPriorityChange()"
+                  [options]="priorityOptions" optionLabel="labelKey" optionValue="value" [translateLabels]="true"
+                  [error]="hasError('priority')" placeholder="{{ 'discardRequest.priority' | translate }}">
                 </app-dropdown>
                 <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-[var(--color-error)]">
                   {{ getError('priority') }}
@@ -114,13 +96,9 @@
                 {{ 'discardRequest.notes' | translate }}
               </label>
               <div class="flex-1">
-                <textarea
-                  [(ngModel)]="notes"
-                  name="notes"
-                  rows="3"
+                <textarea [(ngModel)]="notes" name="notes" rows="3"
                   [placeholder]="'discardRequest.notesPlaceholder' | translate"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
-                ></textarea>
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"></textarea>
               </div>
             </div>
 
@@ -131,23 +109,14 @@
               </label>
               <div class="flex-1">
                 <ng-container *ngIf="isDepartmentLocked; else discardDepartmentSelect">
-                  <input
-                    type="text"
-                    [value]="lockedDepartmentName || ('discardRequest.selectDepartment' | translate)"
+                  <input type="text" [value]="lockedDepartmentName || ('discardRequest.selectDepartment' | translate)"
                     class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed text-sm text-[var(--color-text)] cursor-not-allowed"
-                    readonly
-                  />
+                    readonly />
                 </ng-container>
                 <ng-template #discardDepartmentSelect>
-                  <app-dropdown
-                    class="w-full"
-                    [(ngModel)]="departmentId"
-                    name="departmentId"
-                    (ngModelChange)="onDepartmentChange()"
-                    [disabled]="isLoadingDepartments"
-                    [error]="hasError('departmentId')"
-                    [options]="departments"
-                    optionValue="id"
+                  <app-dropdown class="w-full" [(ngModel)]="departmentId" name="departmentId"
+                    (ngModelChange)="onDepartmentChange()" [disabled]="isLoadingDepartments"
+                    [error]="hasError('departmentId')" [options]="departments" optionValue="id"
                     [optionLabelFn]="departmentOptionLabel"
                     [placeholder]="isLoadingDepartments ? ('common.loading' | translate) : ('discardRequest.selectDepartment' | translate)">
                   </app-dropdown>
@@ -165,21 +134,13 @@
               </label>
               <div class="flex-1">
                 <ng-container *ngIf="isRequesterLocked; else discardRequesterSelect">
-                  <input
-                    type="text"
-                    [value]="lockedRequesterName || currentUserDetails?.userName || ''"
+                  <input type="text" [value]="lockedRequesterName || currentUserDetails?.userName || ''"
                     class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed text-sm text-[var(--color-text)] cursor-not-allowed"
-                    readonly
-                  />
+                    readonly />
                 </ng-container>
                 <ng-template #discardRequesterSelect>
-                  <app-dropdown
-                    class="w-full"
-                    [(ngModel)]="requesterId"
-                    name="requesterId"
-                    [disabled]="isLoadingRequesters"
-                    [options]="requesters"
-                    optionValue="id"
+                  <app-dropdown class="w-full" [(ngModel)]="requesterId" name="requesterId"
+                    [disabled]="isLoadingRequesters" [options]="requesters" optionValue="id"
                     [optionLabelFn]="requesterOptionLabel"
                     [placeholder]="isLoadingRequesters ? ('common.loading' | translate) : ('discardRequest.selectRequester' | translate)">
                   </app-dropdown>
@@ -193,15 +154,9 @@
                 {{ 'discardRequest.requestPurpose' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <div class="flex-1">
-                <app-dropdown
-                  class="w-full"
-                  [(ngModel)]="requestPurposeId"
-                  name="requestPurposeId"
-                  (ngModelChange)="onRequestPurposeChange()"
-                  [disabled]="isLoadingRequestPurposes"
-                  [error]="hasError('requestPurposeId')"
-                  [options]="requestPurposes"
-                  optionValue="id"
+                <app-dropdown class="w-full" [(ngModel)]="requestPurposeId" name="requestPurposeId"
+                  (ngModelChange)="onRequestPurposeChange()" [disabled]="isLoadingRequestPurposes"
+                  [error]="hasError('requestPurposeId')" [options]="requestPurposes" optionValue="id"
                   [optionLabelFn]="requestPurposeOptionLabel"
                   [placeholder]="isLoadingRequestPurposes ? ('common.loading' | translate) : ('discardRequest.selectRequestPurpose' | translate)">
                 </app-dropdown>
@@ -221,41 +176,34 @@
                 <!-- File Input -->
                 <div class="space-y-3">
                   <div class="relative flex items-center gap-2">
-                    <input
-                      type="file"
-                      #fileInput
-                      (change)="onFilesSelected($event)"
-                      multiple
-                      accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx"
-                      class="hidden">
-                    <label (click)="fileInput.click()" 
+                    <input type="file" #fileInput (change)="onFilesSelected($event)" multiple
+                      accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+                    <label (click)="fileInput.click()"
                       class="px-4 py-2 rounded-lg border-0 text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                       {{ 'common.chooseFiles' | translate }}
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
+                        ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
 
                   <!-- Selected Files List -->
                   <div *ngIf="selectedFiles.length > 0" class="space-y-2">
-                    <div *ngFor="let file of selectedFiles; let i = index" 
-                         class="flex items-center justify-between p-2 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                    <div *ngFor="let file of selectedFiles; let i = index"
+                      class="flex items-center justify-between p-2 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
                       <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
                         <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
                       </div>
-                      <button
-                        type="button"
-                        (click)="removeFile(i)"
-                        [disabled]="isLoading"
-                        class="ml-3 p-1 text-[var(--color-error)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                      <button type="button" (click)="removeFile(i)" [disabled]="isLoading"
+                        class="ms-3 p-1 text-[var(--color-error)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
                       </button>
                     </div>
                   </div>
-                  
+
                   <!-- Helper Text -->
                   <p class="text-xs text-[var(--color-text-muted)]">
                     {{ 'common.attachmentsHintOptional' | translate }}
@@ -273,11 +221,8 @@
                 <label class="text-sm font-medium text-[var(--color-text-muted)]">
                   {{ 'discardRequest.discardItems' | translate }} <span class="text-[var(--color-error)]">*</span>
                 </label>
-                <button
-                  type="button"
-                  (click)="addDiscardItem()"
-                  class="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
-                >
+                <button type="button" (click)="addDiscardItem()"
+                  class="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
                   <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
                   {{ 'discardRequest.addItem' | translate }}
                 </button>
@@ -288,18 +233,13 @@
               </div>
 
               <div class="space-y-4">
-                <div
-                  *ngFor="let item of discardItems; let i = index"
-                  class="bg-[var(--color-background)] rounded-lg p-4 border border-[var(--color-border)]"
-                >
+                <div *ngFor="let item of discardItems; let i = index"
+                  class="bg-[var(--color-background)] rounded-lg p-4 border border-[var(--color-border)]">
                   <div class="flex items-start justify-between mb-4">
-                    <h4 class="text-sm font-medium text-[var(--color-text)]">{{ 'discardRequest.item' | translate }} {{ i + 1 }}</h4>
-                    <button
-                      *ngIf="discardItems.length > 1"
-                      type="button"
-                      (click)="removeDiscardItem(i)"
-                      class="p-1 hover:bg-[var(--color-error)]/20 rounded transition-colors"
-                    >
+                    <h4 class="text-sm font-medium text-[var(--color-text)]">{{ 'discardRequest.item' | translate }} {{
+                      i + 1 }}</h4>
+                    <button *ngIf="discardItems.length > 1" type="button" (click)="removeDiscardItem(i)"
+                      class="p-1 hover:bg-[var(--color-error)]/20 rounded transition-colors">
                       <lucide-angular [img]="X" class="h-4 w-4 text-[var(--color-error)]"></lucide-angular>
                     </button>
                   </div>
@@ -311,58 +251,41 @@
                         {{ 'discardRequest.item' | translate }} <span class="text-[var(--color-error)]">*</span>
                       </label>
                       <div class="relative" #itemDropdown>
-                        <input
-                          type="hidden"
-                          [(ngModel)]="item.itemId"
-                          [name]="'itemId_' + i"
-                        />
-                        <button
-                          type="button"
-                          (click)="toggleItemDropdown(i); $event.stopPropagation()"
+                        <input type="hidden" [(ngModel)]="item.itemId" [name]="'itemId_' + i" />
+                        <button type="button" (click)="toggleItemDropdown(i); $event.stopPropagation()"
                           [disabled]="isLoadingItems"
                           class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-[var(--color-background-active)] flex items-center justify-between transition-all hover:border-[var(--color-brand)]/60"
                           [class.border-[var(--color-error)]]="hasError('discardItems.' + i + '.itemId')"
-                          [class.opacity-60]="isLoadingItems"
-                        >
-                          <span class="truncate text-left">
+                          [class.opacity-60]="isLoadingItems">
+                          <span class="truncate text-start">
                             {{
-                              getSelectedItemLabel(i)
-                                || (isLoadingItems ? ('common.loading' | translate) : ('discardRequest.selectItem' | translate))
+                            getSelectedItemLabel(i)
+                            || (isLoadingItems ? ('common.loading' | translate) : ('discardRequest.selectItem' |
+                            translate))
                             }}
                           </span>
-                          <lucide-angular
-                            [img]="ChevronDown"
+                          <lucide-angular [img]="ChevronDown"
                             class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
-                            [class.rotate-180]="itemDropdownOpen[i]"
-                          ></lucide-angular>
+                            [class.rotate-180]="itemDropdownOpen[i]"></lucide-angular>
                         </button>
 
-                        <div
-                          *ngIf="itemDropdownOpen[i]"
-                          class="absolute z-50 mt-2 w-full bg-[var(--color-background)] rounded-lg shadow-lg border border-[var(--color-border)] overflow-hidden"
-                        >
+                        <div *ngIf="itemDropdownOpen[i]"
+                          class="absolute z-50 mt-2 w-full bg-[var(--color-background)] rounded-lg shadow-lg border border-[var(--color-border)] overflow-hidden">
                           <div class="p-3 border-b border-[var(--color-border)]">
                             <div class="relative">
-                              <input
-                                type="text"
-                                [(ngModel)]="itemDropdownSearchTerms[i]"
+                              <input type="text" [(ngModel)]="itemDropdownSearchTerms[i]"
                                 [ngModelOptions]="{ standalone: true }"
                                 [placeholder]="'lookupManagement.searchPlaceholder' | translate"
-                                class="search-input__field"
-                                (click)="$event.stopPropagation()"
-                                (keydown.escape)="closeItemDropdown(i)"
-                              />
+                                class="search-input__field" (click)="$event.stopPropagation()"
+                                (keydown.escape)="closeItemDropdown(i)" />
                             </div>
                           </div>
 
                           <div class="max-h-56 overflow-y-auto">
-                            <button
-                              *ngFor="let itemOption of getFilteredItems(i)"
-                              type="button"
+                            <button *ngFor="let itemOption of getFilteredItems(i)" type="button"
                               (click)="onItemSelect(i, itemOption)"
-                              class="w-full text-left px-4 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors"
-                              [class.selected-item-option]="isOptionSelected(itemOption, discardItems[i].itemId)"
-                            >
+                              class="w-full text-start px-4 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors"
+                              [class.selected-item-option]="isOptionSelected(itemOption, discardItems[i].itemId)">
                               <div class="font-medium">
                                 {{ getItemOptionLabel(itemOption) }}
                               </div>
@@ -371,16 +294,15 @@
                               </div>
                             </button>
 
-                            <div
-                              *ngIf="getFilteredItems(i).length === 0"
-                              class="px-4 py-3 text-center text-sm text-[var(--color-text-muted)]"
-                            >
+                            <div *ngIf="getFilteredItems(i).length === 0"
+                              class="px-4 py-3 text-center text-sm text-[var(--color-text-muted)]">
                               {{ 'lookupManagement.noItemsFound' | translate }}
                             </div>
                           </div>
                         </div>
                       </div>
-                      <p *ngIf="hasError('discardItems.' + i + '.itemId')" class="mt-1 text-xs text-[var(--color-error)]">
+                      <p *ngIf="hasError('discardItems.' + i + '.itemId')"
+                        class="mt-1 text-xs text-[var(--color-error)]">
                         {{ getError('discardItems.' + i + '.itemId') }}
                       </p>
                     </div>
@@ -390,17 +312,13 @@
                       <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
                         {{ 'discardRequest.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
                       </label>
-                      <input
-                        type="number"
-                        [(ngModel)]="item.quantity"
-                        [name]="'quantity_' + i"
-                        (ngModelChange)="onQuantityChange(i)"
-                        min="1"
+                      <input type="number" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
+                        (ngModelChange)="onQuantityChange(i)" min="1"
                         [placeholder]="'discardRequest.quantityPlaceholder' | translate"
                         [class.border-[var(--color-error)]]="hasError('discardItems.' + i + '.quantity')"
-                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                      />
-                      <p *ngIf="hasError('discardItems.' + i + '.quantity')" class="mt-1 text-xs text-[var(--color-error)]">
+                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
+                      <p *ngIf="hasError('discardItems.' + i + '.quantity')"
+                        class="mt-1 text-xs text-[var(--color-error)]">
                         {{ getError('discardItems.' + i + '.quantity') }}
                       </p>
                     </div>
@@ -410,13 +328,9 @@
                       <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1.5">
                         {{ 'discardRequest.itemNotes' | translate }}
                       </label>
-                      <input
-                        type="text"
-                        [(ngModel)]="item.notes"
-                        [name]="'itemNotes_' + i"
+                      <input type="text" [(ngModel)]="item.notes" [name]="'itemNotes_' + i"
                         [placeholder]="'discardRequest.itemNotesPlaceholder' | translate"
-                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                      />
+                        class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
                     </div>
                   </div>
                 </div>
@@ -425,13 +339,7 @@
 
             <!-- Submit Button -->
             <div class="flex justify-center pt-6">
-              <app-button
-                type="submit"
-                variant="primary"
-                size="md"
-                [disabled]="isLoading"
-                class="px-12"
-              >
+              <app-button type="submit" variant="primary" size="md" [disabled]="isLoading" class="px-12">
                 {{ isLoading ? ('common.loading' | translate) : ('discardRequest.sendRequest' | translate) }}
               </app-button>
             </div>
@@ -442,15 +350,7 @@
   </div>
 
   <!-- Confirmation Dialog -->
-  <app-confirmation-dialog
-    [isOpen]="showConfirmDialog"
-    [title]="confirmDialogTitle"
-    [message]="confirmDialogMessage"
-    [type]="confirmDialogType"
-    [confirmText]="confirmDialogConfirmText"
-    [cancelText]="confirmDialogCancelText"
-    [closeOnBackdrop]="true"
-    (confirmed)="onConfirmSubmit()"
-    (cancelled)="onCancelConfirm()"
-  ></app-confirmation-dialog>
+  <app-confirmation-dialog [isOpen]="showConfirmDialog" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
+    [type]="confirmDialogType" [confirmText]="confirmDialogConfirmText" [cancelText]="confirmDialogCancelText"
+    [closeOnBackdrop]="true" (confirmed)="onConfirmSubmit()" (cancelled)="onCancelConfirm()"></app-confirmation-dialog>
 </div>

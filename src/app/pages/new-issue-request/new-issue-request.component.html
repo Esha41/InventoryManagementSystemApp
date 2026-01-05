@@ -9,96 +9,64 @@
     <app-stepper [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
     </app-stepper>
 
-    <app-error-banner
-      *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
+    <app-error-banner *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
       [error]="orderSubmissionState.orderSubmitError">
     </app-error-banner>
 
     <!-- Step 0: Allowance Selection -->
-    <app-allowance-selection
-      *ngIf="currentStep === 0"
-      [fromReserve]="fromReserve"
-      (fromReserveChange)="onFromReserveChange($event)"
-      (next)="onNext()">
+    <app-allowance-selection *ngIf="currentStep === 0" [fromReserve]="fromReserve"
+      (fromReserveChange)="onFromReserveChange($event)" (next)="onNext()">
     </app-allowance-selection>
 
     <!-- Step 1: Selection -->
     <div *ngIf="currentStep === 1">
       <!-- Loading State -->
-      <app-loading-state
-        *ngIf="cartridgeState.loadingCartridges"
-        message="common.loading"
+      <app-loading-state *ngIf="cartridgeState.loadingCartridges" message="common.loading"
         containerClass="bg-[var(--color-background)] rounded-lg p-6 border border-dashed border-[var(--color-border)]">
       </app-loading-state>
 
       <!-- Error State -->
-      <app-error-state
-        *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
-        [error]="cartridgeState.cartridgeError || ''"
-        variant="inline"
-        [actionText]="'common.retry'"
+      <app-error-state *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
+        [error]="cartridgeState.cartridgeError || ''" variant="inline" [actionText]="'common.retry'"
         containerClass="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 rounded-lg p-4"
-        messageClass="text-sm text-[var(--color-error)]"
-        (action)="retryLoadCartridges()">
+        messageClass="text-sm text-[var(--color-error)]" (action)="retryLoadCartridges()">
       </app-error-state>
 
       <!-- Cartridge Details View -->
       <app-cartridge-details
         *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails"
-        [cartridge]="cartridgeState.selectedCartridgeForView"
-        (select)="onSelectCartridge()"
+        [cartridge]="cartridgeState.selectedCartridgeForView" (select)="onSelectCartridge()"
         (cancel)="onCloseCartridgeDetails()">
       </app-cartridge-details>
 
       <!-- Cartridge List View -->
       <app-cartridge-list
         *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
-        [cartridges]="cartridgeState.filteredCartridges"
-        [itemTypeOptions]="filterOptions.itemTypeOptions"
-        [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions"
-        [bulletDiameters]="filterOptions.bulletDiameters"
-        [linkedOptions]="filterOptions.linkedOptions"
-        [natureOptions]="filterOptions.natureOptions"
+        [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="displayedItemTypeOptions"
+        [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions" [bulletDiameters]="filterOptions.bulletDiameters"
+        [linkedOptions]="filterOptions.linkedOptions" [natureOptions]="filterOptions.natureOptions"
         [weaponTypeOptions]="filterOptions.weaponTypeOptions || []"
         [explosiveTypeOptions]="filterOptions.explosiveTypeOptions || []"
-        [selectedItemType]="filterState.selectedItemType"
-        [selectedAmmunitionType]="filterState.selectedAmmunitionType"
-        [selectedBulletDiameter]="filterState.selectedBulletDiameter"
-        [selectedLinked]="filterState.selectedLinked"
-        [selectedNature]="filterState.selectedNature"
-        [selectedWeaponType]="filterState.selectedWeaponType || ''"
+        [selectedItemType]="filterState.selectedItemType" [selectedAmmunitionType]="filterState.selectedAmmunitionType"
+        [selectedBulletDiameter]="filterState.selectedBulletDiameter" [selectedLinked]="filterState.selectedLinked"
+        [selectedNature]="filterState.selectedNature" [selectedWeaponType]="filterState.selectedWeaponType || ''"
         [selectedCaliber]="filterState.selectedCaliber || ''"
         [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
-        [selectedUNNumber]="filterState.selectedUNNumber || ''"
-        [selectedNSN]="filterState.selectedNSN"
-        [canProceed]="canProceedFromSelection"
-        [fromReserve]="fromReserve"
-        (cartridgeClick)="onCartridgeClick($event)"
-        (allowanceError)="onAllowanceError($event)"
-        (addSelection)="onCartridgeAdded($event)"
-        (filterChange)="filterCartridges()"
-        (clearFilters)="onClearFilters()"
-        (next)="onNext()"
-        (previous)="onPrevious()"
-        (searchChange)="onSearchChange($event)"
-        (itemTypeChange)="onItemTypeChange($event)"
-        (ammunitionTypeChange)="onAmmunitionTypeChange($event)"
-        (bulletDiameterChange)="onBulletDiameterChange($event)"
-        (linkedChange)="onLinkedChange($event)"
-        (natureChange)="onNatureChange($event)"
-        (weaponTypeChange)="onWeaponTypeChange($event)"
-        (caliberChange)="onCaliberChange($event)"
-        (explosiveTypeChange)="onExplosiveTypeChange($event)"
-        (unNumberChange)="onUnNumberChange($event)"
-        (nsnChange)="onNSNChange($event)"
-        (removeSelection)="onRemoveSelectedCartridge($event)">
+        [selectedUNNumber]="filterState.selectedUNNumber || ''" [selectedNSN]="filterState.selectedNSN"
+        [canProceed]="canProceedFromSelection" [fromReserve]="fromReserve" (cartridgeClick)="onCartridgeClick($event)"
+        (allowanceError)="onAllowanceError($event)" (addSelection)="onCartridgeAdded($event)"
+        (filterChange)="filterCartridges()" (clearFilters)="onClearFilters()" (next)="onNext()"
+        (previous)="onPrevious()" (searchChange)="onSearchChange($event)" (itemTypeChange)="onItemTypeChange($event)"
+        (ammunitionTypeChange)="onAmmunitionTypeChange($event)" (bulletDiameterChange)="onBulletDiameterChange($event)"
+        (linkedChange)="onLinkedChange($event)" (natureChange)="onNatureChange($event)"
+        (weaponTypeChange)="onWeaponTypeChange($event)" (caliberChange)="onCaliberChange($event)"
+        (explosiveTypeChange)="onExplosiveTypeChange($event)" (unNumberChange)="onUnNumberChange($event)"
+        (nsnChange)="onNSNChange($event)" (removeSelection)="onRemoveSelectedCartridge($event)">
       </app-cartridge-list>
 
       <!-- Allowance Error Banner -->
-      <app-error-banner
-        *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && allowanceError"
-        [error]="allowanceError"
-        class="mt-4">
+      <app-error-banner *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && allowanceError"
+        [error]="allowanceError" class="mt-4">
       </app-error-banner>
     </div>
 
@@ -139,24 +107,14 @@
     </app-review-form>
 
     <!-- Step 4: Send -->
-    <app-order-success
-      *ngIf="currentStep === 4"
-      [orderNumber]="orderSubmissionState.orderNumber"
-      [createdOrderId]="orderSubmissionState.createdOrderId"
-      (trackOrder)="onTrackOrder()">
+    <app-order-success *ngIf="currentStep === 4" [orderNumber]="orderSubmissionState.orderNumber"
+      [createdOrderId]="orderSubmissionState.createdOrderId" (trackOrder)="onTrackOrder()">
     </app-order-success>
   </div>
 
   <!-- Confirmation Dialog -->
-  <app-confirmation-dialog
-    [isOpen]="showConfirmDialog"
-    [title]="confirmDialogConfig.title"
-    [message]="confirmDialogConfig.message"
-    [type]="confirmDialogConfig.type"
-    [confirmText]="confirmDialogConfig.confirmText"
-    [cancelText]="confirmDialogConfig.cancelText"
-    [closeOnBackdrop]="true"
-    (confirmed)="onConfirmSubmit()"
-    (cancelled)="onCancelConfirm()"
-  ></app-confirmation-dialog>
+  <app-confirmation-dialog [isOpen]="showConfirmDialog" [title]="confirmDialogConfig.title"
+    [message]="confirmDialogConfig.message" [type]="confirmDialogConfig.type"
+    [confirmText]="confirmDialogConfig.confirmText" [cancelText]="confirmDialogConfig.cancelText"
+    [closeOnBackdrop]="true" (confirmed)="onConfirmSubmit()" (cancelled)="onCancelConfirm()"></app-confirmation-dialog>
 </div>

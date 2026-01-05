@@ -47,12 +47,12 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   ];
 
   // Priority filter
-  selectedPriorityFilter: 'all' | 'High' | 'Medium' | 'Low' = 'all';
-  readonly priorityFilterOptions: DropdownOption<'all' | 'High' | 'Medium' | 'Low'>[] = [
+  selectedPriorityFilter: 'all' | 'Normal' | 'Urgent' | 'VeryUrgent' = 'all';
+  readonly priorityFilterOptions: DropdownOption<'all' | 'Normal' | 'Urgent' | 'VeryUrgent'>[] = [
     { label: 'dashboard.filters.all', value: 'all' },
-    { label: 'requestsManagement.priorities.high', value: 'High' },
-    { label: 'requestsManagement.priorities.medium', value: 'Medium' },
-    { label: 'requestsManagement.priorities.low', value: 'Low' }
+    { label: 'dashboard.priorityLabels.normal', value: 'Normal' },
+    { label: 'dashboard.priorityLabels.urgent', value: 'Urgent' },
+    { label: 'dashboard.priorityLabels.veryUrgent', value: 'VeryUrgent' }
   ];
 
   currentPage: number = 1;
@@ -158,7 +158,10 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     // Apply priority filter
     if (this.selectedPriorityFilter !== 'all') {
       filtered = filtered.filter(request => {
-        return request.priority === this.selectedPriorityFilter;
+        // Normalize both values by removing spaces for comparison
+        const normalizedRequestPriority = request.priority.toLowerCase().replace(/\s+/g, '');
+        const normalizedFilterPriority = this.selectedPriorityFilter.toLowerCase().replace(/\s+/g, '');
+        return normalizedRequestPriority === normalizedFilterPriority;
       });
     }
 
@@ -203,14 +206,14 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
    * Get priority order for sorting (lower number = higher priority)
    */
   private getPriorityOrder(priority: string): number {
-    const priorityLower = priority.toLowerCase().trim();
+    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
     switch (priorityLower) {
-      case 'high':
-        return 0;
-      case 'medium':
-        return 1;
-      case 'low':
+      case 'normal':
         return 2;
+      case 'urgent':
+        return 1;
+      case 'veryurgent':
+        return 0;
       default:
         return 3;
     }
@@ -233,7 +236,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     return '';
   };
 
-  readonly priorityFilterLabelFn = (option: DropdownOption<'all' | 'High' | 'Medium' | 'Low'> | 'all' | 'High' | 'Medium' | 'Low'): string => {
+  readonly priorityFilterLabelFn = (option: DropdownOption<'all' | 'Normal' | 'Urgent' | 'VeryUrgent'> | 'all' | 'Normal' | 'Urgent' | 'VeryUrgent'): string => {
     if (typeof option === 'object' && option !== null && 'label' in option) {
       return this.translate.instant(option.label as string);
     }
@@ -258,14 +261,14 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   getPriorityClass(priority: string): string {
-    const priorityLower = priority.toLowerCase().trim();
+    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
     switch (priorityLower) {
-      case 'high':
-        return 'bg-orange-100 text-orange-800 border border-orange-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-      case 'low':
+      case 'normal':
         return 'bg-green-100 text-green-800 border border-green-200';
+      case 'urgent':
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+      case 'veryurgent':
+        return 'bg-orange-100 text-orange-800 border border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border border-gray-200';
     }
@@ -275,16 +278,16 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
    * Get priority translation key
    */
   getPriorityText(priority: string): string {
-    const priorityLower = priority?.toLowerCase().trim() || '';
+    const priorityLower = priority?.toLowerCase().trim().replace(/\s+/g, '') || '';
     switch (priorityLower) {
-      case 'high':
-        return 'dashboard.priorityLabels.high';
-      case 'medium':
-        return 'dashboard.priorityLabels.medium';
-      case 'low':
-        return 'dashboard.priorityLabels.low';
+      case 'normal':
+        return 'dashboard.priorityLabels.normal';
+      case 'urgent':
+        return 'dashboard.priorityLabels.urgent';
+      case 'veryurgent':
+        return 'dashboard.priorityLabels.veryUrgent';
       default:
-        return 'dashboard.priorityLabels.medium';
+        return 'dashboard.priorityLabels.urgent';
     }
   }
 

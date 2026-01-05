@@ -56,7 +56,7 @@
         {{ formatDate(detail.expiryDate) }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-        <div class="flex items-center justify-center space-x-2">
+        <div class="flex items-center justify-center gap-2">
           <!-- Edit Button - Only for inventory items (not static) -->
           <ng-container *ngIf="!isStaticItem(detail)">
             <button *appHasPermission="'Inventory.Edit'" (click)="editItem.emit(detail)"
@@ -86,4 +86,3 @@
     </tr>
   </tbody>
 </table>
-

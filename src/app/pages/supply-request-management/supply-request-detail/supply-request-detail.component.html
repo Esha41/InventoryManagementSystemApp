@@ -133,7 +133,7 @@
                 <p class="text-sm text-[var(--color-text)] font-medium">
                   {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName,
                   requestDetail.requesterNameAr) }}
-                  <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ml-2 font-normal">
+                  <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ms-2 font-normal">
                     ({{ requestDetail.requesterUserName }})
                   </span>
                 </p>
@@ -160,7 +160,7 @@
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyRequestManagement.detail.requestItems' | translate }}
             </h2>
-            <div class="ml-auto flex items-center gap-3">
+            <div class="ms-auto flex items-center gap-3">
               <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0"
                 class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
                 {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ?
@@ -175,13 +175,13 @@
               <thead class="bg-[var(--color-background-muted)]">
                 <tr>
                   <th
-                    class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                     {{ 'supplyRequestManagement.detail.itemName' | translate }}</th>
                   <th
-                    class="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                     {{ 'supplyRequestManagement.detail.itemCode' | translate }}</th>
                   <th
-                    class="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                     {{ 'supplyRequestManagement.detail.quantity' | translate }}</th>
                 </tr>
               </thead>
@@ -190,7 +190,7 @@
                   class="hover:bg-[var(--color-background-hover)] transition-colors">
                   <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
                   <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
-                  <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">{{ item.quantity }}
+                  <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
                   </td>
                 </tr>
               </tbody>

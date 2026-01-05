@@ -105,7 +105,7 @@ export class AllowanceComponent implements OnInit {
     // Set default year to current year
     const currentYear = new Date().getFullYear();
     this.selectedYear = currentYear.toString();
-    
+
     // Initialize user context
     this.initializeUserContext();
   }
@@ -114,7 +114,7 @@ export class AllowanceComponent implements OnInit {
     // Check if user can view all departments (admin or has permission)
     const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
     this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
-    
+
     // Get user's department ID
     const currentUser = this.backendAuthService.getCurrentUser();
     if (currentUser?.departmentId) {
@@ -169,7 +169,7 @@ export class AllowanceComponent implements OnInit {
   loadItems(): Promise<void> {
     return new Promise((resolve) => {
       let load$: any;
-      
+
       if (this.selectedItemType === 'Weapon') {
         load$ = this.weaponService.getAll<WeaponDto>();
       } else if (this.selectedItemType === 'Explosive') {
@@ -261,12 +261,10 @@ export class AllowanceComponent implements OnInit {
   loadItemTypeOptions(): void {
     this.translateService.get([
       'allowance.ammunition',
-      'allowance.weapon',
       'allowance.explosive'
     ]).subscribe(translations => {
       this.itemTypeOptions = [
         { value: 'Ammunition', label: translations['allowance.ammunition'] },
-        { value: 'Weapon', label: translations['allowance.weapon'] },
         { value: 'Explosive', label: translations['allowance.explosive'] }
       ];
     });
@@ -277,12 +275,12 @@ export class AllowanceComponent implements OnInit {
     this.lookupService.getDepartments().subscribe({
       next: (departments: DepartmentDto[]) => {
         this.departments = departments;
-        
+
         // Filter departments for non-admin users
         if (!this.isAdminUser && this.userDepartmentId !== null) {
           // Non-admin users can only see their own department
           this.filteredDepartments = departments.filter(dept => dept.id === this.userDepartmentId);
-          
+
           // Pre-select user's department if not already selected
           if (!this.selectedDepartment && this.filteredDepartments.length > 0) {
             this.selectedDepartment = this.userDepartmentId;
@@ -291,7 +289,7 @@ export class AllowanceComponent implements OnInit {
           // Admin users can see all departments
           this.filteredDepartments = departments;
         }
-        
+
         this.isLoadingDepartments = false;
       },
       error: (error: any) => {
@@ -607,7 +605,7 @@ export class AllowanceComponent implements OnInit {
 
   private mapItemsToForm(items: any[]): void {
     const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
-    
+
     this.items = items.map((item: any, index: number) => {
       const foundItem = itemsMap.get(item.itemId);
       this.filteredItems[index] = foundItem

@@ -73,12 +73,12 @@
         <app-card [shadow]="true" class="mb-6">
             <div class="p-6">
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
                         <lucide-icon [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-icon>
                     </div>
                     <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
                         [placeholder]="'inventorySummary.searchPlaceholder' | translate"
-                        class="w-full pl-10 pr-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
+                        class="w-full ps-10 pe-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
                 </div>
             </div>
         </app-card>
@@ -219,7 +219,7 @@
                                         <div *ngIf="isLoadingLots(item.itemId)"
                                             class="flex items-center justify-center py-8">
                                             <div class="spinner"></div>
-                                            <span class="ml-3 text-sm text-[var(--color-text-muted)]">{{
+                                            <span class="ms-3 text-sm text-[var(--color-text-muted)]">{{
                                                 'common.loading' |
                                                 translate }}</span>
                                         </div>
@@ -362,7 +362,7 @@
                     </app-rows-per-page>
 
                     <!-- Pagination Controls -->
-                    <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
                         <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
                             (pageChange)="onPageChange($event)">
                         </app-pagination>
