@@ -1522,6 +1522,55 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Helper method to normalize status string to RequestStatusEnum value
+   */
+  private normalizeStatusToEnum(status: string | undefined): RequestStatusEnum | null {
+    if (!status) return null;
+    const statusLower = status.toLowerCase().trim();
+    if (statusLower === 'approved' || statusLower === 'completed') {
+      return RequestStatusEnum.Approved;
+    }
+    if (statusLower === 'rejected' || statusLower === 'declined') {
+      return RequestStatusEnum.Rejected;
+    }
+    if (statusLower === 'new' || statusLower === 'pending') {
+      return RequestStatusEnum.New;
+    }
+    if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress') {
+      return RequestStatusEnum.UnderProcess;
+    }
+    if (statusLower === 'returnedforreview' || statusLower === 'returned') {
+      return RequestStatusEnum.ReturnedForReview;
+    }
+    return null;
+  }
+
+  /**
+   * Check if the last approval is completed (all approvals are done)
+   */
+  isLastApprovalCompleted(): boolean {
+    if (!this.requestDetail) {
+      return false;
+    }
+
+    // Check if request status is Approved using enum
+    const requestStatusEnum = this.normalizeStatusToEnum(this.requestDetail.status);
+    if (requestStatusEnum === RequestStatusEnum.Approved) {
+      return true;
+    }
+
+    // Check if there are no pending steps in the approval history
+    if (this.requestDetail.approvalHistory && this.requestDetail.approvalHistory.length > 0) {
+      const hasPendingStep = this.requestDetail.approvalHistory.some(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+      return !hasPendingStep;
+    }
+
+    return false;
+  }
+
+  /**
    * Submit supply with receiver information
    */
   submitSupply(): void {
