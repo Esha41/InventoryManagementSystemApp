@@ -386,6 +386,7 @@
     "setPickupDate": "تعيين تاريخ الاستلام",
     "dateAlreadySet": "تم تعيين التاريخ مسبقاً",
     "confirmSupplyPickupDate": "تأكيد تاريخ استلام التوريد",
+    "updateSupplyPickupDate": "تحديث تاريخ استلام التوريد",
     "pickupDateSetByManager": "تاريخ الاستلام (تم تعيينه بواسطة المدير)",
     "readyForConfirmation": "جاهز للتأكيد",
     "adjustDateMessage": "يرجى تأكيد هذا التاريخ أو تعديله إذا لزم الأمر.",
