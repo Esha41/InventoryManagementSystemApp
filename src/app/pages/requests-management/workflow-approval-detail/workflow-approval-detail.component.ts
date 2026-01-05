@@ -1399,6 +1399,26 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Allow editing pickup date in the confirmation section only
+   * when the current pending step belongs to the current user.
+   */
+  isPickupDateEditable(): boolean {
+    if (!this.requestDetail) {
+      return false;
+    }
+
+    const pendingStep = this.requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+
+    if (!pendingStep) {
+      return false;
+    }
+
+    return pendingStep.isCurrentUserApprover === true;
+  }
+
   setSupplyPickupDate(): void {
     if (this.pickupDateProcessing || !this.requestDetail || !this.pickupDate) {
       if (!this.pickupDate) {
