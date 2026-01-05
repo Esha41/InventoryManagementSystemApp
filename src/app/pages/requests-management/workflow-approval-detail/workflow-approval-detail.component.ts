@@ -1260,6 +1260,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Check if there's a pending step with isPending: true and isCurrentUserApprover: true
+    const currentPendingStep = this.requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+
+    if (!currentPendingStep) {
+      return false;
+    }
+
+    // Must have isPending: true AND isCurrentUserApprover: true
+    if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+      return false;
+    }
+
     try {
       return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
     } catch (error) {
@@ -1284,6 +1298,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     }
 
     if (this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    // Check if there's a pending step with isPending: true and isCurrentUserApprover: true
+    const currentPendingStep = this.requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+
+    if (!currentPendingStep) {
+      return false;
+    }
+
+    // Must have isPending: true AND isCurrentUserApprover: true
+    if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
       return false;
     }
 
@@ -2104,5 +2132,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       },
       currentLang
     ) || this.requestDetail.usagePurpose || 'N/A';
+  }
+
+  /**
+   * Check if there is a pending step in the approval workflow
+   * Returns true only if there's a step with status === 'Pending' AND isPending === true
+   * This ensures buttons are hidden after approval (when status changes to 'Approved')
+   */
+  hasPendingStep(): boolean {
+    if (!this.requestDetail || !this.requestDetail.approvalHistory) {
+      return false;
+    }
+    return this.requestDetail.approvalHistory.some(
+      step => step.status === 'Pending' && step.isPending === true
+    );
   }
 }

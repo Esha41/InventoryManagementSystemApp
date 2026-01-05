@@ -390,6 +390,7 @@
     "setPickupDate": "Set Pickup Date",
     "dateAlreadySet": "Date Already Set",
     "confirmSupplyPickupDate": "Confirm Supply Pickup Date",
+    "updateSupplyPickupDate": "Update Supply Pickup Date",
     "pickupDateSetByManager": "Pickup Date (Set by Supply Manager)",
     "readyForConfirmation": "Ready for Confirmation",
     "adjustDateMessage": "You can adjust this date if needed, then click \"Confirm\" to finalize the pickup date.",
