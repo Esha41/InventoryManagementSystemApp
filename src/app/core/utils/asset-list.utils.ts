@@ -70,12 +70,94 @@ export function filterAssets(
 
     // Tab-specific filters
     if (activeTab === 'ammunition') {
-      // Add ammunition-specific filters here if needed
-      // Currently no filters implemented beyond search
+      // Access original data for filtering by IDs
+      const originalData = asset.originalData as any;
+
+      // Case Type filter
+      if (filterState.selectedCaseType) {
+        const assetCaseTypeId = originalData?.caseType?.id;
+        if (assetCaseTypeId !== parseInt(filterState.selectedCaseType)) {
+          return false;
+        }
+      }
+
+      // Hazard Division filter
+      if (filterState.selectedHazardDivision) {
+        const assetHazardDivisionId = originalData?.hazardDivision?.id;
+        if (assetHazardDivisionId !== parseInt(filterState.selectedHazardDivision)) {
+          return false;
+        }
+      }
+
+      // Compatibility filter
+      if (filterState.selectedCompatibility) {
+        const assetCompatibilityId = originalData?.compatibility?.id;
+        if (assetCompatibilityId !== parseInt(filterState.selectedCompatibility)) {
+          return false;
+        }
+      }
     } else if (activeTab === 'weapon') {
-      // Add weapon-specific filters here if needed
+      // Access original data for filtering by IDs
+      const originalData = asset.originalData as any;
+
+      // Weapon Type filter
+      if (filterState.selectedWeaponType) {
+        const assetWeaponTypeId = originalData?.type?.id;
+        if (assetWeaponTypeId !== parseInt(filterState.selectedWeaponType)) {
+          return false;
+        }
+      }
+
+      // Weapon Classification filter
+      if (filterState.selectedWeaponClassification) {
+        const assetClassificationId = originalData?.classification?.id;
+        if (assetClassificationId !== parseInt(filterState.selectedWeaponClassification)) {
+          return false;
+        }
+      }
+
+      // Country of Manufacture filter
+      if (filterState.selectedCountryOfManufacture) {
+        const assetCountryId = originalData?.countryOfManufacture?.id;
+        if (assetCountryId !== parseInt(filterState.selectedCountryOfManufacture)) {
+          return false;
+        }
+      }
     } else if (activeTab === 'explosive') {
-      // Add explosive-specific filters here if needed
+      // Access original data for filtering by IDs
+      const originalData = asset.originalData as any;
+
+      // Explosive Type filter
+      if (filterState.selectedExplosiveType) {
+        const assetExplosiveTypeId = originalData?.type?.id;
+        if (assetExplosiveTypeId !== parseInt(filterState.selectedExplosiveType)) {
+          return false;
+        }
+      }
+
+      // Explosive Classification filter
+      if (filterState.selectedExplosiveClassification) {
+        const assetClassificationId = originalData?.classification?.id;
+        if (assetClassificationId !== parseInt(filterState.selectedExplosiveClassification)) {
+          return false;
+        }
+      }
+
+      // Explosive Hazard Division filter
+      if (filterState.selectedExplosiveHazardDivision) {
+        const assetHazardDivisionId = originalData?.hazardDivision?.id;
+        if (assetHazardDivisionId !== parseInt(filterState.selectedExplosiveHazardDivision)) {
+          return false;
+        }
+      }
+
+      // Explosive Compatibility filter
+      if (filterState.selectedExplosiveCompatibility) {
+        const assetCompatibilityId = originalData?.compatibility?.id;
+        if (assetCompatibilityId !== parseInt(filterState.selectedExplosiveCompatibility)) {
+          return false;
+        }
+      }
     }
 
     return true;

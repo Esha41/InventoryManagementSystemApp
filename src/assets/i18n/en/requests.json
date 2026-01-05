@@ -318,6 +318,8 @@
         "generatedOn": "Generated On",
         "printedBy": "Printed By",
         "isFromAllowance": "From Allowance",
+        "fromAllowance": "(From Allowance)",
+        "outsideOfAllowance": "(Outside of Allowance)",
         "requestType": "Request Type"
       },
       "table": {

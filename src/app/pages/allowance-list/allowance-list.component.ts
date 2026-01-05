@@ -11,6 +11,10 @@ import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionService } from '@services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponService } from '@services/weapon.service';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveService } from '@services/explosive.service';
+import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { ButtonComponent } from '@components/button/button.component';
@@ -67,18 +71,18 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   selectedDepartment: number | string | null = null;
   isAdminUser = false;
   userDepartmentId: number | null = null;
-  allItems: AmmunitionReadDto[] = []; // All items from API
-  filteredItems: AmmunitionReadDto[] = []; // Items filtered by selected department
+  allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // All items from API
+  filteredItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Items filtered by selected department
   selectedItem: number | string | null = null;
 
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translateService));
-  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null) => {
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
     const localizedName = getLocalizedName(item as any, getCurrentLang(this.translateService));
-    return localizedName || item.itemNo || `Item ${item.id}`;
+    return localizedName || (item as any).itemNo || `Item ${(item as any).id}`;
   };
 
   // Pagination
@@ -96,6 +100,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private lookupService: LookupService,
     private ammunitionService: AmmunitionService,
+    private weaponService: WeaponService,
+    private explosiveService: ExplosiveService,
     private router: Router,
     private translateService: TranslateService,
     private translationService: TranslationService,
@@ -156,13 +162,15 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
         API_ENDPOINTS.ALLOWANCE.BASE
       ),
       departments: this.lookupService.getDepartments(),
-      ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>()
+      ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
+      weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
+      explosiveItems: this.explosiveService.getAll<ExplosiveDto>().pipe(catchError(() => of([])))
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ allowances, departments, ammunitionItems }) => {
+        next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
           if (allowances.succeeded && allowances.data) {
-            this.processAllowanceData(allowances.data, departments, ammunitionItems || []);
+            this.processAllowanceData(allowances.data, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
           } else {
             this.error = allowances.message || this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
@@ -180,9 +188,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       });
   }
 
-  private processAllowanceData(items: AllowanceItemDto[], departments: DepartmentDto[], ammunitionItems: AmmunitionReadDto[]): void {
+  private processAllowanceData(items: AllowanceItemDto[], departments: DepartmentDto[], ammunitionItems: AmmunitionReadDto[], weaponItems: WeaponDto[], explosiveItems: ExplosiveDto[]): void {
     const currentLang = getCurrentLang(this.translateService);
-    const processed = processAllowanceData(items, departments, ammunitionItems, currentLang);
+    const processed = processAllowanceData(items, departments, ammunitionItems, weaponItems, explosiveItems, currentLang);
 
     this.departments = processed.departments;
 

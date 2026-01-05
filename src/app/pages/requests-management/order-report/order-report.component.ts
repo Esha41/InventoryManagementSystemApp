@@ -540,6 +540,18 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     return mapOrderPriorityToString(priority);
   }
 
+  getPriorityColorClass(priority: number | string): string {
+    const priorityLabel = this.getPriorityLabel(priority).toLowerCase();
+    if (priorityLabel === 'normal') {
+      return 'priority-normal';
+    } else if (priorityLabel === 'urgent') {
+      return 'priority-urgent';
+    } else if (priorityLabel === 'veryurgent') {
+      return 'priority-veryurgent';
+    }
+    return 'priority-normal'; // default
+  }
+
   getDepartmentName(order: OrderDto): string {
     if (!order) return this.translate.instant('requestsManagement.orderReport.list.unknown');
     const currentLang = getCurrentLang(this.translate);
@@ -864,6 +876,49 @@ export class OrderReportComponent implements OnInit, OnDestroy {
               color: #000 !important;
               font-size: 9pt !important;
               flex: 1 !important;
+            }
+            
+            .order-info-section {
+              position: relative !important;
+            }
+            
+            .print-section-header {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              margin-bottom: 8px !important;
+              padding-bottom: 6px !important;
+              border-bottom: 2px solid #000 !important;
+            }
+            
+            .print-section-title {
+              margin: 0 !important;
+              padding-bottom: 0 !important;
+            }
+            
+            .allowance-badge {
+              background: #f5f5f5 !important;
+              padding: 4px 12px !important;
+              border: none !important;
+              border-radius: 6px !important;
+              font-size: 10pt !important;
+              font-weight: bold !important;
+              color: #000 !important;
+              white-space: nowrap !important;
+              line-height: 1.4 !important;
+              margin: 0 !important;
+            }
+            
+            .priority-value.priority-normal {
+              color: #22c55e !important;
+            }
+            
+            .priority-value.priority-urgent {
+              color: #f97316 !important;
+            }
+            
+            .priority-value.priority-veryurgent {
+              color: #ef4444 !important;
             }
             
             /* Professional Tables */
