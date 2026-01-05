@@ -16,6 +16,7 @@ interface LdapSettingsForm extends LdapSettingsDto {
   ldapEmpAttr: string;
   ldapUsername: string;
   ldapPassword?: string | null;
+  isActive?: boolean | null;
 }
 
 @Component({
@@ -75,6 +76,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
             ldapEmpAttr: settings.ldapEmpAttr || 'sAMAccountName',
             ldapUsername: settings.ldapUsername || '',
             ldapPassword: '',
+            isActive: settings.isActive ?? true,
           };
 
           this.hasExistingPassword = settings.hasPassword ?? false;
@@ -113,7 +115,8 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
       ldapDomain: (this.ldapSettings.ldapDomain || '').trim(),
       ldapEmpAttr: (this.ldapSettings.ldapEmpAttr || 'sAMAccountName').trim(),
       ldapUsername: (this.ldapSettings.ldapUsername || '').trim(),
-      ldapPassword: this.ldapSettings.ldapPassword || undefined
+      ldapPassword: this.ldapSettings.ldapPassword || undefined,
+      isActive: this.ldapSettings.isActive ?? true
     };
 
     this.ldapSettingsService.updateLdapSettings(payload)
@@ -128,7 +131,8 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
             ldapDomain: (updated.ldapDomain ?? payload.ldapDomain) ?? '',
             ldapEmpAttr: (updated.ldapEmpAttr ?? payload.ldapEmpAttr) ?? 'sAMAccountName',
             ldapUsername: (updated.ldapUsername ?? payload.ldapUsername) ?? '',
-            ldapPassword: ''
+            ldapPassword: '',
+            isActive: updated.isActive ?? payload.isActive ?? true
           };
 
           this.translateService.get(['ldapSettings.savedSuccessfully', 'toast.success']).subscribe(translations => {
