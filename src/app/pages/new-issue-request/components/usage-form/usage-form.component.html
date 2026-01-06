@@ -2,7 +2,7 @@
   <!-- Selected Cartridges Summary -->
   <div *ngIf="selectedCartridges.length > 0" class="mb-8">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.selectedCartridges' | translate }}</h2>
+      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.selectedItems' | translate }}</h2>
     </div>
 
     <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
@@ -12,8 +12,6 @@
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.natureOptions' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.linkedNotLinked' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
           </tr>
@@ -26,16 +24,6 @@
             </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">
-              <span *ngIf="isArabic">{{ cartridge.natureLabelAr || cartridge.natureLabelEn || cartridge.natureLabel ||
-                '-' }}</span>
-              <span *ngIf="!isArabic">{{ cartridge.natureLabelEn || cartridge.natureLabel || '-' }}</span>
-            </td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">
-              <span *ngIf="isArabic">{{ cartridge.linkedLabelAr || cartridge.linkedLabelEn || cartridge.linkedLabel ||
-                '-' }}</span>
-              <span *ngIf="!isArabic">{{ cartridge.linkedLabelEn || cartridge.linkedLabel || '-' }}</span>
-            </td>
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
             <td class="px-4 py-2 text-[var(--color-text)]">
               <button type="button" (click)="onRemoveCartridge(cartridge.id)"
@@ -91,9 +79,9 @@
             translate }} <span class="text-red-500">*</span></label>
           <input name="usageLocation" type="text" [ngModel]="usageLocation"
             (ngModelChange)="onUsageLocationChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
+            class="w-full px-3 py-2 border rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
-              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageLocation'),
+              'border-[var(--color-border)] focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)]': !hasError('usageLocation'),
               'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageLocation')
             }">
           <p *ngIf="hasError('usageLocation')" class="mt-1 text-xs text-red-600">

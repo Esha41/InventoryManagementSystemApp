@@ -128,7 +128,8 @@
     "usageDateToPlaceholder": "20/7/2025 18:00",
     "priority": "الأولوية",
     "usageDetails": "تفاصيل الاستخدام",
-    "selectedCartridges": "الذخائر المحددة",
+    "selectedCartridges": "المواد المحددة",
+    "selectedItems": "المواد المحددة",
     "orderDocument": "وثيقة الطلب",
     "attachments": "المرفقات",
     "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق. الملفات اختيارية.",
@@ -152,7 +153,11 @@
       "orderPriorityRequired": "أولوية الطلب مطلوبة.",
       "commentsRequired": "التعليقات مطلوبة.",
       "required": "هذا الحقل مطلوب.",
-      "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة."
+      "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة.",
+      "errors": {
+        "weaponCannotMixWithOthers": "لا يمكن طلب الأسلحة مع أنواع أخرى من المواد. يجب أن تكون جميع المواد في طلب الأسلحة أسلحة فقط.",
+        "cannotMixWithWeapons": "لا يمكن إضافة هذه المادة. لا يمكن طلب الأسلحة مع أنواع أخرى من المواد. يرجى إزالة جميع الأسلحة من اختيارك أولاً، أو إضافة الأسلحة فقط."
+      }
     },
     "errors": {
       "allowanceExceeded": "الكمية المحجوزة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",

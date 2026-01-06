@@ -43,7 +43,8 @@ export interface CartridgeState {
   showCartridgeDetails: boolean;
   loadingCartridges: boolean;
   cartridgeError: string | null;
-  selectedEntries: Array<{ id: number; quantity: number }>;
+  selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>;
+  selectedCartridgesCache: Map<number, Cartridge>; // Cache to preserve full cartridge data across item type changes
 }
 
 export interface UsageFormData {

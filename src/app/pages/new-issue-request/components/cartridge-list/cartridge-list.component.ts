@@ -6,6 +6,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderService } from '@services/order.service';
 import { ConfigService } from '@services/config.service';
+import { ItemTypeValidationService } from '@services/item-type-validation.service';
 
 export interface Cartridge {
   id: number;
@@ -36,6 +37,7 @@ export interface Cartridge {
   added?: boolean;
   ammunitionType?: string | number; // Backend returns as string: "Small", "Medium", "Large"
   armNumber?: string;
+  itemType?: string; // 'Ammunition', 'Weapon', 'Explosive' - inferred from context
 
   // Weapon Specific
   weaponType?: string;
@@ -103,9 +105,11 @@ export class CartridgeListComponent {
   @Input() selectedNSN: string = '';
   @Input() canProceed: boolean = false;
   @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
+  @Input() selectedCartridges: Cartridge[] = []; // Currently selected cartridges for validation
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
   @Output() allowanceError = new EventEmitter<string>();
+  @Output() itemTypeValidationError = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<void>();
   @Output() confirmSelection = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
@@ -136,10 +140,12 @@ export class CartridgeListComponent {
   searchTerm: string = '';
   verifyingAllowance: boolean = false;
   allowanceErrorMessage: string | null = null;
+  itemTypeValidationErrorMessage: string | null = null;
 
   constructor(
     private orderService: OrderService,
-    private config: ConfigService
+    private config: ConfigService,
+    private itemTypeValidationService: ItemTypeValidationService
   ) { }
 
   onCartridgeClick(cartridge: Cartridge): void {
@@ -158,8 +164,9 @@ export class CartridgeListComponent {
     const value = (event.target as HTMLInputElement).value;
     const parsed = value ? parseInt(value, 10) : 1;
     this.pendingQuantity = parsed > 0 ? parsed : 1;
-    // Clear error when quantity changes
+    // Clear errors when quantity changes
     this.allowanceErrorMessage = null;
+    this.itemTypeValidationErrorMessage = null;
   }
 
   confirmAdd(cartridge: Cartridge, event?: Event): void {
@@ -169,6 +176,34 @@ export class CartridgeListComponent {
 
     const quantity = this.pendingQuantity > 0 ? this.pendingQuantity : 1;
     this.allowanceErrorMessage = null;
+    this.itemTypeValidationErrorMessage = null;
+
+    // Infer item type for the cartridge being added
+    const newItemType = cartridge.itemType || this.inferItemType(cartridge) || this.selectedItemType;
+    
+    // Validate item type combination before proceeding
+    const existingItemTypes = this.selectedCartridges
+      .map(c => c.itemType || this.inferItemType(c))
+      .filter(t => t != null) as string[];
+
+    const validationResult = this.itemTypeValidationService.validateItemTypeCombination(
+      newItemType,
+      existingItemTypes
+    );
+
+    if (!validationResult.isValid) {
+      const errorMsg = validationResult.errorMessageKey 
+        ? this.itemTypeValidationService.getErrorMessage(validationResult.errorMessageKey)
+        : validationResult.errorMessage || 'Invalid item type combination';
+      this.itemTypeValidationErrorMessage = errorMsg;
+      this.itemTypeValidationError.emit(errorMsg);
+      return; // Don't proceed, show error
+    }
+
+    // Set itemType on cartridge if not already set
+    if (!cartridge.itemType) {
+      cartridge.itemType = newItemType;
+    }
 
     // If "From Allowance" is selected, verify allowance before confirming
     if (this.fromReserve === 'Yes') {
@@ -202,6 +237,28 @@ export class CartridgeListComponent {
     }
   }
 
+  /**
+   * Infers item type from cartridge properties
+   */
+  private inferItemType(cartridge: Cartridge): string | null {
+    if (cartridge.itemType) {
+      return cartridge.itemType;
+    }
+
+    // Infer from properties
+    if (cartridge.weaponType || cartridge.caliber || cartridge.actionType) {
+      return 'Weapon';
+    }
+    if (cartridge.explosiveType || cartridge.unNumber) {
+      return 'Explosive';
+    }
+    if (cartridge.ammunitionType || cartridge.bulletDiameterLabel || cartridge.linkedLabel) {
+      return 'Ammunition';
+    }
+
+    return null;
+  }
+
   private proceedWithConfirmation(cartridge: Cartridge, quantity: number): void {
     cartridge.quantity = quantity;
     cartridge.added = true;
@@ -231,6 +288,7 @@ export class CartridgeListComponent {
     this.pendingCartridgeId = null;
     this.pendingQuantity = 1;
     this.allowanceErrorMessage = null;
+    this.itemTypeValidationErrorMessage = null;
     this.verifyingAllowance = false;
   }
 

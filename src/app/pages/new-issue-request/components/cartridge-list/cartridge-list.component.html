@@ -95,6 +95,11 @@
               {{ 'common.cancel' | translate }}
             </app-button>
           </div>
+          <!-- Item Type Validation Error Message -->
+          <div *ngIf="itemTypeValidationErrorMessage && pendingCartridgeId === cartridge.id"
+            class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
+            {{ itemTypeValidationErrorMessage }}
+          </div>
           <!-- Allowance Error Message -->
           <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id"
             class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">

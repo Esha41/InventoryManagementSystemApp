@@ -74,6 +74,7 @@ export interface OrderDto {
   usageLocation?: string;
   numberOfOfficer?: number | null;
   numberOfOtherRank?: number | null;
+  supplyDate?: string | Date | null; // Date when the order should be supplied
   departmentNameAr?: string;
   departmentNameEn?: string;
   requesterName?: string;

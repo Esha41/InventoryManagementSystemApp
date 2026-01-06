@@ -57,7 +57,8 @@ export class CartridgeMapperService {
       natureLabelEn: natureLabelEn || undefined,
       // Backend returns enum as string: "Small", "Medium", "Large"
       ammunitionType: dto.ammunitionType ? String(dto.ammunitionType) : undefined,
-      armNumber: dto.armNumber || undefined
+      armNumber: dto.armNumber || undefined,
+      itemType: 'Ammunition' // Set item type for ammunition
     };
   }
 
@@ -100,6 +101,7 @@ export class CartridgeMapperService {
       ncn: dto.nsn || undefined,
       selected: false,
       added: false,
+      itemType: 'Weapon', // Set item type for weapons
 
       // Weapon specific - backend sends enum as string (JsonStringEnumConverter)
       weaponType: dto.weaponType ? getWeaponTypeName(dto.weaponType) : undefined,
@@ -147,6 +149,7 @@ export class CartridgeMapperService {
       ncn: dto.nsn || undefined,
       selected: false,
       added: false,
+      itemType: 'Explosive', // Set item type for explosives
 
       // Explosive specific - backend sends enum as string (JsonStringEnumConverter)
       explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : undefined,

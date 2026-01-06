@@ -12,24 +12,40 @@ import { resolveUserDisplayName } from '@utils/index';
 
 /**
  * Maps selected entries to Cartridge objects with quantities
- * @param selectedEntries - Array of selected entries with id and quantity
+ * @param selectedEntries - Array of selected entries with id, quantity, and optional itemType
  * @param allCartridges - Array of all available cartridges
+ * @param selectedCartridgesCache - Cache map of selected cartridges to preserve full data across item type changes
  * @returns Array of Cartridge objects with quantities
  */
 export function mapSelectedEntriesToCartridges(
-  selectedEntries: Array<{ id: number; quantity: number }>,
-  allCartridges: Cartridge[]
+  selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>,
+  allCartridges: Cartridge[],
+  selectedCartridgesCache?: Map<number, Cartridge>
 ): Cartridge[] {
   return selectedEntries.map(entry => {
-    const cartridge = allCartridges.find(c => c.id === entry.id);
-    if (cartridge) {
-      return { ...cartridge, quantity: entry.quantity };
+    // First try to find in current allCartridges (for currently loaded item type)
+    let cartridge = allCartridges.find(c => c.id === entry.id);
+    
+    // If not found and cache exists, try cache (for items from other item types)
+    if (!cartridge && selectedCartridgesCache) {
+      cartridge = selectedCartridgesCache.get(entry.id);
     }
+    
+    if (cartridge) {
+      return { 
+        ...cartridge, 
+        quantity: entry.quantity,
+        itemType: entry.itemType || cartridge.itemType
+      };
+    }
+    
+    // Fallback: create minimal cartridge object
     return {
       id: entry.id,
       name: `#${entry.id}`,
       selected: true,
-      quantity: entry.quantity
+      quantity: entry.quantity,
+      itemType: entry.itemType
     } as Cartridge;
   });
 }

@@ -131,6 +131,10 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      * Switch between tabs (ammunition, weapon, explosive)
      */
     switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+        // Commented out weapon tab - will have something else
+        // if (tab === 'weapon') {
+        //     return;
+        // }
         this.activeTab = tab;
         this.currentPage = 1;
         this.searchTerm = '';
@@ -215,17 +219,18 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         } else {
             this.expandedItemIds.add(itemId);
 
+            // Commented out weapon assets loading - will have something else
             // For weapons (itemType 2), load assets instead of lots
-            if (itemType === 2) {
-                if (!this.assetsByItemId.has(itemId)) {
-                    this.loadAssetsForItem(itemId);
-                }
-            } else {
+            // if (itemType === 2) {
+            //     if (!this.assetsByItemId.has(itemId)) {
+            //         this.loadAssetsForItem(itemId);
+            //     }
+            // } else {
                 // For ammunition and explosives, load lots
                 if (!this.lotsByItemId.has(itemId)) {
                     this.loadLotsForItem(itemId);
                 }
-            }
+            // }
         }
     }
 

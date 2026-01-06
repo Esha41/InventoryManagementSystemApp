@@ -130,6 +130,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   pickupDateProcessing: boolean = false;
   confirmPickupDateProcessing: boolean = false;
   isPickupDateAlreadySet: boolean = false; // Track if date was already set (from backend or after setting)
+  orderSupplyDate: string | Date | null = null; // Store SupplyDate from OrderDto for weapon orders
   
   // Weapon item detection
   isWeaponOrder: boolean = false; // Track if this order contains weapon items
@@ -204,6 +205,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.error = null;
     // Reset pickup date state when loading new request
     this.isPickupDateAlreadySet = false;
+    this.orderSupplyDate = null;
     // Reset weapon order detection
     this.isWeaponOrder = false;
     // Reset higher approval selection to default 'no'
@@ -330,6 +332,25 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
                     return itemType === 2 || itemType === 'Weapon' || itemType === '2';
                   });
                 this.isWeaponOrder = allItemsAreWeapons;
+                
+                // For weapon orders, check SupplyDate from OrderDto
+                if (this.isWeaponOrder && detailData.supplyDate) {
+                  this.orderSupplyDate = detailData.supplyDate;
+                  const supplyDate = new Date(detailData.supplyDate);
+                  if (!isNaN(supplyDate.getTime())) {
+                    // Format to datetime-local input format
+                    const year = supplyDate.getFullYear();
+                    const month = String(supplyDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(supplyDate.getDate()).padStart(2, '0');
+                    const hours = String(supplyDate.getHours()).padStart(2, '0');
+                    const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
+                    
+                    this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    // For weapon orders, mark as set to disable "Set Supply Pickup Date" section
+                    // but allow updates via "Update Supply Pickup Date" section
+                    this.isPickupDateAlreadySet = true;
+                  }
+                }
               }
             }
 
@@ -1281,8 +1302,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Hide for weapon orders - only show for ammunition and explosives
+    if (this.isWeaponOrder) {
+      return false;
+    }
+
     try {
-      // Super admin should always see the Review button
+      // Super admin should always see the Review button (for non-weapon orders)
       if (this.authService.isSuperAdmin()) {
         return true;
       }
@@ -1352,6 +1378,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Check if user can update request and supply
+   * Only available for ammunition and explosives orders, not for weapon orders
    */
   canUpdateRequestAndSupply(): boolean {
     if (!this.requestDetail) {
@@ -1366,8 +1393,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Hide for weapon orders - only show for ammunition and explosives
+    if (this.isWeaponOrder) {
+      return false;
+    }
+
     try {
-      // Super admin should always see the Update Request & Supply button
+      // Super admin should always see the Update Request & Supply button (for non-weapon orders)
       if (this.authService.isSuperAdmin()) {
         return true;
       }
@@ -1410,6 +1442,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Check if user can review weapon supply
    * This is a separate permission from the general Review button
+   * Only available for weapon orders
    */
   canReviewWeaponSupply(): boolean {
     if (!this.requestDetail) {
@@ -1424,8 +1457,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Only show for weapon orders
+    if (!this.isWeaponOrder) {
+      return false;
+    }
+
     try {
-      // Super admin should always see the Review Weapon Supply button
+      // Super admin should always see the Review Weapon Supply button (for weapon orders)
       if (this.authService.isSuperAdmin()) {
         return true;
       }

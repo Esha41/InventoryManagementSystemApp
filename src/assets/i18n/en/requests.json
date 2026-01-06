@@ -69,7 +69,8 @@
     "view": "View",
     "priority": "Priority",
     "usageDetails": "Usage Details",
-    "selectedCartridges": "Selected Cartridges",
+    "selectedCartridges": "Selected Items",
+    "selectedItems": "Selected Items",
     "orderSubmitted": "Order Submitted Successfully!",
     "orderSentSuccessfully": "Your Order has been Sent Successfully",
     "orderNumber": "Your order number is",
@@ -152,7 +153,11 @@
       "orderPriorityRequired": "Order priority is required.",
       "commentsRequired": "Comments are required.",
       "required": "This field is required.",
-      "correctErrors": "Please fix the highlighted fields before continuing."
+      "correctErrors": "Please fix the highlighted fields before continuing.",
+      "errors": {
+        "weaponCannotMixWithOthers": "Weapons cannot be ordered with other item types. All items in a weapon order must be weapons.",
+        "cannotMixWithWeapons": "This item cannot be added. Weapons cannot be ordered with other item types. Please remove all weapons from your selection first, or only add weapons."
+      }
     },
     "errors": {
       "allowanceExceeded": "Requested quantity ({{requestedQuantity}}) exceeds available allowance. Available: {{availableQuantity}}",

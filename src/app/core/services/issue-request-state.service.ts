@@ -13,7 +13,7 @@ export interface IssueRequestQueryParams {
 export interface QueryParamsState {
   step: number;
   fromReserve: string;
-  pendingSelections: Array<{ id: number; quantity: number }> | null;
+  pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null;
 }
 
 /**
@@ -48,7 +48,7 @@ export class IssueRequestStateService {
 
         const fromReserve = params['fromReserve'] || 'Yes';
 
-        let pendingSelections: Array<{ id: number; quantity: number }> | null = null;
+        let pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null = null;
         const selectionsParam = params['selections'];
         if (selectionsParam) {
           try {
@@ -70,7 +70,7 @@ export class IssueRequestStateService {
    * @param fromReserve - From reserve value
    * @param selectedEntries - Selected cartridge entries
    */
-  updateQueryParams(step: number, fromReserve: string, selectedEntries: Array<{ id: number; quantity: number }>): void {
+  updateQueryParams(step: number, fromReserve: string, selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
     const queryParams: IssueRequestQueryParams = {
       step: step,
       fromReserve: fromReserve
@@ -92,7 +92,7 @@ export class IssueRequestStateService {
    * Persists selected entries to query params
    * @param selectedEntries - Selected cartridge entries
    */
-  persistSelections(selectedEntries: Array<{ id: number; quantity: number }>): void {
+  persistSelections(selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
     const queryParams: IssueRequestQueryParams = {};
     if (selectedEntries.length > 0) {
       queryParams.selections = JSON.stringify(selectedEntries);
@@ -114,7 +114,7 @@ export class IssueRequestStateService {
    * @param cartridgeState - Cartridge state to update
    */
   restoreSelections(
-    pendingSelections: Array<{ id: number; quantity: number }> | null,
+    pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null,
     cartridgeState: CartridgeState
   ): void {
     if (!pendingSelections || !Array.isArray(pendingSelections) || pendingSelections.length === 0) {
@@ -131,6 +131,14 @@ export class IssueRequestStateService {
         cartridge.selected = true;
         cartridge.added = true;
         cartridge.quantity = entry.quantity;
+        // Preserve itemType if available
+        if (entry.itemType) {
+          cartridge.itemType = entry.itemType;
+        }
+        // Cache the cartridge to preserve it across item type changes
+        if (cartridgeState.selectedCartridgesCache) {
+          cartridgeState.selectedCartridgesCache.set(cartridge.id, { ...cartridge });
+        }
       }
     });
   }
