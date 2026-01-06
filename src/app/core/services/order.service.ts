@@ -221,7 +221,53 @@ export class OrderService {
         if (!response.succeeded || !response.data) {
           throw new Error(response.message || 'Failed to fetch order details');
         }
-        return response.data;
+        const order = response.data;
+        
+        // Normalize nested object property names (handle both camelCase and PascalCase)
+        if ((order as any).Department && !order.department) {
+          order.department = (order as any).Department;
+        }
+        if ((order as any).Requester && !order.requester) {
+          order.requester = (order as any).Requester;
+        }
+        if ((order as any).RequestPurpose && !order.requestPurpose) {
+          order.requestPurpose = (order as any).RequestPurpose;
+        }
+        
+        // Populate flat properties from nested objects if missing
+        if (order.department) {
+          if (!order.departmentNameEn && order.department.nameEn) {
+            order.departmentNameEn = order.department.nameEn;
+          }
+          if (!order.departmentNameAr && order.department.nameAr) {
+            order.departmentNameAr = order.department.nameAr;
+          }
+        }
+        
+        if (order.requester) {
+          if (!order.requesterName) {
+            order.requesterName = order.requester.fullNameEN || 
+                                 order.requester.fullNameAR || 
+                                 order.requester.userName;
+          }
+          if (!order.requesterNameEn && order.requester.fullNameEN) {
+            order.requesterNameEn = order.requester.fullNameEN;
+          }
+          if (!order.requesterNameAr && order.requester.fullNameAR) {
+            order.requesterNameAr = order.requester.fullNameAR;
+          }
+        }
+        
+        if (order.requestPurpose) {
+          if (!order.requestPurposeNameEn && order.requestPurpose.nameEn) {
+            order.requestPurposeNameEn = order.requestPurpose.nameEn;
+          }
+          if (!order.requestPurposeNameAr && order.requestPurpose.nameAr) {
+            order.requestPurposeNameAr = order.requestPurpose.nameAr;
+          }
+        }
+        
+        return order;
       }),
       catchError(error => {
         this.config.logError(`Failed to fetch order ${id}`, error);

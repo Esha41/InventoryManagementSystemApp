@@ -496,6 +496,53 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return getPriorityBadgeClass(priority);
   }
 
+  /**
+   * Get priority text color class
+   * Colors: Normal = Green, Urgent = Orange, VeryUrgent = Red, Critical = Red
+   */
+  getPriorityTextColor(priority?: number | string | null): string {
+    if (!priority) return 'text-gray-600';
+    
+    // Normalize priority to string
+    let priorityStr: string;
+    if (typeof priority === 'number') {
+      switch (priority) {
+        case 1: priorityStr = 'Normal'; break;
+        case 2: priorityStr = 'Urgent'; break;
+        case 3: priorityStr = 'VeryUrgent'; break;
+        case 4: priorityStr = 'Critical'; break;
+        default: return 'text-gray-600';
+      }
+    } else {
+      priorityStr = priority.toString();
+    }
+    
+    // Handle Priority type values: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical'
+    switch (priorityStr) {
+      case 'Normal':
+        return 'text-green-600';
+      case 'Urgent':
+        return 'text-orange-600';
+      case 'VeryUrgent':
+        return 'text-red-600';
+      case 'Critical':
+        return 'text-red-600';
+      default:
+        // Fallback: try lowercase matching
+        const priorityLower = priorityStr.toLowerCase().trim().replace(/\s+/g, '');
+        if (priorityLower === 'normal' || priorityLower === '1') {
+          return 'text-green-600';
+        } else if (priorityLower === 'urgent' || priorityLower === '2') {
+          return 'text-orange-600';
+        } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
+          return 'text-red-600';
+        } else if (priorityLower === 'critical' || priorityLower === '4') {
+          return 'text-red-600';
+        }
+        return 'text-gray-600';
+    }
+  }
+
   getApprovalStatusIcon(status: string): any {
     switch (status) {
       case 'Approved': return this.CheckCircle;

@@ -149,10 +149,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderItems = orderItems;
           this.supplyItems = supplyItems;
 
-          // Load full order details if needed for nested objects
-          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
-            this.loadFullOrderDetails(orderId);
-          }
+          // Always load full order details to ensure nested objects (department, requester) are populated
+          this.loadFullOrderDetails(orderId);
 
           this.loadApprovalWorkflow();
           this.loading = false;
@@ -188,10 +186,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.orderItems = orderItems;
           this.supplyItems = supplyItems;
 
-          // Load full order details if needed for nested objects
-          if (this.orderData && (!this.orderData.departmentNameEn && !this.orderData.departmentNameAr || !this.orderData.requesterName)) {
-            this.loadFullOrderDetails(this.orderId);
-          }
+          // Always load full order details to ensure nested objects (department, requester) are populated
+          this.loadFullOrderDetails(this.orderId);
 
           this.loadApprovalWorkflow();
           this.loading = false;
@@ -210,25 +206,41 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   }
 
   private loadFullOrderDetails(orderId: number): void {
+    // This is now a backup/fallback call since we're loading full order details in the service
+    // But we keep it to ensure data is always up-to-date
     this.supplyOrderDataService.loadFullOrderDetails(orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (fullOrder: OrderDto) => {
           if (this.orderData) {
-            // Copy nested department object if not already present
-            if (!this.orderData.department && fullOrder.department) {
+            // Merge nested objects (always update to ensure we have the latest)
+            if (fullOrder.department) {
               this.orderData.department = fullOrder.department;
+              // Always populate flat properties from nested object
+              this.orderData.departmentNameEn = fullOrder.department.nameEn || this.orderData.departmentNameEn;
+              this.orderData.departmentNameAr = fullOrder.department.nameAr || this.orderData.departmentNameAr;
             }
 
-            // Copy nested requester object if not already present
-            if (!this.orderData.requester && fullOrder.requester) {
+            if (fullOrder.requester) {
               this.orderData.requester = fullOrder.requester;
+              // Always populate flat properties from nested object
+              this.orderData.requesterName = fullOrder.requester.fullNameEN || 
+                                             fullOrder.requester.fullNameAR || 
+                                             fullOrder.requester.userName ||
+                                             this.orderData.requesterName;
+              this.orderData.requesterNameEn = fullOrder.requester.fullNameEN || this.orderData.requesterNameEn;
+              this.orderData.requesterNameAr = fullOrder.requester.fullNameAR || this.orderData.requesterNameAr;
             }
 
-            // Copy nested requestPurpose object if not already present
-            if (!this.orderData.requestPurpose && fullOrder.requestPurpose) {
+            if (fullOrder.requestPurpose) {
               this.orderData.requestPurpose = fullOrder.requestPurpose;
+              // Always populate flat properties from nested object
+              this.orderData.requestPurposeNameEn = fullOrder.requestPurpose.nameEn || this.orderData.requestPurposeNameEn;
+              this.orderData.requestPurposeNameAr = fullOrder.requestPurpose.nameAr || this.orderData.requestPurposeNameAr;
             }
+
+            // Trigger change detection to update the UI
+            this.cdr.markForCheck();
           }
         },
         error: () => {

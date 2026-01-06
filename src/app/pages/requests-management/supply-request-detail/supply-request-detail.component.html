@@ -78,10 +78,10 @@
                   {{ 'supplyRequestDetail.priority' | translate }}
                 </label>
                 <p class="text-sm mt-1 font-semibold" [ngClass]="{
-                'text-[var(--color-error)]': requestDetail.priority === 'Critical',
-                'text-[var(--color-warning)]': requestDetail.priority === 'High' || requestDetail.priority === 'Medium',
-                'text-[var(--color-success)]': requestDetail.priority === 'Low'
-              }">{{ ('common.priorityLevels.' + requestDetail.priority) | translate }}</p>
+                'text-red-600': mapOrderPriorityToString(requestDetail.priority) === 'Critical' || mapOrderPriorityToString(requestDetail.priority) === 'VeryUrgent',
+                'text-orange-600': mapOrderPriorityToString(requestDetail.priority) === 'Urgent',
+                'text-green-600': mapOrderPriorityToString(requestDetail.priority) === 'Normal'
+              }">{{ getPriorityTranslationKey(requestDetail.priority) | translate }}</p>
               </div>
 
               <div *ngIf="orderData?.reason">

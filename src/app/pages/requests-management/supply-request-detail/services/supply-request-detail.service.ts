@@ -55,11 +55,54 @@ export class SupplyRequestDetailService {
   loadRequestDetail(orderId: number): Observable<LoadRequestDetailResult> {
     return this.orderService.getOrderById(orderId).pipe(
       map((order: OrderDto) => {
+        // Ensure nested objects and flat properties are populated
+        this.populateOrderData(order);
+        
         const issueNo = order.requestNo || order.orderNo || `#${order.id}`;
         const requestDetail = mapOrderToRequestDetail(order);
         return { orderData: order, requestDetail, issueNo };
       })
     );
+  }
+
+  /**
+   * Populate nested objects and flat properties from nested objects if missing
+   */
+  private populateOrderData(order: OrderDto): void {
+    // Populate department flat properties from nested object if missing
+    if (order.department) {
+      if (!order.departmentNameEn && order.department.nameEn) {
+        order.departmentNameEn = order.department.nameEn;
+      }
+      if (!order.departmentNameAr && order.department.nameAr) {
+        order.departmentNameAr = order.department.nameAr;
+      }
+    }
+
+    // Populate requester flat properties from nested object if missing
+    if (order.requester) {
+      if (!order.requesterName) {
+        order.requesterName = order.requester.fullNameEN || 
+                             order.requester.fullNameAR || 
+                             order.requester.userName;
+      }
+      if (!order.requesterNameEn && order.requester.fullNameEN) {
+        order.requesterNameEn = order.requester.fullNameEN;
+      }
+      if (!order.requesterNameAr && order.requester.fullNameAR) {
+        order.requesterNameAr = order.requester.fullNameAR;
+      }
+    }
+
+    // Populate requestPurpose flat properties from nested object if missing
+    if (order.requestPurpose) {
+      if (!order.requestPurposeNameEn && order.requestPurpose.nameEn) {
+        order.requestPurposeNameEn = order.requestPurpose.nameEn;
+      }
+      if (!order.requestPurposeNameAr && order.requestPurpose.nameAr) {
+        order.requestPurposeNameAr = order.requestPurpose.nameAr;
+      }
+    }
   }
 
   /**

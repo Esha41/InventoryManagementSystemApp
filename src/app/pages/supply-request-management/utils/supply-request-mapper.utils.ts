@@ -30,29 +30,30 @@ export function mapOrderToSupplyRequest(order: OrderDto): SupplyRequest {
     5: 'Cancelled'     // Cancelled
   };
 
-  // Map priority (assuming priority field is 1-4)
+  // Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
   const priorityMap: { [key: number]: SupplyRequest['priority'] } = {
-    1: 'Low',
-    2: 'Medium',
-    3: 'High',
+    1: 'Normal',
+    2: 'Urgent',
+    3: 'VeryUrgent',
     4: 'Critical'
   };
 
   // Normalize priority to number for map lookup
+  // Backend enum: 1=Normal, 2=Urgent, 3=VeryUrgent, 4=Critical
   let priorityNum: number;
   if (typeof order.priority === 'string') {
-    const priorityLower = order.priority.toLowerCase().trim();
-    if (priorityLower === 'high' || priorityLower === '1') {
+    const priorityLower = order.priority.toLowerCase().trim().replace(/\s+/g, '');
+    if (priorityLower === 'normal' || priorityLower === '1') {
       priorityNum = 1;
-    } else if (priorityLower === 'medium' || priorityLower === '2') {
+    } else if (priorityLower === 'urgent' || priorityLower === '2') {
       priorityNum = 2;
-    } else if (priorityLower === 'low' || priorityLower === '3') {
+    } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
       priorityNum = 3;
     } else if (priorityLower === 'critical' || priorityLower === '4') {
       priorityNum = 4;
     } else {
       const parsed = parseInt(order.priority, 10);
-      priorityNum = isNaN(parsed) ? 1 : parsed;
+      priorityNum = isNaN(parsed) ? 2 : parsed; // Default to Urgent (2)
     }
   } else {
     priorityNum = order.priority;
@@ -88,7 +89,7 @@ export function mapOrderToSupplyRequest(order: OrderDto): SupplyRequest {
     issueNo: order.requestNo || order.orderNo || `#${order.id}`,
     requestType: mapToSupplyRequestType(order.requestType),
     quantity: totalQuantity,
-    priority: priorityMap[priorityNum] || 'Low',
+    priority: priorityMap[priorityNum] || 'Urgent',
     requestDate: formatDate(order.usageDateFrom),
     status: statusMap[statusNum] || 'Pending'
   };

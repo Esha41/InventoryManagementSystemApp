@@ -29,12 +29,19 @@ export function getPriorityBadgeClass(priority: string): string {
   switch (priority) {
     case 'Critical':
       return 'bg-red-50 text-red-700 border-red-200';
+    case 'VeryUrgent':
+      return 'bg-red-50 text-red-700 border-red-200';
+    case 'Urgent':
+      return 'bg-orange-50 text-orange-700 border-orange-200';
+    case 'Normal':
+      return 'bg-green-50 text-green-700 border-green-200';
+    // Legacy support for old priority values
     case 'High':
       return 'bg-orange-50 text-orange-700 border-orange-200';
     case 'Medium':
       return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'Low':
-      return 'bg-blue-50 text-blue-700 border-blue-200';
+      return 'bg-green-50 text-green-700 border-green-200';
     default:
       return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-[var(--color-border)]';
   }

@@ -13,7 +13,7 @@ export interface SupplyRequest {
   issueNo: string;
   requestType: 'Order' | 'Return';
   quantity: number;
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  priority: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical';
   requestDate: string;
   status: 'Pending' | 'Processing' | 'Completed' | 'Delivered' | 'Returned' | 'Cancelled';
 }
@@ -35,11 +35,12 @@ export interface OrderItem {
 
 /**
  * Supply request detail view model
+ * Priority matches backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
  */
 export interface SupplyRequestDetail {
   issueNo: string;
   requestType: 'Order' | 'Return';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  priority: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical';
   requestDate: string;
   requesterName: string;
   requesterId: string;
