@@ -386,12 +386,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
 
               this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-              // Mark that the date has already been set
-              // For weapon orders, don't lock the date (allows updates via Order API)
-              // For non-weapon orders, lock the date (requires confirmation)
-              if (!this.isWeaponOrder) {
-                this.isPickupDateAlreadySet = true;
-              }
+              // Mark that the date has already been set to lock the "Set Supply Pickup Date" section
+              // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
+              // This applies to both weapon orders and ammunitions/explosives
+              this.isPickupDateAlreadySet = true;
             }
           }
 
@@ -1669,7 +1667,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Allow editing pickup date in the confirmation section.
-   * For weapon orders, allow updates even after date is set (Order API supports updates).
+   * For weapon orders and ammunitions/explosives, allow updates even after date is set.
    * Super-admin/Administrator can always edit.
    */
   isPickupDateEditable(): boolean {
@@ -1691,12 +1689,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
       // Super-admin/Administrator can always edit pickup date
       if (isAdministrator) {
-        // For weapon orders, always allow editing
-        if (this.isWeaponOrder) {
-          return true;
-        }
-        // For non-weapon orders, allow editing if date is not already set
-        return !this.isPickupDateAlreadySet;
+        return true;
       }
     } catch (error) {
       // If admin check fails, continue with normal checks
@@ -1710,13 +1703,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // For weapon orders, allow editing even if date is already set (Order API supports updates)
-    if (this.isWeaponOrder) {
-      return pendingStep.isCurrentUserApprover === true;
-    }
-
-    // For non-weapon orders, only allow editing if date is not already set
-    return pendingStep.isCurrentUserApprover === true && !this.isPickupDateAlreadySet;
+    // For weapon orders and ammunitions/explosives, allow editing even if date is already set
+    // This allows updates via the "Update Supply Pickup Date" section
+    return pendingStep.isCurrentUserApprover === true;
   }
 
   setSupplyPickupDate(): void {
@@ -1825,11 +1814,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
-          // For weapon orders, don't lock the date (allows further updates via Order API)
-          // For non-weapon orders, lock the date after confirmation
-          if (!this.isWeaponOrder) {
-            this.isPickupDateAlreadySet = true;
-          }
+          // Don't lock the date for weapon orders or ammunitions/explosives (allows further updates)
+          // The "Set Supply Pickup Date" section remains locked, but "Update Supply Pickup Date" stays editable
           this.confirmPickupDateProcessing = false;
           // Reload to sync data
           this.loadRequestDetail();
