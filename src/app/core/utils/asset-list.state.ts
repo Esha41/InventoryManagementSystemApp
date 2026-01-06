@@ -6,12 +6,20 @@ import { AssetFilterState, AssetSortState, AssetPaginationState, AssetModalState
 export function createInitialFilterState(): AssetFilterState {
   return {
     searchTerm: '',
+    // Ammunition filters
     selectedCaseType: null,
     selectedHazardDivision: null,
     selectedCompatibility: null,
     selectedPropellant: null,
+    // Weapon filters
     selectedWeaponType: null,
-    selectedExplosiveType: null
+    selectedWeaponClassification: null,
+    selectedCountryOfManufacture: null,
+    // Explosive filters
+    selectedExplosiveType: null,
+    selectedExplosiveClassification: null,
+    selectedExplosiveHazardDivision: null,
+    selectedExplosiveCompatibility: null
   };
 }
 

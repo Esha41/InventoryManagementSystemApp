@@ -314,6 +314,8 @@
         "generatedOn": "تم الإنشاء في",
         "printedBy": "طبع بواسطة",
         "isFromAllowance": "ضمن المقرر",
+        "fromAllowance": "(من المقرر)",
+        "outsideOfAllowance": "(خارج المقرر)",
         "requestType": "نوع الطلب"
       },
       "table": {

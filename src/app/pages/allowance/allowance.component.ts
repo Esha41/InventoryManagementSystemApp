@@ -261,10 +261,12 @@ export class AllowanceComponent implements OnInit {
   loadItemTypeOptions(): void {
     this.translateService.get([
       'allowance.ammunition',
+      'allowance.weapon',
       'allowance.explosive'
     ]).subscribe(translations => {
       this.itemTypeOptions = [
         { value: 'Ammunition', label: translations['allowance.ammunition'] },
+        { value: 'Weapon', label: translations['allowance.weapon'] },
         { value: 'Explosive', label: translations['allowance.explosive'] }
       ];
     });

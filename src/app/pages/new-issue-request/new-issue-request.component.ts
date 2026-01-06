@@ -237,9 +237,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   get displayedItemTypeOptions(): string[] {
-    if (this.fromReserve === 'Yes') {
-      return this.filterOptions.itemTypeOptions.filter(opt => opt !== 'Weapon');
-    }
     return this.filterOptions.itemTypeOptions;
   }
 

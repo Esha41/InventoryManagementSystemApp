@@ -84,7 +84,7 @@
                 </div>
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-[var(--color-text-muted)] truncate">{{ getOrderDateLabel(order) }}</span>
-                  <span class="font-bold text-[var(--color-text)] shrink-0 ms-2">{{ ('common.priorityLevels.' +
+                  <span class="font-bold shrink-0 ms-2 priority-badge" [ngClass]="getPriorityColorClass(order.priority)">{{ ('common.priorityLevels.' +
                     getPriorityLabel(order.priority)) | translate }}</span>
                 </div>
               </button>
@@ -150,9 +150,14 @@
             </div>
 
             <!-- Order Information Section -->
-            <section class="print-section">
-              <h2 class="print-section-title">{{ 'requestsManagement.orderReport.labels.orderInformation' | translate }}
-              </h2>
+            <section class="print-section order-info-section">
+              <div class="print-section-header">
+                <h2 class="print-section-title">{{ 'requestsManagement.orderReport.labels.orderInformation' | translate }}
+                </h2>
+                <div class="allowance-badge" *ngIf="orderSummary.requestType !== 'Return' && orderSummary.requestType !== 'Discard' && orderSummary.isFromAllowance !== undefined">
+                  {{ (orderSummary.isFromAllowance ? 'requestsManagement.orderReport.labels.fromAllowance' : 'requestsManagement.orderReport.labels.outsideOfAllowance') | translate }}
+                </div>
+              </div>
 
               <div class="print-info-grid">
                 <div class="print-info-item">
@@ -177,12 +182,6 @@
                   <span class="print-info-value">{{ orderSummary.status | translate }}</span>
                 </div>
                 <div class="print-info-item">
-                  <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.priority' | translate
-                    }}:</span>
-                  <span class="print-info-value">{{ ('common.priorityLevels.' + orderSummary.priority) | translate
-                    }}</span>
-                </div>
-                <div class="print-info-item">
                   <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requestDate' | translate
                     }}:</span>
                   <span class="print-info-value">{{ orderSummary.requestDate || 'N/A' }}</span>
@@ -194,10 +193,10 @@
                     }}</span>
                 </div>
                 <div class="print-info-item">
-                  <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.isFromAllowance' | translate
+                  <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.priority' | translate
                     }}:</span>
-                  <span class="print-info-value">{{ (orderSummary.isFromAllowance ? 'common.yes' : 'common.no') |
-                    translate }}</span>
+                  <span class="print-info-value priority-value" [ngClass]="getPriorityColorClass(orderSummary.priority)">{{ ('common.priorityLevels.' + orderSummary.priority) | translate
+                    }}</span>
                 </div>
               </div>
             </section>

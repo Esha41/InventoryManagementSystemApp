@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <!-- Case Type Filter (Ammunition only) -->
+          <!-- Ammunition Filters -->
           <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.caseType' | translate }}
@@ -104,7 +104,6 @@
             </app-dropdown>
           </div>
 
-          <!-- Hazard Division Filter (Ammunition only) -->
           <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.hazardDivision' | translate }}
@@ -116,13 +115,91 @@
             </app-dropdown>
           </div>
 
-          <!-- Compatibility Filter (Ammunition only) -->
           <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.compatibility' | translate }}
             </label>
             <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCompatibility"
               (selectionChange)="onFilterChange()" [options]="compatibilityFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- Weapon Filters -->
+          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.weaponType' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponType"
+              (selectionChange)="onFilterChange()" [options]="weaponTypeFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allWeaponTypes' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.classification' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponClassification"
+              (selectionChange)="onFilterChange()" [options]="weaponClassificationFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.country' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCountryOfManufacture"
+              (selectionChange)="onFilterChange()" [options]="countryFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allCountries' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- Explosive Filters -->
+          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.explosiveType' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveType"
+              (selectionChange)="onFilterChange()" [options]="explosiveTypeFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allExplosiveTypes' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.classification' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveClassification"
+              (selectionChange)="onFilterChange()" [options]="explosiveClassificationFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.hazardDivision' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveHazardDivision"
+              (selectionChange)="onFilterChange()" [options]="explosiveHazardDivisionFilterOptions" optionLabel="label"
+              optionValue="value" [placeholderSelectable]="false"
+              placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.compatibility' | translate }}
+            </label>
+            <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveCompatibility"
+              (selectionChange)="onFilterChange()" [options]="explosiveCompatibilityFilterOptions" optionLabel="label"
               optionValue="value" [placeholderSelectable]="false"
               placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
             </app-dropdown>
@@ -234,11 +311,8 @@
                   <td class="py-4 px-6">
                     <div class="image-preview-container">
                       <div class="flex items-center justify-center w-16 h-16 relative">
-                        <img *ngIf="asset.imageUrl" 
-                          [src]="asset.imageUrl" 
-                          [alt]="asset.name"
-                          (error)="onImageError(asset)"
-                          (mouseenter)="showImagePreview($event, asset)"
+                        <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name"
+                          (error)="onImageError(asset)" (mouseenter)="showImagePreview($event, asset)"
                           (mouseleave)="hideImagePreview()"
                           class="max-w-full max-h-full object-contain rounded-lg border border-[var(--color-border)] cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-[var(--color-brand)]">
                         <div *ngIf="!asset.imageUrl"

@@ -178,6 +178,36 @@ export class AssetListComponent implements OnInit, OnDestroy {
     return createFilterOptions(this.compatibilityList, this.translateService);
   }
 
+  // Weapon filter options
+  get weaponTypeFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.itemTypes, this.translateService);
+  }
+
+  get weaponClassificationFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.classifications, this.translateService);
+  }
+
+  get countryFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.countries, this.translateService);
+  }
+
+  // Explosive filter options
+  get explosiveTypeFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.itemTypes, this.translateService);
+  }
+
+  get explosiveClassificationFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.classifications, this.translateService);
+  }
+
+  get explosiveHazardDivisionFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.hazardDivisionList, this.translateService);
+  }
+
+  get explosiveCompatibilityFilterOptions(): Array<{ label: string; value: number }> {
+    return createFilterOptions(this.compatibilityList, this.translateService);
+  }
+
   get paginatedAssets(): Asset[] {
     const filtered = filterAssets(this.assets, this.filterState, this.activeTab);
     const sorted = sortAssets(filtered, this.sortState);
@@ -329,7 +359,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (items) => {
           try {
-            this.assets = mapWeaponArrayToAssets(items || []);
+            this.assets = mapWeaponArrayToAssets(items || [], this.translateService);
             this.finishLoading();
           } catch {
             this.assets = [];
@@ -352,7 +382,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (items) => {
           try {
-            this.assets = mapExplosiveArrayToAssets(items || []);
+            this.assets = mapExplosiveArrayToAssets(items || [], this.translateService);
             this.finishLoading();
           } catch {
             this.assets = [];

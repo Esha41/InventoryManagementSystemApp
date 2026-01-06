@@ -44,7 +44,7 @@ export function mapAmmunitionToAsset(
 /**
  * Maps WeaponDto to Asset
  */
-export function mapWeaponToAsset(dto: WeaponDto): Asset {
+export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
   // Note: imageUrl is not set here because fileUrl from response is a network path
   // Images will be loaded as blobs in loadImagesFromResponse() using the image ID
 
@@ -55,6 +55,7 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
+    weaponType: dto.type ? getLocalizedName(dto.type, currentLang) : '-',
     caliber: dto.caliber,
     expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
     readyForIssue: dto.readyForIssue ?? true,
@@ -68,9 +69,19 @@ export function mapWeaponToAsset(dto: WeaponDto): Asset {
 /**
  * Maps ExplosiveDto to Asset
  */
-export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
+export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Asset {
   // Note: imageUrl is not set here because fileUrl from response is a network path
   // Images will be loaded as blobs in loadImagesFromResponse() using the image ID
+
+  // Determine explosive type - check type lookup first, then fall back to explosiveType enum
+  let explosiveTypeDisplay = '-';
+  if (dto.type) {
+    // Use type lookup (similar to weapons)
+    explosiveTypeDisplay = getLocalizedName(dto.type, currentLang);
+  } else if (dto.explosiveType) {
+    // Fall back to explosiveType enum
+    explosiveTypeDisplay = getExplosiveTypeName(dto.explosiveType);
+  }
 
   return {
     id: dto.id?.toString() || '-',
@@ -79,7 +90,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto): Asset {
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
-    explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : '-',
+    explosiveType: explosiveTypeDisplay,
     unNumber: dto.unNumber,
     netExplosiveQuantity: dto.netExplosiveQuantity,
     netExplosiveQuantityUnit: dto.netExplosiveQuantityUnit,
@@ -110,14 +121,16 @@ export function mapAmmunitionArrayToAssets(
 /**
  * Maps array of WeaponDto to Asset[]
  */
-export function mapWeaponArrayToAssets(dtos: WeaponDto[]): Asset[] {
-  return (dtos || []).map(dto => mapWeaponToAsset(dto));
+export function mapWeaponArrayToAssets(dtos: WeaponDto[], translateService: TranslateService): Asset[] {
+  const currentLang = getCurrentLang(translateService);
+  return (dtos || []).map(dto => mapWeaponToAsset(dto, currentLang));
 }
 
 /**
  * Maps array of ExplosiveDto to Asset[]
  */
-export function mapExplosiveArrayToAssets(dtos: ExplosiveDto[]): Asset[] {
-  return (dtos || []).map(dto => mapExplosiveToAsset(dto));
+export function mapExplosiveArrayToAssets(dtos: ExplosiveDto[], translateService: TranslateService): Asset[] {
+  const currentLang = getCurrentLang(translateService);
+  return (dtos || []).map(dto => mapExplosiveToAsset(dto, currentLang));
 }
 

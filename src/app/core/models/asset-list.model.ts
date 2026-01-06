@@ -71,12 +71,20 @@ export interface Asset {
  */
 export interface AssetFilterState {
   searchTerm: string;
+  // Ammunition filters
   selectedCaseType: string | null;
   selectedHazardDivision: string | null;
   selectedCompatibility: string | null;
   selectedPropellant: string | null;
+  // Weapon filters
   selectedWeaponType: string | null;
+  selectedWeaponClassification: string | null;
+  selectedCountryOfManufacture: string | null;
+  // Explosive filters
   selectedExplosiveType: string | null;
+  selectedExplosiveClassification: string | null;
+  selectedExplosiveHazardDivision: string | null;
+  selectedExplosiveCompatibility: string | null;
 }
 
 /**

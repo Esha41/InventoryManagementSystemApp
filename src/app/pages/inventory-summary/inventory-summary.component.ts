@@ -6,7 +6,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { AssetService } from '@services/asset.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
+import { AssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -47,7 +49,9 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     // Accordion state
     expandedItemIds = new Set<number>();
     lotsByItemId = new Map<number, LotDetailDto[]>();
+    assetsByItemId = new Map<number, AssetDto[]>();
     loadingLots = new Set<number>();
+    loadingAssets = new Set<number>();
 
     // UI state
     loading = true;
@@ -74,6 +78,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     constructor(
         private dataService: InventorySummaryDataService,
         private inventoryService: InventoryService,
+        private assetService: AssetService,
         private translateService: TranslateService,
         private translationService: TranslationService,
         private excelExportService: ExcelExportService,
@@ -204,15 +209,22 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     /**
      * Toggle accordion row expansion
      */
-    toggleRow(itemId: number): void {
+    toggleRow(itemId: number, itemType: number): void {
         if (this.expandedItemIds.has(itemId)) {
             this.expandedItemIds.delete(itemId);
         } else {
             this.expandedItemIds.add(itemId);
 
-            // Load lots if not already loaded
-            if (!this.lotsByItemId.has(itemId)) {
-                this.loadLotsForItem(itemId);
+            // For weapons (itemType 2), load assets instead of lots
+            if (itemType === 2) {
+                if (!this.assetsByItemId.has(itemId)) {
+                    this.loadAssetsForItem(itemId);
+                }
+            } else {
+                // For ammunition and explosives, load lots
+                if (!this.lotsByItemId.has(itemId)) {
+                    this.loadLotsForItem(itemId);
+                }
             }
         }
     }
@@ -255,6 +267,61 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     isLoadingLots(itemId: number): boolean {
         return this.loadingLots.has(itemId);
+    }
+
+    /**
+     * Load assets for a weapon item
+     */
+    private loadAssetsForItem(itemId: number): void {
+        this.loadingAssets.add(itemId);
+
+        this.assetService.getAll<AssetDto>({ search: '' })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (assets) => {
+                    // Filter assets by itemId
+                    const itemAssets = assets.filter(a => a.itemId === itemId && !a.isDeleted);
+                    this.assetsByItemId.set(itemId, itemAssets);
+                    this.loadingAssets.delete(itemId);
+                },
+                error: () => {
+                    this.loadingAssets.delete(itemId);
+                }
+            });
+    }
+
+    /**
+     * Get assets for a specific weapon item
+     */
+    getAssetsForItem(itemId: number): AssetDto[] {
+        return this.assetsByItemId.get(itemId) || [];
+    }
+
+    /**
+     * Check if assets are currently loading for an item
+     */
+    isLoadingAssets(itemId: number): boolean {
+        return this.loadingAssets.has(itemId);
+    }
+
+    /**
+     * Get asset status label
+     */
+    getAssetStatusLabel(asset: AssetDto): string {
+        switch (asset.status) {
+            case 1: return 'Available';
+            case 2: return 'In Use';
+            case 3: return 'Under Maintenance';
+            case 4: return 'Retired';
+            default: return 'Unknown';
+        }
+    }
+
+    /**
+     * Get asset depot name
+     */
+    getAssetDepotName(asset: AssetDto): string {
+        return asset.depot ? getLocalizedName(asset.depot, getCurrentLang(this.translateService)) || '-' : '-';
     }
 
     // Formatting methods using utils

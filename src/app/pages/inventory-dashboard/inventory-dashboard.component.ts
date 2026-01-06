@@ -25,6 +25,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { InventoryDashboardCard, StatisticsData } from '@models/inventory-dashboard.model';
+import { ItemInventorySummaryDto } from '@models/inventory.model';
 import {
   mapRequestStatusToCardStatus,
   getRequestStatusTranslationKey,
@@ -235,13 +236,21 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       })
     );
 
+    const summary$ = this.inventoryService.getAllItemsSummary().pipe(
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
+        return of([] as ItemInventorySummaryDto[]);
+      })
+    );
+
     combineLatest({
       requests: requests$,
-      inventories: inventories$
+      inventories: inventories$,
+      summary: summary$
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ requests, inventories }) => {
+        next: ({ requests, inventories, summary }) => {
           // Transform BaseRequestDto to specific types
           const orders = requests.orders.map(o => mapToOrderDto(o));
           const returns = requests.returns.map(r => mapToReturnDto(r));
@@ -252,7 +261,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           this.processRequestData(orders, returns, discards);
 
           // Process statistics
-          this.calculateStatistics(inventories, orders);
+          this.calculateStatistics(inventories, orders, summary);
 
           this.filterCards();
           this.cdr.markForCheck();
@@ -580,7 +589,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   // Legacy individual load methods are removed as we use parallel loading now
 
-  private calculateStatistics(inventories: any[], orders: OrderDto[]): void {
+  private calculateStatistics(inventories: any[], orders: OrderDto[], summary: ItemInventorySummaryDto[]): void {
     const stats: StatisticsData = {
       totalItems: 0,
       totalQuantity: 0,
@@ -597,47 +606,46 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const overstockThreshold = 10000; // Adjust based on business rules
     const lowStockThreshold = 100; // Items below this are considered low stock
 
-    // Process inventories
-    const itemMap = new Map<number, { quantity: number; expiryDate?: Date; name: string; hasExpiringLot: boolean; hasLowStockLot: boolean }>();
+    // Process Summary for Totals and Low Stock
+    if (summary && summary.length > 0) {
+      stats.totalItems = summary.filter(x => x.remainingQuantity > 0).length;
+      stats.totalQuantity = summary.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
+      stats.lowStock = summary.filter(item => (item.remainingQuantity || 0) < lowStockThreshold && (item.remainingQuantity || 0) > 0).length;
+    }
+
+    // Process inventories for Expiry and Overstock (detailed view)
+    const itemMap = new Map<number, { quantity: number; expiryDate?: Date; name: string; hasExpiringLot: boolean }>();
 
     (inventories || []).forEach((inv: any) => {
       const details = inv.inventoryDetails || [];
       details.forEach((d: any) => {
-        const quantity = Number(d.originalQuantity ?? d.currentQuantity ?? 0);
+        const quantity = Number(d.remainingQuantity ?? d.currentQuantity ?? 0);
         const itemId = d.itemId;
         const itemName = d.item ? (getLocalizedName(d.item, getCurrentLang(this.translate)) || d.item.itemNo || 'Item') : 'Item';
 
         if (quantity > 0) {
-          stats.totalQuantity += quantity;
-
-          const expDate = d.item?.expiryDate ? new Date(d.item.expiryDate) : null;
+          const expDate = d.item?.expiryDate ? new Date(d.item.expiryDate) : (d.expiryDate ? new Date(d.expiryDate) : null); // Check detail expiry too
           const isExpiring = expDate && expDate <= thirtyDaysFromNow && expDate > now;
-          const isLowStock = quantity < lowStockThreshold;
 
-          // Track for overstock calculation and unique item counting
           const existing = itemMap.get(itemId);
           if (existing) {
             existing.quantity += quantity;
             if (isExpiring) existing.hasExpiringLot = true;
-            if (isLowStock) existing.hasLowStockLot = true;
           } else {
             itemMap.set(itemId, {
               quantity,
               expiryDate: expDate && !isNaN(expDate.getTime()) ? expDate : undefined,
               name: itemName,
-              hasExpiringLot: isExpiring || false,
-              hasLowStockLot: isLowStock || false
+              hasExpiringLot: isExpiring || false
             });
           }
         }
       });
     });
 
-    // Count unique items and calculate statistics
-    stats.totalItems = itemMap.size;
+    // Count expiring items
     itemMap.forEach(item => {
       if (item.hasExpiringLot) stats.expiringSoon++;
-      if (item.hasLowStockLot) stats.lowStock++;
     });
 
     // Calculate overstock items (top items by quantity)
