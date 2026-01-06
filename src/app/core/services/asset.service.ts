@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { environment } from '@environments/environment';
 import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
 import { APIOperationResponse } from '@models/api-response.model';
+import { ConfigService } from './config.service';
 
 /**
  * Asset Service
@@ -14,9 +14,14 @@ import { APIOperationResponse } from '@models/api-response.model';
     providedIn: 'root'
 })
 export class AssetService {
-    private readonly baseUrl = `${environment.apiUrl}/Asset`;
+    private get baseUrl(): string {
+        return `${this.configService.apiUrl}/Asset`;
+    }
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private configService: ConfigService
+    ) { }
 
     /**
      * Get all assets
