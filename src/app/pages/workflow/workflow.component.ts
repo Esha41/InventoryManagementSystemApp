@@ -288,14 +288,8 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   getWorkflowTypeName(type?: number): string {
     if (type === undefined || type === null) return '-';
-    const workflowTypes: { [key: number]: string } = {
-      1: 'Type 1',
-      2: 'Type 2',
-      3: 'Type 3',
-      4: 'Type 4',
-      5: 'Type 5'
-    };
-    return workflowTypes[type] || `Type ${type}`;
+    const lang = this.translationService.getCurrentLanguage();
+    return this.workflowService.getWorkflowTypeNameById(type, lang);
   }
 
   getRoleNameById(roleId?: string | null): string {

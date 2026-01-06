@@ -8,10 +8,14 @@ export interface WorkflowTypeItem {
   name: string;
 }
 export enum WorkflowType {
-  NoramlOrder = 1,
+  NormalOrder = 1,
   OrderFromAllowance = 2,
   Return = 3,
-  Discard = 4
+  Discard = 4,
+  NormalOrderForTrainingPurpose = 5,
+  NormalOrder_Weapon = 6,
+  OrderFromAllowance_Weapon = 7,
+  NormalOrderForTrainingPurpose_Weapon = 8
 }
 export interface WorkflowDto {
   id: number;
@@ -76,10 +80,14 @@ export interface BackendCreateWorkflowDto {
   workflowSteps: BackendWorkflowStepDto[];
 }
 export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: string } } = {
-  [WorkflowType.NoramlOrder]: { en: 'Order', ar: 'طلب' },
+  [WorkflowType.NormalOrder]: { en: 'Order', ar: 'طلب' },
+  [WorkflowType.OrderFromAllowance]: { en: 'Order From Reserved Allowance', ar: 'طلب من المخصص المحجوز' },
   [WorkflowType.Return]: { en: 'Return', ar: 'إرجاع' },
   [WorkflowType.Discard]: { en: 'Discard', ar: 'تخلص' },
-  [WorkflowType.OrderFromAllowance]: { en: 'Order From Reserved Allowance', ar: 'طلب من المخصص المحجوز' }
+  [WorkflowType.NormalOrderForTrainingPurpose]: { en: 'Order For Training Purpose', ar: 'طلب للغرض التدريبي' },
+  [WorkflowType.NormalOrder_Weapon]: { en: 'Order (Weapon)', ar: 'طلب (سلاح)' },
+  [WorkflowType.OrderFromAllowance_Weapon]: { en: 'Order From Reserved Allowance (Weapon)', ar: 'طلب من المخصص المحجوز (سلاح)' },
+  [WorkflowType.NormalOrderForTrainingPurpose_Weapon]: { en: 'Order For Training Purpose (Weapon)', ar: 'طلب للغرض التدريبي (سلاح)' }
 };
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;

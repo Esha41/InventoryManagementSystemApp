@@ -57,10 +57,14 @@ export class WorkflowService {
     // Handle string enum values from backend
     const stringValue = String(workflowType);
     switch (stringValue) {
-      case 'NoramlOrder': return WorkflowType.NoramlOrder;
+      case 'NormalOrder': return WorkflowType.NormalOrder;
       case 'OrderFromAllowance': return WorkflowType.OrderFromAllowance;
       case 'Return': return WorkflowType.Return;
       case 'Discard': return WorkflowType.Discard;
+      case 'NormalOrderForTrainingPurpose': return WorkflowType.NormalOrderForTrainingPurpose;
+      case 'NormalOrder_Weapon': return WorkflowType.NormalOrder_Weapon;
+      case 'OrderFromAllowance_Weapon': return WorkflowType.OrderFromAllowance_Weapon;
+      case 'NormalOrderForTrainingPurpose_Weapon': return WorkflowType.NormalOrderForTrainingPurpose_Weapon;
       default:
         return 0;
     }
