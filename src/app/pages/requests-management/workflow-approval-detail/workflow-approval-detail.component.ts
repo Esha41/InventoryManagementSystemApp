@@ -1260,18 +1260,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    const currentUser = this.authService.getCurrentUser();
-
     try {
-      // Super admin / administrator should always see the Review button
-      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
-        currentUser?.email?.toLowerCase().includes('administrator');
-      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-
-      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-
-      if (isAdministrator) {
+      // Super admin should always see the Review button
+      if (this.authService.isSuperAdmin()) {
         return true;
       }
 
@@ -1318,18 +1309,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    const currentUser = this.authService.getCurrentUser();
-
     try {
-      // Super admin / administrator should always see the Update Request & Supply button
-      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
-        currentUser?.email?.toLowerCase().includes('administrator');
-      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-
-      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-
-      if (isAdministrator) {
+      // Super admin should always see the Update Request & Supply button
+      if (this.authService.isSuperAdmin()) {
         return true;
       }
 
