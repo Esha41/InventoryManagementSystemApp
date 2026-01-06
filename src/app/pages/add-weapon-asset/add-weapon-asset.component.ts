@@ -333,8 +333,40 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         this.errorMessage = null;
         this.cdr.markForCheck();
 
-        // Create assets sequentially
-        this.createAssetsSequentially(createDtos, 0);
+        // Create assets in bulk
+        this.assetService.createBulk(createDtos)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.submitting = false;
+                    this.isProcessingBulk = false;
+                    this.bulkProgress = { current: createDtos.length, total: createDtos.length };
+                    this.cdr.markForCheck();
+
+                    this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
+                        const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
+                        const title = translations['toast.success'];
+                        this.toastService.success(message, title);
+                    });
+
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+                    }, 500);
+                },
+                error: (error: unknown) => {
+                    const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
+                    const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
+                    this.errorMessage = errorMsg;
+                    this.submitting = false;
+                    this.isProcessingBulk = false;
+                    this.cdr.markForCheck();
+
+                    this.translateService.get(['toast.error']).subscribe(translations => {
+                        this.toastService.error(errorMsg, translations['toast.error']);
+                    });
+                }
+            });
     }
 
     private navigateToBulkEntry(): void {
@@ -350,7 +382,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             purchasePrice: bulkData.purchasePrice,
             notes: bulkData.notes
         }));
-        
+
         this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add', 'bulk-entry']);
     }
 
@@ -377,50 +409,6 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             });
         }
         return dtos;
-    }
-
-    private createAssetsSequentially(dtos: CreateAssetDto[], index: number): void {
-        this.bulkProgress = { current: index, total: dtos.length };
-        this.cdr.markForCheck();
-
-        if (index >= dtos.length) {
-            // All assets created successfully
-            this.submitting = false;
-            this.cdr.markForCheck();
-
-            this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
-                const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
-                const title = translations['toast.success'];
-                this.toastService.success(message, title);
-            });
-
-            // Redirect after a short delay
-            setTimeout(() => {
-                this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
-            }, 800);
-            return;
-        }
-
-        // Create current asset
-        this.assetService.create(dtos[index])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    // Move to next asset
-                    this.createAssetsSequentially(dtos, index + 1);
-                },
-                error: (error: unknown) => {
-                    const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
-                    const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
-                    this.errorMessage = errorMsg;
-                    this.submitting = false;
-                    this.cdr.markForCheck();
-
-                    this.translateService.get(['toast.error']).subscribe(translations => {
-                        this.toastService.error(errorMsg, translations['toast.error']);
-                    });
-                }
-            });
     }
 
     onCancel(): void {

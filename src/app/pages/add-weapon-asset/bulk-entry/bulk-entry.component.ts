@@ -128,7 +128,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
 
     private initializeForm(): void {
         const itemsArray = this.fb.array<FormGroup>([]);
-        
+
         // Create a form group for each item
         for (let i = 0; i < this.bulkData.quantity; i++) {
             itemsArray.push(this.createItemFormGroup(i + 1));
@@ -216,43 +216,31 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         this.errorMessage = null;
         this.cdr.markForCheck();
 
-        // Create assets sequentially
-        this.createAssetsSequentially(createDtos, 0);
-    }
+        // Create assets in bulk
+        this.bulkProgress = { current: 0, total: createDtos.length }; // Initial state
 
-    private createAssetsSequentially(dtos: CreateAssetDto[], index: number): void {
-        this.bulkProgress = { current: index, total: dtos.length };
-        this.cdr.markForCheck();
-
-        if (index >= dtos.length) {
-            // All assets created successfully
-            this.submitting = false;
-            this.isProcessingBulk = false;
-            this.cdr.markForCheck();
-
-            // Clear session storage
-            sessionStorage.removeItem('bulkAssetData');
-
-            this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
-                const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
-                const title = translations['toast.success'];
-                this.toastService.success(message, title);
-            });
-
-            // Redirect after a short delay
-            setTimeout(() => {
-                this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
-            }, 800);
-            return;
-        }
-
-        // Create current asset
-        this.assetService.create(dtos[index])
+        this.assetService.createBulk(createDtos)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: () => {
-                    // Move to next asset
-                    this.createAssetsSequentially(dtos, index + 1);
+                    this.submitting = false;
+                    this.isProcessingBulk = false;
+                    this.bulkProgress = { current: createDtos.length, total: createDtos.length };
+                    this.cdr.markForCheck();
+
+                    // Clear session storage
+                    sessionStorage.removeItem('bulkAssetData');
+
+                    this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
+                        const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
+                        const title = translations['toast.success'];
+                        this.toastService.success(message, title);
+                    });
+
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+                    }, 500);
                 },
                 error: (error: unknown) => {
                     const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');

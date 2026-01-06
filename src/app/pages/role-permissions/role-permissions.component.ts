@@ -13,6 +13,8 @@ import { ButtonComponent } from '@components/button/button.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
+import { ProfileDataService } from '@services/profile-data.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 // ============================================================================
 // INTERFACES
@@ -91,6 +93,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   permissionForm: FormGroup;
   private destroy$ = new Subject<void>();
 
+  // Super admin check
+  isSuperAdmin = false;
+
   // ============================================================================
   // PERMISSION METADATA (for better UX)
   // ============================================================================
@@ -118,7 +123,9 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     private backendUserService: BackendUserService,
     private fb: FormBuilder,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private profileDataService: ProfileDataService,
+    private authService: BackendAuthService
   ) {
     this.permissionForm = this.fb.group({});
   }
@@ -127,6 +134,10 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // LIFECYCLE HOOKS
   // ============================================================================
   ngOnInit(): void {
+    // Check if current user is super admin
+    const profileData = this.profileDataService.getFullProfileData();
+    this.isSuperAdmin = profileData?.isSuperAdmin || this.authService.isSuperAdmin();
+
     this.loadRoles();
   }
 
@@ -140,8 +151,15 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
   get filteredRoles(): RoleDto[] {
     const search = this.roleSearchTerm.trim().toLowerCase();
-    if (!search) return this.roles;
-    return this.roles.filter(role => role.name?.toLowerCase().includes(search));
+    let roles = this.roles;
+
+    // Filter out superadmin roles if current user is not a superadmin
+    if (!this.isSuperAdmin) {
+      roles = roles.filter(role => !role.isSuperAdmin);
+    }
+
+    if (!search) return roles;
+    return roles.filter(role => role.name?.toLowerCase().includes(search));
   }
 
   get paginatedRoles(): RoleDto[] {

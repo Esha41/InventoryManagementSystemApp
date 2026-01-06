@@ -103,6 +103,19 @@ export class AssetService {
     }
 
     /**
+     * Create bulk assets
+     */
+    createBulk<T = number[]>(data: CreateAssetDto[]): Observable<APIOperationResponse<T>> {
+        console.log('[DEBUG] createBulk called with', data.length, 'items');
+        return this.http.post<APIOperationResponse<T>>(`${this.baseUrl}/Bulk`, data).pipe(
+            catchError(error => {
+                console.error('Error creating bulk assets:', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    /**
      * Update existing asset
      */
     update<T = AssetDto>(id: number, data: UpdateAssetDto): Observable<APIOperationResponse<T>> {
