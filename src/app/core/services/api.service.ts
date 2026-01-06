@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse, HttpRequest } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -33,8 +33,31 @@ export class ApiService {
   /**
    * POST request
    */
-  post<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data)
+  post<T, D = unknown>(endpoint: string, data: D, options?: { withCredentials?: boolean }): Observable<T> {
+    let headers = new HttpHeaders();
+    
+    // Add client information headers
+    const clientHeaders = this.getClientInfoHeaders();
+    if (Object.keys(clientHeaders).length > 0) {
+      Object.keys(clientHeaders).forEach(key => {
+        headers = headers.set(key, clientHeaders[key]);
+      });
+    }
+    
+    const httpOptions: {
+      headers: HttpHeaders;
+      withCredentials?: boolean;
+      observe: 'body';
+    } = {
+      headers: headers,
+      observe: 'body' as const
+    };
+    
+    if (options?.withCredentials) {
+      httpOptions.withCredentials = true;
+    }
+    
+    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, httpOptions)
       .pipe(catchError(error => this.handleError(error)));
   }
 
@@ -125,6 +148,88 @@ export class ApiService {
     }
 
     headers = headers.set('Content-Type', 'application/json');
+    return headers;
+  }
+
+  /**
+   * Get client information headers
+   */
+  private getClientInfoHeaders(): Record<string, string> {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return {};
+    }
+
+    const userAgent = navigator.userAgent || '';
+    const headers: Record<string, string> = {};
+
+    // Browser info
+    if (userAgent.includes('Firefox')) {
+      headers['X-Client-Browser'] = 'Firefox';
+      const match = userAgent.match(/Firefox\/([\d.]+)/);
+      if (match) headers['X-Client-BrowserVersion'] = match[1];
+    } else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      headers['X-Client-Browser'] = 'Chrome';
+      const match = userAgent.match(/Chrome\/([\d.]+)/);
+      if (match) headers['X-Client-BrowserVersion'] = match[1];
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+      headers['X-Client-Browser'] = 'Safari';
+      const match = userAgent.match(/Version\/([\d.]+)/);
+      if (match) headers['X-Client-BrowserVersion'] = match[1];
+    } else if (userAgent.includes('Edg')) {
+      headers['X-Client-Browser'] = 'Edge';
+      const match = userAgent.match(/Edg\/([\d.]+)/);
+      if (match) headers['X-Client-BrowserVersion'] = match[1];
+    }
+
+    // OS info
+    if (userAgent.includes('Windows')) {
+      headers['X-Client-OS'] = 'Windows';
+      if (userAgent.includes('Windows NT 10.0')) headers['X-Client-OSVersion'] = '10';
+      else if (userAgent.includes('Windows NT 6.3')) headers['X-Client-OSVersion'] = '8.1';
+      else if (userAgent.includes('Windows NT 6.2')) headers['X-Client-OSVersion'] = '8';
+      else if (userAgent.includes('Windows NT 6.1')) headers['X-Client-OSVersion'] = '7';
+    } else if (userAgent.includes('Mac OS')) {
+      headers['X-Client-OS'] = 'macOS';
+      const match = userAgent.match(/Mac OS X (\d+[._]\d+)/);
+      if (match) headers['X-Client-OSVersion'] = match[1].replace('_', '.');
+    } else if (userAgent.includes('Linux')) {
+      headers['X-Client-OS'] = 'Linux';
+    } else if (userAgent.includes('Android')) {
+      headers['X-Client-OS'] = 'Android';
+      const match = userAgent.match(/Android ([\d.]+)/);
+      if (match) headers['X-Client-OSVersion'] = match[1];
+    } else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+      headers['X-Client-OS'] = 'iOS';
+      const match = userAgent.match(/OS (\d+[._]\d+)/);
+      if (match) headers['X-Client-OSVersion'] = match[1].replace('_', '.');
+    }
+
+    // Device type
+    if (userAgent.includes('Mobile') || (userAgent.includes('Android') && !userAgent.includes('Tablet'))) {
+      headers['X-Client-Device'] = 'Mobile';
+    } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+      headers['X-Client-Device'] = 'Tablet';
+    } else {
+      headers['X-Client-Device'] = 'Desktop';
+    }
+
+    // Additional info
+    if (userAgent) headers['X-Client-UserAgent'] = userAgent;
+    if (window.screen?.width) headers['X-Client-ScreenWidth'] = window.screen.width.toString();
+    if (window.screen?.height) headers['X-Client-ScreenHeight'] = window.screen.height.toString();
+    if (navigator.language) headers['X-Client-Language'] = navigator.language;
+    if (navigator.platform) headers['X-Client-Platform'] = navigator.platform;
+    
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timezone) headers['X-Client-Timezone'] = timezone;
+    } catch (e) {
+      // Ignore timezone errors
+    }
+
+    // Note: Windows user cannot be accessed from browser JavaScript due to security restrictions
+    // The backend will extract it from HttpContext.User.Identity.Name when Windows Authentication is enabled
+
     return headers;
   }
 

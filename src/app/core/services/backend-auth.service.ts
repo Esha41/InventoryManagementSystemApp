@@ -171,7 +171,7 @@ export class BackendAuthService {
 
     return this.apiService.post<ApiResponse<LoginResponse>>(
       API_ENDPOINTS.AUTH.LOGIN,
-      credentials
+      credentials,{ withCredentials: true }
     ).pipe(
       map(response => {
         if (!response.succeeded || !response.data) {
@@ -557,12 +557,21 @@ export class BackendAuthService {
    */
   logout(): Observable<boolean> {
     this.configService.log('Logging out user');
-    this.clearAuthData();
-
-    return new Observable(observer => {
-      observer.next(true);
-      observer.complete();
-    });
+    
+    // Call backend logout endpoint to invalidate refresh token
+    return this.apiService.postWithAuth<APIOperationResponse<string>>(API_ENDPOINTS.AUTH.LOGOUT, {}).pipe(
+      map(response => {
+        this.configService.log('Backend logout successful');
+        this.clearAuthData();
+        return true;
+      }),
+      catchError(error => {
+        // Even if backend logout fails, clear local data to ensure user is logged out
+        this.configService.logError('Backend logout failed, clearing local data anyway', error);
+        this.clearAuthData();
+        return of(true);
+      })
+    );
   }
 
   /**
@@ -811,11 +820,19 @@ export class BackendAuthService {
    * Clear authentication data
    */
   private clearAuthData(): void {
+    // Clear specific auth-related storage items
     this.storageService.remove('auth_token');
     this.storageService.remove('refresh_token');
     this.storageService.remove('current_user');
     this.storageService.remove('token_expires_at');
 
+    // Clear all localStorage and sessionStorage
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+
+    // Update observables
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
     this.authStateSubject.next({
