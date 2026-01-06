@@ -1260,21 +1260,25 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if there's a pending step with isPending: true and isCurrentUserApprover: true
-    const currentPendingStep = this.requestDetail.approvalHistory?.find(
-      step => step.status === 'Pending' && step.isPending === true
-    );
-
-    if (!currentPendingStep) {
-      return false;
-    }
-
-    // Must have isPending: true AND isCurrentUserApprover: true
-    if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
-      return false;
-    }
-
     try {
+      // Super admin should always see the Review button
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+
+      // For normal users, they must be the current approver on the pending step
+      const currentPendingStep = this.requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false;
+      }
+
+      if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+        return false;
+      }
+
       return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
     } catch (error) {
       return false;
@@ -1301,21 +1305,30 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if there's a pending step with isPending: true and isCurrentUserApprover: true
-    const currentPendingStep = this.requestDetail.approvalHistory?.find(
-      step => step.status === 'Pending' && step.isPending === true
-    );
-
-    if (!currentPendingStep) {
-      return false;
-    }
-
-    // Must have isPending: true AND isCurrentUserApprover: true
-    if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+    if (this.requestDetail.status !== 'Pending') {
       return false;
     }
 
     try {
+      // Super admin should always see the Update Request & Supply button
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+
+      // For normal users, they must be the current approver on the pending step
+      const currentPendingStep = this.requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false;
+      }
+
+      // Must have isPending: true AND isCurrentUserApprover: true
+      if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+        return false;
+      }
+
       return this.authService.hasPermission(this.UPDATE_REQUEST_AND_SUPPLY_PERMISSION);
     } catch (error) {
       return false;
