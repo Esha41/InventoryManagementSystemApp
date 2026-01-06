@@ -375,6 +375,7 @@
     "item": "item",
     "items": "items",
     "review": "Review",
+    "reviewWeaponSupply": "Supply Weapon",
     "updateRequestAndSupply": "Update Request & Supply",
     "itemName": "Item Name",
     "itemCode": "Item Code",
@@ -476,7 +477,10 @@
       "militaryIdRequired": "Military ID is required",
       "filesRequired": "At least one file attachment is required",
       "fileDownloadFailed": "Failed to download file",
-      "selectStepToReturn": "Please select a step to return to"
+      "selectStepToReturn": "Please select a step to return to",
+      "notWeaponOrder": "This order does not contain weapon items",
+      "failedToLoadOrder": "Failed to load order data",
+      "notOrderRequest": "This is not an order request"
     }
   },
   "supplyRequestDetail": {

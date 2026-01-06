@@ -90,53 +90,42 @@ export class WarehouseComponent implements OnInit, OnDestroy {
       depot.depotCode ||
       (codeFromName ? codeFromName[1] : `DEP-${depot.id.toString().padStart(2, '0')}`);
 
+    // TODO: Replace with actual API data when backend is ready
     // Generate dummy statistics based on warehouse code for consistency
     // This will be replaced with actual data later
-    const dummyStats = this.getDummyStatistics(depot.id, code);
+    // const dummyStats = this.getDummyStatistics(depot.id, code);
 
     return {
       id: depot.id.toString(),
       name: getLocalizedName(depot, getCurrentLang(this.translateService)), // Use localized name
       code: code,
-      neqPercentage: dummyStats.neqPercentage,
-      consumedPercentage: dummyStats.consumedPercentage,
-      totalCapacity: dummyStats.totalCapacity,
-      currentStock: dummyStats.currentStock,
+      // TODO: Replace with actual API data when backend is ready
+      neqPercentage: 0, // dummyStats.neqPercentage,
+      consumedPercentage: 0, // dummyStats.consumedPercentage,
+      totalCapacity: 0, // dummyStats.totalCapacity,
+      currentStock: 0, // dummyStats.currentStock,
       depot: depot // Store the full depot object for dynamic localization
     };
   }
 
+  // TODO: Replace with actual API data when backend is ready
   /**
    * Generate dummy statistics for warehouse display
    * TODO: Replace with actual API data when backend is ready
    */
-  private getDummyStatistics(warehouseId: number, code: string): {
-    neqPercentage: number;
-    consumedPercentage: number;
-    totalCapacity: number;
-    currentStock: number;
-  } {
-    // Use warehouse ID to generate consistent dummy data
-    // This ensures the same warehouse always shows the same stats
-    const seed = warehouseId % 10;
-
-    // Generate NEQ percentage (30-95% range)
-    const neqPercentage = 30 + (seed * 7) + (warehouseId % 3) * 5;
-
-    // Generate Consumed percentage (50-95% range)
-    const consumedPercentage = 50 + (seed * 5) + (warehouseId % 4) * 3;
-
-    // Generate capacity and stock values
-    const totalCapacity = 10000 + (warehouseId * 500);
-    const currentStock = Math.round(totalCapacity * (consumedPercentage / 100));
-
-    return {
-      neqPercentage: Math.min(95, Math.max(30, neqPercentage)),
-      consumedPercentage: Math.min(95, Math.max(50, consumedPercentage)),
-      totalCapacity,
-      currentStock
-    };
-  }
+  // private getDummyStatistics(warehouseId: number, code: string): {
+  //   neqPercentage: number;
+  //   consumedPercentage: number;
+  //   totalCapacity: number;
+  //   currentStock: number;
+  // } {
+  //   return {
+  //     neqPercentage: 0,
+  //     consumedPercentage: 0,
+  //     totalCapacity: 0,
+  //     currentStock: 0
+  //   };
+  // }
 
   onViewWarehouse(warehouseId: string): void {
     // Navigate to warehouse inventory detail page

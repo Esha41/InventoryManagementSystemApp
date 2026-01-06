@@ -77,6 +77,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
   private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
+  private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
@@ -129,6 +130,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   pickupDateProcessing: boolean = false;
   confirmPickupDateProcessing: boolean = false;
   isPickupDateAlreadySet: boolean = false; // Track if date was already set (from backend or after setting)
+  
+  // Weapon item detection
+  isWeaponOrder: boolean = false; // Track if this order contains weapon items
 
   // Receiver information for supply submission
   receiverInfo = {
@@ -200,6 +204,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.error = null;
     // Reset pickup date state when loading new request
     this.isPickupDateAlreadySet = false;
+    // Reset weapon order detection
+    this.isWeaponOrder = false;
     // Reset higher approval selection to default 'no'
     this.sendToHigherApproval = 'no';
 
@@ -314,6 +320,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
             if (detailData?.requestItems && Array.isArray(detailData.requestItems)) {
               baseRequest.requestItems = detailData.requestItems;
+              
+              // Check if all items are weapons (ItemType.Weapon = 2)
+              if (baseRequest.requestType === RequestTypeEnum.Order || 
+                  (typeof baseRequest.requestType === 'string' && baseRequest.requestType.toLowerCase() === 'order')) {
+                const allItemsAreWeapons = detailData.requestItems.length > 0 && 
+                  detailData.requestItems.every((item: any) => {
+                    const itemType = item.itemType;
+                    return itemType === 2 || itemType === 'Weapon' || itemType === '2';
+                  });
+                this.isWeaponOrder = allItemsAreWeapons;
+              }
             }
 
             resolve();
@@ -349,7 +366,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
               this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
               // Mark that the date has already been set
-              this.isPickupDateAlreadySet = true;
+              // For weapon orders, don't lock the date (allows updates via Order API)
+              // For non-weapon orders, lock the date (requires confirmation)
+              if (!this.isWeaponOrder) {
+                this.isPickupDateAlreadySet = true;
+              }
             }
           }
 
@@ -1290,7 +1311,43 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/requests-management', this.requestId, 'supply-request-detail']);
+    // For Order type requests, we need to check the itemType from the order data
+    // since requestDetail.requestItems might not have itemType property
+    if (this.requestDetail.requestType === 'Order') {
+      // Fetch order data to check itemType
+      this.apiService.getWithAuth<any>(API_ENDPOINTS.ORDERS.BY_ID(this.requestId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            const orderData = response?.data || response;
+            const requestItems = orderData?.requestItems || [];
+            
+            // Check if all items are weapons
+            // ItemType.Weapon = 2
+            const allItemsAreWeapons = requestItems.length > 0 && 
+              requestItems.every((item: any) => {
+                const itemType = item.itemType;
+                return itemType === 2 || itemType === 'Weapon' || itemType === '2';
+              });
+
+            if (allItemsAreWeapons) {
+              // Route to weapon supply review
+              this.router.navigate(['/requests-management', this.requestId, 'weapon-supply-review']);
+            } else {
+              // Route to ammunition/explosives supply review
+              this.router.navigate(['/requests-management', this.requestId, 'supply-request-detail']);
+            }
+          },
+          error: (error) => {
+            this.config.logError('Failed to load order data for routing', error);
+            // Default to supply-request-detail if we can't determine item type
+            this.router.navigate(['/requests-management', this.requestId, 'supply-request-detail']);
+          }
+        });
+    } else {
+      // For non-Order requests, default to supply-request-detail
+      this.router.navigate(['/requests-management', this.requestId, 'supply-request-detail']);
+    }
   }
 
   /**
@@ -1348,6 +1405,119 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     // Navigate with query param to indicate this is an orderId, not a supplyId
     this.router.navigate(['/supply-order', this.requestId], { queryParams: { byOrder: true } });
+  }
+
+  /**
+   * Check if user can review weapon supply
+   * This is a separate permission from the general Review button
+   */
+  canReviewWeaponSupply(): boolean {
+    if (!this.requestDetail) {
+      return false;
+    }
+
+    if (this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    if (this.requestDetail.status !== 'Pending') {
+      return false;
+    }
+
+    try {
+      // Super admin should always see the Review Weapon Supply button
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+
+      // For normal users, they must be the current approver on the pending step
+      const currentPendingStep = this.requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false;
+      }
+
+      if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+        return false;
+      }
+
+      // Check if items are weapons and user has permission
+      // We need to check if the order contains weapon items
+      return this.authService.hasPermission(this.REVIEW_WEAPON_SUPPLY_PERMISSION) && this.hasWeaponItems();
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if the request contains weapon items
+   * Uses cached isWeaponOrder property for better performance
+   */
+  private hasWeaponItems(): boolean {
+    return this.isWeaponOrder;
+  }
+
+  /**
+   * Navigate directly to weapon supply review page
+   * This is separate from the general Review button
+   */
+  navigateToWeaponSupplyReview(): void {
+    if (!this.requestDetail || !this.requestId) {
+      return;
+    }
+
+    // For Order type requests, verify they are weapons before routing
+    if (this.requestDetail.requestType === 'Order') {
+      // Fetch order data to verify itemType
+      this.apiService.getWithAuth<any>(API_ENDPOINTS.ORDERS.BY_ID(this.requestId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response: any) => {
+            const orderData = response?.data || response;
+            const requestItems = orderData?.requestItems || [];
+            
+            // Check if all items are weapons
+            // ItemType.Weapon = 2
+            const allItemsAreWeapons = requestItems.length > 0 && 
+              requestItems.every((item: any) => {
+                const itemType = item.itemType;
+                return itemType === 2 || itemType === 'Weapon' || itemType === '2';
+              });
+
+            if (allItemsAreWeapons) {
+              // Route to weapon supply review
+              this.router.navigate(['/requests-management', this.requestId, 'weapon-supply-review']);
+            } else {
+              // Show error - this button should only be visible for weapon orders
+              this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
+                this.toastService.error(
+                  translations['workflowApprovalDetail.errors.notWeaponOrder'] || 'This order does not contain weapon items',
+                  translations['toast.error']
+                );
+              });
+            }
+          },
+          error: (error) => {
+            this.config.logError('Failed to load order data for weapon supply review', error);
+            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToLoadOrder']).subscribe(translations => {
+              this.toastService.error(
+                translations['workflowApprovalDetail.errors.failedToLoadOrder'] || 'Failed to load order data',
+                translations['toast.error']
+              );
+            });
+          }
+        });
+    } else {
+      // For non-Order requests, show error
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notOrderRequest']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.notOrderRequest'] || 'This is not an order request',
+          translations['toast.error']
+        );
+      });
+    }
   }
 
   /**
@@ -1413,12 +1583,38 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Allow editing pickup date in the confirmation section only
-   * when the current pending step belongs to the current user.
+   * Allow editing pickup date in the confirmation section.
+   * For weapon orders, allow updates even after date is set (Order API supports updates).
+   * Super-admin/Administrator can always edit.
    */
   isPickupDateEditable(): boolean {
     if (!this.requestDetail) {
       return false;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+
+    // Check if user is super-admin/administrator
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+      const isSuperAdmin = this.authService.isSuperAdmin();
+
+      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isSuperAdmin;
+
+      // Super-admin/Administrator can always edit pickup date
+      if (isAdministrator) {
+        // For weapon orders, always allow editing
+        if (this.isWeaponOrder) {
+          return true;
+        }
+        // For non-weapon orders, allow editing if date is not already set
+        return !this.isPickupDateAlreadySet;
+      }
+    } catch (error) {
+      // If admin check fails, continue with normal checks
     }
 
     const pendingStep = this.requestDetail.approvalHistory?.find(
@@ -1429,7 +1625,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    return pendingStep.isCurrentUserApprover === true;
+    // For weapon orders, allow editing even if date is already set (Order API supports updates)
+    if (this.isWeaponOrder) {
+      return pendingStep.isCurrentUserApprover === true;
+    }
+
+    // For non-weapon orders, only allow editing if date is not already set
+    return pendingStep.isCurrentUserApprover === true && !this.isPickupDateAlreadySet;
   }
 
   setSupplyPickupDate(): void {
@@ -1458,16 +1660,21 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.pickupDateProcessing = true;
 
-    const supplyDate = new Date(this.pickupDate).toISOString();
+    // Use Order API for weapon orders, Supply API for non-weapon orders
+    const endpoint = this.isWeaponOrder 
+      ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(this.requestId)
+      : API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(this.requestId);
 
-    const payload = {
-      supplyDate: supplyDate
-    };
+    // For weapon orders, use pickupDate format; for supply, use supplyDate
+    const payload = this.isWeaponOrder
+      ? {
+          pickupDate: new Date(this.pickupDate).toISOString()
+        }
+      : {
+          supplyDate: new Date(this.pickupDate).toISOString()
+        };
 
-    this.apiService.putWithAuth(
-      API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(this.requestId),
-      payload
-    )
+    this.apiService.putWithAuth(endpoint, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -1477,10 +1684,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
-          // Mark the date as set and lock the input
+          // Always lock the "Set Supply Pickup Date" section after setting
+          // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
           this.isPickupDateAlreadySet = true;
           this.pickupDateProcessing = false;
-          // Don't clear pickupDate - keep it to show in both sections
+          // Reload to sync data
           this.loadRequestDetail();
         },
         error: (error) => {
@@ -1508,16 +1716,21 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     this.confirmPickupDateProcessing = true;
 
-    const supplyDate = new Date(this.pickupDate).toISOString();
+    // Use Order API for weapon orders, Supply API for non-weapon orders
+    const endpoint = this.isWeaponOrder 
+      ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(this.requestId)
+      : API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(this.requestId);
 
-    const payload = {
-      supplyDate: supplyDate
-    };
+    // For weapon orders, use pickupDate format; for supply, use supplyDate
+    const payload = this.isWeaponOrder
+      ? {
+          pickupDate: new Date(this.pickupDate).toISOString()
+        }
+      : {
+          supplyDate: new Date(this.pickupDate).toISOString()
+        };
 
-    this.apiService.putWithAuth(
-      API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(this.requestId),
-      payload
-    )
+    this.apiService.putWithAuth(endpoint, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -1527,10 +1740,13 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
-          // Mark as set so the Set section shows the updated date as locked
-          this.isPickupDateAlreadySet = true;
+          // For weapon orders, don't lock the date (allows further updates via Order API)
+          // For non-weapon orders, lock the date after confirmation
+          if (!this.isWeaponOrder) {
+            this.isPickupDateAlreadySet = true;
+          }
           this.confirmPickupDateProcessing = false;
-          // Reload to sync everything
+          // Reload to sync data
           this.loadRequestDetail();
         },
         error: (error) => {
@@ -1545,9 +1761,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Check if user can submit supply (requires SubmitSupply permission)
+   * Hide for weapon orders as submission is handled in weapon supply page
    */
   canSubmitSupply(): boolean {
     if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    // Hide submit supply section for weapon orders
+    if (this.isWeaponOrder) {
       return false;
     }
 

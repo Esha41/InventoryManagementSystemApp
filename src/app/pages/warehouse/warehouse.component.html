@@ -39,9 +39,9 @@
           </div>
         </div>
 
+        <!-- TODO: Replace with actual API data when backend is ready -->
         <!-- Statistics Progress Bars -->
-        <div class="mb-6 space-y-4">
-          <!-- NEQ Progress Bar -->
+        <!-- <div class="mb-6 space-y-4">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'warehouse.neq' | translate }}</span>
@@ -54,7 +54,6 @@
             </div>
           </div>
 
-          <!-- Consumed Progress Bar -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'warehouse.consumed' | translate
@@ -67,7 +66,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Warehouse Info and Actions -->
         <div class="flex items-center justify-between pt-4 border-t border-[var(--color-border)]">
@@ -76,10 +75,6 @@
             <div class="text-xs text-[var(--color-text-muted)]">
               <span class="font-medium">{{ 'warehouse.location' | translate }}:</span>
               <span class="ms-2">{{ warehouse.code }}</span>
-            </div>
-            <div class="text-xs text-[var(--color-text-muted)]">
-              <span class="font-medium">{{ 'warehouse.capacity' | translate }}:</span>
-              <span class="ms-2">{{ warehouse.currentStock | number }} / {{ warehouse.totalCapacity | number }}</span>
             </div>
           </div>
 

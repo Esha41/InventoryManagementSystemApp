@@ -200,6 +200,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/weapon-supply-review',
+        loadComponent: () => import('@pages/requests-management/weapon-supply-review/weapon-supply-review.component').then(m => m.WeaponSupplyReviewComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReviewWeaponSupply', 'viewrequest.page', 'viewrequest.view', 'order.view', 'Permissions.AssetSupply.View'] }
+      },
+      {
         path: 'requests-management/order-report',
         loadComponent: () => import('@pages/requests-management/order-report/order-report.component').then(m => m.OrderReportComponent),
         canActivate: [permissionGuard],

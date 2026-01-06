@@ -371,6 +371,7 @@
     "item": "عنصر",
     "items": "مواد",
     "review": "مراجعة التوريد",
+    "reviewWeaponSupply": "توريد الأسلحة",
     "updateRequestAndSupply": "تحديث الطلب والتوريد",
     "itemName": "اسم مادة",
     "itemCode": "رمز مادة",
@@ -469,7 +470,10 @@
       "receiverRankRequired": "رتبة المستلم مطلوبة",
       "militaryIdRequired": "الرقم العسكري مطلوب",
       "filesRequired": "مطلوب ملف واحد على الأقل",
-      "fileDownloadFailed": "فشل تحميل الملف"
+      "fileDownloadFailed": "فشل تحميل الملف",
+      "notWeaponOrder": "هذا الطلب لا يحتوي على أسلحة",
+      "failedToLoadOrder": "فشل تحميل بيانات الطلب",
+      "notOrderRequest": "هذا ليس طلب توريد"
     },
     "success": {
       "pickupDateConfirmed": "تم تأكيد موعد الاستلام بنجاح",

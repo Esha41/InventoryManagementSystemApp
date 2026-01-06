@@ -168,6 +168,9 @@ export class  DropdownComponent<T = Primitive>
   private onChange: (value: T | null | T[]) => void = () => {};
   private onTouched: () => void = () => {};
   private onValidatorChange: () => void = () => {};
+  private scrollHandler?: () => void;
+  private resizeHandler?: () => void;
+  private scrollableParent: HTMLElement | null = null;
 
   @HostBinding('attr.name')
   get attrName(): string | null {
@@ -306,6 +309,9 @@ export class  DropdownComponent<T = Primitive>
     }
 
     this.isOpen = !this.isOpen;
+    if (this.isOpen) {
+      setTimeout(() => this.adjustPanelPosition(), 0);
+    }
     this.openedChange.emit(this.isOpen);
   }
 
@@ -315,7 +321,85 @@ export class  DropdownComponent<T = Primitive>
     }
     this.isOpen = true;
     this.searchTerm = '';
+    setTimeout(() => this.adjustPanelPosition(), 0);
     this.openedChange.emit(true);
+  }
+
+  private adjustPanelPosition(): void {
+    const trigger = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
+    const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
+    
+    if (!trigger || !panel) return;
+
+    // Clean up previous listeners
+    this.cleanupPositionListeners();
+
+    // Always use fixed positioning when open to prevent scrolling issues
+    this.scrollableParent = this.findScrollableParent(this.host.nativeElement);
+    
+    // Always use fixed positioning - it handles both container and page scrolling
+    {
+      const triggerRect = trigger.getBoundingClientRect();
+      panel.style.position = 'fixed';
+      panel.style.top = `${triggerRect.bottom + 8}px`;
+      panel.style.left = `${triggerRect.left}px`;
+      panel.style.width = `${triggerRect.width}px`;
+      panel.style.minWidth = `${triggerRect.width}px`;
+      panel.style.maxWidth = `${triggerRect.width}px`;
+      panel.style.zIndex = '10001';
+      panel.style.right = 'auto';
+      
+      // Update position on scroll/resize - listen to both container and window scroll
+      const updatePosition = () => {
+        if (this.isOpen && trigger && panel) {
+          const newRect = trigger.getBoundingClientRect();
+          panel.style.top = `${newRect.bottom + 8}px`;
+          panel.style.left = `${newRect.left}px`;
+          panel.style.width = `${newRect.width}px`;
+          panel.style.minWidth = `${newRect.width}px`;
+          panel.style.maxWidth = `${newRect.width}px`;
+        }
+      };
+      
+      this.scrollHandler = updatePosition;
+      this.resizeHandler = updatePosition;
+      
+      // Listen to scroll on container if it exists, otherwise listen to window scroll
+      if (this.scrollableParent) {
+        this.scrollableParent.addEventListener('scroll', this.scrollHandler, { passive: true });
+      }
+      // Always listen to window scroll to handle page scrolling
+      window.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
+      window.addEventListener('resize', this.resizeHandler, { passive: true });
+    }
+  }
+
+  private cleanupPositionListeners(): void {
+    if (this.scrollableParent && this.scrollHandler) {
+      this.scrollableParent.removeEventListener('scroll', this.scrollHandler);
+    }
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler, { capture: true } as any);
+    }
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+    this.scrollHandler = undefined;
+    this.resizeHandler = undefined;
+    this.scrollableParent = null;
+  }
+
+  private findScrollableParent(element: HTMLElement): HTMLElement | null {
+    let parent = element.parentElement;
+    while (parent) {
+      const style = window.getComputedStyle(parent);
+      const overflow = style.overflow + style.overflowY + style.overflowX;
+      if (overflow.includes('scroll') || overflow.includes('auto')) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return null;
   }
 
   close(): void {
@@ -325,6 +409,22 @@ export class  DropdownComponent<T = Primitive>
     this.isOpen = false;
     this.hoveredIndex = null;
     this.searchTerm = '';
+    
+    // Clean up position listeners
+    this.cleanupPositionListeners();
+    
+    // Reset panel positioning
+    const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
+    if (panel) {
+      panel.style.position = '';
+      panel.style.top = '';
+      panel.style.left = '';
+      panel.style.width = '';
+      panel.style.minWidth = '';
+      panel.style.maxWidth = '';
+      panel.style.right = '';
+    }
+    
     this.openedChange.emit(false);
   }
 

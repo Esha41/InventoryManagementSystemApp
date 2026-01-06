@@ -1,0 +1,132 @@
+/* Component-specific styles */
+
+/* Table wrapper for proper overflow handling */
+.assets-table-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+/* Assets table styling */
+.assets-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* Column widths */
+.assets-table th:nth-child(1),
+.assets-table td:nth-child(1) {
+  width: 20%;
+  min-width: 150px;
+}
+
+.assets-table th:nth-child(2),
+.assets-table td:nth-child(2) {
+  width: 30%;
+  min-width: 250px;
+}
+
+.assets-table th:nth-child(3),
+.assets-table td:nth-child(3) {
+  width: 25%;
+  min-width: 200px;
+}
+
+.assets-table th:nth-child(4),
+.assets-table td:nth-child(4) {
+  width: 25%;
+  min-width: 200px;
+}
+
+/* Table cell styling */
+.assets-table td {
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+
+/* Dropdown cell - ensure proper overflow handling */
+.dropdown-cell {
+  position: relative;
+  width: 100%;
+  min-width: 200px;
+}
+
+/* Ensure dropdown panels can escape overflow containers */
+:host ::ng-deep .assets-table-wrapper > div {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Dropdown panel z-index and smooth transitions */
+:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-panel {
+  z-index: 10001 !important;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Smooth dropdown opening */
+:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown {
+  position: relative;
+}
+
+:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-trigger {
+  transition: all 0.2s ease;
+}
+
+/* Input styling improvements */
+.assets-table input[type="text"] {
+  transition: all 0.2s ease;
+}
+
+.assets-table input[type="text"]:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Table row hover effect */
+.assets-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Submit section */
+.submit-section {
+  margin-top: 2rem;
+  background-color: var(--color-background);
+}
+
+/* Enhanced card hover effects */
+.bg-\[var\(--color-background\)\] {
+  transition: all 0.2s ease;
+}
+
+/* Smooth transitions for interactive elements */
+button, input, textarea, select {
+  transition: all 0.2s ease;
+}
+
+/* Enhanced focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Badge animations */
+span[class*="rounded"] {
+  transition: all 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .assets-table {
+    min-width: 800px;
+  }
+  
+  .assets-table-wrapper > div {
+    overflow-x: auto;
+  }
+  
+  .submit-section {
+    padding: 1rem;
+  }
+}

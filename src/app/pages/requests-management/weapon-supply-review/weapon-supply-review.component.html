@@ -1,0 +1,458 @@
+<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+  <!-- Loading State -->
+  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+  </app-loading-state>
+
+  <!-- Content -->
+  <div *ngIf="!loading && orderData">
+    <!-- Header with Back Button -->
+    <div class="mb-6">
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <button (click)="goBack()"
+              class="p-2.5 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+              <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+            </button>
+            <div>
+              <h1 class="text-2xl font-bold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.title' | translate }} {{ orderData.requestNo || orderData.orderNo }}
+              </h1>
+              <div class="flex items-center gap-3 mt-2">
+                <p class="text-sm text-[var(--color-text-muted)]">
+                  {{ 'weaponSupplyReview.department' | translate }}: {{ getDepartmentName() }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="space-y-6">
+      <!-- Request Information -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
+        <button (click)="isRequestInfoExpanded = !isRequestInfoExpanded"
+          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'weaponSupplyReview.requestInformation' | translate }}
+            </h2>
+          </div>
+          <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)]">
+          </lucide-angular>
+        </button>
+
+        <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+            <div class="space-y-1">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                {{ 'weaponSupplyReview.orderNo' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo }}</p>
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                {{ 'weaponSupplyReview.department' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getDepartmentName() }}</p>
+            </div>
+            <div class="space-y-1">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                {{ 'weaponSupplyReview.requester' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getRequesterName() }}</p>
+            </div>
+            <div *ngIf="orderData.usageLocation" class="space-y-1">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                {{ 'weaponSupplyReview.usageLocation' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.usageLocation }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Depot Selection -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)] p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+          <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+            <lucide-angular [img]="Warehouse" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+          </div>
+          <div class="flex-1">
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'weaponSupplyReview.selectDepots' | translate }}
+            </h2>
+            <p class="text-sm text-[var(--color-text-muted)] mt-1">
+              {{ 'weaponSupplyReview.selectDepotsDescription' | translate }}
+            </p>
+          </div>
+        </div>
+        
+        <div *ngIf="loadingDepots" class="text-center py-8">
+          <div class="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+            <span class="animate-spin inline-block">⏳</span>
+            <span>{{ 'weaponSupplyReview.loadingDepots' | translate }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loadingDepots && depotDropdownOptions.length > 0" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label *ngFor="let depot of depotDropdownOptions" [for]="'depot-' + depot.value" [ngClass]="{'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700': selectedDepotIds.includes(depot.value), 'opacity-50': depotsConfirmed && !selectedDepotIds.includes(depot.value)}" [class.cursor-not-allowed]="depotsConfirmed" [class.cursor-pointer]="!depotsConfirmed" class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <input type="checkbox" [id]="'depot-' + depot.value" [checked]="selectedDepotIds.includes(depot.value)" [disabled]="depotsConfirmed" (change)="toggleDepotSelection(depot.value)" class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
+              <div class="flex-1">
+                <span class="text-sm font-medium text-[var(--color-text)]">{{ depot.label }}</span>
+                <span *ngIf="depot.description" class="block text-xs text-[var(--color-text-muted)] mt-0.5">{{ depot.description }}</span>
+              </div>
+            </label>
+          </div>
+          
+          <!-- Selection Summary and Actions -->
+          <div class="mt-4 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex-1">
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">
+                  {{ 'weaponSupplyReview.selectedDepotsCount' | translate }}: 
+                  <span class="font-semibold text-[var(--color-text)]">{{ selectedDepotIds.length }}</span>
+                </p>
+                <div *ngIf="depotsConfirmed" class="flex items-center gap-2 mt-2">
+                  <lucide-angular [img]="CheckCircle" class="h-4 w-4 text-[var(--color-success)]"></lucide-angular>
+                  <span class="text-xs text-[var(--color-success)] font-medium">
+                    {{ 'weaponSupplyReview.depotsConfirmed' | translate }}
+                  </span>
+                </div>
+              </div>
+              <div class="flex gap-2 w-full sm:w-auto">
+                <button *ngIf="!depotsConfirmed" 
+                  (click)="confirmDepotSelection()"
+                  [disabled]="selectedDepotIds.length === 0"
+                  class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+                  <lucide-angular [img]="Check" class="h-4 w-4"></lucide-angular>
+                  <span>{{ 'weaponSupplyReview.confirmSelection' | translate }}</span>
+                </button>
+                <button *ngIf="depotsConfirmed"
+                  (click)="clearDepotSelection()"
+                  class="flex items-center gap-2 px-4 py-2 bg-[var(--color-background-active)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-all border border-[var(--color-border)] font-medium shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-border)] focus:ring-offset-2">
+                  <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+                  <span>{{ 'weaponSupplyReview.changeSelection' | translate }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedDepotIds.length === 0 && !depotsConfirmed" class="p-4 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-lg">
+            <div class="flex items-center gap-2">
+              <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-warning)]"></lucide-angular>
+              <p class="text-sm text-[var(--color-warning)] font-medium">
+                {{ 'weaponSupplyReview.selectAtLeastOneDepot' | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loadingDepots && depotDropdownOptions.length === 0" class="text-center py-8">
+          <div class="inline-flex flex-col items-center gap-2 text-sm text-[var(--color-text-muted)]">
+            <lucide-angular [img]="Building2" class="h-8 w-8 opacity-50"></lucide-angular>
+            <p>{{ 'weaponSupplyReview.noDepotsAvailable' | translate }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items with Assets -->
+      <div *ngIf="depotsConfirmed" class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
+        <button (click)="isItemsExpanded = !isItemsExpanded"
+          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'weaponSupplyReview.itemsAndAssets' | translate }}
+            </h2>
+          </div>
+          <lucide-angular [img]="isItemsExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)]">
+          </lucide-angular>
+        </button>
+
+        <div *ngIf="isItemsExpanded" class="px-6 pb-6 border-t border-[var(--color-border)] space-y-6 pt-6">
+          <div *ngIf="loadingAssets" class="text-center py-8">
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
+          </div>
+
+          <div *ngIf="!loadingAssets && itemsWithAssets.length === 0" class="text-center py-8">
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.noItems' | translate }}</p>
+          </div>
+
+          <div *ngFor="let item of itemsWithAssets" class="border border-[var(--color-border)] rounded-xl p-6 bg-[var(--color-background-muted)]/30">
+            <!-- Item Header -->
+            <div class="flex items-start justify-between mb-6 pb-4 border-b border-[var(--color-border)]">
+              <div class="flex-1">
+                <h3 class="font-semibold text-[var(--color-text)] text-lg mb-2">{{ item.itemName }}</h3>
+                <div class="flex items-center gap-4 flex-wrap">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                      {{ 'weaponSupplyReview.requestedQuantity' | translate }}:
+                    </span>
+                    <span class="text-sm font-medium text-[var(--color-text)]">{{ formatNumber(item.requestedQuantity) }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                      {{ 'weaponSupplyReview.availableAssets' | translate }}:
+                    </span>
+                    <span class="text-sm font-medium text-[var(--color-text)]">{{ formatNumber(item.availableQuantity) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-end ms-4 flex flex-col items-end gap-2">
+                <div class="px-3 py-1.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+                  <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-0.5">
+                    {{ 'weaponSupplyReview.selected' | translate }}
+                  </p>
+                  <p class="text-lg font-bold text-[var(--color-text)]">
+                    {{ formatNumber(item.selectedCount) }} / {{ formatNumber(item.requestedQuantity) }}
+                  </p>
+                </div>
+                <!-- Quick Select -->
+                <div class="flex gap-2">
+                  <button (click)="selectAssetsForItem(item, item.requestedQuantity)"
+                    class="px-3 py-1.5 text-xs bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 font-medium">
+                    {{ 'weaponSupplyReview.selectAll' | translate }}
+                  </button>
+                  <button (click)="selectAssetsForItem(item, 0)"
+                    class="px-3 py-1.5 text-xs bg-[var(--color-background-active)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-all border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-border)] focus:ring-offset-1 font-medium">
+                    {{ 'weaponSupplyReview.clear' | translate }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Available Assets Selection (Checkboxes) -->
+            <div class="mb-4 p-4 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+              <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
+                {{ 'weaponSupplyReview.selectAssets' | translate }}
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <label *ngFor="let asset of item.selectedAssets; let i = index" [ngClass]="{'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 shadow-custom-sm': asset.selected, 'opacity-50': !asset.selected && item.selectedCount >= item.requestedQuantity}" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] cursor-pointer transition-all">
+                  <input type="checkbox" [checked]="asset.selected" [disabled]="!asset.selected && item.selectedCount >= item.requestedQuantity" (change)="toggleAssetSelection(item, asset)" class="w-4 h-4 text-[var(--color-brand)] rounded border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
+                  <span class="text-sm font-medium text-[var(--color-text)]">{{ asset.serialNumber }}</span>
+                  <span *ngIf="asset.assetTag" class="text-xs text-[var(--color-text-muted)]">({{ asset.assetTag }})</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Selected Assets Table -->
+            <div *ngIf="item.selectedCount > 0" class="mt-4">
+              <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
+                {{ 'weaponSupplyReview.selectedAssetsTable' | translate }}
+              </p>
+              <div class="assets-table-wrapper">
+                <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] shadow-custom-sm">
+                  <table class="assets-table">
+                    <thead class="bg-[var(--color-background-muted)]">
+                      <tr>
+                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
+                          {{ 'weaponSupplyReview.serialNumber' | translate }}
+                        </th>
+                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
+                          {{ 'weaponSupplyReview.assignee' | translate }}
+                        </th>
+                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
+                          {{ 'weaponSupplyReview.condition' | translate }}
+                        </th>
+                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
+                          {{ 'weaponSupplyReview.notes' | translate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let asset of getSelectedAssetsForItem(item); let i = index"
+                        class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+                        <td class="px-4 py-3 text-[var(--color-text)]">
+                          <div class="flex items-center gap-2">
+                            <span class="font-medium">{{ asset.serialNumber }}</span>
+                            <span *ngIf="asset.assetTag" class="text-xs text-[var(--color-text-muted)] px-1.5 py-0.5 bg-[var(--color-background-muted)] rounded">({{ asset.assetTag }})</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="dropdown-cell">
+                            <app-dropdown
+                              [options]="userDropdownOptions"
+                              [(ngModel)]="asset.custodianId"
+                              [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
+                              [disabled]="loadingUsers"
+                              optionValue="value"
+                              optionLabel="label"
+                              class="w-full">
+                            </app-dropdown>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <input type="text" 
+                            [value]="asset.conditionOnSupply || asset.condition || ''"
+                            (input)="onConditionChange(asset, $any($event.target).value)"
+                            placeholder="{{ 'weaponSupplyReview.enterCondition' | translate }}"
+                            class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm transition-all">
+                        </td>
+                        <td class="px-4 py-3">
+                          <input type="text" 
+                            [value]="asset.notes || ''"
+                            (input)="onNotesChange(asset, $any($event.target).value)"
+                            placeholder="{{ 'weaponSupplyReview.enterNotes' | translate }}"
+                            class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm transition-all">
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div class="mt-4 flex items-center gap-2">
+              <span *ngIf="item.selectedCount === 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--color-background-active)] text-[var(--color-text)] border border-[var(--color-border)] shadow-custom-sm">
+                <lucide-angular [img]="AlertTriangle" class="h-3 w-3"></lucide-angular>
+                {{ 'weaponSupplyReview.noAssetsSelected' | translate }}
+              </span>
+              <span *ngIf="item.selectedCount > 0 && item.selectedCount < item.requestedQuantity"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] shadow-custom-sm">
+                <lucide-angular [img]="Clock" class="h-3 w-3"></lucide-angular>
+                {{ 'weaponSupplyReview.partiallySelected' | translate }}
+              </span>
+              <span *ngIf="item.selectedCount === item.requestedQuantity"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#D1FAE5] text-[#065F46] border border-[#BBF7D0] shadow-custom-sm">
+                <lucide-angular [img]="CheckCircle" class="h-3 w-3"></lucide-angular>
+                {{ 'weaponSupplyReview.fullySelected' | translate }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receiver Information -->
+      <div *ngIf="depotsConfirmed" class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
+        <button (click)="isReceiverInfoExpanded = !isReceiverInfoExpanded"
+          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Users" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'weaponSupplyReview.receiverInformation' | translate }}
+            </h2>
+          </div>
+          <lucide-angular [img]="isReceiverInfoExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)]">
+          </lucide-angular>
+        </button>
+
+        <div *ngIf="isReceiverInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.receiverName' | translate }} <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <input type="text" 
+                [(ngModel)]="receiverName"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.receiverMilitaryId' | translate }} <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <input type="text" 
+                [(ngModel)]="receiverMilitaryId"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.receiverRank' | translate }} <span class="text-[var(--color-error)]">*</span>
+              </label>
+              <select [(ngModel)]="receiverRankId"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
+                <option value="0">{{ 'weaponSupplyReview.selectRank' | translate }}</option>
+                <option *ngFor="let rank of ranks" [value]="rank.id">
+                  {{ getCurrentLang() === 'ar' ? rank.nameAr : rank.nameEn }}
+                </option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.location' | translate }}
+              </label>
+              <input type="text" 
+                [(ngModel)]="location"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.expectedReturnDate' | translate }}
+              </label>
+              <input type="date" 
+                [(ngModel)]="expectedReturnDate"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
+            </div>
+
+            <div class="md:col-span-2 space-y-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'weaponSupplyReview.notes' | translate }}
+              </label>
+              <textarea [(ngModel)]="notes"
+                rows="3"
+                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary and Submit -->
+      <div *ngIf="depotsConfirmed" class="submit-section bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-brand)] p-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+                <lucide-angular [img]="ClipboardList" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+              </div>
+              <h3 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.summary' | translate }}
+              </h3>
+            </div>
+            <div class="ml-13">
+              <p class="text-sm text-[var(--color-text-muted)]">
+                {{ 'weaponSupplyReview.totalSelected' | translate }}: 
+                <span class="font-semibold text-[var(--color-text)] text-base">{{ formatNumber(getTotalSelectedCount()) }}</span> 
+                <span class="text-[var(--color-text-muted)] mx-1">/</span>
+                <span class="font-semibold text-[var(--color-text)] text-base">{{ formatNumber(getTotalRequestedCount()) }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-full sm:w-auto">
+            <button 
+              [disabled]="!canSubmit() || submitting"
+              (click)="onSubmit()"
+              class="w-full sm:w-auto px-8 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold shadow-custom-sm hover:shadow-custom-md disabled:shadow-none min-w-[180px] text-base focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+              <lucide-angular *ngIf="!submitting" [img]="CheckCircle" class="h-5 w-5"></lucide-angular>
+              <span *ngIf="submitting" class="flex items-center gap-2">
+                <span class="animate-spin inline-block">⏳</span>
+                {{ 'weaponSupplyReview.submitting' | translate }}
+              </span>
+              <span *ngIf="!submitting">{{ 'weaponSupplyReview.submit' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
