@@ -1260,21 +1260,34 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if there's a pending step with isPending: true and isCurrentUserApprover: true
-    const currentPendingStep = this.requestDetail.approvalHistory?.find(
-      step => step.status === 'Pending' && step.isPending === true
-    );
-
-    if (!currentPendingStep) {
-      return false;
-    }
-
-    // Must have isPending: true AND isCurrentUserApprover: true
-    if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
-      return false;
-    }
+    const currentUser = this.authService.getCurrentUser();
 
     try {
+      // Super admin / administrator should always see the Review button
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+
+      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
+
+      if (isAdministrator) {
+        return true;
+      }
+
+      // For normal users, they must be the current approver on the pending step
+      const currentPendingStep = this.requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false;
+      }
+
+      if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+        return false;
+      }
+
       return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
     } catch (error) {
       return false;
