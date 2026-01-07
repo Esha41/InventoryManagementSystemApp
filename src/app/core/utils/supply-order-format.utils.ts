@@ -10,44 +10,24 @@ import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { mapOrderPriorityToString } from './priority.utils';
 
 /**
  * Get priority translation key
  * Handles both number and string priority values
- * Returns translation key (e.g., 'dashboard.priorityLabels.high')
+ * Returns translation key (e.g., 'common.priorityLevels.Normal')
  */
 export function getPriorityTranslationKey(priority?: number | string | null): string {
   if (priority === null || priority === undefined) {
-    return 'dashboard.priorityLabels.medium';
+    return 'common.priorityLevels.Urgent';
   }
 
-  // Normalize priority to number
-  let priorityNum: number;
-  if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim();
-    if (priorityLower === 'high' || priorityLower === '1') {
-      priorityNum = 1;
-    } else if (priorityLower === 'medium' || priorityLower === '2') {
-      priorityNum = 2;
-    } else if (priorityLower === 'low' || priorityLower === '3') {
-      priorityNum = 3;
-    } else if (priorityLower === 'critical' || priorityLower === '4') {
-      priorityNum = 4;
-    } else {
-      const parsed = parseInt(priority, 10);
-      priorityNum = isNaN(parsed) ? 2 : parsed;
-    }
-  } else {
-    priorityNum = priority;
-  }
-
-  const priorityMap: { [key: number]: string } = {
-    1: 'dashboard.priorityLabels.high',
-    2: 'dashboard.priorityLabels.medium',
-    3: 'dashboard.priorityLabels.low',
-    4: 'dashboard.priorityLabels.high' // Critical maps to high
-  };
-  return priorityMap[priorityNum] || 'dashboard.priorityLabels.medium';
+  // Use mapOrderPriorityToString to normalize priority to string format
+  // This handles: 1 = Normal, 2 = Urgent, 3 = VeryUrgent, 4 = Critical
+  const priorityString = mapOrderPriorityToString(priority);
+  
+  // Return the correct translation key using common.priorityLevels prefix
+  return `common.priorityLevels.${priorityString}`;
 }
 
 /**

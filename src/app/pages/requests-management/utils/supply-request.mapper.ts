@@ -23,10 +23,12 @@ function mapToSupplyRequestType(type: number | string): 'Order' | 'Return' {
  * Map OrderDto to SupplyRequestDetail
  */
 export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
+  // Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
+  // Map to SupplyRequestDetail priority format (keeping as string for display)
   const priorityMap: { [key: number]: SupplyRequestDetail['priority'] } = {
-    1: 'Low',
-    2: 'Medium',
-    3: 'High',
+    1: 'Normal',
+    2: 'Urgent',
+    3: 'VeryUrgent',
     4: 'Critical'
   };
 
@@ -39,20 +41,21 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
   };
 
   // Normalize priority to number for map lookup
+  // Backend enum: 1=Normal, 2=Urgent, 3=VeryUrgent, 4=Critical
   let priorityNum: number;
   if (typeof order.priority === 'string') {
-    const priorityLower = order.priority.toLowerCase().trim();
-    if (priorityLower === 'high' || priorityLower === '1') {
+    const priorityLower = order.priority.toLowerCase().trim().replace(/\s+/g, '');
+    if (priorityLower === 'normal' || priorityLower === '1') {
       priorityNum = 1;
-    } else if (priorityLower === 'medium' || priorityLower === '2') {
+    } else if (priorityLower === 'urgent' || priorityLower === '2') {
       priorityNum = 2;
-    } else if (priorityLower === 'low' || priorityLower === '3') {
+    } else if (priorityLower === 'veryurgent' || priorityLower === 'veryurgent' || priorityLower === '3') {
       priorityNum = 3;
     } else if (priorityLower === 'critical' || priorityLower === '4') {
       priorityNum = 4;
     } else {
       const parsed = parseInt(order.priority, 10);
-      priorityNum = isNaN(parsed) ? 1 : parsed;
+      priorityNum = isNaN(parsed) ? 2 : parsed; // Default to Urgent (2)
     }
   } else {
     priorityNum = order.priority;
@@ -95,7 +98,7 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
   return {
     issueNo: order.requestNo || order.orderNo || `#${order.id}`,
     requestType: mapToSupplyRequestType(order.requestType),
-    priority: priorityMap[priorityNum] || 'Low',
+    priority: priorityMap[priorityNum] || 'Urgent',
     requestDate: formatDate(order.usageDateFrom),
     requesterName: order.requesterName || 'N/A',
     requesterId: order.requesterId || 'N/A',

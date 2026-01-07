@@ -10,6 +10,7 @@ import { OrderService, OrderDto } from '@services/order.service';
 import { SupplyService } from '@services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent } from '@components/index';
+import { mapOrderPriorityToString } from '@utils/priority.utils';
 
 @Component({
   selector: 'app-supply-order-list',
@@ -166,33 +167,20 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
    * Handles both number and string priority values
    */
   getPriorityText(priority: number | string): string {
-    // Normalize priority to number
-    let priorityNum: number;
-    if (typeof priority === 'string') {
-      const priorityLower = priority.toLowerCase().trim();
-      if (priorityLower === 'high' || priorityLower === '1') {
-        priorityNum = 1;
-      } else if (priorityLower === 'medium' || priorityLower === '2') {
-        priorityNum = 2;
-      } else if (priorityLower === 'low' || priorityLower === '3') {
-        priorityNum = 3;
-      } else if (priorityLower === 'critical' || priorityLower === '4') {
-        priorityNum = 4;
-      } else {
-        const parsed = parseInt(priority, 10);
-        priorityNum = isNaN(parsed) ? 2 : parsed; // Default to Medium
-      }
-    } else {
-      priorityNum = priority;
-    }
+    // Use mapOrderPriorityToString to normalize priority to string format
+    // This handles: 1 = Normal, 2 = Urgent, 3 = VeryUrgent, 4 = Critical
+    const priorityString = this.mapOrderPriorityToString(priority);
+    
+    // Return the correct translation key using common.priorityLevels prefix
+    return `common.priorityLevels.${priorityString}`;
+  }
 
-    const priorityMap: { [key: number]: string } = {
-      1: 'dashboard.priorityLabels.high',
-      2: 'dashboard.priorityLabels.medium',
-      3: 'dashboard.priorityLabels.low',
-      4: 'dashboard.priorityLabels.high' // Critical maps to high for now
-    };
-    return priorityMap[priorityNum] || 'dashboard.priorityLabels.medium';
+  /**
+   * Map order priority to string (for use in template)
+   * Exposes mapOrderPriorityToString utility function to template
+   */
+  mapOrderPriorityToString(priority?: number | string | null): string {
+    return mapOrderPriorityToString(priority);
   }
 }
 

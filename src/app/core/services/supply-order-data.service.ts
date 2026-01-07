@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, EMPTY } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, of, EMPTY, forkJoin } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { OrderService, OrderDto } from './order.service';
 import { SupplyService, SupplyDto } from './supply.service';
 import { InventoryService, LotDetailDto } from './inventory.service';
@@ -45,15 +45,38 @@ export class SupplyOrderDataService {
     orderItems: OrderRequestItemDto[];
     supplyItems: SupplyItemDisplay[];
   }> {
-    return this.supplyService.getByOrderId(orderId).pipe(
-      map((supply: SupplyDto) => {
-        const order = supply.order;
-        const orderItems = order?.requestItems || [];
+    return forkJoin({
+      supply: this.supplyService.getByOrderId(orderId),
+      fullOrder: this.orderService.getOrderById(orderId)
+    }).pipe(
+      map(({ supply, fullOrder }) => {
+        const order = supply.order || fullOrder;
+        
+        // Merge full order data (with nested objects) into supply.order if it exists
+        if (supply.order && fullOrder) {
+          // Copy nested objects from fullOrder
+          if (fullOrder.department && !supply.order.department) {
+            supply.order.department = fullOrder.department;
+          }
+          if (fullOrder.requester && !supply.order.requester) {
+            supply.order.requester = fullOrder.requester;
+          }
+          if (fullOrder.requestPurpose && !supply.order.requestPurpose) {
+            supply.order.requestPurpose = fullOrder.requestPurpose;
+          }
+          
+          // Populate flat properties from nested objects
+          this.populateOrderFlatProperties(supply.order);
+        }
+        
+        // Use fullOrder if supply.order is not available
+        const finalOrder = supply.order || fullOrder;
+        const orderItems = finalOrder?.requestItems || [];
         const supplyItems = mapSupplyDetailsToDisplay(supply);
 
         return {
           supply,
-          order: order!,
+          order: finalOrder!,
           orderItems,
           supplyItems
         };
@@ -66,6 +89,60 @@ export class SupplyOrderDataService {
   }
 
   /**
+   * Populate flat properties from nested objects
+   * Also handles PascalCase property names from backend
+   */
+  private populateOrderFlatProperties(order: OrderDto | any): void {
+    if (!order) return;
+
+    // Normalize nested object property names (handle both camelCase and PascalCase)
+    if ((order as any).Department && !order.department) {
+      order.department = (order as any).Department;
+    }
+    if ((order as any).Requester && !order.requester) {
+      order.requester = (order as any).Requester;
+    }
+    if ((order as any).RequestPurpose && !order.requestPurpose) {
+      order.requestPurpose = (order as any).RequestPurpose;
+    }
+
+    // Populate department flat properties from nested object if missing
+    if (order.department) {
+      if (!order.departmentNameEn && order.department.nameEn) {
+        order.departmentNameEn = order.department.nameEn;
+      }
+      if (!order.departmentNameAr && order.department.nameAr) {
+        order.departmentNameAr = order.department.nameAr;
+      }
+    }
+
+    // Populate requester flat properties from nested object if missing
+    if (order.requester) {
+      if (!order.requesterName) {
+        order.requesterName = order.requester.fullNameEN || 
+                             order.requester.fullNameAR || 
+                             order.requester.userName;
+      }
+      if (!order.requesterNameEn && order.requester.fullNameEN) {
+        order.requesterNameEn = order.requester.fullNameEN;
+      }
+      if (!order.requesterNameAr && order.requester.fullNameAR) {
+        order.requesterNameAr = order.requester.fullNameAR;
+      }
+    }
+
+    // Populate requestPurpose flat properties from nested object if missing
+    if (order.requestPurpose) {
+      if (!order.requestPurposeNameEn && order.requestPurpose.nameEn) {
+        order.requestPurposeNameEn = order.requestPurpose.nameEn;
+      }
+      if (!order.requestPurposeNameAr && order.requestPurpose.nameAr) {
+        order.requestPurposeNameAr = order.requestPurpose.nameAr;
+      }
+    }
+  }
+
+  /**
    * Load supply data by supply ID
    */
   loadSupplyData(supplyId: number): Observable<{
@@ -75,17 +152,62 @@ export class SupplyOrderDataService {
     supplyItems: SupplyItemDisplay[];
   }> {
     return this.supplyService.getById(supplyId).pipe(
-      map((supply: SupplyDto) => {
-        const order = supply.order;
-        const orderItems = order?.requestItems || [];
-        const supplyItems = mapSupplyDetailsToDisplay(supply);
+      switchMap((supply: SupplyDto) => {
+        // Load full order details to get nested objects
+        const orderId = supply.orderId;
+        if (!orderId) {
+          // If no orderId, use supply.order as-is
+          const order = supply.order;
+          const orderItems = order?.requestItems || [];
+          const supplyItems = mapSupplyDetailsToDisplay(supply);
+          return of({
+            supply,
+            order: order!,
+            orderItems,
+            supplyItems
+          });
+        }
 
-        return {
-          supply,
-          order: order!,
-          orderItems,
-          supplyItems
-        };
+        // Load both supply and full order details in parallel
+        return forkJoin({
+          fullOrder: this.orderService.getOrderById(orderId),
+          supplyData: of(supply)
+        }).pipe(
+          map(({ fullOrder, supplyData }) => {
+            const order = supplyData.order || fullOrder;
+            
+            // Merge nested objects from fullOrder into supply.order if it exists
+            if (supplyData.order && fullOrder) {
+              // Copy nested objects from fullOrder
+              if (fullOrder.department && !supplyData.order.department) {
+                supplyData.order.department = fullOrder.department;
+              }
+              if (fullOrder.requester && !supplyData.order.requester) {
+                supplyData.order.requester = fullOrder.requester;
+              }
+              if (fullOrder.requestPurpose && !supplyData.order.requestPurpose) {
+                supplyData.order.requestPurpose = fullOrder.requestPurpose;
+              }
+              
+              // Populate flat properties from nested objects
+              this.populateOrderFlatProperties(supplyData.order);
+            } else if (fullOrder) {
+              // Use fullOrder if supply.order is not available
+              this.populateOrderFlatProperties(fullOrder);
+            }
+            
+            const finalOrder = supplyData.order || fullOrder;
+            const orderItems = finalOrder?.requestItems || [];
+            const supplyItems = mapSupplyDetailsToDisplay(supplyData);
+
+            return {
+              supply: supplyData,
+              order: finalOrder!,
+              orderItems,
+              supplyItems
+            };
+          })
+        );
       }),
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply order');

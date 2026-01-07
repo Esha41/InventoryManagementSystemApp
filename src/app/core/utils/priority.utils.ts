@@ -24,11 +24,12 @@ export const PRIORITY_TEXT_MAP: Record<Priority, string> = {
 
 /**
  * Priority CSS class mapping
+ * Colors: Normal = Green, Urgent = Orange, VeryUrgent = Red, Critical = Red
  */
 export const PRIORITY_CLASS_MAP: Record<Priority, string> = {
   [Priority.Normal]: 'text-green-600',
-  [Priority.Urgent]: 'text-yellow-600',
-  [Priority.VeryUrgent]: 'text-orange-600',
+  [Priority.Urgent]: 'text-orange-600',
+  [Priority.VeryUrgent]: 'text-red-600',
   [Priority.Critical]: 'text-red-600'
 };
 

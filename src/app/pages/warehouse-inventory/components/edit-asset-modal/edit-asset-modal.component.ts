@@ -44,8 +44,11 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     ngOnInit(): void { }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['asset'] && this.asset && this.isOpen) {
+        if (changes['asset'] && this.asset && this.isOpen && this.assetForm) {
             this.patchForm();
+        }
+        if (changes['isOpen'] && !this.isOpen && this.assetForm) {
+            this.assetForm.reset();
         }
     }
 
@@ -63,7 +66,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     }
 
     private patchForm(): void {
-        if (!this.asset) return;
+        if (!this.asset || !this.assetForm) return;
 
         const formatDate = (date: Date | string | undefined) => {
             if (!date) return null;
@@ -85,7 +88,9 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
 
     close(): void {
         this.closed.emit();
-        this.assetForm.reset();
+        if (this.assetForm) {
+            this.assetForm.reset();
+        }
         this.errorMessage = null;
     }
 

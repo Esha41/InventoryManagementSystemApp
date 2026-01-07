@@ -16,6 +16,30 @@ export class IssueRequestCartridgeManagementService {
   ) {}
 
   /**
+   * Infers item type from cartridge properties
+   * @param cartridge - Cartridge to infer type from
+   * @returns Inferred item type
+   */
+  private inferItemType(cartridge: Cartridge): string | null {
+    if (cartridge.itemType) {
+      return cartridge.itemType;
+    }
+
+    // Infer from properties
+    if (cartridge.weaponType || cartridge.caliber || cartridge.actionType) {
+      return 'Weapon';
+    }
+    if (cartridge.explosiveType || cartridge.unNumber) {
+      return 'Explosive';
+    }
+    if (cartridge.ammunitionType || cartridge.bulletDiameterLabel || cartridge.linkedLabel) {
+      return 'Ammunition';
+    }
+
+    return null;
+  }
+
+  /**
    * Adds a cartridge to selected entries
    * @param cartridge - Cartridge to add
    * @param quantity - Quantity to add
@@ -26,11 +50,21 @@ export class IssueRequestCartridgeManagementService {
     quantity: number,
     cartridgeState: CartridgeState
   ): void {
+    // Ensure itemType is set on cartridge
+    if (!cartridge.itemType) {
+      cartridge.itemType = this.inferItemType(cartridge) || undefined;
+    }
+
     const existingIndex = cartridgeState.selectedEntries.findIndex(entry => entry.id === cartridge.id);
     if (existingIndex >= 0) {
       cartridgeState.selectedEntries[existingIndex].quantity = quantity;
+      cartridgeState.selectedEntries[existingIndex].itemType = cartridge.itemType;
     } else {
-      cartridgeState.selectedEntries.push({ id: cartridge.id, quantity });
+      cartridgeState.selectedEntries.push({ 
+        id: cartridge.id, 
+        quantity,
+        itemType: cartridge.itemType
+      });
     }
 
     const target = cartridgeState.allCartridges.find(c => c.id === cartridge.id);
@@ -38,6 +72,7 @@ export class IssueRequestCartridgeManagementService {
       target.added = true;
       target.selected = true;
       target.quantity = quantity;
+      target.itemType = cartridge.itemType;
     }
   }
 

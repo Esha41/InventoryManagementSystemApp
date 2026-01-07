@@ -154,7 +154,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     showCartridgeDetails: false,
     loadingCartridges: false,
     cartridgeError: null,
-    selectedEntries: []
+    selectedEntries: [],
+    selectedCartridgesCache: new Map<number, Cartridge>()
   };
 
   usageFormData: UsageFormData = {
@@ -232,7 +233,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   get selectedCartridges(): Cartridge[] {
     return mapSelectedEntriesToCartridges(
       this.cartridgeState.selectedEntries,
-      this.cartridgeState.allCartridges
+      this.cartridgeState.allCartridges,
+      this.cartridgeState.selectedCartridgesCache
     );
   }
 
@@ -389,6 +391,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   onCartridgeAdded(event: { cartridge: Cartridge; quantity: number }): void {
     const { cartridge, quantity } = event;
+    // Cache the full cartridge data to preserve it across item type changes
+    this.cartridgeState.selectedCartridgesCache.set(cartridge.id, { ...cartridge });
     this.cartridgeManagementService.addCartridge(cartridge, quantity, this.cartridgeState);
     this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
     this.cdr.markForCheck();
@@ -518,6 +522,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   onRemoveSelectedCartridge(cartridgeId: number): void {
+    // Remove from cache as well
+    this.cartridgeState.selectedCartridgesCache.delete(cartridgeId);
     this.cartridgeManagementService.removeCartridge(cartridgeId, this.cartridgeState);
     this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
     this.cdr.markForCheck();
@@ -827,6 +833,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.cartridgeState.selectedEntries = [];
     this.cartridgeState.allCartridges = [];
     this.cartridgeState.filteredCartridges = [];
+    this.cartridgeState.selectedCartridgesCache.clear();
     this.fromReserve = 'Yes'; // Reset to default
     this.usageFormData = {
       usePurpose: '',

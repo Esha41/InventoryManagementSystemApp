@@ -115,6 +115,7 @@ export const API_ENDPOINTS = {
     BASE: '/Order',
     BY_ID: (id: number) => `/Order/${id}`,
     VERIFY_ALLOWANCE: '/Order/verify-allowance',
+    SET_PICKUP_DATE: (id: number) => `/Order/${id}/set-pickup-date`,
   },
 
   // Request Purposes

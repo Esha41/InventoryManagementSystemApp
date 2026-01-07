@@ -7,13 +7,15 @@ import { SupplyRequest } from '@models/supply-request.model';
 
 /**
  * Get priority color CSS classes
+ * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
+ * Colors: Normal = Green, Urgent = Orange, VeryUrgent = Red, Critical = Red
  */
 export function getPriorityColor(priority: SupplyRequest['priority']): string {
   switch (priority) {
     case 'Critical': return 'text-red-600';
-    case 'High': return 'text-orange-600';
-    case 'Medium': return 'text-yellow-600';
-    case 'Low': return 'text-green-600';
+    case 'VeryUrgent': return 'text-red-600';
+    case 'Urgent': return 'text-orange-600';
+    case 'Normal': return 'text-green-600';
     default: return 'text-gray-600';
   }
 }

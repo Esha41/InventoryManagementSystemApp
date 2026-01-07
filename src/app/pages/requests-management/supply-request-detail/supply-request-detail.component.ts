@@ -38,6 +38,7 @@ import {
 import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
+import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -765,6 +766,23 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     if (this.orderData.requesterName) return this.orderData.requesterName;
 
     return 'N/A';
+  }
+
+  /**
+   * Get priority translation key
+   * Converts priority (number or string) to the correct translation key format
+   */
+  getPriorityTranslationKey(priority?: number | string | null): string {
+    const priorityString = mapPriorityToString(priority);
+    return `common.priorityLevels.${priorityString}`;
+  }
+
+  /**
+   * Map order priority to string (for use in template)
+   * Exposes mapOrderPriorityToString utility function to template
+   */
+  mapOrderPriorityToString(priority?: number | string | null): string {
+    return mapPriorityToString(priority);
   }
 }
 
