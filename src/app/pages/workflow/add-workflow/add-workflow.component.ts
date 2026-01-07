@@ -41,24 +41,24 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     name: '',
     status: 'Active'
   };
-  
+
   selectedWorkflowType: number = 1;
-  
+
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  steps: Array<{ 
-    roleId: string | null; 
-    applicationEntityId: number | null; 
+  steps: Array<{
+    roleId: string | null;
+    applicationEntityId: number | null;
     entities: number[];
     requireHigherApproval?: boolean;
     higherApprovalRoleId?: string | null;
     higherApplicationEntityId?: number | null;
     canReturn?: boolean;
     errors?: { role?: boolean; entity?: boolean; higherRole?: boolean; higherEntity?: boolean };
-  }>=[];
+  }> = [];
 
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string }> = [];
@@ -80,7 +80,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     private router: Router,
     private translate: TranslateService,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     if (this.mutationObserver) {
@@ -102,7 +102,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   private checkAndPositionDropdowns(): void {
     const openDropdowns = document.querySelectorAll('.app-dropdown-open');
     this.hasOpenDropdown = openDropdowns.length > 0;
-    
+
     if (this.hasOpenDropdown) {
       this.repositionDropdowns();
       if (!this.positioningInterval) {
@@ -147,7 +147,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
       if (scrollContainer.contains(dropdown)) {
         const triggerRect = trigger.getBoundingClientRect();
-        
+
         const top = triggerRect.bottom + 8;
         const left = triggerRect.left;
         const width = triggerRect.width;
@@ -166,7 +166,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.workflowForm.status = 'Active';
-    
+
     setTimeout(() => {
       this.mutationObserver = new MutationObserver(() => {
         this.checkAndPositionDropdowns();
@@ -183,7 +183,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       }
 
       document.addEventListener('click', this.handleDocumentClick.bind(this));
-      
+
       this.checkAndPositionDropdowns();
     }, 0);
     this.backendUserService.getAllRolesSimple().subscribe({
@@ -221,7 +221,9 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (!this.workflowForm.name || this.workflowForm.name.trim() === '') {
-      this.errorMessage = 'Workflow name is required';
+      this.translate.get('workflow.nameRequired').subscribe(msg => {
+        this.errorMessage = msg;
+      });
       return;
     }
 
@@ -266,11 +268,10 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.submitting = false;
-        this.errorMessage = error.message || 'Failed to create workflow';
-        
+
         this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: any) => {
-          const errorMsg = error.message || translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
-          this.errorMessage = errorMsg;
+          const errorMsg = translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
+          this.errorMessage = error.message || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }
@@ -302,9 +303,9 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.steps.push({ 
-      roleId: null, 
-      applicationEntityId: null, 
+    this.steps.push({
+      roleId: null,
+      applicationEntityId: null,
       entities: [],
       requireHigherApproval: false,
       higherApprovalRoleId: null,

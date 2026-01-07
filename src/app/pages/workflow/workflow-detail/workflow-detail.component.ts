@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WorkflowService } from '@services/workflow.service';
 
 @Component({
@@ -19,8 +19,9 @@ export class WorkflowDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private workflowService: WorkflowService
-  ) {}
+    private workflowService: WorkflowService,
+    private translate: TranslateService
+  ) { }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -35,7 +36,12 @@ export class WorkflowDetailComponent implements OnInit {
     this.loading = true;
     this.workflowService.getWorkflowDetailById(id).subscribe({
       next: wf => { this.workflow = wf; this.loading = false; },
-      error: err => { this.errorMessage = err.message || 'Failed to load'; this.loading = false; }
+      error: err => {
+        this.translate.get('toast.failedToLoad').subscribe(msg => {
+          this.errorMessage = err.message || msg;
+        });
+        this.loading = false;
+      }
     });
   }
 

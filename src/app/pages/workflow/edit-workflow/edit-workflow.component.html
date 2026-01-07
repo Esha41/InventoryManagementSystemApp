@@ -56,7 +56,7 @@
           {{ 'workflow.status' | translate }} <span class="text-[var(--color-error)]">*</span>
         </label>
         <app-dropdown class="w-full" [(ngModel)]="editForm.status" name="status" required
-          [options]="workflowStatusOptions" optionLabel="label" optionValue="value"
+          [options]="workflowStatusOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
           placeholder="{{ 'workflow.status' | translate }}">
         </app-dropdown>
       </div>

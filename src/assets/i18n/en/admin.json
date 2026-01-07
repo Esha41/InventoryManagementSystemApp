@@ -221,6 +221,7 @@
     "ninetieth": "Ninetieth",
     "oneHundredth": "One hundredth",
     "stepNumber": "Step {{number}}",
+    "nameRequired": "Workflow name is required.",
     "createdSuccess": "Workflow created successfully.",
     "stepFieldsRequired": "Please fill Role and Application Entity for every step before saving.",
     "stepFieldsRequiredAdd": "Please fill Role and Application Entity before adding another step.",

@@ -161,7 +161,9 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (error) => {
-        this.errorMessage = error.message || 'Failed to load workflows';
+        this.translate.get('toast.failedToLoad').subscribe(msg => {
+          this.errorMessage = error.message || msg;
+        });
         this.loading = false;
       }
     });
@@ -211,7 +213,9 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: err => {
-        this.errorMessage = err.message || 'Failed to load workflow';
+        this.translate.get('toast.failedToLoadDetails').subscribe(msg => {
+          this.errorMessage = err.message || msg;
+        });
         this.loading = false;
       }
     });
@@ -260,10 +264,9 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.workflowToDelete = null;
       },
       error: (error) => {
-        this.errorMessage = error.message || 'Failed to delete workflow';
-
         this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: any) => {
-          const errorMsg = error.message || translations['toast.failedToDeleteWorkflow'];
+          const errorMsg = translations['toast.failedToDeleteWorkflow'] || 'Failed to delete workflow';
+          this.errorMessage = error.message || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
         });
 
@@ -541,7 +544,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   getSkipToSteps(step: any): string[] {
     // Extract skip-to step IDs from transitions array first
     let skipToStepIds: number[] = [];
-    
+
     if (Array.isArray(step?.transitions) && step.transitions.length > 0) {
       // Extract targetWorkflowStepId from transitions
       skipToStepIds = step.transitions
@@ -551,7 +554,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
       // Fallback to allowedSkipTargetIds if transitions not available
       skipToStepIds = [...step.allowedSkipTargetIds];
     }
-    
+
     if (skipToStepIds.length === 0) {
       return [];
     }

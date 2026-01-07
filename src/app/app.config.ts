@@ -39,9 +39,9 @@ export class JsonTranslationLoader implements TranslateLoader {
     // Merge all translations using forkJoin
     return forkJoin(moduleTranslations).pipe(
       map(translations => {
-        // Merge all translation objects into one
+        // Merge all translation objects into one using deep merge
         const merged = translations.reduce((acc, translation) => {
-          return { ...acc, ...translation };
+          return this.deepMerge(acc, translation);
         }, {});
         return merged;
       }),
@@ -50,6 +50,31 @@ export class JsonTranslationLoader implements TranslateLoader {
         return of({});
       })
     );
+  }
+
+  private deepMerge(target: any, source: any): any {
+    if (!source) return target;
+    if (!target) return source;
+
+    const output = { ...target };
+    if (this.isObject(target) && this.isObject(source)) {
+      Object.keys(source).forEach(key => {
+        if (this.isObject(source[key])) {
+          if (!(key in target)) {
+            Object.assign(output, { [key]: source[key] });
+          } else {
+            output[key] = this.deepMerge(target[key], source[key]);
+          }
+        } else {
+          Object.assign(output, { [key]: source[key] });
+        }
+      });
+    }
+    return output;
+  }
+
+  private isObject(item: any): boolean {
+    return item && typeof item === 'object' && !Array.isArray(item);
   }
 }
 

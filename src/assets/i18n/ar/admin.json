@@ -217,6 +217,7 @@
     "ninetieth": "التسعون",
     "oneHundredth": "المائة",
     "stepNumber": "الخطوة {{number}}",
+    "nameRequired": "اسم سير العمل مطلوب.",
     "createdSuccess": "تم إنشاء سير العمل بنجاح.",
     "stepFieldsRequired": "يرجى تعبئة الدور وكيان التطبيق لكل خطوة قبل الحفظ.",
     "stepFieldsRequiredAdd": "يرجى تعبئة الدور وكيان التطبيق قبل إضافة خطوة جديدة.",
