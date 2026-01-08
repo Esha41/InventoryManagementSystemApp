@@ -5,7 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 
 // Export MAX_FILE_SIZE_MB for template use
@@ -245,14 +245,9 @@ export class UsageFormComponent {
         }
       });
 
-      // Show error message if any files exceed the limit
+      // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get(['toast.error', 'newIssueRequest.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['newIssueRequest.errors.fileSizeExceeded']
-            ? `${translations['newIssueRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
-            : invalidFiles.join('\n');
-          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'newIssueRequest');
       }
 
       // Add only valid files to the selection

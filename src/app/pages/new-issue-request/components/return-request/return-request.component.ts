@@ -24,7 +24,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 interface ReturnItemForm {
@@ -733,14 +733,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Show error message if any files exceed the limit
+      // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translate.get(['toast.error', 'returnRequest.errors.fileSizeExceeded']).subscribe((translations: any) => {
-          const errorMessage = translations['returnRequest.errors.fileSizeExceeded']
-            ? `${translations['returnRequest.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
-            : invalidFiles.join('\n');
-          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
-        });
+        showFileValidationErrors(this.translate, this.toastService, invalidFiles, 'returnRequest');
       }
 
       // Add only valid files to the selection

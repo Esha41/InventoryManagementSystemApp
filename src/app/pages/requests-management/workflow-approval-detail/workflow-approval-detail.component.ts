@@ -26,7 +26,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
-import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
@@ -997,14 +997,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Show error message if any files exceed the limit
+      // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
-            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
-            : invalidFiles.join('\n');
-          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
         // Reset input
         if (input) {
           input.value = '';
@@ -2056,14 +2051,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Show error message if any files exceed the limit
+      // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
-            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
-            : invalidFiles.join('\n');
-          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
       }
 
       // Add only valid files to existing selection (avoid duplicates by name)
@@ -2115,14 +2105,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         }
       });
 
-      // Show error message if any files exceed the limit
+      // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileSizeExceeded']).subscribe(translations => {
-          const errorMessage = translations['workflowApprovalDetail.errors.fileSizeExceeded']
-            ? `${translations['workflowApprovalDetail.errors.fileSizeExceeded']} ${MAX_FILE_SIZE_MB} MB`
-            : invalidFiles.join('\n');
-          this.toastService.error(errorMessage, translations['toast.error'] || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
       }
 
       // Add only valid files to existing selection (avoid duplicates by name)
