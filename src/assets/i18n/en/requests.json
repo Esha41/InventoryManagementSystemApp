@@ -161,7 +161,9 @@
     },
     "errors": {
       "allowanceExceeded": "Requested quantity ({{requestedQuantity}}) exceeds available allowance. Available: {{availableQuantity}}",
-      "failedToVerifyAllowance": "Failed to verify allowance. Please try again."
+      "failedToVerifyAllowance": "Failed to verify allowance. Please try again.",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
     },
     "confirmDialog": {
       "title": "Confirm Request",
@@ -200,7 +202,9 @@
       "failedToLoadDepartments": "Failed to load departments",
       "failedToLoadRequestPurposes": "Failed to load request purposes",
       "failedToLoadItems": "Failed to load items",
-      "failedToLoadUsers": "Failed to load users"
+      "failedToLoadUsers": "Failed to load users",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
     },
     "success": {
       "created": "Return request created successfully"
@@ -243,7 +247,9 @@
       "failedToLoadRequestPurposes": "Failed to load request purposes",
       "failedToLoadItems": "Failed to load items",
       "failedToLoadUsers": "Failed to load users",
-      "correctFormErrors": "Please correct the form errors"
+      "correctFormErrors": "Please correct the form errors",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
     },
     "success": {
       "created": "Discard request created successfully"
@@ -485,7 +491,9 @@
       "selectStepToReturn": "Please select a step to return to",
       "notWeaponOrder": "This order does not contain weapon items",
       "failedToLoadOrder": "Failed to load order data",
-      "notOrderRequest": "This is not an order request"
+      "notOrderRequest": "This is not an order request",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
     }
   },
   "supplyRequestDetail": {

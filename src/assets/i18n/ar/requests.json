@@ -161,7 +161,9 @@
     },
     "errors": {
       "allowanceExceeded": "الكمية المحجوزة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
-      "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى."
+      "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى.",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
@@ -198,7 +200,9 @@
       "failedToLoadDepartments": "فشل تحميل الأقسام",
       "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
       "failedToLoadItems": "فشل تحميل المواد",
-      "failedToLoadUsers": "فشل تحميل المستخدمين"
+      "failedToLoadUsers": "فشل تحميل المستخدمين",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },
     "success": {
       "created": "تم إنشاء طلب الإرجاع بنجاح"
@@ -239,7 +243,9 @@
       "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
       "failedToLoadItems": "فشل تحميل المواد",
       "failedToLoadUsers": "فشل تحميل المستخدمين",
-      "correctFormErrors": "يرجى تصحيح أخطاء النموذج"
+      "correctFormErrors": "يرجى تصحيح أخطاء النموذج",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },
     "success": {
       "created": "تم إنشاء طلب الإتلاف بنجاح"
@@ -478,7 +484,9 @@
       "fileDownloadFailed": "فشل تحميل الملف",
       "notWeaponOrder": "هذا الطلب لا يحتوي على أسلحة",
       "failedToLoadOrder": "فشل تحميل بيانات الطلب",
-      "notOrderRequest": "هذا ليس طلب توريد"
+      "notOrderRequest": "هذا ليس طلب توريد",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },
     "success": {
       "pickupDateConfirmed": "تم تأكيد موعد الاستلام بنجاح",

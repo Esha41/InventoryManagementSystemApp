@@ -1,6 +1,8 @@
 /**
  * File utility functions for common file operations
  */
+import { TranslateService } from '@ngx-translate/core';
+import { ToastService } from '@services/toast.service';
 
 /**
  * Formats file size in bytes to human-readable format
@@ -165,5 +167,65 @@ export function validateFile(file: File): { isValid: boolean; errorMessage: stri
   }
 
   return { isValid: true, errorMessage: '' };
+}
+
+/**
+ * Contexts where file validation errors can occur.
+ * Used to resolve the correct i18n key prefix.
+ */
+export type FileErrorContext =
+  | 'newIssueRequest'
+  | 'workflowApprovalDetail'
+  | 'returnRequest'
+  | 'discardRequest';
+
+/**
+ * Shows file validation errors in a toast with translation support.
+ *
+ * It takes the raw validation error messages (coming from frontend or backend),
+ * detects if they are file-type or file-size errors, and maps them to the
+ * appropriate translation keys for the given context.
+ *
+ * @param translate Angular TranslateService instance
+ * @param toastService ToastService instance
+ * @param invalidErrors Array of error messages returned from validateFile / backend
+ * @param context Which page/context triggered the validation (controls i18n prefix)
+ */
+export function showFileValidationErrors(
+  translate: TranslateService,
+  toastService: ToastService,
+  invalidErrors: string[],
+  context: FileErrorContext
+): void {
+  if (!invalidErrors || invalidErrors.length === 0) {
+    return;
+  }
+
+  const prefix = `${context}.errors`;
+
+  translate.get('toast.error').subscribe(errorTitle => {
+    const translatedErrors = invalidErrors.map(errorMsg => {
+      // Match backend/frontend format error:
+      // File "name.ext" has an invalid format. Allowed formats: ...
+      const formatMatch = errorMsg.match(/File "([^"]+)" has an invalid format/);
+      if (formatMatch) {
+        const fileName = formatMatch[1];
+        return translate.instant(`${prefix}.invalidFileFormat`, { fileName });
+      }
+
+      // Match backend/frontend size error:
+      // File "name.ext" is too large (X.YZ MB). Maximum file size is NN MB.
+      const sizeMatch = errorMsg.match(/File "([^"]+)" is too large \(([\d.]+) MB\)/);
+      if (sizeMatch) {
+        return `${translate.instant(`${prefix}.fileSizeExceeded`)} ${MAX_FILE_SIZE_MB} MB`;
+      }
+
+      // Fallback to the original message
+      return errorMsg;
+    });
+
+    const errorMessage = translatedErrors.join('\n');
+    toastService.error(errorMessage, errorTitle || 'Error');
+  });
 }
 
