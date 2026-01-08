@@ -405,7 +405,7 @@
     "readyForConfirmation": "جاهز للتأكيد",
     "adjustDateMessage": "يرجى تأكيد هذا التاريخ أو تعديله إذا لزم الأمر.",
     "waitingForPickupDate": "في انتظار تعيين التاريخ...",
-    "confirmPickupDate": "تأكيد تاريخ الاستلام",
+    "confirmPickupDate": "تحديث تاريخ الاستلام",
     "awaitingDate": "في انتظار التاريخ",
     "submitSupplyReceiverInfo": "إرسال معلومات مستلم التوريد",
     "supplyNotCreated": "لم يتم إنشاء التوريد",
