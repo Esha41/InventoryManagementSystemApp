@@ -237,8 +237,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           const convertedDiscards = discards.map(disc => this.convertDiscardToOrderDto(disc));
 
           const allRequests = [...orders, ...convertedReturns, ...convertedDiscards];
-          const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
-          this.orders = filteredRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
+          //const filteredRequests = filterRequestsByDepartment(allRequests, currentUser?.departmentId);
+          this.orders = allRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
 
           this.ordersLoading = false;
           if (this.orders.length > 0) {
