@@ -57,6 +57,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/inventory-dashboard',
       permissions: ['InventoryDashboard']
     },
+    {
+      label: 'nav.adminDashboard',
+      icon: Shield,
+      route: '/admin-dashboard',
+      permissions: ['systemusers.page', 'systemusers.view']
+    },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
     //   label: 'nav.supplyManagement',
@@ -217,8 +223,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       permissions: ['workflow.page', 'workflow.view']
     },
     {
-      label: 'nav.stockNotificationSettings', 
-      icon: Mail, 
+      label: 'nav.stockNotificationSettings',
+      icon: Mail,
       route: '/stock-notification-settings',
       permissions: ['inventory.edit', 'inventory.view']
     }

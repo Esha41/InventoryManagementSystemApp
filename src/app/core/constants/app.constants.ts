@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/Users/${id}`,
     ROLES: (id: string) => `/Users/${id}/roles`,
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
+    TOGGLE_STATUS: (id: string) => `/Users/${id}/toggle-status`,
     CHANGE_PASSWORD: '/Users/change-password',
   },
 

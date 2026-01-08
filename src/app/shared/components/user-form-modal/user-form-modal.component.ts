@@ -104,10 +104,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     const isLdapUser = !this.isCurrentUserSuperAdmin ? true : (this.user?.isLdapUser || false);
 
     // For non-super-admin users, userName and password are optional
-    const userNameValidators = this.isCurrentUserSuperAdmin 
+    const userNameValidators = this.isCurrentUserSuperAdmin
       ? [Validators.required, Validators.minLength(3)]
       : [];
-    const passwordValidators = this.isCurrentUserSuperAdmin 
+    const passwordValidators = this.isCurrentUserSuperAdmin
       ? [Validators.required, Validators.minLength(6)]
       : [];
 
@@ -116,6 +116,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       email: [this.user?.email || '', [Validators.required, Validators.email]],
       isLdapUser: [{ value: isLdapUser, disabled: !this.isCurrentUserSuperAdmin }],
       ldapUserName: [this.user?.ldapUserName || ''],
+      isActive: [this.user?.isActive ?? true],
       extraEmployeesView: [this.user?.extraEmployeesView || ''],
       departmentId: [this.user?.departmentId ?? null],
       roleIds: [roleIds, [this.validateRoleIds.bind(this)]], // Multiple role selection - required
@@ -332,6 +333,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         fullNameEN: formValue.nameEn || undefined,
         fullNameAR: formValue.nameAr || undefined,
         rankId: formValue.rankId || undefined,
+        isActive: formValue.isActive ?? true,
         militoryId: formValue.militaryId != null ? String(formValue.militaryId).trim() : undefined
       };
 
@@ -386,6 +388,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         fullNameEN: formValue.nameEn || undefined,
         fullNameAR: formValue.nameAr || undefined,
         rankId: formValue.rankId || undefined,
+        isActive: formValue.isActive ?? true,
         militoryId: militaryIdValue // Include even if empty string to allow clearing
       };
 

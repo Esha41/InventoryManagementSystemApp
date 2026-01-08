@@ -27,3 +27,12 @@
   color: var(--color-text) !important;
 }
 
+/* Logo styling */
+.navbar-logo {
+  transition: filter var(--transition-base);
+}
+
+/* Dark mode logo - make it brand color (gold/beige #c8a87f) */
+.dark-mode-logo {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%);
+}

@@ -6,7 +6,6 @@
     "totalUsers": "Total Users",
     "rolesAvailable": "Roles Available",
     "systemStatus": "System Status",
-    "active": "Active",
     "searchPlaceholder": "Search by username or email...",
     "allRoles": "All Roles",
     "user": "user",
@@ -28,7 +27,15 @@
     "name": "Name",
     "rank": "Rank",
     "militaryId": "Military ID",
-    "department": "Department"
+    "department": "Department",
+    "status": "Status",
+    "inactive": "Inactive",
+    "active": "Active",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "cannotEditSuperAdmin": "You cannot edit or disable a super admin user.",
+    "userEnabledSuccess": "User enabled successfully",
+    "userDisabledSuccess": "User disabled successfully"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -366,5 +373,79 @@
     "selectDepot": "Select Depot",
     "selectDepotPlaceholder": "Choose a depot...",
     "selectDepotMessage": "Please select a depot from the dropdown above to view and export warehouse inventory data."
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "refresh": "Refresh",
+    "loading": "Loading dashboard...",
+    "analytics": "Analytics & Trends",
+    "quickActions": "Quick Actions",
+    "manageUsers": "Manage Users",
+    "manageRoles": "Manage Roles",
+    "viewInventory": "View Inventory",
+    "viewRequests": "View Requests",
+    "chartsComingSoon": "Advanced charts and analytics coming soon",
+    "lastUpdated": "Last updated",
+    "status": {
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "critical": "Critical",
+      "unknown": "Unknown"
+    },
+    "systemHealth": {
+      "title": "System Health",
+      "activeUsers": "Active Users",
+      "uptime": "System Uptime",
+      "responseTime": "Avg Response Time",
+      "activeRequests": "Active Requests",
+      "errorRate": "Error Rate"
+    },
+    "inventory": {
+      "title": "Inventory Overview",
+      "totalItems": "Total Items",
+      "totalQuantity": "Total Quantity",
+      "lowStock": "Low Stock",
+      "expiringSoon": "Expiring Soon (30 days)",
+      "overstock": "Overstock"
+    },
+    "requests": {
+      "title": "Request Management",
+      "totalPending": "Total Pending",
+      "orders": "Orders",
+      "returns": "Returns",
+      "discards": "Discards",
+      "avgApprovalTime": "Avg Approval Time",
+      "slaCompliance": "SLA Compliance"
+    },
+    "userActivity": {
+      "title": "User Activity",
+      "dailyActive": "Daily Active",
+      "newToday": "New Today",
+      "totalUsers": "Total Users",
+      "topDepartments": "Top Departments",
+      "noDepartments": "No department data available"
+    },
+    "charts": {
+      "requestTrends": "Request Trends",
+      "inventoryComposition": "Inventory Composition",
+      "weeklyActivity": "Weekly activity overview",
+      "monthlyActivity": "Monthly activity overview",
+      "yearlyActivity": "Full year activity overview",
+      "itemsByCategory": "Items by category",
+      "totalItemsLabel": "Total Items",
+      "analyzingTrends": "Analyzing trends...",
+      "categorizingInventory": "Categorizing inventory...",
+      "failedToLoad": "Failed to load data",
+      "retry": "Retry",
+      "orders": "Orders",
+      "returns": "Returns",
+      "discards": "Discards",
+      "ammunition": "Ammunition",
+      "weapons": "Weapons",
+      "explosives": "Explosives",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    }
   }
 }

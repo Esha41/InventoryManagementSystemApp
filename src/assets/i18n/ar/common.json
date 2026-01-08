@@ -126,6 +126,7 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "inventoryDashboard": "لوحة تحكم المخزون",
+    "adminDashboard": "لوحة تحكم المسؤول",
     "supplyManagement": "إدارة الطلبات",
     "warehouse": "المستودعات",
     "warehouseList": "قائمة المستودعات",

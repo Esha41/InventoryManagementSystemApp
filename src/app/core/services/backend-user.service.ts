@@ -4,9 +4,9 @@ import { map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { 
-  BackendUserDto, 
-  CreateUserDto, 
+import {
+  BackendUserDto,
+  CreateUserDto,
   UpdateUserDto,
   UpdateUserRolesDto,
   UserRolesDto,
@@ -38,7 +38,7 @@ export class BackendUserService {
   constructor(
     private apiService: ApiService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   // ==================== USER MANAGEMENT ====================
 
@@ -188,7 +188,7 @@ export class BackendUserService {
   updateUser(id: string, user: UpdateUserDto): Observable<BackendUserDto> {
     this.configService.log('Updating user', { id });
     console.log("User update DTO:", JSON.stringify(user, null, 2));
-    
+
     return this.apiService.putWithAuth<ApiResponse<BackendUserDto>>(
       API_ENDPOINTS.USERS.BY_ID(id),
       { ...user, id }
@@ -218,6 +218,41 @@ export class BackendUserService {
         this.configService.logError('Failed to update user', error);
         return throwError(() => new Error(
           error.userMessage || 'Failed to update user'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Toggle user active status
+   */
+  toggleUserStatus(id: string): Observable<boolean> {
+    this.configService.log('Toggling user status', { id });
+
+    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+      API_ENDPOINTS.USERS.TOGGLE_STATUS(id),
+      {}
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to toggle user status');
+        }
+        return true;
+      }),
+      tap(() => {
+        // Update local status
+        const currentUsers = this.usersSubject.value;
+        const index = currentUsers.findIndex(u => u.id === id);
+        if (index !== -1) {
+          currentUsers[index].isActive = !currentUsers[index].isActive;
+          this.usersSubject.next([...currentUsers]);
+        }
+        this.configService.log('User status toggled successfully', { id });
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to toggle user status', error);
+        return throwError(() => new Error(
+          error.userMessage || 'Failed to toggle user status'
         ));
       })
     );
@@ -266,7 +301,7 @@ export class BackendUserService {
         if (!response.succeeded) {
           throw new Error(response.message || 'Failed to fetch user roles');
         }
-        console.log("response",response.data);
+        console.log("response", response.data);
         return response.data || [];
       }),
       catchError(error => {
@@ -282,7 +317,7 @@ export class BackendUserService {
    * Update user roles
    */
   updateUserRoles(userId: string, roleIds: string[]): Observable<boolean> {
-    console.log("updateUserRoles",roleIds)
+    console.log("updateUserRoles", roleIds)
     this.configService.log('Updating user roles', { userId, roleIds });
 
     const dto: UpdateUserRolesDto = { userId, roleIds };
@@ -658,7 +693,7 @@ export class BackendUserService {
         console.log('Response type:', typeof response);
         console.log('Response succeeded:', response?.succeeded);
         console.log('Response data:', response?.data);
-        
+
         // Handle different response formats
         // Case 1: Standard ApiResponse with succeeded flag
         if (response && typeof response === 'object') {
@@ -679,7 +714,7 @@ export class BackendUserService {
             return response.data;
           }
         }
-        
+
         // Default: return empty array if format is unexpected
         console.warn('Unexpected response format, returning empty array');
         return [];
@@ -698,12 +733,12 @@ export class BackendUserService {
           url: error?.url
         });
         this.configService.logError('Failed to fetch application entities', error);
-        
+
         // Provide more helpful error message
-        const errorMessage = error?.status === 404 
+        const errorMessage = error?.status === 404
           ? 'Application entities endpoint not found. Please check the API endpoint.'
           : error?.message || error?.error?.message || 'Failed to fetch application entities';
-        
+
         return throwError(() => new Error(errorMessage));
       })
     );

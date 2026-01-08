@@ -359,6 +359,39 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  onToggleStatus(user: BackendUserDto): void {
+    // Prevent toggling superadmin status if current user is not a superadmin
+    if (!this.canManageUser(user)) {
+      this.toastService.error(
+        this.translateService.instant('manageAdmins.cannotEditSuperAdmin'),
+        this.translateService.instant('common.error')
+      );
+      return;
+    }
+
+    const action = user.isActive ? 'disable' : 'enable';
+
+    this.userManagementService.toggleUserStatus(user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.toastService.success(
+              this.translateService.instant(`manageAdmins.user${action.charAt(0).toUpperCase() + action.slice(1)}dSuccess`),
+              this.translateService.instant('common.success')
+            );
+            this.loadUsers();
+          }
+        },
+        error: (error) => {
+          this.toastService.error(
+            error.message || `Failed to ${action} user`,
+            this.translateService.instant('common.error')
+          );
+        }
+      });
+  }
+
   confirmDelete(): void {
     if (this.selectedUser) {
       this.userManagementService.deleteUser(this.selectedUser.id)
