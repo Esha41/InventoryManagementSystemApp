@@ -203,29 +203,31 @@ export function showFileValidationErrors(
 
   const prefix = `${context}.errors`;
 
-  translate.get('toast.error').subscribe(errorTitle => {
-    const translatedErrors = invalidErrors.map(errorMsg => {
-      // Match backend/frontend format error:
-      // File "name.ext" has an invalid format. Allowed formats: ...
-      const formatMatch = errorMsg.match(/File "([^"]+)" has an invalid format/);
-      if (formatMatch) {
-        const fileName = formatMatch[1];
-        return translate.instant(`${prefix}.invalidFileFormat`, { fileName });
-      }
+  // Use instant() instead of subscribe() for synchronous translation
+  // Translations are already loaded by the time file validation occurs
+  const errorTitle = translate.instant('toast.error') || 'Error';
 
-      // Match backend/frontend size error:
-      // File "name.ext" is too large (X.YZ MB). Maximum file size is NN MB.
-      const sizeMatch = errorMsg.match(/File "([^"]+)" is too large \(([\d.]+) MB\)/);
-      if (sizeMatch) {
-        return `${translate.instant(`${prefix}.fileSizeExceeded`)} ${MAX_FILE_SIZE_MB} MB`;
-      }
+  const translatedErrors = invalidErrors.map(errorMsg => {
+    // Match backend/frontend format error:
+    // File "name.ext" has an invalid format. Allowed formats: ...
+    const formatMatch = errorMsg.match(/File "([^"]+)" has an invalid format/);
+    if (formatMatch) {
+      const fileName = formatMatch[1];
+      return translate.instant(`${prefix}.invalidFileFormat`, { fileName });
+    }
 
-      // Fallback to the original message
-      return errorMsg;
-    });
+    // Match backend/frontend size error:
+    // File "name.ext" is too large (X.YZ MB). Maximum file size is NN MB.
+    const sizeMatch = errorMsg.match(/File "([^"]+)" is too large \(([\d.]+) MB\)/);
+    if (sizeMatch) {
+      return `${translate.instant(`${prefix}.fileSizeExceeded`)} ${MAX_FILE_SIZE_MB} MB`;
+    }
 
-    const errorMessage = translatedErrors.join('\n');
-    toastService.error(errorMessage, errorTitle || 'Error');
+    // Fallback to the original message
+    return errorMsg;
   });
+
+  const errorMessage = translatedErrors.join('\n');
+  toastService.error(errorMessage, errorTitle);
 }
 

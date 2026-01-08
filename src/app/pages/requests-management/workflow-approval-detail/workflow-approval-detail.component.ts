@@ -2053,26 +2053,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
       // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get('toast.error').subscribe(errorTitle => {
-          // Translate error messages if they match known patterns
-          const translatedErrors = invalidFiles.map(errorMsg => {
-            // Check if it's a file format error
-            const formatMatch = errorMsg.match(/File "([^"]+)" has an invalid format/);
-            if (formatMatch) {
-              const fileName = formatMatch[1];
-              return this.translateService.instant('workflowApprovalDetail.errors.invalidFileFormat', { fileName });
-            }
-            // Check if it's a file size error
-            const sizeMatch = errorMsg.match(/File "([^"]+)" is too large \(([\d.]+) MB\)/);
-            if (sizeMatch) {
-              return `${this.translateService.instant('workflowApprovalDetail.errors.fileSizeExceeded')} ${MAX_FILE_SIZE_MB} MB`;
-            }
-            // Return original message if no pattern matches
-            return errorMsg;
-          });
-          const errorMessage = translatedErrors.join('\n');
-          this.toastService.error(errorMessage, errorTitle || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
       }
 
       // Add only valid files to existing selection (avoid duplicates by name)
@@ -2126,11 +2107,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
       // Show error message if any files are invalid
       if (invalidFiles.length > 0) {
-        this.translateService.get('toast.error').subscribe(errorTitle => {
-          // Show the actual validation error messages (file type or size)
-          const errorMessage = invalidFiles.join('\n');
-          this.toastService.error(errorMessage, errorTitle || 'Error');
-        });
+        showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
       }
 
       // Add only valid files to existing selection (avoid duplicates by name)
