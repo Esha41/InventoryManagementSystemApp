@@ -5,14 +5,12 @@ import { UnifiedRequestService, BaseRequestDto } from './unified-request.service
 import { OrderService, OrderDto } from './order.service';
 import { ReturnService, ReturnDto } from './return.service';
 import { DiscardService, DiscardDto } from './discard.service';
-import { BackendAuthService } from './backend-auth.service';
 import { DashboardCard } from '@models/dashboard.model';
 import {
   mapRequestStatusToCardStatus,
   getRequestTitle,
   mapRequestItems,
   filterDisplayableRequests,
-  filterRequestsByDepartment,
   DisplayableRequest
 } from '@utils/dashboard.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
@@ -33,7 +31,6 @@ export class DashboardDataService {
     private readonly orderService: OrderService,
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
-    private readonly authService: BackendAuthService,
     private readonly translate: TranslateService
   ) {}
 
@@ -80,14 +77,9 @@ export class DashboardDataService {
       return [];
     }
 
-    const currentUser = this.authService.getCurrentUser();
     const displayableRequests = filterDisplayableRequests(orders);
-    const filtered = filterRequestsByDepartment(
-      displayableRequests,
-      currentUser?.departmentId
-    );
 
-    return filtered.map(order => ({
+    return displayableRequests.map(order => ({
       title: getRequestTitle(order, order.orderNo),
       status: mapRequestStatusToCardStatus(order.status),
       orders: [{
@@ -111,14 +103,9 @@ export class DashboardDataService {
       return [];
     }
 
-    const currentUser = this.authService.getCurrentUser();
     const displayableRequests = filterDisplayableRequests(returns);
-    const filtered = filterRequestsByDepartment(
-      displayableRequests,
-      currentUser?.departmentId
-    );
 
-    return filtered.map(ret => ({
+    return displayableRequests.map(ret => ({
       title: getRequestTitle(ret),
       status: mapRequestStatusToCardStatus(ret.status),
       orders: [{
@@ -142,14 +129,9 @@ export class DashboardDataService {
       return [];
     }
 
-    const currentUser = this.authService.getCurrentUser();
     const displayableRequests = filterDisplayableRequests(discards);
-    const filtered = filterRequestsByDepartment(
-      displayableRequests,
-      currentUser?.departmentId
-    );
 
-    return filtered.map(discard => ({
+    return displayableRequests.map(discard => ({
       title: getRequestTitle(discard),
       status: mapRequestStatusToCardStatus(discard.status),
       orders: [{
