@@ -76,7 +76,7 @@ export class LoginComponent implements OnInit {
   get password() { return this.loginForm.get('password'); }
   get captcha() { return this.loginForm.get('captcha'); }
   get isRTL(): boolean { return this.translationService.isRTL(); }
-  
+
   /**
    * Check if login button should be disabled
    */
@@ -84,12 +84,12 @@ export class LoginComponent implements OnInit {
     if (this.isLoading) {
       return true;
     }
-    
+
     // If captcha is shown, it must be filled
     if (this.showCaptcha) {
       return !this.loginForm.valid || !this.captcha?.value || this.captcha?.invalid;
     }
-    
+
     // Otherwise, just check if form is valid
     return !this.loginForm.valid;
   }
@@ -104,7 +104,7 @@ export class LoginComponent implements OnInit {
   loadCaptcha(): void {
     this.isLoadingCaptcha = true;
     this.showCaptcha = true;
-    
+
     // Add required validator to captcha field
     this.captcha?.setValidators([Validators.required]);
     this.captcha?.updateValueAndValidity();
@@ -131,14 +131,14 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.isLoadingCaptcha = false;
         this.configService.logError('Failed to load captcha', error);
-        
+
         // Extract error message from various possible locations
-        const errorMessage = error?.error?.message || 
-                            error?.message || 
-                            error?.error?.data?.message ||
-                            error?.error?.error?.message ||
-                            'Failed to load captcha. Please try again.';
-        
+        const errorMessage = error?.error?.message ||
+          error?.message ||
+          error?.error?.data?.message ||
+          error?.error?.error?.message ||
+          'Failed to load captcha. Please try again.';
+
         this.loginError = this.translate.instant('auth.login.errors.captchaLoadFailed') || errorMessage;
       }
     });
@@ -159,7 +159,7 @@ export class LoginComponent implements OnInit {
   private generateCaptchaImage(captchaCode: string): string {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) {
       throw new Error('Canvas context not available');
     }
@@ -226,7 +226,7 @@ export class LoginComponent implements OnInit {
     for (let i = 0; i < captchaCode.length; i++) {
       const char = captchaCode[i];
       const baseX = charSpacing * (i + 1);
-      
+
       // Random vertical offset for each character
       const yOffset = (Math.random() - 0.5) * 8;
       const x = baseX + (Math.random() - 0.5) * 3;
@@ -247,7 +247,7 @@ export class LoginComponent implements OnInit {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(rotation);
-      
+
       // Add slight skew for more distortion
       ctx.transform(1, Math.random() * 0.2 - 0.1, Math.random() * 0.1 - 0.05, 1, 0, 0);
 
@@ -270,7 +270,7 @@ export class LoginComponent implements OnInit {
       const startY = Math.random() * canvas.height;
       const endX = Math.random() * canvas.width;
       const endY = Math.random() * canvas.height;
-      
+
       // Create curved line
       ctx.moveTo(startX, startY);
       const cpX = (startX + endX) / 2 + (Math.random() - 0.5) * 20;
@@ -303,7 +303,7 @@ export class LoginComponent implements OnInit {
     // Apply slight overall distortion effect
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
-    
+
     // Add subtle pixel noise
     for (let i = 0; i < data.length; i += 4) {
       if (Math.random() > 0.95) {
@@ -313,7 +313,7 @@ export class LoginComponent implements OnInit {
         data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise)); // B
       }
     }
-    
+
     ctx.putImageData(imageData, 0, 0);
 
     // Convert canvas to data URL
@@ -376,10 +376,10 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
-        
+
         // Increment failed attempts
         this.failedLoginAttempts++;
-        
+
         // Show captcha after 3 failed attempts
         if (this.failedLoginAttempts >= 3 && !this.showCaptcha) {
           this.loadCaptcha();
@@ -444,7 +444,7 @@ export class LoginComponent implements OnInit {
       this.showPassword = false;
     }
     this.applyPasswordValidators();
-    
+
     // Reset captcha when switching modes
     if (this.showCaptcha) {
       this.showCaptcha = false;
@@ -556,14 +556,18 @@ export class LoginComponent implements OnInit {
       lowerMessage.includes('temporarily locked') ||
       lowerMessage.includes('too many failed')) {
       // Try to translate the backend message
-      if (errorMessage && errorMessage.trim() && 
-          !errorMessage.includes('Error') && 
-          !errorMessage.includes('Exception') &&
-          errorMessage.length < 200) {
+      if (errorMessage && errorMessage.trim() &&
+        !errorMessage.includes('Error') &&
+        !errorMessage.includes('Exception') &&
+        errorMessage.length < 200) {
         const translated = this.translateBackendErrorMessage(errorMessage, lowerMessage);
         if (translated) {
           return translated;
         }
+      }
+
+      if (errorCode === 'ACCOUNT_DISABLED' || errorCode === 'USER_DISABLED' || lowerMessage.includes('disabled') || lowerMessage.includes('inactive')) {
+        return this.translate.instant('auth.login.errors.accountDisabled');
       }
       return this.translate.instant('auth.login.errors.accountLocked');
     }
@@ -646,8 +650,11 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.serverError');
     }
 
-    // Forbidden (403) - access denied
+    // Forbidden (403) - access denied or account disabled
     if (statusCode === 403) {
+      if (lowerMessage.includes('disabled') || lowerMessage.includes('inactive')) {
+        return this.translate.instant('auth.login.errors.accountDisabled');
+      }
       return this.translate.instant('auth.login.errors.accessDenied');
     }
 
@@ -698,17 +705,17 @@ export class LoginComponent implements OnInit {
    */
   private translateBackendErrorMessage(errorMessage: string, lowerMessage: string): string | null {
     // Handle account temporarily locked with time remaining
-    if (lowerMessage.includes('temporarily locked') || 
-        lowerMessage.includes('too many failed') ||
-        lowerMessage.includes('locked due to')) {
-      
+    if (lowerMessage.includes('temporarily locked') ||
+      lowerMessage.includes('too many failed') ||
+      lowerMessage.includes('locked due to')) {
+
       // Try to extract minutes from message (e.g., "try again in 15 minutes")
       const minutesMatch = errorMessage.match(/(\d+)\s*(?:minute|min|minutes?)/i);
       if (minutesMatch && minutesMatch[1]) {
         const minutes = minutesMatch[1];
         return this.translate.instant('auth.login.errors.accountTemporarilyLocked', { minutes });
       }
-      
+
       // Generic temporarily locked message
       return this.translate.instant('auth.login.errors.accountTemporarilyLockedGeneric');
     }

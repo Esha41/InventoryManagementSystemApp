@@ -21,7 +21,7 @@ export class UserManagementService {
     private backendUserService: BackendUserService,
     private lookupService: LookupService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Load all users
@@ -65,6 +65,13 @@ export class UserManagementService {
   }
 
   /**
+   * Toggle user active status
+   */
+  toggleUserStatus(userId: string): Observable<boolean> {
+    return this.backendUserService.toggleUserStatus(userId);
+  }
+
+  /**
    * Filter users by search term
    */
   filterUsers(users: BackendUserDto[], searchTerm: string): BackendUserDto[] {
@@ -105,7 +112,7 @@ export class UserManagementService {
   cacheUserRoles(user: BackendUserDto, roles: RoleDto[] = []): void {
     const roleNames = this.extractRoleNames(user, roles);
     this.userRolesMap.set(user.id, roleNames);
-    
+
     // If user has roleIds but no roles, load them
     if (roleNames.length === 0 && user.roleIds && user.roleIds.length > 0 && (!user.roles || user.roles.length === 0)) {
       this.loadUserRolesData(user.id);
@@ -219,14 +226,14 @@ export class UserManagementService {
    * Get total active users count
    */
   getTotalActiveUsers(users: BackendUserDto[]): number {
-    return users.length;
+    return users.filter(user => user.isActive).length;
   }
 
   /**
    * Get total inactive users count
    */
   getTotalInactiveUsers(users: BackendUserDto[]): number {
-    return 0;
+    return users.filter(user => !user.isActive).length;
   }
 
   /**

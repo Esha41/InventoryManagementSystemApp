@@ -1,0 +1,93 @@
+<div class="admin-dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="title-section">
+                <h1 class="dashboard-title">{{ 'adminDashboard.title' | translate }}</h1>
+            </div>
+
+            <div class="header-actions">
+                <button class="refresh-button" (click)="onRefresh()" [disabled]="isRefreshing"
+                    [attr.aria-label]="'adminDashboard.refresh' | translate">
+                    <lucide-icon [img]="RefreshCw" [class.spinning]="isRefreshing" class="refresh-icon">
+                    </lucide-icon>
+                    <span>{{ 'adminDashboard.refresh' | translate }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">{{ 'adminDashboard.loading' | translate }}</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading" class="dashboard-content">
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+            <!-- Inventory Overview Card -->
+            <app-inventory-overview-card *ngIf="inventoryMetrics" [metrics]="inventoryMetrics" class="kpi-card">
+            </app-inventory-overview-card>
+
+            <!-- Request Metrics Card -->
+            <app-request-metrics-card *ngIf="requestMetrics" [metrics]="requestMetrics" class="kpi-card">
+            </app-request-metrics-card>
+
+            <!-- User Activity Card -->
+            <app-user-activity-card *ngIf="userActivityMetrics" [metrics]="userActivityMetrics" class="kpi-card">
+            </app-user-activity-card>
+        </div>
+
+        <!-- Charts Section (Phase 3) -->
+        <div class="charts-section">
+            <div class="section-header">
+                <lucide-icon [img]="TrendingUp" class="section-icon"></lucide-icon>
+                <h2 class="section-title">{{ 'adminDashboard.analytics' | translate }}</h2>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-item chart-wide">
+                    <app-request-trends-chart period="weekly"></app-request-trends-chart>
+                </div>
+                <div class="chart-item">
+                    <app-inventory-distribution-chart></app-inventory-distribution-chart>
+                </div>
+                <div class="chart-item">
+                    <app-top-requested-items-chart></app-top-requested-items-chart>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="quick-actions-section">
+            <div class="section-header">
+                <lucide-icon [img]="AlertCircle" class="section-icon"></lucide-icon>
+                <h2 class="section-title">{{ 'adminDashboard.quickActions' | translate }}</h2>
+            </div>
+
+            <div class="actions-grid">
+                <a routerLink="/manage-admins" class="action-card">
+                    <lucide-icon [img]="Users" class="action-icon"></lucide-icon>
+                    <span class="action-label">{{ 'adminDashboard.manageUsers' | translate }}</span>
+                </a>
+
+                <a routerLink="/admin-roles" class="action-card">
+                    <lucide-icon [img]="Users" class="action-icon"></lucide-icon>
+                    <span class="action-label">{{ 'adminDashboard.manageRoles' | translate }}</span>
+                </a>
+
+                <a routerLink="/warehouse" class="action-card">
+                    <lucide-icon [img]="Package" class="action-icon"></lucide-icon>
+                    <span class="action-label">{{ 'adminDashboard.viewInventory' | translate }}</span>
+                </a>
+
+                <a routerLink="/requests-management" class="action-card">
+                    <lucide-icon [img]="AlertCircle" class="action-icon"></lucide-icon>
+                    <span class="action-label">{{ 'adminDashboard.viewRequests' | translate }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

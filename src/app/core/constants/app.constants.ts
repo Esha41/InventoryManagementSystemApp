@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/Users/${id}`,
     ROLES: (id: string) => `/Users/${id}/roles`,
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
+    TOGGLE_STATUS: (id: string) => `/Users/${id}/toggle-status`,
     CHANGE_PASSWORD: '/Users/change-password',
   },
 
@@ -237,4 +238,14 @@ export const ROUTES = {
 export const SUPPLY_ORDER_CONSTANTS = {
   NAVIGATION_DELAY_MS: 1500,
   REJECTION_DELAY_MS: 1000,
+} as const;
+
+// Admin Dashboard Constants
+export const DASHBOARD_CONSTANTS = {
+  AUTO_REFRESH_INTERVAL_MS: 30000, // 30 seconds
+  LOW_STOCK_THRESHOLD: 100,
+  OVERSTOCK_THRESHOLD: 10000,
+  EXPIRING_SOON_DAYS: 30,
+  TOP_ITEMS_LIMIT: 10,
+  DEFAULT_CHART_PERIOD: 'weekly'
 } as const;

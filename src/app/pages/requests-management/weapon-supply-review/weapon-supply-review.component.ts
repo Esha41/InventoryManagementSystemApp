@@ -22,21 +22,12 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { ItemAssetSelectionComponent } from './components/item-asset-selection/item-asset-selection.component';
+import { SelectedAsset } from './services/asset-selection.service';
 
 // Utils
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
-
-/**
- * Selected asset with custodian assignment - matches CreateAssetSupplyDetailDto structure
- */
-interface SelectedAsset extends AssetToSupplyDto {
-  selected: boolean;
-  assetId: number; // For DTO mapping
-  custodianId?: string;
-  conditionOnSupply?: string;
-  notes?: string;
-}
 
 /**
  * Item with selected assets
@@ -63,7 +54,8 @@ interface ItemWithAssets {
     LoadingStateComponent,
     ModalComponent,
     ButtonComponent,
-    DropdownComponent
+    DropdownComponent,
+    ItemAssetSelectionComponent
   ],
   templateUrl: './weapon-supply-review.component.html',
   styleUrls: ['./weapon-supply-review.component.css']
@@ -139,6 +131,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   depotDropdownOptions: DropdownOption<number>[] = [];
   depotsSelected: boolean = false;
   depotsConfirmed: boolean = false;
+
 
 
   constructor(
@@ -297,13 +290,16 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       availableQuantity: item.availableQuantity,
       canFulfill: item.canFulfill,
       selectedAssets: item.availableAssets.map(asset => ({
-        ...asset,
+        id: asset.id,
         assetId: asset.id, // For DTO mapping
+        serialNumber: asset.serialNumber,
+        assetTag: asset.assetTag,
+        condition: asset.condition,
         selected: false,
         custodianId: this.defaultCustodianId,
         conditionOnSupply: asset.condition || '',
         notes: ''
-      })),
+      } as SelectedAsset)),
       selectedCount: 0
     }));
   }
@@ -349,23 +345,24 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ==================== ASSET SELECTION ====================
+  // ==================== ASSET SELECTION (Handled by Child Component) ====================
 
-  toggleAssetSelection(item: ItemWithAssets, asset: SelectedAsset): void {
-    if (!asset.selected && item.selectedCount >= item.requestedQuantity) {
+  onAssetSelectionChange(item: ItemWithAssets, event: { asset: SelectedAsset; selected: boolean }): void {
+    if (!event.selected && item.selectedCount >= item.requestedQuantity) {
       const message = this.translate.instant('weaponSupplyReview.maxQuantityReached', {
         quantity: item.requestedQuantity
       });
       const title = this.translate.instant('toast.warning');
       this.toastService.warning(message, title);
+      event.asset.selected = false;
       return;
     }
 
-    asset.selected = !asset.selected;
+    event.asset.selected = event.selected;
     item.selectedCount = item.selectedAssets.filter(a => a.selected).length;
   }
 
-  selectAssetsForItem(item: ItemWithAssets, count: number): void {
+  onBulkSelectChange(item: ItemWithAssets, count: number): void {
     const maxCount = Math.min(count, item.requestedQuantity, item.selectedAssets.length);
     const currentlySelected = item.selectedCount;
 
@@ -390,6 +387,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
     item.selectedCount = item.selectedAssets.filter(a => a.selected).length;
   }
+
 
   // ==================== CUSTODIAN ASSIGNMENT ====================
 
@@ -602,5 +600,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       item.selectedCount > 0 && item.selectedCount < item.requestedQuantity
     );
   }
+
 }
 

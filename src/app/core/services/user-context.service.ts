@@ -112,6 +112,7 @@ export class UserContextService {
       departmentName: payload.DepartmentName || payload.departmentName,
       nameEn: nameEn || undefined,
       nameAr: nameAr || undefined,
+      isActive: String(payload.isActive || payload.IsActive || 'true').toLowerCase() === 'true',
       organizationId: this.toNumber(
         payload.OrganizationId ??
         payload.organizationId ??
@@ -260,6 +261,7 @@ export class UserContextService {
       rankId: rankId ?? undefined,
       rankNameEn: rankNameEn || undefined,
       rankNameAr: rankNameAr || undefined,
+      isActive: Boolean(apiData.isActive ?? apiData.IsActive ?? true),
       militaryId: militaryId || undefined,
       militoryId: militaryId || undefined,
       roles: normalizedRoles,

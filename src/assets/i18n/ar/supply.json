@@ -309,6 +309,15 @@
     "selectedDepotsCount": "المستودعات المحددة",
     "confirmSelection": "تأكيد الاختيار",
     "changeSelection": "تغيير الاختيار",
-    "depotsConfirmed": "تم تأكيد المستودعات. جاري تحميل الأصول."
+    "depotsConfirmed": "تم تأكيد المستودعات. جاري تحميل الأصول.",
+    "searchAssets": "البحث بالرقم التسلسلي أو علامة الأصل...",
+    "selectCount": "عدد المحدد",
+    "apply": "تطبيق",
+    "assetTag": "علامة الأصل",
+    "noAssetsFound": "لم يتم العثور على أصول تطابق البحث",
+    "showingResults": "عرض",
+    "of": "من",
+    "totalItems": "إجمالي المواد",
+    "showing": "عرض"
   }
 }

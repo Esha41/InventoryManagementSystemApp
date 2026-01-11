@@ -10,6 +10,7 @@ export interface BackendUserDto {
   id: string;
   userName: string;
   email: string;
+  isActive: boolean;
   isLdapUser: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;
@@ -35,6 +36,7 @@ export interface CreateUserDto {
   userName: string;
   email?: string;
   password: string;
+  isActive: boolean;
   isLdapUser: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;
@@ -57,6 +59,7 @@ export interface UpdateUserDto {
   userName?: string;
   email?: string;
   password?: string;
+  isActive?: boolean;
   isLdapUser?: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;

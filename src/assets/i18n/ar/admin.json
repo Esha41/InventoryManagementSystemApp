@@ -6,7 +6,6 @@
     "totalUsers": "إجمالي المستخدمين",
     "rolesAvailable": "الأدوار المتاحة",
     "systemStatus": "حالة النظام",
-    "active": "نشط",
     "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني...",
     "allRoles": "جميع الأدوار",
     "user": "مستخدم",
@@ -28,7 +27,15 @@
     "name": "الاسم",
     "rank": "الرتبة",
     "militaryId": "الرقم العسكري",
-    "department": "القسم"
+    "department": "القسم",
+    "status": "الحالة",
+    "inactive": "غير نشط",
+    "active": "نشط",
+    "activate": "تفعيل",
+    "deactivate": "تعطيل",
+    "cannotEditSuperAdmin": "لا يمكنك تعديل أو تعطيل مستخدم مدير فائق.",
+    "userEnabledSuccess": "تم تفعيل المستخدم بنجاح",
+    "userDisabledSuccess": "تم تعطيل المستخدم بنجاح"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
@@ -362,5 +369,86 @@
     "selectDepot": "اختر المستودع",
     "selectDepotPlaceholder": "اختر مستودعاً...",
     "selectDepotMessage": "يرجى اختيار مستودع من القائمة المنسدلة أعلاه لعرض وتصدير بيانات مخزون المستودع."
+  },
+  "adminDashboard": {
+    "title": "لوحة تحكم المسؤول",
+    "refresh": "تحديث",
+    "loading": "جاري تحميل لوحة التحكم...",
+    "analytics": "التحليلات والاتجاهات",
+    "quickActions": "إجراءات سريعة",
+    "manageUsers": "إدارة المستخدمين",
+    "manageRoles": "إدارة الأدوار",
+    "viewInventory": "عرض المخزون",
+    "viewRequests": "عرض الطلبات",
+    "chartsComingSoon": "الرسوم البيانية والتحليلات المتقدمة قريباً",
+    "lastUpdated": "آخر تحديث",
+    "status": {
+      "healthy": "سليم",
+      "degraded": "متدهور",
+      "critical": "حرج",
+      "unknown": "غير معروف"
+    },
+    "systemHealth": {
+      "title": "صحة النظام",
+      "activeUsers": "المستخدمون النشطون",
+      "uptime": "وقت تشغيل النظام",
+      "responseTime": "متوسط وقت الاستجابة",
+      "activeRequests": "الطلبات النشطة",
+      "errorRate": "معدل الأخطاء"
+    },
+    "inventory": {
+      "title": "نظرة عامة على المخزون",
+      "totalItems": "إجمالي العناصر",
+      "totalQuantity": "الكمية الإجمالية",
+      "lowStock": "مخزون منخفض",
+      "expiringSoon": "تنتهي صلاحيته قريباً (30 يوماً)",
+      "overstock": "مخزون زائد"
+    },
+    "requests": {
+      "title": "مقاييس الطلبات",
+      "totalPending": "إجمالي المعلقة",
+      "new": "جديد",
+      "inProgress": "قيد المعالجة",
+      "completed": "مكتمل",
+      "rejected": "مرفوض",
+      "orders": "الطلبات",
+      "returns": "المرتجعات",
+      "discards": "الإتلافات",
+      "avgApprovalTime": "متوسط وقت الموافقة",
+      "slaCompliance": "الامتثال لاتفاقية مستوى الخدمة"
+    },
+    "userActivity": {
+      "title": "نشاط المستخدم",
+      "dailyActive": "النشطون يومياً",
+      "newToday": "جديد اليوم",
+      "totalUsers": "إجمالي المستخدمين",
+      "topDepartments": "أفضل الأقسام",
+      "noDepartments": "لا توجد بيانات أقسام متاحة"
+    },
+    "charts": {
+      "requestTrends": "اتجاهات الطلبات",
+      "inventoryComposition": "تكوين المخزون",
+      "topRequestedItems": "المواد الأكثر طلباً",
+      "weeklyActivity": "نظرة عامة على النشاط الأسبوعي",
+      "monthlyActivity": "نظرة عامة على النشاط الشهري",
+      "yearlyActivity": "نظرة عامة على نشاط السنة كاملة",
+      "itemsByCategory": "المواد حسب الفئة",
+      "totalItemsLabel": "إجمالي المواد",
+      "analyzingTrends": "جاري تحليل الاتجاهات...",
+      "analyzingItems": "جاري تحليل المواد...",
+      "categorizingInventory": "جاري تصنيف المخزون...",
+      "failedToLoad": "فشل في تحميل البيانات",
+      "retry": "إعادة المحاولة",
+      "orders": "الطلبات",
+      "returns": "المرتجعات",
+      "discards": "الإتلافات",
+      "ammunition": "الذخيرة",
+      "weapons": "الأسلحة",
+      "explosives": "المتفجرات",
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "monthly": "شهري",
+      "yearly": "سنوي"
+    }
   }
 }

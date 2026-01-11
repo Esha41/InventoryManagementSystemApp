@@ -309,6 +309,15 @@
     "selectedDepotsCount": "Selected Depots",
     "confirmSelection": "Confirm Selection",
     "changeSelection": "Change Selection",
-    "depotsConfirmed": "Depots confirmed. Assets are being loaded."
+    "depotsConfirmed": "Depots confirmed. Assets are being loaded.",
+    "searchAssets": "Search by serial number or asset tag...",
+    "selectCount": "Select Count",
+    "apply": "Apply",
+    "assetTag": "Asset Tag",
+    "noAssetsFound": "No assets found matching your search",
+    "showingResults": "Showing",
+    "of": "of",
+    "totalItems": "Total Items",
+    "showing": "Showing"
   }
 }
