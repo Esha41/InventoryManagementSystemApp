@@ -81,6 +81,8 @@
     "searchPlaceholder": "Search permissions by name, entity, description, or page..."
   },
   "userFormModal": {
+    "addNewUser": "Add New User",
+    "editUser": "Edit User",
     "username": "Username",
     "usernamePlaceholder": "Enter username or email",
     "nameEn": "Name (EN)",
@@ -91,6 +93,7 @@
     "emailPlaceholder": "Enter email address",
     "militaryId": "Military ID",
     "militaryIdPlaceholder": "Enter military ID",
+    "department": "Department",
     "password": "Password",
     "passwordPlaceholder": "Enter password",
     "roles": "Roles",
