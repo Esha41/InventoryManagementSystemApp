@@ -3,16 +3,10 @@
     <div class="dashboard-header">
         <div class="header-content">
             <div class="title-section">
-                <lucide-icon [img]="LayoutDashboard" class="title-icon"></lucide-icon>
                 <h1 class="dashboard-title">{{ 'adminDashboard.title' | translate }}</h1>
             </div>
 
             <div class="header-actions">
-                <div class="status-indicator" [ngClass]="getStatusColorClass()">
-                    <lucide-icon [img]="Activity" class="status-icon"></lucide-icon>
-                    <span class="status-text">{{ getStatusText() | translate }}</span>
-                </div>
-
                 <button class="refresh-button" (click)="onRefresh()" [disabled]="isRefreshing"
                     [attr.aria-label]="'adminDashboard.refresh' | translate">
                     <lucide-icon [img]="RefreshCw" [class.spinning]="isRefreshing" class="refresh-icon">
@@ -33,10 +27,6 @@
     <div *ngIf="!isLoading" class="dashboard-content">
         <!-- KPI Cards Grid -->
         <div class="kpi-grid">
-            <!-- System Health Card -->
-            <app-system-health-card *ngIf="systemHealth" [metrics]="systemHealth" class="kpi-card">
-            </app-system-health-card>
-
             <!-- Inventory Overview Card -->
             <app-inventory-overview-card *ngIf="inventoryMetrics" [metrics]="inventoryMetrics" class="kpi-card">
             </app-inventory-overview-card>
@@ -58,11 +48,14 @@
             </div>
 
             <div class="charts-grid">
-                <div class="chart-item">
+                <div class="chart-item chart-wide">
                     <app-request-trends-chart period="weekly"></app-request-trends-chart>
                 </div>
                 <div class="chart-item">
                     <app-inventory-distribution-chart></app-inventory-distribution-chart>
+                </div>
+                <div class="chart-item">
+                    <app-top-requested-items-chart></app-top-requested-items-chart>
                 </div>
             </div>
         </div>

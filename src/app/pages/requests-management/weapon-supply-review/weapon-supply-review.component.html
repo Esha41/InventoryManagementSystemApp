@@ -180,7 +180,7 @@
           </lucide-angular>
         </button>
 
-        <div *ngIf="isItemsExpanded" class="px-6 pb-6 border-t border-[var(--color-border)] space-y-6 pt-6">
+        <div *ngIf="isItemsExpanded" class="px-6 pb-6 border-t border-[var(--color-border)] space-y-6 pt-6 items-section">
           <div *ngIf="loadingAssets" class="text-center py-8">
             <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
           </div>
@@ -220,11 +220,11 @@
                 </div>
                 <!-- Quick Select -->
                 <div class="flex gap-2">
-                  <button (click)="selectAssetsForItem(item, item.requestedQuantity)"
+                  <button (click)="onBulkSelectChange(item, item.requestedQuantity)"
                     class="px-3 py-1.5 text-xs bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 font-medium">
                     {{ 'weaponSupplyReview.selectAll' | translate }}
                   </button>
-                  <button (click)="selectAssetsForItem(item, 0)"
+                  <button (click)="onBulkSelectChange(item, 0)"
                     class="px-3 py-1.5 text-xs bg-[var(--color-background-active)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-all border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-border)] focus:ring-offset-1 font-medium">
                     {{ 'weaponSupplyReview.clear' | translate }}
                   </button>
@@ -232,86 +232,20 @@
               </div>
             </div>
 
-            <!-- Available Assets Selection (Checkboxes) -->
-            <div class="mb-4 p-4 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-              <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
-                {{ 'weaponSupplyReview.selectAssets' | translate }}
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <label *ngFor="let asset of item.selectedAssets; let i = index" [ngClass]="{'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 shadow-custom-sm': asset.selected, 'opacity-50': !asset.selected && item.selectedCount >= item.requestedQuantity}" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] cursor-pointer transition-all">
-                  <input type="checkbox" [checked]="asset.selected" [disabled]="!asset.selected && item.selectedCount >= item.requestedQuantity" (change)="toggleAssetSelection(item, asset)" class="w-4 h-4 text-[var(--color-brand)] rounded border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
-                  <span class="text-sm font-medium text-[var(--color-text)]">{{ asset.serialNumber }}</span>
-                  <span *ngIf="asset.assetTag" class="text-xs text-[var(--color-text-muted)]">({{ asset.assetTag }})</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Selected Assets Table -->
-            <div *ngIf="item.selectedCount > 0" class="mt-4">
-              <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
-                {{ 'weaponSupplyReview.selectedAssetsTable' | translate }}
-              </p>
-              <div class="assets-table-wrapper">
-                <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] shadow-custom-sm">
-                  <table class="assets-table">
-                    <thead class="bg-[var(--color-background-muted)]">
-                      <tr>
-                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
-                          {{ 'weaponSupplyReview.serialNumber' | translate }}
-                        </th>
-                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
-                          {{ 'weaponSupplyReview.assignee' | translate }}
-                        </th>
-                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
-                          {{ 'weaponSupplyReview.condition' | translate }}
-                        </th>
-                        <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] whitespace-nowrap text-xs uppercase tracking-wide">
-                          {{ 'weaponSupplyReview.notes' | translate }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let asset of getSelectedAssetsForItem(item); let i = index"
-                        class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
-                        <td class="px-4 py-3 text-[var(--color-text)]">
-                          <div class="flex items-center gap-2">
-                            <span class="font-medium">{{ asset.serialNumber }}</span>
-                            <span *ngIf="asset.assetTag" class="text-xs text-[var(--color-text-muted)] px-1.5 py-0.5 bg-[var(--color-background-muted)] rounded">({{ asset.assetTag }})</span>
-                          </div>
-                        </td>
-                        <td class="px-4 py-3">
-                          <div class="dropdown-cell">
-                            <app-dropdown
-                              [options]="userDropdownOptions"
-                              [(ngModel)]="asset.custodianId"
-                              [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
-                              [disabled]="loadingUsers"
-                              optionValue="value"
-                              optionLabel="label"
-                              class="w-full">
-                            </app-dropdown>
-                          </div>
-                        </td>
-                        <td class="px-4 py-3">
-                          <input type="text" 
-                            [value]="asset.conditionOnSupply || asset.condition || ''"
-                            (input)="onConditionChange(asset, $any($event.target).value)"
-                            placeholder="{{ 'weaponSupplyReview.enterCondition' | translate }}"
-                            class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm transition-all">
-                        </td>
-                        <td class="px-4 py-3">
-                          <input type="text" 
-                            [value]="asset.notes || ''"
-                            (input)="onNotesChange(asset, $any($event.target).value)"
-                            placeholder="{{ 'weaponSupplyReview.enterNotes' | translate }}"
-                            class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm transition-all">
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            <!-- Asset Selection Component -->
+            <app-item-asset-selection
+              [assets]="item.selectedAssets"
+              [requestedQuantity]="item.requestedQuantity"
+              [selectedCount]="item.selectedCount"
+              [defaultCustodianId]="defaultCustodianId"
+              [userDropdownOptions]="userDropdownOptions"
+              [loadingUsers]="loadingUsers"
+              (assetSelectionChange)="onAssetSelectionChange(item, $event)"
+              (bulkSelectChange)="onBulkSelectChange(item, $event)"
+              (custodianChange)="onCustodianChange($event.asset, $event.custodianId)"
+              (conditionChange)="onConditionChange($event.asset, $event.condition)"
+              (notesChange)="onNotesChange($event.asset, $event.notes)">
+            </app-item-asset-selection>
 
             <!-- Status Badge -->
             <div class="mt-4 flex items-center gap-2">

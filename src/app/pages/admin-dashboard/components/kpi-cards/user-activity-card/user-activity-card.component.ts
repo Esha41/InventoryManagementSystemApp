@@ -1,7 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Users, UserPlus, TrendingUp } from 'lucide-angular';
+import { LucideAngularModule, Users, TrendingUp } from 'lucide-angular';
 import { UserActivityMetrics } from '@services/admin-analytics.service';
 
 /**
@@ -25,14 +25,6 @@ import { UserActivityMetrics } from '@services/admin-analytics.service';
           <div class="stat-content">
             <div class="stat-value">{{ metrics.dailyActiveUsers }}</div>
             <div class="stat-label">{{ 'adminDashboard.userActivity.dailyActive' | translate }}</div>
-          </div>
-        </div>
-
-        <div class="stat-box success">
-          <lucide-icon [img]="UserPlus" class="stat-icon"></lucide-icon>
-          <div class="stat-content">
-            <div class="stat-value">{{ metrics.newUsersToday }}</div>
-            <div class="stat-label">{{ 'adminDashboard.userActivity.newToday' | translate }}</div>
           </div>
         </div>
 
@@ -94,7 +86,7 @@ import { UserActivityMetrics } from '@services/admin-analytics.service';
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
@@ -228,6 +220,5 @@ export class UserActivityCardComponent {
     @Input() metrics!: UserActivityMetrics;
 
     readonly Users = Users;
-    readonly UserPlus = UserPlus;
     readonly TrendingUp = TrendingUp;
 }

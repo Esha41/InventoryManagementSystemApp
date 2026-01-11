@@ -1,7 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, FileText, Clock, CheckCircle2, Target } from 'lucide-angular';
+import { LucideAngularModule, FileText } from 'lucide-angular';
 import { RequestMetrics } from '@services/admin-analytics.service';
 
 /**
@@ -19,9 +19,26 @@ import { RequestMetrics } from '@services/admin-analytics.service';
         <h3 class="card-title">{{ 'adminDashboard.requests.title' | translate }}</h3>
       </div>
 
-      <div class="total-pending">
-        <div class="pending-value">{{ metrics.totalPending }}</div>
-        <div class="pending-label">{{ 'adminDashboard.requests.totalPending' | translate }}</div>
+      <div class="status-breakdown">
+        <div class="status-item new">
+          <div class="status-value">{{ metrics.newRequests }}</div>
+          <div class="status-label">{{ 'adminDashboard.requests.new' | translate }}</div>
+        </div>
+
+        <div class="status-item inprogress">
+          <div class="status-value">{{ metrics.inProgressRequests }}</div>
+          <div class="status-label">{{ 'adminDashboard.requests.inProgress' | translate }}</div>
+        </div>
+
+        <div class="status-item completed">
+          <div class="status-value">{{ metrics.completedRequests }}</div>
+          <div class="status-label">{{ 'adminDashboard.requests.completed' | translate }}</div>
+        </div>
+
+        <div class="status-item rejected">
+          <div class="status-value">{{ metrics.rejectedRequests }}</div>
+          <div class="status-label">{{ 'adminDashboard.requests.rejected' | translate }}</div>
+        </div>
       </div>
 
       <div class="request-types">
@@ -46,24 +63,6 @@ import { RequestMetrics } from '@services/admin-analytics.service';
           <div class="type-content">
             <div class="type-value">{{ metrics.pendingDiscards }}</div>
             <div class="type-label">{{ 'adminDashboard.requests.discards' | translate }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="performance-metrics">
-        <div class="perf-item">
-          <lucide-icon [img]="Clock" class="perf-icon"></lucide-icon>
-          <div class="perf-content">
-            <div class="perf-value">{{ metrics.avgApprovalTime }}h</div>
-            <div class="perf-label">{{ 'adminDashboard.requests.avgApprovalTime' | translate }}</div>
-          </div>
-        </div>
-
-        <div class="perf-item">
-          <lucide-icon [img]="Target" class="perf-icon"></lucide-icon>
-          <div class="perf-content">
-            <div class="perf-value">{{ metrics.slaCompliance }}%</div>
-            <div class="perf-label">{{ 'adminDashboard.requests.slaCompliance' | translate }}</div>
           </div>
         </div>
       </div>
@@ -102,25 +101,67 @@ import { RequestMetrics } from '@services/admin-analytics.service';
       margin: 0;
     }
 
-    .total-pending {
-      text-align: center;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-      border-radius: 12px;
+    .status-breakdown {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
 
-    .pending-value {
-      font-size: 2.5rem;
+    .status-item {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid;
+    }
+
+    .status-item.new {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgb(59, 130, 246);
+    }
+
+    .status-item.inprogress {
+      background: rgba(249, 115, 22, 0.1);
+      border-color: rgb(249, 115, 22);
+    }
+
+    .status-item.completed {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgb(34, 197, 94);
+    }
+
+    .status-item.rejected {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgb(239, 68, 68);
+    }
+
+    .status-value {
+      font-size: 1.75rem;
       font-weight: 700;
-      color: var(--color-primary);
       line-height: 1;
     }
 
-    .pending-label {
-      font-size: 0.875rem;
+    .status-item.new .status-value {
+      color: rgb(59, 130, 246);
+    }
+
+    .status-item.inprogress .status-value {
+      color: rgb(249, 115, 22);
+    }
+
+    .status-item.completed .status-value {
+      color: rgb(34, 197, 94);
+    }
+
+    .status-item.rejected .status-value {
+      color: rgb(239, 68, 68);
+    }
+
+    .status-label {
+      font-size: 0.75rem;
       color: var(--color-text-muted);
       margin-top: 0.5rem;
+      font-weight: 500;
     }
 
     .request-types {
@@ -175,44 +216,6 @@ import { RequestMetrics } from '@services/admin-analytics.service';
       color: var(--color-text-muted);
     }
 
-    .performance-metrics {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-    }
-
-    .perf-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem;
-      background: var(--color-background);
-      border-radius: 8px;
-    }
-
-    .perf-icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--color-primary);
-    }
-
-    .perf-content {
-      text-align: center;
-    }
-
-    .perf-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--color-text);
-    }
-
-    .perf-label {
-      font-size: 0.625rem;
-      color: var(--color-text-muted);
-      margin-top: 0.25rem;
-    }
-
     .card-footer {
       margin-top: auto;
       padding-top: 1rem;
@@ -230,7 +233,4 @@ export class RequestMetricsCardComponent {
     @Input() metrics!: RequestMetrics;
 
     readonly FileText = FileText;
-    readonly Clock = Clock;
-    readonly CheckCircle2 = CheckCircle2;
-    readonly Target = Target;
 }

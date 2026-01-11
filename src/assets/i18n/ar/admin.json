@@ -405,8 +405,12 @@
       "overstock": "مخزون زائد"
     },
     "requests": {
-      "title": "إدارة الطلبات",
+      "title": "مقاييس الطلبات",
       "totalPending": "إجمالي المعلقة",
+      "new": "جديد",
+      "inProgress": "قيد المعالجة",
+      "completed": "مكتمل",
+      "rejected": "مرفوض",
       "orders": "الطلبات",
       "returns": "المرتجعات",
       "discards": "الإتلافات",
@@ -424,12 +428,14 @@
     "charts": {
       "requestTrends": "اتجاهات الطلبات",
       "inventoryComposition": "تكوين المخزون",
+      "topRequestedItems": "المواد الأكثر طلباً",
       "weeklyActivity": "نظرة عامة على النشاط الأسبوعي",
       "monthlyActivity": "نظرة عامة على النشاط الشهري",
       "yearlyActivity": "نظرة عامة على نشاط السنة كاملة",
       "itemsByCategory": "المواد حسب الفئة",
       "totalItemsLabel": "إجمالي المواد",
       "analyzingTrends": "جاري تحليل الاتجاهات...",
+      "analyzingItems": "جاري تحليل المواد...",
       "categorizingInventory": "جاري تصنيف المخزون...",
       "failedToLoad": "فشل في تحميل البيانات",
       "retry": "إعادة المحاولة",
@@ -439,6 +445,7 @@
       "ammunition": "الذخيرة",
       "weapons": "الأسلحة",
       "explosives": "المتفجرات",
+      "daily": "يومي",
       "weekly": "أسبوعي",
       "monthly": "شهري",
       "yearly": "سنوي"

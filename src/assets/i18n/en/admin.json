@@ -409,8 +409,12 @@
       "overstock": "Overstock"
     },
     "requests": {
-      "title": "Request Management",
+      "title": "Request Metrics",
       "totalPending": "Total Pending",
+      "new": "New",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "rejected": "Rejected",
       "orders": "Orders",
       "returns": "Returns",
       "discards": "Discards",
@@ -428,12 +432,14 @@
     "charts": {
       "requestTrends": "Request Trends",
       "inventoryComposition": "Inventory Composition",
+      "topRequestedItems": "Top Requested Items",
       "weeklyActivity": "Weekly activity overview",
       "monthlyActivity": "Monthly activity overview",
       "yearlyActivity": "Full year activity overview",
       "itemsByCategory": "Items by category",
       "totalItemsLabel": "Total Items",
       "analyzingTrends": "Analyzing trends...",
+      "analyzingItems": "Analyzing items...",
       "categorizingInventory": "Categorizing inventory...",
       "failedToLoad": "Failed to load data",
       "retry": "Retry",
@@ -443,6 +449,7 @@
       "ammunition": "Ammunition",
       "weapons": "Weapons",
       "explosives": "Explosives",
+      "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly",
       "yearly": "Yearly"

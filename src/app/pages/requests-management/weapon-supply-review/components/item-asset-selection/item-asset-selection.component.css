@@ -98,42 +98,6 @@
   transition: background-color 0.15s ease;
 }
 
-/* Submit section */
-.submit-section {
-  margin-top: 2rem;
-  background-color: var(--color-background);
-}
-
-/* Enhanced card hover effects */
-.bg-\[var\(--color-background\)\] {
-  transition: all 0.2s ease;
-}
-
-/* Smooth transitions for interactive elements */
-button, input, textarea, select {
-  transition: all 0.2s ease;
-}
-
-/* Enhanced focus states */
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-}
-
-/* Badge animations */
-span[class*="rounded"] {
-  transition: all 0.2s ease;
-}
-
-/* Search input styling */
-input[type="text"]:focus,
-input[type="number"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
 /* Sortable header styling */
 .assets-table th[class*="cursor-pointer"] {
   user-select: none;
@@ -157,9 +121,5 @@ input[type="number"]:focus {
   
   .assets-table-wrapper > div {
     overflow-x: auto;
-  }
-  
-  .submit-section {
-    padding: 1rem;
   }
 }

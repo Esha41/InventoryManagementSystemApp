@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, interval, of } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Observable, BehaviorSubject, interval, of, Subscription } from 'rxjs';
 import { map, shareReplay, switchMap, filter, take, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { InventoryService } from './inventory.service';
+import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
 
 /**
  * System Health Metrics Interface
@@ -37,6 +38,10 @@ export interface RequestMetrics {
     pendingReturns: number;
     pendingDiscards: number;
     totalPending: number;
+    newRequests: number;
+    inProgressRequests: number;
+    completedRequests: number;
+    rejectedRequests: number;
     avgApprovalTime: number;
     slaCompliance: number;
     lastUpdated: Date;
@@ -103,9 +108,10 @@ export interface TopRequestedItems {
 @Injectable({
     providedIn: 'root'
 })
-export class AdminAnalyticsService {
-    private refreshInterval = 30000; // 30 seconds
+export class AdminAnalyticsService implements OnDestroy {
+    private refreshInterval = DASHBOARD_CONSTANTS.AUTO_REFRESH_INTERVAL_MS;
     public readonly refresh$ = new BehaviorSubject<number>(Date.now());
+    private autoRefreshSubscription?: Subscription;
 
     // Caches to prevent redundant calls
     private systemHealthCache$?: Observable<SystemHealthMetrics>;
@@ -114,11 +120,16 @@ export class AdminAnalyticsService {
     private userActivityCache$?: Observable<UserActivityMetrics>;
     private trendsCache = new Map<string, Observable<RequestTrend>>();
     private distributionCache$?: Observable<InventoryDistribution>;
+    private topItemsCache$?: Observable<TopRequestedItems>;
 
     constructor(
         private apiService: ApiService,
         private inventoryService: InventoryService
     ) { }
+
+    ngOnDestroy(): void {
+        this.autoRefreshSubscription?.unsubscribe();
+    }
 
     /**
      * Get system health metrics with auto-refresh and caching
@@ -210,7 +221,7 @@ export class AdminAnalyticsService {
      * Start auto-refresh interval
      */
     startAutoRefresh(): void {
-        interval(this.refreshInterval).pipe(
+        this.autoRefreshSubscription = interval(this.refreshInterval).pipe(
             tap(() => this.refresh())
         ).subscribe();
     }
@@ -233,18 +244,38 @@ export class AdminAnalyticsService {
     private fetchInventoryMetrics(): Observable<InventoryMetrics> {
         return this.inventoryService.getAllItemsSummary().pipe(
             map(items => {
+                const lowStockThreshold = DASHBOARD_CONSTANTS.LOW_STOCK_THRESHOLD;
+                const overstockThreshold = DASHBOARD_CONSTANTS.OVERSTOCK_THRESHOLD;
+                const expiringThreshold = DASHBOARD_CONSTANTS.EXPIRING_SOON_DAYS;
+
                 const totalItems = items.filter(x => (x.remainingQuantity || 0) > 0).length;
                 const totalQuantity = items.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
-                const lowStockThreshold = 100;
-                const lowStockItems = items.filter(item => (item.remainingQuantity || 0) < lowStockThreshold && (item.remainingQuantity || 0) > 0).length;
-                const overstockThreshold = 10000;
-                const overstockItems = items.filter(item => (item.remainingQuantity || 0) > overstockThreshold).length;
+                const lowStockItems = items.filter(item =>
+                    (item.remainingQuantity || 0) < lowStockThreshold &&
+                    (item.remainingQuantity || 0) > 0
+                ).length;
+                const overstockItems = items.filter(item =>
+                    (item.remainingQuantity || 0) > overstockThreshold
+                ).length;
+
+                // Calculate expiring items (items expiring within threshold days)
+                const now = new Date();
+                const expiringDate = new Date();
+                expiringDate.setDate(now.getDate() + expiringThreshold);
+
+                const expiringSoon = items.filter(item => {
+                    // Check if item has expirationDate property
+                    const expDate = (item as any).expirationDate;
+                    if (!expDate) return false;
+                    const itemExpDate = new Date(expDate);
+                    return itemExpDate > now && itemExpDate <= expiringDate;
+                }).length;
 
                 return {
                     totalItems,
                     totalQuantity,
                     lowStockItems,
-                    expiringSoon: 0,
+                    expiringSoon,
                     overstockItems,
                     lastUpdated: new Date()
                 };
@@ -292,5 +323,18 @@ export class AdminAnalyticsService {
         return this.apiService.get<any>(`/admin/analytics/top-requested-items?limit=${limit}`).pipe(
             map(response => response.data || response)
         );
+    }
+
+    /**
+     * Get top requested items with auto-refresh and caching
+     */
+    getTopRequestedItems(limit: number = DASHBOARD_CONSTANTS.TOP_ITEMS_LIMIT): Observable<TopRequestedItems> {
+        if (!this.topItemsCache$) {
+            this.topItemsCache$ = this.refresh$.pipe(
+                switchMap(() => this.fetchTopRequestedItems(limit)),
+                shareReplay(1)
+            );
+        }
+        return this.topItemsCache$;
     }
 }
