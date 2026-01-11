@@ -458,9 +458,9 @@
     "selectStep": "Select a step",
     "noPreviousSteps": "No previous steps available",
     "returnRequest": "Return Request",
-    "skipToStep": "Skip To Step",
-    "selectSkipToStep": "Select skip to step",
-    "skipToStepHint": "Select the step to skip to when approving this request",
+    "skipToStep": "Go To Step",
+    "selectSkipToStep": "Select the step to go to",
+    "skipToStepHint": "Select the step to go to when approving this request",
     "confirmApprove": "Confirm Approval",
     "confirmApproveMessage": "Are you sure you want to approve this request?",
     "confirmReject": "Confirm Rejection",
@@ -475,7 +475,7 @@
       "pickupDateConfirmed": "Pickup date confirmed successfully",
       "supplySubmitted": "Supply submitted successfully"
     },
-    "selectSkipToStepRequired": "Please select a step to skip to from the \"Skip To Step\" dropdown before approving this request.",
+    "selectSkipToStepRequired": "Please select a step to go to from the \"Go To Step\" dropdown before approving this request.",
     "errors": {
       "invalidRequestData": "Invalid request data",
       "failedToLoadRanks": "Failed to load ranks",

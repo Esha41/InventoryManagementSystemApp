@@ -375,13 +375,26 @@ export class SidebarComponent implements OnInit, OnDestroy {
       return hasPermission;
     });
 
-    // Remove headers that have no children after them
+    // Remove headers that have no visible items after them
+    // Headers should only be shown if there's at least one visible menu item following them
+    // (before the next header, which marks a new section)
     this.menuItems = this.menuItems.filter((item, index) => {
+      // Keep all non-header items
       if (!item.isHeader) return true;
 
-      // Check if there are any non-header items after this header
-      const hasChildren = this.menuItems.slice(index + 1).some(nextItem => !nextItem.isHeader);
-      return hasChildren;
+      // For headers, check if there are any visible items after this header
+      // Look at all items after this header until we hit another header
+      for (let i = index + 1; i < this.menuItems.length; i++) {
+        const nextItem = this.menuItems[i];
+        // If we hit another header, this section has no items - remove this header
+        if (nextItem.isHeader) {
+          return false;
+        }
+        // Found a visible non-header item - keep this header
+        return true;
+      }
+      // Reached end of list with no items after header - remove this header
+      return false;
     });
 
 
