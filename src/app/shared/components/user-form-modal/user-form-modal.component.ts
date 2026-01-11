@@ -301,7 +301,11 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
 
   get title(): string {
-    return this.mode === 'create' ? 'Add New User' : `Edit User: ${this.user?.userName}`;
+    if (this.mode === 'create') {
+      return this.translate.instant('userFormModal.addNewUser');
+    } else {
+      return `${this.translate.instant('userFormModal.editUser')}: ${this.user?.userName}`;
+    }
   }
 
   onSubmit(): void {

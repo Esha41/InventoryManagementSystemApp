@@ -110,7 +110,7 @@
     "usersPlaceholder": "اختر المستخدمين",
     "dateTimeSettings": "إعدادات التاريخ والوقت",
     "dateAndTime": "التاريخ والوقت",
-    "dateTimeNote": "حدد التاريخ والوقت لجدولة إشعارات المخزون",
+    "dateTimeNote": "ملاحضة: حاليا الوقت فقط مطلوب سيتم إرسال إشعار يومي",
     "recipientsSavedSuccess": "تم حفظ المستلمين بنجاح",
     "recipientsSaveFailed": "فشل حفظ المستلمين",
     "scheduleSavedSuccess": "تم حفظ الجدولة بنجاح",

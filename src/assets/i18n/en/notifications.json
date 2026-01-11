@@ -110,7 +110,7 @@
     "usersPlaceholder": "Select users",
     "dateTimeSettings": "Date and Time Settings",
     "dateAndTime": "Date and Time",
-    "dateTimeNote": "Select the date and time for stock notification scheduling",
+    "dateTimeNote": "Note : Currently, only the time is required. A daily notification will be sent.",
     "recipientsSavedSuccess": "Recipients saved successfully",
     "recipientsSaveFailed": "Failed to save recipients",
     "scheduleSavedSuccess": "Schedule saved successfully",
