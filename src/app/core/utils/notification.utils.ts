@@ -133,39 +133,42 @@ export function determineDetailType(detail: RequestDetail): NotificationDetailTy
 /**
  * Get priority label translation key
  * Handles both number and string priority values
+ * Priority mapping: 1 = Normal, 2 = Urgent, 3 = VeryUrgent
  */
 export function getPriorityLabelTranslation(priority?: number | string | null): string {
   if (priority === null || priority === undefined) {
-    return 'dashboard.priorityLabels.high';
+    return 'dashboard.priorityLabels.urgent';
   }
   
   // Normalize to number
   let priorityNum: number;
   if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim();
-    if (priorityLower === 'high' || priorityLower === '1') {
+    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
+    if (priorityLower === 'normal' || priorityLower === '1') {
       priorityNum = 1;
-    } else if (priorityLower === 'medium' || priorityLower === '2') {
+    } else if (priorityLower === 'urgent' || priorityLower === '2') {
       priorityNum = 2;
-    } else if (priorityLower === 'low' || priorityLower === '3') {
+    } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
       priorityNum = 3;
     } else if (priorityLower === 'critical' || priorityLower === '4') {
       priorityNum = 4;
     } else {
       const parsed = parseInt(priority, 10);
-      priorityNum = isNaN(parsed) ? 1 : parsed;
+      priorityNum = isNaN(parsed) ? 2 : parsed;
     }
   } else {
     priorityNum = priority;
   }
   
   switch (priorityNum) {
+    case 1:
+      return 'dashboard.priorityLabels.normal';
     case 2:
-      return 'dashboard.priorityLabels.medium';
+      return 'dashboard.priorityLabels.urgent';
     case 3:
-      return 'dashboard.priorityLabels.low';
+      return 'dashboard.priorityLabels.veryUrgent';
     default:
-      return 'dashboard.priorityLabels.high';
+      return 'dashboard.priorityLabels.urgent';
   }
 }
 

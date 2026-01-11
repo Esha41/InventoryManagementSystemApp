@@ -454,5 +454,23 @@
       "monthly": "Monthly",
       "yearly": "Yearly"
     }
+  },
+  "DELEGATION": {
+    "TITLE": "Delegations",
+    "MY_DELEGATIONS": "My Delegations",
+    "ADD_NEW": "Add Delegation",
+    "DELEGATEE": "Delegatee",
+    "START_DATE": "Start Date",
+    "END_DATE": "End Date",
+    "REASON": "Reason",
+    "STATUS": "Status",
+    "REVOKE": "Revoke",
+    "REVOKE_CONFIRM": "Are you sure you want to revoke this delegation?",
+    "REVOKE_CONFIRM_TITLE": "Revoke Delegation",
+    "CREATE_TITLE": "Create Delegation",
+    "SELECT_USER": "Select User",
+    "DELEGATED": "Delegated",
+    "SAVE": "Save",
+    "CANCEL": "Cancel"
   }
 }

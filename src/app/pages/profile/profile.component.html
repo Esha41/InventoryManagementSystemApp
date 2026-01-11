@@ -253,50 +253,56 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Security Section -->
-      <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"
-        class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
-        <div
-          class="px-6 py-4 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-brand)]/5 to-transparent">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Lock" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-[var(--color-text)]">
-                {{ 'profile.security.title' | translate }}
-              </h3>
-              <p class="text-sm text-[var(--color-text-muted)]">
-                {{ 'profile.security.subtitle' | translate }}
-              </p>
-            </div>
+    <!-- Delegation Section -->
+    <div *ngIf="!loading && currentUser"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+      <app-delegation-list></app-delegation-list>
+    </div>
+
+    <!-- Security Section -->
+    <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+      <div
+        class="px-6 py-4 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-brand)]/5 to-transparent">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+            <lucide-angular [img]="Lock" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[var(--color-text)]">
+              {{ 'profile.security.title' | translate }}
+            </h3>
+            <p class="text-sm text-[var(--color-text-muted)]">
+              {{ 'profile.security.subtitle' | translate }}
+            </p>
           </div>
         </div>
-        <div class="px-6 py-6">
-          <button (click)="openChangePasswordModal()"
-            class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-dark)] hover:from-[var(--color-brand-dark)] hover:to-[var(--color-brand)] text-white rounded-lg transition-all shadow-custom-sm hover:shadow-custom-md">
-            <lucide-angular [img]="Lock" class="h-5 w-5"></lucide-angular>
-            <span class="font-semibold">{{ 'profile.security.changePassword' | translate }}</span>
-          </button>
-        </div>
       </div>
+      <div class="px-6 py-6">
+        <button (click)="openChangePasswordModal()"
+          class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-dark)] hover:from-[var(--color-brand-dark)] hover:to-[var(--color-brand)] text-white rounded-lg transition-all shadow-custom-sm hover:shadow-custom-md">
+          <lucide-angular [img]="Lock" class="h-5 w-5"></lucide-angular>
+          <span class="font-semibold">{{ 'profile.security.changePassword' | translate }}</span>
+        </button>
+      </div>
+    </div>
 
-      <!-- No User State -->
-      <div *ngIf="!loading && !currentUser" class="flex items-center justify-center min-h-[60vh]">
-        <div class="max-w-md w-full mx-auto">
-          <div
-            class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-border)] p-12 text-center">
-            <div class="flex flex-col items-center gap-6">
-              <div
-                class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-text-muted)]/20 to-[var(--color-text-muted)]/10 border-2 border-[var(--color-text-muted)]/30">
-                <lucide-angular [img]="User" class="h-10 w-10 text-[var(--color-text-muted)]"></lucide-angular>
-              </div>
-              <div class="space-y-2">
-                <h3 class="text-2xl font-bold text-[var(--color-text)]">{{ 'profile.noUserData' | translate }}</h3>
-                <p class="text-base text-[var(--color-text-muted)] leading-relaxed">{{ 'profile.noUserDataDescription' |
-                  translate }}</p>
-              </div>
+    <!-- No User State -->
+    <div *ngIf="!loading && !currentUser" class="flex items-center justify-center min-h-[60vh]">
+      <div class="max-w-md w-full mx-auto">
+        <div
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-border)] p-12 text-center">
+          <div class="flex flex-col items-center gap-6">
+            <div
+              class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-text-muted)]/20 to-[var(--color-text-muted)]/10 border-2 border-[var(--color-text-muted)]/30">
+              <lucide-angular [img]="User" class="h-10 w-10 text-[var(--color-text-muted)]"></lucide-angular>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-2xl font-bold text-[var(--color-text)]">{{ 'profile.noUserData' | translate }}</h3>
+              <p class="text-base text-[var(--color-text-muted)] leading-relaxed">{{ 'profile.noUserDataDescription' |
+                translate }}</p>
             </div>
           </div>
         </div>
@@ -304,6 +310,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- Change Password Modal -->
 <app-change-password-modal [isOpen]="showChangePasswordModal" (closeModal)="closeChangePasswordModal()"

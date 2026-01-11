@@ -450,5 +450,23 @@
       "monthly": "شهري",
       "yearly": "سنوي"
     }
+  },
+  "DELEGATION": {
+    "TITLE": "التفويضات",
+    "MY_DELEGATIONS": "تفويضاتي",
+    "ADD_NEW": "إضافة تفويض",
+    "DELEGATEE": "المفوض إليه",
+    "START_DATE": "تاريخ البدء",
+    "END_DATE": "تاريخ الانتهاء",
+    "REASON": "السبب",
+    "STATUS": "الحالة",
+    "REVOKE": "إلغاء",
+    "REVOKE_CONFIRM": "هل أنت متأكد من أنك تريد إلغاء هذا التفويض؟",
+    "REVOKE_CONFIRM_TITLE": "إلغاء التفويض",
+    "CREATE_TITLE": "إنشاء تفويض",
+    "SELECT_USER": "اختر المستخدم",
+    "DELEGATED": "مفوض",
+    "SAVE": "حفظ",
+    "CANCEL": "إلغاء"
   }
 }
