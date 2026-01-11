@@ -567,9 +567,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
         'workflowApprovalDetail.selectSkipToStepRequired',
         'workflowApprovalDetail.skipToStep'
       ]).subscribe(translations => {
-        const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Skip To Step';
+        const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Go To Step';
         const errorMsg = translations['workflowApprovalDetail.selectSkipToStepRequired'] ||
-          `Please select a step to skip to from the "${skipToStepLabel}" dropdown before approving this request.`;
+          `Please select a step to go to from the "${skipToStepLabel}" dropdown before approving this request.`;
         const errorTitle = translations['toast.error'] || 'Action Required';
         this.toastService.error(errorMsg, errorTitle);
       });
@@ -705,6 +705,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Get display name for a transition target step (for dropdown)
+   * Uses localized role name (nameAr for Arabic, nameEn for English)
    */
   getTransitionDisplayName = (option: any): string => {
     if (!option) return '';
@@ -716,10 +717,33 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     const targetStep = transition.targetStep;
     const stepOrder = targetStep.stepOrder || '';
-    const roleName = targetStep.applicationRole?.name || targetStep.applicationRole?.nameEn || targetStep.applicationRoleName || 'Unknown Role';
-    const entityName = targetStep.applicationEntityId ? ` (Entity ${targetStep.applicationEntityId})` : '';
+    
+    // Get role name - check nested applicationRole object for both EN and AR
+    let roleNameEn: string | undefined;
+    let roleNameAr: string | undefined;
+    
+    // First check nested applicationRole object (has both EN and AR)
+    if (targetStep.applicationRole) {
+      roleNameEn = targetStep.applicationRole.name || targetStep.applicationRole.nameEn;
+      roleNameAr = targetStep.applicationRole.nameAr;
+    }
+    
+    // Fallback to flat properties if nested object not available
+    if (!roleNameEn && targetStep.applicationRoleName) {
+      roleNameEn = targetStep.applicationRoleName;
+    }
+    if (!roleNameAr && targetStep.applicationRoleNameAr) {
+      roleNameAr = targetStep.applicationRoleNameAr;
+    }
+    
+    // Use getLocalizedValue helper for role name (follows Angular best practices)
+    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) || 
+                     this.translateService.instant('workflowApprovalDetail.unknownApprover');
+    
+    // Use translate service for "Step" label (Angular best practice)
+    const stepLabel = this.translateService.instant('requestsManagement.orderReport.table.step');
 
-    return `Step ${stepOrder}: ${roleName}${entityName}`;
+    return `${stepLabel} ${stepOrder}: ${roleName}`;
   }
 
   /**
