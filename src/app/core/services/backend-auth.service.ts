@@ -37,6 +37,8 @@ export class BackendAuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+  private isClearingAuthData = false; // Flag to prevent recursive calls
+
   constructor(
     private apiService: ApiService,
     private storageService: StorageService,
@@ -663,6 +665,11 @@ export class BackendAuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
+    // Prevent recursive calls - if we're already clearing auth data, just return false
+    if (this.isClearingAuthData) {
+      return false;
+    }
+    
     if (this.isAuthenticatedSubject.value && this.isTokenExpired()) {
       this.clearAuthData();
       return false;
@@ -820,28 +827,43 @@ export class BackendAuthService {
    * Clear authentication data
    */
   private clearAuthData(): void {
-    // Clear specific auth-related storage items
-    this.storageService.remove('auth_token');
-    this.storageService.remove('refresh_token');
-    this.storageService.remove('current_user');
-    this.storageService.remove('token_expires_at');
-
-    // Clear all localStorage and sessionStorage
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-      sessionStorage.clear();
+    // Prevent recursive calls
+    if (this.isClearingAuthData) {
+      return;
     }
 
-    // Update observables
-    this.currentUserSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-    this.authStateSubject.next({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      refreshToken: null,
-      expiresAt: null
-    });
+    this.isClearingAuthData = true;
+
+    try {
+      // Clear specific auth-related storage items
+      this.storageService.remove('auth_token');
+      this.storageService.remove('refresh_token');
+      this.storageService.remove('current_user');
+      this.storageService.remove('token_expires_at');
+
+      // Clear all localStorage and sessionStorage
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+
+      // Update observables
+      this.currentUserSubject.next(null);
+      this.isAuthenticatedSubject.next(false);
+      this.authStateSubject.next({
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        refreshToken: null,
+        expiresAt: null
+      });
+    } finally {
+      // Use setTimeout to reset the flag after the current execution cycle
+      // This ensures any subscriptions triggered by the above next() calls complete first
+      setTimeout(() => {
+        this.isClearingAuthData = false;
+      }, 0);
+    }
   }
 
   /**
