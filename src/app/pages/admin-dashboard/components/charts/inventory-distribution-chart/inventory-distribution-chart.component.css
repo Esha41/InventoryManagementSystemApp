@@ -1,12 +1,12 @@
 .chart-container {
-    background: white;
+    background: var(--color-background);
     border-radius: 1.25rem;
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     height: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid #f1f5f9;
+    border: 1px solid var(--color-border);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -24,29 +24,29 @@
 .chart-title {
     font-size: 1.125rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--color-text);
     margin: 0;
 }
 
 .chart-subtitle {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     margin: 0.25rem 0 0 0;
 }
 
 .action-btn {
-    background: #f8fafc;
+    background: var(--color-background-active);
     border: none;
     padding: 0.5rem;
     border-radius: 0.5rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .action-btn:hover {
-    background: #f1f5f9;
-    color: #3b82f6;
+    background: var(--color-background-hover);
+    color: var(--color-primary);
 }
 
 .action-btn.spinning i-lucide {
@@ -94,12 +94,12 @@
 .total-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--color-text);
 }
 
 .total-label {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -113,8 +113,8 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    color: #64748b;
-    background: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-muted);
+    background: color-mix(in srgb, var(--color-background) 80%, transparent);
     backdrop-filter: blur(4px);
     z-index: 10;
     border-radius: 1rem;
@@ -123,8 +123,8 @@
 .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid #f3f4f6;
-    border-top: 3px solid #3b82f6;
+    border: 3px solid var(--color-background-active);
+    border-top: 3px solid var(--color-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
