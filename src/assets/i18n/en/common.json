@@ -105,7 +105,9 @@
       "Completed": "Completed",
       "Delivered": "Delivered",
       "Cancelled": "Cancelled",
-      "New": "New"
+      "New": "New",
+      "Active": "Active",
+      "Inactive": "Inactive"
     }
   },
   "importDialog": {
@@ -216,5 +218,9 @@
     "message": "You do not have permission to view this page. Please contact an administrator or choose another section.",
     "goHome": "Go to dashboard",
     "logout": "Sign out"
+  },
+  "COMMON": {
+    "SAVE": "Save",
+    "CANCEL": "Cancel"
   }
 }

@@ -6,6 +6,10 @@
         <span class="text-sm font-medium whitespace-nowrap px-4" [class.text-[var(--color-brand)]]="isStepActive(i)"
           [class.font-semibold]="isStepActive(i)" [class.text-[var(--color-text-muted)]]="!isStepActive(i)">
           {{ step.label | translate }}
+          <span *ngIf="step.isDelegation"
+            class="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded bg-blue-100 text-blue-800 border border-blue-200 inline-flex items-center">
+            {{ 'DELEGATION.DELEGATED' | translate }}
+          </span>
         </span>
 
         <!-- Connector Line -->

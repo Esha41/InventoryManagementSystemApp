@@ -1,0 +1,73 @@
+<div *ngIf="isOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none bg-black/50 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg mx-auto my-6">
+        <!--content-->
+        <div
+            class="relative flex flex-col w-full bg-[var(--color-background)] border-0 rounded-xl shadow-custom-lg outline-none focus:outline-none">
+            <!--header-->
+            <div
+                class="flex items-center justify-between p-5 border-b border-solid border-[var(--color-border)] rounded-t">
+                <h3 class="text-xl font-bold font-heading text-[var(--color-text)]">
+                    {{ 'DELEGATION.CREATE_TITLE' | translate }}
+                </h3>
+                <button
+                    class="p-1 ml-auto border-0 text-[var(--color-text)] float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
+                    (click)="cancel()">
+                    <lucide-angular [img]="X" class="w-6 h-6"></lucide-angular>
+                </button>
+            </div>
+            <!--body-->
+            <div class="relative p-6 flex-auto">
+                <form [formGroup]="form" class="space-y-4">
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.SELECT_USER' |
+                            translate }}</label>
+                        <app-dropdown formControlName="delegateeUserId" [options]="userOptions"
+                            [placeholder]="'DELEGATION.SELECT_USER' | translate" [required]="true">
+                        </app-dropdown>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.START_DATE' |
+                                translate }}</label>
+                            <input type="date" formControlName="startDate" [min]="minDate"
+                                class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.END_DATE' |
+                                translate }}</label>
+                            <input type="date" formControlName="endDate" [min]="form.value.startDate || minDate"
+                                class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.REASON' | translate
+                            }}</label>
+                        <textarea formControlName="reason" rows="3"
+                            class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]"></textarea>
+                    </div>
+
+                </form>
+            </div>
+            <!--footer-->
+            <div
+                class="flex items-center justify-end p-6 border-t border-solid border-[var(--color-border)] rounded-b gap-3">
+                <button
+                    class="px-6 py-2 text-sm font-bold text-[var(--color-text-muted)] uppercase transition-all duration-150 ease-linear outline-none focus:outline-none hover:text-[var(--color-text)]"
+                    type="button" (click)="cancel()">
+                    {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button
+                    class="px-6 py-2 text-sm font-bold text-white uppercase transition-all duration-150 ease-linear rounded shadow outline-none bg-[var(--color-brand)] active:bg-[var(--color-brand-dark)] hover:shadow-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="button" (click)="submit()" [disabled]="form.invalid || loading">
+                    {{ 'COMMON.SAVE' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="isOpen" class="fixed inset-0 z-40 bg-black opacity-25"></div>

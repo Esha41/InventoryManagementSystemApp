@@ -531,3 +531,17 @@ tr.action-required-highlight {
 .animate-action-glow {
   animation: action-pulse 2s infinite;
 }
+
+/* Global Logo Filter Classes */
+.logo-filter-white {
+  filter: brightness(0) invert(1);
+}
+
+.logo-filter-brand {
+  /* Brand color gold/beige (#c8a87f) */
+  filter: brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%);
+}
+
+.dark-mode-logo {
+  @apply logo-filter-brand;
+}

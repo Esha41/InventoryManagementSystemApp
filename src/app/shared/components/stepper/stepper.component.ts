@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export interface Step {
   label: string;
   completed: boolean;
+  isDelegation?: boolean;
 }
 
 @Component({
