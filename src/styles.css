@@ -35,8 +35,13 @@
     --color-accent-light: #3B82F6;
     --color-accent-dark: #0C30C8;
 
+    /* Primary Colors (alias for accent) */
+    --color-primary: #0F60FF;
+    --color-primary-dark: #0C30C8;
+
     /* Background Colors */
     --color-background: #FFFFFF;
+    --color-surface: #FFFFFF;
     /* Main background */
     --color-background-muted: #F9FAFB;
     /* Slightly gray background */
@@ -132,8 +137,13 @@
     --color-accent-light: #93C5FD;
     --color-accent-dark: #3B82F6;
 
+    /* Primary Colors (alias for accent) */
+    --color-primary: #60A5FA;
+    --color-primary-dark: #3B82F6;
+
     /* Background Colors */
     --color-background: #1A1D24;
+    --color-surface: #1A1D24;
     /* Dark background */
     --color-background-muted: #13161B;
     /* Darker background */

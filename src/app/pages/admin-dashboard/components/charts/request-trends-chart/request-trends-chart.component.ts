@@ -6,6 +6,7 @@ import { AdminAnalyticsService, RequestTrend } from '../../../../../core/service
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ThemeService } from '../../../../../core/services/theme.service';
 
 @Component({
     selector: 'app-request-trends-chart',
@@ -29,11 +30,19 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
     constructor(
         private analyticsService: AdminAnalyticsService,
         private translate: TranslateService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private themeService: ThemeService
     ) { }
 
     ngOnInit(): void {
         this.loadData();
+        // Subscribe to theme changes and reload chart when theme changes
+        this.themeService.currentTheme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            if (this.chartOptions && Object.keys(this.chartOptions).length > 0) {
+                // Reload data to reinitialize chart with new theme colors
+                this.loadData();
+            }
+        });
     }
 
     ngOnDestroy(): void {
@@ -71,35 +80,44 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
     }
 
     private initChart(data: RequestTrend): void {
+        const isDarkMode = this.themeService.isDarkMode();
+        const textColor = isDarkMode ? '#E5E7EB' : '#1f2937';
+        const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6b7280';
+        const axisLineColor = isDarkMode ? '#4B5563' : '#e5e7eb';
+        const splitLineColor = isDarkMode ? '#4B5563' : '#f3f4f6';
+        const tooltipBg = isDarkMode ? 'rgba(26, 29, 36, 0.95)' : 'rgba(255, 255, 255, 0.9)';
+        const backgroundColor = isDarkMode ? '#1A1D24' : '#FFFFFF';
+
         forkJoin({
             orders: this.translate.get('adminDashboard.charts.orders'),
             returns: this.translate.get('adminDashboard.charts.returns'),
             discards: this.translate.get('adminDashboard.charts.discards')
         }).subscribe(translations => {
             this.chartOptions = {
+                backgroundColor: backgroundColor,
                 tooltip: {
                     trigger: 'axis',
                     axisPointer: {
                         type: 'cross',
                         label: {
-                            backgroundColor: '#6a7985'
+                            backgroundColor: isDarkMode ? '#4B5563' : '#6a7985'
                         }
                     },
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: tooltipBg,
                     textStyle: {
-                        color: '#1f2937'
+                        color: textColor
                     },
                     borderRadius: 8,
                     padding: 12,
                     shadowBlur: 10,
-                    shadowColor: 'rgba(0, 0, 0, 0.1)'
+                    shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
                 },
                 legend: {
                     data: [translations.orders, translations.returns, translations.discards],
                     bottom: 0,
                     icon: 'circle',
                     textStyle: {
-                        color: '#6b7280',
+                        color: mutedTextColor,
                         fontSize: 12
                     }
                 },
@@ -116,11 +134,11 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                     data: data.dates,
                     axisLine: {
                         lineStyle: {
-                            color: '#e5e7eb'
+                            color: axisLineColor
                         }
                     },
                     axisLabel: {
-                        color: '#9ca3af',
+                        color: mutedTextColor,
                         fontSize: 11
                     }
                 },
@@ -128,12 +146,12 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                     type: 'value',
                     splitLine: {
                         lineStyle: {
-                            color: '#f3f4f6',
+                            color: splitLineColor,
                             type: 'dashed'
                         }
                     },
                     axisLabel: {
-                        color: '#9ca3af',
+                        color: mutedTextColor,
                         fontSize: 11
                     }
                 },
@@ -151,7 +169,7 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                         itemStyle: {
                             color: '#3b82f6',
                             borderWidth: 2,
-                            borderColor: '#fff'
+                            borderColor: backgroundColor
                         },
                         areaStyle: {
                             color: {

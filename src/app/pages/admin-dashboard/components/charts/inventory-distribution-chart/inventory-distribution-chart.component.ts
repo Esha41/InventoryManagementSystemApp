@@ -6,6 +6,7 @@ import { AdminAnalyticsService, InventoryDistribution } from '../../../../../cor
 import { Subject, takeUntil, forkJoin, map } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ThemeService } from '../../../../../core/services/theme.service';
 
 @Component({
     selector: 'app-inventory-distribution-chart',
@@ -27,11 +28,19 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
 
     constructor(
         private analyticsService: AdminAnalyticsService,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private themeService: ThemeService
     ) { }
 
     ngOnInit(): void {
         this.loadData();
+        // Subscribe to theme changes and reload chart when theme changes
+        this.themeService.currentTheme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            if (this.chartOptions && Object.keys(this.chartOptions).length > 0) {
+                // Reload data to reinitialize chart with new theme colors
+                this.loadData();
+            }
+        });
     }
 
     ngOnDestroy(): void {
@@ -59,6 +68,13 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
     }
 
     private initChart(data: InventoryDistribution): void {
+        const isDarkMode = this.themeService.isDarkMode();
+        const textColor = isDarkMode ? '#E5E7EB' : '#1f2937';
+        const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6b7280';
+        const tooltipBg = isDarkMode ? 'rgba(26, 29, 36, 0.95)' : 'rgba(255, 255, 255, 0.9)';
+        const backgroundColor = isDarkMode ? '#1A1D24' : '#FFFFFF';
+        const borderColor = backgroundColor;
+
         forkJoin(
             data.categories.map(cat => {
                 const translationKey = `adminDashboard.charts.${cat.name.toLowerCase()}`;
@@ -71,17 +87,18 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
             })
         ).subscribe((chartData: any[]) => {
             this.chartOptions = {
+                backgroundColor: backgroundColor,
                 tooltip: {
                     trigger: 'item',
                     formatter: '{b}: {c} ({d}%)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: tooltipBg,
                     textStyle: {
-                        color: '#1f2937'
+                        color: textColor
                     },
                     borderRadius: 8,
                     padding: 12,
                     shadowBlur: 10,
-                    shadowColor: 'rgba(0, 0, 0, 0.1)'
+                    shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
                 },
                 legend: {
                     orient: 'vertical',
@@ -90,7 +107,7 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
                     icon: 'circle',
                     itemGap: 20,
                     textStyle: {
-                        color: '#6b7280',
+                        color: mutedTextColor,
                         fontSize: 12
                     }
                 },
@@ -104,7 +121,7 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
                         avoidLabelOverlap: false,
                         itemStyle: {
                             borderRadius: 10,
-                            borderColor: '#fff',
+                            borderColor: borderColor,
                             borderWidth: 2
                         },
                         label: {
