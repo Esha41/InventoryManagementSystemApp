@@ -92,7 +92,7 @@
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">Rank</label>
       <app-dropdown class="w-full" formControlName="rankId" [options]="ranks" optionValue="id"
-        [optionLabelFn]="rankOptionLabel" [disabled]="isLoadingRanks" [placeholderSelectable]="false"
+        [optionLabelFn]="rankOptionLabel" [disabled]="isLoadingRanks" [placeholderSelectable]="true"
         [placeholderValue]="null" placeholder="{{ 'userFormModal.rankPlaceholder' | translate }}">
       </app-dropdown>
     </div>
@@ -127,7 +127,7 @@
         {{ 'userFormModal.department' | translate }}
       </label>
       <app-dropdown class="w-full" formControlName="departmentId" [options]="departments" optionValue="id"
-        [optionLabelFn]="departmentOptionLabel" [disabled]="isLoadingDepartments" [placeholderSelectable]="false"
+        [optionLabelFn]="departmentOptionLabel" [disabled]="isLoadingDepartments" [placeholderSelectable]="true"
         [placeholderValue]="null" placeholder="{{ 'userFormModal.departmentPlaceholder' | translate }}">
       </app-dropdown>
     </div>

@@ -89,41 +89,41 @@ export class SidebarComponent implements OnInit, OnDestroy {
       ]
     },
     {
-      label: 'nav.orderManagement',
+      label: 'nav.requestManagement',
       icon: ClipboardList,
-      permissions: ['order.create', 'return.create', 'discard.create'],
+      permissions: ['order.page', 'return.page', 'discard.page'],
       children: [
         {
           label: 'nav.newIssueRequest',
           route: '/new-issue-request',
-          permissions: ['order.create']
+          permissions: ['order.page']
         },
         {
-          label: 'nav.returnRequest',
+          label: 'nav.newReturnRequest',
           route: '/return-request',
-          permissions: ['return.create']
+          permissions: ['return.page']
         },
         {
-          label: 'nav.discardRequest',
+          label: 'nav.newDiscardRequest',
           route: '/discard-request',
-          permissions: ['discard.create']
+          permissions: ['discard.page']
         }
       ]
     },
     {
       label: 'nav.requestsManagement',
       icon: FileText,
-      permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view'],
+      permissions: ['order.page', 'request.page', 'request.view','requestReciever.page'],
       children: [
         {
           label: 'nav.requestsOverview',
           route: '/requests-management',
-          permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
+          permissions: ['viewrequest.page', 'request.page','requestReciever.page']
         },
         {
           label: 'nav.orderReport',
           route: '/requests-management/order-report',
-          permissions: ['viewrequest.page', 'viewrequest.view', 'order.view', 'request.page', 'request.view']
+          permissions: ['viewrequest.page','request.page','requestReciever.page']
         }
       ]
     },
@@ -142,7 +142,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.addAsset',
       icon: Plus,
       route: '/add-asset',
-      permissions: ['addnewassetpage.page', 'ammunition.create']
+      permissions: ['addnewassetpage.page']
     },
     {
       label: 'nav.assetList',
@@ -161,36 +161,36 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventorySummary',
       icon: Package,
       route: '/inventory-summary',
-      permissions: ['inventorypage.page', 'inventorypage.view']
+      permissions: ['inventorypage.page']
     },
     {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['warehousepage.page', 'warehousepage.view']
+      permissions: ['warehousepage.page']
     },
     {
       label: 'nav.depotManagement',
       icon: Warehouse,
       route: '/depot-management',
-      permissions: ['depots.page', 'depots.view']
+      permissions: ['depots.page']
     },
     {
       label: 'nav.admin',
       isHeader: true,
-      permissions: ['systemusers.page', 'systemusers.view', 'roles.page', 'roles.view']
+      permissions: ['systemusers.page']
     },
     {
       label: 'nav.manageAdmins',
       icon: Users,
       route: '/manage-admins',
-      permissions: ['systemusers.page', 'systemusers.view']
+      permissions: ['systemusers.page']
     },
     {
       label: 'nav.adminRoles',
       icon: Shield,
       route: '/admin-roles',
-      permissions: ['roles.page', 'roles.view']
+      permissions: ['roles.page']
     },
     {
       label: 'nav.rolePermissions',
@@ -202,31 +202,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.ldapSettings',
       icon: Settings,
       route: '/ldap-settings',
-      permissions: ['systemusers.page', 'systemusers.view']
+      permissions: ['ldapSettings.page']
     },
     {
       label: 'nav.emailSettings',
       icon: Mail,
       route: '/email-settings',
-      permissions: ['emailsettings.page', 'emailsettings.view']
+      permissions: ['emailsettings.page']
     },
     {
       label: 'nav.adminImportExport',
       icon: Upload,
       route: '/admin-import-export',
-      permissions: ['systemusers.page', 'systemusers.view']
+      permissions: ['canImportData']
     },
     {
       label: 'nav.workflow',
       icon: GitBranch,
       route: '/workflow',
-      permissions: ['workflow.page', 'workflow.view']
+      permissions: ['workflow.page']
     },
     {
       label: 'nav.stockNotificationSettings',
       icon: Mail,
       route: '/stock-notification-settings',
-      permissions: ['inventory.edit', 'inventory.view']
+      permissions: ['inventory.page']
     }
   ];
 
@@ -276,7 +276,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
-      this.expandedMenus.add('nav.orderManagement');
+      this.expandedMenus.add('nav.requestManagement');
     }
   }
 
