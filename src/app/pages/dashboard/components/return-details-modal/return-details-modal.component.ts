@@ -56,14 +56,45 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  getPriorityKey(priority?: number | null): string {
-    switch (priority) {
+  /**
+   * Get translation key for priority
+   * Handles both number and string priority values
+   * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
+   */
+  getPriorityKey(priority?: number | string | null): string {
+    if (priority === null || priority === undefined) {
+      return 'dashboard.priorityLabels.urgent';
+    }
+
+    // Normalize to number
+    let priorityNum: number;
+    if (typeof priority === 'string') {
+      const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
+      if (priorityLower === 'normal' || priorityLower === '1') {
+        priorityNum = 1;
+      } else if (priorityLower === 'urgent' || priorityLower === '2') {
+        priorityNum = 2;
+      } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
+        priorityNum = 3;
+      } else if (priorityLower === 'critical' || priorityLower === '4') {
+        priorityNum = 4;
+      } else {
+        const parsed = parseInt(priority, 10);
+        priorityNum = isNaN(parsed) ? 2 : parsed;
+      }
+    } else {
+      priorityNum = priority;
+    }
+
+    switch (priorityNum) {
       case 1:
         return 'dashboard.priorityLabels.normal';
       case 2:
         return 'dashboard.priorityLabels.urgent';
       case 3:
         return 'dashboard.priorityLabels.veryUrgent';
+      case 4:
+        return 'dashboard.priorityLabels.veryUrgent'; // Critical uses same label as VeryUrgent
       default:
         return 'dashboard.priorityLabels.urgent';
     }

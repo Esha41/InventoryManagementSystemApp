@@ -17,8 +17,8 @@ export class UserDelegationService {
         return this.apiService.getWithAuth<ApiResponse<BackendUserDto[]>>(`${this.endpoint}/available-users`);
     }
 
-    create(dto: CreateUserDelegation): Observable<ApiResponse<UserDelegation>> {
-        return this.apiService.postWithAuth<ApiResponse<UserDelegation>>(this.endpoint, dto);
+    create(dto: CreateUserDelegation): Observable<ApiResponse<boolean>> {
+        return this.apiService.postWithAuth<ApiResponse<boolean>>(this.endpoint, dto);
     }
 
     getMyDelegations(): Observable<ApiResponse<UserDelegation[]>> {

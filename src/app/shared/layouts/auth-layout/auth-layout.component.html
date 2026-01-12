@@ -27,8 +27,8 @@
     <!-- Logo and Header Section -->
     <div class="text-center mb-8">
       <div class="inline-block mb-6">
-        <img src="assets/logo.png" alt="Barzan Holdings" class="h-16 w-auto drop-shadow-sm"
-          style="transform: scaleX(1); direction: ltr;" />
+        <img src="assets/logo.png" alt="Barzan Holdings" class="h-16 w-auto drop-shadow-sm transition-all duration-200"
+          [class.dark-mode-logo]="themeService.isDarkMode()" style="transform: scaleX(1); direction: ltr;" />
       </div>
     </div>
 
