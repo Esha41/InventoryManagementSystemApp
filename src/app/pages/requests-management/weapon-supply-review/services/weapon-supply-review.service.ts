@@ -80,7 +80,8 @@ export class WeaponSupplyReviewService {
                     selected: false,
                     custodianId: this.defaultCustodianId,
                     conditionOnSupply: asset.condition || '',
-                    notes: ''
+                    notes: '',
+                    depot: asset.depot
                 } as SelectedAsset));
 
                 const existingIds = existingItem.selectedAssets.map(a => a.id);

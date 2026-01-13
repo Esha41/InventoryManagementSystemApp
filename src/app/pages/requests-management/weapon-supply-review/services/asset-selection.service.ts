@@ -13,6 +13,11 @@ export interface SelectedAsset {
   custodianId?: string;
   conditionOnSupply?: string;
   notes?: string;
+  depot?: {
+    id: number;
+    nameEn?: string;
+    nameAr?: string;
+  };
 }
 
 /**
@@ -40,7 +45,7 @@ export interface AssetFilterState {
   providedIn: 'root'
 })
 export class AssetSelectionService {
-  
+
   /**
    * Filter assets based on search term
    */
@@ -48,7 +53,7 @@ export class AssetSelectionService {
     if (!searchTerm.trim()) {
       return assets;
     }
-    
+
     const searchLower = searchTerm.toLowerCase();
     return assets.filter(asset =>
       asset.serialNumber?.toLowerCase().includes(searchLower) ||
@@ -121,7 +126,7 @@ export class AssetSelectionService {
     rowsPerPage: number
   ): AssetPaginationState {
     const totalPages = Math.ceil(totalItems / rowsPerPage);
-    
+
     // Ensure current page is valid
     let validPage = currentPage;
     if (validPage > totalPages && totalPages > 0) {
@@ -165,7 +170,7 @@ export class AssetSelectionService {
     requestedQuantity: number
   ): boolean {
     if (filteredAssets.length === 0) return false;
-    return filteredAssets.every(a => 
+    return filteredAssets.every(a =>
       a.selected || (!a.selected && selectedCount >= requestedQuantity)
     );
   }
@@ -180,7 +185,7 @@ export class AssetSelectionService {
   ): boolean {
     if (filteredAssets.length === 0) return false;
     const hasSelected = filteredAssets.some(a => a.selected);
-    const allSelectedOrDisabled = filteredAssets.every(a => 
+    const allSelectedOrDisabled = filteredAssets.every(a =>
       a.selected || (!a.selected && selectedCount >= requestedQuantity)
     );
     return hasSelected && !allSelectedOrDisabled;
@@ -195,7 +200,7 @@ export class AssetSelectionService {
     requestedQuantity: number
   ): boolean {
     if (filteredAssets.length === 0) return true;
-    return filteredAssets.every(a => 
+    return filteredAssets.every(a =>
       !a.selected && selectedCount >= requestedQuantity
     );
   }

@@ -2,11 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, InventoryDistribution } from '../../../../../core/services/admin-analytics.service';
+import { AdminAnalyticsService, InventoryDistribution } from '@services/admin-analytics.service';
 import { Subject, takeUntil, forkJoin, map } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ThemeService } from '../../../../../core/services/theme.service';
+import { ThemeService } from '@services/theme.service';
 
 @Component({
     selector: 'app-inventory-distribution-chart',
@@ -53,13 +53,13 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
         this.analyticsService.getInventoryDistribution()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (data) => {
-                    this.totalItems = data.categories.reduce((acc, curr) => acc + curr.value, 0);
+                next: (data: InventoryDistribution) => {
+                    this.totalItems = data.categories.reduce((acc: number, curr: { value: number }) => acc + curr.value, 0);
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
                 },
-                error: (err) => {
+                error: (err: any) => {
                     console.error('Error loading inventory distribution:', err);
                     this.loading = false;
                     this.error = true;
@@ -76,7 +76,7 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
         const borderColor = backgroundColor;
 
         forkJoin(
-            data.categories.map(cat => {
+            data.categories.map((cat: any) => {
                 const translationKey = `adminDashboard.charts.${cat.name.toLowerCase()}`;
                 return this.translate.get(translationKey).pipe(
                     map((translatedName: string) => ({

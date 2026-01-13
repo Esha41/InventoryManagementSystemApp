@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, TopRequestedItems } from '../../../../../core/services/admin-analytics.service';
+import { AdminAnalyticsService, TopRequestedItems } from '@services/admin-analytics.service';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, TrendingUp, RefreshCw, AlertCircle } from 'lucide-angular';
@@ -46,13 +46,13 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
         this.analyticsService.getTopRequestedItems()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (data) => {
+                next: (data: TopRequestedItems) => {
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
                     this.cdr.detectChanges();
                 },
-                error: (err) => {
+                error: (err: any) => {
                     console.error('Error loading top requested items:', err);
                     this.loading = false;
                     this.error = true;
@@ -62,8 +62,8 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     }
 
     private initChart(data: TopRequestedItems): void {
-        const itemNames = data.items.map(item => item.itemName);
-        const requestCounts = data.items.map(item => item.requestCount);
+        const itemNames = data.items.map((item: any) => item.itemName);
+        const requestCounts = data.items.map((item: any) => item.requestCount);
 
         this.chartOptions = {
             tooltip: {

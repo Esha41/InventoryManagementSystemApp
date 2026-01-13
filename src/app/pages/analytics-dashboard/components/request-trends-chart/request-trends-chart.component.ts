@@ -2,11 +2,11 @@ import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, RequestTrend } from '../../../../../core/services/admin-analytics.service';
+import { AdminAnalyticsService, RequestTrend } from '@services/admin-analytics.service';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ThemeService } from '../../../../../core/services/theme.service';
+import { ThemeService } from '@services/theme.service';
 
 @Component({
     selector: 'app-request-trends-chart',
@@ -64,13 +64,13 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
         this.analyticsService.getRequestTrends(this.period)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (data) => {
+                next: (data: RequestTrend) => {
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
                     this.cdr.detectChanges();
                 },
-                error: (err) => {
+                error: (err: any) => {
                     console.error(`Error loading request trends for ${this.period}:`, err);
                     this.loading = false;
                     this.error = true;

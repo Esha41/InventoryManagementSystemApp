@@ -9,10 +9,10 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
  * Displays inventory statistics and alerts
  */
 @Component({
-    selector: 'app-inventory-overview-card',
-    standalone: true,
-    imports: [CommonModule, TranslateModule, LucideAngularModule],
-    template: `
+  selector: 'app-inventory-overview-card',
+  standalone: true,
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  template: `
     <div class="inventory-card" *ngIf="metrics">
       <div class="card-header">
         <lucide-icon [img]="Package" class="card-icon"></lucide-icon>
@@ -66,7 +66,7 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
       <p>Loading inventory metrics...</p>
     </div>
   `,
-    styles: [`
+  styles: [`
     .inventory-card {
       height: 100%;
       display: flex;
@@ -191,14 +191,14 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
       color: var(--color-text-muted);
     }
   `],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryOverviewCardComponent {
-    @Input() metrics!: InventoryMetrics;
+  @Input() metrics!: InventoryMetrics;
 
-    readonly Package = Package;
-    readonly TrendingDown = TrendingDown;
-    readonly AlertTriangle = AlertTriangle;
-    readonly TrendingUp = TrendingUp;
-    readonly Archive = Archive;
+  readonly Package = Package;
+  readonly TrendingDown = TrendingDown;
+  readonly AlertTriangle = AlertTriangle;
+  readonly TrendingUp = TrendingUp;
+  readonly Archive = Archive;
 }

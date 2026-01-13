@@ -56,6 +56,12 @@ export const routes: Routes = [
         data: { permissions: ['systemusers.page', 'systemusers.view'] }
       },
       {
+        path: 'analytics-dashboard',
+        loadComponent: () => import('@pages/analytics-dashboard/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['analytics.page', 'analytics.view'] }
+      },
+      {
         path: 'supply-request-management',
         loadComponent: () => import('@pages/supply-request-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
         canActivate: [permissionGuard],

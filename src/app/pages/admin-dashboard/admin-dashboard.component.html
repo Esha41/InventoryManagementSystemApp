@@ -25,89 +25,23 @@
 
     <!-- Dashboard Content -->
     <div *ngIf="!isLoading" class="dashboard-content">
-        <!-- Dashboard Navigation Tabs -->
-        <div class="dashboard-nav mb-6 flex border-b border-[var(--color-border)] px-1">
-            <button (click)="switchView('overview')" [class.active]="activeView === 'overview'"
-                class="nav-tab flex items-center gap-2 px-6 py-3 border-b-2 border-transparent font-semibold transition-all hover:text-[var(--color-brand)]">
-                <span>{{ 'adminDashboard.overview' | translate }}</span>
-            </button>
-            <button (click)="switchView('delegations')" [class.active]="activeView === 'delegations'"
-                class="nav-tab flex items-center gap-2 px-6 py-3 border-b-2 border-transparent font-semibold transition-all hover:text-[var(--color-brand)] text-[var(--color-text-muted)]">
-                <span>{{ 'DELEGATION.ADMIN_TITLE' | translate }}</span>
-            </button>
-        </div>
-
-        <!-- Overview Section -->
-        <div *ngIf="activeView === 'overview'" class="space-y-6">
-            <!-- KPI Cards Grid -->
+        <!-- User Activity Section -->
+        <div class="space-y-6">
             <div class="kpi-grid">
-                <!-- Inventory Overview Card -->
-                <app-inventory-overview-card *ngIf="inventoryMetrics" [metrics]="inventoryMetrics" class="kpi-card">
-                </app-inventory-overview-card>
-
-                <!-- Request Metrics Card -->
-                <app-request-metrics-card *ngIf="requestMetrics" [metrics]="requestMetrics" class="kpi-card">
-                </app-request-metrics-card>
-
-                <!-- User Activity Card -->
+                <!-- User Activity Card (Made full width or just part of grid) -->
                 <app-user-activity-card *ngIf="userActivityMetrics" [metrics]="userActivityMetrics" class="kpi-card">
                 </app-user-activity-card>
-            </div>
-
-            <!-- Charts Section (Phase 3) -->
-            <div class="charts-section">
-                <div class="section-header">
-                    <lucide-icon [img]="TrendingUp" class="section-icon"></lucide-icon>
-                    <h2 class="section-title">{{ 'adminDashboard.analytics' | translate }}</h2>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="chart-item chart-wide">
-                        <app-request-trends-chart period="weekly"></app-request-trends-chart>
-                    </div>
-                    <div class="chart-item">
-                        <app-inventory-distribution-chart></app-inventory-distribution-chart>
-                    </div>
-                    <div class="chart-item">
-                        <app-top-requested-items-chart></app-top-requested-items-chart>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions Section -->
-            <div class="quick-actions-section">
-                <div class="section-header">
-                    <lucide-icon [img]="AlertCircle" class="section-icon"></lucide-icon>
-                    <h2 class="section-title">{{ 'adminDashboard.quickActions' | translate }}</h2>
-                </div>
-
-                <div class="actions-grid">
-                    <a routerLink="/manage-admins" class="action-card">
-                        <lucide-icon [img]="Users" class="action-icon"></lucide-icon>
-                        <span class="action-label">{{ 'adminDashboard.manageUsers' | translate }}</span>
-                    </a>
-
-                    <a routerLink="/admin-roles" class="action-card">
-                        <lucide-icon [img]="Users" class="action-icon"></lucide-icon>
-                        <span class="action-label">{{ 'adminDashboard.manageRoles' | translate }}</span>
-                    </a>
-
-                    <a routerLink="/warehouse" class="action-card">
-                        <lucide-icon [img]="Package" class="action-icon"></lucide-icon>
-                        <span class="action-label">{{ 'adminDashboard.viewInventory' | translate }}</span>
-                    </a>
-
-                    <a routerLink="/requests-management" class="action-card">
-                        <lucide-icon [img]="AlertCircle" class="action-icon"></lucide-icon>
-                        <span class="action-label">{{ 'adminDashboard.viewRequests' | translate }}</span>
-                    </a>
-                </div>
             </div>
         </div>
 
         <!-- Delegations Section -->
-        <div *ngIf="activeView === 'delegations'" class="delegations-view">
-            <app-admin-delegations></app-admin-delegations>
+        <div class="delegations-section">
+            <div class="section-header">
+                <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>
+            </div>
+            <div class="delegations-view">
+                <app-admin-delegations></app-admin-delegations>
+            </div>
         </div>
     </div>
 </div>
