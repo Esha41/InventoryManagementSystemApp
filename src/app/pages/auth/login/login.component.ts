@@ -7,6 +7,7 @@ import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle, RefreshCw } 
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { ConfigService } from '@services/config.service';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -57,6 +58,13 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Set LDAP mode as default in non-development environments
+    if (!environment.production) {
+      this.isLdapMode = false; // Keep password login first in development
+    } else {
+      this.isLdapMode = true; // LDAP first in production/staging
+    }
+    
     this.applyPasswordValidators();
 
     // Check if user is already logged in
@@ -76,6 +84,7 @@ export class LoginComponent implements OnInit {
   get password() { return this.loginForm.get('password'); }
   get captcha() { return this.loginForm.get('captcha'); }
   get isRTL(): boolean { return this.translationService.isRTL(); }
+  get isDevelopment(): boolean { return !environment.production; }
 
   /**
    * Check if login button should be disabled
