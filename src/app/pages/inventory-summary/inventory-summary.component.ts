@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, User, Building } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AssetService } from '@services/asset.service';
+import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
-import { AssetDto } from '@models/asset.model';
+import { AssetDto, AssetStatus } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -53,6 +54,11 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     loadingLots = new Set<number>();
     loadingAssets = new Set<number>();
 
+    // Asset History state
+    expandedAssetIds = new Set<number>();
+    historyByAssetId = new Map<number, AssetHistoryDto[]>();
+    loadingHistory = new Set<number>();
+
     // UI state
     loading = true;
     error: string | null = null;
@@ -72,6 +78,10 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     readonly AlertCircle = AlertCircle;
     readonly Search = Search;
     readonly Download = Download;
+    readonly History = History;
+    readonly ArrowRight = ArrowRight;
+    readonly User = User;
+    readonly Building = Building;
 
     private destroy$ = new Subject<void>();
 
@@ -79,6 +89,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private dataService: InventorySummaryDataService,
         private inventoryService: InventoryService,
         private assetService: AssetService,
+        private assetHistoryService: AssetHistoryService,
         private translateService: TranslateService,
         private translationService: TranslationService,
         private excelExportService: ExcelExportService,
@@ -131,10 +142,6 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      * Switch between tabs (ammunition, weapon, explosive)
      */
     switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
-        // Commented out weapon tab - will have something else
-        // if (tab === 'weapon') {
-        //     return;
-        // }
         this.activeTab = tab;
         this.currentPage = 1;
         this.searchTerm = '';
@@ -219,18 +226,17 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         } else {
             this.expandedItemIds.add(itemId);
 
-            // Commented out weapon assets loading - will have something else
             // For weapons (itemType 2), load assets instead of lots
-            // if (itemType === 2) {
-            //     if (!this.assetsByItemId.has(itemId)) {
-            //         this.loadAssetsForItem(itemId);
-            //     }
-            // } else {
+            if (itemType === 2) {
+                if (!this.assetsByItemId.has(itemId)) {
+                    this.loadAssetsForItem(itemId);
+                }
+            } else {
                 // For ammunition and explosives, load lots
                 if (!this.lotsByItemId.has(itemId)) {
                     this.loadLotsForItem(itemId);
                 }
-            // }
+            }
         }
     }
 
@@ -239,6 +245,56 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     isExpanded(itemId: number): boolean {
         return this.expandedItemIds.has(itemId);
+    }
+
+    /**
+     * Toggle asset history expansion
+     */
+    toggleAsset(assetId: number): void {
+        if (this.expandedAssetIds.has(assetId)) {
+            this.expandedAssetIds.delete(assetId);
+        } else {
+            this.expandedAssetIds.add(assetId);
+            if (!this.historyByAssetId.has(assetId)) {
+                this.loadHistoryForAsset(assetId);
+            }
+        }
+    }
+
+    /**
+     * Check if asset is expanded
+     */
+    isAssetExpanded(assetId: number): boolean {
+        return this.expandedAssetIds.has(assetId);
+    }
+
+    /**
+     * Load history for an asset
+     */
+    private loadHistoryForAsset(assetId: number): void {
+        this.loadingHistory.add(assetId);
+
+        this.assetHistoryService.getByAssetId(assetId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (history) => {
+                    this.historyByAssetId.set(assetId, history);
+                    this.loadingHistory.delete(assetId);
+                },
+                error: (err) => {
+                    console.error('Error loading history', err);
+                    this.loadingHistory.delete(assetId);
+                    this.toastService.error('Error loading history');
+                }
+            });
+    }
+
+    getHistoryForAsset(assetId: number): AssetHistoryDto[] {
+        return this.historyByAssetId.get(assetId) || [];
+    }
+
+    isLoadingHistory(assetId: number): boolean {
+        return this.loadingHistory.has(assetId);
     }
 
     /**
@@ -284,7 +340,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (assets) => {
-                    // Filter assets by itemId
+                    // Filter assets by itemId and not deleted
                     const itemAssets = assets.filter(a => a.itemId === itemId && !a.isDeleted);
                     this.assetsByItemId.set(itemId, itemAssets);
                     this.loadingAssets.delete(itemId);
@@ -314,12 +370,36 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     getAssetStatusLabel(asset: AssetDto): string {
         switch (asset.status) {
-            case 1: return 'Available';
-            case 2: return 'In Use';
-            case 3: return 'Under Maintenance';
-            case 4: return 'Retired';
-            default: return 'Unknown';
+            case AssetStatus.Active: return 'assetStatus.active';
+            case AssetStatus.Inactive: return 'assetStatus.inactive';
+            case AssetStatus.Maintenance: return 'assetStatus.maintenance';
+            case AssetStatus.Disposed: return 'assetStatus.disposed';
+            case AssetStatus.Lost: return 'assetStatus.lost';
+            case AssetStatus.Damaged: return 'assetStatus.damaged';
+            default: return 'assetStatus.unknown';
         }
+    }
+
+    /**
+     * Get asset status badge class
+     */
+    getAssetStatusClass(asset: AssetDto): string {
+        switch (asset.status) {
+            case AssetStatus.Active: return 'bg-green-100 text-green-800';
+            case AssetStatus.Inactive: return 'bg-blue-100 text-blue-800';
+            case AssetStatus.Maintenance: return 'bg-yellow-100 text-yellow-800';
+            case AssetStatus.Disposed: return 'bg-red-100 text-red-800';
+            case AssetStatus.Lost: return 'bg-red-100 text-red-800';
+            case AssetStatus.Damaged: return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    /**
+     * Get asset assignee name (custodian)
+     */
+    getAssetAssigneeName(asset: AssetDto): string {
+        return asset.custodian ? getLocalizedName(asset.custodian, getCurrentLang(this.translateService)) || '-' : '-';
     }
 
     /**

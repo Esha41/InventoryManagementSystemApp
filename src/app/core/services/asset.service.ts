@@ -70,6 +70,24 @@ export class AssetService {
     }
 
     /**
+     * Get asset by Serial Number
+     */
+    getBySerialNumber<T = AssetDto>(serialNumber: string): Observable<T | null> {
+        return this.http.get<APIOperationResponse<T>>(`${this.baseUrl}/serial/${serialNumber}`).pipe(
+            map(response => {
+                if (response.succeeded) {
+                    return response.data || null;
+                }
+                throw new Error(response.message || 'Failed to fetch asset by serial number');
+            }),
+            catchError(error => {
+                console.error('Error fetching asset by serial:', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    /**
      * Create new asset
      */
     create<T = AssetDto>(data: CreateAssetDto, files?: File[]): Observable<APIOperationResponse<T>> {

@@ -35,7 +35,24 @@
                             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
                         </div>
                     </button>
-                    <!-- <button (click)="switchTab('weapon')" [ngClass]="{
+
+                    <button (click)="switchTab('explosive')" [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border(--color-border)]': activeTab !== 'explosive'
+            }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
+                        <div class="flex items-center gap-2 relative z-10">
+                            <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                     'bg-white': activeTab === 'explosive',
+                     'bg-[var(--color-brand)]': activeTab !== 'explosive'
+                   }"></div>
+                            <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
+                        </div>
+                        <div *ngIf="activeTab === 'explosive'"
+                            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+                        </div>
+                    </button>
+
+                    <button (click)="switchTab('weapon')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
             }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
@@ -47,21 +64,6 @@
                             <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
                         </div>
                         <div *ngIf="activeTab === 'weapon'"
-                            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-                        </div>
-                    </button> -->
-                    <button (click)="switchTab('explosive')" [ngClass]="{
-              'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
-              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
-            }" class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group">
-                        <div class="flex items-center gap-2 relative z-10">
-                            <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-                     'bg-white': activeTab === 'explosive',
-                     'bg-[var(--color-brand)]': activeTab !== 'explosive'
-                   }"></div>
-                            <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
-                        </div>
-                        <div *ngIf="activeTab === 'explosive'"
                             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
                         </div>
                     </button>
@@ -128,31 +130,24 @@
                             </th>
                             <th
                                 class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.totalQty' | translate }}
-                                <!-- {{ activeTab === 'weapon' ? ('inventorySummary.totalAssets' | translate) :
-                                ('inventorySummary.totalQty' | translate) }} -->
+                                {{ (activeTab === 'weapon' ? 'inventorySummary.totalAssets' :
+                                'inventorySummary.totalQty') | translate }}
                             </th>
                             <th
                                 class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.usedQty' | translate }}
+                                {{ (activeTab === 'weapon' ? 'inventorySummary.assignedAssets' :
+                                'inventorySummary.usedQty') | translate }}
                             </th>
-                            <!-- <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.reservedQty' | translate }}
-                            </th> -->
                             <th
                                 class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.reservedQty' | translate }}
                             </th>
                             <th
                                 class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.remainingQty' | translate }}
+                                {{ (activeTab === 'weapon' ? 'inventorySummary.availableAssets' :
+                                'inventorySummary.remainingQty') | translate }}
                             </th>
-                            <!-- <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.totalLots' | translate }}
-                            </th> -->
-                            <th
+                            <th *ngIf="activeTab !== 'weapon'"
                                 class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.totalLots' | translate }}
                             </th>
@@ -161,7 +156,7 @@
                     <tbody class="divide-y divide-[var(--color-border)]">
                         <!-- Empty State -->
                         <tr *ngIf="paginatedItems.length === 0">
-                            <td [attr.colspan]="11" class="px-6 py-12 text-center">
+                            <td [attr.colspan]="activeTab === 'weapon' ? 10 : 11" class="px-6 py-12 text-center">
                                 <!-- <td [attr.colspan]="activeTab === 'weapon' ? 9 : 11" class="px-6 py-12 text-center"> -->
                                 <p class="text-[var(--color-text-muted)]">
                                     {{ searchTerm ? ('inventorySummary.noResults' | translate) :
@@ -212,22 +207,14 @@
                                     class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                                     {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
                                 </td> -->
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
                                     {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
                                     {{ formatNumber(item.remainingQuantity) }}
                                 </td>
-                                <!-- <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
-                                        {{ item.totalLots }}
-                                    </span>
-                                </td> -->
-                                <td
+                                <td *ngIf="activeTab !== 'weapon'"
                                     class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
                                     <span
                                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
@@ -238,9 +225,9 @@
 
                             <!-- Expanded Details Row -->
                             <tr *ngIf="isExpanded(item.itemId)" class="detail-row bg-[var(--color-background-muted)]">
-                                <td colspan="11">
+                                <td [attr.colspan]="activeTab === 'weapon' ? 10 : 11">
                                     <!-- Weapon Assets (itemType 2) -->
-                                    <!-- <div *ngIf="item.itemType === 2" class="lot-details-container">
+                                    <div *ngIf="item.itemType === 2" class="lot-details-container">
                                         <div *ngIf="isLoadingAssets(item.itemId)"
                                             class="flex items-center justify-center py-8">
                                             <div class="spinner"></div>
@@ -257,10 +244,11 @@
 
                                             <div class="bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] overflow-hidden"
                                                 *ngIf="getAssetsForItem(item.itemId).length > 0">
-                                                <table class="lot-details-table">
+                                                <table class="lot-details-table w-full">
                                                     <thead
                                                         class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
                                                         <tr>
+                                                            <th class="w-8"></th>
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                                                 {{ 'warehouseInventory.serialNumber' | translate }}
@@ -279,7 +267,7 @@
                                                             </th>
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                                                {{ 'warehouseInventory.status' | translate }}
+                                                                {{ 'inventorySummary.assignee' | translate }}
                                                             </th>
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -292,46 +280,155 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody class="divide-y divide-[var(--color-border)]">
-                                                        <tr *ngFor="let asset of getAssetsForItem(item.itemId)"
-                                                            class="hover:bg-[var(--color-background-hover)] transition-colors">
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
-                                                                {{ asset.serialNumber || '-' }}
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                {{ asset.rfid || '-' }}
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                {{ asset.assetTag || '-' }}
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                {{ getAssetDepotName(asset) }}
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                <span
-                                                                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                                                    [ngClass]="{
-                                                                        'bg-green-100 text-green-800': asset.status === 1,
-                                                                        'bg-blue-100 text-blue-800': asset.status === 2,
-                                                                        'bg-yellow-100 text-yellow-800': asset.status === 3,
-                                                                        'bg-gray-100 text-gray-800': asset.status === 4
-                                                                    }">
-                                                                    {{ getAssetStatusLabel(asset) }}
-                                                                </span>
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                {{ asset.location || '-' }}
-                                                            </td>
-                                                            <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                {{ asset.condition || '-' }}
-                                                            </td>
-                                                        </tr>
+                                                        <ng-container
+                                                            *ngFor="let asset of getAssetsForItem(item.itemId)">
+                                                            <tr class="hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
+                                                                (click)="toggleAsset(asset.id)">
+                                                                <td class="px-4 py-3 text-center">
+                                                                    <lucide-angular
+                                                                        [img]="getExpandIcon(isAssetExpanded(asset.id))"
+                                                                        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
+                                                                    {{ asset.serialNumber || '-' }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ asset.rfid || '-' }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ asset.assetTag || '-' }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ getAssetDepotName(asset) }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ getAssetAssigneeName(asset) }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ asset.location || '-' }}
+                                                                </td>
+                                                                <td
+                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                                                    {{ asset.condition || '-' }}
+                                                                </td>
+                                                            </tr>
+
+                                                            <!-- Asset History Expansion -->
+                                                            <tr *ngIf="isAssetExpanded(asset.id)"
+                                                                class="bg-[var(--color-background-muted)]/50">
+                                                                <td colspan="8" class="p-4 pl-12">
+                                                                    <div
+                                                                        class="bg-white rounded-lg border border-[var(--color-border)] p-4 shadow-sm">
+                                                                        <div
+                                                                            class="flex items-center gap-2 mb-4 text-[var(--color-brand)]">
+                                                                            <lucide-angular [img]="History"
+                                                                                class="h-5 w-5"></lucide-angular>
+                                                                            <h4 class="font-semibold">{{
+                                                                                'inventorySummary.assetHistory' |
+                                                                                translate }}</h4>
+                                                                        </div>
+
+                                                                        <div *ngIf="isLoadingHistory(asset.id)"
+                                                                            class="flex justify-center py-4">
+                                                                            <div class="spinner"></div>
+                                                                        </div>
+
+                                                                        <div *ngIf="!isLoadingHistory(asset.id) && getHistoryForAsset(asset.id).length === 0"
+                                                                            class="text-center py-4 text-[var(--color-text-muted)]">
+                                                                            {{ 'inventorySummary.noHistory' | translate
+                                                                            }}
+                                                                        </div>
+
+                                                                        <div *ngIf="!isLoadingHistory(asset.id) && getHistoryForAsset(asset.id).length > 0"
+                                                                            class="relative">
+                                                                            <!-- Timeline -->
+                                                                            <div
+                                                                                class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200">
+                                                                            </div>
+
+                                                                            <div class="space-y-6">
+                                                                                <div *ngFor="let entry of getHistoryForAsset(asset.id)"
+                                                                                    class="relative pl-10">
+                                                                                    <!-- Dot -->
+                                                                                    <div
+                                                                                        class="absolute left-[11px] top-1.5 w-3 h-3 rounded-full bg-[var(--color-brand)] ring-4 ring-white">
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                        class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
+                                                                                        <span
+                                                                                            class="font-medium text-[var(--color-text)]">{{
+                                                                                            entry.actionTypeName
+                                                                                            }}</span>
+                                                                                        <span
+                                                                                            class="text-xs text-[var(--color-text-muted)]">{{
+                                                                                            formatDate(entry.actionDate)
+                                                                                            }}</span>
+                                                                                    </div>
+
+                                                                                    <p
+                                                                                        class="text-sm text-[var(--color-text-secondary)] mt-1">
+                                                                                        {{ entry.description }}</p>
+
+                                                                                    <div *ngIf="entry.previousStatusName || entry.newStatusName"
+                                                                                        class="mt-2 text-xs flex items-center gap-2 text-[var(--color-text-muted)] bg-gray-50 px-2 py-1 rounded w-fit">
+                                                                                        <span
+                                                                                            *ngIf="entry.previousStatusName">{{
+                                                                                            entry.previousStatusName
+                                                                                            }}</span>
+                                                                                        <lucide-angular
+                                                                                            [img]="ArrowRight"
+                                                                                            class="h-3 w-3"></lucide-angular>
+                                                                                        <span
+                                                                                            *ngIf="entry.newStatusName"
+                                                                                            class="font-medium text-[var(--color-text)]">{{
+                                                                                            entry.newStatusName
+                                                                                            }}</span>
+                                                                                    </div>
+
+                                                                                    <div *ngIf="entry.newCustodianName || entry.newDepartmentName"
+                                                                                        class="mt-2 text-xs flex flex-wrap items-center gap-2 text-[var(--color-text-muted)]">
+                                                                                        <span
+                                                                                            *ngIf="entry.newCustodianName"
+                                                                                            class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1">
+                                                                                            <lucide-angular [img]="User"
+                                                                                                class="h-3 w-3"></lucide-angular>
+                                                                                            {{ entry.newCustodianName }}
+                                                                                        </span>
+                                                                                        <span
+                                                                                            *ngIf="entry.newDepartmentName"
+                                                                                            class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100 flex items-center gap-1">
+                                                                                            <lucide-angular
+                                                                                                [img]="Building"
+                                                                                                class="h-3 w-3"></lucide-angular>
+                                                                                            {{ entry.newDepartmentName
+                                                                                            }}
+                                                                                        </span>
+                                                                                    </div>
+
+                                                                                    <div *ngIf="entry.notes"
+                                                                                        class="mt-1 text-xs text-[var(--color-text-muted)] italic">
+                                                                                        "{{ entry.notes }}"
+                                                                                    </div>
+
+                                                                                    <div
+                                                                                        class="mt-1 text-xs text-[var(--color-text-muted)]">
+                                                                                        By: {{ entry.performedByUserName
+                                                                                        || 'System' }}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </ng-container>
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -342,10 +439,11 @@
                                                     'inventorySummary.noAssets' | translate }}</p>
                                             </div>
                                         </div>
-                                    </div> -->
+                                    </div>
+
 
                                     <!-- Lot Details (for Ammunition and Explosives) -->
-                                    <div class="lot-details-container">
+                                    <div *ngIf="item.itemType !== 2" class="lot-details-container">
                                         <!-- <div *ngIf="item.itemType !== 2" class="lot-details-container"> -->
                                         <!-- Loading lots -->
                                         <div *ngIf="isLoadingLots(item.itemId)"

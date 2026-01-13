@@ -6,6 +6,8 @@ import { ThemeService } from '@services/theme.service';
 import { LucideAngularModule, Globe, Moon, Sun } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { APP_CONSTANTS } from '@constants/app.constants';
+
 /**
  * Authentication Layout Component
  * Used for login, register, and other auth pages
@@ -23,6 +25,7 @@ export class AuthLayoutComponent {
   readonly Moon = Moon;
   readonly Sun = Sun;
   readonly currentYear = new Date().getFullYear();
+  readonly version = APP_CONSTANTS.VERSION;
 
   constructor(
     public translationService: TranslationService,

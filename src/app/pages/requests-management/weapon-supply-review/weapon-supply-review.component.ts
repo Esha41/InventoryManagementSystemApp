@@ -3,44 +3,29 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText, Warehouse, Building2, Users, ClipboardList, Check, X } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText, Warehouse, Building2, Users, ClipboardList, Check, X, Search } from 'lucide-angular';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 // Services
-import { AssetSupplyService, OrderAssetsToSupplyDto, ItemAssetsToSupplyDto, AssetToSupplyDto, CreateAssetSupplyDto } from '@services/asset-supply.service';
+import { AssetSupplyService, OrderAssetsToSupplyDto } from '@services/asset-supply.service';
 import { OrderService, OrderDto } from '@services/order.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { TranslationService } from '@services/translation.service';
-import { LookupService, LookupItem } from '@services/lookup.service';
-import { UserContextService } from '@services/user-context.service';
-import { BackendUserService } from '@services/backend-user.service';
-import { BackendUserDto } from '@models/backend-user.model';
-
-// Components
-import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
-import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { ItemAssetSelectionComponent } from './components/item-asset-selection/item-asset-selection.component';
+import { WeaponSupplyReviewService, ItemWithAssets } from './services/weapon-supply-review.service';
+import { WeaponSupplyUIService } from './services/weapon-supply-ui.service';
+import { WeaponSupplyLookupService } from './services/weapon-supply-lookup.service';
+import { WeaponSupplyDisplayService } from './services/weapon-supply-display.service';
 import { SelectedAsset } from './services/asset-selection.service';
 
-// Utils
-import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
-import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
-
-/**
- * Item with selected assets
- */
-interface ItemWithAssets {
-  itemId: number;
-  itemName: string;
-  requestedQuantity: number;
-  availableQuantity: number;
-  canFulfill: boolean;
-  selectedAssets: SelectedAsset[];
-  selectedCount: number;
-}
+// Components
+import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { ItemAssetSelectionComponent } from './components/item-asset-selection/item-asset-selection.component';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -56,6 +41,12 @@ interface ItemWithAssets {
     ButtonComponent,
     DropdownComponent,
     ItemAssetSelectionComponent
+  ],
+  providers: [
+    WeaponSupplyReviewService,
+    WeaponSupplyUIService,
+    WeaponSupplyLookupService,
+    WeaponSupplyDisplayService
   ],
   templateUrl: './weapon-supply-review.component.html',
   styleUrls: ['./weapon-supply-review.component.css']
@@ -81,6 +72,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly ClipboardList = ClipboardList;
   readonly Check = Check;
   readonly X = X;
+  readonly Search = Search;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -90,7 +82,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     return this.isRTL ? ArrowRight : ArrowLeft;
   }
 
-  // State
+  // Core State
   orderId: number = 0;
   orderData: OrderDto | null = null;
   assetsData: OrderAssetsToSupplyDto | null = null;
@@ -100,6 +92,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   isRequestInfoExpanded: boolean = true;
   isItemsExpanded: boolean = true;
   isReceiverInfoExpanded: boolean = true;
+  scanSubject = new Subject<string>();
 
   // Loading States
   loading: boolean = true;
@@ -113,26 +106,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   location: string = '';
   expectedReturnDate: string = '';
   notes: string = '';
-  defaultCustodianId: string = '';
 
-  // Ranks dropdown
-  ranks: LookupItem[] = [];
-  loadingRanks: boolean = false;
-
-  // Users/Custodians
-  availableUsers: BackendUserDto[] = [];
-  userDropdownOptions: DropdownOption<string>[] = [];
-  loadingUsers: boolean = false;
-
-  // Depots
-  availableDepots: LookupItem[] = [];
+  // Depot Selection
   selectedDepotIds: number[] = [];
-  loadingDepots: boolean = false;
-  depotDropdownOptions: DropdownOption<number>[] = [];
   depotsSelected: boolean = false;
   depotsConfirmed: boolean = false;
-
-
 
   constructor(
     private route: ActivatedRoute,
@@ -143,25 +121,65 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     public translate: TranslateService,
     private config: ConfigService,
-    private lookupService: LookupService,
-    private userContextService: UserContextService,
-    private backendUserService: BackendUserService
+    public reviewService: WeaponSupplyReviewService,
+    public uiService: WeaponSupplyUIService,
+    public lookupService: WeaponSupplyLookupService,
+    public displayService: WeaponSupplyDisplayService
   ) { }
 
+  // Expose service properties for template
+  get defaultCustodianId(): string {
+    return this.reviewService.defaultCustodianId;
+  }
+
+  get ranks() {
+    return this.lookupService.ranks;
+  }
+
+  get availableUsers() {
+    return this.lookupService.availableUsers;
+  }
+
+  get userDropdownOptions() {
+    return this.lookupService.userDropdownOptions;
+  }
+
+  get availableDepots() {
+    return this.lookupService.availableDepots;
+  }
+
+  get depotDropdownOptions() {
+    return this.lookupService.depotDropdownOptions;
+  }
+
+  get currentPage(): number {
+    return this.uiService.currentPage;
+  }
+
+  get pageSize(): number {
+    return this.uiService.pageSize;
+  }
+
+  get loadingUsers(): boolean {
+    return this.loading;
+  }
+
+  get loadingRanks(): boolean {
+    return this.loading;
+  }
+
+  get loadingDepots(): boolean {
+    return this.loading;
+  }
+
+  get itemSearchTerm(): string {
+    return this.uiService.searchTerm;
+  }
+
   ngOnInit(): void {
-    const idParam = this.route.snapshot.params['id'];
-    this.orderId = parseInt(idParam, 10);
-    if (isNaN(this.orderId)) {
-      const message = this.translate.instant('weaponSupplyReview.invalidOrderId');
-      const title = this.translate.instant('toast.error');
-      this.toastService.error(message, title);
-      this.router.navigate(['/requests-management']);
-      return;
-    }
-    this.loadOrderData();
-    this.loadRanks();
-    this.loadUsers();
-    this.loadDepots();
+    this.initializeRoute();
+    this.loadAllData();
+    this.setupSubscriptions();
   }
 
   ngOnDestroy(): void {
@@ -169,54 +187,69 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ==================== DATA LOADING ====================
+  // ==================== INITIALIZATION ====================
 
-  loadOrderData(): void {
+  private initializeRoute(): void {
+    const idParam = this.route.snapshot.params['id'];
+    this.orderId = parseInt(idParam, 10);
+
+    if (isNaN(this.orderId)) {
+      this.toastService.error(
+        this.translate.instant('weaponSupplyReview.invalidOrderId'),
+        this.translate.instant('toast.error')
+      );
+      this.router.navigate(['/requests-management']);
+    }
+  }
+
+  private loadAllData(): void {
     this.loading = true;
 
+    // Load order data
     this.orderService.getOrderById(this.orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order) => {
           this.orderData = order;
-          this.defaultCustodianId = order.requesterId || '';
-          // Don't load assets data here - wait for depot selection
+          this.reviewService.initializeItemsFromOrder(order);
           this.loading = false;
         },
         error: (error) => {
-          this.config.logError('Failed to load order details', error);
-          const message = this.translate.instant('weaponSupplyReview.failedToLoadOrderDetails');
-          const title = this.translate.instant('toast.error');
-          this.toastService.error(message, title);
-          this.loading = false;
+          this.handleError('Failed to load order details', error, 'weaponSupplyReview.failedToLoadOrderDetails');
           this.goBack();
         }
       });
-  }
 
-  loadDepots(): void {
-    this.loadingDepots = true;
-    this.lookupService.getDepots()
-      .pipe(takeUntil(this.destroy$))
+    // Load lookup data in parallel
+    forkJoin({
+      depots: this.lookupService.loadDepots(),
+      users: this.lookupService.loadUsers(),
+      ranks: this.lookupService.loadRanks()
+    }).pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots: LookupItem[]) => {
-          this.availableDepots = depots.filter(d => !d.isDeleted);
-          const currentLang = getCurrentLang(this.translate);
-          this.depotDropdownOptions = this.availableDepots.map(depot => ({
-            value: depot.id!,
-            label: currentLang === 'ar' 
-              ? (depot.nameAr || depot.nameEn || `Depot ${depot.id}`)
-              : (depot.nameEn || depot.nameAr || `Depot ${depot.id}`),
-            description: depot.code || ''
-          })).sort((a, b) => a.label.localeCompare(b.label));
-          this.loadingDepots = false;
-        },
-        error: (error: any) => {
-          this.config.logError('Failed to load depots', error);
-          this.loadingDepots = false;
-        }
+        error: (error) => this.config.logError('Failed to load lookup data', error)
       });
   }
+
+  private setupSubscriptions(): void {
+    // Subscribe to items changes
+    this.reviewService.itemsWithAssets$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(items => {
+        this.itemsWithAssets = items;
+      });
+
+    // Setup scan listener with debounce
+    this.scanSubject.pipe(
+      takeUntil(this.destroy$),
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(value => {
+      this.reviewService.scanSerialNumber(value);
+    });
+  }
+
+  // ==================== DEPOT MANAGEMENT ====================
 
   toggleDepotSelection(depotId: number): void {
     const index = this.selectedDepotIds.indexOf(depotId);
@@ -225,141 +258,84 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     } else {
       this.selectedDepotIds.push(depotId);
     }
-    
-    // Reset confirmation if depots are changed
+
     if (this.depotsConfirmed) {
-      this.depotsConfirmed = false;
-      this.assetsData = null;
-      this.itemsWithAssets = [];
+      this.resetDepotConfirmation();
     }
   }
 
   confirmDepotSelection(): void {
     if (this.selectedDepotIds.length === 0) {
-      const message = this.translate.instant('weaponSupplyReview.selectAtLeastOneDepot');
-      const title = this.translate.instant('toast.warning');
-      this.toastService.warning(message, title);
+      this.toastService.warning(
+        this.translate.instant('weaponSupplyReview.selectAtLeastOneDepot'),
+        this.translate.instant('toast.warning')
+      );
       return;
     }
 
     this.depotsConfirmed = true;
     this.depotsSelected = true;
-    this.loadAssetsData();
+    this.loadAssets();
   }
 
   clearDepotSelection(): void {
     this.selectedDepotIds = [];
+    this.resetDepotConfirmation();
+  }
+
+  private resetDepotConfirmation(): void {
     this.depotsConfirmed = false;
     this.depotsSelected = false;
     this.assetsData = null;
-    this.itemsWithAssets = [];
+
+    if (this.orderData) {
+      this.reviewService.initializeItemsFromOrder(this.orderData);
+    }
   }
 
-  loadAssetsData(): void {
-    if (!this.depotsConfirmed || this.selectedDepotIds.length === 0) {
-      return;
-    }
+  private loadAssets(): void {
+    if (!this.orderId || this.selectedDepotIds.length === 0) return;
 
     this.loadingAssets = true;
-
     this.assetSupplyService.getAssetsToSupply(this.orderId, this.selectedDepotIds)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           this.assetsData = data;
-          this.initializeItemsWithAssets(data);
+          this.reviewService.updateItemsWithAvailableAssets(data);
           this.loadingAssets = false;
           this.loading = false;
         },
         error: (error) => {
-          this.config.logError('Failed to load available assets', error);
-          const message = this.translate.instant('weaponSupplyReview.failedToLoadAssets');
-          const title = this.translate.instant('toast.error');
-          this.toastService.error(message, title);
+          this.handleError('Failed to load assets', error, 'weaponSupplyReview.failedToLoadAssets');
           this.loadingAssets = false;
           this.loading = false;
         }
       });
   }
 
-  private initializeItemsWithAssets(data: OrderAssetsToSupplyDto): void {
-    this.itemsWithAssets = data.items.map(item => ({
-      itemId: item.itemId,
-      itemName: item.itemName || 'Unknown Item',
-      requestedQuantity: item.requestedQuantity,
-      availableQuantity: item.availableQuantity,
-      canFulfill: item.canFulfill,
-      selectedAssets: item.availableAssets.map(asset => ({
-        id: asset.id,
-        assetId: asset.id, // For DTO mapping
-        serialNumber: asset.serialNumber,
-        assetTag: asset.assetTag,
-        condition: asset.condition,
-        selected: false,
-        custodianId: this.defaultCustodianId,
-        conditionOnSupply: asset.condition || '',
-        notes: ''
-      } as SelectedAsset)),
-      selectedCount: 0
-    }));
+  // ==================== SCANNING ====================
+
+  onScanInput(value: string): void {
+    this.scanSubject.next(value);
   }
 
-  loadUsers(): void {
-    this.loadingUsers = true;
-    this.backendUserService.getUsers()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (users: BackendUserDto[]) => {
-          this.availableUsers = users || [];
-          // Create dropdown options
-          const currentLang = getCurrentLang(this.translate);
-          this.userDropdownOptions = this.availableUsers.map(user => ({
-            value: user.id,
-            label: currentLang === 'ar' 
-              ? (user.nameAr || user.userName)
-              : (user.nameEn || user.userName),
-            description: user.userName
-          })).sort((a, b) => a.label.localeCompare(b.label));
-          this.loadingUsers = false;
-        },
-        error: (error: any) => {
-          this.config.logError('Failed to load users', error);
-          this.loadingUsers = false;
-        }
-      });
+  scanSerialNumber(value: string): void {
+    this.reviewService.scanSerialNumber(value);
   }
 
-  loadRanks(): void {
-    this.loadingRanks = true;
-    this.lookupService.getLookupItems('Rank')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (ranks: LookupItem[]) => {
-          this.ranks = ranks || [];
-          this.loadingRanks = false;
-        },
-        error: (error: any) => {
-          this.config.logError('Failed to load ranks', error);
-          this.loadingRanks = false;
-        }
-      });
-  }
-
-  // ==================== ASSET SELECTION (Handled by Child Component) ====================
+  // ==================== ASSET SELECTION ====================
 
   onAssetSelectionChange(item: ItemWithAssets, event: { asset: SelectedAsset; selected: boolean }): void {
     if (!event.selected && item.selectedCount >= item.requestedQuantity) {
-      const message = this.translate.instant('weaponSupplyReview.maxQuantityReached', {
-        quantity: item.requestedQuantity
-      });
-      const title = this.translate.instant('toast.warning');
-      this.toastService.warning(message, title);
+      this.toastService.warning(
+        this.translate.instant('weaponSupplyReview.maxQuantityReached', { quantity: item.requestedQuantity }),
+        this.translate.instant('toast.warning')
+      );
       event.asset.selected = false;
       return;
     }
-
-    event.asset.selected = event.selected;
-    item.selectedCount = item.selectedAssets.filter(a => a.selected).length;
+    this.reviewService.toggleAssetSelection(item, event.asset, event.selected);
   }
 
   onBulkSelectChange(item: ItemWithAssets, count: number): void {
@@ -367,27 +343,32 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     const currentlySelected = item.selectedCount;
 
     if (maxCount > currentlySelected) {
-      // Select more assets (FIFO order)
-      const assetsToSelect = item.selectedAssets
-        .filter(a => !a.selected)
-        .slice(0, maxCount - currentlySelected);
-      assetsToSelect.forEach(asset => {
-        asset.selected = true;
-        asset.custodianId = this.defaultCustodianId;
-      });
+      this.selectAssets(item, maxCount - currentlySelected);
     } else if (maxCount < currentlySelected) {
-      // Deselect assets (reverse FIFO order)
-      const assetsToDeselect = item.selectedAssets
-        .filter(a => a.selected)
-        .slice(-(currentlySelected - maxCount));
-      assetsToDeselect.forEach(asset => {
-        asset.selected = false;
-      });
+      this.deselectAssets(item, currentlySelected - maxCount);
     }
-
-    item.selectedCount = item.selectedAssets.filter(a => a.selected).length;
   }
 
+  private selectAssets(item: ItemWithAssets, count: number): void {
+    const assetsToSelect = item.selectedAssets
+      .filter(a => !a.selected)
+      .slice(0, count);
+
+    assetsToSelect.forEach(asset => {
+      this.reviewService.toggleAssetSelection(item, asset, true);
+      asset.custodianId = this.reviewService.defaultCustodianId;
+    });
+  }
+
+  private deselectAssets(item: ItemWithAssets, count: number): void {
+    const assetsToDeselect = item.selectedAssets
+      .filter(a => a.selected)
+      .slice(-count);
+
+    assetsToDeselect.forEach(asset => {
+      this.reviewService.toggleAssetSelection(item, asset, false);
+    });
+  }
 
   // ==================== CUSTODIAN ASSIGNMENT ====================
 
@@ -403,16 +384,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     asset.notes = notes || undefined;
   }
 
-  getUserDisplayName(userId: string): string {
-    if (!userId) return '';
-    const user = this.availableUsers.find(u => u.id === userId);
-    if (!user) return userId;
-    const currentLang = getCurrentLang(this.translate);
-    return currentLang === 'ar' 
-      ? (user.nameAr || user.userName)
-      : (user.nameEn || user.userName);
-  }
-
   getSelectedAssetsForItem(item: ItemWithAssets): SelectedAsset[] {
     return item.selectedAssets.filter(asset => asset.selected);
   }
@@ -420,22 +391,15 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
-    // Check if depots are confirmed
-    if (!this.depotsConfirmed || this.selectedDepotIds.length === 0) {
-      return false;
-    }
-
     if (!this.receiverName || !this.receiverMilitaryId || !this.receiverRankId) {
       return false;
     }
 
-    // Check if at least one asset is selected
     const hasSelectedAssets = this.itemsWithAssets.some(item => item.selectedCount > 0);
     if (!hasSelectedAssets) {
       return false;
     }
 
-    // Check if all selected assets have custodians
     const allHaveCustodians = this.itemsWithAssets.every(item =>
       item.selectedAssets
         .filter(a => a.selected)
@@ -447,62 +411,78 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (!this.canSubmit()) {
-      const message = this.translate.instant('weaponSupplyReview.cannotSubmit');
-      const title = this.translate.instant('toast.warning');
-      this.toastService.warning(message, title);
+      this.toastService.warning(
+        this.translate.instant('weaponSupplyReview.cannotSubmit'),
+        this.translate.instant('toast.warning')
+      );
       return;
     }
 
-    const selectedAssets = this.itemsWithAssets.flatMap(item =>
-      item.selectedAssets
-        .filter(a => a.selected)
-        .map(a => ({
-          assetId: a.assetId || a.id,
-          conditionOnSupply: a.conditionOnSupply || a.condition || undefined,
-          custodianId: a.custodianId || undefined,
-          notes: a.notes || undefined
-        }))
-    );
-
-    const dto: CreateAssetSupplyDto = {
-      orderId: this.orderId,
-      custodianId: this.defaultCustodianId,
+    const receiverInfo = {
       receiverName: this.receiverName,
       receiverMilitaryId: this.receiverMilitaryId,
       receiverRankId: this.receiverRankId,
-      location: this.location || undefined,
-      expectedReturnDate: this.expectedReturnDate || undefined,
-      notes: this.notes || undefined,
-      supplyDetails: selectedAssets
+      location: this.location,
+      expectedReturnDate: this.expectedReturnDate,
+      notes: this.notes
     };
+
+    const dto = this.reviewService.createSupplyDto(this.orderId, receiverInfo, this.itemsWithAssets);
 
     this.submitting = true;
 
-    this.assetSupplyService.createAndSubmit(dto)
+    this.reviewService.submitSupply(dto)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
-          this.config.logError('Failed to submit asset supply', error);
-          const errorMessage = error?.error?.message || error?.message || this.translate.instant('weaponSupplyReview.failedToSubmit');
-          const title = this.translate.instant('toast.error');
-          this.toastService.error(errorMessage, title);
+          this.handleError('Failed to submit asset supply', error, 'weaponSupplyReview.failedToSubmit');
           this.submitting = false;
           return [];
         })
       )
       .subscribe({
-        next: (supplyId) => {
+        next: () => {
           this.submitting = false;
-          const message = this.translate.instant('weaponSupplyReview.submitSuccess');
-          const title = this.translate.instant('toast.success');
-          this.toastService.success(message, title);
-          
-          // Navigate back to workflow approval detail
+          this.toastService.success(
+            this.translate.instant('weaponSupplyReview.submitSuccess'),
+            this.translate.instant('toast.success')
+          );
+
           setTimeout(() => {
             this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
           }, 1500);
         }
       });
+  }
+
+  // ==================== UI HELPERS ====================
+
+  get filteredItems(): ItemWithAssets[] {
+    return this.uiService.filterItems(this.itemsWithAssets);
+  }
+
+  get paginatedItems(): ItemWithAssets[] {
+    return this.uiService.paginateItems(this.filteredItems);
+  }
+
+  get totalPages(): number {
+    return this.uiService.getTotalPages(this.filteredItems.length);
+  }
+
+  onItemSearch(term: string): void {
+    this.uiService.setSearchTerm(term);
+  }
+
+  setPage(page: number): void {
+    this.uiService.setPage(page, this.totalPages);
+  }
+
+  toggleItemExpanded(item: ItemWithAssets): void {
+    this.uiService.toggleItemExpanded(item.itemId);
+  }
+
+  isItemExpanded(item: ItemWithAssets): boolean {
+    return this.uiService.isItemExpanded(item.itemId);
   }
 
   // ==================== NAVIGATION ====================
@@ -515,91 +495,53 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ==================== UI HELPERS ====================
+  // ==================== ERROR HANDLING ====================
+
+  private handleError(logMessage: string, error: any, translationKey: string): void {
+    this.config.logError(logMessage, error);
+    const errorMessage = error?.error?.message || error?.message || this.translate.instant(translationKey);
+    this.toastService.error(errorMessage, this.translate.instant('toast.error'));
+  }
+
+  // ==================== DISPLAY HELPERS (Delegated to Service) ====================
 
   formatNumber(num: number): string {
-    return formatNumberUtil(num);
+    return this.displayService.formatNumber(num);
   }
 
   formatDate(date: Date | string | undefined): string {
-    return formatDateUtil(date);
+    return this.displayService.formatDate(date);
   }
 
   getCurrentLang(): string {
-    return getCurrentLang(this.translate);
+    return this.displayService.getCurrentLang();
   }
 
   getDepartmentName(): string {
-    if (!this.orderData) return 'N/A';
-    const currentLang = getCurrentLang(this.translate);
-    
-    if (this.orderData.department) {
-      return getLocalizedName(this.orderData.department, currentLang) || 'N/A';
-    }
-    
-    if (this.orderData.departmentNameEn || this.orderData.departmentNameAr) {
-      return getLocalizedName(
-        {
-          nameEn: this.orderData.departmentNameEn,
-          nameAr: this.orderData.departmentNameAr
-        },
-        currentLang
-      ) || 'N/A';
-    }
-    
-    return 'N/A';
+    return this.displayService.getDepartmentName(this.orderData);
   }
 
   getRequesterName(): string {
-    if (!this.orderData) return 'N/A';
-    const currentLang = getCurrentLang(this.translate);
-
-    // Use nested requester object if available (for proper localization)
-    if (this.orderData.requester) {
-      const localized = getLocalizedName(
-        {
-          nameEn: this.orderData.requester.fullNameEN,
-          nameAr: this.orderData.requester.fullNameAR
-        },
-        currentLang
-      );
-      if (localized) return localized;
-      if (this.orderData.requester.userName) return this.orderData.requester.userName;
-    }
-
-    // Fallback to flattened properties
-    if (this.orderData.requesterNameEn || this.orderData.requesterNameAr) {
-      return getLocalizedName(
-        {
-          nameEn: this.orderData.requesterNameEn,
-          nameAr: this.orderData.requesterNameAr
-        },
-        currentLang
-      ) || 'N/A';
-    }
-
-    if (this.orderData.requesterName) return this.orderData.requesterName;
-
-    return 'N/A';
+    return this.displayService.getRequesterName(this.orderData);
   }
 
   getTotalSelectedCount(): number {
-    return this.itemsWithAssets.reduce((sum, item) => sum + item.selectedCount, 0);
+    return this.displayService.getTotalSelectedCount(this.itemsWithAssets);
   }
 
   getTotalRequestedCount(): number {
-    return this.itemsWithAssets.reduce((sum, item) => sum + item.requestedQuantity, 0);
+    return this.displayService.getTotalRequestedCount(this.itemsWithAssets);
   }
 
   isFullyFulfilled(): boolean {
-    return this.itemsWithAssets.every(item => item.selectedCount >= item.requestedQuantity);
+    return this.displayService.isFullyFulfilled(this.itemsWithAssets);
   }
 
   isPartiallyFulfilled(): boolean {
-    return this.itemsWithAssets.some(item => 
-      item.selectedCount > 0 && item.selectedCount < item.requestedQuantity
-    );
+    return this.displayService.isPartiallyFulfilled(this.itemsWithAssets);
   }
 
+  getUserDisplayName(userId: string): string {
+    return this.lookupService.getUserDisplayName(userId);
+  }
 }
-
