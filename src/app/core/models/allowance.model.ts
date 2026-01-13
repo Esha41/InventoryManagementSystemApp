@@ -49,6 +49,7 @@ export interface AllowanceTableRow {
   itemName: string;
   itemNo: string;
   batchNo: string;
+  itemType: number;
   quantity: number;
   usedQuantityFromAllowance: number;
   reservedQuantityByDraftSupplies: number;

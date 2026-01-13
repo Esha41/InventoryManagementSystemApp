@@ -87,6 +87,8 @@ export class AllowanceComponent implements OnInit {
   isLoading = false;
   errors: { [key: string]: string } = {};
   itemErrors: { [key: number]: { [key: string]: string } } = {};
+  targetItemId: number | null = null;
+  allExistingItems: any[] = [];
 
   constructor(
     private lookupService: LookupService,
@@ -149,10 +151,20 @@ export class AllowanceComponent implements OnInit {
       if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
         this.selectedDepartment = parseInt(params['departmentId'], 10);
         this.selectedYear = params['year'];
+        this.targetItemId = params['itemId'] ? parseInt(params['itemId'], 10) : null;
+
         // Set item type from query params if provided
-        if (params['itemType'] && ['Ammunition', 'Weapon', 'Explosive'].includes(params['itemType'])) {
-          this.selectedItemType = params['itemType'];
+        if (params['itemType']) {
+          const itype = params['itemType'].toString();
+          if (itype === '1' || itype === 'Ammunition') {
+            this.selectedItemType = 'Ammunition';
+          } else if (itype === '2' || itype === 'Weapon') {
+            this.selectedItemType = 'Weapon';
+          } else if (itype === '3' || itype === 'Explosive') {
+            this.selectedItemType = 'Explosive';
+          }
         }
+
         // Wait for items to be loaded before loading allowance data
         if (this.allItems.length > 0) {
           this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
@@ -472,11 +484,23 @@ export class AllowanceComponent implements OnInit {
         ? this.selectedDepartment
         : parseInt(this.selectedDepartment as string, 10),
       year: year,
-      items: this.items.map(item => ({
-        itemId: parseInt(item.itemId.trim(), 10),
-        itemType: itemType,
-        quantity: parseInt(item.quantity.trim(), 10)
-      }))
+      items: [
+        ...this.items.map(item => ({
+          itemId: parseInt(item.itemId.trim(), 10),
+          itemType: itemType,
+          quantity: parseInt(item.quantity.trim(), 10)
+        })),
+        // Include other items that were not being edited if in single-item edit mode
+        ...(this.targetItemId !== null
+          ? this.allExistingItems
+            .filter(ei => ei.itemId !== this.targetItemId)
+            .map(ei => ({
+              itemId: ei.itemId,
+              itemType: ei.itemType || itemType,
+              quantity: ei.quantity
+            }))
+          : [])
+      ]
     };
 
     this.isLoading = true;
@@ -557,6 +581,7 @@ export class AllowanceComponent implements OnInit {
         const items = response.data?.items || response.data?.Items || [];
 
         if (items && items.length > 0) {
+          this.allExistingItems = items;
           // Determine item type from first item if available
           const firstItem = items[0];
           if (firstItem.itemType) {
@@ -608,7 +633,13 @@ export class AllowanceComponent implements OnInit {
   private mapItemsToForm(items: any[]): void {
     const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
 
-    this.items = items.map((item: any, index: number) => {
+    // Filter items if targetItemId is provided
+    let itemsToMap = items;
+    if (this.targetItemId !== null) {
+      itemsToMap = items.filter(item => item.itemId === this.targetItemId);
+    }
+
+    this.items = itemsToMap.map((item: any, index: number) => {
       const foundItem = itemsMap.get(item.itemId);
       this.filteredItems[index] = foundItem
         ? [foundItem, ...this.allItems.filter(a => a.id !== item.itemId)]

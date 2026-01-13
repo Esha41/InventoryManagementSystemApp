@@ -336,6 +336,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       queryParams: {
         departmentId: allowance.departmentId,
         year: allowance.year,
+        itemId: allowance.itemId,
+        itemType: allowance.itemType,
         edit: 'true'
       }
     });
