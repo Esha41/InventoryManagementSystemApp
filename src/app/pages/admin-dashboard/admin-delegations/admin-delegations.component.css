@@ -1,0 +1,48 @@
+.admin-delegations-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-muted {
+    background-color: var(--color-background-soft);
+    color: var(--color-text-muted);
+}
+
+/* Filter Buttons */
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background-color: var(--color-background-soft);
+    color: var(--color-text-muted);
+}
+
+.filter-btn:hover {
+    background-color: var(--color-background-muted);
+}
+
+.filter-btn--active {
+    background-color: var(--color-brand) !important;
+    color: white !important;
+}

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, LayoutDashboard, Users, Package, AlertCircle, TrendingUp, Activity, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, Package, AlertCircle, TrendingUp, Activity, RefreshCw, Layers } from 'lucide-angular';
 import { AdminAnalyticsService, InventoryMetrics, RequestMetrics, UserActivityMetrics } from '@services/admin-analytics.service';
 import { InventoryOverviewCardComponent } from './components/kpi-cards/inventory-overview-card/inventory-overview-card.component';
 import { RequestMetricsCardComponent } from './components/kpi-cards/request-metrics-card/request-metrics-card.component';
@@ -11,6 +11,7 @@ import { UserActivityCardComponent } from './components/kpi-cards/user-activity-
 import { RequestTrendsChartComponent } from './components/charts/request-trends-chart/request-trends-chart.component';
 import { InventoryDistributionChartComponent } from './components/charts/inventory-distribution-chart/inventory-distribution-chart.component';
 import { TopRequestedItemsChartComponent } from './components/charts/top-requested-items-chart/top-requested-items-chart.component';
+import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
 import { NgxEchartsModule, provideEcharts } from 'ngx-echarts';
 import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
 
@@ -32,6 +33,7 @@ import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
         RequestTrendsChartComponent,
         InventoryDistributionChartComponent,
         TopRequestedItemsChartComponent,
+        AdminDelegationsComponent,
         NgxEchartsModule
     ],
     providers: [
@@ -50,6 +52,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     readonly AlertCircle = AlertCircle;
     readonly TrendingUp = TrendingUp;
     readonly RefreshCw = RefreshCw;
+    readonly LayoutDashboard = LayoutDashboard;
+    readonly Layers = Layers;
+
+    // View state
+    activeView: 'overview' | 'delegations' = 'overview';
 
     // Metrics
     inventoryMetrics: InventoryMetrics | null = null;
@@ -114,6 +121,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     onRefresh(): void {
         this.isRefreshing = true;
         this.adminAnalyticsService.refresh();
+        this.cdr.markForCheck();
+    }
+
+    /**
+     * Switch between dashboard views
+     */
+    switchView(view: 'overview' | 'delegations'): void {
+        this.activeView = view;
         this.cdr.markForCheck();
     }
 }

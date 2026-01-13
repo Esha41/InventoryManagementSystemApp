@@ -28,4 +28,25 @@ export class UserDelegationService {
     revoke(id: number): Observable<ApiResponse<boolean>> {
         return this.apiService.putWithAuth<ApiResponse<boolean>>(`${this.endpoint}/${id}/revoke`, {});
     }
+
+    approve(id: number): Observable<ApiResponse<boolean>> {
+        return this.apiService.putWithAuth<ApiResponse<boolean>>(`${this.endpoint}/${id}/approve`, {});
+    }
+
+    reject(id: number): Observable<ApiResponse<boolean>> {
+        return this.apiService.putWithAuth<ApiResponse<boolean>>(`${this.endpoint}/${id}/reject`, {});
+    }
+
+    getPendingDelegations(): Observable<ApiResponse<UserDelegation[]>> {
+        return this.apiService.getWithAuth<ApiResponse<UserDelegation[]>>(`${this.endpoint}/pending-delegations`);
+    }
+
+    // Admin methods
+    getAllDelegations(): Observable<ApiResponse<UserDelegation[]>> {
+        return this.apiService.getWithAuth<ApiResponse<UserDelegation[]>>(`${this.endpoint}/admin/all`);
+    }
+
+    getDelegationHistory(): Observable<ApiResponse<UserDelegation[]>> {
+        return this.apiService.getWithAuth<ApiResponse<UserDelegation[]>>(`${this.endpoint}/admin/history`);
+    }
 }
