@@ -327,7 +327,8 @@
         "isFromAllowance": "ضمن المقرر",
         "fromAllowance": "(من المقرر)",
         "outsideOfAllowance": "(خارج المقرر)",
-        "requestType": "نوع الطلب"
+        "requestType": "نوع الطلب",
+        "usagePurpose": "الغرض من الاستخدام"
       },
       "table": {
         "phase": "المرحلة",

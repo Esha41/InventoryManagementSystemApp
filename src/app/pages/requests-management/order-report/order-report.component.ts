@@ -112,19 +112,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    this.updateCurrentDate();
     const user = this.authService.getCurrentUser();
     this.currentUser = user?.userName || user?.email || 'N/A';
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.updateCurrentDate();
         if (this.selectedOrderId) {
           this.loadOrder(this.selectedOrderId);
         }
@@ -1166,6 +1161,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       printWindow.print();
       printWindow.close();
     }, 250);
+  }
+
+  private updateCurrentDate(): void {
+    this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   resolveUsagePurpose(): string {
