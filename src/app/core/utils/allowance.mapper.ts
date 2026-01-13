@@ -117,6 +117,7 @@ export function processAllowanceData(
       itemName: itemName,
       itemNo: itemNo,
       batchNo: batchNo,
+      itemType: item.itemType || 1,
       quantity: item.quantity,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
       reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,

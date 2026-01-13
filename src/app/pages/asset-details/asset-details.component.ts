@@ -62,6 +62,10 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
 
         if (assetId) {
             this.loadAssetDetails(assetId);
+        } else {
+            this.loading = false;
+            this.error = 'Invalid asset ID';
+            this.cdr.markForCheck();
         }
     }
 
@@ -72,17 +76,20 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
 
     private loadAssetDetails(id: number): void {
         this.loading = true;
+        this.cdr.markForCheck();
         this.assetService.getById<AssetDto>(id)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (asset) => {
                     this.asset = asset;
                     this.loading = false;
+                    this.cdr.markForCheck();
                 },
                 error: (error) => {
                     console.error('Error loading asset:', error);
                     this.error = 'Failed to load asset details';
                     this.loading = false;
+                    this.cdr.markForCheck();
                     this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).subscribe(translations => {
                         this.toastService.error(
                             translations['assetDetails.failedToLoad'] || 'Failed to load asset details',
@@ -145,7 +152,7 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
         // Preserve tab query parameter when navigating back
         const tabParam = this.route.snapshot.queryParams['tab'];
         const queryParams = tabParam ? { tab: tabParam } : {};
-        
+
         this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
             queryParams
         });
@@ -208,7 +215,7 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
                     // Preserve tab query parameter when navigating back after delete
                     const tabParam = this.route.snapshot.queryParams['tab'];
                     const queryParams = tabParam ? { tab: tabParam } : {};
-                    
+
                     this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
                         queryParams
                     });
