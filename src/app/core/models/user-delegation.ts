@@ -12,6 +12,8 @@ export interface UserDelegation {
     isActive: boolean;
     createdDate: string;
     status: string;
+    delegationStatus: number; // 0 = Pending, 1 = Approved, 2 = Rejected
+    isIncoming: boolean;
 }
 
 export interface CreateUserDelegation {
