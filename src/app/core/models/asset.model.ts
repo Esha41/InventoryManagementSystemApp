@@ -10,10 +10,12 @@ import { DepotDto } from './depot.model';
  * Asset Status Enum
  */
 export enum AssetStatus {
-    Available = 1,
-    InUse = 2,
-    UnderMaintenance = 3,
-    Retired = 4
+    Active = 1,
+    Inactive = 2,
+    Maintenance = 3,
+    Disposed = 4,
+    Lost = 5,
+    Damaged = 6
 }
 
 /**
@@ -114,16 +116,20 @@ export interface UpdateAssetDto {
  */
 export function getAssetStatusLabel(status?: AssetStatus): string {
     switch (status) {
-        case AssetStatus.Available:
-            return 'Available';
-        case AssetStatus.InUse:
-            return 'In Use';
-        case AssetStatus.UnderMaintenance:
-            return 'Under Maintenance';
-        case AssetStatus.Retired:
-            return 'Retired';
+        case AssetStatus.Active:
+            return 'assetStatus.active';
+        case AssetStatus.Inactive:
+            return 'assetStatus.inactive';
+        case AssetStatus.Maintenance:
+            return 'assetStatus.maintenance';
+        case AssetStatus.Disposed:
+            return 'assetStatus.disposed';
+        case AssetStatus.Lost:
+            return 'assetStatus.lost';
+        case AssetStatus.Damaged:
+            return 'assetStatus.damaged';
         default:
-            return 'Unknown';
+            return 'assetStatus.unknown';
     }
 }
 
@@ -132,14 +138,18 @@ export function getAssetStatusLabel(status?: AssetStatus): string {
  */
 export function getAssetStatusColor(status?: AssetStatus): string {
     switch (status) {
-        case AssetStatus.Available:
-            return 'success';
-        case AssetStatus.InUse:
-            return 'info';
-        case AssetStatus.UnderMaintenance:
-            return 'warning';
-        case AssetStatus.Retired:
-            return 'error';
+        case AssetStatus.Active:
+            return 'success';       // Green
+        case AssetStatus.Inactive:
+            return 'secondary';     // Gray
+        case AssetStatus.Maintenance:
+            return 'warning';       // Orange
+        case AssetStatus.Disposed:
+            return 'error';         // Red
+        case AssetStatus.Lost:
+            return 'error';         // Red
+        case AssetStatus.Damaged:
+            return 'error';         // Red
         default:
             return 'default';
     }
