@@ -61,13 +61,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.adminDashboard',
       icon: Shield,
       route: '/admin-dashboard',
-      permissions: ['systemusers.page', 'systemusers.view']
+      permissions: ['systemusers.page']
     },
     {
       label: 'nav.analytics',
       icon: TrendingUp,
       route: '/analytics-dashboard',
-      permissions: ['analytics.page', 'analytics.view']
+      permissions: ['analytics.page']
     },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
@@ -119,7 +119,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.requestsManagement',
       icon: FileText,
-      permissions: ['order.page', 'request.page', 'request.view', 'requestReciever.page'],
+      permissions: ['order.page', 'request.page', 'requestReciever.page'],
       children: [
         {
           label: 'nav.requestsOverview',
@@ -202,7 +202,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.rolePermissions',
       icon: Settings,
       route: '/role-permissions',
-      permissions: ['roles.edit', 'roles.view']
+      permissions: ['roles.page']
     },
     {
       label: 'nav.ldapSettings',
@@ -232,7 +232,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.stockNotificationSettings',
       icon: Mail,
       route: '/stock-notification-settings',
-      permissions: ['inventory.page']
+      permissions: ['stockNotificationSettingsPage']
     }
   ];
 
