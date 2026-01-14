@@ -55,7 +55,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventoryDashboard',
       icon: LayoutDashboard,
       route: '/inventory-dashboard',
-      permissions: ['InventoryDashboard']
+      permissions: ['inventoryDashboard']
     },
     {
       label: 'nav.adminDashboard',
@@ -148,13 +148,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.addAsset',
       icon: Plus,
       route: '/add-asset',
-      permissions: ['addnewassetpage.page']
+      permissions: ['ammunition.create', 'weapon.create', 'explosive.create']
     },
     {
       label: 'nav.assetList',
       icon: List,
       route: '/asset-list',
-      permissions: ['ammunition.page']
+      permissions: ['ammunition.page', 'weapon.page', 'explosive.page']
     },
     // Temporarily commented out - contains dummy data, will be implemented later
     // {
@@ -167,13 +167,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.inventorySummary',
       icon: Package,
       route: '/inventory-summary',
-      permissions: ['inventorypage.page']
+      permissions: ['inventorySummaryReportPage']
     },
     {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['warehousepage.page']
+      permissions: ['inventory.page']
     },
     {
       label: 'nav.depotManagement',
