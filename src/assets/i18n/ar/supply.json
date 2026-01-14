@@ -73,6 +73,7 @@
     "selectItemPlaceholder": "اختر مادة",
     "itemRequired": "المادة مطلوبة",
     "quantityRequired": "الكمية مطلوبة ويجب أن تكون على الأقل 1",
+    "quantityMinError": "لا يمكن أن تكون الكمية أقل من الكمية المحددة للصرف ({{min}})",
     "quantity": "الكمية",
     "item": "المادة",
     "productId": "رقم المنتج",

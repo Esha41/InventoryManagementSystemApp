@@ -301,16 +301,15 @@ export function getApproverName(changedBy?: string): string {
 }
 
 /**
- * Format date for approval display assuming backend stores UTC
- * and we want to show Qatar local time (UTC+3), independent of browser time zone.
+ * Format date for approval display.
+ * Assumes backend provides local time.
  */
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
 
-  const utc = new Date(date);
-  const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+  const localDate = new Date(date);
 
-  return qatarTime.toLocaleDateString('en-GB', {
+  return localDate.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
@@ -324,18 +323,17 @@ export function formatApprovalDate(date: string | Date | undefined): string {
 export function formatApprovalDateTime(date: string | Date | undefined): string {
   if (!date) return '';
 
-  const utc = new Date(date);
-  const qatarTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+  const localDate = new Date(date);
 
   // Format date portion
-  const dateStr = qatarTime.toLocaleString('en-GB', {
+  const dateStr = localDate.toLocaleString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   });
 
   // Format time in military format (HHmm)
-  const timeStr = formatTimeToMilitary(qatarTime);
+  const timeStr = formatTimeToMilitary(localDate);
 
   return `${dateStr} ${timeStr}`;
 }

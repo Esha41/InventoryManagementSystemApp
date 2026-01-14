@@ -72,6 +72,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly AlertTriangle = AlertTriangle;
   readonly Package = Package;
   readonly Clock = Clock;
+  readonly Math = Math;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

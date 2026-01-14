@@ -113,9 +113,11 @@
                 </label>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
                   {{ formatDate(orderData?.usageDateFrom) }}
-                  <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom) }}</span>
+                  <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom)
+                    }}</span>
                   <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
-                  <span *ngIf="orderData?.usageTimeTo" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeTo) }}</span>
+                  <span *ngIf="orderData?.usageTimeTo" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeTo)
+                    }}</span>
                 </p>
               </div>
             </div>
@@ -214,11 +216,11 @@
                         <span class="font-semibold">{{ formatNumber(item.totalSelectedForDischarge) }} / {{
                           formatNumber(item.approvedQuantity) }}</span>
                       </div>
-                      <div class="w-full bg-[var(--color-background-active)] rounded-full h-2">
+                      <div class="w-full bg-[var(--color-background-active)] rounded-full h-2 overflow-hidden">
                         <div class="h-2 rounded-full transition-all"
                           [class.bg-[var(--color-success)]]="item.totalSelectedForDischarge > 0 && item.totalSelectedForDischarge <= item.approvedQuantity"
                           [class.bg-[var(--color-error)]]="item.totalSelectedForDischarge > item.approvedQuantity"
-                          [style.width.%]="(item.totalSelectedForDischarge / item.approvedQuantity) * 100">
+                          [style.width.%]="item.approvedQuantity > 0 ? Math.min((item.totalSelectedForDischarge / item.approvedQuantity) * 100, 100) : 0">
                         </div>
                       </div>
                     </div>
@@ -278,7 +280,8 @@
                 <div class="flex gap-4 relative z-10">
                   <!-- Status Icon -->
                   <div class="flex-shrink-0">
-                    <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm bg-[var(--color-background)]"
+                    <div
+                      class="w-12 h-12 rounded-full border-2 flex items-center justify-center shadow-custom-sm bg-[var(--color-background)]"
                       [ngClass]="{
                         'border-[var(--color-success)]': approval.status === 'Approved',
                         'border-amber-300': approval.status === 'Pending',
@@ -314,17 +317,22 @@
                               <span *ngSwitchDefault>{{ ('common.statuses.' + approval.status) | translate }}</span>
                             </ng-container>
                           </span>
-                          <p *ngIf="approval.approvedDateTime || approval.approvedDate" class="text-xs text-[var(--color-text-muted)] mt-2">
+                          <p *ngIf="approval.approvedDateTime || approval.approvedDate"
+                            class="text-xs text-[var(--color-text-muted)] mt-2">
                             <span *ngIf="approval.status === 'Approved'">
-                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{ approval.approvedDateTime || approval.approvedDate }}
+                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{ approval.approvedDateTime ||
+                              approval.approvedDate }}
                             </span>
                             <span *ngIf="approval.status === 'Rejected'">
-                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime || approval.approvedDate }}
+                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime ||
+                              approval.approvedDate }}
                             </span>
                             <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
-                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime || approval.approvedDate }}
+                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime ||
+                              approval.approvedDate }}
                             </span>
-                            <span *ngIf="approval.status !== 'Approved' && approval.status !== 'Rejected' && approval.status !== 'ReturnedForReview' && approval.status !== 'Returned'">
+                            <span
+                              *ngIf="approval.status !== 'Approved' && approval.status !== 'Rejected' && approval.status !== 'ReturnedForReview' && approval.status !== 'Returned'">
                               {{ approval.approvedDateTime || approval.approvedDate }}
                             </span>
                           </p>
