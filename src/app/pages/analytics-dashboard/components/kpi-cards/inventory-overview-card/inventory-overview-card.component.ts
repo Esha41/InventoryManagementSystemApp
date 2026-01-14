@@ -38,22 +38,6 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
             <div class="alert-label">{{ 'adminDashboard.inventory.lowStock' | translate }}</div>
           </div>
         </div>
-
-        <div class="alert-item" [ngClass]="{'has-alerts': (metrics?.expiringSoon || 0) > 0}">
-          <lucide-icon [img]="AlertTriangle" class="alert-icon"></lucide-icon>
-          <div class="alert-content">
-            <div class="alert-value">{{ metrics?.expiringSoon || 0 }}</div>
-            <div class="alert-label">{{ 'adminDashboard.inventory.expiringSoon' | translate }}</div>
-          </div>
-        </div>
-
-        <div class="alert-item" [ngClass]="{'has-alerts': (metrics?.overstockItems || 0) > 0}">
-          <lucide-icon [img]="TrendingUp" class="alert-icon"></lucide-icon>
-          <div class="alert-content">
-            <div class="alert-value">{{ metrics?.overstockItems || 0 }}</div>
-            <div class="alert-label">{{ 'adminDashboard.inventory.overstock' | translate }}</div>
-          </div>
-        </div>
       </div>
 
       <div class="card-footer">

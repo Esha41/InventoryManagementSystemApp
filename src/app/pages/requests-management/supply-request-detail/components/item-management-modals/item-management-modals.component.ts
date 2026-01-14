@@ -53,7 +53,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeAddItemForm();
@@ -75,8 +75,9 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   }
 
   private initializeEditItemForm(item?: OrderItem): void {
+    const minAllowed = Math.max(1, item?.totalSelectedForDischarge || 0);
     this.editItemForm = this.fb.group({
-      quantity: [item?.approvedQuantity || 1, [Validators.required, Validators.min(1)]],
+      quantity: [item?.approvedQuantity || 1, [Validators.required, Validators.min(minAllowed)]],
       notes: ['']
     });
   }

@@ -42,9 +42,21 @@
     </div>
   </div>
 
+  <!-- Validation messages before the button -->
+  <div class="mt-6 space-y-2">
+    <p *ngIf="!canProcessDischarge() && getTotalSelectedForDischarge() === 0"
+      class="text-xs text-[var(--color-text-muted)] text-center font-medium p-2 bg-[var(--color-background-muted)] rounded border border-[var(--color-border)]">
+      {{ 'supplyRequestDetail.selectItemsToDischarge' | translate }}
+    </p>
+    <p *ngIf="getTotalSelectedForDischarge() > getTotalApproved()"
+      class="text-xs text-[var(--color-error)] text-center font-bold p-2 bg-[var(--color-error)]/10 rounded border border-[var(--color-error)]/20">
+      {{ 'supplyRequestDetail.exceedsApprovedAmount' | translate }}
+    </p>
+  </div>
+
   <!-- Discharge Button -->
   <button (click)="onProcessDischarge()" [disabled]="!canProcessDischarge() || processingDischarge"
-    class="w-full mt-6 px-4 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+    class="w-full mt-4 px-4 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
     [ngClass]="{
       'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canProcessDischarge() && !processingDischarge,
       'bg-[var(--color-background-muted)]': !canProcessDischarge() || processingDischarge
@@ -52,13 +64,4 @@
     <span *ngIf="!processingDischarge">{{ 'supplyRequestDetail.apply' | translate }}</span>
     <span *ngIf="processingDischarge">{{ 'common.processing' | translate }}...</span>
   </button>
-
-  <p *ngIf="!canProcessDischarge() && getTotalSelectedForDischarge() === 0"
-    class="text-xs text-[var(--color-text-muted)] text-center mt-3">
-    {{ 'supplyRequestDetail.selectItemsToDischarge' | translate }}
-  </p>
-  <p *ngIf="getTotalSelectedForDischarge() > getTotalApproved()"
-    class="text-xs text-[var(--color-error)] text-center mt-3 font-medium">
-    {{ 'supplyRequestDetail.exceedsApprovedAmount' | translate }}
-  </p>
 </div>

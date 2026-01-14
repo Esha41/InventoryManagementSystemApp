@@ -53,7 +53,7 @@ export const routes: Routes = [
         path: 'admin-dashboard',
         loadComponent: () => import('@pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+        data: { permissions: ['admindashboard.page', 'admindashboard.view'] }
       },
       {
         path: 'analytics-dashboard',
@@ -287,7 +287,7 @@ export const routes: Routes = [
         path: 'ldap-settings',
         loadComponent: () => import('./pages/ldap-settings/ldap-settings.component').then(m => m.LdapSettingsComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+        data: { permissions: ['ldapsettings.page', 'ldapsettings.view'] }
       },
       {
         path: 'email-settings',
@@ -299,7 +299,7 @@ export const routes: Routes = [
         path: 'admin-import-export',
         loadComponent: () => import('@pages/admin-import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['systemusers.page', 'systemusers.view'] }
+        data: { permissions: ['AdminImportExport'] }
       },
       {
         path: 'stock-notification-settings',

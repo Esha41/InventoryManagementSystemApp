@@ -345,8 +345,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   onDelete(user: BackendUserDto): void {
-    // Prevent deleting superadmin users if current user is not a superadmin
-    if (!this.canManageUser(user)) {
+    // Prevent deleting superadmin users
+    if (this.isUserSuperAdmin(user)) {
       this.toastService.error(
         this.translateService.instant('manageAdmins.cannotDeleteSuperAdmin'),
         this.translateService.instant('common.error')
@@ -360,10 +360,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   onToggleStatus(user: BackendUserDto): void {
-    // Prevent toggling superadmin status if current user is not a superadmin
-    if (!this.canManageUser(user)) {
+    // Prevent toggling superadmin status
+    if (this.isUserSuperAdmin(user)) {
       this.toastService.error(
-        this.translateService.instant('manageAdmins.cannotEditSuperAdmin'),
+        this.translateService.instant('manageAdmins.cannotToggleSuperAdmin'),
         this.translateService.instant('common.error')
       );
       return;
