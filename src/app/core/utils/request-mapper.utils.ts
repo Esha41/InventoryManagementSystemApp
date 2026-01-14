@@ -300,10 +300,6 @@ export function getApproverName(changedBy?: string): string {
   return changedBy;
 }
 
-/**
- * Format date for approval display.
- * Assumes backend provides local time.
- */
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
 

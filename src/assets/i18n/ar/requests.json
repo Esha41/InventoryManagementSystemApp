@@ -487,7 +487,9 @@
       "failedToLoadOrder": "فشل تحميل بيانات الطلب",
       "notOrderRequest": "هذا ليس طلب توريد",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
-      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX.",
+      "pickupDateRequired": "يرجى تحديد تاريخ استلام التوريد قبل الموافقة.",
+      "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة."
     },
     "success": {
       "pickupDateConfirmed": "تم تأكيد موعد الاستلام بنجاح",

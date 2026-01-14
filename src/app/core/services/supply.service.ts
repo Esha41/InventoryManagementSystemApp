@@ -75,7 +75,7 @@ export interface UpdateSupplyDto {
 
 export interface SubmitSupplyDto {
   recieverName: string;
-  receiverRankId: number;
+  receiverRankId: number | null;
   recieverMilitaryId: string;
   notes?: string;
 }
@@ -144,7 +144,7 @@ export class SupplyService {
     private http: HttpClient,
     private config: ConfigService,
     private apiService: ApiService
-  ) {}
+  ) { }
 
   private get baseUrl(): string {
     return `${this.config.apiUrl}/Supply`;
@@ -157,7 +157,7 @@ export class SupplyService {
    */
   getSupplySuggestion(orderId: number, depotIds?: number[]): Observable<OrderSupplySuggestionDto> {
     this.config.log(`Fetching supply suggestion for order ${orderId}`, { depotIds });
-    
+
     let params = new HttpParams();
     if (depotIds && depotIds.length > 0) {
       depotIds.forEach(id => {
@@ -421,23 +421,25 @@ export class SupplyService {
    */
   submit(id: number, dto: SubmitSupplyDto, files: File[]): Observable<boolean> {
     this.config.log(`Submitting supply ${id}`, dto);
-    
+
     // Create FormData for multipart/form-data request
     const formData = new FormData();
-    
+
     // Append DTO fields
     formData.append('RecieverName', dto.recieverName);
-    formData.append('ReceiverRankId', dto.receiverRankId.toString());
+    if (dto.receiverRankId !== null) {
+      formData.append('ReceiverRankId', dto.receiverRankId.toString());
+    }
     formData.append('RecieverMilitaryId', dto.recieverMilitaryId);
     if (dto.notes) {
       formData.append('Notes', dto.notes);
     }
-    
+
     // Append files
     files.forEach((file, index) => {
       formData.append('files', file);
     });
-    
+
     return this.apiService.postWithAuth<APIOperationResponse<boolean>>(
       `/Supply/${id}/submit`,
       formData

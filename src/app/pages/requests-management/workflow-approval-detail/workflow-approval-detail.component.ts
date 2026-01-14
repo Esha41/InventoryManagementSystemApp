@@ -64,6 +64,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return this.translationService.isRTL();
   }
 
+  get isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
+
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
   }
@@ -131,17 +135,49 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   confirmPickupDateProcessing: boolean = false;
   isPickupDateAlreadySet: boolean = false; // Track if date was already set (from backend or after setting)
   orderSupplyDate: string | Date | null = null; // Store SupplyDate from OrderDto for weapon orders
-  
+
   // Weapon item detection
   isWeaponOrder: boolean = false; // Track if this order contains weapon items
 
   // Receiver information for supply submission
-  receiverInfo = {
-    recieverName: "",
-    receiverRankId: 0,
-    recieverMilitaryId: "",
-    notes: ""
-  };
+  receiverInfo: {
+    recieverName: string;
+    receiverRankId: number | null;
+    recieverMilitaryId: string;
+    notes: string;
+  } = {
+      recieverName: "",
+      receiverRankId: null,
+      recieverMilitaryId: "",
+      notes: ""
+    };
+
+
+  isSupplySubmitted(): boolean {
+    if (!this.supplyData) {
+      return false;
+    }
+
+    // Check for submitted (2) or completed/approved (3+) status
+    const status = this.supplyData.submissionStatus;
+    if (status != null && status >= 2) {
+      return true;
+    }
+
+    // Backward compatibility: For old orders that may have receiver info filled
+    // but submissionStatus is still 1 (Draft), check if essential receiver fields are present
+    // This handles legacy data where submission workflow wasn't enforced
+    const hasReceiverInfo = !!(
+      this.supplyData.recieverName &&
+      this.supplyData.recieverName.trim() !== '' &&
+      this.supplyData.receiverRankId &&
+      this.supplyData.recieverMilitaryId &&
+      this.supplyData.recieverMilitaryId.trim() !== ''
+    );
+
+    return hasReceiverInfo;
+  }
+
   supplyId: number | null = null;
   supplyData: SupplyDto | null = null;
   ranks: LookupItem[] = [];
@@ -322,17 +358,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
             if (detailData?.requestItems && Array.isArray(detailData.requestItems)) {
               baseRequest.requestItems = detailData.requestItems;
-              
+
               // Check if all items are weapons (ItemType.Weapon = 2)
-              if (baseRequest.requestType === RequestTypeEnum.Order || 
-                  (typeof baseRequest.requestType === 'string' && baseRequest.requestType.toLowerCase() === 'order')) {
-                const allItemsAreWeapons = detailData.requestItems.length > 0 && 
+              if (baseRequest.requestType === RequestTypeEnum.Order ||
+                (typeof baseRequest.requestType === 'string' && baseRequest.requestType.toLowerCase() === 'order')) {
+                const allItemsAreWeapons = detailData.requestItems.length > 0 &&
                   detailData.requestItems.every((item: any) => {
                     const itemType = item.itemType;
                     return itemType === 2 || itemType === 'Weapon' || itemType === '2';
                   });
                 this.isWeaponOrder = allItemsAreWeapons;
-                
+
                 // For weapon orders, check SupplyDate from OrderDto
                 if (this.isWeaponOrder && detailData.supplyDate) {
                   this.orderSupplyDate = detailData.supplyDate;
@@ -344,7 +380,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
                     const day = String(supplyDate.getDate()).padStart(2, '0');
                     const hours = String(supplyDate.getHours()).padStart(2, '0');
                     const minutes = String(supplyDate.getMinutes()).padStart(2, '0');
-                    
+
                     this.pickupDate = `${year}-${month}-${day}T${hours}:${minutes}`;
                     // For weapon orders, mark as set to disable "Set Supply Pickup Date" section
                     // but allow updates via "Update Supply Pickup Date" section
@@ -500,7 +536,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   getPriorityTextColor(priority?: number | string | null): string {
     if (!priority) return 'text-gray-600';
-    
+
     // Normalize priority to string
     let priorityStr: string;
     if (typeof priority === 'number') {
@@ -514,7 +550,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     } else {
       priorityStr = priority.toString();
     }
-    
+
     // Handle Priority type values: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical'
     switch (priorityStr) {
       case 'Normal':
@@ -558,6 +594,31 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   approveRequest(): void {
     if (this.processing || !this.requestDetail) return;
+
+    // Validate: Pickup date must be set if user has permission
+    // EXCEPTION: Super Admin can bypass this requirement
+    const isSuperAdmin = this.authService.isSuperAdmin();
+    if (!isSuperAdmin && this.canSetSupplyPickupDate() && !this.isPickupDateAlreadySet) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.pickupDateRequired'] || 'Please set the supply pickup date before approving.',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
+
+    // Validate: Supply must be submitted if user has permission
+    // EXCEPTION: Super Admin can bypass this requirement
+    if (!isSuperAdmin && this.canSubmitSupply() && !this.isSupplySubmitted()) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.supplySubmissionRequired']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.supplySubmissionRequired'] || 'Please submit the supply information before approving.',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
 
     // Validate: If there are multiple skip-to step options, user must select one
     const transitions = this.getCurrentStepTransitions();
@@ -717,17 +778,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
     const targetStep = transition.targetStep;
     const stepOrder = targetStep.stepOrder || '';
-    
+
     // Get role name - check nested applicationRole object for both EN and AR
     let roleNameEn: string | undefined;
     let roleNameAr: string | undefined;
-    
+
     // First check nested applicationRole object (has both EN and AR)
     if (targetStep.applicationRole) {
       roleNameEn = targetStep.applicationRole.name || targetStep.applicationRole.nameEn;
       roleNameAr = targetStep.applicationRole.nameAr;
     }
-    
+
     // Fallback to flat properties if nested object not available
     if (!roleNameEn && targetStep.applicationRoleName) {
       roleNameEn = targetStep.applicationRoleName;
@@ -735,11 +796,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (!roleNameAr && targetStep.applicationRoleNameAr) {
       roleNameAr = targetStep.applicationRoleNameAr;
     }
-    
+
     // Use getLocalizedValue helper for role name (follows Angular best practices)
-    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) || 
-                     this.translateService.instant('workflowApprovalDetail.unknownApprover');
-    
+    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) ||
+      this.translateService.instant('workflowApprovalDetail.unknownApprover');
+
     // Use translate service for "Step" label (Angular best practice)
     const stepLabel = this.translateService.instant('requestsManagement.orderReport.table.step');
 
@@ -933,18 +994,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    */
   getWorkflowStepDisplayName(step: any): string {
     if (!step) return '';
-    
+
     // Get role name - backend only sends ApplicationRoleName (EN), not ApplicationRoleNameAr
     // So we need to check the nested applicationRole object for Arabic name
     let roleNameEn: string | undefined;
     let roleNameAr: string | undefined;
-    
+
     // First check nested applicationRole object (has both EN and AR)
     if (step.applicationRole) {
       roleNameEn = step.applicationRole.name || step.applicationRole.nameEn;
       roleNameAr = step.applicationRole.nameAr;
     }
-    
+
     // Fallback to flat properties if nested object not available
     if (!roleNameEn && step.applicationRoleName) {
       roleNameEn = step.applicationRoleName;
@@ -952,14 +1013,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (!roleNameAr && step.applicationRoleNameAr) {
       roleNameAr = step.applicationRoleNameAr;
     }
-    
+
     // Use getLocalizedValue helper for role name (follows Angular best practices)
-    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) || 
-                     this.translateService.instant('workflowApprovalDetail.unknownApprover');
-    
+    const roleName = this.getLocalizedValue(roleNameEn, roleNameAr) ||
+      this.translateService.instant('workflowApprovalDetail.unknownApprover');
+
     // Use translate service for "Step" label (Angular best practice)
     const stepLabel = this.translateService.instant('requestsManagement.orderReport.table.step');
-    
+
     return `${stepLabel} ${step.stepOrder}: ${roleName}`;
   }
 
@@ -1411,10 +1472,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             const orderData = response?.data || response;
             const requestItems = orderData?.requestItems || [];
-            
+
             // Check if all items are weapons
             // ItemType.Weapon = 2
-            const allItemsAreWeapons = requestItems.length > 0 && 
+            const allItemsAreWeapons = requestItems.length > 0 &&
               requestItems.every((item: any) => {
                 const itemType = item.itemType;
                 return itemType === 2 || itemType === 'Weapon' || itemType === '2';
@@ -1579,10 +1640,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             const orderData = response?.data || response;
             const requestItems = orderData?.requestItems || [];
-            
+
             // Check if all items are weapons
             // ItemType.Weapon = 2
-            const allItemsAreWeapons = requestItems.length > 0 && 
+            const allItemsAreWeapons = requestItems.length > 0 &&
               requestItems.every((item: any) => {
                 const itemType = item.itemType;
                 return itemType === 2 || itemType === 'Weapon' || itemType === '2';
@@ -1642,17 +1703,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const currentUser = this.authService.getCurrentUser();
 
     try {
-      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
-        currentUser?.email?.toLowerCase().includes('administrator');
-      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-
-      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-
-      if (isAdministrator) {
-        return true;
-      }
-
+      // Administrators should NOT bypass the permission check for this specific action
+      // They must explicitly have the 'SetSupplyPickupDate' permission assigned or they are treated as normal users
+      // This enforces the workflow rule that even admins must set the date if they are the designated approver/fulfiller
       return this.authService.hasPermission(this.SET_SUPPLY_PICKUP_DATE_PERMISSION);
     } catch (error) {
       return false;
@@ -1754,18 +1807,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.pickupDateProcessing = true;
 
     // Use Order API for weapon orders, Supply API for non-weapon orders
-    const endpoint = this.isWeaponOrder 
+    const endpoint = this.isWeaponOrder
       ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(this.requestId)
       : API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(this.requestId);
 
     // For weapon orders, use pickupDate format; for supply, use supplyDate
     const payload = this.isWeaponOrder
       ? {
-          pickupDate: new Date(this.pickupDate).toISOString()
-        }
+        pickupDate: new Date(this.pickupDate).toISOString()
+      }
       : {
-          supplyDate: new Date(this.pickupDate).toISOString()
-        };
+        supplyDate: new Date(this.pickupDate).toISOString()
+      };
 
     this.apiService.putWithAuth(endpoint, payload)
       .pipe(takeUntil(this.destroy$))
@@ -1810,18 +1863,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.confirmPickupDateProcessing = true;
 
     // Use Order API for weapon orders, Supply API for non-weapon orders
-    const endpoint = this.isWeaponOrder 
+    const endpoint = this.isWeaponOrder
       ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(this.requestId)
       : API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(this.requestId);
 
     // For weapon orders, use pickupDate format; for supply, use supplyDate
     const payload = this.isWeaponOrder
       ? {
-          pickupDate: new Date(this.pickupDate).toISOString()
-        }
+        pickupDate: new Date(this.pickupDate).toISOString()
+      }
       : {
-          supplyDate: new Date(this.pickupDate).toISOString()
-        };
+        supplyDate: new Date(this.pickupDate).toISOString()
+      };
 
     this.apiService.putWithAuth(endpoint, payload)
       .pipe(takeUntil(this.destroy$))
@@ -1850,8 +1903,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if user can submit supply (requires SubmitSupply permission)
-   * Hide for weapon orders as submission is handled in weapon supply page
+   * Check if user MUST submit supply before approving
+   * This checks if:
+   * 1. User has SubmitSupply permission
+   * 2. User is the current approver at the pending workflow step
+   * 3. Request is an Order (not weapon order)
+   * 
+   * This ensures that only users at the "submit supply" workflow step
+   * are blocked from approving until supply is submitted.
    */
   canSubmitSupply(): boolean {
     if (!this.requestDetail || this.requestDetail.requestType !== 'Order') {
@@ -1863,8 +1922,31 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // Super admin bypass - they don't need to submit supply to approve
+    if (this.authService.isSuperAdmin()) {
+      return false; // Return false so approval button is NOT blocked
+    }
+
     try {
-      return this.authService.hasPermission(this.SUBMIT_SUPPLY_PERMISSION);
+      // Check if user has the permission
+      const hasPermission = this.authService.hasPermission(this.SUBMIT_SUPPLY_PERMISSION);
+
+      if (!hasPermission) {
+        return false; // User doesn't have permission, so they don't need to submit
+      }
+
+      // User has permission - now check if they are the current approver
+      // Only block approval if they are at the current pending step
+      const currentPendingStep = this.requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false; // No pending step, don't block
+      }
+
+      // Only require supply submission if user is the current approver
+      return currentPendingStep.isCurrentUserApprover === true;
     } catch (error) {
       return false;
     }
@@ -1890,9 +1972,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Check if supply exists and is already submitted
    */
-  isSupplySubmitted(): boolean {
-    return !!(this.supplyId && this.supplyData && this.supplyData.submissionStatus === 2);
-  }
+
+
 
   /**
    * Helper method to normalize status string to RequestStatusEnum value
@@ -2029,8 +2110,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           if (this.fileInputElement) {
             this.fileInputElement.value = '';
           }
-          // Reload to refresh supply status and show newly uploaded files
-          this.loadRequestDetail();
+          if (this.supplyData) {
+            this.supplyData.submissionStatus = 2; // Submitted
+          }
+          // Reload to refreshing full data - COMMENTED OUT to avoid race condition where backend returns old status
+          // this.loadRequestDetail();
         },
         error: (error) => {
           // Extract error message from API response
@@ -2482,4 +2566,5 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       step => step.status === 'Pending' && step.isPending === true
     );
   }
+
 }

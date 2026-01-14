@@ -50,7 +50,7 @@ export interface DropdownOption<T = Primitive> {
     }
   ]
 })
-export class  DropdownComponent<T = Primitive>
+export class DropdownComponent<T = Primitive>
   implements ControlValueAccessor, Validator {
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
@@ -165,12 +165,9 @@ export class  DropdownComponent<T = Primitive>
 
   private innerValue: T | null | T[] = null;
   private _required = false;
-  private onChange: (value: T | null | T[]) => void = () => {};
-  private onTouched: () => void = () => {};
-  private onValidatorChange: () => void = () => {};
-  private scrollHandler?: () => void;
-  private resizeHandler?: () => void;
-  private scrollableParent: HTMLElement | null = null;
+  private onChange: (value: T | null | T[]) => void = () => { };
+  private onTouched: () => void = () => { };
+  private onValidatorChange: () => void = () => { };
 
   @HostBinding('attr.name')
   get attrName(): string | null {
@@ -181,7 +178,7 @@ export class  DropdownComponent<T = Primitive>
     private host: ElementRef<HTMLElement>,
     @Optional() private translate?: TranslateService,
     @Optional() private translationService?: TranslationService
-  ) {}
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -192,7 +189,7 @@ export class  DropdownComponent<T = Primitive>
    */
   get computedOptions(): Array<DropdownOption<T> | T> {
     let baseOptions = this.options ?? [];
-    
+
     // Apply search filter
     if (this.searchTerm && this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
@@ -201,7 +198,7 @@ export class  DropdownComponent<T = Primitive>
         return label.includes(searchLower);
       });
     }
-    
+
     if (this.placeholderSelectable) {
       const placeholderOption: DropdownOption<T> = {
         label: this.placeholder,
@@ -235,7 +232,7 @@ export class  DropdownComponent<T = Primitive>
       if (this.innerValue.length === 0) {
         return this.placeholder;
       }
-      
+
       // Get labels for all selected options
       const selectedLabels = this.innerValue
         .map(value => {
@@ -243,16 +240,16 @@ export class  DropdownComponent<T = Primitive>
           return option ? this.getOptionLabel(option) : this.formatLabel(value);
         })
         .filter(label => label && label.trim() !== '');
-      
+
       if (selectedLabels.length === 0) {
         return this.placeholder;
       }
-      
+
       // Show all selected role names, or count if too many
       if (selectedLabels.length <= 3) {
         return selectedLabels.join(', ');
       }
-      
+
       // If more than 3, show first 3 and count
       return `${selectedLabels.slice(0, 3).join(', ')} +${selectedLabels.length - 3} more`;
     }
@@ -326,81 +323,22 @@ export class  DropdownComponent<T = Primitive>
   }
 
   private adjustPanelPosition(): void {
-    const trigger = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
-    
-    if (!trigger || !panel) return;
+    if (!panel) return;
 
-    // Clean up previous listeners
-    this.cleanupPositionListeners();
-
-    // Always use fixed positioning when open to prevent scrolling issues
-    this.scrollableParent = this.findScrollableParent(this.host.nativeElement);
-    
-    // Always use fixed positioning - it handles both container and page scrolling
-    {
-      const triggerRect = trigger.getBoundingClientRect();
-      panel.style.position = 'fixed';
-      panel.style.top = `${triggerRect.bottom + 8}px`;
-      panel.style.left = `${triggerRect.left}px`;
-      panel.style.width = `${triggerRect.width}px`;
-      panel.style.minWidth = `${triggerRect.width}px`;
-      panel.style.maxWidth = `${triggerRect.width}px`;
-      panel.style.zIndex = '10001';
-      panel.style.right = 'auto';
-      
-      // Update position on scroll/resize - listen to both container and window scroll
-      const updatePosition = () => {
-        if (this.isOpen && trigger && panel) {
-          const newRect = trigger.getBoundingClientRect();
-          panel.style.top = `${newRect.bottom + 8}px`;
-          panel.style.left = `${newRect.left}px`;
-          panel.style.width = `${newRect.width}px`;
-          panel.style.minWidth = `${newRect.width}px`;
-          panel.style.maxWidth = `${newRect.width}px`;
-        }
-      };
-      
-      this.scrollHandler = updatePosition;
-      this.resizeHandler = updatePosition;
-      
-      // Listen to scroll on container if it exists, otherwise listen to window scroll
-      if (this.scrollableParent) {
-        this.scrollableParent.addEventListener('scroll', this.scrollHandler, { passive: true });
-      }
-      // Always listen to window scroll to handle page scrolling
-      window.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
-      window.addEventListener('resize', this.resizeHandler, { passive: true });
-    }
+    // Reset manual positioning to rely on CSS absolute positioning
+    // This fixes issues where transformed ancestors (like modals) would break fixed positioning
+    panel.style.position = '';
+    panel.style.top = '';
+    panel.style.left = '';
+    panel.style.width = '';
+    panel.style.minWidth = '';
+    panel.style.maxWidth = '';
+    panel.style.right = '';
+    panel.style.zIndex = '';
   }
 
-  private cleanupPositionListeners(): void {
-    if (this.scrollableParent && this.scrollHandler) {
-      this.scrollableParent.removeEventListener('scroll', this.scrollHandler);
-    }
-    if (this.scrollHandler) {
-      window.removeEventListener('scroll', this.scrollHandler, { capture: true } as any);
-    }
-    if (this.resizeHandler) {
-      window.removeEventListener('resize', this.resizeHandler);
-    }
-    this.scrollHandler = undefined;
-    this.resizeHandler = undefined;
-    this.scrollableParent = null;
-  }
 
-  private findScrollableParent(element: HTMLElement): HTMLElement | null {
-    let parent = element.parentElement;
-    while (parent) {
-      const style = window.getComputedStyle(parent);
-      const overflow = style.overflow + style.overflowY + style.overflowX;
-      if (overflow.includes('scroll') || overflow.includes('auto')) {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-    return null;
-  }
 
   close(): void {
     if (!this.isOpen) {
@@ -409,10 +347,9 @@ export class  DropdownComponent<T = Primitive>
     this.isOpen = false;
     this.hoveredIndex = null;
     this.searchTerm = '';
-    
-    // Clean up position listeners
-    this.cleanupPositionListeners();
-    
+
+
+
     // Reset panel positioning
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
     if (panel) {
@@ -424,7 +361,7 @@ export class  DropdownComponent<T = Primitive>
       panel.style.maxWidth = '';
       panel.style.right = '';
     }
-    
+
     this.openedChange.emit(false);
   }
 
@@ -444,7 +381,7 @@ export class  DropdownComponent<T = Primitive>
     }
 
     const value = this.getOptionValue(option);
-    
+
     // Handle placeholder option
     if (this.placeholderSelectable && value === this.placeholderValue) {
       if (this.multiple) {
@@ -458,11 +395,11 @@ export class  DropdownComponent<T = Primitive>
       this.onTouched();
       return;
     }
-    
+
     if (this.multiple) {
       const currentValues = Array.isArray(this.innerValue) ? [...this.innerValue] : [];
       const index = currentValues.findIndex(v => v === value);
-      
+
       if (index > -1) {
         // Remove if already selected
         currentValues.splice(index, 1);
@@ -470,7 +407,7 @@ export class  DropdownComponent<T = Primitive>
         // Add if not selected
         currentValues.push(value);
       }
-      
+
       this.innerValue = currentValues as T[];
       this.onChange(this.innerValue);
       this.selectionChange.emit(this.innerValue);
@@ -481,17 +418,17 @@ export class  DropdownComponent<T = Primitive>
       this.selectionChange.emit(this.innerValue);
       this.close();
     }
-    
+
     this.onTouched();
   }
 
   isSelected(option: DropdownOption<T> | T): boolean {
     const optionValue = this.getOptionValue(option);
-    
+
     if (this.multiple) {
       return Array.isArray(this.innerValue) && this.innerValue.includes(optionValue);
     }
-    
+
     return optionValue === this.innerValue;
   }
 
