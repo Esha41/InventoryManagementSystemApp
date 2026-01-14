@@ -302,6 +302,7 @@
     "enterCondition": "Enter condition",
     "enterNotes": "Enter notes",
     "selectDepots": "Select Depots",
+    "depot": "Depot",
     "selectDepotsDescription": "Please select one or more depots to view available assets for this order.",
     "loadingDepots": "Loading depots...",
     "selectAtLeastOneDepot": "Please select at least one depot to continue.",

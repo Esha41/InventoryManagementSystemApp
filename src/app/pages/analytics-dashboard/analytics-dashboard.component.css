@@ -1,43 +1,9 @@
+/* Copy of Admin Dashboard CSS */
 /* Admin Dashboard Container */
 .admin-dashboard-container {
     padding: 2rem;
     min-height: 100vh;
     background-color: var(--color-background-soft);
-}
-
-/* Dashboard Tabs */
-.dashboard-nav {
-    display: flex;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.dashboard-nav::-webkit-scrollbar {
-    display: none;
-}
-
-.nav-tab {
-    position: relative;
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--color-text-muted);
-}
-
-.nav-tab.active {
-    color: var(--color-brand);
-    border-bottom-color: var(--color-brand);
-}
-
-.nav-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--color-brand);
-    border-radius: 2px;
 }
 
 /* Header */
@@ -217,15 +183,8 @@
 }
 
 
+/* Quick Actions Section */
 
-
-/* Delegations Section */
-.delegations-section {
-    background: var(--color-surface);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
 
 /* Responsive Design */
 @media (max-width: 1024px) {

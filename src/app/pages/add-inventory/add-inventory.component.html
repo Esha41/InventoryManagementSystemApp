@@ -32,19 +32,28 @@
     <!-- Form -->
     <form *ngIf="!loading" [formGroup]="inventoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <!-- Item Type Tabs -->
-      <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] overflow-hidden">
+      <div
+        class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] overflow-hidden">
         <div class="flex border-b border-[var(--color-border)]">
-          <button type="button" (click)="switchTab('ammunition')" 
-            [ngClass]="{
+          <button type="button" (click)="switchTab('ammunition')" [ngClass]="{
               'border-b-3': activeTab === 'ammunition',
               'border-[var(--color-brand)]': activeTab === 'ammunition',
               'bg-[var(--color-brand)]/10': activeTab === 'ammunition',
               'text-[var(--color-brand)]': activeTab === 'ammunition',
               'font-semibold': activeTab === 'ammunition',
               'text-[var(--color-text-muted)]': activeTab !== 'ammunition'
-            }"
-            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
+            }" class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
             {{ 'warehouseInventory.tabs.ammunition' | translate }}
+          </button>
+          <button type="button" (click)="switchTab('explosive')" [ngClass]="{
+              'border-b-3': activeTab === 'explosive',
+              'border-[var(--color-brand)]': activeTab === 'explosive',
+              'bg-[var(--color-brand)]/10': activeTab === 'explosive',
+              'text-[var(--color-brand)]': activeTab === 'explosive',
+              'font-semibold': activeTab === 'explosive',
+              'text-[var(--color-text-muted)]': activeTab !== 'explosive'
+            }" class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
+            {{ 'warehouseInventory.tabs.explosive' | translate }}
           </button>
           <!-- Weapon tab button hidden (will be enabled later) -->
           <!-- <button type="button" (click)="switchTab('weapon')" [class.border-b-3]="activeTab === 'weapon'"
@@ -54,25 +63,14 @@
             class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
             {{ 'warehouseInventory.tabs.weapon' | translate }}
           </button> -->
-          <button type="button" (click)="switchTab('explosive')" 
-            [ngClass]="{
-              'border-b-3': activeTab === 'explosive',
-              'border-[var(--color-brand)]': activeTab === 'explosive',
-              'bg-[var(--color-brand)]/10': activeTab === 'explosive',
-              'text-[var(--color-brand)]': activeTab === 'explosive',
-              'font-semibold': activeTab === 'explosive',
-              'text-[var(--color-text-muted)]': activeTab !== 'explosive'
-            }"
-            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
-            {{ 'warehouseInventory.tabs.explosive' | translate }}
-          </button>
         </div>
       </div>
 
       <!-- Inventory Items Card -->
       <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ 'addInventory.inventoryItems' | translate }}</h2>
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ 'addInventory.inventoryItems' | translate }}
+          </h2>
           <button type="button" (click)="addItem()"
             class="flex items-center space-x-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
             <lucide-angular [img]="Plus" class="w-4 w-4"></lucide-angular>
@@ -85,7 +83,8 @@
           <div *ngFor="let itemGroup of itemsFormArray.controls; let i = index" [formGroupName]="i"
             class="p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background-active)]">
             <div class="flex items-start justify-between mb-4">
-              <h3 class="text-sm font-medium text-[var(--color-text)]">{{ 'addInventory.item' | translate }} {{ i + 1 }}</h3>
+              <h3 class="text-sm font-medium text-[var(--color-text)]">{{ 'addInventory.item' | translate }} {{ i + 1 }}
+              </h3>
               <button type="button" *ngIf="itemsFormArray.length > 1" (click)="removeItem(i)"
                 class="text-[var(--color-error)] hover:text-[var(--color-error)]/80 transition-colors">
                 <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
@@ -117,7 +116,8 @@
                 <input type="number" formControlName="lot" min="1" step="1" [max]="999999"
                   (input)="onFieldChange('lot', i)"
                   class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                  [class.border-[var(--color-border)]]="!isFieldInvalid('lot', i)" [class.border-[var(--color-error)]]="isFieldInvalid('lot', i)"
+                  [class.border-[var(--color-border)]]="!isFieldInvalid('lot', i)"
+                  [class.border-[var(--color-error)]]="isFieldInvalid('lot', i)"
                   [placeholder]="'addInventory.enterLotNumber' | translate">
                 <p *ngIf="isFieldInvalid('lot', i)" class="mt-1 text-sm text-[var(--color-error)]">
                   {{ getFieldError('lot', i) || ('addInventory.lotNumberMustBeGreaterThanZero' | translate) }}
@@ -198,7 +198,8 @@
                 <label class="flex items-center space-x-2 cursor-pointer">
                   <input type="checkbox" formControlName="readyForIssue"
                     class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)]">
-                  <span class="text-sm font-medium text-[var(--color-text)]">{{ 'addInventory.readyForIssue' | translate }}</span>
+                  <span class="text-sm font-medium text-[var(--color-text)]">{{ 'addInventory.readyForIssue' | translate
+                    }}</span>
                 </label>
               </div>
             </div>
@@ -208,7 +209,8 @@
 
       <!-- Invoice Information Card -->
       <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
-        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addInventory.invoiceInformation' | translate }}</h2>
+        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addInventory.invoiceInformation' | translate
+          }}</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Invoice Number -->

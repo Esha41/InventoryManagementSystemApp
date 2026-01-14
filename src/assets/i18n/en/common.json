@@ -130,6 +130,7 @@
     "dashboard": "Dashboard",
     "inventoryDashboard": "Inventory Dashboard",
     "adminDashboard": "Admin Dashboard",
+    "analytics": "Analytics",
     "supplyManagement": "Supply Management",
     "warehouse": "Depots",
     "warehouseList": "Warehouse List",

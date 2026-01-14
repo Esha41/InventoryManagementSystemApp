@@ -9,19 +9,19 @@
         class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.ammunition' | translate }}
       </button>
-      <button (click)="switchTab('weapon')" [ngClass]="{
-        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
-        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
-      }"
-        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
-        {{ 'warehouseInventory.tabs.weapon' | translate }}
-      </button>
       <button (click)="switchTab('explosive')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
       }"
         class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.explosive' | translate }}
+      </button>
+      <button (click)="switchTab('weapon')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        {{ 'warehouseInventory.tabs.weapon' | translate }}
       </button>
     </nav>
   </div>

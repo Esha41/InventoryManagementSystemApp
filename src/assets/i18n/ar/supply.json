@@ -302,6 +302,7 @@
     "enterCondition": "أدخل الحالة",
     "enterNotes": "أدخل الملاحظات",
     "selectDepots": "اختر المستودعات",
+    "depot": "المستودع",
     "selectDepotsDescription": "يرجى اختيار مستودع واحد أو أكثر لعرض الأصول المتاحة لهذا الطلب.",
     "loadingDepots": "جاري تحميل المستودعات...",
     "selectAtLeastOneDepot": "يرجى اختيار مستودع واحد على الأقل للمتابعة.",

@@ -63,6 +63,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/admin-dashboard',
       permissions: ['systemusers.page', 'systemusers.view']
     },
+    {
+      label: 'nav.analytics',
+      icon: TrendingUp,
+      route: '/analytics-dashboard',
+      permissions: ['analytics.page', 'analytics.view']
+    },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
     //   label: 'nav.supplyManagement',
@@ -113,17 +119,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.requestsManagement',
       icon: FileText,
-      permissions: ['order.page', 'request.page', 'request.view','requestReciever.page'],
+      permissions: ['order.page', 'request.page', 'request.view', 'requestReciever.page'],
       children: [
         {
           label: 'nav.requestsOverview',
           route: '/requests-management',
-          permissions: ['viewrequest.page', 'request.page','requestReciever.page']
+          permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
         },
         {
           label: 'nav.orderReport',
           route: '/requests-management/order-report',
-          permissions: ['viewrequest.page','request.page','requestReciever.page']
+          permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
         }
       ]
     },

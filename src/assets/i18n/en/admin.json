@@ -470,6 +470,7 @@
     "REASON": "Reason",
     "STATUS": "Status",
     "REVOKE": "Revoke",
+    "REVOKED": "Revoked",
     "REVOKE_CONFIRM": "Are you sure you want to revoke this delegation?",
     "REVOKE_CONFIRM_TITLE": "Revoke Delegation",
     "CREATE_TITLE": "Create Delegation",

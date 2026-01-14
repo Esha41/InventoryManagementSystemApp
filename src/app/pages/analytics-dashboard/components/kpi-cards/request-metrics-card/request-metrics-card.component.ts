@@ -9,10 +9,10 @@ import { RequestMetrics } from '@services/admin-analytics.service';
  * Displays request management statistics
  */
 @Component({
-    selector: 'app-request-metrics-card',
-    standalone: true,
-    imports: [CommonModule, TranslateModule, LucideAngularModule],
-    template: `
+  selector: 'app-request-metrics-card',
+  standalone: true,
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  template: `
     <div class="request-card">
       <div class="card-header">
         <lucide-icon [img]="FileText" class="card-icon"></lucide-icon>
@@ -74,7 +74,7 @@ import { RequestMetrics } from '@services/admin-analytics.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .request-card {
       height: 100%;
       display: flex;
@@ -227,10 +227,10 @@ import { RequestMetrics } from '@services/admin-analytics.service';
       color: var(--color-text-muted);
     }
   `],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestMetricsCardComponent {
-    @Input() metrics!: RequestMetrics;
+  @Input() metrics!: RequestMetrics;
 
-    readonly FileText = FileText;
+  readonly FileText = FileText;
 }

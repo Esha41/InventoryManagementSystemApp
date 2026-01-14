@@ -331,7 +331,8 @@
         "isFromAllowance": "From Allowance",
         "fromAllowance": "(From Allowance)",
         "outsideOfAllowance": "(Outside of Allowance)",
-        "requestType": "Request Type"
+        "requestType": "Request Type",
+        "usagePurpose": "Usage Purpose"
       },
       "table": {
         "phase": "Phase",

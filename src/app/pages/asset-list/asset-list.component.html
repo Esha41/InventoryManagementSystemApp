@@ -34,20 +34,6 @@
               <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
             </div>
           </button>
-          <button (click)="switchTab('weapon')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
-          }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
-            [class.flex-row-reverse]="isRTL">
-            <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
-              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-                   'bg-white': activeTab === 'weapon',
-                   'bg-[var(--color-brand)]': activeTab !== 'weapon'
-                 }"></div>
-              <span>{{ 'assetList.tabs.weapon' | translate }}</span>
-            </div>
-          </button>
           <button (click)="switchTab('explosive')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
@@ -60,6 +46,20 @@
                    'bg-[var(--color-brand)]': activeTab !== 'explosive'
                  }"></div>
               <span>{{ 'assetList.tabs.explosive' | translate }}</span>
+            </div>
+          </button>
+          <button (click)="switchTab('weapon')" [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            [class.flex-row-reverse]="isRTL">
+            <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                   'bg-white': activeTab === 'weapon',
+                   'bg-[var(--color-brand)]': activeTab !== 'weapon'
+                 }"></div>
+              <span>{{ 'assetList.tabs.weapon' | translate }}</span>
             </div>
           </button>
         </nav>

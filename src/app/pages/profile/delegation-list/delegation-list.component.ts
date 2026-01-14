@@ -139,7 +139,14 @@ export class DelegationListComponent implements OnInit {
                 next: (res) => {
                     if (res?.succeeded) {
                         this.loadPendingDelegations();
+                    } else {
+                        // If checking failed (e.g. revoked), reload to update list
+                        this.loadPendingDelegations();
                     }
+                },
+                error: (err) => {
+                    // On error also reload to be safe and sync state
+                    this.loadPendingDelegations();
                 }
             });
         }
@@ -158,7 +165,14 @@ export class DelegationListComponent implements OnInit {
                 next: (res) => {
                     if (res?.succeeded) {
                         this.loadPendingDelegations();
+                    } else {
+                        // If checking failed (e.g. revoked), reload to update list
+                        this.loadPendingDelegations();
                     }
+                },
+                error: (err) => {
+                    // On error also reload to be safe and sync state
+                    this.loadPendingDelegations();
                 }
             });
         }
