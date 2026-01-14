@@ -4,15 +4,18 @@
 
 /* Priority Color Classes */
 .priority-normal {
-  color: #22c55e !important; /* Green */
+  color: #22c55e !important;
+  /* Green */
 }
 
 .priority-urgent {
-  color: #f97316 !important; /* Orange */
+  color: #f97316 !important;
+  /* Orange */
 }
 
 .priority-veryurgent {
-  color: #ef4444 !important; /* Red */
+  color: #ef4444 !important;
+  /* Red */
 }
 
 .priority-badge {
@@ -64,6 +67,19 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Search Bar Enhancements */
+input[type="text"]:focus {
+  outline: none;
+}
+
+input[type="text"]::placeholder {
+  transition: opacity 0.2s ease;
+}
+
+input[type="text"]:focus::placeholder {
+  opacity: 0.6;
 }
 
 /* Smooth Animations */

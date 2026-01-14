@@ -46,7 +46,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -69,7 +69,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
   loadInventorySummary(): void {
     this.loadingInventorySummary = true;
     this.cdr.markForCheck();
-    
+
     this.inventorySummaryDataService.loadAllItems()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -90,10 +90,10 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
   private applyFilters(): void {
     let filtered = [...this.inventorySummaryItems];
-    
+
     const itemType = InventorySummaryUtils.getItemTypeFromTab(this.activeTab);
     filtered = filtered.filter(item => item.itemType === itemType);
-    
+
     this.filteredInventoryItems = filtered;
   }
 
@@ -147,9 +147,9 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         width: 12
       }
     ];
-    
+
     const fileName = `Inventory_Summary_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
-    
+
     this.importExportService.exportToExcel({
       fileName,
       sheetName: 'Summary',
@@ -157,7 +157,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
       data: this.filteredInventoryItems,
       includeTimestamp: true
     });
-    
+
     this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });

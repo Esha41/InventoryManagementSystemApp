@@ -47,6 +47,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   showImportModal = false;
   showPreviewModal = false;
   previewData: any = null;
+  pendingImportFile: File | null = null; // Store file for import after preview confirmation
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -138,6 +139,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   onImportPreview(file: File): void {
     this.loadingAssets = true;
     this.closeImportModal();
+    this.pendingImportFile = file; // Store file for later import
     this.cdr.markForCheck();
 
     const service = this.getService(this._activeTab) as any;
@@ -261,20 +263,61 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
   onPreviewConfirmed(validRows: any[]): void {
     this.showPreviewModal = false;
+    this.previewData = null;
+
+    // Validate that we have the file
+    if (!this.pendingImportFile) {
+      this.toastService.error('Import file not found. Please try uploading again.');
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.loadingAssets = true;
     this.cdr.markForCheck();
 
-    // TODO: Send the validated/edited rows to the backend for final import
-    // For now, we'll just show a success message
-    this.toastService.success(`${validRows.length} rows will be imported`);
-    this.loadingAssets = false;
-    this.loadAssets();
-    this.cdr.markForCheck();
+    const service = this.getService(this._activeTab) as any;
+    const file = this.pendingImportFile;
+
+    // Call the actual import endpoint
+    service.importData(file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+          this.loadingAssets = false;
+          this.pendingImportFile = null; // Clear the stored file
+
+          if (res.succeeded) {
+            const result = res.data;
+
+            // Show import results using the import-export service
+            this.importExportService.handleImportResult({
+              successCount: result.successCount || 0,
+              failureCount: result.failureCount || 0,
+              errors: result.errors || []
+            });
+
+            // Reload the assets list to show newly imported items
+            this.loadAssets();
+          } else {
+            this.toastService.error(res.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: any) => {
+          this.loadingAssets = false;
+          this.pendingImportFile = null; // Clear the stored file
+
+          const errorMessage = error?.error?.message || error?.message || 'Import failed';
+          this.toastService.error(errorMessage);
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onPreviewCancelled(): void {
     this.showPreviewModal = false;
     this.previewData = null;
+    this.pendingImportFile = null; // Clear the stored file
     this.cdr.markForCheck();
   }
 

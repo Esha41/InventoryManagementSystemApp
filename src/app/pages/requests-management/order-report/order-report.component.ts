@@ -1,8 +1,9 @@
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock4, QrCode, ArrowLeft, Search, X } from 'lucide-angular';
 import { Subject, takeUntil, of, Observable } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import QRCode from 'qrcode';
@@ -40,7 +41,7 @@ import { TranslationService } from '@services/translation.service';
 @Component({
   selector: 'app-order-report',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './order-report.component.html',
   styleUrls: ['./order-report.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -55,6 +56,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   readonly CheckCircle2 = CheckCircle2;
   readonly Clock4 = Clock4;
   readonly QrCode = QrCode;
+  readonly Search = Search;
+  readonly X = X;
 
   private destroy$ = new Subject<void>();
   ordersLoading = false;
@@ -63,7 +66,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   qrCodeDataUrl: string | null = null;
   orders: OrderDto[] = [];
+  filteredOrders: OrderDto[] = [];
   selectedOrderId: number | null = null;
+  searchTerm: string = '';
 
   orderSummary: OrderSummary = {
     orderId: '',
@@ -221,6 +226,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         next: (orders) => {
           const allRequests = [...orders];
           this.orders = allRequests.sort((a, b) => (a.id || 0) - (b.id || 0));
+          this.filteredOrders = [...this.orders];
 
           this.ordersLoading = false;
           this.selectedOrderId = null;
@@ -235,6 +241,44 @@ export class OrderReportComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  /**
+   * Filter orders based on search term
+   */
+  filterOrders(): void {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredOrders = [...this.orders];
+    } else {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      this.filteredOrders = this.orders.filter(order => {
+        const requestNo = (order.requestNo || order.orderNo || `#${order.id}`).toLowerCase();
+        const department = this.getDepartmentName(order).toLowerCase();
+        const status = this.getStatusLabel(order.status).toLowerCase();
+        const priority = this.getPriorityLabel(order.priority).toLowerCase();
+
+        return requestNo.includes(searchLower) ||
+          department.includes(searchLower) ||
+          status.includes(searchLower) ||
+          priority.includes(searchLower);
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Handle search input change
+   */
+  onSearchChange(): void {
+    this.filterOrders();
+  }
+
+  /**
+   * Clear search
+   */
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterOrders();
   }
 
   selectOrder(order: OrderDto): void {

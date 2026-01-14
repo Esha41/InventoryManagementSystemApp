@@ -56,6 +56,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   searchTerm = '';
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
   // Super admin check
   isSuperAdmin = false;
@@ -191,6 +192,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       console.log('[filteredUsers] Filtered from', beforeCount, 'to', users.length, 'users');
     }
 
+    // Apply status filter
+    if (this.statusFilter === 'active') {
+      users = users.filter(user => user.isActive);
+    } else if (this.statusFilter === 'inactive') {
+      users = users.filter(user => !user.isActive);
+    }
+
     return users;
   }
 
@@ -316,6 +324,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   onSearchChange(searchTerm: string): void {
     this.searchTerm = searchTerm;
+    this.currentPage = 1;
+    this.validateCurrentPage();
+    this.cdr.markForCheck();
+  }
+
+  onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive'): void {
+    this.statusFilter = statusFilter;
     this.currentPage = 1;
     this.validateCurrentPage();
     this.cdr.markForCheck();

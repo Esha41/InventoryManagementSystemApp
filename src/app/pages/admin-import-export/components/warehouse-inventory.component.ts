@@ -54,6 +54,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   showImportModal = false;
   showPreviewModal = false;
   previewData: any = null;
+  pendingImportFile: File | null = null; // Store file for import after preview confirmation
+  pendingDepotId: number | null = null; // Store depot ID for import after preview confirmation
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -251,7 +253,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     // For weapons, use asset import (includes serial number, RFID, asset tag, etc.)
     // For ammunition/explosives, use inventory import (includes lots, batches, quantities)
-    const importService = this.activeTab === 'weapon' 
+    const importService = this.activeTab === 'weapon'
       ? this.assetService.importData(file, this.selectedDepotId)
       : this.inventoryService.importData(file, this.selectedDepotId);
 
@@ -302,6 +304,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     this.loadingWarehouseInventory = true;
     this.closeImportModal();
+    this.pendingImportFile = file; // Store file for later import
+    this.pendingDepotId = this.selectedDepotId; // Store depot ID for later import
     this.cdr.markForCheck();
 
     // For weapons, use asset preview (includes serial number, RFID, asset tag, etc.)
@@ -352,18 +356,76 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   onPreviewConfirmed(validRows: any[]): void {
     this.showPreviewModal = false;
+    this.previewData = null;
+
+    // Validate that we have the file and depot ID
+    if (!this.pendingImportFile || !this.pendingDepotId) {
+      this.toastService.error('Import file or depot not found. Please try uploading again.');
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
 
-    this.toastService.success(`${validRows.length} rows will be imported`);
-    this.loadingWarehouseInventory = false;
-    this.loadWarehouseInventory();
-    this.cdr.markForCheck();
+    const file = this.pendingImportFile;
+    const depotId = this.pendingDepotId;
+
+    // For weapons, use asset import; for ammunition/explosives, use inventory import
+    const importService = this.activeTab === 'weapon'
+      ? this.assetService.importData(file, depotId)
+      : this.inventoryService.importData(file, depotId);
+
+    importService
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.loadingWarehouseInventory = false;
+          this.pendingImportFile = null; // Clear the stored file
+          this.pendingDepotId = null; // Clear the stored depot ID
+
+          if (response.succeeded && response.data) {
+            const result = response.data;
+            const successCount = result.successCount || 0;
+            const failureCount = result.failureCount || 0;
+            const errors = result.errors || [];
+
+            if (failureCount > 0 || errors.length > 0) {
+              let msg = `Imported ${successCount} items. ${failureCount} failed.`;
+              if (errors.length > 0 && errors.length <= 3) {
+                msg += ` Errors: ${errors.slice(0, 3).map((e: any) => e.errorMessage || e).join('; ')}`;
+              } else if (errors.length > 3) {
+                msg += ` (${errors.length} errors found)`;
+              }
+              this.toastService.warning(msg);
+            } else {
+              this.toastService.success(`Imported ${successCount} items successfully.`);
+            }
+          } else {
+            this.toastService.error(response.message || 'Import failed');
+          }
+
+          this.loadWarehouseInventory();
+          this.cdr.markForCheck();
+        },
+        error: (error: any) => {
+          this.loadingWarehouseInventory = false;
+          this.pendingImportFile = null; // Clear the stored file
+          this.pendingDepotId = null; // Clear the stored depot ID
+
+          const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
+          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          this.toastService.error(`Failed to import ${entityType}: ${errorMessage}`);
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onPreviewCancelled(): void {
     this.showPreviewModal = false;
     this.previewData = null;
+    this.pendingImportFile = null; // Clear the stored file
+    this.pendingDepotId = null; // Clear the stored depot ID
     this.cdr.markForCheck();
   }
 

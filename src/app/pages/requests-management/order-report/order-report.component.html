@@ -28,10 +28,10 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid gap-8 lg:grid-cols-[340px_1fr]">
       <!-- Orders List Sidebar -->
-      <aside class="lg:sticky lg:top-24 h-fit">
+      <aside class="lg:sticky lg:top-4 lg:self-start h-fit lg:max-h-[calc(100vh-2rem)]">
         <div
-          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-border)] p-6">
-          <div class="mb-5 pb-4 border-b border-[var(--color-border)] flex items-start justify-between gap-3">
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-border)] p-6 flex flex-col lg:max-h-[calc(100vh-2rem)]">
+          <div class="mb-5 pb-4 border-b border-[var(--color-border)] flex items-start justify-between gap-3 shrink-0">
             <div>
               <h2 class="text-lg font-bold text-[var(--color-text)] mb-1">
                 {{ 'requestsManagement.orderReport.list.title' | translate }}
@@ -52,7 +52,32 @@
             </button>
           </div>
 
-          <div *ngIf="ordersLoading" class="py-8 text-center">
+          <!-- Search Bar -->
+          <div class="mb-4 shrink-0">
+            <div class="relative">
+              <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                <lucide-angular [img]="Search" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              </div>
+              <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+                [placeholder]="'common.search' | translate"
+                class="block w-full ps-10 pe-10 py-2.5 text-sm text-[var(--color-text)] bg-[var(--color-background-muted)] border-2 border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition-all duration-200 placeholder:text-[var(--color-text-muted)]" />
+              <button *ngIf="searchTerm" type="button" (click)="clearSearch()"
+                class="absolute inset-y-0 end-0 flex items-center pe-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+              </button>
+            </div>
+            <p *ngIf="searchTerm && filteredOrders.length === 0"
+              class="mt-2 text-xs text-[var(--color-text-muted)] text-center">
+              {{ 'common.noResultsFound' | translate }}
+            </p>
+            <p *ngIf="searchTerm && filteredOrders.length > 0"
+              class="mt-2 text-xs text-[var(--color-text-muted)] text-center">
+              {{ 'common.showing' | translate }} {{ filteredOrders.length }} {{ 'common.of' | translate }} {{
+              orders.length }}
+            </p>
+          </div>
+
+          <div *ngIf="ordersLoading" class="py-8 text-center shrink-0">
             <div class="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
               <div
                 class="w-4 h-4 border-2 border-[var(--color-border)] border-t-[var(--color-text)] rounded-full animate-spin">
@@ -62,19 +87,19 @@
           </div>
 
           <div *ngIf="ordersError && !ordersLoading"
-            class="mt-4 rounded-xl border-2 border-[var(--color-error)] bg-[var(--color-error)]/10 px-4 py-3 text-sm text-[var(--color-error)]">
+            class="mt-4 rounded-xl border-2 border-[var(--color-error)] bg-[var(--color-error)]/10 px-4 py-3 text-sm text-[var(--color-error)] shrink-0">
             {{ ordersError }}
           </div>
 
-          <div *ngIf="!ordersLoading && !ordersError && orders.length === 0" class="py-8 text-center">
+          <div *ngIf="!ordersLoading && !ordersError && orders.length === 0" class="py-8 text-center shrink-0">
             <p class="text-sm text-[var(--color-text-muted)]">
               {{ 'requestsManagement.orderReport.list.empty' | translate }}
             </p>
           </div>
 
           <ul *ngIf="!ordersLoading && !ordersError && orders.length > 0"
-            class="space-y-2.5 max-h-[calc(100vh-16rem)] overflow-y-auto pe-2 custom-scrollbar">
-            <li *ngFor="let order of orders; trackBy: trackByOrderId">
+            class="space-y-2.5 overflow-y-auto pe-2 custom-scrollbar flex-1 min-h-0">
+            <li *ngFor="let order of filteredOrders; trackBy: trackByOrderId">
               <button (click)="selectOrder(order)"
                 class="w-full group rounded-xl border-2 px-4 py-3.5 text-start transition-all duration-200 hover:shadow-custom-md"
                 [ngClass]="order.id === selectedOrderId 

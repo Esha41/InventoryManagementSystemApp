@@ -25,10 +25,17 @@ export class UserFiltersComponent {
   readonly Search = Search;
 
   @Input() searchTerm: string = '';
+  @Input() statusFilter: 'all' | 'active' | 'inactive' = 'all';
   @Output() searchChange = new EventEmitter<string>();
+  @Output() statusFilterChange = new EventEmitter<'all' | 'active' | 'inactive'>();
 
   onSearchChange(): void {
     this.searchChange.emit(this.searchTerm);
+  }
+
+  onStatusFilterChange(status: 'all' | 'active' | 'inactive'): void {
+    this.statusFilter = status;
+    this.statusFilterChange.emit(this.statusFilter);
   }
 }
 

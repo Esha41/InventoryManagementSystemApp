@@ -52,7 +52,9 @@
   </div>
 
   <!-- Filters -->
-  <app-user-filters [searchTerm]="searchTerm" (searchChange)="onSearchChange($event)"></app-user-filters>
+  <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" (searchChange)="onSearchChange($event)"
+    (statusFilterChange)="onStatusFilterChange($event)">
+  </app-user-filters>
 
   <!-- Users Table -->
   <app-card>
