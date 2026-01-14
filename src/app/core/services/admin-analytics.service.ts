@@ -25,8 +25,6 @@ export interface InventoryMetrics {
     totalItems: number;
     totalQuantity: number;
     lowStockItems: number;
-    expiringSoon: number;
-    overstockItems: number;
     lastUpdated: Date;
 }
 
@@ -245,8 +243,6 @@ export class AdminAnalyticsService implements OnDestroy {
         return this.inventoryService.getAllItemsSummary().pipe(
             map(items => {
                 const lowStockThreshold = DASHBOARD_CONSTANTS.LOW_STOCK_THRESHOLD;
-                const overstockThreshold = DASHBOARD_CONSTANTS.OVERSTOCK_THRESHOLD;
-                const expiringThreshold = DASHBOARD_CONSTANTS.EXPIRING_SOON_DAYS;
 
                 const totalItems = items.filter(x => (x.remainingQuantity || 0) > 0).length;
                 const totalQuantity = items.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
@@ -254,29 +250,11 @@ export class AdminAnalyticsService implements OnDestroy {
                     (item.remainingQuantity || 0) < lowStockThreshold &&
                     (item.remainingQuantity || 0) > 0
                 ).length;
-                const overstockItems = items.filter(item =>
-                    (item.remainingQuantity || 0) > overstockThreshold
-                ).length;
-
-                // Calculate expiring items (items expiring within threshold days)
-                const now = new Date();
-                const expiringDate = new Date();
-                expiringDate.setDate(now.getDate() + expiringThreshold);
-
-                const expiringSoon = items.filter(item => {
-                    // Check if item has expirationDate property
-                    const expDate = (item as any).expirationDate;
-                    if (!expDate) return false;
-                    const itemExpDate = new Date(expDate);
-                    return itemExpDate > now && itemExpDate <= expiringDate;
-                }).length;
 
                 return {
                     totalItems,
                     totalQuantity,
                     lowStockItems,
-                    expiringSoon,
-                    overstockItems,
                     lastUpdated: new Date()
                 };
             })

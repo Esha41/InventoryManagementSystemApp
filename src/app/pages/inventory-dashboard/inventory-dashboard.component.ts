@@ -100,9 +100,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   statistics: StatisticsData = {
     totalItems: 0,
     totalQuantity: 0,
-    expiringSoon: 0,
     lowStock: 0,
-    overstockItems: [],
     monthlyActivity: Array(12).fill(0),
     monthlyActivityPercentages: Array(12).fill(0)
   };
@@ -593,17 +591,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const stats: StatisticsData = {
       totalItems: 0,
       totalQuantity: 0,
-      expiringSoon: 0,
       lowStock: 0,
-      overstockItems: [],
       monthlyActivity: Array(12).fill(0),
       monthlyActivityPercentages: Array(12).fill(0)
     };
 
     const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const currentYear = now.getFullYear();
-    const overstockThreshold = 10000; // Adjust based on business rules
     const lowStockThreshold = 100; // Items below this are considered low stock
 
     // Process Summary for Totals and Low Stock
@@ -613,59 +607,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       stats.lowStock = summary.filter(item => (item.remainingQuantity || 0) < lowStockThreshold && (item.remainingQuantity || 0) > 0).length;
     }
 
-    // Process inventories for Expiry and Overstock (detailed view)
-    const itemMap = new Map<number, { quantity: number; expiryDate?: Date; name: string; hasExpiringLot: boolean }>();
 
-    (inventories || []).forEach((inv: any) => {
-      const details = inv.inventoryDetails || [];
-      details.forEach((d: any) => {
-        const quantity = Number(d.remainingQuantity ?? d.currentQuantity ?? 0);
-        const itemId = d.itemId;
-        const itemName = d.item ? (getLocalizedName(d.item, getCurrentLang(this.translate)) || d.item.itemNo || 'Item') : 'Item';
-
-        if (quantity > 0) {
-          const expDate = d.item?.expiryDate ? new Date(d.item.expiryDate) : (d.expiryDate ? new Date(d.expiryDate) : null); // Check detail expiry too
-          const isExpiring = expDate && expDate <= thirtyDaysFromNow && expDate > now;
-
-          const existing = itemMap.get(itemId);
-          if (existing) {
-            existing.quantity += quantity;
-            if (isExpiring) existing.hasExpiringLot = true;
-          } else {
-            itemMap.set(itemId, {
-              quantity,
-              expiryDate: expDate && !isNaN(expDate.getTime()) ? expDate : undefined,
-              name: itemName,
-              hasExpiringLot: isExpiring || false
-            });
-          }
-        }
-      });
-    });
-
-    // Count expiring items
-    itemMap.forEach(item => {
-      if (item.hasExpiringLot) stats.expiringSoon++;
-    });
-
-    // Calculate overstock items (top items by quantity)
-    const overstockItems: OverstockItemView[] = Array.from(itemMap.values())
-      .map(item => {
-        const percentage = Math.min(100, Math.round((item.quantity / overstockThreshold) * 100));
-        return {
-          name: item.name,
-          lot: 'N/A',
-          percentage,
-          expiryDate: item.expiryDate
-            ? `${item.expiryDate.getDate()} ${item.expiryDate.toLocaleString('en', { month: 'short' })} ${item.expiryDate.getFullYear()}`
-            : undefined,
-          imageUrl: 'assets/Ammunition.png' // Default, can be enhanced
-        };
-      })
-      .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 10);
-
-    stats.overstockItems = overstockItems;
 
     // Calculate monthly activity for current year only (not accumulating)
     // This shows distribution of orders across months in the current year
@@ -1056,9 +998,5 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   get annualActivityValues(): number[] {
     // Return actual counts for the chart (can be switched to percentages if needed)
     return this.statistics.monthlyActivity;
-  }
-
-  get overstockItems(): OverstockItemView[] {
-    return this.statistics.overstockItems;
   }
 }

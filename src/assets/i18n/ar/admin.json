@@ -34,6 +34,8 @@
     "activate": "تفعيل",
     "deactivate": "تعطيل",
     "cannotEditSuperAdmin": "لا يمكنك تعديل أو تعطيل مستخدم مدير فائق.",
+    "cannotToggleSuperAdmin": "لا يمكن تعطيل مستخدمي المدير الفائق.",
+    "cannotDeleteSuperAdmin": "لا يمكن حذف مستخدمي المدير الفائق.",
     "userEnabledSuccess": "تم تفعيل المستخدم بنجاح",
     "userDisabledSuccess": "تم تعطيل المستخدم بنجاح"
   },

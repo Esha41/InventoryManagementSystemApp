@@ -17,9 +17,7 @@ export interface InventoryDashboardCard {
 export interface StatisticsData {
   totalItems: number;
   totalQuantity: number;
-  expiringSoon: number; // Items expiring in next 30 days
   lowStock: number; // Items below threshold
-  overstockItems: OverstockItemView[];
   monthlyActivity: number[]; // Orders per month (current year only)
   monthlyActivityPercentages: number[]; // Percentage distribution
 }

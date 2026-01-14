@@ -34,6 +34,8 @@
     "activate": "Activate",
     "deactivate": "Deactivate",
     "cannotEditSuperAdmin": "You cannot edit or disable a super admin user.",
+    "cannotToggleSuperAdmin": "Super admin users cannot be deactivated.",
+    "cannotDeleteSuperAdmin": "Super admin users cannot be deleted.",
     "userEnabledSuccess": "User enabled successfully",
     "userDisabledSuccess": "User disabled successfully"
   },
