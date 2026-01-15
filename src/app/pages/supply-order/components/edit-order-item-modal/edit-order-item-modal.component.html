@@ -19,9 +19,13 @@
           'border-[var(--color-error)]': editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched,
           'border-[var(--color-border)]': !(editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched)
         }" />
-      <p *ngIf="editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched"
+      <p *ngIf="editItemForm.get('quantity')?.errors?.['required'] && editItemForm.get('quantity')?.touched"
         class="mt-1 text-sm text-[var(--color-error)]">
         {{ 'supplyOrder.quantityRequired' | translate }}
+      </p>
+      <p *ngIf="editItemForm.get('quantity')?.errors?.['min'] && editItemForm.get('quantity')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.quantityMinError' | translate:{min: totalSupplied} }}
       </p>
     </div>
 
@@ -52,4 +56,3 @@
     </button>
   </div>
 </app-modal>
-

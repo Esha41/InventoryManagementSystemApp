@@ -98,7 +98,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private supplyOrderDataService: SupplyOrderDataService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.params['supplyId'];
@@ -224,10 +224,10 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             if (fullOrder.requester) {
               this.orderData.requester = fullOrder.requester;
               // Always populate flat properties from nested object
-              this.orderData.requesterName = fullOrder.requester.fullNameEN || 
-                                             fullOrder.requester.fullNameAR || 
-                                             fullOrder.requester.userName ||
-                                             this.orderData.requesterName;
+              this.orderData.requesterName = fullOrder.requester.fullNameEN ||
+                fullOrder.requester.fullNameAR ||
+                fullOrder.requester.userName ||
+                this.orderData.requesterName;
               this.orderData.requesterNameEn = fullOrder.requester.fullNameEN || this.orderData.requesterNameEn;
               this.orderData.requesterNameAr = fullOrder.requester.fullNameAR || this.orderData.requesterNameAr;
             }
@@ -569,6 +569,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
    */
   private getSupplyItemDisplayName(item: SupplyItemDisplay): string {
     return getSupplyItemDisplayName(item, this.translateService);
+  }
+
+  /**
+   * Get total supplied quantity for an order item
+   */
+  getTotalSupplied(item: OrderRequestItemDto | null): number {
+    if (!item || !this.supplyItems) return 0;
+    // Sum up quantities of all lots for this item in the supply items list
+    return this.supplyItems
+      .filter(si => si.itemId === item.itemId)
+      .reduce((sum, si) => sum + si.quantity, 0);
   }
 
 }

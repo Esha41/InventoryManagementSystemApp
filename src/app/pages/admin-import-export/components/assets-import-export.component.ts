@@ -143,8 +143,9 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const service = this.getService(this._activeTab) as any;
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    service.importPreview(file)
+    service.importPreview(file, currentLang)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -230,8 +231,9 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const service = this.getService(this._activeTab) as any;
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    service.importData(file)
+    service.importData(file, currentLang)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -277,9 +279,10 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
     const service = this.getService(this._activeTab) as any;
     const file = this.pendingImportFile;
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
     // Call the actual import endpoint
-    service.importData(file)
+    service.importData(file, currentLang)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {

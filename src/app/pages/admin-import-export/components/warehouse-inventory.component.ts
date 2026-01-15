@@ -253,9 +253,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     // For weapons, use asset import (includes serial number, RFID, asset tag, etc.)
     // For ammunition/explosives, use inventory import (includes lots, batches, quantities)
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
     const importService = this.activeTab === 'weapon'
-      ? this.assetService.importData(file, this.selectedDepotId)
-      : this.inventoryService.importData(file, this.selectedDepotId);
+      ? this.assetService.importData(file, this.selectedDepotId, currentLang)
+      : this.inventoryService.importData(file, this.selectedDepotId, currentLang);
 
     importService
       .pipe(takeUntil(this.destroy$))
@@ -310,9 +311,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     // For weapons, use asset preview (includes serial number, RFID, asset tag, etc.)
     // For ammunition/explosives, use inventory preview (includes lots, batches, quantities)
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
     const previewService = this.activeTab === 'weapon'
-      ? this.assetService.importPreview(file, this.selectedDepotId)
-      : this.inventoryService.importPreview(file, this.selectedDepotId);
+      ? this.assetService.importPreview(file, this.selectedDepotId, currentLang)
+      : this.inventoryService.importPreview(file, this.selectedDepotId, currentLang);
 
     previewService
       .pipe(takeUntil(this.destroy$))
@@ -370,11 +372,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     const file = this.pendingImportFile;
     const depotId = this.pendingDepotId;
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
     // For weapons, use asset import; for ammunition/explosives, use inventory import
     const importService = this.activeTab === 'weapon'
-      ? this.assetService.importData(file, depotId)
-      : this.inventoryService.importData(file, depotId);
+      ? this.assetService.importData(file, depotId, currentLang)
+      : this.inventoryService.importData(file, depotId, currentLang);
 
     importService
       .pipe(takeUntil(this.destroy$))

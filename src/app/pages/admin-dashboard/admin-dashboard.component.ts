@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, LayoutDashboard, Users, RefreshCw } from 'lucide-angular';
 import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
-import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
+// import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
 
 /**
  * Admin Dashboard Component
@@ -21,7 +21,7 @@ import { AdminDelegationsComponent } from './admin-delegations/admin-delegations
         TranslateModule,
         LucideAngularModule,
         UserActivityCardComponent,
-        AdminDelegationsComponent,
+        // AdminDelegationsComponent,
     ],
     templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css'],

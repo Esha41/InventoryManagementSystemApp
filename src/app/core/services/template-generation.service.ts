@@ -32,7 +32,7 @@ export class TemplateGenerationService {
   generateAssetTemplate(type: 'ammunition' | 'weapon' | 'explosive'): void {
     // Use backend template for all asset types (comprehensive with all fields)
     let service: AmmunitionService | ExplosiveService | WeaponService;
-    
+
     if (type === 'ammunition') {
       service = this.ammunitionService;
     } else if (type === 'explosive') {
@@ -72,7 +72,10 @@ export class TemplateGenerationService {
       return;
     }
 
-    this.inventoryService.downloadImportTemplate(depotId)
+    // Get current language from TranslateService
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+    this.inventoryService.downloadImportTemplate(depotId, currentLang)
       .pipe(
         catchError(() => {
           this.toastService.error('Failed to download template. Please try again.');

@@ -34,6 +34,7 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   @Input() isOpen: boolean = false;
   @Input() orderId: number = 0;
   @Input() selectedItem: OrderRequestItemDto | null = null;
+  @Input() totalSupplied: number = 0;
 
   @Output() closed = new EventEmitter<void>();
   @Output() itemUpdated = new EventEmitter<void>();
@@ -63,6 +64,9 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
     if (changes['isOpen'] && this.isOpen && this.selectedItem) {
       this.initializeForm();
     }
+    if (changes['totalSupplied'] && this.isOpen) {
+      this.initializeForm();
+    }
   }
 
   ngOnDestroy(): void {
@@ -71,8 +75,9 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   }
 
   private initializeForm(): void {
+    const minAllowed = Math.max(1, this.totalSupplied || 0);
     this.editItemForm = this.fb.group({
-      quantity: [this.selectedItem?.quantity || 1, [Validators.required, Validators.min(1)]],
+      quantity: [this.selectedItem?.quantity || 1, [Validators.required, Validators.min(minAllowed)]],
       notes: ['']
     });
   }

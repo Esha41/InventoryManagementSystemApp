@@ -7,10 +7,7 @@
     <!-- Content -->
     <div *ngIf="!loading && orderData && supplyData">
       <!-- Header with Back Button -->
-      <app-supply-order-header
-        [orderData]="orderData"
-        [supplyData]="supplyData"
-        (backClick)="goBack()">
+      <app-supply-order-header [orderData]="orderData" [supplyData]="supplyData" (backClick)="goBack()">
       </app-supply-order-header>
 
       <!-- Main Content -->
@@ -19,11 +16,8 @@
         <app-supply-order-info [orderData]="orderData"></app-supply-order-info>
 
         <!-- Order Items Management Table -->
-        <app-order-items-management
-          [orderItems]="orderItems"
-          (addItemClick)="openAddOrderItemModal()"
-          (editItemClick)="openEditOrderItemModal($event)"
-          (removeItemClick)="openRemoveOrderItemModal($event)">
+        <app-order-items-management [orderItems]="orderItems" (addItemClick)="openAddOrderItemModal()"
+          (editItemClick)="openEditOrderItemModal($event)" (removeItemClick)="openRemoveOrderItemModal($event)">
         </app-order-items-management>
 
         <!-- Approval Workflow -->
@@ -34,16 +28,9 @@
         </app-approval-workflow> -->
 
         <!-- Order Items (Pre-filled from Supply Details) -->
-        <app-supply-items-list
-          [supplyItems]="supplyItems"
-          [supplyId]="supplyId"
-          [updatingItem]="updatingItem"
-          [deletingItem]="deletingItem"
-          (addLotClick)="openAddLotModal()"
-          (editItem)="onEditItem($event)"
-          (updateItem)="onUpdateItem($event)"
-          (cancelEdit)="onCancelEdit($event)"
-          (deleteItem)="onDeleteItem($event)">
+        <app-supply-items-list [supplyItems]="supplyItems" [supplyId]="supplyId" [updatingItem]="updatingItem"
+          [deletingItem]="deletingItem" (addLotClick)="openAddLotModal()" (editItem)="onEditItem($event)"
+          (updateItem)="onUpdateItem($event)" (cancelEdit)="onCancelEdit($event)" (deleteItem)="onDeleteItem($event)">
         </app-supply-items-list>
 
       </div>
@@ -51,12 +38,8 @@
   </div>
 
   <!-- Add Lot Modal -->
-  <app-add-lot-modal
-    [isOpen]="isAddLotModalOpen"
-    [supplyId]="supplyId"
-    [orderItems]="orderItems"
-    (closed)="closeAddLotModal()"
-    (lotAdded)="onLotAdded()">
+  <app-add-lot-modal [isOpen]="isAddLotModalOpen" [supplyId]="supplyId" [orderItems]="orderItems"
+    (closed)="closeAddLotModal()" (lotAdded)="onLotAdded()">
   </app-add-lot-modal>
 
   <!-- Confirmation Modal -->
@@ -84,20 +67,13 @@
   </app-modal>
 
   <!-- Add Order Item Modal -->
-  <app-add-order-item-modal
-    [isOpen]="isAddItemModalOpen"
-    [orderId]="orderId"
-    [orderItems]="orderItems"
-    (closed)="closeAddOrderItemModal()"
-    (itemAdded)="onOrderItemAdded()">
+  <app-add-order-item-modal [isOpen]="isAddItemModalOpen" [orderId]="orderId" [orderItems]="orderItems"
+    (closed)="closeAddOrderItemModal()" (itemAdded)="onOrderItemAdded()">
   </app-add-order-item-modal>
 
   <!-- Edit Order Item Quantity Modal -->
-  <app-edit-order-item-modal
-    [isOpen]="isEditItemModalOpen"
-    [orderId]="orderId"
-    [selectedItem]="selectedItemForEdit"
-    (closed)="closeEditOrderItemModal()"
+  <app-edit-order-item-modal [isOpen]="isEditItemModalOpen" [orderId]="orderId" [selectedItem]="selectedItemForEdit"
+    [totalSupplied]="getTotalSupplied(selectedItemForEdit)" (closed)="closeEditOrderItemModal()"
     (itemUpdated)="onOrderItemUpdated()">
   </app-edit-order-item-modal>
 

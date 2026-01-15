@@ -242,17 +242,19 @@ export class AmmunitionService {
   }
 
   // Import ammunition data
-  importData(file: File): Observable<APIOperationResponse<any>> {
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData);
+    const params = new HttpParams().set('language', language);
+    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params });
   }
 
   // Preview import data without saving
-  importPreview(file: File): Observable<APIOperationResponse<any>> {
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData);
+    const params = new HttpParams().set('language', language);
+    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params });
   }
 
   // Download import template with all fields and data validation

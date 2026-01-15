@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle } from 'lucide-angular';
 import { Subject, takeUntil, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
@@ -59,6 +59,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+  readonly RotateCcw = RotateCcw;
+  readonly X = X;
+  readonly Check = Check;
+  readonly XCircle = XCircle;
 
   get isRTL(): boolean {
     return this.translationService.isRTL();

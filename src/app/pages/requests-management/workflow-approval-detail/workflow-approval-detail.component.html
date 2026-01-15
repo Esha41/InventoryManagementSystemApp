@@ -866,32 +866,31 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex gap-3 pt-2">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <!-- Reject Button -->
                 <button *ngIf="canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
-                  class="flex-1 px-6 py-3 bg-[var(--color-error)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-error)] focus:ring-offset-2">
+                  class="action-btn btn-reject">
+                  <lucide-angular *ngIf="!processing" [img]="XCircle" class="h-4 w-4"></lucide-angular>
                   <span *ngIf="!processing">{{ 'workflowApprovalDetail.reject' | translate }}</span>
-                  <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
+                  <span *ngIf="processing" class="flex items-center gap-2">
+                    <div class="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></div>
+                    {{ 'common.processing' | translate }}...
+                  </span>
                 </button>
 
                 <!-- Return for Review Dropdown Button -->
-                <div *ngIf="canReturnForReview()" class="relative flex-1">
+                <div *ngIf="canReturnForReview()" class="relative">
                   <button type="button" (click)="toggleReturnForReview()" [disabled]="processing"
-                    class="w-full px-6 py-3 bg-[var(--color-info)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-info)] focus:ring-offset-2 flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
-                    </svg>
+                    class="action-btn btn-return">
+                    <lucide-angular *ngIf="!processing" [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
                     <span>{{ 'workflowApprovalDetail.returnForReview' | translate }}</span>
-                    <svg class="w-4 h-4 ms-1 transition-transform" [class.rotate-180]="showReturnForReview" fill="none"
-                      stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
+                    <lucide-angular [img]="ChevronDown" class="h-4 w-4 transition-transform duration-200"
+                      [class.rotate-180]="showReturnForReview"></lucide-angular>
                   </button>
 
                   <!-- Dropdown Panel -->
                   <div *ngIf="showReturnForReview"
-                    class="absolute bottom-full start-0 end-0 mb-2 p-4 bg-[var(--color-background)] border-2 border-[var(--color-info)]/40 rounded-lg shadow-lg z-10 space-y-3">
+                    class="absolute bottom-full start-0 end-0 mb-3 p-5 bg-[var(--color-background)] border border-[var(--color-info)]/30 rounded-xl shadow-xl z-20 space-y-4 return-dropdown-panel backdrop-blur-md">
                     <div>
                       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                         {{ 'workflowApprovalDetail.selectStepToReturn' | translate }} <span
@@ -903,14 +902,14 @@
                         [disabled]="processing || loadingPreviousSteps" class="w-full">
                       </app-dropdown>
                       <p *ngIf="previousWorkflowSteps.length === 0 && !loadingPreviousSteps"
-                        class="mt-2 text-xs text-red-600">
+                        class="mt-2 text-xs text-red-600 font-medium">
                         {{ 'workflowApprovalDetail.noPreviousSteps' | translate }}
                       </p>
                     </div>
 
                     <button (click)="returnForReview()"
                       [disabled]="processing || !returnToStepId || loadingPreviousSteps"
-                      class="w-full px-4 py-2 bg-[var(--color-info)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-info)] focus:ring-offset-1">
+                      class="w-full action-btn btn-return">
                       <span *ngIf="!processing">{{ 'workflowApprovalDetail.returnRequest' | translate }}</span>
                       <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
                     </button>
@@ -918,21 +917,25 @@
                 </div>
 
                 <!-- Approve Button -->
-                <!-- Approve Button -->
-                <div [class.flex-1]="canRejectRequest() || canReturnForReview()"
-                  [class.w-full]="!canRejectRequest() && !canReturnForReview()">
+                <div [class.sm:col-span-3]="!canRejectRequest() && !canReturnForReview()"
+                  [class.sm:col-span-2]="canRejectRequest() && !canReturnForReview()"
+                  [class.sm:col-span-2]="!canRejectRequest() && canReturnForReview()" class="flex flex-col">
                   <button (click)="approveRequest()"
                     [disabled]="processing || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin)"
-                    class="w-full px-6 py-3 bg-[var(--color-success)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2">
+                    class="action-btn btn-approve">
+                    <lucide-angular *ngIf="!processing" [img]="CheckCircle" class="h-4 w-4"></lucide-angular>
                     <span *ngIf="!processing">{{ 'workflowApprovalDetail.approve' | translate }}</span>
-                    <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
+                    <span *ngIf="processing" class="flex items-center gap-2">
+                      <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      {{ 'common.processing' | translate }}...
+                    </span>
                   </button>
                   <p *ngIf="canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin"
-                    class="text-xs text-[var(--color-error)] mt-2 text-center font-medium animate-pulse">
+                    class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
                     {{ 'workflowApprovalDetail.errors.pickupDateRequired' | translate }}
                   </p>
                   <p *ngIf="canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin"
-                    class="text-xs text-[var(--color-error)] mt-2 text-center font-medium animate-pulse">
+                    class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
                     {{ 'workflowApprovalDetail.errors.supplySubmissionRequired' | translate }}
                   </p>
                 </div>

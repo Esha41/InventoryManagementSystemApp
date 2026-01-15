@@ -189,18 +189,19 @@ export class ExplosiveService {
   }
 
   // Import explosives from Excel file
-  importData(file: File): Observable<any> {
+  importData(file: File, language: string = 'en'): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-
-    return this.http.post<any>(`${this.baseUrl}/Import`, formData);
+    const params = new HttpParams().set('language', language);
+    return this.http.post<any>(`${this.baseUrl}/Import`, formData, { params });
   }
 
   // Preview import data without saving
-  importPreview(file: File): Observable<any> {
+  importPreview(file: File, language: string = 'en'): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<any>(`${this.baseUrl}/ImportPreview`, formData);
+    const params = new HttpParams().set('language', language);
+    return this.http.post<any>(`${this.baseUrl}/ImportPreview`, formData, { params });
   }
 
   // Download import template with all fields and data validation

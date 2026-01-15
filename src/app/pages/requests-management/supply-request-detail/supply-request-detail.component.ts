@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle, Package, Clock } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -30,7 +30,6 @@ import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatT
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import {
   getLotConditionClass,
-  getApprovalStatusIcon as getApprovalStatusIconUtil,
   getItemTypeIcon as getItemTypeIconUtil,
   getDepartmentName as getDepartmentNameUtil,
   getItemProductId as getItemProductIdUtil
@@ -70,8 +69,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
-  readonly Package = Package;
-  readonly Clock = Clock;
   readonly Math = Math;
 
   get isRTL(): boolean {
@@ -90,7 +87,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   // UI State
   isRequestInfoExpanded: boolean = true;
-  isApprovalWorkflowExpanded: boolean = true;
   isOrderItemsExpanded: boolean = true;
 
   // Loading States
@@ -160,15 +156,6 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.orderData = result.orderData;
           this.issueNo = result.issueNo;
           this.requestDetail = result.requestDetail;
-
-          // Load approval history
-          this.supplyRequestDetailService.loadApprovalHistory(this.orderId, this.requestDetail)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: (updatedDetail) => {
-                this.requestDetail = updatedDetail;
-              }
-            });
 
           this.loading = false;
           this.loadSuggestionsAutomatically();
@@ -625,9 +612,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   // ==================== UI HELPER METHODS ====================
 
-  getApprovalStatusIcon(status: string): any {
-    return getApprovalStatusIconUtil(status);
-  }
+
 
   getApprovalStatusClass(status: string): string {
     return getApprovalStatusBadgeClass(status);
@@ -661,35 +646,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     return getItemProductIdUtil(item, this.orderData);
   }
 
-  /**
-   * Get localized approver name based on current language
-   */
-  getApproverName(approval: any): string {
-    const currentLang = getCurrentLang(this.translate);
 
-    // Check if this is a WorkflowApprovalStep (has applicationRoleName) or ApprovalStep (has militaryRank)
-    // For pending steps, use role name (not user name)
-    if (approval.isPending) {
-      if (currentLang === 'ar' && approval.applicationRoleNameAr) {
-        return approval.applicationRoleNameAr;
-      } else if (approval.applicationRoleName) {
-        return approval.applicationRoleName;
-      }
-    }
-
-    // For completed steps, use user name
-    // Check for Arabic name first
-    if (currentLang === 'ar' && approval.approverNameAr) {
-      return approval.approverNameAr;
-    } else if (approval.approverNameEn) {
-      return approval.approverNameEn;
-    } else if (approval.approverName) {
-      return approval.approverName;
-    }
-
-    // Fallback: if no name found, return empty string
-    return '';
-  }
 
   /**
    * Resolve usage purpose with proper localization

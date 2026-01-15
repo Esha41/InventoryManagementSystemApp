@@ -205,12 +205,13 @@ export class AssetService {
     /**
      * Import assets from Excel file
      */
-    importData(file: File, depotId: number): Observable<APIOperationResponse<any>> {
+    importData(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('depotId', depotId.toString());
+        const params = new HttpParams().set('language', language);
 
-        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData).pipe(
+        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params }).pipe(
             catchError(error => {
                 console.error('Error importing assets:', error);
                 return throwError(() => error);
@@ -221,12 +222,13 @@ export class AssetService {
     /**
      * Preview asset import from Excel file (validation only)
      */
-    importPreview(file: File, depotId: number): Observable<APIOperationResponse<any>> {
+    importPreview(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('depotId', depotId.toString());
+        const params = new HttpParams().set('language', language);
 
-        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData).pipe(
+        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params }).pipe(
             catchError(error => {
                 console.error('Error previewing asset import:', error);
                 return throwError(() => error);
