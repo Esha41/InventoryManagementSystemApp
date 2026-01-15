@@ -84,7 +84,7 @@ export class DashboardDataService {
       status: mapRequestStatusToCardStatus(order.status),
       orders: [{
         orderId: getRequestTitle(order, order.orderNo),
-        requestDate: this.formatCreationDate(order),
+        requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
         departmentName: this.resolveOrderDepartmentName(order),
         requesterName: this.resolveRequesterName(order),
         items: mapRequestItems(order.requestItems)
@@ -110,7 +110,7 @@ export class DashboardDataService {
       status: mapRequestStatusToCardStatus(ret.status),
       orders: [{
         orderId: getRequestTitle(ret),
-        requestDate: this.formatCreationDate(ret),
+        requestDate: (ret as any).creationDate ? (typeof (ret as any).creationDate === 'string' ? (ret as any).creationDate : (ret as any).creationDate.toISOString()) : '',
         departmentName: this.resolveReturnDepartmentName(ret),
         requesterName: this.resolveRequesterName(ret),
         items: mapRequestItems(ret.requestItems)
@@ -136,7 +136,7 @@ export class DashboardDataService {
       status: mapRequestStatusToCardStatus(discard.status),
       orders: [{
         orderId: getRequestTitle(discard),
-        requestDate: this.formatCreationDate(discard),
+        requestDate: (discard as any).creationDate ? (typeof (discard as any).creationDate === 'string' ? (discard as any).creationDate : (discard as any).creationDate.toISOString()) : '',
         departmentName: this.resolveDiscardDepartmentName(discard),
         requesterName: this.resolveRequesterName(discard),
         items: mapRequestItems(discard.requestItems)
@@ -147,14 +147,6 @@ export class DashboardDataService {
     }));
   }
 
-  /**
-   * Format creation date for display
-   */
-  private formatCreationDate(request: OrderDto | ReturnDto | DiscardDto | any): string {
-    const creationDate = request.creationDate;
-    if (!creationDate) return 'N/A';
-    return new Date(creationDate).toLocaleDateString();
-  }
 
   /**
    * Resolve department name with localization for orders

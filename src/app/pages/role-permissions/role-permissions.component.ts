@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
-import { LucideAngularModule, Shield, Save, RefreshCw, Search, ChevronDown, ChevronUp, X } from 'lucide-angular';
+import { LucideAngularModule, Badge, Save, RefreshCw, Search, ChevronDown, ChevronUp, X } from 'lucide-angular';
 
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
@@ -63,7 +63,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
   // ICONS
   // ============================================================================
-  readonly Shield = Shield;
+  readonly Badge = Badge;
   readonly Save = Save;
   readonly RefreshCw = RefreshCw;
   readonly Search = Search;

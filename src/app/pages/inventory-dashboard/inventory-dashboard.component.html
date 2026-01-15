@@ -133,7 +133,7 @@
                 {{ card.orders[0].orderId || card.title }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ card.orders[0].requestDate || 'N/A' }}
+                {{ formatApprovalDateTime(card.orders[0].requestDate) || 'N/A' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ card.orders[0].departmentName || 'N/A' }}
@@ -222,11 +222,6 @@
       </ng-template>
     </div>
 
-    <!-- Statistics Section -->
-    <div class="grid grid-cols-1 gap-6">
-      <app-annual-activity-card [title]="'inventoryDashboard.annualSupplyActivity' | translate"
-        [values]="annualActivityValues"></app-annual-activity-card>
-    </div>
   </div>
 </div>
 

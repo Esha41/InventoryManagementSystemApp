@@ -22,7 +22,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { formatDate, formatTimeToMilitary } from '@utils/format.utils';
+import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { mapApprovalHistory, mapRequestStatus, RequestTypeEnum, formatRequestDateTime, formatRequestDate } from '@utils/request-mapper.utils';
 import { filterRequestsByDepartment } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -389,7 +389,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const updatedSummary = mapOrderToSummary(order, baseRequest.status, this.translate);
 
     if (baseRequest.requestDate) {
-      updatedSummary.requestDate = formatRequestDate(baseRequest.requestDate);
+      updatedSummary.requestDate = formatDateShort(baseRequest.requestDate);
     }
 
     if ((!updatedSummary.department || updatedSummary.department === 'N/A') &&
@@ -405,7 +405,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     }
 
     if (!updatedSummary.lastUpdated || updatedSummary.lastUpdated.trim() === '') {
-      updatedSummary.lastUpdated = formatRequestDate(baseRequest.requestDate) || 'N/A';
+      updatedSummary.lastUpdated = formatDateShort(baseRequest.requestDate) || 'N/A';
     }
 
     if (updatedSummary.orderId && updatedSummary.orderId.trim() !== '') {
@@ -440,12 +440,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       ? baseRequest.requesterNameAr
       : baseRequest?.requesterNameEn || baseRequest?.requesterName || this.orderSummary.requester || 'N/A';
 
+    const requestDate = baseRequest?.requestDate || this.orderSummary.requestDate;
     return {
       step: '1',
       role: requesterRoleName,
       approver: requesterApproverName,
       status: 'approved',
-      date: baseRequest?.requestDate ? formatRequestDateTime(baseRequest.requestDate) : (this.orderSummary.requestDate || 'N/A'),
+      date: requestDate ? this.formatApprovalDateTime(requestDate) : 'N/A',
       notes: 'Request submitted'
     };
   }
@@ -459,7 +460,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       role: this.getLocalizedRoleName(step),
       approver: this.getLocalizedApproverName(step),
       status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' || 'pending',
-      date: step.approvedDateTime || formatOrderDateTime(step.changedAt?.toString(), undefined),
+      date: step.approvedDateTime ? this.formatApprovalDateTime(step.approvedDateTime) : (step.changedAt ? this.formatApprovalDateTime(step.changedAt) : 'Pending'),
       notes: step.comments || ''
     }));
   }
@@ -470,10 +471,16 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return [];
     }
 
-    const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => formatOrderDateTime(d, t))
+    const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => {
+      if (d) {
+        return this.formatApprovalDateTime(d);
+      }
+      return 'Pending';
+    })
       .map((step, index) => ({
         ...step,
-        step: (index + 2).toString()
+        step: (index + 2).toString(),
+        date: step.date ? this.formatApprovalDateTime(step.date) : 'Pending'
       }));
 
     const requesterStep = this.createRequesterStepFromOrder(order);
@@ -493,12 +500,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         ? order.requesterNameAr
         : order.requesterNameEn || order.requesterName || this.orderSummary.requester || 'N/A');
 
+    const requestDate = this.orderSummary.requestDate || this.orderSummary.submittedOn;
     return {
       step: '1',
       role: requesterRoleName,
       approver: requesterApproverName,
       status: 'approved',
-      date: this.orderSummary.requestDate || this.orderSummary.submittedOn || 'N/A',
+      date: requestDate ? this.formatApprovalDateTime(requestDate) : 'N/A',
       notes: 'Request submitted'
     };
   }
@@ -577,28 +585,40 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   getOrderDateLabel(order: OrderDto): string {
     if (!order.usageDateFrom) return '-';
 
-    const formatTime = (timeStr: string | null | undefined): string => {
-      if (!timeStr) return '';
-      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        return timeStr;
-      }
-      if (timeStr.includes(':')) {
-        const parts = timeStr.split(':');
-        const hours = parts[0].padStart(2, '0');
-        const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-        return hours + minutes;
-      }
-      return timeStr;
-    };
-
-    const fromDate = formatDate(order.usageDateFrom);
-    const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
-    const fromTime = formatTimeToMilitary(order.usageTimeFrom);
-    const toTime = formatTimeToMilitary(order.usageTimeTo);
+    const fromDate = formatDateShort(order.usageDateFrom);
+    const toDate = order.usageDateTo ? formatDateShort(order.usageDateTo) : '';
 
     return toDate
-      ? `${fromDate} ${fromTime ? '· ' + fromTime : ''} - ${toDate} ${toTime ? '· ' + toTime : ''}`.trim()
-      : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
+      ? `${fromDate} - ${toDate}`
+      : fromDate;
+  }
+
+  /**
+   * Format approval date-time for workflow display
+   * Formats date as dd/MM/yyyy and time as HHmm (military format)
+   * Handles both Date objects and string formats
+   * Matches the format used in workflow-approval-detail component
+   */
+  formatApprovalDateTime(dateTime: string | Date | undefined): string {
+    if (!dateTime) return '';
+
+    try {
+      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+      if (isNaN(date.getTime())) return '';
+
+      // Format date as dd/MM/yyyy
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+
+      // Format time as HHmm
+      const formattedTime = formatTimeToMilitary(date);
+
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    } catch {
+      return '';
+    }
   }
 
   trackByOrderId(_: number, order: OrderDto): number | undefined {

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, MoreVertical, Eye } from 'lucide-angular';
+import { formatTimeToMilitary } from '@utils/format.utils';
 
 export interface OrderItem {
   orderId: string;
@@ -153,6 +154,34 @@ export class StatusCardComponent {
 
   isOrderCard(): boolean {
     return !!this.orderRequestId && !this.returnRequestId && !this.discardRequestId;
+  }
+
+  /**
+   * Format approval date-time for display
+   * Formats date as dd/MM/yyyy and time as HHmm (military format)
+   * Handles both Date objects and string formats
+   * Matches the format used in workflow-approval-detail component
+   */
+  formatApprovalDateTime(dateTime: string | Date | undefined): string {
+    if (!dateTime) return '';
+
+    try {
+      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+      if (isNaN(date.getTime())) return '';
+
+      // Format date as dd/MM/yyyy
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+
+      // Format time as HHmm
+      const formattedTime = formatTimeToMilitary(date);
+
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    } catch {
+      return '';
+    }
   }
 }
 

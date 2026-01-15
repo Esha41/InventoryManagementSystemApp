@@ -8,7 +8,7 @@ import { RoleFormModalComponent } from '@components/role-form-modal/role-form-mo
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
-import { LucideAngularModule, Shield, Plus, Edit, Trash2, Users, Settings, Copy, Check, X, Search } from 'lucide-angular';
+import { LucideAngularModule, Badge, Plus, Edit, Trash2, Users, Settings, Copy, Check, X, Search } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
 import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -37,7 +37,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
   styleUrls: ['./admin-roles.component.css']
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
-  readonly Shield = Shield;
+  readonly Badge = Badge;
   readonly Plus = Plus;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;

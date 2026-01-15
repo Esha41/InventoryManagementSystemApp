@@ -11,7 +11,7 @@ import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { formatOrderDateTime } from '@utils/date.utils';
 import { getRequestTitle } from '@utils/dashboard.utils';
 import { formatRequestDate } from '@utils/request-mapper.utils';
-import { formatDate, formatTimeToMilitary } from '@utils/format.utils';
+import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -80,9 +80,11 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
     : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
 
-  // Format usage date without time (for lastUpdated/usageDate field)
-  const usageDateOnly = fromDate
-    ? (toDate ? `${fromDate} - ${toDate}` : fromDate)
+  // Format usage date without time (for lastUpdated/usageDate field) - use DD/MM/YYYY format
+  const fromDateShort = order.usageDateFrom ? formatDateShort(order.usageDateFrom) : '';
+  const toDateShort = order.usageDateTo ? formatDateShort(order.usageDateTo) : '';
+  const usageDateOnly = fromDateShort
+    ? (toDateShort ? `${fromDateShort} - ${toDateShort}` : fromDateShort)
     : '';
 
   // Get localized department name

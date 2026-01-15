@@ -30,7 +30,7 @@
         </div>
         <div class="status-card__info" *ngIf="order.requestDate">
           <span class="status-card__label">{{ 'dashboard.requestDate' | translate }}</span>
-          <span class="status-card__value">{{ order.requestDate }}</span>
+          <span class="status-card__value">{{ formatApprovalDateTime(order.requestDate) || 'N/A' }}</span>
         </div>
       </div>
 

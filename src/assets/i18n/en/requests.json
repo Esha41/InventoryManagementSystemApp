@@ -380,6 +380,7 @@
     "approvalWorkflow": "Approval Workflow",
     "unknownApprover": "Unknown Approver",
     "approvedAt": "Approved at",
+    "createdAt": "Created at",
     "rejectedAt": "Rejected at",
     "returnedAt": "Returned at",
     "noApprovalWorkflowData": "No approval workflow data available",

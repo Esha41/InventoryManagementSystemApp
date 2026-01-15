@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { LucideAngularModule, UserPlus, UserIcon, Shield, Power, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, UserPlus, UserIcon, Power, Edit, Trash2 } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { LookupItem } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -44,7 +44,6 @@ import { BackendAuthService } from '@services/backend-auth.service';
 export class UserManagementComponent implements OnInit, OnDestroy {
   readonly UserPlus = UserPlus;
   readonly UserIcon = UserIcon;
-  readonly Shield = Shield;
   readonly Power = Power;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;

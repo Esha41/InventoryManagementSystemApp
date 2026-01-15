@@ -376,6 +376,7 @@
     "approvalWorkflow": "سير عمل الموافقة",
     "unknownApprover": "موافق غير معروف",
     "approvedAt": "تاريخ ووقت الموافقة",
+    "createdAt": "تاريخ ووقت الإنشاء",
     "rejectedAt": "تاريخ ووقت الرفض",
     "returnedAt": "تاريخ ووقت الإرجاع",
     "noApprovalWorkflowData": "لا توجد بيانات سير عمل الموافقة متاحة",

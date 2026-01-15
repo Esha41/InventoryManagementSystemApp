@@ -119,9 +119,8 @@
                     {{ getStatusLabel(order.status) }}
                   </span>
                 </div>
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-[var(--color-text-muted)] truncate">{{ getOrderDateLabel(order) }}</span>
-                  <span class="font-bold shrink-0 ms-2 priority-badge"
+                <div class="flex items-center justify-end text-xs">
+                  <span class="font-bold shrink-0 priority-badge"
                     [ngClass]="getPriorityColorClass(order.priority)">{{ ('common.priorityLevels.' +
                     getPriorityLabel(order.priority)) | translate }}</span>
                 </div>
@@ -232,7 +231,7 @@
                     }}:</span>
                   <span class="print-info-value">{{ orderSummary.requestDate || 'N/A' }}</span>
                 </div>
-                <div class="print-info-item">
+                <div class="print-info-item" *ngIf="orderSummary.requestType !== 'Return' && orderSummary.requestType !== 'Discard'">
                   <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.usageDate' | translate
                     }}:</span>
                   <span class="print-info-value">{{ orderSummary.lastUpdated || orderSummary.requestDate || 'N/A'

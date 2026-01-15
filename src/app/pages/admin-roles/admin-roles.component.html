@@ -24,7 +24,7 @@
           <p class="text-sm text-[var(--color-text-muted)]">{{ 'adminRoles.totalRoles' | translate }}</p>
           <p class="text-2xl font-bold text-[var(--color-text)]">{{ getTotalRoles() }}</p>
         </div>
-        <lucide-angular [img]="Shield" class="h-8 w-8 text-[var(--color-accent)]"></lucide-angular>
+        <lucide-angular [img]="Badge" class="h-8 w-8 text-[var(--color-accent)]"></lucide-angular>
       </div>
     </app-card>
 
@@ -82,7 +82,7 @@
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center flex-shrink-0">
-                  <lucide-angular [img]="Shield" class="h-5 w-5 text-[var(--color-accent)]"></lucide-angular>
+                  <lucide-angular [img]="Badge" class="h-5 w-5 text-[var(--color-accent)]"></lucide-angular>
                 </div>
                 <div>
                   <h3 class="font-semibold text-[var(--color-text)]">{{ getRoleDisplayName(role) }}</h3>
@@ -118,7 +118,7 @@
 
       <!-- Empty State -->
       <div *ngIf="filteredRoles.length === 0 && !isLoading" class="text-center py-12">
-        <lucide-angular [img]="Shield" class="h-12 w-12 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
+        <lucide-angular [img]="Badge" class="h-12 w-12 mx-auto text-[var(--color-text-muted)] mb-4"></lucide-angular>
         <p class="text-[var(--color-text-muted)]">{{ 'adminRoles.noRolesFound' | translate }}</p>
       </div>
 

@@ -179,9 +179,6 @@
                 <p class="text-sm text-[var(--color-text)] font-medium">
                   {{ getLocalizedValue(requestDetail.requesterNameEn || requestDetail.requesterName,
                   requestDetail.requesterNameAr) }}
-                  <span *ngIf="requestDetail.requesterUserName" class="text-[var(--color-text-muted)] ms-2 font-normal">
-                    ({{ requestDetail.requesterUserName }})
-                  </span>
                 </p>
               </div>
             </div>
@@ -325,7 +322,8 @@
                         'approved': approval.status === 'Approved',
                         'pending': approval.status === 'Pending',
                         'rejected': approval.status === 'Rejected',
-                        'border-[var(--color-success)]': approval.status === 'Approved',
+                        'submitted': approval.status === 'Submitted',
+                        'border-[var(--color-success)]': approval.status === 'Approved' || approval.status === 'Submitted',
                         'border-amber-300': approval.status === 'Pending',
                         'border-red-300': approval.status === 'Rejected',
                         'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
@@ -353,15 +351,23 @@
                             [ngClass]="getApprovalStatusClass(approval.status)">
                             {{ ('common.statuses.' + approval.status) | translate }}
                           </span>
-                          <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2">
+                          <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2"
+                            dir="ltr">
+                            <span *ngIf="approval.status === 'Submitted'">
+                              {{ 'workflowApprovalDetail.createdAt' | translate }}: {{
+                              formatApprovalDateTime(approval.approvedDateTime) }}
+                            </span>
                             <span *ngIf="approval.status === 'Approved'">
-                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{ approval.approvedDateTime }}
+                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{
+                              formatApprovalDateTime(approval.approvedDateTime) }}
                             </span>
                             <span *ngIf="approval.status === 'Rejected'">
-                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{ approval.approvedDateTime }}
+                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{
+                              formatApprovalDateTime(approval.approvedDateTime) }}
                             </span>
                             <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
-                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{ approval.approvedDateTime }}
+                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{
+                              formatApprovalDateTime(approval.approvedDateTime) }}
                             </span>
                           </p>
                         </div>

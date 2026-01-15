@@ -28,6 +28,7 @@ import {
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { formatTimeToMilitary } from '@utils/format.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -406,6 +407,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  /**
+   * Format approval date-time for display
+   * Formats date as dd/MM/yyyy and time as HHmm (military format)
+   * Handles both Date objects and string formats
+   * Matches the format used in workflow-approval-detail component
+   */
+  formatApprovalDateTime(dateTime: string | Date | undefined): string {
+    if (!dateTime) return '';
+
+    try {
+      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+      if (isNaN(date.getTime())) return '';
+
+      // Format date as dd/MM/yyyy
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+
+      // Format time as HHmm
+      const formattedTime = formatTimeToMilitary(date);
+
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    } catch {
+      return '';
+    }
+  }
 
 }
 

@@ -16,7 +16,6 @@ import { InventoryService } from '@services/inventory.service';
 import { UserContextService } from '@services/user-context.service';
 import { UnifiedRequestService } from '@services/unified-request.service';
 import { OverstockCardComponent, OverstockItemView } from '@pages/dashboard/components/overstock-card/overstock-card.component';
-import { AnnualActivityCardComponent } from '@pages/dashboard/components/annual-activity-card/annual-activity-card.component';
 import { ReturnService, ReturnDto } from '@services/return.service';
 import { DiscardService, DiscardDto } from '@services/discard.service';
 import { ErrorHandlingService } from '@services/error-handling.service';
@@ -52,7 +51,6 @@ import { formatTimeToMilitary } from '@utils/format.utils';
     ReturnDetailsModalComponent,
     DiscardDetailsModalComponent,
     OverstockCardComponent,
-    AnnualActivityCardComponent,
     DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent
@@ -499,7 +497,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         status: cardStatus,
         orders: [{
           orderId: getRequestTitle(order, order.orderNo),
-          requestDate: this.formatCreationDate(order),
+          requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
           departmentName: this.resolveOrderDepartmentName(order),
           requesterName: this.resolveRequesterName(order),
           items: mapRequestItems(order.requestItems),
@@ -525,7 +523,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         status: cardStatus,
         orders: [{
           orderId: getRequestTitle(ret),
-          requestDate: this.formatReturnDate(ret),
+          requestDate: (ret as any).creationDate ? (typeof (ret as any).creationDate === 'string' ? (ret as any).creationDate : (ret as any).creationDate.toISOString()) : '',
           departmentName: this.resolveReturnDepartmentName(ret),
           requesterName: this.resolveRequesterName(ret),
           items: mapRequestItems(ret.requestItems),
@@ -551,7 +549,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         status: cardStatus,
         orders: [{
           orderId: getRequestTitle(discard),
-          requestDate: this.formatDiscardDate(discard),
+          requestDate: (discard as any).creationDate ? (typeof (discard as any).creationDate === 'string' ? (discard as any).creationDate : (discard as any).creationDate.toISOString()) : '',
           departmentName: this.resolveDiscardDepartmentName(discard),
           requesterName: this.resolveRequesterName(discard),
           items: mapRequestItems(discard.requestItems),
@@ -732,9 +730,37 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Format creation date for display
    */
   formatCreationDate(order: OrderDto | any): string {
-    const creationDate = order.creationDate;
+    const creationDate = order.creationDate || order.requestDate;
     if (!creationDate) return 'N/A';
-    return this.formatDate(creationDate);
+    return this.formatApprovalDateTime(creationDate);
+  }
+
+  /**
+   * Format approval date-time for display
+   * Formats date as dd/MM/yyyy and time as HHmm (military format)
+   * Handles both Date objects and string formats
+   * Matches the format used in workflow-approval-detail component
+   */
+  formatApprovalDateTime(dateTime: string | Date | undefined): string {
+    if (!dateTime) return '';
+
+    try {
+      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
+      if (isNaN(date.getTime())) return '';
+
+      // Format date as dd/MM/yyyy
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+
+      // Format time as HHmm
+      const formattedTime = formatTimeToMilitary(date);
+
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    } catch {
+      return '';
+    }
   }
 
   private formatDate(source?: string | Date): string {

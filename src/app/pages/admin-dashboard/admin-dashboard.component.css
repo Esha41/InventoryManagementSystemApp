@@ -219,6 +219,97 @@
 
 
 
+/* Quick Actions Section */
+.quick-actions-section {
+    background: var(--color-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions-section .section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-background);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.section-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+}
+
+
+.quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: var(--color-background);
+    border: 2px solid var(--color-border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    width: 100%;
+}
+
+.quick-action-card:hover {
+    border-color: var(--color-primary);
+    background: var(--color-background-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    background-color: var(--color-background-active);
+    flex-shrink: 0;
+}
+
+.quick-action-icon .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-brand);
+}
+
+.quick-action-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.quick-action-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+}
+
+.quick-action-description {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
 /* Delegations Section */
 .delegations-section {
     background: var(--color-surface);
@@ -235,6 +326,12 @@
 
     .charts-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -256,12 +353,20 @@
         grid-template-columns: 1fr;
     }
 
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .actions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 480px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
     .actions-grid {
         grid-template-columns: 1fr;
     }

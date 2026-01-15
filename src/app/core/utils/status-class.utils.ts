@@ -61,6 +61,8 @@ export function getApprovalStatusBadgeClass(status: string): string {
       return 'text-purple-700 bg-purple-50 border-purple-200';
     case 'Pending':
       return 'text-amber-700 bg-amber-50 border-amber-200';
+    case 'Submitted':
+      return 'text-emerald-700 bg-emerald-50 border-emerald-200';
     default:
       return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
   }
