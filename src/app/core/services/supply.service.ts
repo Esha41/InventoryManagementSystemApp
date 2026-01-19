@@ -5,9 +5,10 @@ import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { FileUploadDto } from '@models/file-upload.model';
+import { OrderDto } from '@models/order.model';
 
 // ==================== Supply DTOs ====================
-
 
 export interface SupplyLotSuggestionDto {
   inventoryDetailId: number;
@@ -106,16 +107,6 @@ export interface SupplyDetailDto {
   };
 }
 
-export interface FileUploadDto {
-  id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: number;
-  entityId: number;
-}
-
 export interface SupplyDto {
   id: number;
   orderId: number;
@@ -126,7 +117,7 @@ export interface SupplyDto {
   submissionStatus: number; // SupplySubmissionStatus enum
   fulfillmentStatus: number; // SupplyFulfillmentStatus enum
   notes?: string;
-  order?: any;
+  order?: OrderDto;
   receiverRank?: {
     id: number;
     nameAr?: string;

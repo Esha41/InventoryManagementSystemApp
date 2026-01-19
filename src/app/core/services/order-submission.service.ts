@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
-import { OrderService, CreateOrderRequest, OrderDto } from './order.service';
+import { OrderService } from './order.service';
 import { ErrorHandlingService } from './error-handling.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { CreateOrderDto, OrderDto } from '@models/order.model';
 import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
 import { parseOptionalInteger } from '@utils/number.utils';
 
@@ -141,7 +142,7 @@ export class OrderSubmissionService {
   /**
    * Builds the order payload from submission data
    */
-  buildOrderPayload(data: OrderSubmissionData): CreateOrderRequest {
+  buildOrderPayload(data: OrderSubmissionData): CreateOrderDto {
     const usageDateTimeFrom = this.combineDateAndTime(data.usageDateFrom, data.usageTimeFrom);
     const usageDateTimeTo = this.combineDateAndTime(data.usageDateTo, data.usageTimeTo);
 
@@ -188,7 +189,7 @@ export class OrderSubmissionService {
    * Submits an order
    * Uses RxJS operators to chain observables properly (no nested subscribes)
    */
-  submitOrder(payload: CreateOrderRequest, files?: File[]): Observable<OrderSubmissionResult> {
+  submitOrder(payload: CreateOrderDto, files?: File[]): Observable<OrderSubmissionResult> {
     return this.orderService.createOrder(payload, files).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {

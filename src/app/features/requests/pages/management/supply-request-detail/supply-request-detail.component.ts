@@ -17,7 +17,8 @@ import { ConfigService } from '@services/config.service';
 
 // Models
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { OrderDto, CreateUpdateRequestItemDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
+import { CreateRequestItemDto } from '@models/request-item.model';
 
 // Components
 import { LotSelectionModalComponent } from './components/lot-selection-modal/lot-selection-modal.component';
@@ -533,7 +534,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSaveAddItem(itemDto: CreateUpdateRequestItemDto): void {
+  onSaveAddItem(itemDto: CreateRequestItemDto): void {
     this.savingItem = true;
     this.orderItemManagementService.addItem(this.orderId, itemDto)
       .pipe(takeUntil(this.destroy$))

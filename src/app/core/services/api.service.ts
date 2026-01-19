@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { ConfigService } from './config.service';
+import { LoggingService } from './logging.service';
 
 /**
  * Base API service for making HTTP requests
@@ -15,7 +16,8 @@ import { ConfigService } from './config.service';
 export class ApiService {
   constructor(
     private http: HttpClient,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private loggingService: LoggingService
   ) { }
 
   private get baseUrl(): string {
@@ -35,7 +37,7 @@ export class ApiService {
    */
   post<T, D = unknown>(endpoint: string, data: D, options?: { withCredentials?: boolean }): Observable<T> {
     let headers = new HttpHeaders();
-    
+
     // Add client information headers
     const clientHeaders = this.getClientInfoHeaders();
     if (Object.keys(clientHeaders).length > 0) {
@@ -43,7 +45,7 @@ export class ApiService {
         headers = headers.set(key, clientHeaders[key]);
       });
     }
-    
+
     const httpOptions: {
       headers: HttpHeaders;
       withCredentials?: boolean;
@@ -52,11 +54,11 @@ export class ApiService {
       headers: headers,
       observe: 'body' as const
     };
-    
+
     if (options?.withCredentials) {
       httpOptions.withCredentials = true;
     }
-    
+
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, httpOptions)
       .pipe(catchError(error => this.handleError(error)));
   }
@@ -89,51 +91,62 @@ export class ApiService {
    * GET request with authentication headers
    */
   getWithAuth<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params, headers })
-      .pipe(catchError(error => this.handleError(error)));
+    return this.makeAuthenticatedRequest<T>(
+      (url, headers) => this.http.get<T>(url, { params, headers })
+      , endpoint);
   }
 
   /**
    * POST request with authentication headers
    */
   postWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    let headers = this.getAuthHeaders();
-
-    // If data is FormData, don't set Content-Type header (browser will set it with boundary)
-    if (data instanceof FormData) {
-      headers = headers.delete('Content-Type');
-    }
-
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, { headers })
-      .pipe(catchError(error => this.handleError(error)));
+    return this.makeAuthenticatedRequest<T>(
+      (url, headers) => {
+        // If data is FormData, don't set Content-Type header (browser will set it with boundary)
+        const finalHeaders = data instanceof FormData ? headers.delete('Content-Type') : headers;
+        return this.http.post<T>(url, data, { headers: finalHeaders });
+      },
+      endpoint
+    );
   }
 
   /**
    * PUT request with authentication headers
    */
   putWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    const headers = this.getAuthHeaders();
-    return this.http.put<T>(`${this.baseUrl}${endpoint}`, data, { headers })
-      .pipe(catchError(error => this.handleError(error)));
+    return this.makeAuthenticatedRequest<T>(
+      (url, headers) => this.http.put<T>(url, data, { headers })
+      , endpoint);
   }
 
   /**
    * PATCH request with authentication headers
    */
   patchWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    const headers = this.getAuthHeaders();
-    return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data, { headers })
-      .pipe(catchError(error => this.handleError(error)));
+    return this.makeAuthenticatedRequest<T>(
+      (url, headers) => this.http.patch<T>(url, data, { headers })
+      , endpoint);
   }
 
   /**
    * DELETE request with authentication headers
    */
   deleteWithAuth<T>(endpoint: string): Observable<T> {
+    return this.makeAuthenticatedRequest<T>(
+      (url, headers) => this.http.delete<T>(url, { headers })
+      , endpoint);
+  }
+
+  /**
+   * Helper method to make authenticated requests with consistent error handling
+   */
+  private makeAuthenticatedRequest<T>(
+    requestFn: (url: string, headers: HttpHeaders) => Observable<T>,
+    endpoint: string
+  ): Observable<T> {
     const headers = this.getAuthHeaders();
-    return this.http.delete<T>(`${this.baseUrl}${endpoint}`, { headers })
-      .pipe(catchError(error => this.handleError(error)));
+    const url = `${this.baseUrl}${endpoint}`;
+    return requestFn(url, headers).pipe(catchError(error => this.handleError(error)));
   }
 
   /**
@@ -219,7 +232,7 @@ export class ApiService {
     if (window.screen?.height) headers['X-Client-ScreenHeight'] = window.screen.height.toString();
     if (navigator.language) headers['X-Client-Language'] = navigator.language;
     if (navigator.platform) headers['X-Client-Platform'] = navigator.platform;
-    
+
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (timezone) headers['X-Client-Timezone'] = timezone;
@@ -287,7 +300,7 @@ export class ApiService {
       errorMessage = error.message;
     }
 
-    this.configService.logError('API Error:', error);
+    this.loggingService.error('API Error', error);
     return throwError(() => new Error(errorMessage));
   }
 

@@ -12,9 +12,12 @@ import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EmailService } from './email.service';
 import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
-import { OrderService, OrderDto } from './order.service';
-import { ReturnService, ReturnDto } from './return.service';
-import { DiscardService, DiscardDto } from './discard.service';
+import { OrderService } from './order.service';
+import { ReturnService } from './return.service';
+import { DiscardService } from './discard.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnDto } from '@models/return.model';
+import { DiscardDto } from '@models/discard.model';
 
 interface NotificationDto {
   id?: number;

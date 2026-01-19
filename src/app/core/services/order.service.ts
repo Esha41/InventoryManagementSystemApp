@@ -1,124 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
-
-export interface CreateUpdateRequestItemDto {
-  itemId: number;
-  quantity: number;
-  notes?: string;
-}
-
-export interface CreateOrderRequest {
-  orderNo: string;
-  requestNo: string;
-  reason: string;
-  priority: number;
-  notes?: string;
-  departmentId: number;
-  requestTypeId?: number | null;
-  requesterId?: string | null;
-  recieverId?: string | null;
-  depotId?: number | null;
-  requestPurposeId: number;
-  isFromAllowance: boolean;
-  usageDateFrom: string;
-  usageTimeFrom: string;
-  usageDateTo: string;
-  usageTimeTo: string;
-  usagePurpose: string;
-  annualDiscard?: number | null;
-  usageLocation: string;
-  numberOfOfficer?: number | null;
-  numberOfOtherRank?: number | null;
-  requestItems: Array<{
-    itemId: number;
-    quantity: number;
-    notes?: string;
-  }>;
-}
-
-export interface OrderRequestItemDto {
-  id: number;
-  itemId: number;
-  quantity: number;
-  notes?: string;
-  itemName?: string;
-  itemNo?: string;
-  nsn?: string;
-  itemType?: number;
-}
-
-export interface OrderDto {
-  id: number;
-  requestNo?: string;
-  orderNo: string;
-  requestType: number | string; // Can be number (1, 2, 3) or string ('Order', 'Return', 'Discard')
-  reason?: string;
-  priority: number | string; // Can be number (1, 2, 3) or string ('High', 'Medium', 'Low')
-  status: number | string; // Can be number (1, 2, 3, 4) or string ('New', 'UnderProcess', 'Approved', 'Rejected')
-  notes?: string;
-  departmentId: number;
-  requesterId?: string | null;
-  recieverId?: string | null;
-  depotId?: number | null;
-  requestPurposeId: number;
-  isFromAllowance: boolean;
-  usageDateFrom?: string;
-  usageTimeFrom?: string;
-  usageDateTo?: string;
-  usageTimeTo?: string;
-  usagePurpose?: string;
-  annualDiscard?: number | null;
-  usageLocation?: string;
-  numberOfOfficer?: number | null;
-  numberOfOtherRank?: number | null;
-  supplyDate?: string | Date | null; // Date when the order should be supplied
-  departmentNameAr?: string;
-  departmentNameEn?: string;
-  requesterName?: string;
-  requesterNameEn?: string;
-  requesterNameAr?: string;
-  recieverName?: string;
-  depotNameAr?: string;
-  depotNameEn?: string;
-  requestPurposeNameAr?: string;
-  requestPurposeNameEn?: string;
-  requestItems?: OrderRequestItemDto[];
-  creationDate?: string | Date;
-  isMyTurn?: boolean;
-  // Nested objects for localization (similar to ReturnDto and DiscardDto)
-  department?: {
-    id: number;
-    code: string;
-    nameAr: string;
-    nameEn: string;
-    isDeleted: boolean;
-  };
-  requester?: {
-    id: string;
-    userName: string;
-    fullNameEN: string;
-    fullNameAR: string;
-    militoryId?: string | null;
-    email?: string;
-    rank?: any;
-    department?: any;
-  };
-  requestPurpose?: {
-    id: number;
-    nameAr: string;
-    nameEn: string;
-    requestType: number;
-  };
-}
-
-export interface OrderStatusSummaryItem {
-  status: number;
-  count?: number;
-}
+import { CreateOrderDto, OrderDto, OrderStatusSummaryItem } from '@models/order.model';
+import { CreateRequestItemDto } from '@models/request-item.model';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -131,7 +18,7 @@ export class OrderService {
     return `${this.config.apiUrl}/Order`;
   }
 
-  createOrder(payload: CreateOrderRequest, files?: File[]): Observable<APIOperationResponse<number>> {
+  createOrder(payload: CreateOrderDto, files?: File[]): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
 
     // Always send as FormData (multipart/form-data) to match backend expectations
@@ -223,7 +110,7 @@ export class OrderService {
           throw new Error(response.message || 'Failed to fetch order details');
         }
         const order = response.data;
-        
+
         // Normalize nested object property names (handle both camelCase and PascalCase)
         if ((order as any).Department && !order.department) {
           order.department = (order as any).Department;
@@ -234,7 +121,7 @@ export class OrderService {
         if ((order as any).RequestPurpose && !order.requestPurpose) {
           order.requestPurpose = (order as any).RequestPurpose;
         }
-        
+
         // Populate flat properties from nested objects if missing
         if (order.department) {
           if (!order.departmentNameEn && order.department.nameEn) {
@@ -244,12 +131,12 @@ export class OrderService {
             order.departmentNameAr = order.department.nameAr;
           }
         }
-        
+
         if (order.requester) {
           if (!order.requesterName) {
-            order.requesterName = order.requester.fullNameEN || 
-                                 order.requester.fullNameAR || 
-                                 order.requester.userName;
+            order.requesterName = order.requester.fullNameEN ||
+              order.requester.fullNameAR ||
+              order.requester.userName;
           }
           if (!order.requesterNameEn && order.requester.fullNameEN) {
             order.requesterNameEn = order.requester.fullNameEN;
@@ -258,7 +145,7 @@ export class OrderService {
             order.requesterNameAr = order.requester.fullNameAR;
           }
         }
-        
+
         if (order.requestPurpose) {
           if (!order.requestPurposeNameEn && order.requestPurpose.nameEn) {
             order.requestPurposeNameEn = order.requestPurpose.nameEn;
@@ -267,7 +154,7 @@ export class OrderService {
             order.requestPurposeNameAr = order.requestPurpose.nameAr;
           }
         }
-        
+
         return order;
       }),
       catchError(error => {
@@ -332,7 +219,7 @@ export class OrderService {
    * Add a new item to an existing order
    * Backend endpoint: POST {baseUrl}/{orderId}/items
    */
-  addOrderItem(orderId: number, itemDto: CreateUpdateRequestItemDto): Observable<APIOperationResponse<number>> {
+  addOrderItem(orderId: number, itemDto: CreateRequestItemDto): Observable<APIOperationResponse<number>> {
     this.config.log(`Adding item to order ${orderId}`, itemDto);
     return this.http.post<APIOperationResponse<number>>(`${this.baseUrl}/${orderId}/items`, itemDto).pipe(
       catchError(error => {

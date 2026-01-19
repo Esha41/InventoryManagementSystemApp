@@ -6,34 +6,10 @@ import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
 
-/**
- * Enum to identify which domain entity a file belongs to.
- * Maps to backend FileEntityType enum.
- */
-export enum FileEntityType {
-  Ammunition = 1,
-  Order = 2,
-  Workflow = 3,
-  WorkflowApproval = 4,
-  Supply = 5,
-  Return = 6,
-  Weapon = 7,
-  Explosive = 8
-}
-
-/**
- * File upload DTO matching backend structure
- */
-export interface FileUploadDto {
-  id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: number;
-  entityId: number;
-}
+// Re-export for backward compatibility
+export { FileUploadDto, FileEntityType };
 
 /**
  * File upload service for handling file operations

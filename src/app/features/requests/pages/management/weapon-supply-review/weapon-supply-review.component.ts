@@ -9,7 +9,8 @@ import { catchError } from 'rxjs/operators';
 
 // Services
 import { AssetSupplyService, OrderAssetsToSupplyDto } from '@services/asset-supply.service';
-import { OrderService, OrderDto } from '@services/order.service';
+import { OrderService } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { TranslationService } from '@services/translation.service';

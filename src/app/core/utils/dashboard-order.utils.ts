@@ -4,7 +4,7 @@
  */
 
 import { TranslateService } from '@ngx-translate/core';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { formatTimeToMilitary } from './format.utils';
 import { getRequestStatusTranslationKey } from './dashboard.utils';

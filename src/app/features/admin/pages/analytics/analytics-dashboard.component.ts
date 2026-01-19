@@ -5,6 +5,7 @@ import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, LayoutDashboard, TrendingUp, RefreshCw } from 'lucide-angular';
 import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@services/admin-analytics.service';
+import { LoggingService } from '@services/logging.service';
 import { InventoryOverviewCardComponent } from './components/kpi-cards/inventory-overview-card/inventory-overview-card.component';
 import { RequestMetricsCardComponent } from './components/kpi-cards/request-metrics-card/request-metrics-card.component';
 import { RequestTrendsChartComponent } from './components/request-trends-chart/request-trends-chart.component';
@@ -56,7 +57,8 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
 
     constructor(
         private adminAnalyticsService: AdminAnalyticsService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private loggingService: LoggingService
     ) { }
 
     ngOnInit(): void {
@@ -92,7 +94,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
                     this.cdr.markForCheck();
                 },
                 error: (error) => {
-                    console.error('Error loading analytics metrics:', error);
+                    this.loggingService.error('Error loading analytics metrics', error);
                     this.isLoading = false;
                     this.isRefreshing = false;
                     this.cdr.markForCheck();

@@ -1,4 +1,4 @@
-import { Notification, RequestDetail, NotificationDetailType } from '@models/notification.model';
+import { Notification, NotificationRequestDetail, NotificationDetailType } from '@models/notification.model';
 
 /**
  * Extract entity ID from notification metadata
@@ -120,7 +120,7 @@ export function hasMetadataAction(
 /**
  * Determine detail type from request detail
  */
-export function determineDetailType(detail: RequestDetail): NotificationDetailType {
+export function determineDetailType(detail: NotificationRequestDetail): NotificationDetailType {
   if ('requestNo' in detail && !('reason' in detail)) {
     return 'order';
   } else if ('reason' in detail) {
@@ -139,7 +139,7 @@ export function getPriorityLabelTranslation(priority?: number | string | null): 
   if (priority === null || priority === undefined) {
     return 'dashboard.priorityLabels.urgent';
   }
-  
+
   // Normalize to number
   let priorityNum: number;
   if (typeof priority === 'string') {
@@ -159,7 +159,7 @@ export function getPriorityLabelTranslation(priority?: number | string | null): 
   } else {
     priorityNum = priority;
   }
-  
+
   switch (priorityNum) {
     case 1:
       return 'dashboard.priorityLabels.normal';
@@ -180,7 +180,7 @@ export function getStatusLabelTranslation(status?: number | string | null): stri
   if (status === null || status === undefined) {
     return 'dashboard.statusLabels.new';
   }
-  
+
   // Normalize to number
   let statusNum: number;
   if (typeof status === 'string') {
@@ -202,7 +202,7 @@ export function getStatusLabelTranslation(status?: number | string | null): stri
   } else {
     statusNum = status;
   }
-  
+
   switch (statusNum) {
     case 2:
       return 'dashboard.statusLabels.underProcess';
@@ -290,7 +290,7 @@ export function handleDetailError(
   translateService: { instant: (key: string) => string }
 ): string {
   const errorObj = error as any;
-  
+
   // Check for permission/authorization errors
   if (errorObj?.status === 403 || errorObj?.status === 401) {
     return 'You do not have permission to view details for this notification.';

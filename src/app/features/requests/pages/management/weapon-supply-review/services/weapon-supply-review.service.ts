@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { AssetSupplyService, OrderAssetsToSupplyDto, CreateAssetSupplyDto } from '@services/asset-supply.service';
 import { AssetService } from '@services/asset.service';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { SelectedAsset } from './asset-selection.service';
 
 export interface ItemWithAssets {

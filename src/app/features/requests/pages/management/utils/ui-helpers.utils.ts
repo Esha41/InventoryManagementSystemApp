@@ -5,7 +5,7 @@
 
 import { formatDate } from '@utils/format.utils';
 import { CheckCircle, AlertTriangle, Clock, Package } from 'lucide-angular';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { OrderItem } from '@models/supply-request.model';
 
 /**

@@ -3,7 +3,7 @@
  * Functions for mapping OrderDto to SupplyRequestDetail and related operations
  */
 
-import { OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { OrderSupplySuggestionDto } from '@services/supply.service';
 import { formatDate } from '@utils/format.utils';

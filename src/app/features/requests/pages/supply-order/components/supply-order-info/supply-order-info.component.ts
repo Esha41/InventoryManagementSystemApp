@@ -1,7 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { formatDate as formatDateUtil, formatTimeToMilitary } from '@utils/format.utils';
 import { getPriorityClass } from '@utils/priority.utils';
 import {

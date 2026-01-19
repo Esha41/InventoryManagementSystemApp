@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CartridgeDataService, CartridgeLoadResult } from './cartridge-data.service';
+import { CartridgeDataService, CartridgeLoadResult } from '@services/cartridge-data.service';
 import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 

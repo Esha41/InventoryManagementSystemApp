@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
-import { OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { Subject, takeUntil } from 'rxjs';
 import {
   formatCreationDate,

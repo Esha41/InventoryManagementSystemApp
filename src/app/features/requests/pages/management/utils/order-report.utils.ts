@@ -3,7 +3,7 @@
  * Component-specific utilities for order report functionality
  */
 
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { mapOrderStatusToString, mapOrderStatusFromApi } from '@utils/status.utils';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';

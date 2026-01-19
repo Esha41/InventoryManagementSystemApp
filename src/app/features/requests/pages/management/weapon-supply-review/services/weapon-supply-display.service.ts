@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
 import { ItemWithAssets } from './weapon-supply-review.service';

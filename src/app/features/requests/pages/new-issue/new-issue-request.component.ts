@@ -1,29 +1,29 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '@components/button/button.component';
 import { StepperComponent, Step } from '@components/stepper/stepper.component';
-import { CartridgeDetailsComponent } from './components/cartridge-details/cartridge-details.component';
-import { CartridgeListComponent, Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { UsageFormComponent } from './components/usage-form/usage-form.component';
 import { ReviewFormComponent } from './components/review-form/review-form.component';
 import { AllowanceSelectionComponent } from './components/allowance-selection/allowance-selection.component';
 import { OrderSuccessComponent } from './components/order-success/order-success.component';
+import { StepSelectionComponent } from './components/step-selection/step-selection.component';
 import { ErrorBannerComponent } from './components/error-banner/error-banner.component';
 import { Subject, takeUntil } from 'rxjs';
 import { CartridgeDataService } from '@services/cartridge-data.service';
 import { OrderSubmissionService } from '@services/order-submission.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { IssueRequestFilterService } from '@services/issue-request-filter.service';
-import { IssueRequestStateService } from '@services/issue-request-state.service';
-import { IssueRequestDataService } from '@services/issue-request-data.service';
-import { IssueRequestNavigationService } from '@services/issue-request-navigation.service';
-import { IssueRequestUserContextService } from '@services/issue-request-user-context.service';
-import { IssueRequestCartridgeLoaderService } from '@services/issue-request-cartridge-loader.service';
-import { IssueRequestCartridgeManagementService } from '@services/issue-request-cartridge-management.service';
-import { IssueRequestSubmissionService } from '@services/issue-request-submission.service';
+import { IssueRequestFilterService } from '@requests/services/issue-request-filter.service';
+import { IssueRequestStateService } from '@requests/services/issue-request-state.service';
+import { IssueRequestDataService } from '@requests/services/issue-request-data.service';
+import { IssueRequestNavigationService } from '@requests/services/issue-request-navigation.service';
+import { IssueRequestUserContextService } from '@requests/services/issue-request-user-context.service';
+import { IssueRequestCartridgeLoaderService } from '@requests/services/issue-request-cartridge-loader.service';
+import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
+import { IssueRequestSubmissionService } from '@requests/services/issue-request-submission.service';
 import {
   RequestPurposeDto,
   FilterState,
@@ -76,8 +76,7 @@ interface ExtendedFilterOptions extends FilterOptions {
     TranslateModule,
     ButtonComponent,
     StepperComponent,
-    CartridgeDetailsComponent,
-    CartridgeListComponent,
+    StepperComponent,
     UsageFormComponent,
     ReviewFormComponent,
     AllowanceSelectionComponent,
@@ -86,7 +85,8 @@ interface ExtendedFilterOptions extends FilterOptions {
     LoadingStateComponent,
     ErrorStateComponent,
     HasPermissionDirective,
-    ConfirmationDialogComponent
+    ConfirmationDialogComponent,
+    StepSelectionComponent
   ],
   templateUrl: './new-issue-request.component.html',
   styleUrls: ['./new-issue-request.component.css'],
@@ -469,58 +469,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // Handlers invoked from child component outputs
-  onBulletDiameterChange(value: string): void {
-    this.filterState.selectedBulletDiameter = value;
-    this.filterCartridges();
-  }
-
-  onLinkedChange(value: string): void {
-    this.filterState.selectedLinked = value;
-    this.filterCartridges();
-  }
-
-  onNatureChange(value: string): void {
-    this.filterState.selectedNature = value;
-    this.filterCartridges();
-  }
-
-  onNSNChange(value: string): void {
-    this.filterState.selectedNSN = value;
-    this.filterCartridges();
-  }
-
-  onSearchChange(value: string): void {
-    this.filterState.searchTerm = value;
-    this.filterCartridges();
-  }
-
-  onCartridgeClick(cartridge: Cartridge): void {
-    this.cartridgeState.selectedCartridgeForView = cartridge;
-    this.cartridgeState.showCartridgeDetails = true;
-    this.cdr.markForCheck();
-  }
-
-  onCloseCartridgeDetails(): void {
-    this.cartridgeState.showCartridgeDetails = false;
-    this.cartridgeState.selectedCartridgeForView = null;
-    this.cdr.markForCheck();
-  }
-
-  onSelectCartridge(): void {
-    if (!this.cartridgeState.selectedCartridgeForView) {
-      return;
-    }
-
-    const cartridge = this.cartridgeState.allCartridges.find(c => c.id === this.cartridgeState.selectedCartridgeForView?.id) || this.cartridgeState.selectedCartridgeForView;
-    const quantity = cartridge.quantity && cartridge.quantity > 0 ? cartridge.quantity : 1;
-    this.onCartridgeAdded({ cartridge, quantity });
-
-    this.cartridgeState.showCartridgeDetails = false;
-    this.cartridgeState.selectedCartridgeForView = null;
-    this.cdr.markForCheck();
-  }
-
+  // Handlers
   onRemoveSelectedCartridge(cartridgeId: number): void {
     // Remove from cache as well
     this.cartridgeState.selectedCartridgesCache.delete(cartridgeId);
@@ -529,22 +478,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onAllowanceError(errorMessage: string): void {
-    this.allowanceError = errorMessage;
-    this.cdr.markForCheck();
-    // Clear error after 5 seconds
-    setTimeout(() => {
-      this.allowanceError = null;
-      this.cdr.markForCheck();
-    }, 5000);
-  }
-
   onClearFilters(): void {
     this.filterService.clearFilters(this.filterState, this.filterState.selectedItemType);
     this.filterCartridges();
   }
-
-
 
   onItemTypeChange(value: string): void {
     const prev = this.filterState.selectedItemType;
@@ -554,35 +491,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       this.onClearFilters();
 
       // RELOAD data for new type
-      // Reset cartridge loading state?
       this.cartridgeState.allCartridges = [];
       this.loadCartridges();
     }
-  }
-
-  onAmmunitionTypeChange(value: string): void {
-    this.filterState.selectedAmmunitionType = value;
-    this.filterCartridges();
-  }
-
-  onWeaponTypeChange(value: string): void {
-    this.filterState.selectedWeaponType = value;
-    this.filterCartridges();
-  }
-
-  onCaliberChange(value: string): void {
-    this.filterState.selectedCaliber = value;
-    this.filterCartridges();
-  }
-
-  onExplosiveTypeChange(value: string): void {
-    this.filterState.selectedExplosiveType = value;
-    this.filterCartridges();
-  }
-
-  onUnNumberChange(value: string): void {
-    this.filterState.selectedUNNumber = value;
-    this.filterCartridges();
   }
 
   onStepChange(step: number): void {

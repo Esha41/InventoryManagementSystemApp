@@ -1,6 +1,6 @@
-import { OrderDto } from '@services/order.service';
-import { ReturnDto } from '@services/return.service';
-import { DiscardDto } from '@services/discard.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnDto } from '@models/return.model';
+import { DiscardDto } from '@models/discard.model';
 
 /**
  * Base notification interface

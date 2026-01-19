@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { SupplyDto } from '@services/supply.service';
 
 /**

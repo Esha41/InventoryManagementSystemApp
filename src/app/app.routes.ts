@@ -105,19 +105,19 @@ export const routes: Routes = [
       },
       {
         path: 'warehouse/:id/inventory/add',
-        loadComponent: () => import('@inventory/pages/add/add-inventory.component').then(m => m.AddInventoryComponent),
+        loadComponent: () => import('@warehouse/pages/inventory/add-inventory/add-inventory.component').then(m => m.AddInventoryComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventorypage.page', 'inventory.create'] }
       },
       {
         path: 'warehouse/:id/assets/add',
-        loadComponent: () => import('@assets/pages/add-weapon/add-weapon-asset.component').then(m => m.AddWeaponAssetComponent),
+        loadComponent: () => import('@warehouse/pages/inventory/add-weapon/add-weapon-asset.component').then(m => m.AddWeaponAssetComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['asset.page', 'asset.create'] }
       },
       {
         path: 'warehouse/:id/assets/add/bulk-entry',
-        loadComponent: () => import('@assets/pages/add-weapon/bulk-entry/bulk-entry.component').then(m => m.BulkEntryComponent),
+        loadComponent: () => import('@warehouse/pages/inventory/add-weapon/bulk-entry/bulk-entry.component').then(m => m.BulkEntryComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['asset.page', 'asset.create'] }
       },

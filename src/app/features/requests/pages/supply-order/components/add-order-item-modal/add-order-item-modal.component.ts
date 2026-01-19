@@ -5,8 +5,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { ModalComponent } from '@shared/components/modal/modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { OrderRequestItemDto, CreateUpdateRequestItemDto } from '@services/order.service';
-import { SupplyOrderDataService } from '@services/supply-order-data.service';
+import { OrderRequestItemDto, CreateRequestItemDto } from '@models/order.model';
+import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getItemManagementOptionLabel } from '@utils/supply-order-format.utils';
@@ -116,7 +116,7 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
       return;
     }
 
-    const itemDto: CreateUpdateRequestItemDto = {
+    const itemDto: CreateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
       notes: formValue.notes || undefined

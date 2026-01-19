@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { RequestPurposeDto, RequestPurposeState } from '@requests/pages/new-issue/new-issue-request.state';

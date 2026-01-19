@@ -8,15 +8,20 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail, RequestTypeEnum } from '@utils/request-mapper.utils';
+import { RequestItemDto } from '@models/common.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
+import { FlexibleApiListResponse, DetailApiResponse } from '@models/api-response-types.model';
+
+import { RequestItemsTableComponent } from '@requests/components/request-items-table/request-items-table.component';
+import { RequestSummarySidebarComponent } from '@requests/components/request-summary-sidebar/request-summary-sidebar.component';
 
 @Component({
   selector: 'app-supply-request-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent, RequestItemsTableComponent, RequestSummarySidebarComponent],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css']
 })
@@ -48,7 +53,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private apiService: ApiService,
     private translationService: TranslationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params
@@ -74,47 +79,47 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    this.apiService.getWithAuth<BaseRequestDto[]>(
+    this.apiService.getWithAuth<FlexibleApiListResponse<BaseRequestDto>>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response) 
-          ? response 
-          : (response?.data || []);
-        
-        const baseRequest = data.find(r => r.id === this.requestId);
-        
-        if (!baseRequest) {
-          this.error = 'Request not found';
-          this.loading = false;
-          return;
-        }
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const data: BaseRequestDto[] = Array.isArray(response)
+            ? response
+            : (response?.data || []);
 
-        // Load items from the specific order/return/discard API based on request type
-        this.loadRequestItems(baseRequest).then(() => {
-          this.requestDetail = mapToRequestDetail(baseRequest);
+          const baseRequest = data.find(r => r.id === this.requestId);
+
+          if (!baseRequest) {
+            this.error = 'Request not found';
+            this.loading = false;
+            return;
+          }
+
+          // Load items from the specific order/return/discard API based on request type
+          this.loadRequestItems(baseRequest).then(() => {
+            this.requestDetail = mapToRequestDetail(baseRequest);
+            this.loading = false;
+          }).catch(() => {
+            // Still show the request detail even if items fail to load
+            this.requestDetail = mapToRequestDetail(baseRequest);
+            this.loading = false;
+          });
+        },
+        error: (error) => {
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
           this.loading = false;
-        }).catch(() => {
-          // Still show the request detail even if items fail to load
-          this.requestDetail = mapToRequestDetail(baseRequest);
-          this.loading = false;
-        });
-      },
-      error: (error) => {
-        this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
-        this.loading = false;
-      }
-    });
+        }
+      });
   }
 
   private async loadRequestItems(baseRequest: BaseRequestDto): Promise<void> {
     return new Promise((resolve) => {
       let endpoint = '';
-      
-      const requestTypeValue: any = baseRequest.requestType;
-      
+
+      const requestTypeValue = baseRequest.requestType;
+
       if (typeof requestTypeValue === 'number') {
         switch (requestTypeValue) {
           case RequestTypeEnum.Order:
@@ -154,16 +159,16 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.apiService.getWithAuth<any>(endpoint)
+      this.apiService.getWithAuth<DetailApiResponse>(endpoint)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response: any) => {
+          next: (response) => {
             const detailData = response?.data || response;
-            
+
             if (detailData && detailData.requestItems) {
-              baseRequest.requestItems = detailData.requestItems;
+              baseRequest.requestItems = (detailData.requestItems as any[]) as RequestItemDto[];
             }
-            
+
             resolve();
           },
           error: () => {

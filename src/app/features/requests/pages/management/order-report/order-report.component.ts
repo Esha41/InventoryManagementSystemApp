@@ -7,9 +7,12 @@ import { LucideAngularModule, FileDown, Printer, ArrowRight, CheckCircle2, Clock
 import { Subject, takeUntil, of, Observable } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import QRCode from 'qrcode';
-import { OrderService, OrderDto } from '@services/order.service';
-import { ReturnService, ReturnDto } from '@services/return.service';
-import { DiscardService, DiscardDto } from '@services/discard.service';
+import { OrderService } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnService } from '@services/return.service';
+import { ReturnDto } from '@models/return.model';
+import { DiscardService } from '@services/discard.service';
+import { DiscardDto } from '@models/discard.model';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { BackendAuthService } from '@services/backend-auth.service';

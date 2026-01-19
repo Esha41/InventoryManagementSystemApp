@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
-import { ReturnDto } from '@services/return.service';
+import { ReturnDto } from '@models/return.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { Subject, takeUntil } from 'rxjs';

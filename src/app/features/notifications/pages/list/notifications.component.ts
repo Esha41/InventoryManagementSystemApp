@@ -21,9 +21,9 @@ import { Notification } from '@notifications/models/notification.model';
 import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
-import { OrderDto } from '@services/order.service';
-import { ReturnDto } from '@services/return.service';
-import { DiscardDto } from '@services/discard.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnDto } from '@models/return.model';
+import { DiscardDto } from '@models/discard.model';
 import {
   NotificationFilter,
   NotificationDetailType,

@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, EMPTY, forkJoin } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
-import { OrderService, OrderDto } from './order.service';
-import { SupplyService, SupplyDto } from './supply.service';
-import { InventoryService, LotDetailDto } from './inventory.service';
-import { AmmunitionService } from './ammunition.service';
-import { ApiService } from './api.service';
+import { OrderService } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
+import { SupplyService, SupplyDto } from '@services/supply.service';
+import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { AmmunitionService } from '@services/ammunition.service';
+import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
-import { OrderRequestItemDto, CreateUpdateRequestItemDto } from './order.service';
+import { OrderRequestItemDto, CreateRequestItemDto } from '@models/order.model';
 import { SupplyItemDisplay, LotItem } from '@models/supply-order.model';
 import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
 import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
@@ -34,7 +35,7 @@ export class SupplyOrderDataService {
     private readonly ammunitionService: AmmunitionService,
     private readonly apiService: ApiService,
     private readonly translateService: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Load supply data by order ID
@@ -51,7 +52,7 @@ export class SupplyOrderDataService {
     }).pipe(
       map(({ supply, fullOrder }) => {
         const order = supply.order || fullOrder;
-        
+
         // Merge full order data (with nested objects) into supply.order if it exists
         if (supply.order && fullOrder) {
           // Copy nested objects from fullOrder
@@ -64,11 +65,11 @@ export class SupplyOrderDataService {
           if (fullOrder.requestPurpose && !supply.order.requestPurpose) {
             supply.order.requestPurpose = fullOrder.requestPurpose;
           }
-          
+
           // Populate flat properties from nested objects
           this.populateOrderFlatProperties(supply.order);
         }
-        
+
         // Use fullOrder if supply.order is not available
         const finalOrder = supply.order || fullOrder;
         const orderItems = finalOrder?.requestItems || [];
@@ -119,9 +120,9 @@ export class SupplyOrderDataService {
     // Populate requester flat properties from nested object if missing
     if (order.requester) {
       if (!order.requesterName) {
-        order.requesterName = order.requester.fullNameEN || 
-                             order.requester.fullNameAR || 
-                             order.requester.userName;
+        order.requesterName = order.requester.fullNameEN ||
+          order.requester.fullNameAR ||
+          order.requester.userName;
       }
       if (!order.requesterNameEn && order.requester.fullNameEN) {
         order.requesterNameEn = order.requester.fullNameEN;
@@ -175,7 +176,7 @@ export class SupplyOrderDataService {
         }).pipe(
           map(({ fullOrder, supplyData }) => {
             const order = supplyData.order || fullOrder;
-            
+
             // Merge nested objects from fullOrder into supply.order if it exists
             if (supplyData.order && fullOrder) {
               // Copy nested objects from fullOrder
@@ -188,14 +189,14 @@ export class SupplyOrderDataService {
               if (fullOrder.requestPurpose && !supplyData.order.requestPurpose) {
                 supplyData.order.requestPurpose = fullOrder.requestPurpose;
               }
-              
+
               // Populate flat properties from nested objects
               this.populateOrderFlatProperties(supplyData.order);
             } else if (fullOrder) {
               // Use fullOrder if supply.order is not available
               this.populateOrderFlatProperties(fullOrder);
             }
-            
+
             const finalOrder = supplyData.order || fullOrder;
             const orderItems = finalOrder?.requestItems || [];
             const supplyItems = mapSupplyDetailsToDisplay(supplyData);
@@ -298,7 +299,7 @@ export class SupplyOrderDataService {
    */
   transformLotDetailToLotItem(lot: LotDetailDto): LotItem {
     const currentLang = getCurrentLang(this.translateService);
-    
+
     return {
       inventoryDetailId: lot.inventoryDetailId,
       lotNumber: lot.lot,
@@ -377,7 +378,7 @@ export class SupplyOrderDataService {
   /**
    * Add order item
    */
-  addOrderItem(orderId: number, item: CreateUpdateRequestItemDto): Observable<APIOperationResponse<number>> {
+  addOrderItem(orderId: number, item: CreateRequestItemDto): Observable<APIOperationResponse<number>> {
     return this.orderService.addOrderItem(orderId, item).pipe(
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add item');

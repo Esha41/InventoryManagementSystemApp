@@ -10,9 +10,12 @@ import { StatusCardComponent, OrderItem } from './components/status-card/status-
 import { RequestDetailsModalComponent, UnifiedRequestDto } from './components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UnifiedRequestService } from '@services/unified-request.service';
-import { ReturnService, ReturnDto } from '@services/return.service';
-import { DiscardService, DiscardDto } from '@services/discard.service';
-import { OrderService, OrderDto } from '@services/order.service';
+import { ReturnService } from '@services/return.service';
+import { ReturnDto } from '@models/return.model';
+import { DiscardService } from '@services/discard.service';
+import { DiscardDto } from '@models/discard.model';
+import { OrderService } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { ErrorHandlingService } from '@services/error-handling.service';
 import { UserContextService } from '@services/user-context.service';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';

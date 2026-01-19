@@ -5,7 +5,8 @@
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { OrderService, CreateUpdateRequestItemDto } from '@services/order.service';
+import { OrderService } from '@services/order.service';
+import { CreateRequestItemDto } from '@models/request-item.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -23,7 +24,7 @@ export class OrderItemManagementService {
   /**
    * Add new item to order
    */
-  addItem(orderId: number, itemDto: CreateUpdateRequestItemDto): Observable<APIOperationResponse<number>> {
+  addItem(orderId: number, itemDto: CreateRequestItemDto): Observable<APIOperationResponse<number>> {
     return this.orderService.addOrderItem(orderId, itemDto);
   }
 

@@ -11,7 +11,7 @@ import { ModalComponent } from '@components/modal/modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { OrderItem } from '@models/supply-request.model';
-import { CreateUpdateRequestItemDto } from '@services/order.service';
+import { CreateRequestItemDto } from '@models/request-item.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -43,7 +43,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   @Output() addItemClosed = new EventEmitter<void>();
   @Output() editItemClosed = new EventEmitter<void>();
   @Output() removeItemClosed = new EventEmitter<void>();
-  @Output() saveAddItem = new EventEmitter<CreateUpdateRequestItemDto>();
+  @Output() saveAddItem = new EventEmitter<CreateRequestItemDto>();
   @Output() saveEditItem = new EventEmitter<{ requestItemId: number; quantity: number }>();
   @Output() confirmRemoveItem = new EventEmitter<number>();
 
@@ -105,7 +105,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     }
 
     const formValue = this.addItemForm.value;
-    const itemDto: CreateUpdateRequestItemDto = {
+    const itemDto: CreateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
       notes: formValue.notes || undefined

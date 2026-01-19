@@ -2,9 +2,12 @@ import { Injectable } from '@angular/core';
 import { Observable, of, EMPTY } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { UnifiedRequestService, BaseRequestDto } from './unified-request.service';
-import { OrderService, OrderDto } from './order.service';
-import { ReturnService, ReturnDto } from './return.service';
-import { DiscardService, DiscardDto } from './discard.service';
+import { OrderService } from './order.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnService } from './return.service';
+import { ReturnDto } from '@models/return.model';
+import { DiscardService } from './discard.service';
+import { DiscardDto } from '@models/discard.model';
 import { DashboardCard } from '@models/dashboard.model';
 import {
   mapRequestStatusToCardStatus,
@@ -32,7 +35,7 @@ export class DashboardDataService {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
     private readonly translate: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Load all dashboard cards from unified endpoint
@@ -154,13 +157,13 @@ export class DashboardDataService {
   private resolveOrderDepartmentName(order: OrderDto): string {
     if (!order) return 'N/A';
     const currentLang = getCurrentLang(this.translate);
-    
+
     // Use nested department object if available (for proper localization)
     if (order.department) {
       const localized = getLocalizedName(order.department, currentLang);
       if (localized) return localized;
     }
-    
+
     // Fallback to flattened properties
     if (order.departmentNameEn || order.departmentNameAr) {
       const localized = getLocalizedName(
@@ -172,7 +175,7 @@ export class DashboardDataService {
       );
       if (localized) return localized;
     }
-    
+
     return 'N/A';
   }
 
@@ -183,17 +186,17 @@ export class DashboardDataService {
   private resolveRequesterName(request: OrderDto | ReturnDto | DiscardDto | any): string {
     if (!request) return 'N/A';
     const currentLang = getCurrentLang(this.translate);
-    
+
     // Use nested requester object if available (for proper localization)
     if (request.requester) {
       const localized = getLocalizedName(request.requester, currentLang);
       if (localized) return localized;
       if (request.requester.userName) return request.requester.userName;
     }
-    
+
     // Fallback to flattened property (for OrderDto compatibility)
     if (request.requesterName) return request.requesterName;
-    
+
     return 'N/A';
   }
 

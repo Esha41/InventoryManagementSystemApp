@@ -6,7 +6,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Search, Package } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
-import { OrderService, OrderDto } from '@services/order.service';
+import { OrderService } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { SupplyService } from '@services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent } from '@components/index';

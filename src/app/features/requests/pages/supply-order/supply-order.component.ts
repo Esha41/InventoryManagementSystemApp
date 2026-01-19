@@ -16,7 +16,7 @@ import { SupplyOrderInfoComponent } from './components/supply-order-info/supply-
 import { OrderItemsManagementComponent } from './components/order-items-management/order-items-management.component';
 import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
 import { SupplyItemsListComponent } from './components/supply-items-list/supply-items-list.component';
-import { OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { SupplyDto } from '@services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -27,7 +27,7 @@ import { LoadingStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
-import { SupplyOrderDataService } from '@services/supply-order-data.service';
+import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
 
 @Component({

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
-import { UserContextService } from './user-context.service';
-import { BackendAuthService } from './backend-auth.service';
+import { UserContextService } from '@services/user-context.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
 import { UserContextState } from '@requests/pages/new-issue/new-issue-request.state';

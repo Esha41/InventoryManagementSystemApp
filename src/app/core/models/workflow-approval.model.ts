@@ -1,16 +1,9 @@
+import { FileUploadDto } from './file-upload.model';
+import { RequestItemDto } from './common.model';
 
-/**
- * File upload DTO matching backend structure
- */
-export interface FileUploadDto {
-  id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: number;
-  entityId: number;
-}
+// Re-export for backward compatibility
+export { FileUploadDto };
+
 
 /**
  * Approval step in the workflow (for workflow approval detail view)
@@ -155,8 +148,8 @@ export interface BaseRequestDto {
   requesterNameAr?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
-  requestItems?: any[];
-  approvalHistory?: any[];
+  requestItems?: RequestItemDto[];
+  approvalHistory?: WorkflowApprovalStep[];
   files?: FileUploadDto[];
   isMyTurn?: boolean;
   [key: string]: any;
