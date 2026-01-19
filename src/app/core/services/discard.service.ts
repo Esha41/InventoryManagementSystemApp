@@ -75,6 +75,7 @@ export interface DiscardItemDto {
   notes?: string;
   itemName?: string;
   itemNo?: string;
+  nsn?: string;
 }
 
 /**

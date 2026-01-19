@@ -47,6 +47,7 @@ export interface OrderRequestItemDto {
   notes?: string;
   itemName?: string;
   itemNo?: string;
+  nsn?: string;
   itemType?: number;
 }
 

@@ -242,20 +242,10 @@
       </ng-template>
     </div>
 
-    <!-- Return Details Modal -->
-    <app-return-details-modal [isOpen]="isReturnModalOpen" [returnRequest]="selectedReturnRequest"
-      (close)="closeReturnModal()">
-    </app-return-details-modal>
-
-    <!-- Discard Details Modal -->
-    <app-discard-details-modal [isOpen]="isDiscardModalOpen" [discardRequest]="selectedDiscardRequest"
-      (close)="closeDiscardModal()">
-    </app-discard-details-modal>
-
-    <!-- Order Details Modal -->
-    <app-order-details-modal [isOpen]="isOrderModalOpen" [orderRequest]="selectedOrderRequest"
-      (close)="closeOrderModal()">
-    </app-order-details-modal>
+    <!-- Unified Request Details Modal -->
+    <app-request-details-modal [isOpen]="isRequestModalOpen" [request]="selectedRequest"
+      (close)="closeRequestModal()">
+    </app-request-details-modal>
 
   </div>
 </div>

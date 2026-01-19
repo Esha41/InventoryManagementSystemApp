@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { ReturnDto } from '@services/return.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatTimeToMilitary } from '@utils/format.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -118,29 +119,26 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
 
   formatRequestDate(request: ReturnDto | null): string {
     if (!request) return 'N/A';
-    // Use current date if no date field available
-    return this.formatDate(new Date());
-  }
-
-  private formatDate(source?: string | Date): string {
-    let date: Date;
-
-    if (source instanceof Date) {
-      date = source;
-    } else if (typeof source === 'string') {
-      const parsed = new Date(source);
-      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    } else {
-      date = new Date();
+    const creationDate = request.creationDate;
+    if (!creationDate) return 'N/A';
+    
+    try {
+      const date = new Date(creationDate);
+      if (isNaN(date.getTime())) return 'N/A';
+      
+      // Format date as MM/DD/YYYY (month first)
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      const dateStr = `${month}/${day}/${year}`;
+      
+      // Format time as military time (HHMM)
+      const timeStr = formatTimeToMilitary(date);
+      
+      return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+    } catch {
+      return 'N/A';
     }
-
-    const day = date.getDate();
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-
-    return `${day} ${month} ${year}`;
   }
 
   resolveDepartmentName(request: ReturnDto | null): string {

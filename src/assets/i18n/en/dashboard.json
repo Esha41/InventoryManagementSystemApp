@@ -41,6 +41,7 @@
     "depot": "Depot",
     "itemName": "Item Name",
     "itemNo": "Item Number",
+    "nsn": "NSN",
     "priorityLabels": {
       "normal": "Normal",
       "urgent": "Urgent",

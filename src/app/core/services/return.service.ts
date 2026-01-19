@@ -75,6 +75,7 @@ export interface ReturnItemDto {
   notes?: string;
   itemName?: string;
   itemNo?: string;
+  nsn?: string;
 }
 
 /**

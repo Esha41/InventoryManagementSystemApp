@@ -7,9 +7,7 @@ import { Subject, takeUntil, combineLatest, of, EMPTY, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
-import { ReturnDetailsModalComponent } from './components/return-details-modal/return-details-modal.component';
-import { DiscardDetailsModalComponent } from './components/discard-details-modal/discard-details-modal.component';
-import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
+import { RequestDetailsModalComponent, UnifiedRequestDto } from './components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UnifiedRequestService } from '@services/unified-request.service';
 import { ReturnService, ReturnDto } from '@services/return.service';
@@ -39,9 +37,7 @@ import { formatTimeToMilitary } from '@utils/format.utils';
     TranslateModule,
     LucideAngularModule,
     StatusCardComponent,
-    ReturnDetailsModalComponent,
-    DiscardDetailsModalComponent,
-    OrderDetailsModalComponent,
+    RequestDetailsModalComponent,
     DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent
@@ -95,13 +91,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
   ];
 
-  // Modal state
-  isReturnModalOpen = false;
-  isDiscardModalOpen = false;
-  isOrderModalOpen = false;
-  selectedOrderRequest: OrderDto | null = null;
-  selectedReturnRequest: ReturnDto | null = null;
-  selectedDiscardRequest: DiscardDto | null = null;
+  // Modal state (unified)
+  isRequestModalOpen = false;
+  selectedRequest: UnifiedRequestDto | null = null;
   private readonly orderRequestsMap = new Map<number, OrderDto>();
   private readonly returnRequestsMap = new Map<number, ReturnDto>();
   private readonly discardRequestsMap = new Map<number, DiscardDto>();
@@ -351,9 +343,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order) => {
-          this.selectedOrderRequest = order;
+          this.selectedRequest = order as UnifiedRequestDto;
           this.orderRequestsMap.set(order.id, order); // Cache for future use
-          this.isOrderModalOpen = true;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
@@ -366,9 +358,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (returnRequest) => {
-          this.selectedReturnRequest = returnRequest;
+          this.selectedRequest = returnRequest as UnifiedRequestDto;
           this.returnRequestsMap.set(returnRequest.id, returnRequest); // Cache for future use
-          this.isReturnModalOpen = true;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
@@ -381,29 +373,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (discardRequest) => {
-          this.selectedDiscardRequest = discardRequest;
+          this.selectedRequest = discardRequest as UnifiedRequestDto;
           this.discardRequestsMap.set(discardRequest.id, discardRequest); // Cache for future use
-          this.isDiscardModalOpen = true;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
   }
 
-  closeReturnModal(): void {
-    this.isReturnModalOpen = false;
-    this.selectedReturnRequest = null;
-    this.cdr.markForCheck();
-  }
-
-  closeDiscardModal(): void {
-    this.isDiscardModalOpen = false;
-    this.selectedDiscardRequest = null;
-    this.cdr.markForCheck();
-  }
-
-  closeOrderModal(): void {
-    this.isOrderModalOpen = false;
-    this.selectedOrderRequest = null;
+  closeRequestModal(): void {
+    this.isRequestModalOpen = false;
+    this.selectedRequest = null;
     this.cdr.markForCheck();
   }
 

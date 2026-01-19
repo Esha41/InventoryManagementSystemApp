@@ -40,6 +40,7 @@
     "depot": "المستودع",
     "itemName": "اسم مادة",
     "itemNo": "رقم مادة",
+    "nsn": "NSN",
     "priorityLabels": {
       "normal": "عادية",
       "urgent": "مستعجل",

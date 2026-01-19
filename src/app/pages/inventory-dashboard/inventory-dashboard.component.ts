@@ -7,8 +7,7 @@ import { Subject, takeUntil, forkJoin, combineLatest, of, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@pages/dashboard/components/status-card/status-card.component';
-import { ReturnDetailsModalComponent } from '@pages/dashboard/components/return-details-modal/return-details-modal.component';
-import { DiscardDetailsModalComponent } from '@pages/dashboard/components/discard-details-modal/discard-details-modal.component';
+import { RequestDetailsModalComponent, UnifiedRequestDto } from '@pages/dashboard/components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { OrderService, OrderDto, OrderRequestItemDto } from '@services/order.service';
 import { NotificationService } from '@services/notification.service';
@@ -48,8 +47,7 @@ import { formatTimeToMilitary } from '@utils/format.utils';
     TranslateModule,
     LucideAngularModule,
     StatusCardComponent,
-    ReturnDetailsModalComponent,
-    DiscardDetailsModalComponent,
+    RequestDetailsModalComponent,
     OverstockCardComponent,
     DropdownComponent,
     PaginationComponent,
@@ -83,13 +81,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     { label: 'dashboard.statusLabels.rejected', value: 'declined' }
   ];
 
-  // Modal state
-  isOrderModalOpen = false;
-  isReturnModalOpen = false;
-  isDiscardModalOpen = false;
-  selectedOrderRequest: OrderDto | null = null;
-  selectedReturnRequest: ReturnDto | null = null;
-  selectedDiscardRequest: DiscardDto | null = null;
+  // Modal state (unified)
+  isRequestModalOpen = false;
+  selectedRequest: UnifiedRequestDto | null = null;
   private readonly orderRequestsMap = new Map<number, OrderDto>();
   private readonly returnRequestsMap = new Map<number, ReturnDto>();
   private readonly discardRequestsMap = new Map<number, DiscardDto>();
@@ -647,14 +641,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (order) => {
-          this.selectedOrderRequest = order;
-          this.isOrderModalOpen = true;
+          this.selectedRequest = order as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         },
         error: () => {
           // Fallback to cached
-          this.selectedOrderRequest = orderRequest || null;
-          this.isOrderModalOpen = true;
+          this.selectedRequest = (orderRequest || null) as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
@@ -667,13 +661,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (ret: ReturnDto) => {
-          this.selectedReturnRequest = ret;
-          this.isReturnModalOpen = true;
+          this.selectedRequest = ret as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         },
         error: () => {
-          this.selectedReturnRequest = returnRequest || null;
-          this.isReturnModalOpen = true;
+          this.selectedRequest = (returnRequest || null) as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
@@ -686,33 +680,21 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: DiscardDto) => {
-          this.selectedDiscardRequest = res;
-          this.isDiscardModalOpen = true;
+          this.selectedRequest = res as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         },
         error: () => {
-          this.selectedDiscardRequest = discardRequest || null;
-          this.isDiscardModalOpen = true;
+          this.selectedRequest = (discardRequest || null) as UnifiedRequestDto;
+          this.isRequestModalOpen = true;
           this.cdr.markForCheck();
         }
       });
   }
 
-  closeOrderModal(): void {
-    this.isOrderModalOpen = false;
-    this.selectedOrderRequest = null;
-    this.cdr.markForCheck();
-  }
-
-  closeReturnModal(): void {
-    this.isReturnModalOpen = false;
-    this.selectedReturnRequest = null;
-    this.cdr.markForCheck();
-  }
-
-  closeDiscardModal(): void {
-    this.isDiscardModalOpen = false;
-    this.selectedDiscardRequest = null;
+  closeRequestModal(): void {
+    this.isRequestModalOpen = false;
+    this.selectedRequest = null;
     this.cdr.markForCheck();
   }
 
