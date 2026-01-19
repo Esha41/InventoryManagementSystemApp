@@ -4,7 +4,7 @@ import { takeUntil, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
-import { RequestPurposeDto, RequestPurposeState } from '@pages/new-issue-request/new-issue-request.state';
+import { RequestPurposeDto, RequestPurposeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { normalizeArrayResponse } from '@utils/index';
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';

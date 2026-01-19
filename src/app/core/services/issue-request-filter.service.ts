@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
-import { FilterState } from '@pages/new-issue-request/new-issue-request.state';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 
 /**
  * Extended filter state interface that includes weapon and explosive filters

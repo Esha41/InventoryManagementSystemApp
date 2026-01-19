@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FilterState } from '@pages/new-issue-request/new-issue-request.state';
+import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 import { IssueRequestFilterService } from './issue-request-filter.service';
 
 /**
@@ -12,7 +12,7 @@ import { IssueRequestFilterService } from './issue-request-filter.service';
 export class IssueRequestFilterHandlerService {
   constructor(
     private filterService: IssueRequestFilterService
-  ) {}
+  ) { }
 
   /**
    * Updates filter value and triggers filtering

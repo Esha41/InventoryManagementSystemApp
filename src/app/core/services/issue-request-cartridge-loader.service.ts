@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CartridgeDataService, CartridgeLoadResult } from './cartridge-data.service';
-import { CartridgeState } from '@pages/new-issue-request/new-issue-request.state';
-import { FilterState } from '@pages/new-issue-request/new-issue-request.state';
+import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
+import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 
 /**
  * Service responsible for orchestrating cartridge loading operations
@@ -14,7 +14,7 @@ import { FilterState } from '@pages/new-issue-request/new-issue-request.state';
 export class IssueRequestCartridgeLoaderService {
   constructor(
     private cartridgeDataService: CartridgeDataService
-  ) {}
+  ) { }
 
   /**
    * Determines which load method to use based on item type and allowance setting

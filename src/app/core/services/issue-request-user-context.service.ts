@@ -5,7 +5,7 @@ import { UserContextService } from './user-context.service';
 import { BackendAuthService } from './backend-auth.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
-import { UserContextState } from '@pages/new-issue-request/new-issue-request.state';
+import { UserContextState } from '@requests/pages/new-issue/new-issue-request.state';
 import {
   applyUserContext as applyUserContextUtil,
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil
@@ -22,7 +22,7 @@ export class IssueRequestUserContextService {
   constructor(
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService
-  ) {}
+  ) { }
 
   /**
    * Initializes user context state

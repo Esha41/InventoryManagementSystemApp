@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
-import { CartridgeState } from '@pages/new-issue-request/new-issue-request.state';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { IssueRequestStateService } from './issue-request-state.service';
 
 /**
@@ -13,7 +13,7 @@ import { IssueRequestStateService } from './issue-request-state.service';
 export class IssueRequestCartridgeManagementService {
   constructor(
     private stateService: IssueRequestStateService
-  ) {}
+  ) { }
 
   /**
    * Infers item type from cartridge properties
@@ -60,8 +60,8 @@ export class IssueRequestCartridgeManagementService {
       cartridgeState.selectedEntries[existingIndex].quantity = quantity;
       cartridgeState.selectedEntries[existingIndex].itemType = cartridge.itemType;
     } else {
-      cartridgeState.selectedEntries.push({ 
-        id: cartridge.id, 
+      cartridgeState.selectedEntries.push({
+        id: cartridge.id,
         quantity,
         itemType: cartridge.itemType
       });

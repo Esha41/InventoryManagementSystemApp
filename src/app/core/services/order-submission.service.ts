@@ -4,7 +4,7 @@ import { switchMap, map, catchError } from 'rxjs/operators';
 import { OrderService, CreateOrderRequest, OrderDto } from './order.service';
 import { ErrorHandlingService } from './error-handling.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
 import { parseOptionalInteger } from '@utils/number.utils';
 
 export interface OrderSubmissionData {

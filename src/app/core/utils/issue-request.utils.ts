@@ -1,5 +1,5 @@
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
-import { CartridgeState, ReserveDetailsState, UserContextState, ReviewFormData } from '@pages/new-issue-request/new-issue-request.state';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { CartridgeState, ReserveDetailsState, UserContextState, ReviewFormData } from '@requests/pages/new-issue/new-issue-request.state';
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
 import { resolveUserDisplayName } from '@utils/index';
@@ -25,20 +25,20 @@ export function mapSelectedEntriesToCartridges(
   return selectedEntries.map(entry => {
     // First try to find in current allCartridges (for currently loaded item type)
     let cartridge = allCartridges.find(c => c.id === entry.id);
-    
+
     // If not found and cache exists, try cache (for items from other item types)
     if (!cartridge && selectedCartridgesCache) {
       cartridge = selectedCartridgesCache.get(entry.id);
     }
-    
+
     if (cartridge) {
-      return { 
-        ...cartridge, 
+      return {
+        ...cartridge,
         quantity: entry.quantity,
         itemType: entry.itemType || cartridge.itemType
       };
     }
-    
+
     // Fallback: create minimal cartridge object
     return {
       id: entry.id,

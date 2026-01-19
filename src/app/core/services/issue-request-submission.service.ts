@@ -9,7 +9,7 @@ import {
   ReviewFormData,
   RequestPurposeState,
   OrderSubmissionState
-} from '@pages/new-issue-request/new-issue-request.state';
+} from '@requests/pages/new-issue/new-issue-request.state';
 import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@utils/issue-request.utils';
 
 export interface SubmissionDialogConfig {
@@ -31,7 +31,7 @@ export class IssueRequestSubmissionService {
   constructor(
     private orderSubmissionService: OrderSubmissionService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Builds submission data from component state

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
 import { getLocalizedName } from '@utils/localization.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';
@@ -72,8 +72,8 @@ export class CartridgeMapperService {
 
     // Build barrel length label with unit
     const barrelLengthLabel = this.buildMeasurementLabel(
-      dto.barrelLength, 
-      dto.barrelLengthUnit, 
+      dto.barrelLength,
+      dto.barrelLengthUnit,
       currentLang
     );
 
@@ -200,7 +200,7 @@ export class CartridgeMapperService {
       return undefined;
     }
     // If useEnglishUnit is true, always use English unit name (for bullet diameter values)
-    const unitName = useEnglishUnit 
+    const unitName = useEnglishUnit
       ? (unit?.nameEn || unit?.nameEN || unit?.name || '')
       : getLocalizedName(unit, currentLang);
     return unitName ? `${numeric} ${unitName}` : `${numeric}`;
