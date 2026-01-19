@@ -10,15 +10,15 @@ export const routes: Routes = [
     children: [
       {
         path: 'login',
-        loadComponent: () => import('@pages/auth/login/login.component').then(m => m.LoginComponent)
+        loadComponent: () => import('@auth/pages/login/login.component').then(m => m.LoginComponent)
       },
       {
         path: 'forgot-password',
-        loadComponent: () => import('@pages/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
+        loadComponent: () => import('@auth/pages/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
       },
       {
         path: 'reset-password',
-        loadComponent: () => import('@pages/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+        loadComponent: () => import('@auth/pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
       },
       {
         path: '',
@@ -39,7 +39,7 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
-        loadComponent: () => import('@pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+        loadComponent: () => import('@dashboard/pages/overview/dashboard.component').then(m => m.DashboardComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['dashboard_view'] }
       },
@@ -51,7 +51,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin-dashboard',
-        loadComponent: () => import('@pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+        loadComponent: () => import('@admin/pages/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['admindashboard.page', 'admindashboard.view'] }
       },
@@ -93,13 +93,13 @@ export const routes: Routes = [
       },
       {
         path: 'allowance',
-        loadComponent: () => import('@pages/allowance-list/allowance-list.component').then(m => m.AllowanceListComponent),
+        loadComponent: () => import('@allowance/pages/list/allowance-list.component').then(m => m.AllowanceListComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create'] }
       },
       {
         path: 'allowance/add',
-        loadComponent: () => import('@pages/allowance/allowance.component').then(m => m.AllowanceComponent),
+        loadComponent: () => import('@allowance/pages/overview/allowance.component').then(m => m.AllowanceComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.create', 'order.create'] }
       },
@@ -153,25 +153,25 @@ export const routes: Routes = [
       },
       {
         path: 'workflow',
-        loadComponent: () => import('@pages/workflow/workflow.component').then(m => m.WorkflowComponent),
+        loadComponent: () => import('@workflow/pages/overview/workflow.component').then(m => m.WorkflowComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['workflow.page', 'workflow.view'] }
       },
       {
         path: 'workflow/add',
-        loadComponent: () => import('@pages/workflow/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
+        loadComponent: () => import('@workflow/pages/overview/add-workflow/add-workflow.component').then(m => m.AddWorkflowComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['workflow.create'] }
       },
       {
         path: 'workflow/:id',
-        loadComponent: () => import('@pages/workflow/workflow-detail/workflow-detail.component').then(m => m.WorkflowDetailComponent),
+        loadComponent: () => import('@workflow/pages/overview/workflow-detail/workflow-detail.component').then(m => m.WorkflowDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['workflow.view', 'workflow.page'] }
       },
       {
         path: 'workflow/:id/edit',
-        loadComponent: () => import('@pages/workflow/edit-workflow/edit-workflow.component').then(m => m.EditWorkflowComponent),
+        loadComponent: () => import('@workflow/pages/overview/edit-workflow/edit-workflow.component').then(m => m.EditWorkflowComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['workflow.edit'] }
       },
@@ -225,7 +225,7 @@ export const routes: Routes = [
       },
       {
         path: 'forecast',
-        loadComponent: () => import('@pages/forecast/forecast.component').then(m => m.ForecastComponent),
+        loadComponent: () => import('@forecast/pages/overview/forecast.component').then(m => m.ForecastComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view'] }
       },
@@ -261,61 +261,61 @@ export const routes: Routes = [
       },
       {
         path: 'depot-management',
-        loadComponent: () => import('@pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
+        loadComponent: () => import('@admin/pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['depots.page', 'depots.view'] }
       },
       {
         path: 'manage-admins',
-        loadComponent: () => import('@pages/manage-admins/manage-admins.component').then(m => m.ManageAdminsComponent),
+        loadComponent: () => import('@admin/pages/manage-users/manage-admins.component').then(m => m.ManageAdminsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['systemusers.page', 'systemusers.view'] }
       },
       {
         path: 'admin-roles',
-        loadComponent: () => import('@pages/admin-roles/admin-roles.component').then(m => m.AdminRolesComponent),
+        loadComponent: () => import('@admin/pages/roles/admin-roles.component').then(m => m.AdminRolesComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['roles.page', 'roles.view'] }
       },
       {
         path: 'role-permissions',
-        loadComponent: () => import('@pages/role-permissions/role-permissions.component').then(m => m.RolePermissionsComponent),
+        loadComponent: () => import('@admin/pages/permissions/role-permissions.component').then(m => m.RolePermissionsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['roles.edit', 'roles.view'] }
       },
       {
         path: 'ldap-settings',
-        loadComponent: () => import('./pages/ldap-settings/ldap-settings.component').then(m => m.LdapSettingsComponent),
+        loadComponent: () => import('@settings/pages/ldap/ldap-settings.component').then(m => m.LdapSettingsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ldapsettings.page', 'ldapsettings.view'] }
       },
       {
         path: 'email-settings',
-        loadComponent: () => import('@pages/email-settings/email-settings.component').then(m => m.EmailSettingsComponent),
+        loadComponent: () => import('@settings/pages/email/email-settings.component').then(m => m.EmailSettingsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['emailsettings.page', 'emailsettings.view'] }
       },
       {
         path: 'admin-import-export',
-        loadComponent: () => import('@pages/admin-import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
+        loadComponent: () => import('@admin/pages/import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['AdminImportExport'] }
       },
       {
         path: 'stock-notification-settings',
-        loadComponent: () => import('@pages/stock-notification-settings/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
+        loadComponent: () => import('@settings/pages/stock-notifications/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventory.edit', 'inventory.view'] }
       },
       {
         path: 'notifications',
-        loadComponent: () => import('@pages/notifications/notifications.component').then(m => m.NotificationsComponent),
+        loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['notificationspage.page', 'notificationspage.view', 'dashboard_view'] }
       },
       {
         path: 'profile',
-        loadComponent: () => import('@pages/profile/profile.component').then(m => m.ProfileComponent)
+        loadComponent: () => import('@profile/pages/overview/profile.component').then(m => m.ProfileComponent)
       },
       {
         path: 'access-denied',
