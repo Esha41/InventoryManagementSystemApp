@@ -399,6 +399,8 @@
     "summary": "Summary",
     "requestId": "Request ID",
     "type": "Type",
+    "fromAllowance": "From Allowance",
+    "outOfAllowance": "Out of Allowance",
     "setSupplyPickupDate": "Set Supply Pickup Date",
     "pickupDate": "Pickup Date",
     "dateSetLocked": "✓ Date Set (Locked)",

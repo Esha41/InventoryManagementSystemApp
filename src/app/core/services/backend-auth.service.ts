@@ -103,7 +103,7 @@ export class BackendAuthService {
   generateCaptcha(): Observable<CaptchaResponse> {
     const endpoint = API_ENDPOINTS.AUTH.GENERATE_CAPTCHA;
     this.configService.log('Generating captcha', { endpoint, fullUrl: `${this.configService.apiUrl}${endpoint}` });
-    return this.apiService.get<any>(
+    return this.apiService.getRaw<any>(
       endpoint
     ).pipe(
       map(response => {
@@ -111,17 +111,20 @@ export class BackendAuthService {
 
         // Handle wrapped response (ApiResponse)
         if (response && typeof response === 'object' && 'succeeded' in response) {
-          const apiResponse = response as ApiResponse<CaptchaResponse>;
+          const apiResponse = response as APIOperationResponse<CaptchaResponse>;
           if (!apiResponse.succeeded) {
             throw new Error(apiResponse.message || 'Failed to generate captcha');
           }
-          if (!apiResponse.data || !apiResponse.data.captchaId) {
+          if (!apiResponse.data || !(apiResponse.data as any).captchaId) {
+            // Handle case where data might be the ID itself if backend is weird, 
+            // but assuming standard data structure:
+            if ((apiResponse.data as any).captchaId) return apiResponse.data as CaptchaResponse;
             throw new Error('Invalid captcha response: missing captchaId');
           }
-          return apiResponse.data;
+          return apiResponse.data as CaptchaResponse;
         }
 
-        // Handle direct response
+        // Handle direct response (Legacy/Fallback)
         if (response && typeof response === 'object' && 'captchaId' in response) {
           const directResponse = response as CaptchaResponse;
           if (!directResponse.captchaId) {
@@ -171,9 +174,9 @@ export class BackendAuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this.configService.log('Attempting login', { username: credentials.username });
 
-    return this.apiService.post<ApiResponse<LoginResponse>>(
+    return this.apiService.postRaw<LoginResponse>(
       API_ENDPOINTS.AUTH.LOGIN,
-      credentials,{ withCredentials: true }
+      credentials
     ).pipe(
       map(response => {
         if (!response.succeeded || !response.data) {
@@ -229,8 +232,8 @@ export class BackendAuthService {
         }
 
         // Fetch full user profile from /Users/me for ProfileDataService
-        return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
-          switchMap(userMeResponse => {
+        return this.apiService.post<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
+          switchMap(userMeData => {
             return this.getUserClaims().pipe(
               map(userWithClaims => {
                 const mergedUser: AuthenticatedUser = {
@@ -248,7 +251,7 @@ export class BackendAuthService {
                 });
 
                 // Save profile data including isSuperAdmin flag
-                this.profileDataService.saveProfile(mergedUser, userMeResponse?.data);
+                this.profileDataService.saveProfile(mergedUser, userMeData);
 
                 this.storageService.set('current_user', mergedUser);
                 this.currentUserSubject.next(mergedUser);
@@ -260,7 +263,7 @@ export class BackendAuthService {
                 this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
 
                 // Still save profile data even without claims
-                this.profileDataService.saveProfile(authenticatedUser, userMeResponse?.data);
+                this.profileDataService.saveProfile(authenticatedUser, userMeData);
 
                 this.storageService.set('current_user', authenticatedUser);
                 this.currentUserSubject.next(authenticatedUser);
@@ -306,13 +309,11 @@ export class BackendAuthService {
   }
 
   private fetchCompleteUserData(): Observable<AuthenticatedUser | null> {
-    return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
-      map(response => {
-        if (!response?.succeeded || !response.data) {
+    return this.apiService.post<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
+      map(apiData => {
+        if (!apiData) {
           return null;
         }
-
-        const apiData = response.data;
 
         const departmentId = this.tryParseNumber(
           apiData.department?.id ??
@@ -378,18 +379,17 @@ export class BackendAuthService {
    * Get user claims from backend
    */
   getUserClaims(): Observable<AuthenticatedUser> {
-    return this.apiService.getWithAuth<ApiResponse<ClaimDto[]>>(
+    return this.apiService.get<ClaimDto[]>(
       API_ENDPOINTS.AUTH.USER_CLAIMS
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
+      map(claims => {
+        if (!claims) {
           throw new Error('Failed to fetch user claims');
         }
 
         // Extract user info from token or claims
         const token = this.storageService.get<string>('auth_token');
         const tokenPayload = token ? this.decodeToken(token) : null;
-        const claims = response.data;
 
         const user: AuthenticatedUser = {
           id: tokenPayload?.userId || '',
@@ -559,10 +559,10 @@ export class BackendAuthService {
    */
   logout(): Observable<boolean> {
     this.configService.log('Logging out user');
-    
+
     // Call backend logout endpoint to invalidate refresh token
-    return this.apiService.postWithAuth<APIOperationResponse<string>>(API_ENDPOINTS.AUTH.LOGOUT, {}).pipe(
-      map(response => {
+    return this.apiService.post<string>(API_ENDPOINTS.AUTH.LOGOUT, {}).pipe(
+      map(() => {
         this.configService.log('Backend logout successful');
         this.clearAuthData();
         return true;
@@ -582,13 +582,13 @@ export class BackendAuthService {
   changePassword(request: ChangePasswordRequest): Observable<boolean> {
     this.configService.log('Attempting to change password');
 
-    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+    return this.apiService.put<boolean>(
       API_ENDPOINTS.USERS.CHANGE_PASSWORD,
       request
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Password change failed');
+      map(succeeded => {
+        if (!succeeded) {
+          throw new Error('Password change failed');
         }
         this.configService.log('Password changed successfully');
         return true;
@@ -608,7 +608,7 @@ export class BackendAuthService {
   forgotPassword(email: string): Observable<boolean> {
     this.configService.log('Requesting password reset', { email });
 
-    return this.apiService.post<ApiResponse<string>>(
+    return this.apiService.postRaw<string>(
       API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
       { email }
     ).pipe(
@@ -634,7 +634,7 @@ export class BackendAuthService {
   resetPassword(email: string, token: string, newPassword: string): Observable<boolean> {
     this.configService.log('Attempting to reset password', { email });
 
-    return this.apiService.post<ApiResponse<string>>(
+    return this.apiService.postRaw<string>(
       API_ENDPOINTS.AUTH.RESET_PASSWORD,
       { email, token, newPassword }
     ).pipe(
@@ -669,7 +669,7 @@ export class BackendAuthService {
     if (this.isClearingAuthData) {
       return false;
     }
-    
+
     if (this.isAuthenticatedSubject.value && this.isTokenExpired()) {
       this.clearAuthData();
       return false;

@@ -27,8 +27,14 @@
       "@app/*": [
         "src/app/*"
       ],
+      "@core/*": [
+        "src/app/core/*"
+      ],
       "@constants/*": [
         "src/app/core/constants/*"
+      ],
+      "@shared/*": [
+        "src/app/shared/*"
       ],
       "@components/*": [
         "src/app/shared/components/*"
@@ -45,9 +51,6 @@
       "@interceptors/*": [
         "src/app/core/interceptors/*"
       ],
-      "@pages/*": [
-        "src/app/pages/*"
-      ],
       "@guards/*": [
         "src/app/core/guards/*"
       ],
@@ -56,6 +59,54 @@
       ],
       "@environments/*": [
         "src/environments/*"
+      ],
+      "@pages/*": [
+        "src/app/pages/*"
+      ],
+      "@features/*": [
+        "src/app/features/*"
+      ],
+      "@auth/*": [
+        "src/app/features/auth/*"
+      ],
+      "@dashboard/*": [
+        "src/app/features/dashboard/*"
+      ],
+      "@warehouse/*": [
+        "src/app/features/warehouse/*"
+      ],
+      "@requests/*": [
+        "src/app/features/requests/*"
+      ],
+      "@supply/*": [
+        "src/app/features/supply/*"
+      ],
+      "@inventory/*": [
+        "src/app/features/inventory/*"
+      ],
+      "@assets/*": [
+        "src/app/features/assets/*"
+      ],
+      "@workflow/*": [
+        "src/app/features/workflow/*"
+      ],
+      "@allowance/*": [
+        "src/app/features/allowance/*"
+      ],
+      "@forecast/*": [
+        "src/app/features/forecast/*"
+      ],
+      "@admin/*": [
+        "src/app/features/admin/*"
+      ],
+      "@settings/*": [
+        "src/app/features/settings/*"
+      ],
+      "@notifications/*": [
+        "src/app/features/notifications/*"
+      ],
+      "@profile/*": [
+        "src/app/features/profile/*"
       ]
     }
   },

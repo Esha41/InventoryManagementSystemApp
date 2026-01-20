@@ -1,0 +1,168 @@
+<div class="page-wrapper">
+  <div class="page-container flex justify-center">
+    <div class="w-full max-w-4xl">
+      <div class="space-y-6">
+        <!-- Header with Back Button -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <button (click)="onBack()"
+              class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+              <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+              <span class="font-medium">{{ 'allowance.backToList' | translate }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.addAllowance' | translate }}</h1>
+          <p class="text-sm text-[var(--color-text-muted)] mt-2">{{ 'allowance.addSubtitle' | translate }}</p>
+        </div>
+
+        <div class="bg-[var(--color-background-muted)] rounded-xl p-8 border-2 border-[var(--color-border)]">
+          <form #allowanceForm="ngForm" (ngSubmit)="onSend(allowanceForm)">
+            <div class="space-y-6 max-w-3xl">
+              <!-- Department Dropdown -->
+              <div class="flex items-start gap-8">
+                <label class="text-sm font-medium text-[var(--color-text)] w-40 shrink-0 pt-2.5">
+                  {{ 'allowance.department' | translate }} <span class="text-[var(--color-error)]">*</span>
+                </label>
+                <div class="flex-1">
+                  <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" name="department"
+                    (ngModelChange)="onDepartmentChange()" [disabled]="isLoadingDepartments || !isAdminUser"
+                    [error]="hasError('department')" [options]="filteredDepartments" optionValue="id"
+                    [optionLabelFn]="departmentOptionLabel"
+                    placeholder="{{ 'allowance.selectDepartment' | translate }}">
+                  </app-dropdown>
+                  <p *ngIf="hasError('department')" class="mt-1.5 text-xs text-[var(--color-error)]">
+                    {{ getError('department') }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Year Input -->
+              <div class="flex items-start gap-8">
+                <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                  {{ 'allowance.year' | translate }} <span class="text-red-500">*</span>
+                </label>
+                <div class="flex-1">
+                  <input type="text" [(ngModel)]="selectedYear" name="year" (ngModelChange)="onYearChange()"
+                    [placeholder]="'allowance.yearPlaceholder' | translate" [class.border-red-500]="hasError('year')"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    maxlength="4" pattern="[0-9]{4}" />
+                  <p *ngIf="hasError('year')" class="mt-1.5 text-xs text-[var(--color-error)]">
+                    {{ getError('year') }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Item Type Dropdown -->
+              <div class="flex items-start gap-8">
+                <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+                  {{ 'allowance.itemType' | translate }} <span class="text-red-500">*</span>
+                </label>
+                <div class="flex-1">
+                  <app-dropdown class="w-full" [(ngModel)]="selectedItemType" name="itemType"
+                    (ngModelChange)="onItemTypeChange()" [disabled]="targetItemId !== null" [options]="itemTypeOptions"
+                    optionValue="value" optionLabel="label" placeholder="{{ 'allowance.selectItemType' | translate }}">
+                  </app-dropdown>
+                </div>
+              </div>
+
+              <!-- Items List -->
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-medium text-[#6B7280]">
+                    {{ 'allowance.items' | translate }} <span class="text-red-500">*</span>
+                  </label>
+                  <button type="button" (click)="addItem()"
+                    class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
+                    + {{ 'allowance.addItem' | translate }}
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <div *ngFor="let item of items; let i = index"
+                    class="bg-[var(--color-background)] rounded-lg p-4 border-2 border-[var(--color-border)]">
+                    <div class="flex items-center justify-between mb-4">
+                      <span class="text-sm font-medium text-[var(--color-text)]">
+                        {{ 'allowance.item' | translate }} {{ i + 1 }}
+                      </span>
+                      <button *ngIf="items.length > 1" type="button" (click)="removeItem(i)"
+                        class="text-[var(--color-error)] hover:text-[var(--color-error)]/80 text-sm font-medium">
+                        {{ 'allowance.remove' | translate }}
+                      </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Item ID with Search/Filter -->
+                      <div class="relative">
+                        <label class="block text-xs font-medium text-[var(--color-text)] mb-1.5">
+                          {{ 'allowance.itemId' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <div class="relative">
+                          <input type="text" [(ngModel)]="searchTerms[i]" [name]="'itemSearch_' + i"
+                            [placeholder]="'allowance.itemIdPlaceholder' | translate"
+                            (input)="onItemSearch(i, searchTerms[i] || '')" (focus)="toggleDropdown(i)"
+                            (blur)="closeDropdown(i)" [class.border-red-500]="hasItemError(i, 'itemId')"
+                            class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
+                          <!-- Dropdown Results -->
+                          <div *ngIf="showDropdowns[i] && filteredItems[i] && filteredItems[i].length > 0"
+                            class="absolute z-10 w-full mt-1 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-lg max-h-60 overflow-y-auto">
+                            <div *ngFor="let item of filteredItems[i]"
+                              (mousedown)="selectItem(i, item); $event.preventDefault()"
+                              class="px-3 py-2 hover:bg-[var(--color-background-hover)] cursor-pointer border-b border-[var(--color-border)] last:border-b-0">
+                              <div class="text-sm font-medium text-[var(--color-text)]">{{ item.name || 'N/A' }}</div>
+                              <div class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                                {{ 'allowance.itemNo' | translate }}: {{ item.itemNo || 'N/A' }} |
+                                {{ 'allowance.nsn' | translate }}: {{ item.nsn || 'N/A' }}
+                              </div>
+                            </div>
+                          </div>
+                          <div *ngIf="showDropdowns[i] && filteredItems[i] && filteredItems[i].length === 0"
+                            class="absolute z-10 w-full mt-1 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-lg px-3 py-2 text-sm text-[var(--color-text-muted)]">
+                            {{ 'allowance.noItemsFound' | translate }}
+                          </div>
+                        </div>
+                        <p *ngIf="hasItemError(i, 'itemId')" class="mt-1 text-xs text-[var(--color-error)]">
+                          {{ getItemError(i, 'itemId') }}
+                        </p>
+                      </div>
+
+                      <!-- Quantity -->
+                      <div>
+                        <label class="block text-xs font-medium text-[#6B7280] mb-1.5">
+                          {{ 'allowance.quantity' | translate }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
+                          (ngModelChange)="onQuantityChange(i)"
+                          [placeholder]="'allowance.quantityPlaceholder' | translate"
+                          [class.border-red-500]="hasItemError(i, 'quantity')"
+                          class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]" />
+                        <p *ngIf="hasItemError(i, 'quantity')" class="mt-1 text-xs text-[var(--color-error)]">
+                          {{ getItemError(i, 'quantity') }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div *ngIf="errors['submit']"
+                class="bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 text-[var(--color-error)] px-4 py-3 rounded-lg">
+                {{ errors['submit'] }}
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-center pt-6">
+                <app-button *appHasPermission="['AllowanceItem.Create', 'AllowanceItem.Edit']" appPermissionMode="any"
+                  type="submit" variant="primary" size="md" class="px-12" [disabled]="isLoading">
+                  {{ isLoading ? ('allowance.sending' | translate) : ('allowance.send' | translate) }}
+                </app-button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

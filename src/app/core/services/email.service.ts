@@ -27,21 +27,21 @@ export class EmailService {
   constructor(
     private http: HttpClient,
     private config: ConfigService
-  ) {}
+  ) { }
 
   /**
    * Send an email
    */
   sendEmail(request: SendEmailRequest): Observable<APIOperationResponse<void>> {
     const endpoint = `${this.config.apiUrl}${API_ENDPOINTS.EMAIL.SEND}`;
-    console.log('[EmailService] Sending email:', { 
-      to: request.to, 
+    console.log('[EmailService] Sending email:', {
+      to: request.to,
       subject: request.subject,
       endpoint: endpoint,
       fullUrl: endpoint
     });
     this.config.log('Sending email', { to: request.to, subject: request.subject });
-    
+
     return this.http.post<APIOperationResponse<void>>(endpoint, {
       To: request.to,
       Subject: request.subject,
@@ -49,11 +49,6 @@ export class EmailService {
       IsHtml: request.isHtml ?? true
     }).pipe(
       catchError(error => {
-        console.error('[EmailService] Email send failed:', error);
-        console.error('[EmailService] Error status:', error?.status);
-        console.error('[EmailService] Error message:', error?.message);
-        console.error('[EmailService] Error response:', error?.error);
-        console.error('[EmailService] Full error object:', error);
         this.config.logError('Failed to send email', error);
         return throwError(() => error);
       })
@@ -73,7 +68,7 @@ export class EmailService {
   ): Observable<APIOperationResponse<void>> {
     const emailBody = this.buildNotificationEmailBody(title, message, details, entityDetails, entityType);
     console.log('[EmailService] Sending notification email with body:', emailBody);
-    
+
     return this.sendEmail({
       to: recipientEmail,
       subject: title,
@@ -250,7 +245,7 @@ export class EmailService {
    */
   private buildOrderDetails(order: any): string {
     let html = '';
-    
+
     if (order.orderNo || order.requestNo) {
       html += `<div class="detail-row"><span class="detail-label">Order Number:</span><span>${this.escapeHtml(order.orderNo || order.requestNo || `#${order.id}`)}</span></div>`;
     }
@@ -276,8 +271,8 @@ export class EmailService {
       const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleString() : '';
       const fromTime = order.usageTimeFrom || '';
       const toTime = order.usageTimeTo || '';
-      const dateRange = toDate 
-        ? `${fromDate} ${fromTime} - ${toDate} ${toTime}` 
+      const dateRange = toDate
+        ? `${fromDate} ${fromTime} - ${toDate} ${toTime}`
         : `${fromDate} ${fromTime}`;
       html += `<div class="detail-row"><span class="detail-label">Usage Date:</span><span>${dateRange}</span></div>`;
     }
@@ -287,7 +282,7 @@ export class EmailService {
     if (order.notes) {
       html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(order.notes)}</span></div>`;
     }
-    
+
     // Add items if available
     if (order.requestItems && order.requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
@@ -296,7 +291,7 @@ export class EmailService {
       });
       html += '</tbody></table></div>';
     }
-    
+
     return html;
   }
 
@@ -305,7 +300,7 @@ export class EmailService {
    */
   private buildReturnDetails(returnReq: any): string {
     let html = '';
-    
+
     if (returnReq.requestNo) {
       html += `<div class="detail-row"><span class="detail-label">Return Number:</span><span>${this.escapeHtml(returnReq.requestNo || `#${returnReq.id}`)}</span></div>`;
     }
@@ -332,7 +327,7 @@ export class EmailService {
     if (returnReq.notes) {
       html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(returnReq.notes)}</span></div>`;
     }
-    
+
     // Add items if available
     if (returnReq.requestItems && returnReq.requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
@@ -341,7 +336,7 @@ export class EmailService {
       });
       html += '</tbody></table></div>';
     }
-    
+
     return html;
   }
 
@@ -350,7 +345,7 @@ export class EmailService {
    */
   private buildDiscardDetails(discard: any): string {
     let html = '';
-    
+
     if (discard.requestNo) {
       html += `<div class="detail-row"><span class="detail-label">Discard Number:</span><span>${this.escapeHtml(discard.requestNo || `#${discard.id}`)}</span></div>`;
     }
@@ -377,7 +372,7 @@ export class EmailService {
     if (discard.notes) {
       html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(discard.notes)}</span></div>`;
     }
-    
+
     // Add items if available
     if (discard.requestItems && discard.requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
@@ -386,7 +381,7 @@ export class EmailService {
       });
       html += '</tbody></table></div>';
     }
-    
+
     return html;
   }
 

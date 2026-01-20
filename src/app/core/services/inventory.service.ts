@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import {
@@ -22,55 +23,28 @@ import {
   providedIn: 'root'
 })
 export class InventoryService {
+  private readonly endpoint = API_ENDPOINTS.INVENTORY.BASE;
+
   constructor(
-    private http: HttpClient,
+    private apiService: ApiService,
+    private http: HttpClient, // Kept for Blob operations until ApiService supports them
     private config: ConfigService
   ) { }
-
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}${API_ENDPOINTS.INVENTORY.BASE}`;
-  }
 
   /**
    * Get all inventories with details
    */
   getAll(): Observable<InventoryDto[]> {
     this.config.log('Fetching all inventories');
-
-    return this.http.get<APIOperationResponse<InventoryDto[]>>(this.baseUrl).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        console.warn('Failed to load inventories:', response.message);
-        return [];
-      }),
-      catchError(err => {
-        this.config.logError('Failed to fetch inventories', err);
-        throw err;
-      })
-    );
+    return this.apiService.get<InventoryDto[]>(this.endpoint);
   }
 
   /**
    * Get inventory by ID with all details and navigation properties
    */
-  getById(id: number): Observable<InventoryDto | null> {
+  getById(id: number): Observable<InventoryDto> {
     this.config.log('Fetching inventory', { id });
-
-    return this.http.get<APIOperationResponse<InventoryDto>>(`${this.baseUrl}/${id}`).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        console.warn('Failed to load inventory:', response.message);
-        return null;
-      }),
-      catchError(err => {
-        this.config.logError('Failed to fetch inventory', err);
-        throw err;
-      })
-    );
+    return this.apiService.get<InventoryDto>(`${this.endpoint}/${id}`);
   }
 
   /**
@@ -119,20 +93,7 @@ export class InventoryService {
    */
   create(dto: CreateInventoryDto): Observable<InventoryDto> {
     this.config.log('Creating inventory', { depoId: dto.depoId });
-
-    return this.http.post<APIOperationResponse<InventoryDto>>(this.baseUrl, dto).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          this.config.log('Inventory created successfully', { id: response.data.id });
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to create inventory');
-      }),
-      catchError(err => {
-        this.config.logError('Failed to create inventory', err);
-        throw err;
-      })
-    );
+    return this.apiService.post<InventoryDto>(this.endpoint, dto);
   }
 
   /**
@@ -144,23 +105,8 @@ export class InventoryService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('depotId', depotId.toString());
-    const params = { language };
 
-    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params }).pipe(
-      map(response => {
-        if (response.succeeded) {
-          this.config.log('Inventory import completed', {
-            successCount: response.data?.successCount || 0,
-            failureCount: response.data?.failureCount || 0
-          });
-        }
-        return response;
-      }),
-      catchError(err => {
-        this.config.logError('Failed to import inventory', err);
-        throw err;
-      })
-    );
+    return this.apiService.postRaw<any>(`${this.endpoint}/Import`, formData, { params: { language } });
   }
 
   /**
@@ -172,23 +118,8 @@ export class InventoryService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('depotId', depotId.toString());
-    const params = { language };
 
-    return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params }).pipe(
-      map(response => {
-        if (response.succeeded) {
-          this.config.log('Import preview completed', {
-            successCount: response.data?.successCount || 0,
-            failureCount: response.data?.failureCount || 0
-          });
-        }
-        return response;
-      }),
-      catchError(err => {
-        this.config.logError('Failed to preview import', err);
-        throw err;
-      })
-    );
+    return this.apiService.postRaw<any>(`${this.endpoint}/ImportPreview`, formData, { params: { language } });
   }
 
   /**
@@ -196,20 +127,7 @@ export class InventoryService {
    */
   update(id: number, dto: UpdateInventoryDto): Observable<InventoryDto> {
     this.config.log('Updating inventory', { id });
-
-    return this.http.put<APIOperationResponse<InventoryDto>>(`${this.baseUrl}/${id}`, dto).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          this.config.log('Inventory updated successfully', { id });
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to update inventory');
-      }),
-      catchError(err => {
-        this.config.logError('Failed to update inventory', err);
-        throw err;
-      })
-    );
+    return this.apiService.put<InventoryDto>(`${this.endpoint}/${id}`, dto);
   }
 
   /**
@@ -217,20 +135,7 @@ export class InventoryService {
    */
   delete(id: number): Observable<boolean> {
     this.config.log('Deleting inventory', { id });
-
-    return this.http.delete<APIOperationResponse<boolean>>(`${this.baseUrl}/${id}`).pipe(
-      map(response => {
-        if (response.succeeded) {
-          this.config.log('Inventory deleted successfully', { id });
-          return true;
-        }
-        throw new Error(response.message || 'Failed to delete inventory');
-      }),
-      catchError(err => {
-        this.config.logError('Failed to delete inventory', err);
-        throw err;
-      })
-    );
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
   }
 
   /**
@@ -238,22 +143,7 @@ export class InventoryService {
    */
   getLotsByItemId(itemId: number): Observable<LotDetailDto[]> {
     this.config.log(`Fetching all lots for item ${itemId}`);
-
-    return this.http.get<APIOperationResponse<LotDetailDto[]>>(
-      `${this.baseUrl}/item/${itemId}/lots`
-    ).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        console.warn('Failed to load lots:', response.message);
-        return [];
-      }),
-      catchError(err => {
-        this.config.logError(`Failed to fetch lots for item ${itemId}`, err);
-        throw err;
-      })
-    );
+    return this.apiService.get<LotDetailDto[]>(`${this.endpoint}/item/${itemId}/lots`);
   }
 
   /**
@@ -262,7 +152,7 @@ export class InventoryService {
   getAvailableLotsForQuantity(itemId: number, requiredQuantity: number, depotIds?: number[]): Observable<LotDetailDto[]> {
     this.config.log(`Fetching available lots for item ${itemId}, quantity ${requiredQuantity}`);
 
-    let url = `${this.baseUrl}/item/${itemId}/available-lots?quantity=${requiredQuantity}`;
+    let url = `${this.endpoint}/item/${itemId}/available-lots?quantity=${requiredQuantity}`;
 
     if (depotIds && depotIds.length > 0) {
       depotIds.forEach(depotId => {
@@ -270,19 +160,7 @@ export class InventoryService {
       });
     }
 
-    return this.http.get<APIOperationResponse<LotDetailDto[]>>(url).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        console.warn('Failed to load available lots:', response.message);
-        return [];
-      }),
-      catchError(err => {
-        this.config.logError(`Failed to fetch available lots for item ${itemId}`, err);
-        throw err;
-      })
-    );
+    return this.apiService.get<LotDetailDto[]>(url);
   }
 
   /**
@@ -290,22 +168,10 @@ export class InventoryService {
    * Endpoint: GET /api/Inventory/lot/{lotNumber}
    */
   getLotByNumber(lotNumber: number): Observable<LotDetailDto> {
-    const url = `${this.baseUrl}/lot/${lotNumber}`;
+    const url = `${this.endpoint}/lot/${lotNumber}`;
     console.log('getLotByNumber - Making API call to:', url);
     this.config.log(`Fetching lot details for lot ${lotNumber}`);
-
-    return this.http.get<APIOperationResponse<LotDetailDto>>(url).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Lot not found');
-      }),
-      catchError(err => {
-        this.config.logError(`Failed to fetch lot ${lotNumber}`, err);
-        throw err;
-      })
-    );
+    return this.apiService.get<LotDetailDto>(url);
   }
   /**
    * Get aggregated inventory summary for a specific item
@@ -313,21 +179,7 @@ export class InventoryService {
    */
   getItemInventorySummary(itemId: number): Observable<ItemInventorySummaryDto> {
     this.config.log(`Fetching inventory summary for item ${itemId}`);
-
-    return this.http.get<APIOperationResponse<ItemInventorySummaryDto>>(
-      `${this.baseUrl}/item/${itemId}/summary`
-    ).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to fetch inventory summary');
-      }),
-      catchError(err => {
-        this.config.logError(`Failed to fetch inventory summary for item ${itemId}`, err);
-        throw err;
-      })
-    );
+    return this.apiService.get<ItemInventorySummaryDto>(`${this.endpoint}/item/${itemId}/summary`);
   }
 
   /**
@@ -337,26 +189,13 @@ export class InventoryService {
   getAllItemsSummary(): Observable<ItemInventorySummaryDto[]> {
     this.config.log('Fetching inventory summary for all items');
 
-    return this.http.get<APIOperationResponse<ItemInventorySummaryDto[]>>(
-      `${this.baseUrl}/items/summary`
-    ).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          // Transform itemType from string to number if needed
-          return response.data.map(item => ({
-            ...item,
-            itemType: typeof item.itemType === 'string'
-              ? this.convertItemTypeStringToNumber(item.itemType)
-              : item.itemType
-          }));
-        }
-        console.warn('Failed to load items summary:', response.message);
-        return [];
-      }),
-      catchError(err => {
-        this.config.logError('Failed to fetch items summary', err);
-        throw err;
-      })
+    return this.apiService.get<ItemInventorySummaryDto[]>(`${this.endpoint}/items/summary`).pipe(
+      map(items => items.map(item => ({
+        ...item,
+        itemType: typeof item.itemType === 'string'
+          ? this.convertItemTypeStringToNumber(item.itemType)
+          : item.itemType
+      })))
     );
   }
 
@@ -376,11 +215,12 @@ export class InventoryService {
   /**
    * Download inventory import template with data validation (dropdowns for lookups)
    * This template is generated by the backend with Excel data validation
+   * Note: Using HttpClient directly because ApiService doesn't support 'blob' response type yet
    */
   downloadImportTemplate(depotId: number, language: string = 'en'): Observable<Blob> {
     this.config.log('Downloading inventory import template', { depotId, language });
 
-    return this.http.get(`${this.baseUrl}/template?depotId=${depotId}&language=${language}`, {
+    return this.http.get(`${this.config.apiUrl}${this.endpoint}/template?depotId=${depotId}&language=${language}`, {
       responseType: 'blob',
       observe: 'body'
     }).pipe(

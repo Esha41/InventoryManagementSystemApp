@@ -3,6 +3,7 @@
     "title": "Dashboard",
     "subtitle": "Order status overview",
     "orderStatusOverview": "Order status overview",
+    "count": "Count",
     "newIssue": "New Issue",
     "newIssueOrders": "New Issue Orders",
     "newReturns": "New Returns",

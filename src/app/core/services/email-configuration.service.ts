@@ -50,7 +50,7 @@ export class EmailConfigurationService {
   constructor(
     private readonly apiService: ApiService,
     private readonly config: ConfigService
-  ) {}
+  ) { }
 
   private get endpoint(): string {
     return API_ENDPOINTS.EMAIL_CONFIGURATION.BASE;
@@ -60,7 +60,7 @@ export class EmailConfigurationService {
     this.config.log('Fetching email configuration');
 
     return this.apiService
-      .getWithAuth<APIOperationResponse<EmailConfigurationApiDto>>(this.endpoint)
+      .getRaw<EmailConfigurationApiDto>(this.endpoint)
       .pipe(
         map(response => {
           // If response succeeded but no data, return empty config
@@ -72,26 +72,26 @@ export class EmailConfigurationService {
         catchError(error => {
           // If 404, return empty config (settings don't exist yet)
           // Check both HttpErrorResponse status and error message
-          const is404 = (error as any)?.status === 404 || 
-                       error?.message?.includes('404') || 
-                       error?.message?.includes('Resource not found') ||
-                       error?.message?.includes('Not Found');
-          
+          const is404 = (error as any)?.status === 404 ||
+            error?.message?.includes('404') ||
+            error?.message?.includes('Resource not found') ||
+            error?.message?.includes('Not Found');
+
           // If 403, also return empty config (user might not have permission to view, but can still configure)
-          const is403 = (error as any)?.status === 403 || 
-                       error?.message?.includes('403') || 
-                       error?.message?.includes('Forbidden');
-          
+          const is403 = (error as any)?.status === 403 ||
+            error?.message?.includes('403') ||
+            error?.message?.includes('Forbidden');
+
           if (is404) {
             this.config.log('Email configuration not found, returning empty config');
             return of({} as EmailConfigurationDto);
           }
-          
+
           if (is403) {
             this.config.log('Email configuration access forbidden, returning empty config (user may still be able to save)');
             return of({} as EmailConfigurationDto);
           }
-          
+
           this.config.logError('Failed to fetch email configuration', error);
           return throwError(() => error);
         })
@@ -105,7 +105,7 @@ export class EmailConfigurationService {
     const apiDto = this.internalDtoToApiDto(config);
 
     return this.apiService
-      .postWithAuth<APIOperationResponse<EmailSettingsApiDto>>(this.endpoint, apiDto)
+      .postRaw<EmailSettingsApiDto>(this.endpoint, apiDto)
       .pipe(
         map(response => {
           if (!response.succeeded) {
@@ -116,11 +116,11 @@ export class EmailConfigurationService {
         catchError(error => {
           // Provide more specific error messages
           let errorMessage = 'Failed to update email configuration';
-          
+
           // Check for status code in HttpErrorResponse
           const status = (error as any)?.status;
           const errorMsg = error instanceof Error ? error.message : String(error);
-          
+
           if (status === 403 || errorMsg?.includes('403') || errorMsg?.includes('Forbidden')) {
             errorMessage = 'You do not have permission to update email settings. Please contact your administrator.';
           } else if (status === 404 || errorMsg?.includes('404') || errorMsg?.includes('Not Found')) {
@@ -130,7 +130,7 @@ export class EmailConfigurationService {
           } else if (errorMsg && errorMsg !== 'An unknown error occurred') {
             errorMessage = errorMsg;
           }
-          
+
           this.config.logError('Failed to update email configuration', error);
           return throwError(() => new Error(errorMessage));
         })

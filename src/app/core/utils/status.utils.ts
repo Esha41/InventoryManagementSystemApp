@@ -241,11 +241,14 @@ export function mapOrderStatusToString(status: number): string {
 }
 
 /**
- * Map order status from API response (handles both string and number)
- * Maps to backend RequestStatus enum: New=1, UnderProcess=2, Approved=3, Rejected=4, Cancelled=5
+ * Map order status from API to standardized string
+ * @param status Status value from API (can be number or string)
+ * @returns Standardized status string
  */
-export function mapOrderStatusFromApi(status: any): string {
-  // Handle string status
+export function mapOrderStatusFromApi(status: string | number): string {
+  if (typeof status === 'number') {
+    return mapOrderStatusToString(status);
+  }
   if (typeof status === 'string') {
     const lowerStatus = status.toLowerCase();
     if (lowerStatus === 'new') return 'New';
@@ -255,10 +258,6 @@ export function mapOrderStatusFromApi(status: any): string {
     if (lowerStatus === 'cancelled') return 'Cancelled';
     if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') return 'Returned for Review';
     if (lowerStatus === 'pending') return 'New';
-  }
-  // Handle numeric status
-  if (typeof status === 'number') {
-    return mapOrderStatusToString(status);
   }
   return 'New';
 }

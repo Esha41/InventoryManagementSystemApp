@@ -5,6 +5,9 @@ import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
+import { RankDto } from '@models/rank.model';
+import { DepartmentDto } from '@models/lookup.model';
+import { RequestItemDto } from '@models/common.model';
 
 /**
  * Base Request DTO from backend
@@ -19,8 +22,18 @@ export interface BaseRequestDto {
     status: number; // 1=New, 2=UnderProcess, 3=Approved, 4=Rejected, 6=ReturnedForReview
     notes?: string;
     departmentId: number;
+    departmentName?: string;
+    departmentNameAr?: string;
+    departmentNameEn?: string;
     requesterId?: string;
+    requesterName?: string;
+    requesterNameAr?: string;
+    requesterNameEn?: string;
+    requesterRoleNameAr?: string;
     requestPurposeId: number;
+    requestPurposeName?: string;
+    requestPurposeNameAr?: string;
+    requestPurposeNameEn?: string;
     requestDate: string | Date; // For compatibility with workflow-approval.model
     creationDate: string | Date;
 
@@ -40,8 +53,8 @@ export interface BaseRequestDto {
         fullNameAR: string;
         militoryId?: string | null;
         email?: string;
-        rank?: any;
-        department?: any;
+        rank?: RankDto;
+        department?: DepartmentDto;
     };
 
     requestPurpose?: {
@@ -70,22 +83,12 @@ export interface BaseRequestDto {
     receiverId?: string;
     receiverName?: string;
     isMyTurn?: boolean;
+    [key: string]: any; // Allow dynamic property access
 }
 
-/**
- * Request Item DTO
- */
-export interface RequestItemDto {
-    id: number;
-    itemId: number;
-    quantity: number;
-    requestId: number;
-    notes?: string;
-    itemName?: string;
-    itemNo?: string;
-    nsn?: string;
-    itemType?: number; // 1=Ammunition, 2=Weapon, 3=Explosive
-}
+// RequestItemDto is now imported from @models/common.model
+// Re-export for backward compatibility
+export type { RequestItemDto } from '@models/common.model';
 
 /**
  * Unified Request Service

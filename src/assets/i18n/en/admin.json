@@ -168,6 +168,7 @@
     "nameArPlaceholder": "Enter Arabic name",
     "code": "Code",
     "codePlaceholder": "Enter code (optional)",
+    "codeRequiredPlaceholder": "Enter code",
     "itemType": "Item Type",
     "selectItemType": "Select item type",
     "ammunition": "Ammunition",

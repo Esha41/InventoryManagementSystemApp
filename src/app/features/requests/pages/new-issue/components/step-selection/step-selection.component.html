@@ -1,0 +1,49 @@
+<!-- Loading State -->
+<app-loading-state *ngIf="cartridgeState.loadingCartridges" message="common.loading"
+    containerClass="bg-[var(--color-background)] rounded-lg p-6 border border-dashed border-[var(--color-border)]">
+</app-loading-state>
+
+<!-- Error State -->
+<app-error-state *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
+    [error]="cartridgeState.cartridgeError || ''" variant="inline" [actionText]="'common.retry'"
+    containerClass="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 rounded-lg p-4"
+    messageClass="text-sm text-[var(--color-error)]" (action)="retryLoad.emit()">
+</app-error-state>
+
+<!-- Cartridge Details View -->
+<app-cartridge-details
+    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails"
+    [cartridge]="cartridgeState.selectedCartridgeForView" (select)="onSelectCartridge()"
+    (cancel)="onCloseCartridgeDetails()">
+</app-cartridge-details>
+
+<!-- Cartridge List View -->
+<app-cartridge-list
+    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
+    [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="displayedItemTypeOptions"
+    [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions" [bulletDiameters]="filterOptions.bulletDiameters"
+    [linkedOptions]="filterOptions.linkedOptions" [natureOptions]="filterOptions.natureOptions"
+    [weaponTypeOptions]="filterOptions.weaponTypeOptions || []"
+    [explosiveTypeOptions]="filterOptions.explosiveTypeOptions || []" [selectedItemType]="filterState.selectedItemType"
+    [selectedAmmunitionType]="filterState.selectedAmmunitionType"
+    [selectedBulletDiameter]="filterState.selectedBulletDiameter" [selectedLinked]="filterState.selectedLinked"
+    [selectedNature]="filterState.selectedNature" [selectedWeaponType]="filterState.selectedWeaponType || ''"
+    [selectedCaliber]="filterState.selectedCaliber || ''"
+    [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
+    [selectedUNNumber]="filterState.selectedUNNumber || ''" [selectedNSN]="filterState.selectedNSN"
+    [canProceed]="canProceed" [fromReserve]="fromReserve" [selectedCartridges]="selectedCartridges"
+    (cartridgeClick)="onCartridgeClick($event)" (allowanceError)="onAllowanceError($event)"
+    (itemTypeValidationError)="onAllowanceError($event)" (addSelection)="addSelection.emit($event)"
+    (filterChange)="filterChange.emit()" (clearFilters)="clearFilters.emit()" (next)="next.emit()"
+    (previous)="previous.emit()" (searchChange)="onSearchChange($event)" (itemTypeChange)="onItemTypeChange($event)"
+    (ammunitionTypeChange)="onAmmunitionTypeChange($event)" (bulletDiameterChange)="onBulletDiameterChange($event)"
+    (linkedChange)="onLinkedChange($event)" (natureChange)="onNatureChange($event)"
+    (weaponTypeChange)="onWeaponTypeChange($event)" (caliberChange)="onCaliberChange($event)"
+    (explosiveTypeChange)="onExplosiveTypeChange($event)" (unNumberChange)="onUnNumberChange($event)"
+    (nsnChange)="onNSNChange($event)" (removeSelection)="removeSelection.emit($event)">
+</app-cartridge-list>
+
+<!-- Allowance Error Banner -->
+<app-error-banner *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && allowanceError"
+    [error]="allowanceError" class="mt-4">
+</app-error-banner>

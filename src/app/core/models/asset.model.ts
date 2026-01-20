@@ -3,8 +3,11 @@
  * Matches backend DTOs from Ettad.Inventory.Services.Assets
  */
 
+
 import { WeaponDto } from './weapon.model';
 import { DepotDto } from './depot.model';
+import { FileUploadDto } from './file-upload.model';
+import { DepartmentDto } from './lookup.model';
 
 /**
  * Asset Status Enum
@@ -18,14 +21,7 @@ export enum AssetStatus {
     Damaged = 6
 }
 
-/**
- * Department DTO
- */
-export interface DepartmentDto {
-    id: number;
-    nameAr: string;
-    nameEn: string;
-}
+
 
 /**
  * Employee DTO (Custodian)
@@ -38,18 +34,6 @@ export interface EmployeeDto {
     employeeNumber?: string;
 }
 
-/**
- * File Upload DTO
- */
-export interface FileUploadDto {
-    id: number;
-    fileUrl: string;
-    fileName: string;
-    originalName: string;
-    isMain: boolean;
-    entity: string;
-    entityId: number;
-}
 
 /**
  * Asset DTO (Read)
