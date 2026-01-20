@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronDown, Search } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, Search, X, Filter } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent, DropdownComponent, DropdownOption } from '@components/index';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
 import { RequestsManagementService } from './services/requests-management.service';
@@ -27,6 +27,8 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
+  readonly X = X;
+  readonly Filter = Filter;
 
   requests: Request[] = [];
   filteredRequests: Request[] = [];

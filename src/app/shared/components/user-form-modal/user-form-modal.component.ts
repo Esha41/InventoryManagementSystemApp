@@ -145,7 +145,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         }
       },
       error: (error: any) => {
-        console.error('Failed to load roles from API:', error);
         this.errorMessage = 'Failed to load roles';
         // Load fallback roles on error
         this.loadFallbackRoles();
@@ -193,7 +192,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         isSuperAdmin: false
       }
     ];
-    console.log('Using fallback roles:', this.roles);
   }
 
   private loadDepartments(): void {
@@ -273,15 +271,12 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         if (deptId != null) {
           this.userForm.patchValue({ departmentId: deptId });
         }
-
-        console.log('Selected roles for user:', selectedRoleIds.length > 0 ? selectedRoleIds : this.user?.roleIds);
       },
       error: (error: any) => {
         // If getUserRoles fails, still try to set the roles from user data
         if (this.user?.roleIds && this.user.roleIds.length > 0) {
           this.userForm.patchValue({ roleIds: this.user.roleIds });
         }
-        console.error('Failed to load user roles:', error);
         // Don't show error message as roles might already be loaded from loadRoles()
       }
     });
@@ -341,10 +336,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: formValue.militaryId != null ? String(formValue.militaryId).trim() : undefined
       };
 
-      console.log('Creating user with DTO:', JSON.stringify(dto, null, 2));
-      console.log('Selected roles:', dto.roleIds);
-      console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId, 'In DTO (militoryId):', dto.militoryId);
-
       this.backendUserService.createUser(dto).subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
@@ -363,7 +354,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
             errorMsg || this.translate.instant('userFormModal.createError'),
             this.translate.instant('userFormModal.createTitle')
           );
-          console.error('Error creating user:', error);
         }
       });
     } else if (this.user) {
@@ -396,11 +386,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: militaryIdValue // Include even if empty string to allow clearing
       };
 
-      console.log('Updating user with DTO:', JSON.stringify(dto, null, 2));
-      console.log('Selected roles:', dto.roleIds);
-      console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId);
-      console.log('Military ID - Processed value (militoryId):', dto.militoryId);
-
       this.backendUserService.updateUser(this.user.id, dto).subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
@@ -419,7 +404,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
             errorMsg || this.translate.instant('userFormModal.updateError'),
             this.translate.instant('userFormModal.updateTitle')
           );
-          console.error('Error updating user:', error);
         }
       });
     }

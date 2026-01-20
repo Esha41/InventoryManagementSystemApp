@@ -462,10 +462,54 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   filterCartridges(): void {
-    this.cartridgeState.filteredCartridges = this.filterService.filterCartridges(
+    // First, get the filtered cartridges based on current filters
+    const filtered = this.filterService.filterCartridges(
       this.cartridgeState.allCartridges,
       this.filterState
     );
+
+    // Get selected cartridges from cache that match the current item type filter
+    const selectedCartridges: Cartridge[] = [];
+    const selectedIds = new Set<number>();
+    const currentItemType = this.filterState.selectedItemType;
+
+    // Helper function to infer item type from cartridge properties
+    const inferItemType = (cartridge: Cartridge): string | null => {
+      if (cartridge.itemType) {
+        return cartridge.itemType;
+      }
+      if (cartridge.weaponType || cartridge.caliber || cartridge.actionType) {
+        return 'Weapon';
+      }
+      if (cartridge.explosiveType || cartridge.unNumber) {
+        return 'Explosive';
+      }
+      if (cartridge.ammunitionType || cartridge.bulletDiameterLabel || cartridge.linkedLabel) {
+        return 'Ammunition';
+      }
+      return null;
+    };
+
+    // Collect selected cartridges from cache that match the current item type
+    this.cartridgeState.selectedCartridgesCache.forEach((cachedCartridge, id) => {
+      const cartridgeItemType = cachedCartridge.itemType || inferItemType(cachedCartridge);
+      
+      // Only include selected items that match the current filter type
+      if (cartridgeItemType === currentItemType) {
+        // Create a copy to avoid mutating the cache
+        const cartridgeCopy = { ...cachedCartridge };
+        cartridgeCopy.added = true;
+        cartridgeCopy.selected = true;
+        selectedCartridges.push(cartridgeCopy);
+        selectedIds.add(id);
+      }
+    });
+
+    // Remove selected items from filtered list to avoid duplicates
+    const filteredWithoutSelected = filtered.filter(c => !selectedIds.has(c.id));
+
+    // Prepend selected items at the top, then add filtered items
+    this.cartridgeState.filteredCartridges = [...selectedCartridges, ...filteredWithoutSelected];
     this.cdr.markForCheck();
   }
 

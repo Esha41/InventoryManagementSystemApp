@@ -30,6 +30,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
+import { ItemType } from '@core/models/inventory.model';
 
 @Component({
   selector: 'app-allowance-list',
@@ -72,8 +73,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   isAdminUser = false;
   userDepartmentId: number | null = null;
   allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // All items from API
-  filteredItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Items filtered by selected department
+  ammunitionItems: AmmunitionReadDto[] = []; // Ammunition items
+  weaponItems: WeaponDto[] = []; // Weapon items
+  explosiveItems: ExplosiveDto[] = []; // Explosive items
+  filteredItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Items filtered by selected type and department
   selectedItem: number | string | null = null;
+  selectedItemType: ItemType | null = null; // Filter by item type: Ammunition, Weapon, or Explosive
+  itemTypeOptions: { value: ItemType | null; label: string }[] = []; // Item type dropdown options
 
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
@@ -83,6 +89,10 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     if (!item) return '';
     const localizedName = getLocalizedName(item as any, getCurrentLang(this.translateService));
     return localizedName || (item as any).itemNo || `Item ${(item as any).id}`;
+  };
+  readonly itemTypeOptionLabel = (option: DropdownOption<{ value: ItemType | null; label: string }> | { value: ItemType | null; label: string } | null) => {
+    const itemType = this.unwrapOption(option);
+    return itemType?.label || '';
   };
 
   // Pagination
@@ -132,14 +142,26 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.initializeItemTypeOptions();
     this.loadAllowances();
 
     // Subscribe to language changes to reload allowances with new localized names
     this.translateService.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.initializeItemTypeOptions();
         this.loadAllowances();
       });
+  }
+
+  private initializeItemTypeOptions(): void {
+    const currentLang = getCurrentLang(this.translateService);
+    this.itemTypeOptions = [
+      { value: null, label: this.translateService.instant('allowance.allItems') || 'All Items' },
+      { value: ItemType.Ammunition, label: this.translateService.instant('allowance.ammunition') || 'Ammunition' },
+      { value: ItemType.Weapon, label: this.translateService.instant('allowance.weapon') || 'Weapon' },
+      { value: ItemType.Explosive, label: this.translateService.instant('allowance.explosive') || 'Explosive' }
+    ];
   }
 
   ngOnDestroy(): void {
@@ -203,8 +225,14 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       this.filteredDepartments = processed.departments;
     }
 
+    // Store items separately by type
+    this.ammunitionItems = ammunitionItems || [];
+    this.weaponItems = weaponItems || [];
+    this.explosiveItems = explosiveItems || [];
     this.allItems = processed.allItems;
-    this.filteredItems = [...processed.allItems];
+    
+    // Update filtered items based on selected item type
+    this.updateFilteredItems();
     this.allAllowances = processed.allAllowances;
     this.filteredAllowances = [...this.allAllowances];
 
@@ -230,10 +258,27 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  onItemTypeChange(): void {
+    this.selectedItem = null; // Clear item selection when item type changes
+    this.updateFilteredItems();
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
   updateFilteredItems(): void {
-    // Always show all items in the dropdown
-    // Filtering by department/item happens in applyFilters()
-    this.filteredItems = [...this.allItems];
+    // Filter items based on selected item type
+    if (this.selectedItemType === null) {
+      // Show all items
+      this.filteredItems = [...this.allItems];
+    } else if (this.selectedItemType === ItemType.Ammunition) {
+      this.filteredItems = [...this.ammunitionItems];
+    } else if (this.selectedItemType === ItemType.Weapon) {
+      this.filteredItems = [...this.weaponItems];
+    } else if (this.selectedItemType === ItemType.Explosive) {
+      this.filteredItems = [...this.explosiveItems];
+    } else {
+      this.filteredItems = [...this.allItems];
+    }
   }
 
   onItemChange(): void {
@@ -259,9 +304,18 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  clearItemTypeFilter(): void {
+    this.selectedItemType = null;
+    this.selectedItem = null; // Clear item selection when clearing type filter
+    this.currentPage = 1;
+    this.updateFilteredItems();
+    this.applyFilters();
+  }
+
   clearAllFilters(): void {
     this.selectedDepartment = null;
     this.selectedItem = null;
+    this.selectedItemType = null;
     this.currentPage = 1;
     this.updateFilteredItems();
     this.applyFilters();
@@ -271,7 +325,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.filteredAllowances = filterAllowances(
       this.allAllowances,
       this.selectedDepartment,
-      this.selectedItem
+      this.selectedItem,
+      this.selectedItemType
     );
     this.updatePagination();
   }

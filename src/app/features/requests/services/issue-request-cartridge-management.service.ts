@@ -70,7 +70,7 @@ export class IssueRequestCartridgeManagementService {
     const target = cartridgeState.allCartridges.find(c => c.id === cartridge.id);
     if (target) {
       target.added = true;
-      target.selected = true;
+      target.selected = false; // Clear selection highlight after saving
       target.quantity = quantity;
       target.itemType = cartridge.itemType;
     }

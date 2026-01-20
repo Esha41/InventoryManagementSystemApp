@@ -239,8 +239,8 @@
     </div>
   </div>
 
-  <!-- Reserve Details Section - Only show if from allowance -->
-  <div *ngIf="fromReserve === 'Yes'" class="mb-8">
+  <!-- Reserve Details Section - Only show if from allowance and there are selected items -->
+  <div *ngIf="fromReserve === 'Yes' && selectedCartridges.length > 0" class="mb-8">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reserveDetails' | translate }}</h2>
       <span class="text-sm text-[var(--color-text-muted)]">
