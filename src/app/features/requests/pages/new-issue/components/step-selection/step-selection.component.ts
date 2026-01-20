@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnInit
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CartridgeListComponent, Cartridge } from '../cartridge-list/cartridge-list.component';
-import { CartridgeDetailsComponent } from '../cartridge-details/cartridge-details.component';
+import { ItemDetailsComponent } from '@shared/components/item-details/item-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
 import { FilterState, FilterOptions, CartridgeState } from '../../new-issue-request.state';
@@ -17,7 +17,7 @@ import { IssueRequestCartridgeManagementService } from '@requests/services/issue
         CommonModule,
         TranslateModule,
         CartridgeListComponent,
-        CartridgeDetailsComponent,
+        ItemDetailsComponent,
         LoadingStateComponent,
         ErrorStateComponent,
         ErrorBannerComponent

@@ -60,9 +60,9 @@ import {
   resetFilterState
 } from '@utils/asset-list.state';
 import { AssetPropertyAccessor } from '@utils/asset-property.utils';
-import { AssetViewModalComponent } from './components/asset-view-modal/asset-view-modal.component';
 import { AssetEditModalComponent } from './components/asset-edit-modal/asset-edit-modal.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 @Component({
   selector: 'app-asset-list',
@@ -81,7 +81,6 @@ import { ImportDialogComponent } from '@components/import-dialog/import-dialog.c
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    AssetViewModalComponent,
     AssetEditModalComponent,
     ImportDialogComponent,
     ImagePreviewTooltipComponent
@@ -223,6 +222,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
     private lookupService: LookupService,
+    private fileUploadService: FileUploadService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
@@ -423,8 +423,22 @@ export class AssetListComponent implements OnInit, OnDestroy {
           return null;
         }
 
-        // Get main image or first image
-        const image = originalData.images.find((img: any) => img.isMain) || originalData.images[0];
+        // Get main images (there might be multiple with isMain: true)
+        const mainImages = originalData.images.filter((img: any) => img.isMain);
+        let image: any;
+        
+        if (mainImages.length > 0) {
+          // If multiple main images exist, get the one with highest ID (latest uploaded)
+          image = mainImages.reduce((latest: any, current: any) => 
+            (current.id > latest.id) ? current : latest
+          );
+        } else {
+          // If no main image, get the image with highest ID (latest uploaded)
+          image = originalData.images.reduce((latest: any, current: any) => 
+            (current.id > latest.id) ? current : latest
+          );
+        }
+        
         if (!image?.id) {
           return null;
         }
@@ -499,31 +513,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const numericId = parseInt(assetId);
     if (isNaN(numericId)) return;
 
-    const service = this.getAssetService();
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    service.getById(numericId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.modalState.selectedAsset = data;
-          this.modalState.showViewModal = true;
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
-      });
+    // Navigate to detail page with tab query param
+    this.router.navigate(['/asset-list', numericId], {
+      queryParams: { tab: this.activeTab }
+    });
   }
 
-  closeViewModal(): void {
-    this.modalState.showViewModal = false;
-    this.modalState.selectedAsset = null;
-    this.cdr.markForCheck();
-  }
 
   onEdit(assetId: string): void {
     const asset = this.assets.find(a => a.id === assetId);
@@ -543,13 +538,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.loading = false;
           this.modalState.selectedAsset = data;
 
-          // Load image for edit
-          this.loadEditImage(numericId);
-          this.modalState.showEditModal = true;
-          this.cdr.markForCheck();
+          // Load image for edit first, then open modal
+          this.loadEditImage(numericId, () => {
+            this.loading = false;
+            this.modalState.showEditModal = true;
+            this.cdr.markForCheck();
+          });
         },
         error: () => {
           this.loading = false;
@@ -558,29 +554,73 @@ export class AssetListComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadEditImage(id: number): void {
+  private loadEditImage(id: number, callback?: () => void): void {
     const service = this.getAssetService();
 
-    service.getFileInfo(id)
+    // Get all files to find the latest one
+    let entityType: FileEntityType;
+    if (this.activeTab === 'ammunition') {
+      entityType = FileEntityType.Ammunition;
+    } else if (this.activeTab === 'weapon') {
+      entityType = FileEntityType.Weapon;
+    } else if (this.activeTab === 'explosive') {
+      entityType = FileEntityType.Explosive;
+    } else {
+      if (callback) callback();
+      return;
+    }
+
+    this.fileUploadService.getFilesByEntity(entityType, id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (info) => {
-          if (info) {
-            this.imageState.editImageFileId = info.id;
-            // Fetch blob for preview
-            service.getFileBlob(info.id)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: (blob: Blob) => {
-                  this.imageState.editImageUrl = URL.createObjectURL(blob);
-                  this.blobUrls.add(this.imageState.editImageUrl!);
-                  this.cdr.markForCheck();
-                },
-                error: () => { /* Silently handle image blob loading errors - images are optional */ }
-              });
+        next: (files: any[]) => {
+          if (files && files.length > 0) {
+            // Get main images (there might be multiple with isMain: true)
+            const mainImages = files.filter((img: any) => img.isMain);
+            let latestImage: any;
+            
+            if (mainImages.length > 0) {
+              // If multiple main images exist, get the one with highest ID (latest uploaded)
+              latestImage = mainImages.reduce((latest: any, current: any) => 
+                (current.id > latest.id) ? current : latest
+              );
+            } else {
+              // If no main image, get the image with highest ID (latest uploaded)
+              latestImage = files.reduce((latest: any, current: any) => 
+                (current.id > latest.id) ? current : latest
+              );
+            }
+            
+            if (latestImage?.id) {
+              this.imageState.editImageFileId = latestImage.id;
+              // Fetch blob for preview
+              service.getFileBlob(latestImage.id)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: (blob: Blob) => {
+                    this.imageState.editImageUrl = URL.createObjectURL(blob);
+                    this.blobUrls.add(this.imageState.editImageUrl!);
+                    // Create a new object reference to trigger change detection
+                    this.imageState = { ...this.imageState };
+                    this.cdr.markForCheck();
+                    if (callback) callback();
+                  },
+                  error: () => {
+                    // Even if image fails, continue with callback
+                    if (callback) callback();
+                  }
+                });
+            } else {
+              if (callback) callback();
+            }
+          } else {
+            if (callback) callback();
           }
         },
-        error: () => { /* Silently handle file info loading errors - file info is optional */ }
+        error: () => {
+          // Even if file fetch fails, continue with callback
+          if (callback) callback();
+        }
       });
   }
 

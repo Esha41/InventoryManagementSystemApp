@@ -95,9 +95,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   // Modal states
   showEditModal = false;
   showDeleteDialog = false;
-  showViewModal = false;
   selectedDetail?: InventoryDetailDto;
-  selectedDetailForView?: InventoryDetailDto;
   currentInventory?: InventoryDto;
 
   // Asset modal states
@@ -326,11 +324,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   onViewItem(detail: InventoryDetailDto): void {
-    // For static items (weapons/explosives), show view modal
-    if (this.isStaticItem(detail)) {
-      this.selectedDetailForView = detail;
-      this.showViewModal = true;
-      this.cdr.markForCheck();
+    // For static items (weapons/explosives), navigate to item detail page
+    if (this.isStaticItem(detail) && detail.item) {
+      // Navigate to asset-list detail page with tab query param
+      this.router.navigate(['/asset-list', detail.item.id], {
+        queryParams: { tab: this.activeTab }
+      });
     } else {
       // For inventory items, navigate to inventory detail page with tab query param
       this.router.navigate(['/warehouse', this.depoId, 'inventory', detail.id], {
@@ -340,14 +339,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Close view modal
-   */
-  closeViewModal(): void {
-    this.showViewModal = false;
-    this.selectedDetailForView = undefined;
-    this.cdr.markForCheck();
-  }
 
   onRowsPerPageChange(newSize: number): void {
     this.rowsPerPage = newSize;

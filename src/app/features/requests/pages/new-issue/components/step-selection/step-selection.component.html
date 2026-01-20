@@ -11,11 +11,11 @@
 </app-error-state>
 
 <!-- Cartridge Details View -->
-<app-cartridge-details
+<app-item-details
     *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails"
-    [cartridge]="cartridgeState.selectedCartridgeForView" (select)="onSelectCartridge()"
-    (cancel)="onCloseCartridgeDetails()">
-</app-cartridge-details>
+    [item]="cartridgeState.selectedCartridgeForView" [showActions]="true" [isModal]="false"
+    (select)="onSelectCartridge()" (cancel)="onCloseCartridgeDetails()">
+</app-item-details>
 
 <!-- Cartridge List View -->
 <app-cartridge-list
