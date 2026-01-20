@@ -107,8 +107,14 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       this.editForm.patchValue(formValue);
       this.cdr.markForCheck();
     }
-    if (changes['imageState']) {
-      this.imageStateLocal = { ...this.imageState };
+    if (changes['imageState'] && this.imageState) {
+      // Deep copy to ensure change detection triggers
+      this.imageStateLocal = { 
+        editImageUrl: this.imageState.editImageUrl,
+        editImageFile: this.imageState.editImageFile,
+        editImagePreview: this.imageState.editImagePreview,
+        editImageFileId: this.imageState.editImageFileId
+      };
       this.cdr.markForCheck();
     }
   }
