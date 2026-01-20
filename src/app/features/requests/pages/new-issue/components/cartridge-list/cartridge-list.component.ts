@@ -262,11 +262,12 @@ export class CartridgeListComponent {
   private proceedWithConfirmation(cartridge: Cartridge, quantity: number): void {
     cartridge.quantity = quantity;
     cartridge.added = true;
-    cartridge.selected = true;
+    cartridge.selected = false; // Clear selection highlight after saving
     this.addSelection.emit({ cartridge, quantity });
     this.pendingCartridgeId = null;
     this.pendingQuantity = 1;
     this.allowanceErrorMessage = null;
+    this.itemTypeValidationErrorMessage = null;
   }
 
   removePending(cartridge: Cartridge, event?: Event): void {

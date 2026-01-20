@@ -176,19 +176,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   get filteredUsers(): BackendUserDto[] {
     let users = this.userManagementService.filterUsers(this.users, this.searchTerm);
 
-    console.log('[filteredUsers] Total users before filtering:', users.length);
-    console.log('[filteredUsers] Current user isSuperAdmin:', this.isSuperAdmin);
-    console.log('[filteredUsers] Roles loaded:', this.roles.length);
-
     // Filter out superadmin users if current user is not a superadmin
     if (!this.isSuperAdmin) {
-      const beforeCount = users.length;
       users = users.filter(user => {
         const isSuperAdmin = this.isUserSuperAdmin(user);
-        console.log('[filteredUsers] User:', user.userName, 'isSuperAdmin:', isSuperAdmin, 'filtered out:', isSuperAdmin);
         return !isSuperAdmin;
       });
-      console.log('[filteredUsers] Filtered from', beforeCount, 'to', users.length, 'users');
     }
 
     // Apply status filter
@@ -206,37 +199,26 @@ export class UserManagementComponent implements OnInit, OnDestroy {
    */
   isUserSuperAdmin(user: BackendUserDto): boolean {
     if (!user) {
-      console.log('[isUserSuperAdmin] User is null or undefined, returning false.');
       return false;
     }
-
-    console.log(`[isUserSuperAdmin] Checking user: ${user.userName || user.id}`);
-    console.log('[isUserSuperAdmin] User roleIds:', user.roleIds);
-    console.log('[isUserSuperAdmin] User roles (full objects):', user.roles);
-    console.log('[isUserSuperAdmin] All available roles:', this.roles.map(r => ({ id: r.id, name: r.name, isSuperAdmin: r.isSuperAdmin })));
 
     // Check roleIds (string array) first
     if (user.roleIds && Array.isArray(user.roleIds) && user.roleIds.length > 0) {
       const isSuperAdmin = user.roleIds.some(roleId => {
         const role = this.roles.find(r => r.id === roleId);
-        console.log(`[isUserSuperAdmin] Checking roleId: ${roleId}. Found role: ${role?.name} (isSuperAdmin: ${role?.isSuperAdmin})`);
         return role?.isSuperAdmin === true;
       });
-      console.log(`[isUserSuperAdmin] User ${user.userName} (via roleIds) isSuperAdmin: ${isSuperAdmin}`);
       return isSuperAdmin;
     }
 
     // Fallback to roles (RoleDto array) if roleIds is not available
     if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
       const isSuperAdmin = user.roles.some(role => {
-        console.log(`[isUserSuperAdmin] Checking role object: ${role.name} (isSuperAdmin: ${role.isSuperAdmin})`);
         return role.isSuperAdmin === true;
       });
-      console.log(`[isUserSuperAdmin] User ${user.userName} (via role objects) isSuperAdmin: ${isSuperAdmin}`);
       return isSuperAdmin;
     }
 
-    console.log(`[isUserSuperAdmin] User ${user.userName} has no roles or roleIds, returning false.`);
     return false;
   }
 

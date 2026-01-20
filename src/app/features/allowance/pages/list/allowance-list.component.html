@@ -27,6 +27,20 @@
           </button>
         </div>
         <div class="flex-1 relative">
+          <app-dropdown class="w-full" [(ngModel)]="selectedItemType" (ngModelChange)="onItemTypeChange()"
+            [options]="itemTypeOptions" optionValue="value" [optionLabelFn]="itemTypeOptionLabel"
+            placeholder="{{ 'allowance.selectItemType' | translate }}">
+          </app-dropdown>
+          <!-- Clear Item Type Filter Button -->
+          <button *ngIf="selectedItemType !== null && selectedItemType !== undefined" type="button"
+            (click)="clearItemTypeFilter(); $event.stopPropagation()"
+            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+            style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+            title="{{ 'allowance.clearFilter' | translate }}">
+            <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+          </button>
+        </div>
+        <div class="flex-1 relative">
           <app-dropdown class="w-full" [(ngModel)]="selectedItem" (ngModelChange)="onItemChange()"
             [options]="filteredItems" optionValue="id" [optionLabelFn]="itemOptionLabel"
             placeholder="{{ 'allowance.selectItem' | translate }}">
