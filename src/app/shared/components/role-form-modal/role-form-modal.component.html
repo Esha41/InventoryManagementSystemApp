@@ -38,30 +38,6 @@
       </label>
     </div>
 
-    <!-- Application Entities Section -->
-    <div class="pt-4 border-t border-[var(--color-border)]">
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'roleFormModal.applicationEntity' | translate }}
-      </label>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoadingEntities" class="text-sm text-[var(--color-text-muted)] py-4">
-        {{ 'roleFormModal.loadingEntities' | translate }}
-      </div>
-
-      <!-- Entity Dropdown -->
-      <div *ngIf="!isLoadingEntities">
-        <app-dropdown class="w-full" formControlName="applicationEntityId" [options]="entities" optionValue="id"
-          [optionLabelFn]="entityOptionLabel" [disabled]="isLoadingEntities" [placeholderSelectable]="false"
-          [placeholderValue]="null" placeholder="{{ 'roleFormModal.selectEntity' | translate }}">
-        </app-dropdown>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoadingEntities && entities.length === 0" class="text-sm text-[var(--color-text-muted)] py-4">
-        {{ 'roleFormModal.noEntitiesAvailable' | translate }}
-      </div>
-    </div>
 
     <!-- Error Message -->
     <div *ngIf="errorMessage"

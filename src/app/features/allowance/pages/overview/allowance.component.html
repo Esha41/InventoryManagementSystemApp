@@ -62,8 +62,8 @@
                 </label>
                 <div class="flex-1">
                   <app-dropdown class="w-full" [(ngModel)]="selectedItemType" name="itemType"
-                    (ngModelChange)="onItemTypeChange()" [options]="itemTypeOptions" optionValue="value"
-                    optionLabel="label" placeholder="{{ 'allowance.selectItemType' | translate }}">
+                    (ngModelChange)="onItemTypeChange()" [disabled]="targetItemId !== null" [options]="itemTypeOptions"
+                    optionValue="value" optionLabel="label" placeholder="{{ 'allowance.selectItemType' | translate }}">
                   </app-dropdown>
                 </div>
               </div>

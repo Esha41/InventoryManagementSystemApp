@@ -6,7 +6,7 @@ import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { RankDto } from '@models/rank.model';
-import { DepartmentDto } from '@models/asset.model';
+import { DepartmentDto } from '@models/lookup.model';
 import { RequestItemDto } from '@models/common.model';
 
 /**

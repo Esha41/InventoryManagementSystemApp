@@ -114,7 +114,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
     const formConfig: any = {
       nameEn: ['', [Validators.required, Validators.maxLength(100)]],
       nameAr: ['', [Validators.required, Validators.maxLength(100)]],
-      code: ['', [Validators.maxLength(50)]]
+      code: ['', this.tableConfig?.hasCode ? [Validators.required, Validators.maxLength(50)] : [Validators.maxLength(50)]]
     };
 
     // Add ItemType field for ItemType lookup table

@@ -119,8 +119,14 @@ export class NotificationService implements OnDestroy {
   }
 
   markAsRead(id: number): Observable<void> {
-    const notification = this.notificationsSubject.getValue().find(item => item.id === id);
-    const wasUnread = notification ? !notification.isRead : false;
+    const notifications = this.notificationsSubject.getValue();
+    const notification = notifications.find(item => item.id === id);
+
+    if (!notification) {
+      return of(void 0);
+    }
+
+    const wasUnread = !notification.isRead;
 
     const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(id);
 
@@ -133,7 +139,15 @@ export class NotificationService implements OnDestroy {
           return throwError(() => error);
         }),
         tap(() => {
+          // Check if notification was unread BEFORE we update it
+          const notifications = this.notificationsSubject.getValue();
+          const notification = notifications.find(item => item.id === id);
+          const wasUnread = notification ? !notification.isRead : false;
+
+          // Update the notification to mark it as read
           this.applyNotificationUpdate(id, { isRead: true });
+
+          // Only decrement count if it was actually unread
           if (wasUnread) {
             this.decrementUnreadCount();
           }
@@ -311,7 +325,9 @@ export class NotificationService implements OnDestroy {
     });
 
     this.hubConnection.on('UnreadCountUpdated', (count: number) => {
-      this.ngZone.run(() => this.unreadCountSubject.next(count ?? 0));
+      this.ngZone.run(() => {
+        this.unreadCountSubject.next(count ?? 0);
+      });
     });
 
     this.hubConnection.onreconnected(() => {

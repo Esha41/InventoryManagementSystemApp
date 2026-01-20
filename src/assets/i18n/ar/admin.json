@@ -168,6 +168,7 @@
     "nameArPlaceholder": "أدخل الاسم بالعربية",
     "code": "الرمز",
     "codePlaceholder": "أدخل الرمز (اختياري)",
+    "codeRequiredPlaceholder": "أدخل الرمز",
     "itemType": "نوع المادة",
     "selectItemType": "اختر نوع المادة",
     "ammunition": "ذخيرة",

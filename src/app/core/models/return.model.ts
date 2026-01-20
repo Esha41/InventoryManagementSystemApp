@@ -1,5 +1,5 @@
 import { RankDto } from './rank.model';
-import { DepartmentDto } from './asset.model';
+import { DepartmentDto } from './lookup.model';
 import { ReturnItemDto } from './request-item.model';
 
 // Re-export for backward compatibility

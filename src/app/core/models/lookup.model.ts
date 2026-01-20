@@ -19,7 +19,7 @@ export type ManufacturerDto = LookupItem;
 export type CountryDto = LookupItem;
 export type HccDto = LookupItem;
 export type NatureOptionDto = LookupItem;
-export type DepotDto = LookupItem;
+
 
 export interface CreateUpdateLookupDto {
   nameAr: string;

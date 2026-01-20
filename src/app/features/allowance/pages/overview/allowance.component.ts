@@ -143,10 +143,7 @@ export class AllowanceComponent implements OnInit {
       this.loadItems();
     });
 
-    // Load items first, then check for edit mode
-    this.loadItems();
-
-    // Check for edit mode from query params after items are loaded
+    // Check for edit mode from query params
     this.route.queryParams.subscribe(params => {
       if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
         this.selectedDepartment = parseInt(params['departmentId'], 10);
@@ -156,6 +153,7 @@ export class AllowanceComponent implements OnInit {
         // Set item type from query params if provided
         if (params['itemType']) {
           const itype = params['itemType'].toString();
+
           if (itype === '1' || itype === 'Ammunition') {
             this.selectedItemType = 'Ammunition';
           } else if (itype === '2' || itype === 'Weapon') {
@@ -165,15 +163,13 @@ export class AllowanceComponent implements OnInit {
           }
         }
 
-        // Wait for items to be loaded before loading allowance data
-        if (this.allItems.length > 0) {
+        // Load items with the correct type, then load allowance data
+        this.loadItems().then(() => {
           this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
-        } else {
-          // If items not loaded yet, wait for them
-          this.loadItems().then(() => {
-            this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
-          });
-        }
+        });
+      } else {
+        // Not in edit mode, load default items
+        this.loadItems();
       }
     });
   }
@@ -582,24 +578,9 @@ export class AllowanceComponent implements OnInit {
 
         if (items && items.length > 0) {
           this.allExistingItems = items;
-          // Determine item type from first item if available
-          const firstItem = items[0];
-          if (firstItem.itemType) {
-            if (firstItem.itemType === ItemType.Weapon) {
-              this.selectedItemType = 'Weapon';
-            } else if (firstItem.itemType === ItemType.Explosive) {
-              this.selectedItemType = 'Explosive';
-            } else {
-              this.selectedItemType = 'Ammunition';
-            }
-            // Reload items for the correct type
-            this.loadItems().then(() => {
-              this.mapItemsToForm(items);
-            });
-          } else {
-            // Fallback: try to find items in current list
-            this.mapItemsToForm(items);
-          }
+          // Items are already loaded with correct type from query params
+          // Just map them to the form
+          this.mapItemsToForm(items);
         } else {
           this.items = [{ itemId: '', quantity: '' }];
         }

@@ -18,7 +18,7 @@ import {
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
-import { NotificationService } from '@notifications/services/notification.service';
+import { NotificationService } from '@services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderDto } from '@models/order.model';
@@ -381,20 +381,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       if (existing) {
         this.selectedNotification = existing;
         this.loadNotificationDetail(existing);
-        // Mark as read if it's unread
-        if (!existing.isRead) {
-          this.markAsRead(existing);
-        }
+        // Don't auto-mark as read during sync - only when user clicks
         return;
       }
     }
 
+    // Auto-select first notification but don't mark as read yet
     this.selectedNotification = notifications[0];
     this.loadNotificationDetail(this.selectedNotification);
-    // Mark as read if it's unread
-    if (!this.selectedNotification.isRead) {
-      this.markAsRead(this.selectedNotification);
-    }
+    // Don't auto-mark as read during sync - only when user clicks
   }
 
   private loadNotificationDetail(notification: Notification | null): void {
