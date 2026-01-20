@@ -102,7 +102,7 @@ export class CartridgeDataService {
     const currentYear = new Date().getFullYear();
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, currentYear);
 
-    return this.apiService.getWithAuth<any>(endpoint).pipe(
+    return this.apiService.getRaw<any>(endpoint).pipe(
       switchMap((response) => {
         const allowanceItems = response.data?.items || response.data?.Items || [];
 
@@ -198,7 +198,7 @@ export class CartridgeDataService {
     const currentYear = new Date().getFullYear();
     const endpoint = API_ENDPOINTS.ALLOWANCE.RESERVE_DETAILS(departmentId, currentYear);
 
-    return this.apiService.getWithAuth<any>(endpoint).pipe(
+    return this.apiService.getRaw<any>(endpoint).pipe(
       map((response) => {
         if (response.succeeded && response.data) {
           // Map the new API field names to the expected format

@@ -18,7 +18,6 @@ export class LookupService {
 
   constructor(
     private apiService: ApiService,
-    private http: HttpClient,
     private configService: ConfigService
   ) { }
 
@@ -29,14 +28,7 @@ export class LookupService {
     const endpoint = `${this.baseUrl}/${tableName}`;
     const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
 
-    return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to load lookup items');
-      })
-    );
+    return this.apiService.get<LookupItem[]>(endpoint, params);
   }
 
   /**
@@ -44,15 +36,7 @@ export class LookupService {
    */
   getLookupItemById(tableName: string, id: number): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-
-    return this.apiService.getWithAuth<APIOperationResponse<LookupItem>>(endpoint).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to load lookup item');
-      })
-    );
+    return this.apiService.get<LookupItem>(endpoint);
   }
 
   /**
@@ -60,15 +44,7 @@ export class LookupService {
    */
   createLookupItem(tableName: string, dto: CreateUpdateLookupDto): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}`;
-
-    return this.apiService.postWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to create lookup item');
-      })
-    );
+    return this.apiService.post<LookupItem>(endpoint, dto);
   }
 
   /**
@@ -76,53 +52,16 @@ export class LookupService {
    */
   updateLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<LookupItem> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-
-    return this.apiService.putWithAuth<APIOperationResponse<LookupItem>>(endpoint, dto).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to update lookup item');
-      })
-    );
+    return this.apiService.put<LookupItem>(endpoint, dto);
   }
 
   /**
    * Soft delete a lookup item
-   * Note: Backend DELETE endpoint expects DTO in body, which HttpClient supports
    */
   deleteLookupItem(tableName: string, id: number, dto: CreateUpdateLookupDto): Observable<boolean> {
     const endpoint = `${this.baseUrl}/${tableName}/${id}`;
-
-    // HttpClient supports DELETE with body, though it's not standard HTTP
-    // We need to use http directly to send DELETE with body
-    const headers = this.getAuthHeaders();
-    return this.http.delete<APIOperationResponse<LookupItem>>(`${this.configService.apiUrl}${endpoint}`, {
-      headers,
-      body: dto
-    }).pipe(
-      map(response => {
-        if (response.succeeded) {
-          return true;
-        }
-        throw new Error(response.message || 'Failed to delete lookup item');
-      })
-    );
-  }
-
-  /**
-   * Get auth headers for direct HTTP calls
-   */
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token');
-    let headers = new HttpHeaders();
-
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    headers = headers.set('Content-Type', 'application/json');
-    return headers;
+    // ApiService handles the body in DELETE requests now
+    return this.apiService.delete<boolean>(endpoint, dto);
   }
 
   /**
@@ -135,14 +74,7 @@ export class LookupService {
       params = params.set('includeDeleted', 'true');
     }
 
-    return this.apiService.getWithAuth<APIOperationResponse<LookupItem[]>>(endpoint, params).pipe(
-      map(response => {
-        if (response.succeeded && response.data) {
-          return response.data;
-        }
-        throw new Error(response.message || 'Failed to search lookup items');
-      })
-    );
+    return this.apiService.get<LookupItem[]>(endpoint, params);
   }
 
   // Backward compatibility methods - convenience methods for specific lookup tables

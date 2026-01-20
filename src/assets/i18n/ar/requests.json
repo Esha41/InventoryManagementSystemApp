@@ -395,6 +395,8 @@
     "summary": "ملخص",
     "requestId": "رقم الطلب",
     "type": "النوع",
+    "fromAllowance": "من المقرر",
+    "outOfAllowance": "خارج المقرر",
     "setSupplyPickupDate": "تعين تاريخ الإستلام",
     "pickupDate": "تاريخ الاستلام",
     "dateSetLocked": "تم تعيين التاريخ",

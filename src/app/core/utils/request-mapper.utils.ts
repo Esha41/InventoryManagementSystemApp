@@ -402,7 +402,8 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     usageDateTo: data['usageDateTo'] ? formatRequestDate(data['usageDateTo']) : undefined,
     usageTimeTo: data['usageTimeTo'],
     numberOfOfficer: data['numberOfOfficer'],
-    numberOfOtherRank: data['numberOfOtherRank']
+    numberOfOtherRank: data['numberOfOtherRank'],
+    isFromAllowance: data['isFromAllowance']
   };
 }
 

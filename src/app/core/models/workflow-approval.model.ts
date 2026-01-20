@@ -124,6 +124,7 @@ export interface RequestDetail {
   usageTimeTo?: string;
   numberOfOfficer?: number;
   numberOfOtherRank?: number;
+  isFromAllowance?: boolean;
 }
 
 /**

@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, EMPTY, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
-import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
+import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from './components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -55,7 +55,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // View state
   viewMode: 'grid' | 'table' = 'grid';
   currentPage = 1;
-  rowsPerPage = 9;
+  rowsPerPage = 8;
 
   // Icons
   readonly Grid = Grid;
@@ -66,6 +66,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
+  readonly X = X;
+  readonly Filter = Filter;
 
   // Search functionality
   searchQuery: string = '';

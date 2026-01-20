@@ -84,7 +84,7 @@
       "Critical": "حرجة"
     },
     "requestTypes": {
-      "Order": "طلب",
+      "Order": "صرف",
       "Issue": "صرف",
       "Return": "إرجاع",
       "Discard": "إتلاف"
@@ -145,7 +145,7 @@
     "newDiscardRequest": "طلب إتلاف",
     "requestsManagement": "إدارة الموافقات",
     "requestsOverview": "عرض الطلبات",
-    "orderReport": "تقرير الطلب",
+    "orderReport": "تقرير الصرف",
     "forecast": "التوقعات",
     "inventory": "المخزون",
     "addAsset": "إضافة مادة",

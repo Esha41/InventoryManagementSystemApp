@@ -76,8 +76,7 @@ export class NotificationService implements OnDestroy {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService
   ) {
-    // Check email configuration on initialization
-    this.checkEmailConfiguration();
+    // Moved checkEmailConfiguration to initialize() to avoid 401 on login page
   }
 
   initialize(): void {
@@ -98,6 +97,9 @@ export class NotificationService implements OnDestroy {
             this.stopHubConnection();
             this.loadInitialData();
             this.startHubConnection();
+
+            // Check email config when user logs in
+            this.checkEmailConfiguration();
           }
         } else {
           this.currentUser = null;
@@ -130,11 +132,11 @@ export class NotificationService implements OnDestroy {
 
     const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(id);
 
-    return this.apiService.patchWithAuth(endpoint, {})
+    return this.apiService.patch<void>(endpoint, {})
       .pipe(
         catchError(error => {
           if (error?.status === 405) {
-            return this.apiService.postWithAuth(endpoint, {});
+            return this.apiService.post<void>(endpoint, {});
           }
           return throwError(() => error);
         }),
@@ -163,11 +165,11 @@ export class NotificationService implements OnDestroy {
   markAllAsRead(): Observable<void> {
     const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_AS_READ;
 
-    return this.apiService.patchWithAuth(endpoint, {})
+    return this.apiService.patch<void>(endpoint, {})
       .pipe(
         catchError(error => {
           if (error?.status === 405) {
-            return this.apiService.postWithAuth(endpoint, {});
+            return this.apiService.post<void>(endpoint, {});
           }
           return throwError(() => error);
         }),
@@ -196,7 +198,7 @@ export class NotificationService implements OnDestroy {
       'confirm'
     ]) ?? API_ENDPOINTS.NOTIFICATIONS.CONFIRM_PICKUP(id);
 
-    return this.apiService.postWithAuth(endpoint, {})
+    return this.apiService.post<void>(endpoint, {})
       .pipe(
         tap(() => {
           this.toastService.success(
@@ -242,7 +244,7 @@ export class NotificationService implements OnDestroy {
       );
     };
 
-    return this.apiService.postWithAuth(endpoint, payload).pipe(
+    return this.apiService.post<void>(endpoint, payload).pipe(
       tap(() => applySuccessUpdates()),
       map(() => void 0),
       catchError(error => {
@@ -273,13 +275,13 @@ export class NotificationService implements OnDestroy {
   private loadNotifications(): void {
     this.loadingSubject.next(true);
 
-    this.apiService.getWithAuth<any>(API_ENDPOINTS.NOTIFICATIONS.BASE)
+    this.apiService.get<any>(API_ENDPOINTS.NOTIFICATIONS.BASE)
       .pipe(finalize(() => this.loadingSubject.next(false)))
       .subscribe({
         next: (response) => {
           const items: NotificationDto[] = Array.isArray(response)
             ? response
-            : (response?.data ?? []);
+            : (response ?? []);
 
           const notifications = (items || []).map(dto => this.mapDtoToNotification(dto));
           notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -292,10 +294,10 @@ export class NotificationService implements OnDestroy {
   }
 
   private loadUnreadCount(): void {
-    this.apiService.getWithAuth<any>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT)
+    this.apiService.get<any>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT)
       .subscribe({
         next: (response) => {
-          const count = typeof response === 'number' ? response : response?.data ?? 0;
+          const count = typeof response === 'number' ? response : response ?? 0;
           this.unreadCountSubject.next(count ?? 0);
         },
         error: (error) => {

@@ -48,16 +48,12 @@ export class BackendUserService {
   getUsers(): Observable<BackendUserDto[]> {
     this.configService.log('Fetching all users');
 
-    return this.apiService.getWithAuth<ApiResponse<BackendUserDto[]>>(
+    return this.apiService.get<BackendUserDto[]>(
       API_ENDPOINTS.USERS.BASE
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch users');
-        }
+      map(users => {
         // Normalize militoryId to militaryId for all users
-        const users = response.data || [];
-        return users.map(rawUser => {
+        return (users || []).map(rawUser => {
           const user = { ...rawUser } as BackendUserDto;
 
           if ((rawUser as any).militoryId && !user.militaryId) {
@@ -128,15 +124,14 @@ export class BackendUserService {
   getUserById(id: string): Observable<BackendUserDto> {
     this.configService.log('Fetching user', { id });
 
-    return this.apiService.getWithAuth<ApiResponse<BackendUserDto>>(
+    return this.apiService.get<BackendUserDto>(
       API_ENDPOINTS.USERS.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch user');
+      map(userData => {
+        if (!userData) {
+          throw new Error('Failed to fetch user');
         }
         // Normalize militoryId to militaryId for consistency
-        const userData = response.data;
         if ((userData as any).militoryId && !userData.militaryId) {
           userData.militaryId = (userData as any).militoryId;
         }
@@ -157,15 +152,15 @@ export class BackendUserService {
   createUser(user: CreateUserDto): Observable<BackendUserDto> {
     this.configService.log('Creating user', { userName: user.userName });
 
-    return this.apiService.postWithAuth<ApiResponse<BackendUserDto>>(
+    return this.apiService.post<BackendUserDto>(
       API_ENDPOINTS.USERS.BASE,
       user
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to create user');
+      map(newUser => {
+        if (!newUser) {
+          throw new Error('Failed to create user');
         }
-        return response.data;
+        return newUser;
       }),
       tap(newUser => {
         // Update local users list
@@ -189,16 +184,15 @@ export class BackendUserService {
     this.configService.log('Updating user', { id });
     console.log("User update DTO:", JSON.stringify(user, null, 2));
 
-    return this.apiService.putWithAuth<ApiResponse<BackendUserDto>>(
+    return this.apiService.put<BackendUserDto>(
       API_ENDPOINTS.USERS.BY_ID(id),
       { ...user, id }
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to update user');
+      map(userData => {
+        if (!userData) {
+          throw new Error('Failed to update user');
         }
         // Normalize militoryId to militaryId for consistency
-        const userData = response.data;
         if ((userData as any).militoryId && !userData.militaryId) {
           userData.militaryId = (userData as any).militoryId;
         }
@@ -229,13 +223,13 @@ export class BackendUserService {
   toggleUserStatus(id: string): Observable<boolean> {
     this.configService.log('Toggling user status', { id });
 
-    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+    return this.apiService.put<boolean>(
       API_ENDPOINTS.USERS.TOGGLE_STATUS(id),
       {}
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to toggle user status');
+      map(succeeded => {
+        if (!succeeded) {
+          throw new Error('Failed to toggle user status');
         }
         return true;
       }),
@@ -264,13 +258,10 @@ export class BackendUserService {
   deleteUser(id: string): Observable<boolean> {
     this.configService.log('Deleting user', { id });
 
-    return this.apiService.deleteWithAuth<ApiResponse<any>>(
+    return this.apiService.delete<any>(
       API_ENDPOINTS.USERS.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete user');
-        }
+      map(() => {
         return true;
       }),
       tap(() => {
@@ -294,15 +285,12 @@ export class BackendUserService {
   getUserRoles(userId: string): Observable<RoleDto[]> {
     this.configService.log('Fetching user roles', { userId });
 
-    return this.apiService.getWithAuth<ApiResponse<RoleDto[]>>(
+    return this.apiService.get<RoleDto[]>(
       API_ENDPOINTS.USERS.ROLES(userId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch user roles');
-        }
-        console.log("response", response.data);
-        return response.data || [];
+      map(roles => {
+        console.log("response", roles);
+        return roles || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch user roles', error);
@@ -322,13 +310,14 @@ export class BackendUserService {
 
     const dto: UpdateUserRolesDto = { userId, roleIds };
 
-    return this.apiService.putWithAuth<ApiResponse<any>>(
+    return this.apiService.put<any>(
       API_ENDPOINTS.USERS.UPDATE_ROLES(userId),
       dto
     ).pipe(
       map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to update user roles');
+        // Handle case where put returns boolean succeeded directly
+        if (typeof response === 'boolean' && !response) {
+          throw new Error('Failed to update user roles');
         }
         return true;
       }),
@@ -352,12 +341,12 @@ export class BackendUserService {
   getRolesWithPagination(request: PagedRequest): Observable<PagedResponse<RoleDto>> {
     this.configService.log('Fetching roles with pagination', request);
 
-    return this.apiService.postWithAuth<PagedResponse<RoleDto>>(
+    return this.apiService.post<PagedResponse<RoleDto>>(
       API_ENDPOINTS.ROLES.BASE + '/GetRolesWithPagination',
       request
     ).pipe(
       tap(response => {
-        if (response.succeeded && response.data) {
+        if (response && response.succeeded && Array.isArray(response.data)) {
           this.rolesSubject.next(response.data);
           this.configService.log(`Fetched ${response.data.length} roles`);
         }
@@ -382,15 +371,15 @@ export class BackendUserService {
       pageSize: 1000
     };
 
-    return this.apiService.postWithAuth<ApiResponse<PaginatedList<RoleDto>>>(
+    return this.apiService.post<PaginatedList<RoleDto>>(
       API_ENDPOINTS.ROLES.PAGINATED,
       paginationRequest
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch roles');
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to fetch roles');
         }
-        return response.data.items || [];
+        return data.items || [];
       }),
       tap(roles => {
         this.rolesSubject.next(roles);
@@ -410,14 +399,11 @@ export class BackendUserService {
    */
   getAllRolesSimple(): Observable<RoleDto[]> {
     this.configService.log('Fetching all roles (simple)');
-    return this.apiService.getWithAuth<ApiResponse<RoleDto[]>>(
+    return this.apiService.get<RoleDto[]>(
       API_ENDPOINTS.ROLES.BASE
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch roles');
-        }
-        return response.data || [];
+      map(roles => {
+        return roles || [];
       })
     );
   }
@@ -428,12 +414,12 @@ export class BackendUserService {
   getApplicationEntitiesByRole(roleId: string): Observable<number[]> {
     this.configService.log('Fetching application entities for role', { roleId });
     // Backend expects roleId in path: /Roles/getApplicationentities/{roleId}
-    return this.apiService.getWithAuth<ApiResponse<RoleApplicationEntityLinkDto[]>>(
+    return this.apiService.get<RoleApplicationEntityLinkDto[]>(
       API_ENDPOINTS.ROLES.APPLICATION_ENTITIES_BY_ROLE(roleId)
     ).pipe(
-      map(response => {
-        if (response?.succeeded && Array.isArray(response.data)) {
-          return response.data.map(x => x.applicationEntityId);
+      map(data => {
+        if (Array.isArray(data)) {
+          return data.map(x => x.applicationEntityId);
         }
         return [] as number[];
       })
@@ -446,14 +432,14 @@ export class BackendUserService {
   getRoleById(id: string): Observable<RoleDto> {
     this.configService.log('Fetching role', { id });
 
-    return this.apiService.getWithAuth<ApiResponse<RoleDto>>(
+    return this.apiService.get<RoleDto>(
       API_ENDPOINTS.ROLES.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch role');
+      map(role => {
+        if (!role) {
+          throw new Error('Failed to fetch role');
         }
-        return response.data;
+        return role;
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch role', error);
@@ -471,15 +457,15 @@ export class BackendUserService {
     this.configService.log('Creating role', { name: role.name });
     console.log('BackendUserService - Creating role with payload:', JSON.stringify(role, null, 2));
 
-    return this.apiService.postWithAuth<ApiResponse<RoleDto>>(
+    return this.apiService.post<RoleDto>(
       API_ENDPOINTS.ROLES.BASE,
       role
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to create role');
+      map(newRole => {
+        if (!newRole) {
+          throw new Error('Failed to create role');
         }
-        return response.data;
+        return newRole;
       }),
       tap(newRole => {
         // Update local roles list
@@ -502,15 +488,15 @@ export class BackendUserService {
   updateRole(id: string, role: UpdateRoleDto): Observable<RoleDto> {
     this.configService.log('Updating role', { id });
 
-    return this.apiService.putWithAuth<ApiResponse<RoleDto>>(
+    return this.apiService.put<RoleDto>(
       API_ENDPOINTS.ROLES.BY_ID(id),
       { ...role, id }
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to update role');
+      map(updatedRole => {
+        if (!updatedRole) {
+          throw new Error('Failed to update role');
         }
-        return response.data;
+        return updatedRole;
       }),
       tap(updatedRole => {
         // Update local roles list
@@ -537,13 +523,10 @@ export class BackendUserService {
   deleteRole(id: string): Observable<boolean> {
     this.configService.log('Deleting role', { id });
 
-    return this.apiService.deleteWithAuth<ApiResponse<any>>(
+    return this.apiService.delete<any>(
       API_ENDPOINTS.ROLES.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete role');
-        }
+      map(() => {
         return true;
       }),
       tap(() => {
@@ -567,14 +550,11 @@ export class BackendUserService {
   getRolePermissions(roleId: string): Observable<PermissionDto[]> {
     this.configService.log('Fetching role permissions', { roleId });
 
-    return this.apiService.getWithAuth<ApiResponse<PermissionDto[]>>(
+    return this.apiService.get<PermissionDto[]>(
       API_ENDPOINTS.ROLES.PERMISSIONS(roleId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch role permissions');
-        }
-        return response.data || [];
+      map(permissions => {
+        return permissions || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch role permissions', error);
@@ -596,14 +576,11 @@ export class BackendUserService {
   getPlainPermissionsForRole(roleId: string): Observable<CrudPermission[]> {
     this.configService.log('Fetching plain permissions for role', { roleId });
 
-    return this.apiService.getWithAuth<ApiResponse<CrudPermission[]>>(
+    return this.apiService.get<CrudPermission[]>(
       API_ENDPOINTS.ROLES.PERMISSIONS(roleId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch permissions');
-        }
-        return response.data || [];
+      map(permissions => {
+        return permissions || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch plain permissions', error);
@@ -620,14 +597,11 @@ export class BackendUserService {
   getCrudPermissionsForRole(roleId: string): Observable<CrudPermission[]> {
     this.configService.log('Fetching CRUD permissions for role', { roleId });
 
-    return this.apiService.getWithAuth<ApiResponse<CrudPermission[]>>(
+    return this.apiService.get<CrudPermission[]>(
       API_ENDPOINTS.ROLES.CRUD_PERMISSIONS(roleId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch CRUD permissions');
-        }
-        return response.data || [];
+      map(permissions => {
+        return permissions || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch CRUD permissions', error);
@@ -649,7 +623,7 @@ export class BackendUserService {
       permissionsList: permissions
     };
 
-    return this.apiService.postWithAuth<ApiResponse<boolean>>(
+    return this.apiService.postRaw<boolean>(
       API_ENDPOINTS.ROLES.ASSIGN_PERMISSIONS,
       assignPermissionsDto
     ).pipe(
@@ -685,38 +659,22 @@ export class BackendUserService {
     console.log('API Call: GET', endpoint);
     console.log('Full URL will be:', `${this.configService.apiUrl}${endpoint}`);
 
-    return this.apiService.getWithAuth<ApiResponse<any[]>>(
+    return this.apiService.get<any[]>(
       endpoint
     ).pipe(
       map((response: any) => {
-        console.log('Raw API Response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Response succeeded:', response?.succeeded);
-        console.log('Response data:', response?.data);
+        console.log('API Response:', response);
 
         // Handle different response formats
-        // Case 1: Standard ApiResponse with succeeded flag
-        if (response && typeof response === 'object') {
-          if ('succeeded' in response) {
-            if (!response.succeeded) {
-              throw new Error(response.message || 'Failed to fetch application entities');
-            }
-            // Data might be directly in response.data or response.data could be an array
-            const entities = response.data || response;
-            return Array.isArray(entities) ? entities : (Array.isArray(response.data) ? response.data : []);
-          }
-          // Case 2: Direct array response
-          if (Array.isArray(response)) {
-            return response;
-          }
-          // Case 3: Response has data property that's an array
-          if (response.data && Array.isArray(response.data)) {
-            return response.data;
-          }
+        if (Array.isArray(response)) {
+          return response;
         }
 
-        // Default: return empty array if format is unexpected
-        console.warn('Unexpected response format, returning empty array');
+        // If it's a wrapped response but was auto-unwrapped, response is the data
+        if (response && typeof response === 'object') {
+          return response;
+        }
+
         return [];
       }),
       tap(entities => {
@@ -750,14 +708,11 @@ export class BackendUserService {
   getUsersInRole(roleId: string): Observable<UserInRoleDto[]> {
     this.configService.log('Fetching users in role', { roleId });
 
-    return this.apiService.getWithAuth<ApiResponse<UserInRoleDto[]>>(
+    return this.apiService.get<UserInRoleDto[]>(
       API_ENDPOINTS.ROLES.USERS_IN_ROLE(roleId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch users in role');
-        }
-        return response.data || [];
+      map(data => {
+        return data || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch users in role', error);
@@ -774,15 +729,12 @@ export class BackendUserService {
   removeUsersFromRole(roleId: string, userIds: string[]): Observable<boolean> {
     this.configService.log('Removing users from role', { roleId, userIds });
 
-    return this.apiService.postWithAuth<ApiResponse<boolean>>(
+    return this.apiService.post<boolean>(
       API_ENDPOINTS.ROLES.USERS_IN_ROLE(roleId),
       { userIds }
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to remove users from role');
-        }
-        return response.data;
+      map(succeeded => {
+        return !!succeeded;
       }),
       tap(() => {
         this.configService.log('Users removed from role successfully');

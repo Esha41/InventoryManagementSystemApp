@@ -1,22 +1,20 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto, OrderStatusSummaryItem } from '@models/order.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
+  private readonly endpoint = '/Order';
+
   constructor(
-    private http: HttpClient,
+    private apiService: ApiService,
     private config: ConfigService
   ) { }
-
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}/Order`;
-  }
 
   createOrder(payload: CreateOrderDto, files?: File[]): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
@@ -64,54 +62,26 @@ export class OrderService {
       });
     }
 
-    // Get auth token and set headers
-    const token = localStorage.getItem('auth_token');
-    const headers: { [key: string]: string } = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    // Don't set Content-Type - browser will set it with boundary for FormData
-
-    return this.http.post<APIOperationResponse<number>>(this.baseUrl, formData, { headers }).pipe(
-      catchError(error => {
-        this.config.logError('Failed to create order', error);
-        return throwError(() => error);
-      })
-    );
+    // Use postRaw to return the wrapped response as expected by the caller return type
+    return this.apiService.postRaw<number>(this.endpoint, formData);
   }
 
   getAllOrders(): Observable<OrderDto[]> {
     this.config.log('Fetching all orders');
-    return this.http.get<APIOperationResponse<OrderDto[]>>(this.baseUrl).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch orders');
-        }
-        return response.data ?? [];
-      }),
-      catchError(error => {
-        this.config.logError('Failed to fetch orders', error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<OrderDto[]>(this.endpoint);
   }
 
   getOrderById(id: number): Observable<OrderDto> {
     this.config.log(`Fetching order ${id}`);
-    // Add cache-busting headers to ensure fresh data
-    const headers = {
+    const headers = new HttpHeaders({
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0'
-    };
-    return this.http.get<APIOperationResponse<OrderDto>>(`${this.baseUrl}/${id}`, { headers }).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch order details');
-        }
-        const order = response.data;
+    });
 
-        // Normalize nested object property names (handle both camelCase and PascalCase)
+    return this.apiService.get<OrderDto>(`${this.endpoint}/${id}`, undefined, { headers }).pipe(
+      map((order: OrderDto) => {
+        // Normalize nested object property names
         if ((order as any).Department && !order.department) {
           order.department = (order as any).Department;
         }
@@ -122,7 +92,7 @@ export class OrderService {
           order.requestPurpose = (order as any).RequestPurpose;
         }
 
-        // Populate flat properties from nested objects if missing
+        // Populate flat properties
         if (order.department) {
           if (!order.departmentNameEn && order.department.nameEn) {
             order.departmentNameEn = order.department.nameEn;
@@ -138,6 +108,7 @@ export class OrderService {
               order.requester.fullNameAR ||
               order.requester.userName;
           }
+          // ... other assignments ...
           if (!order.requesterNameEn && order.requester.fullNameEN) {
             order.requesterNameEn = order.requester.fullNameEN;
           }
@@ -156,105 +127,47 @@ export class OrderService {
         }
 
         return order;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to fetch order ${id}`, error);
-        return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Returns a lightweight summary of orders by status for the current user scope.
-   * Backend endpoint: GET {baseUrl}/summary
-   */
   getOrderSummary(): Observable<OrderStatusSummaryItem[]> {
     this.config.log('Fetching order summary');
-    return this.http.get<APIOperationResponse<OrderStatusSummaryItem[]>>(`${this.baseUrl}/summary`).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch order summary');
-        }
-        return response.data ?? [];
-      }),
-      catchError(error => {
-        this.config.logError('Failed to fetch order summary', error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<OrderStatusSummaryItem[]>(`${this.endpoint}/summary`);
   }
 
-  /**
-   * Verify if requested quantity is available in allowance
-   * Backend endpoint: GET /api/Order/verify-allowance?itemId={itemId}&requestedQuantity={quantity}
-   */
   verifyAllowance(itemId: number, requestedQuantity: number): Observable<{ availableQuantity: number; isValid: boolean; message?: string }> {
     this.config.log(`Verifying allowance for item ${itemId}, quantity ${requestedQuantity}`);
     const params = new HttpParams()
       .set('itemId', itemId.toString())
       .set('requestedQuantity', requestedQuantity.toString());
 
-    return this.http.get<any>(`${this.baseUrl}/verify-allowance`, { params }).pipe(
-      map(response => {
-        // Handle different response structures
-        const availableQuantity = response?.availableQuantity ?? response?.data?.availableQuantity ?? 0;
+    return this.apiService.get<any>(`${this.endpoint}/verify-allowance`, params).pipe(
+      map(data => {
+        const availableQuantity = data?.availableQuantity ?? data?.data?.availableQuantity ?? 0;
         const isValid = requestedQuantity <= availableQuantity;
-
         return {
           availableQuantity,
           isValid,
-          message: response?.message
+          message: data?.message
         };
-      }),
-      catchError(error => {
-        this.config.logError('Failed to verify allowance', error);
-        // Extract error message if available
-        const errorMessage = error?.error?.message || error?.message || 'Failed to verify allowance';
-        return throwError(() => new Error(errorMessage));
       })
     );
   }
 
-  /**
-   * Add a new item to an existing order
-   * Backend endpoint: POST {baseUrl}/{orderId}/items
-   */
   addOrderItem(orderId: number, itemDto: CreateRequestItemDto): Observable<APIOperationResponse<number>> {
     this.config.log(`Adding item to order ${orderId}`, itemDto);
-    return this.http.post<APIOperationResponse<number>>(`${this.baseUrl}/${orderId}/items`, itemDto).pipe(
-      catchError(error => {
-        this.config.logError(`Failed to add item to order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.postRaw<number>(`${this.endpoint}/${orderId}/items`, itemDto);
   }
 
-  /**
-   * Update the quantity of an existing order item
-   * Backend endpoint: PUT {baseUrl}/{orderId}/items/{itemId}/quantity
-   */
   updateOrderItemQuantity(orderId: number, itemId: number, newQuantity: number): Observable<APIOperationResponse<boolean>> {
     this.config.log(`Updating item ${itemId} quantity in order ${orderId}`, { newQuantity });
-    return this.http.put<APIOperationResponse<boolean>>(`${this.baseUrl}/${orderId}/items/${itemId}/quantity`, newQuantity).pipe(
-      catchError(error => {
-        this.config.logError(`Failed to update item ${itemId} quantity in order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.putRaw<boolean>(`${this.endpoint}/${orderId}/items/${itemId}/quantity`, newQuantity);
   }
 
-  /**
-   * Delete an item from an order
-   * Backend endpoint: DELETE {baseUrl}/{orderId}/items/{itemId}
-   */
   deleteOrderItem(orderId: number, itemId: number): Observable<APIOperationResponse<boolean>> {
     this.config.log(`Deleting item ${itemId} from order ${orderId}`);
-    return this.http.delete<APIOperationResponse<boolean>>(`${this.baseUrl}/${orderId}/items/${itemId}`).pipe(
-      catchError(error => {
-        this.config.logError(`Failed to delete item ${itemId} from order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${orderId}/items/${itemId}`);
   }
 }
 

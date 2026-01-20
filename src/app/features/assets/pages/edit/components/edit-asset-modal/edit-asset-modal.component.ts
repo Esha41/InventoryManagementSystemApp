@@ -49,18 +49,18 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef
-  ) { }
-
-  ngOnInit(): void {
+  ) {
     this.initForm();
   }
+
+  ngOnInit(): void { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['asset'] && this.asset && this.editForm) {
       this.patchForm(this.asset);
       this.cdr.markForCheck();
     }
-    if (changes['isOpen'] && !this.isOpen) {
+    if (changes['isOpen'] && !this.isOpen && this.editForm) {
       // Reset form when modal closes
       this.editForm.reset();
       this.submitted = false;

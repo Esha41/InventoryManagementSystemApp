@@ -150,7 +150,7 @@ export class UserContextService {
 
   private fetchCurrentUserProfile(): Observable<BackendUserDto | null> {
     // Use /Users/me endpoint which returns more complete user data
-    return this.apiService.postWithAuth<APIOperationResponse<any>>(API_ENDPOINTS.USERS.ME, {}).pipe(
+    return this.apiService.postRaw<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
       map(response => {
         if (response?.succeeded && response.data) {
           // Map the API response to BackendUserDto format
