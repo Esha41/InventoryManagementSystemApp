@@ -24,7 +24,7 @@ export class StockNotificationSettingsComponent {
   users: BackendUserDto[] = [];
   selectedRoles: string[] = [];
   selectedUsers: string[] = [];
-  schedule: string = "";
+  schedule: Date | null = null;
   isLoadingRoles = false;
   isLoadingUsers = false;
   isLoadingSchedule = false;
@@ -167,10 +167,17 @@ export class StockNotificationSettingsComponent {
 
   private loadSchedule(): void {
     this.isLoadingSchedule = true
-    this.stockNotificationService.getSchedule().subscribe({
+    this.stockNotificationService.getSchedule<string | null>().subscribe({
       next: (data) => {
-        this.schedule = String(data.data);
-        this.scheduleForm.patchValue({ dateTime: this.convertCronToISO(this.schedule) })
+        if (data.data) {
+          // Backend returns date string like "2026-01-20T12:47:00"
+          // Extract just the date and time parts for datetime-local input (YYYY-MM-DDTHH:mm)
+          // Use the string directly without any conversion
+          const dateStr = (data.data as string).slice(0, 16);
+          this.scheduleForm.patchValue({ dateTime: dateStr });
+        } else {
+          this.scheduleForm.patchValue({ dateTime: '' });
+        }
         this.isLoadingSchedule = false;
       },
       error: (error) => {
@@ -192,30 +199,27 @@ export class StockNotificationSettingsComponent {
 
   onSubmitScheduleForm(): void {
     const formValue = this.scheduleForm.getRawValue();
+    if (!formValue.dateTime) {
+      this.errorMessage = 'Please select a valid schedule time';
+      return;
+    }
+    // Send the datetime string directly with timezone offset (not as Date object)
+    // datetime-local gives us "2026-01-20T15:47" (local time, no timezone)
+    // Append timezone offset so backend receives and parses the exact local time
+    const timezoneOffset = -new Date().getTimezoneOffset(); // Get offset in minutes
+    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60).toString().padStart(2, '0');
+    const offsetMinutes = (Math.abs(timezoneOffset) % 60).toString().padStart(2, '0');
+    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+    const offsetString = `${offsetSign}${offsetHours}:${offsetMinutes}`;
+    
+    // Create ISO string with timezone: "2026-01-20T15:47:00+03:00"
+    // Send as string so backend parses it correctly with timezone info
+    const dateTimeWithOffset = `${formValue.dateTime}:00${offsetString}`;
+    
     const dto: LowStockNotificationScheduleDto = {
-      scheduleTime: formValue.dateTime
+      scheduleTime: dateTimeWithOffset as any // Send as string, backend will parse to DateTime
     }
     this.updateSchedule(dto)
   }
 
-  private convertCronToISO(cronExpression: string) {
-    // Parse the cron expression (e.g., "50 6 * * *")
-    const parts = cronExpression.split(' ');
-    const minute = parts[0];
-    let hour = parts[1];
-
-    // Pad the hour to ensure it always has two digits (e.g., "06" instead of "6")
-    hour = String(hour).padStart(2, '0');
-
-    // Get today's date in 'yyyy-MM-dd' format
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(today.getDate()).padStart(2, '0');
-
-    // Construct the ISO 8601 formatted date
-    const formattedDate = `${year}-${month}-${day}T${hour}:${minute}`;
-
-    return formattedDate;
-  };
 }
