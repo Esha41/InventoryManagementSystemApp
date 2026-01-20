@@ -56,6 +56,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   previewData: any = null;
   pendingImportFile: File | null = null; // Store file for import after preview confirmation
   pendingDepotId: number | null = null; // Store depot ID for import after preview confirmation
+  isPreviewInProgress = false; // Prevent multiple simultaneous preview requests
+  isImportInProgress = false; // Prevent multiple simultaneous import requests
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -132,7 +134,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   loadWarehouseInventory(): void {
-    if (!this.selectedDepotId) return;
+    if (!this.selectedDepotId) {
+      return;
+    }
 
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
@@ -152,7 +156,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
           },
-          error: () => {
+          error: (error: any) => {
             this.loadingWarehouseInventory = false;
             this.toastService.error('Failed to load warehouse assets');
             this.cdr.markForCheck();
@@ -168,7 +172,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
           },
-          error: () => {
+          error: (error: any) => {
             this.loadingWarehouseInventory = false;
             this.toastService.error('Failed to load warehouse inventory');
             this.cdr.markForCheck();
@@ -247,6 +251,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent multiple simultaneous import requests
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      return;
+    }
+
+    this.isImportInProgress = true;
     this.loadingWarehouseInventory = true;
     this.closeImportModal();
     this.cdr.markForCheck();
@@ -261,11 +272,32 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     importService
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
+          this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
 
-          if (response.succeeded && response.data) {
-            const result = response.data;
+          // Handle both wrapped and unwrapped responses
+          let result: any;
+          if (response?.succeeded !== undefined) {
+            // Wrapped response
+            if (!response.succeeded || !response.data) {
+              this.toastService.error(response.message || 'Import failed');
+              this.cdr.markForCheck();
+              return;
+            }
+            result = response.data;
+            } else {
+              // Unwrapped response
+              if ((response as any)?.successCount !== undefined || (response as any)?.successfulRecords !== undefined || (response as any)?.errors !== undefined) {
+                result = response;
+              } else {
+                this.toastService.error('Unexpected response format from server');
+              this.cdr.markForCheck();
+              return;
+            }
+          }
+
+          if (result) {
             const successCount = result.successCount || 0;
             const failureCount = result.failureCount || 0;
             const errors = result.errors || [];
@@ -281,14 +313,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             } else {
               this.toastService.success(`Imported ${successCount} items successfully.`);
             }
-          } else {
-            this.toastService.error(response.message || 'Import failed');
           }
 
           this.loadWarehouseInventory();
           this.cdr.markForCheck();
         },
         error: (error: any) => {
+          this.isImportInProgress = false;
           const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
           this.toastService.error(`Failed to import ${entityType}: ` + (error.message || 'Unknown error'));
           this.loadingWarehouseInventory = false;
@@ -303,6 +334,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent multiple simultaneous preview requests
+    if (this.isPreviewInProgress) {
+      this.toastService.warning('Preview is already in progress. Please wait...');
+      return;
+    }
+
+    // Clear previous preview data before starting new preview
+    this.previewData = null;
+    this.showPreviewModal = false;
+    this.isPreviewInProgress = true;
     this.loadingWarehouseInventory = true;
     this.closeImportModal();
     this.pendingImportFile = file; // Store file for later import
@@ -320,37 +361,117 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
+          this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
-          if (res.succeeded) {
-            const result = res.data;
-            this.previewData = {
-              rows: result.successfulRecords.map((record: any, index: number) => ({
-                rowNumber: index + 1,
+          
+          // Check if response is valid
+          if (!res) {
+            this.previewData = null;
+            this.toastService.error('Invalid response from server');
+            this.cdr.markForCheck();
+            return;
+          }
+
+          // Handle both wrapped (APIOperationResponse) and unwrapped responses
+          // If response has 'succeeded' property, it's wrapped; otherwise it's the data directly
+          let result: any;
+          if (res.succeeded !== undefined) {
+            // Wrapped response: {succeeded: true, data: {...}}
+            if (!res.succeeded || !res.data) {
+              this.previewData = null;
+              const errorMsg = res.message || res.Message || 'Preview failed';
+              this.toastService.error(errorMsg);
+              this.cdr.markForCheck();
+              return;
+            }
+            result = res.data;
+          } else {
+            // Unwrapped response: the data is directly in res
+            // Check if it looks like ImportResult structure
+            if (res.successfulRecords !== undefined || res.errors !== undefined || res.successCount !== undefined) {
+              result = res;
+            } else {
+              this.previewData = null;
+              this.toastService.error('Unexpected response format from server');
+              this.cdr.markForCheck();
+              return;
+            }
+          }
+
+          if (result) {
+            // Ensure arrays exist
+            const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
+            const errors = Array.isArray(result.errors) ? result.errors : [];
+            
+            // Create a map to track which rows have errors (by row number)
+            const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
+            errors.forEach((error: any) => {
+              const rowNum = error.rowNumber || error.RowNumber || 0;
+              if (!errorsByRow.has(rowNum)) {
+                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || error.RowData || {} });
+              }
+              const errorMsg = error.errorMessage || error.ErrorMessage || 'Unknown error';
+              errorsByRow.get(rowNum)!.errors.push(errorMsg);
+            });
+
+            // Build preview rows with proper Excel row numbers
+            const previewRows: any[] = [];
+            
+            // Process successful records - use rowNumber from backend if available, otherwise calculate
+            successfulRecords.forEach((record: any, index: number) => {
+              // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2
+              // But if backend provides rowNumber, use that instead
+              const rowNum = record.rowNumber || record.RowNumber || (index + 2);
+              const errorInfo = errorsByRow.get(rowNum);
+
+              previewRows.push({
+                rowNumber: rowNum,
                 data: record,
-                isValid: true,
-                errors: []
-              })).concat(
-                result.errors.map((error: any, index: number) => ({
-                  rowNumber: result.successfulRecords.length + index + 1,
-                  data: {},
-                  isValid: false,
-                  errors: [error.errorMessage]
-                }))
-              ),
-              totalRows: result.successCount + result.failureCount,
-              validRows: result.successCount,
-              invalidRows: result.failureCount,
-              columns: result.successfulRecords.length > 0 ? this.getOrderedColumns(result.successfulRecords[0]) : []
+                isValid: !errorInfo || errorInfo.errors.length === 0,
+                errors: errorInfo ? errorInfo.errors : []
+              });
+
+              // Remove from errorsByRow since we've processed it
+              if (errorInfo) {
+                errorsByRow.delete(rowNum);
+              }
+            });
+
+            // Process errors that don't have corresponding successful records
+            errorsByRow.forEach((errorInfo, rowNum) => {
+              previewRows.push({
+                rowNumber: rowNum,
+                data: errorInfo.rowData || {},
+                isValid: false,
+                errors: errorInfo.errors
+              });
+            });
+
+            // Sort by row number to maintain Excel row order
+            previewRows.sort((a, b) => a.rowNumber - b.rowNumber);
+
+            // Calculate valid/invalid counts
+            const validRows = previewRows.filter(r => r.isValid).length;
+            const invalidRows = previewRows.filter(r => !r.isValid).length;
+
+            this.previewData = {
+              rows: previewRows,
+              totalRows: previewRows.length,
+              validRows: validRows,
+              invalidRows: invalidRows,
+              columns: previewRows.length > 0 && previewRows[0].data ? this.getOrderedColumns(previewRows[0].data) : []
             };
             this.showPreviewModal = true;
-          } else {
-            this.toastService.error(res.message || 'Preview failed');
           }
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (error: any) => {
+          this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
-          this.toastService.error('Preview failed');
+          // Clear preview data on error
+          this.previewData = null;
+          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          this.toastService.error(`Preview failed: ${errorMessage}`);
           this.cdr.markForCheck();
         }
       });
@@ -367,6 +488,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent multiple simultaneous import requests
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.isImportInProgress = true;
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
 
@@ -383,12 +512,35 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
+          const resp = response as any;
+          this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
           this.pendingImportFile = null; // Clear the stored file
           this.pendingDepotId = null; // Clear the stored depot ID
 
-          if (response.succeeded && response.data) {
-            const result = response.data;
+          // Handle both wrapped and unwrapped responses
+          // Use resp (already cast to any above) for all checks
+          let result: any;
+          if (resp?.succeeded !== undefined) {
+            // Wrapped response
+            if (!resp.succeeded || !resp.data) {
+              this.toastService.error(resp.message || 'Import failed');
+              this.cdr.markForCheck();
+              return;
+            }
+            result = resp.data;
+          } else {
+            // Unwrapped response - check for ImportResult properties
+            if (resp?.successCount !== undefined || resp?.successfulRecords !== undefined || resp?.errors !== undefined) {
+              result = resp;
+            } else {
+              this.toastService.error('Unexpected response format from server');
+              this.cdr.markForCheck();
+              return;
+            }
+          }
+
+          if (result) {
             const successCount = result.successCount || 0;
             const failureCount = result.failureCount || 0;
             const errors = result.errors || [];
@@ -404,20 +556,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             } else {
               this.toastService.success(`Imported ${successCount} items successfully.`);
             }
-          } else {
-            this.toastService.error(response.message || 'Import failed');
-          }
 
-          this.loadWarehouseInventory();
+            this.loadWarehouseInventory();
+          }
           this.cdr.markForCheck();
         },
         error: (error: any) => {
+          this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
           this.pendingImportFile = null; // Clear the stored file
           this.pendingDepotId = null; // Clear the stored depot ID
 
           const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
-          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          const errorMessage = error?.error?.message || error?.message || error?.statusText || 'Unknown error';
           this.toastService.error(`Failed to import ${entityType}: ${errorMessage}`);
           this.cdr.markForCheck();
         }
@@ -429,6 +580,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.previewData = null;
     this.pendingImportFile = null; // Clear the stored file
     this.pendingDepotId = null; // Clear the stored depot ID
+    this.isPreviewInProgress = false; // Reset preview flag
     this.cdr.markForCheck();
   }
 

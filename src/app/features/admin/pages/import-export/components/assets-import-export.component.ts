@@ -48,6 +48,8 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   showPreviewModal = false;
   previewData: any = null;
   pendingImportFile: File | null = null; // Store file for import after preview confirmation
+  isPreviewInProgress = false; // Prevent multiple simultaneous preview requests
+  isImportInProgress = false; // Prevent multiple simultaneous import requests
 
   readonly Download = Download;
   readonly Upload = Upload;
@@ -137,6 +139,16 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   }
 
   onImportPreview(file: File): void {
+    // Prevent multiple simultaneous preview requests
+    if (this.isPreviewInProgress) {
+      this.toastService.warning('Preview is already in progress. Please wait...');
+      return;
+    }
+
+    // Clear previous preview data before starting new preview
+    this.previewData = null;
+    this.showPreviewModal = false;
+    this.isPreviewInProgress = true;
     this.loadingAssets = true;
     this.closeImportModal();
     this.pendingImportFile = file; // Store file for later import
@@ -149,27 +161,67 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
+          this.isPreviewInProgress = false;
           this.loadingAssets = false;
-          if (res.succeeded) {
-            const result = res.data;
+          
+          // Check if response is valid
+          if (!res) {
+            this.previewData = null;
+            this.toastService.error('Invalid response from server');
+            this.cdr.markForCheck();
+            return;
+          }
+
+          // Handle both wrapped (APIOperationResponse) and unwrapped responses
+          // If response has 'succeeded' property, it's wrapped; otherwise it's the data directly
+          let result: any;
+          if (res.succeeded !== undefined) {
+            // Wrapped response: {succeeded: true, data: {...}}
+            if (!res.succeeded || !res.data) {
+              this.previewData = null;
+              const errorMsg = res.message || res.Message || 'Preview failed';
+              this.toastService.error(errorMsg);
+              this.cdr.markForCheck();
+              return;
+            }
+            result = res.data;
+          } else {
+            // Unwrapped response: the data is directly in res
+            // Check if it looks like ImportResult structure
+            if (res.successfulRecords !== undefined || res.errors !== undefined || res.successCount !== undefined) {
+              result = res;
+            } else {
+              this.previewData = null;
+              this.toastService.error('Unexpected response format from server');
+              this.cdr.markForCheck();
+              return;
+            }
+          }
+
+          if (result) {
+            // Ensure arrays exist
+            const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
+            const errors = Array.isArray(result.errors) ? result.errors : [];
 
             // Create a map to track which rows have errors (by row number)
             const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
-            result.errors.forEach((error: any) => {
-              const rowNum = error.rowNumber || 0;
+            errors.forEach((error: any) => {
+              const rowNum = error.rowNumber || error.RowNumber || 0;
               if (!errorsByRow.has(rowNum)) {
-                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
+                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || error.RowData || {} });
               }
-              errorsByRow.get(rowNum)!.errors.push(error.errorMessage || 'Unknown error');
+              const errorMsg = error.errorMessage || error.ErrorMessage || 'Unknown error';
+              errorsByRow.get(rowNum)!.errors.push(errorMsg);
             });
 
             // Build preview rows
             const previewRows: any[] = [];
-            let currentRowNumber = 2; // Excel rows start at 2 (1 is header)
 
-            // Process successful records
-            result.successfulRecords.forEach((record: any, index: number) => {
-              const rowNum = currentRowNumber + index;
+            // Process successful records - use rowNumber from backend if available, otherwise calculate
+            successfulRecords.forEach((record: any, index: number) => {
+              // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2
+              // But if backend provides rowNumber, use that instead
+              const rowNum = record.rowNumber || record.RowNumber || (index + 2);
               const errorInfo = errorsByRow.get(rowNum);
 
               previewRows.push({
@@ -196,7 +248,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
               });
             });
 
-            // Sort by row number
+            // Sort by row number to maintain Excel row order
             previewRows.sort((a, b) => a.rowNumber - b.rowNumber);
 
             // Calculate valid/invalid counts
@@ -212,20 +264,29 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
               columns: previewRows.length > 0 && previewRows[0].data ? this.getOrderedColumns(previewRows[0].data) : []
             };
             this.showPreviewModal = true;
-          } else {
-            this.toastService.error(res.message || 'Preview failed');
           }
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (error: any) => {
+          this.isPreviewInProgress = false;
           this.loadingAssets = false;
-          this.toastService.error('Preview failed');
+          // Clear preview data on error
+          this.previewData = null;
+          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          this.toastService.error(`Preview failed: ${errorMessage}`);
           this.cdr.markForCheck();
         }
       });
   }
 
   onImportConfirmed(file: File): void {
+    // Prevent multiple simultaneous import requests
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      return;
+    }
+
+    this.isImportInProgress = true;
     this.loadingAssets = true;
     this.closeImportModal();
     this.cdr.markForCheck();
@@ -237,6 +298,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
+          this.isImportInProgress = false;
           this.loadingAssets = false;
           if (res.succeeded) {
             const result = res.data;
@@ -251,9 +313,11 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (error: any) => {
+          this.isImportInProgress = false;
           this.loadingAssets = false;
-          this.toastService.error('Import failed');
+          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          this.toastService.error(`Import failed: ${errorMessage}`);
           this.cdr.markForCheck();
         }
       });
@@ -274,6 +338,14 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevent multiple simultaneous import requests
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.isImportInProgress = true;
     this.loadingAssets = true;
     this.cdr.markForCheck();
 
@@ -281,46 +353,74 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     const file = this.pendingImportFile;
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    // Call the actual import endpoint
-    service.importData(file, currentLang)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res: any) => {
-          this.loadingAssets = false;
-          this.pendingImportFile = null; // Clear the stored file
+    try {
+      const importObservable = service.importData(file, currentLang);
 
-          if (res.succeeded) {
-            const result = res.data;
+      importObservable
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res: any) => {
+            this.isImportInProgress = false;
+            this.loadingAssets = false;
+            this.pendingImportFile = null; // Clear the stored file
 
-            // Show import results using the import-export service
-            this.importExportService.handleImportResult({
-              successCount: result.successCount || 0,
-              failureCount: result.failureCount || 0,
-              errors: result.errors || []
-            });
+            // Handle both wrapped and unwrapped responses
+            let result: any;
+            if (res?.succeeded !== undefined) {
+              // Wrapped response
+              if (!res.succeeded) {
+                this.toastService.error(res.message || 'Import failed');
+                this.cdr.markForCheck();
+                return;
+              }
+              result = res.data;
+            } else {
+              // Unwrapped response - check if it's ImportResult structure
+              if (res?.successCount !== undefined || res?.successfulRecords !== undefined || res?.errors !== undefined) {
+                result = res;
+              } else {
+                this.toastService.error('Unexpected response format from server');
+                this.cdr.markForCheck();
+                return;
+              }
+            }
 
-            // Reload the assets list to show newly imported items
-            this.loadAssets();
-          } else {
-            this.toastService.error(res.message || 'Import failed');
+            if (result) {
+              // Show import results using the import-export service
+              this.importExportService.handleImportResult({
+                successCount: result.successCount || 0,
+                failureCount: result.failureCount || 0,
+                errors: result.errors || []
+              });
+
+              // Reload the assets list to show newly imported items
+              this.loadAssets();
+            }
+            this.cdr.markForCheck();
+          },
+          error: (error: any) => {
+            this.isImportInProgress = false;
+            this.loadingAssets = false;
+            this.pendingImportFile = null; // Clear the stored file
+
+            const errorMessage = error?.error?.message || error?.message || error?.statusText || 'Unknown error';
+            this.toastService.error(`Import failed: ${errorMessage}`);
+            this.cdr.markForCheck();
           }
-          this.cdr.markForCheck();
-        },
-        error: (error: any) => {
-          this.loadingAssets = false;
-          this.pendingImportFile = null; // Clear the stored file
-
-          const errorMessage = error?.error?.message || error?.message || 'Import failed';
-          this.toastService.error(errorMessage);
-          this.cdr.markForCheck();
-        }
-      });
+        });
+    } catch (error) {
+      this.isImportInProgress = false;
+      this.loadingAssets = false;
+      this.toastService.error('Failed to start import: ' + (error as any)?.message);
+      this.cdr.markForCheck();
+    }
   }
 
   onPreviewCancelled(): void {
     this.showPreviewModal = false;
     this.previewData = null;
     this.pendingImportFile = null; // Clear the stored file
+    this.isPreviewInProgress = false; // Reset preview flag
     this.cdr.markForCheck();
   }
 

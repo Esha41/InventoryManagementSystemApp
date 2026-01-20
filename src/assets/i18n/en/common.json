@@ -124,6 +124,7 @@
     "validRows": "Valid Rows",
     "invalidRows": "Invalid Rows",
     "previewInfo": "Double-click any cell to edit. Only valid rows will be imported.",
+    "previewMessage": "Review the data below. Invalid rows will be skipped during import.",
     "confirmImport": "Confirm Import",
     "noDataToPreview": "No data available to preview",
     "invalidRowsWarning": "{{count}} invalid rows will be skipped"
