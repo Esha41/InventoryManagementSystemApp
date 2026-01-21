@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { WarehouseInventoryItem } from '@models/warehouse-inventory.model';
+import { formatDateShort } from '@utils/format.utils';
 
 @Component({
   selector: 'app-item-details-modal',
@@ -29,11 +30,8 @@ export class ItemDetailsModalComponent {
   }
 
   formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    const formatted = formatDateShort(date);
+    return formatted === 'N/A' ? '-' : formatted;
   }
 
   formatNumber(num: number): string {

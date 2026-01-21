@@ -27,6 +27,7 @@
     "details": "Details",
     "error": "An error occurred",
     "success": "Operation completed successfully",
+    "savedSuccessfully": "Saved successfully",
     "retry": "Retry",
     "refresh": "Refresh",
     "view": "View",

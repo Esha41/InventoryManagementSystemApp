@@ -3,16 +3,17 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Users, TrendingUp } from 'lucide-angular';
 import { UserActivityMetrics } from '@services/admin-analytics.service';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 /**
  * User Activity Card Component
  * Displays user activity and department statistics
  */
 @Component({
-    selector: 'app-user-activity-card',
-    standalone: true,
-    imports: [CommonModule, TranslateModule, LucideAngularModule],
-    template: `
+  selector: 'app-user-activity-card',
+  standalone: true,
+  imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe],
+  template: `
     <div class="activity-card">
       <div class="card-header">
         <lucide-icon [img]="Users" class="card-icon"></lucide-icon>
@@ -52,12 +53,12 @@ import { UserActivityMetrics } from '@services/admin-analytics.service';
 
       <div class="card-footer">
         <div class="last-updated">
-          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | date:'short' }}
+          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | appDateTime }}
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .activity-card {
       height: 100%;
       display: flex;
@@ -214,11 +215,11 @@ import { UserActivityMetrics } from '@services/admin-analytics.service';
       }
     }
   `],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserActivityCardComponent {
-    @Input() metrics!: UserActivityMetrics;
+  @Input() metrics!: UserActivityMetrics;
 
-    readonly Users = Users;
-    readonly TrendingUp = TrendingUp;
+  readonly Users = Users;
+  readonly TrendingUp = TrendingUp;
 }

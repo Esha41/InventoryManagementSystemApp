@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, combineLatest, of, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
-import { LucideAngularModule, X, ShieldAlert, RefreshCw, Grid, List, Eye, Search } from 'lucide-angular';
+import { LucideAngularModule, ShieldAlert, RefreshCw, Grid, List, Eye } from 'lucide-angular';
 import { StatusCardComponent, OrderItem, ReturnItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from '@dashboard/pages/overview/components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -22,9 +22,9 @@ import { DiscardService } from '@services/discard.service';
 import { DiscardDto } from '@models/discard.model';
 import { ErrorHandlingService } from '@services/error-handling.service';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
 import { InventoryDashboardCard, StatisticsData } from '@models/inventory-dashboard.model';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { MonitoringService } from '@services/monitoring.service';
@@ -40,7 +40,8 @@ import {
 } from '@utils/dashboard.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { separateRequestsByType, mapToOrderDto, mapToReturnDto, mapToDiscardDto } from '@utils/request-type-mapper.utils';
-import { formatTimeToMilitary } from '@utils/format.utils';
+import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -53,9 +54,10 @@ import { formatTimeToMilitary } from '@utils/format.utils';
     StatusCardComponent,
     RequestDetailsModalComponent,
     OverstockCardComponent,
-    DropdownComponent,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    RequestFilterBarComponent,
+    AppDateTimePipe
   ],
   templateUrl: './inventory-dashboard.component.html',
   styleUrls: ['./inventory-dashboard.component.css'],
@@ -73,17 +75,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // Dashboard cards
   allCards: InventoryDashboardCard[] = [];
   visibleCards: InventoryDashboardCard[] = [];
-
-  // Status filter
-  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
-    { label: 'dashboard.filters.all', value: 'all' },
-    { label: 'requestsManagement.actionRequired', value: 'action-required' },
-    { label: 'dashboard.statusLabels.new', value: 'new' },
-    { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-    { label: 'dashboard.statusLabels.approved', value: 'completed' },
-    { label: 'dashboard.statusLabels.rejected', value: 'declined' }
-  ];
 
   // Modal state (unified)
   isRequestModalOpen = false;
@@ -103,18 +94,17 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   };
 
   // Icons
-  readonly XIcon = X;
   readonly ShieldAlert = ShieldAlert;
   readonly RefreshCw = RefreshCw;
   readonly Grid = Grid;
   readonly List = List;
   readonly Eye = Eye;
-  readonly Search = Search;
 
   showContactAdminNotice = false;
 
-  // Search functionality
+  // Filter state (managed by shared component)
   searchQuery: string = '';
+  selectedStatusFilter: StatusFilter = 'all';
 
   constructor(
     private readonly authService: BackendAuthService,
@@ -362,12 +352,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.showContactAdminNotice = isAuthenticated && permissionsArray.length === 0 && this.visibleCards.length === 0;
   }
 
-  onStatusFilterChange(): void {
+  onStatusFilterChange(status: StatusFilter): void {
+    this.selectedStatusFilter = status;
     this.filterCards();
     this.cdr.markForCheck();
   }
 
-  onSearchChange(): void {
+  onSearchChange(query: string): void {
+    this.searchQuery = query;
     this.filterCards();
     this.currentPage = 1; // Reset to first page when searching
     this.cdr.markForCheck();
@@ -427,13 +419,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   get filteredCardsCount(): number {
     return this.visibleCards.length;
   }
-
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
-    if (typeof option === 'object' && option !== null && 'label' in option) {
-      return this.translate.instant(option.label as string);
-    }
-    return '';
-  };
 
   shouldShowCard(card: InventoryDashboardCard): boolean {
     return this.paginatedCards.includes(card);
@@ -745,40 +730,23 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
    * Matches the format used in workflow-approval-detail component
    */
   formatApprovalDateTime(dateTime: string | Date | undefined): string {
-    if (!dateTime) return '';
-
-    try {
-      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
-      if (isNaN(date.getTime())) return '';
-
-      // Format date as dd/MM/yyyy
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const formattedDate = `${day}/${month}/${year}`;
-
-      // Format time as HHmm
-      const formattedTime = formatTimeToMilitary(date);
-
-      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
-    } catch {
-      return '';
-    }
+    return formatDateTimeExtended(dateTime);
   }
 
   private formatDate(source?: string | Date): string {
-    let date: Date;
-    if (source instanceof Date) {
-      date = source;
-    } else if (typeof source === 'string') {
-      const parsed = new Date(source);
-      date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    } else {
-      date = new Date();
+    if (!source) return 'N/A';
+    try {
+      const date = source instanceof Date ? source : new Date(source);
+      if (isNaN(date.getTime())) return 'N/A';
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+
+      return `${day}/${month}/${year}`;
+    } catch {
+      return 'N/A';
     }
-    const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-      'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
   resolveOrderDepartmentName(order: OrderDto): string {

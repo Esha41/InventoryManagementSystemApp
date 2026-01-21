@@ -13,6 +13,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { EditAssetModalComponent } from '../edit/components/edit-asset-modal/edit-asset-modal.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateShort } from '@utils/format.utils';
 
 @Component({
     selector: 'app-asset-details',
@@ -140,12 +141,8 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
 
     formatDate(date?: Date | string): string {
         if (!date) return '-';
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
-        return dateObj.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
+        const formatted = formatDateShort(date);
+        return formatted === 'N/A' ? '-' : formatted;
     }
 
     onBack(): void {

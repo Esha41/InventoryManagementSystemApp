@@ -196,28 +196,38 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
   private loadDepartments(): void {
     this.isLoadingDepartments = true;
+    const control = this.userForm?.get('departmentId');
+    if (control) control.disable({ emitEvent: false });
+
     this.lookupService.getLookupItems('Department').subscribe({
       next: (deps: DepartmentDto[]) => {
         this.departments = deps ?? [];
         this.isLoadingDepartments = false;
+        if (control) control.enable({ emitEvent: false });
       },
       error: () => {
         this.departments = [];
         this.isLoadingDepartments = false;
+        if (control) control.enable({ emitEvent: false });
       }
     });
   }
 
   private loadRanks(): void {
     this.isLoadingRanks = true;
+    const control = this.userForm?.get('rankId');
+    if (control) control.disable({ emitEvent: false });
+
     this.lookupService.getLookupItems('Rank').subscribe({
       next: (items: LookupItem[]) => {
         this.ranks = items ?? [];
         this.isLoadingRanks = false;
+        if (control) control.enable({ emitEvent: false });
       },
       error: () => {
         this.ranks = [];
         this.isLoadingRanks = false;
+        if (control) control.enable({ emitEvent: false });
       }
     });
   }

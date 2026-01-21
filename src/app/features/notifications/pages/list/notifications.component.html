@@ -97,7 +97,7 @@
                           {{ translateNotificationTitle(notification.title) }}
                         </h3>
                         <span class="text-xs text-[var(--color-text-muted)]">
-                          {{ notification.createdAt | date:'medium' }}
+                          {{ notification.createdAt | appDateTime }}
                         </span>
                       </div>
 
@@ -158,7 +158,7 @@
                   </div>
                   <div>
                     <p class="info-pill__label">{{ 'notifications.updateDate' | translate }}</p>
-                    <p class="info-pill__value">{{ notification.createdAt | date:'mediumDate' }}</p>
+                    <p class="info-pill__value">{{ notification.createdAt | appDate }}</p>
                   </div>
                 </div>
                 <div class="info-pill">
@@ -200,11 +200,9 @@
                   <div class="detail-field" *ngIf="orderDetail.usageDateFrom">
                     <span class="detail-field__label">{{ 'notifications.details.usageDate' | translate }}</span>
                     <span class="detail-field__value">
-                      {{ orderDetail.usageDateFrom | date:'mediumDate' }}
-                      <span *ngIf="orderDetail.usageTimeFrom"> {{ formatTimeForDisplay(orderDetail.usageTimeFrom)
-                        }}</span>
-                      <span *ngIf="orderDetail.usageDateTo"> - {{ orderDetail.usageDateTo | date:'mediumDate' }}</span>
-                      <span *ngIf="orderDetail.usageTimeTo"> {{ formatTimeForDisplay(orderDetail.usageTimeTo) }}</span>
+                      {{ orderDetail.usageDateFrom | appDateTime:orderDetail.usageTimeFrom }}
+                      <span *ngIf="orderDetail.usageDateTo"> - {{ orderDetail.usageDateTo |
+                        appDateTime:orderDetail.usageTimeTo }}</span>
                     </span>
                   </div>
                   <div class="detail-field">

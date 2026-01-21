@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { formatDateShort, formatNumber as formatNumberUtil } from '@utils/format.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -82,7 +82,7 @@ export class WarehouseInventoryFormatterService {
    */
   formatDate(date?: Date | string): string {
     if (!date) return '-';
-    const formatted = formatDateUtil(date);
+    const formatted = formatDateShort(date);
     return formatted === 'N/A' ? '-' : formatted;
   }
 

@@ -463,7 +463,17 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       role: this.getLocalizedRoleName(step),
       approver: this.getLocalizedApproverName(step),
       status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' || 'pending',
-      date: step.approvedDateTime ? this.formatApprovalDateTime(step.approvedDateTime) : (step.changedAt ? this.formatApprovalDateTime(step.changedAt) : 'Pending'),
+      // approvedDateTime is already formatted as a string by request-mapper.utils
+      // but its type is string | Date, so we normalize to a string here
+      date: (() => {
+        if (typeof step.approvedDateTime === 'string') {
+          return step.approvedDateTime;
+        }
+        if (step.approvedDateTime) {
+          return this.formatApprovalDateTime(step.approvedDateTime);
+        }
+        return step.changedAt ? this.formatApprovalDateTime(step.changedAt) : 'Pending';
+      })(),
       notes: step.comments || ''
     }));
   }
@@ -1231,13 +1241,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   private updateCurrentDate(): void {
-    this.currentDate = new Date().toLocaleDateString(this.translate.currentLang === 'ar' ? 'ar-SA' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    this.currentDate = `${day}/${month}/${year} ${hours}${minutes}`;
   }
 
   resolveUsagePurpose(): string {

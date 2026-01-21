@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package, TrendingDown, AlertTriangle, TrendingUp, Archive } from 'lucide-angular';
 import { InventoryMetrics } from '@services/admin-analytics.service';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 /**
  * Inventory Overview Card Component
@@ -11,7 +12,7 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
 @Component({
   selector: 'app-inventory-overview-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe],
   template: `
     <div class="inventory-card" *ngIf="metrics">
       <div class="card-header">
@@ -42,7 +43,7 @@ import { InventoryMetrics } from '@services/admin-analytics.service';
 
       <div class="card-footer">
         <div class="last-updated">
-          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics?.lastUpdated | date:'short' }}
+          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics?.lastUpdated | appDateTime }}
         </div>
       </div>
     </div>

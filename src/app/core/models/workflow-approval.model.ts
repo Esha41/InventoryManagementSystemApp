@@ -50,7 +50,7 @@ export interface WorkflowApprovalStep {
   approverNameAr?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Returned' | 'ReturnedForReview' | 'Submitted';
   approvedDate?: string;
-  approvedDateTime?: string;
+  approvedDateTime?: string | Date;
   applicationRoleName?: string;
   applicationRoleNameAr?: string;
   isPending?: boolean;
@@ -125,6 +125,7 @@ export interface RequestDetail {
   numberOfOfficer?: number;
   numberOfOtherRank?: number;
   isFromAllowance?: boolean;
+  creationDate?: string | Date;
 }
 
 /**

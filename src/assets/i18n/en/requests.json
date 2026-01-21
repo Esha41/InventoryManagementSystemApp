@@ -383,6 +383,7 @@
     "createdAt": "Created at",
     "rejectedAt": "Rejected at",
     "returnedAt": "Returned at",
+    "pendingAt": "Pending at",
     "noApprovalWorkflowData": "No approval workflow data available",
     "requestItems": "Request Items",
     "item": "item",

@@ -121,20 +121,20 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
     if (!request) return 'N/A';
     const creationDate = request.creationDate;
     if (!creationDate) return 'N/A';
-    
+
     try {
       const date = new Date(creationDate);
       if (isNaN(date.getTime())) return 'N/A';
-      
+
       // Format date as MM/DD/YYYY (month first)
-      const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
-      const dateStr = `${month}/${day}/${year}`;
-      
+      const dateStr = `${day}/${month}/${year}`;
+
       // Format time as military time (HHMM)
       const timeStr = formatTimeToMilitary(date);
-      
+
       return timeStr ? `${dateStr} ${timeStr}` : dateStr;
     } catch {
       return 'N/A';

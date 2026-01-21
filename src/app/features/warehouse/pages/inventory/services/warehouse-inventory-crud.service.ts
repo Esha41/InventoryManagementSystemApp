@@ -39,7 +39,7 @@ export class WarehouseInventoryCrudService {
     private assetService: AssetService,
     private toastService: ToastService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Edit inventory detail

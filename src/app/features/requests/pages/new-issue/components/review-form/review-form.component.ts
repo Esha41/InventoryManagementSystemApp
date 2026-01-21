@@ -7,6 +7,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
+import { formatDateTimeExtended } from '@utils/format.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -76,19 +77,11 @@ export class ReviewFormComponent {
 
 
   getFormattedUsageDateFrom(): string {
-    if (!this.usageDateFrom) return '';
-    const date = new Date(this.usageDateFrom);
-    const dateStr = date.toLocaleDateString('en-GB');
-    // Display time in military format (HHMM)
-    return this.usageTimeFrom ? `${dateStr} ${this.usageTimeFrom}` : dateStr;
+    return formatDateTimeExtended(this.usageDateFrom, this.usageTimeFrom);
   }
 
   getFormattedUsageDateTo(): string {
-    if (!this.usageDateTo) return '';
-    const date = new Date(this.usageDateTo);
-    const dateStr = date.toLocaleDateString('en-GB');
-    // Display time in military format (HHMM)
-    return this.usageTimeTo ? `${dateStr} ${this.usageTimeTo}` : dateStr;
+    return formatDateTimeExtended(this.usageDateTo, this.usageTimeTo);
   }
 
   getFileSize = getFileSizeFromFile;

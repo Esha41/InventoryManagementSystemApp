@@ -85,18 +85,18 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   getRequestType(): RequestType | null {
     if (!this.request) return null;
-    
+
     const requestType = this.request.requestType;
     if (typeof requestType === 'number') {
       return requestType as RequestType;
     }
-    
+
     // Handle string enum values
     const typeStr = String(requestType).toLowerCase();
     if (typeStr === 'order' || typeStr === '1') return RequestType.Order;
     if (typeStr === 'return' || typeStr === '2') return RequestType.Return;
     if (typeStr === 'discard' || typeStr === '3') return RequestType.Discard;
-    
+
     return null;
   }
 
@@ -145,24 +145,24 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   formatRequestDate(): string {
     if (!this.request) return 'N/A';
-    
+
     if (this.isOrder()) {
       return formatCreationDate(this.request as OrderDto);
     }
-    
+
     // For Return and Discard
     const creationDate = this.request.creationDate;
     if (!creationDate) return 'N/A';
-    
+
     try {
       const date = new Date(creationDate);
       if (isNaN(date.getTime())) return 'N/A';
-      
-      const month = String(date.getMonth() + 1).padStart(2, '0');
+
       const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
-      const dateStr = `${month}/${day}/${year}`;
-      
+      const dateStr = `${day}/${month}/${year}`;
+
       const timeStr = formatTimeToMilitary(date);
       return timeStr ? `${dateStr} ${timeStr}` : dateStr;
     } catch {
@@ -175,11 +175,11 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   resolveDepartmentName(): string {
     if (!this.request) return 'N/A';
-    
+
     if (this.isOrder()) {
       return resolveOrderDepartmentName(this.request as OrderDto, this.translate);
     }
-    
+
     const currentLang = getCurrentLang(this.translate);
     if (this.request.department) {
       const localized = getLocalizedName(this.request.department, currentLang);
@@ -193,11 +193,11 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   resolveRequesterName(): string {
     if (!this.request) return 'N/A';
-    
+
     if (this.isOrder()) {
       return resolveRequesterName(this.request as OrderDto, this.translate);
     }
-    
+
     const currentLang = getCurrentLang(this.translate);
     if (this.request.requester) {
       const localized = getLocalizedName(this.request.requester, currentLang);
@@ -212,11 +212,11 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   resolveRequestPurpose(): string {
     if (!this.request) return 'N/A';
-    
+
     if (this.isOrder()) {
       return resolveRequestPurpose(this.request as OrderDto, this.translate);
     }
-    
+
     const currentLang = getCurrentLang(this.translate);
     if (this.request.requestPurpose) {
       const localized = getLocalizedName(this.request.requestPurpose, currentLang);
