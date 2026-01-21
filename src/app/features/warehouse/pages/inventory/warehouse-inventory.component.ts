@@ -5,7 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { debounceTime, startWith } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2 } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { AssetService } from '@services/asset.service';
@@ -80,6 +80,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly X = X;
+  readonly Eye = Eye;
+  readonly Edit = Edit;
+  readonly Trash2 = Trash2;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -321,6 +324,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    */
   isStaticItem(detail: InventoryDetailDto): boolean {
     return this.filterService.isStaticItem(detail);
+  }
+
+  isItemExpired(item: InventoryDetailDto): boolean {
+    if (!item.expiryDate) return false;
+    const expiry = new Date(item.expiryDate);
+    return expiry < new Date();
   }
 
   onViewItem(detail: InventoryDetailDto): void {

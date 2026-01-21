@@ -1,13 +1,14 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
         <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
       </div>
-      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()">
-        <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
+        class="w-full sm:w-auto">
+        <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
           <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
           <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
@@ -19,7 +20,7 @@
     <!-- Enhanced Tabs -->
     <app-card [shadow]="true" class="overflow-hidden">
       <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
-        <nav class="flex gap-1 p-2" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
+        <nav class="flex gap-1 p-2 overflow-x-auto" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
           <button (click)="switchTab('ammunition')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
@@ -69,10 +70,10 @@
     <!-- Filters Card -->
     <app-card [shadow]="true">
       <div class="p-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.filters.title' | translate }}</h3>
           <button type="button" (click)="clearFilters()"
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
             <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
             <span>{{ 'assetList.filters.clear' | translate }}</span>
           </button>
@@ -94,7 +95,7 @@
           </div>
 
           <!-- Ammunition Filters -->
-          <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
+          <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.caseType' | translate }}
             </label>
@@ -104,7 +105,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
+          <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.hazardDivision' | translate }}
             </label>
@@ -115,7 +116,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'ammunition'" class="w-[180px]">
+          <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.compatibility' | translate }}
             </label>
@@ -127,7 +128,7 @@
           </div>
 
           <!-- Weapon Filters -->
-          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+          <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.weaponType' | translate }}
             </label>
@@ -138,7 +139,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+          <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.classification' | translate }}
             </label>
@@ -149,7 +150,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'weapon'" class="w-[180px]">
+          <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.country' | translate }}
             </label>
@@ -161,7 +162,7 @@
           </div>
 
           <!-- Explosive Filters -->
-          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+          <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.explosiveType' | translate }}
             </label>
@@ -172,7 +173,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+          <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.classification' | translate }}
             </label>
@@ -183,7 +184,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+          <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.hazardDivision' | translate }}
             </label>
@@ -194,7 +195,7 @@
             </app-dropdown>
           </div>
 
-          <div *ngIf="activeTab === 'explosive'" class="w-[180px]">
+          <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'assetList.filters.compatibility' | translate }}
             </label>
@@ -226,7 +227,88 @@
 
         <!-- Table -->
         <div *ngIf="!loading" class="border border-[var(--color-border)] rounded-lg overflow-hidden">
-          <div class="overflow-x-auto">
+
+          <!-- Mobile Card View -->
+          <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
+            <div *ngFor="let asset of paginatedAssets"
+              class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
+
+              <!-- Header: Image & Name -->
+              <div class="flex items-start gap-4">
+                <div
+                  class="w-16 h-16 flex-shrink-0 relative bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] overflow-hidden">
+                  <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name" (error)="onImageError(asset)"
+                    class="w-full h-full object-cover">
+                  <div *ngIf="!asset.imageUrl"
+                    class="w-full h-full flex items-center justify-center text-[var(--color-text-muted)]">
+                    <lucide-angular [img]="Image" class="h-6 w-6 opacity-40"></lucide-angular>
+                  </div>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-bold text-[var(--color-text)] text-sm line-clamp-2">{{ getAssetName(asset) }}</h3>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span
+                      class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
+                      {{ asset.itemNo }}
+                    </span>
+                    <span *ngIf="asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Type Specific Info Badges -->
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span *ngIf="activeTab === 'ammunition' && asset.caseType"
+                  class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                  {{ asset.caseType }}
+                </span>
+                <span *ngIf="activeTab === 'weapon' && asset.weaponType"
+                  class="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full border border-purple-100">
+                  {{ asset.weaponType }}
+                </span>
+                <span *ngIf="activeTab === 'explosive' && asset.explosiveType"
+                  class="px-2 py-0.5 bg-red-50 text-red-700 rounded-full border border-red-100">
+                  {{ asset.explosiveType }}
+                </span>
+              </div>
+
+              <!-- Metrics Grid -->
+              <div class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
+                <div>
+                  <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'assetList.table.partNo' | translate
+                    }}</span>
+                  <span class="text-[var(--color-text)] font-medium">{{ asset.partNo || '-' }}</span>
+                </div>
+                <div>
+                  <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'assetList.table.price' | translate
+                    }}</span>
+                  <span class="text-[var(--color-text)] font-medium">{{ asset.price || '-' }}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div
+                class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
+                <button (click)="onView(asset.id)"
+                  class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] bg-[var(--color-background-hover)] rounded-lg transition-colors">
+                  <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                </button>
+                <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
+                  class="p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
+                  <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+                </button>
+                <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
+                  class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors">
+                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Desktop Table View -->
+          <div class="hidden lg:block overflow-x-auto">
             <table class="w-full">
               <thead class="bg-[var(--color-background)]">
                 <tr class="border-b border-[var(--color-border)]">
@@ -391,17 +473,17 @@
         </div>
       </div>
 
-      <!-- Pagination Footer - Outside table overflow container -->
+      <!-- Pagination Footer -->
       <div *ngIf="filteredAssets.length > 0 && !loading"
-        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
-        <div class="flex items-center justify-between w-full flex-nowrap">
+        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
           <!-- Rows Per Page Selector -->
           <app-rows-per-page [rowsPerPage]="paginationState.rowsPerPage" [totalItems]="filteredAssets.length"
             [visibleItems]="paginatedAssets.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
           </app-rows-per-page>
 
           <!-- Pagination Controls -->
-          <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
+          <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <app-pagination [currentPage]="paginationState.currentPage" [totalPages]="totalPages"
               (pageChange)="onPageChange($event)">
             </app-pagination>

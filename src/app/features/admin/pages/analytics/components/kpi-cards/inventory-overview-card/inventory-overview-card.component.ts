@@ -14,168 +14,46 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe],
   template: `
-    <div class="inventory-card" *ngIf="metrics">
-      <div class="card-header">
-        <lucide-icon [img]="Package" class="card-icon"></lucide-icon>
-        <h3 class="card-title">{{ 'adminDashboard.inventory.title' | translate }}</h3>
+    <div class="flex flex-col h-full" *ngIf="metrics">
+      <div class="flex items-center gap-3 mb-6">
+        <lucide-icon [img]="Package" class="w-6 h-6 text-[var(--color-brand)]"></lucide-icon>
+        <h3 class="text-lg font-semibold text-[var(--color-text)] m-0">{{ 'adminDashboard.inventory.title' | translate }}</h3>
       </div>
 
-      <div class="main-stats">
-        <div class="stat-item primary">
-          <div class="stat-value">{{ (metrics?.totalItems || 0) | number }}</div>
-          <div class="stat-label">{{ 'adminDashboard.inventory.totalItems' | translate }}</div>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="p-4 rounded-lg text-center bg-blue-500/10 border border-blue-500/20 overflow-hidden">
+          <div class="text-3xl font-bold text-[var(--color-text)] leading-none truncate">{{ (metrics?.totalItems || 0) | number }}</div>
+          <div class="text-xs text-[var(--color-text-muted)] mt-2 truncate">{{ 'adminDashboard.inventory.totalItems' | translate }}</div>
         </div>
-        <div class="stat-item secondary">
-          <div class="stat-value">{{ (metrics?.totalQuantity || 0) | number }}</div>
-          <div class="stat-label">{{ 'adminDashboard.inventory.totalQuantity' | translate }}</div>
+        <div class="p-4 rounded-lg text-center bg-purple-500/10 border border-purple-500/20 overflow-hidden">
+          <div class="text-3xl font-bold text-[var(--color-text)] leading-none truncate">{{ (metrics?.totalQuantity || 0) | number }}</div>
+          <div class="text-xs text-[var(--color-text-muted)] mt-2 truncate">{{ 'adminDashboard.inventory.totalQuantity' | translate }}</div>
         </div>
       </div>
 
-      <div class="alerts-grid">
-        <div class="alert-item" [ngClass]="{'has-alerts': (metrics?.lowStockItems || 0) > 0}">
-          <lucide-icon [img]="TrendingDown" class="alert-icon"></lucide-icon>
-          <div class="alert-content">
-            <div class="alert-value">{{ metrics?.lowStockItems || 0 }}</div>
-            <div class="alert-label">{{ 'adminDashboard.inventory.lowStock' | translate }}</div>
+      <div class="flex flex-col gap-3 flex-1 overflow-hidden">
+        <div class="flex items-center gap-3 p-3 bg-[var(--color-background)] rounded-lg border-l-[3px] transition-all duration-200"
+             [ngClass]="(metrics?.lowStockItems || 0) > 0 ? 'border-l-red-500 bg-red-500/5' : 'border-l-transparent'">
+          <lucide-icon [img]="TrendingDown" class="w-6 h-6 text-[var(--color-text-muted)] flex-shrink-0" 
+                       [class.text-red-500]="(metrics?.lowStockItems || 0) > 0"></lucide-icon>
+          <div class="flex-1 min-w-0">
+            <div class="text-xl font-bold text-[var(--color-text)] truncate" 
+                 [class.text-red-500]="(metrics?.lowStockItems || 0) > 0">{{ metrics?.lowStockItems || 0 }}</div>
+            <div class="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{{ 'adminDashboard.inventory.lowStock' | translate }}</div>
           </div>
         </div>
       </div>
 
-      <div class="card-footer">
-        <div class="last-updated">
-          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics?.lastUpdated | appDateTime }}
-        </div>
+      <div class="mt-4 pt-4 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
+        {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics?.lastUpdated | appDateTime }}
       </div>
     </div>
-    <div class="loading-state" *ngIf="!metrics">
+    
+    <div class="flex flex-col items-center justify-center h-full gap-2 text-[var(--color-text-muted)]" *ngIf="!metrics">
+      <div class="w-8 h-8 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin"></div>
       <p>Loading inventory metrics...</p>
     </div>
   `,
-  styles: [`
-    .inventory-card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .card-icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--color-primary);
-    }
-
-    .card-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--color-text);
-      margin: 0;
-    }
-
-    .main-stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .stat-item {
-      padding: 1rem;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    .stat-item.primary {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-    }
-
-    .stat-item.secondary {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
-    }
-
-    .stat-value {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: var(--color-text);
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      margin-top: 0.5rem;
-    }
-
-    .alerts-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      flex: 1;
-    }
-
-    .alert-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem;
-      background: var(--color-background);
-      border-radius: 8px;
-      border-left: 3px solid transparent;
-      transition: all 0.2s ease;
-    }
-
-    .alert-item.has-alerts {
-      border-left-color: rgb(239, 68, 68);
-      background: rgba(239, 68, 68, 0.05);
-    }
-
-    .alert-icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--color-text-muted);
-    }
-
-    .alert-item.has-alerts .alert-icon {
-      color: rgb(239, 68, 68);
-    }
-
-    .alert-content {
-      flex: 1;
-    }
-
-    .alert-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--color-text);
-    }
-
-    .alert-item.has-alerts .alert-value {
-      color: rgb(239, 68, 68);
-    }
-
-    .alert-label {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      margin-top: 0.125rem;
-    }
-
-    .card-footer {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--color-border);
-      font-size: 0.75rem;
-    }
-
-    .last-updated {
-      color: var(--color-text-muted);
-    }
-  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryOverviewCardComponent {

@@ -1,61 +1,63 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
     <!-- Header -->
-    <div>
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
-          <p class="text-[var(--color-text-muted)] mt-2">{{ 'allowance.subtitle' | translate }}</p>
-        </div>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.title' | translate }}</h1>
+        <p class="text-[var(--color-text-muted)] mt-2">{{ 'allowance.subtitle' | translate }}</p>
       </div>
 
       <!-- Filters and Add Button -->
-      <div *ngIf="!loading && !error" class="flex items-center gap-4">
-        <div class="flex-1 relative">
-          <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()"
-            [options]="filteredDepartments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
-            [disabled]="!isAdminUser" placeholder="{{ 'allowance.selectDepartment' | translate }}">
-          </app-dropdown>
-          <!-- Clear Department Filter Button - Only show for admin users -->
-          <button
-            *ngIf="isAdminUser && selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
-            type="button" (click)="clearDepartmentFilter(); $event.stopPropagation()"
-            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-            style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
-            title="{{ 'allowance.clearFilter' | translate }}">
-            <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
-          </button>
+      <div *ngIf="!loading && !error"
+        class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:flex-shrink-0">
+        <div class="flex flex-col sm:flex-row gap-3 flex-1">
+          <div class="flex-1 relative min-w-0">
+            <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()"
+              [options]="filteredDepartments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
+              [disabled]="!isAdminUser" placeholder="{{ 'allowance.selectDepartment' | translate }}">
+            </app-dropdown>
+            <!-- Clear Department Filter Button - Only show for admin users -->
+            <button
+              *ngIf="isAdminUser && selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
+              type="button" (click)="clearDepartmentFilter(); $event.stopPropagation()"
+              class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+              style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+              title="{{ 'allowance.clearFilter' | translate }}">
+              <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+            </button>
+          </div>
+          <div class="flex-1 relative min-w-0">
+            <app-dropdown class="w-full" [(ngModel)]="selectedItemType" (ngModelChange)="onItemTypeChange()"
+              [options]="itemTypeOptions" optionValue="value" [optionLabelFn]="itemTypeOptionLabel"
+              placeholder="{{ 'allowance.selectItemType' | translate }}">
+            </app-dropdown>
+            <!-- Clear Item Type Filter Button -->
+            <button *ngIf="selectedItemType !== null && selectedItemType !== undefined" type="button"
+              (click)="clearItemTypeFilter(); $event.stopPropagation()"
+              class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+              style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+              title="{{ 'allowance.clearFilter' | translate }}">
+              <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+            </button>
+          </div>
+          <div class="flex-1 relative min-w-0">
+            <app-dropdown class="w-full" [(ngModel)]="selectedItem" (ngModelChange)="onItemChange()"
+              [options]="filteredItems" optionValue="id" [optionLabelFn]="itemOptionLabel"
+              placeholder="{{ 'allowance.selectItem' | translate }}">
+            </app-dropdown>
+            <!-- Clear Item Filter Button -->
+            <button *ngIf="selectedItem !== null && selectedItem !== undefined && selectedItem !== ''" type="button"
+              (click)="clearItemFilter(); $event.stopPropagation()"
+              class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+              style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+              title="{{ 'allowance.clearFilter' | translate }}">
+              <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+            </button>
+          </div>
         </div>
-        <div class="flex-1 relative">
-          <app-dropdown class="w-full" [(ngModel)]="selectedItemType" (ngModelChange)="onItemTypeChange()"
-            [options]="itemTypeOptions" optionValue="value" [optionLabelFn]="itemTypeOptionLabel"
-            placeholder="{{ 'allowance.selectItemType' | translate }}">
-          </app-dropdown>
-          <!-- Clear Item Type Filter Button -->
-          <button *ngIf="selectedItemType !== null && selectedItemType !== undefined" type="button"
-            (click)="clearItemTypeFilter(); $event.stopPropagation()"
-            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-            style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
-            title="{{ 'allowance.clearFilter' | translate }}">
-            <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
-          </button>
-        </div>
-        <div class="flex-1 relative">
-          <app-dropdown class="w-full" [(ngModel)]="selectedItem" (ngModelChange)="onItemChange()"
-            [options]="filteredItems" optionValue="id" [optionLabelFn]="itemOptionLabel"
-            placeholder="{{ 'allowance.selectItem' | translate }}">
-          </app-dropdown>
-          <!-- Clear Item Filter Button -->
-          <button *ngIf="selectedItem !== null && selectedItem !== undefined && selectedItem !== ''" type="button"
-            (click)="clearItemFilter(); $event.stopPropagation()"
-            class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-            style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
-            title="{{ 'allowance.clearFilter' | translate }}">
-            <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
-          </button>
-        </div>
-        <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()">
-          <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+        <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()"
+          class="w-full lg:w-auto lg:flex-shrink-0">
+          <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
             <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
             <span>{{ 'allowance.addAllowance' | translate }}</span>
           </span>
@@ -75,7 +77,77 @@
     <!-- Allowance Table -->
     <div *ngIf="!loading && !error"
       class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
-      <div class="overflow-hidden rounded-t-lg">
+      <!-- Mobile Card View -->
+      <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
+        <div *ngFor="let allowance of allowances"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
+
+          <!-- Header: Department & Year -->
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-bold text-[var(--color-text)] text-sm line-clamp-1">{{ allowance.departmentName }}</h3>
+              <div class="text-xs text-[var(--color-text-muted)] mt-1">
+                {{ allowance.itemName || allowance.itemNo || ('allowance.item' | translate) }}
+                <span *ngIf="allowance.itemNo" class="opacity-75">({{ allowance.itemNo }})</span>
+              </div>
+            </div>
+            <span
+              class="px-2 py-0.5 bg-[var(--color-background-muted)] rounded text-xs font-medium text-[var(--color-text)] border border-[var(--color-border)]">
+              {{ formatDate(allowance.year) }}
+            </span>
+          </div>
+
+          <!-- Batch Info if exists -->
+          <div *ngIf="allowance.batchNo"
+            class="text-xs text-[var(--color-text-muted)] bg-[var(--color-background-subtle)] px-2 py-1 rounded inline-block w-fit">
+            {{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo }}
+          </div>
+
+          <!-- Stats Grid -->
+          <div
+            class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-t border-b border-[var(--color-border-muted)] py-3 my-1">
+            <div>
+              <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.totalQuantity' | translate
+                }}</span>
+              <span class="font-semibold text-[var(--color-text)]">{{ allowance.quantity | number }}</span>
+            </div>
+            <div>
+              <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.remainingQuantity' |
+                translate }}</span>
+              <span class="font-bold text-[var(--color-brand)]">{{ allowance.remainingQuantityFromAllowance | number
+                }}</span>
+            </div>
+            <div>
+              <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.usedQuantity' | translate
+                }}</span>
+              <span class="text-[var(--color-text)]">{{ allowance.usedQuantityFromAllowance | number }}</span>
+            </div>
+            <div>
+              <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.reservedQuantity' |
+                translate }}</span>
+              <span class="text-[var(--color-text)]">{{ allowance.reservedQuantityByDraftSupplies | number }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2">
+            <button *appHasPermission="'AllowanceItem.Edit'" (click)="onEdit(allowance)"
+              class="p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg active:scale-95 transition-transform"
+              [title]="'allowance.edit' | translate">
+              <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+            </button>
+
+            <button *appHasPermission="'AllowanceItem.Delete'" (click)="onDelete(allowance)"
+              class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg active:scale-95 transition-transform"
+              [title]="'allowance.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-hidden rounded-t-lg">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-[var(--color-border)]">
             <thead class="bg-[var(--color-background-muted)]">
@@ -192,18 +264,18 @@
 
     <!-- Pagination Footer - Outside table overflow container -->
     <div *ngIf="allAllowances.length > 0 && !loading"
-      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
-      <div class="flex items-center justify-between w-full flex-nowrap">
+      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4 rounded-b-lg">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 w-full">
         <!-- Rows Per Page Selector -->
         <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="allowances.length"
           (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 
         <!-- Pagination Controls -->
-        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
+        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
-          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
             {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
           </span>
         </div>

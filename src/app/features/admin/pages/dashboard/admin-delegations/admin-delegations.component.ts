@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { UserDelegationService } from '../../../core/services/user-delegation.service';
-import { UserDelegation } from '../../../core/models/user-delegation';
+import { UserDelegationService } from '../../../../../core/services/user-delegation.service';
+import { UserDelegation } from '../../../../../core/models/user-delegation';
+import { ApiResponse } from '@models/api-response.model';
 import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
@@ -51,7 +52,7 @@ export class AdminDelegationsComponent implements OnInit {
                 this.cdr.detectChanges();
             }))
             .subscribe({
-                next: (res) => {
+                next: (res: ApiResponse<UserDelegation[]>) => {
                     this.delegations = res?.succeeded && res.data ? res.data : [];
                     this.applyFilter();
                 },

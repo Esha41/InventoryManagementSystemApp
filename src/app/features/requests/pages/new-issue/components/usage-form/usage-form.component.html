@@ -1,33 +1,85 @@
-<div class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
+<div class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
   <!-- Selected Cartridges Summary -->
-  <div *ngIf="selectedCartridges.length > 0" class="mb-8">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.selectedItems' | translate }}</h2>
+  <div *ngIf="selectedCartridges.length > 0" class="mb-6 sm:mb-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+      <h2 class="text-lg sm:text-xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.selectedItems' | translate
+        }}</h2>
+      <span class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] text-sm font-semibold rounded-full">
+        {{ selectedCartridges.length }} {{ selectedCartridges.length === 1 ? ('common.item' | translate) :
+        ('common.items' | translate) }}
+      </span>
     </div>
 
-    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+    <!-- Mobile Card View -->
+    <div class="lg:hidden space-y-3">
+      <div *ngFor="let cartridge of selectedCartridges"
+        class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-brand)]/50 transition-all">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-[var(--color-text)] text-sm mb-1 break-words">
+              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
+              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+            </h3>
+            <p class="text-xs text-[var(--color-text-muted)]">
+              {{ 'newIssueRequest.productId' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
+            </p>
+          </div>
+          <button type="button" (click)="onRemoveCartridge(cartridge.id)"
+            class="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-[var(--color-border)]">
+          <div>
+            <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
+            <p class="text-sm font-medium text-[var(--color-text)]">{{ cartridge.ncn || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.quantity' | translate }}</p>
+            <p class="text-sm font-semibold text-[var(--color-brand)]">{{ cartridge.quantity || 0 }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden lg:block overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
       <table class="min-w-full text-sm">
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
+            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
+            <th class="px-4 py-3 text-center font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+            <th class="px-4 py-3 text-center font-semibold">{{ 'common.actions' | translate }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
-            <td class="px-4 py-2 text-[var(--color-text)]">
+          <tr *ngFor="let cartridge of selectedCartridges"
+            class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-muted)] transition-colors">
+            <td class="px-4 py-3 text-[var(--color-text)] font-medium">
               <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
               <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
             </td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
-            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
-            <td class="px-4 py-2 text-[var(--color-text)]">
+            <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
+            <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
+            <td class="px-4 py-3 text-center">
+              <span
+                class="inline-flex items-center justify-center px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] font-semibold rounded-full">
+                {{ cartridge.quantity || 0 }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
               <button type="button" (click)="onRemoveCartridge(cartridge.id)"
-                class="text-sm text-red-600 hover:text-red-700">
+                class="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                  </path>
+                </svg>
                 {{ 'common.remove' | translate }}
               </button>
             </td>

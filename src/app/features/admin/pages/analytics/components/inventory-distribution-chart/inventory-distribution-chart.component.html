@@ -1,33 +1,57 @@
-<div class="chart-container">
-    <div class="chart-header">
-        <div class="header-info">
-            <h3 class="chart-title">{{ 'adminDashboard.charts.inventoryComposition' | translate }}</h3>
-            <p class="chart-subtitle">{{ 'adminDashboard.charts.itemsByCategory' | translate }}</p>
+<div
+    class="flex flex-col h-full bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] shadow-sm transition-all duration-300 hover:shadow-md">
+    <div class="flex justify-between items-start p-6 pb-0">
+        <div>
+            <h3 class="text-lg font-semibold text-[var(--color-text)] m-0 leading-tight">{{
+                'adminDashboard.charts.inventoryComposition' | translate }}</h3>
+            <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'adminDashboard.charts.itemsByCategory' |
+                translate }}</p>
         </div>
-        <div class="chart-actions">
-            <button class="action-btn" (click)="loadData()" [class.spinning]="loading">
-                <lucide-icon [img]="RefreshCw" class="icon-sm"></lucide-icon>
-            </button>
-        </div>
+        <button (click)="loadData()" [disabled]="loading"
+            class="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+            [title]="'adminDashboard.refresh' | translate">
+            <lucide-icon [img]="RefreshCw"
+                class="w-5 h-5 transition-transform duration-700 ease-in-out group-hover:rotate-180"
+                [class.animate-spin]="loading"></lucide-icon>
+        </button>
     </div>
 
-    <div class="chart-body" [class.loading]="loading">
-        <div *ngIf="loading" class="chart-loader">
-            <div class="spinner"></div>
-            <span>{{ 'adminDashboard.charts.categorizingInventory' | translate }}</span>
+    <div class="flex-1 relative min-h-[300px] p-4">
+        <!-- Loading State -->
+        <div *ngIf="loading"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/80 backdrop-blur-sm z-10 rounded-b-xl gap-3">
+            <div
+                class="w-10 h-10 border-4 border-[var(--color-brand)]/30 border-t-[var(--color-brand)] rounded-full animate-spin">
+            </div>
+            <span class="text-[var(--color-text-muted)] text-sm font-medium">{{
+                'adminDashboard.charts.categorizingInventory' | translate }}</span>
         </div>
 
-        <div *ngIf="error" class="chart-error">
-            <lucide-icon [img]="AlertCircle" class="error-icon"></lucide-icon>
-            <span>{{ 'adminDashboard.charts.failedToLoad' | translate }}</span>
-            <button (click)="loadData()" class="retry-btn">{{ 'adminDashboard.charts.retry' | translate }}</button>
+        <!-- Error State -->
+        <div *ngIf="error"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/90 z-10 rounded-b-xl gap-4 p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <lucide-icon [img]="AlertCircle" class="w-6 h-6 text-red-500"></lucide-icon>
+            </div>
+            <div>
+                <p class="text-[var(--color-text)] font-medium mb-1">{{ 'adminDashboard.charts.failedToLoad' | translate
+                    }}</p>
+                <button (click)="loadData()" class="text-sm text-[var(--color-brand)] hover:underline font-medium">
+                    {{ 'adminDashboard.charts.retry' | translate }}
+                </button>
+            </div>
         </div>
 
-        <div class="donut-wrapper" *ngIf="!loading && !error">
-            <div echarts [options]="chartOptions" class="echarts-graph"></div>
-            <div class="center-content">
-                <span class="total-value">{{ totalItems }}</span>
-                <span class="total-label">{{ 'adminDashboard.charts.totalItemsLabel' | translate }}</span>
+        <!-- Content -->
+        <div class="relative w-full h-full" *ngIf="!loading && !error">
+            <div echarts [options]="chartOptions" class="w-full h-full"></div>
+
+            <!-- Center Label (Donut Hole) -->
+            <div
+                class="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+                <span class="text-3xl font-bold text-[var(--color-text)] leading-none">{{ totalItems | number }}</span>
+                <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mt-1">{{
+                    'adminDashboard.inventory.totalItems' | translate }}</span>
             </div>
         </div>
     </div>

@@ -43,7 +43,61 @@
     <!-- Table -->
     <div *ngIf="!loading"
       class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
-      <div class="overflow-x-auto">
+      <!-- Mobile List View -->
+      <div class="md:hidden divide-y divide-[var(--color-border)]">
+        <div *ngFor="let request of paginatedRequests"
+          class="p-4 space-y-3 hover:bg-[var(--color-background-hover)] transition-colors">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-xs text-[var(--color-text-muted)] block">{{ 'supplyRequestManagement.issueNo' |
+                translate }}</span>
+              <span class="text-sm font-bold text-[var(--color-text)]">#{{ request.issueNo }}</span>
+            </div>
+            <div [ngClass]="getStatusButtonClass(request.status)"
+              class="px-2 py-1 rounded-md text-xs font-medium border border-current">
+              {{ ('common.statuses.' + request.status) | translate }}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <span class="text-xs text-[var(--color-text-muted)] block">{{ 'supplyRequestManagement.requestType' |
+                translate }}</span>
+              <span class="text-[var(--color-text)]">{{ ('common.requestTypes.' + request.requestType) | translate
+                }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-[var(--color-text-muted)] block">{{ 'supplyRequestManagement.quantity' |
+                translate }}</span>
+              <span class="text-[var(--color-text)]">{{ formatNumber(request.quantity) }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-[var(--color-text-muted)] block">{{ 'supplyRequestManagement.priority' |
+                translate }}</span>
+              <span class="font-medium" [ngClass]="getPriorityColor(request.priority)">{{ ('common.priorityLevels.' +
+                request.priority) | translate }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-[var(--color-text-muted)] block">{{ 'supplyRequestManagement.requestDate' |
+                translate }}</span>
+              <span class="text-[var(--color-text)]">{{ request.requestDate }}</span>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button (click)="onViewDetails(request.issueNo)"
+              class="text-sm text-[var(--color-brand)] font-medium hover:underline flex items-center gap-1">
+              {{ 'common.viewDetails' | translate }}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="overflow-x-auto hidden md:block">
         <table class="min-w-full">
           <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
             <tr>

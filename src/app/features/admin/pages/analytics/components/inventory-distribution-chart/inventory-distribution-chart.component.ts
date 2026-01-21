@@ -72,8 +72,8 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
         const textColor = isDarkMode ? '#E5E7EB' : '#1f2937';
         const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6b7280';
         const tooltipBg = isDarkMode ? 'rgba(26, 29, 36, 0.95)' : 'rgba(255, 255, 255, 0.9)';
-        const backgroundColor = isDarkMode ? '#1A1D24' : '#FFFFFF';
-        const borderColor = backgroundColor;
+        const backgroundColor = 'transparent'; // Let container bg handle it
+        const borderColor = isDarkMode ? '#1e293b' : '#ffffff';
 
         forkJoin(
             data.categories.map((cat: any) => {
@@ -101,11 +101,12 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
                     shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
                 },
                 legend: {
-                    orient: 'vertical',
-                    left: 'left',
-                    top: 'center',
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '0',
+                    top: 'auto',
                     icon: 'circle',
-                    itemGap: 20,
+                    itemGap: 15,
                     textStyle: {
                         color: mutedTextColor,
                         fontSize: 12
@@ -116,9 +117,9 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
                     {
                         name: 'Inventory Composition',
                         type: 'pie',
-                        radius: ['50%', '80%'],
-                        center: ['65%', '50%'],
-                        avoidLabelOverlap: false,
+                        radius: ['45%', '70%'],
+                        center: ['50%', '45%'],
+                        avoidLabelOverlap: true,
                         itemStyle: {
                             borderRadius: 10,
                             borderColor: borderColor,
@@ -129,6 +130,8 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
                             position: 'center'
                         },
                         emphasis: {
+                            scale: true,
+                            scaleSize: 10,
                             label: {
                                 show: false
                             }

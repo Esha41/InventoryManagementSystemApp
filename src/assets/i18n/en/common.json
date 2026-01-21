@@ -80,6 +80,8 @@
     "noFileChosen": "No file chosen",
     "file": "file",
     "files": "files",
+    "item": "item",
+    "items": "items",
     "import": "Import",
     "importData": "Import Data",
     "downloadTemplate": "Download Template",

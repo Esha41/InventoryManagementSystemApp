@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,6 +25,8 @@ interface MenuItem {
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+  @Input() mobileOpen = false;
+  @Output() closeMobile = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<boolean>();
 
   isCollapsed = false;
@@ -493,6 +495,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     this.toggleSidebar.emit(this.isCollapsed);
+  }
+
+  onCloseMobile(): void {
+    this.closeMobile.emit();
   }
 
   toggleSubmenu(label: string): void {
