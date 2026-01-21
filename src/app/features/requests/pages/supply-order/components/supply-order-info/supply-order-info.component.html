@@ -34,13 +34,6 @@
       </p>
     </div>
 
-    <div *ngIf="orderData?.reason">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-        {{ 'supplyOrder.reason' | translate }}
-      </label>
-      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData?.reason }}</p>
-    </div>
-
     <div *ngIf="orderData?.usagePurpose || orderData?.requestPurposeNameEn || orderData?.requestPurposeNameAr">
       <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
         {{ 'supplyOrder.usagePurpose' | translate }}

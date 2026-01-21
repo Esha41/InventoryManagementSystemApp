@@ -97,11 +97,11 @@
                             <div class="flex items-center gap-2">
                                 <lucide-angular [img]="Calendar"
                                     class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                                {{ element.startDate | date: 'dd/MM/yyyy' }}
+                                {{ element.startDate | appDate }}
                             </div>
                         </td>
                         <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                            {{ element.endDate | date: 'dd/MM/yyyy' }}
+                            {{ element.endDate | appDate }}
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex flex-col gap-1 items-start">
@@ -199,11 +199,11 @@
                             <div class="flex items-center gap-2">
                                 <lucide-angular [img]="Calendar"
                                     class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                                {{ element.startDate | date: 'dd/MM/yyyy' }}
+                                {{ element.startDate | appDate }}
                             </div>
                         </td>
                         <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                            {{ element.endDate | date: 'dd/MM/yyyy' }}
+                            {{ element.endDate | appDate }}
                         </td>
                         <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
                             {{ element.reason }}

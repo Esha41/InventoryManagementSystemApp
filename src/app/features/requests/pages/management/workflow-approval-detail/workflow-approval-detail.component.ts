@@ -27,8 +27,10 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
-import { formatTimeToMilitary } from '@utils/format.utils';
+import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -42,7 +44,9 @@ import { ConfirmationDialogComponent, ConfirmationType } from '@shared/component
     LoadingStateComponent,
     ErrorStateComponent,
     DropdownComponent,
-    ConfirmationDialogComponent
+    ConfirmationDialogComponent,
+    AppDatePipe,
+    AppDateTimePipe
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css']
@@ -519,7 +523,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       status: 'Submitted',
       applicationRoleName: 'Requester (Order Requesting Entity)',
       applicationRoleNameAr: 'مقدم الطلب (جهة طلب المواد)',
-      approvedDateTime: this.requestDetail.requestDate,
+      approvedDateTime: this.formatApprovalDateTime(this.requestDetail.creationDate || this.requestDetail.requestDate),
       isPending: false,
       comments: this.requestDetail.notes
     };
@@ -2468,27 +2472,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Format approval date-time for workflow display
    * Formats date as dd/MM/yyyy and time as HHmm (military format)
    * Handles both Date objects and string formats
+   * Uses changedAt as fallback if approvedDateTime doesn't have time information
    */
-  formatApprovalDateTime(dateTime: string | Date | undefined): string {
-    if (!dateTime) return '';
-
-    try {
-      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
-      if (isNaN(date.getTime())) return '';
-
-      // Format date as dd/MM/yyyy
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const formattedDate = `${day}/${month}/${year}`;
-
-      // Format time as HHmm
-      const formattedTime = formatTimeToMilitary(date);
-
-      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
-    } catch {
-      return '';
+  formatApprovalDateTime(dateTime: string | Date | undefined, changedAt?: string | Date | undefined): string {
+    // If primary date is missing, fall back to changedAt completely
+    if (!dateTime && changedAt) {
+      return formatDateTimeExtended(changedAt);
     }
+
+    return formatDateTimeExtended(dateTime, changedAt);
   }
 
   /**

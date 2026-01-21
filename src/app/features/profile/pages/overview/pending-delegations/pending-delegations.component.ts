@@ -1,10 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { UserDelegationService } from '../../../core/services/user-delegation.service';
-import { UserDelegation } from '../../../core/models/user-delegation';
-import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { UserDelegationService } from '@services/user-delegation.service';
+import { UserDelegation } from '@models/user-delegation';
+import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LucideAngularModule, CheckCircle, XCircle, Calendar, User, AlertCircle } from 'lucide-angular';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -14,7 +15,8 @@ import { finalize } from 'rxjs/operators';
         CommonModule,
         TranslateModule,
         ConfirmationDialogComponent,
-        LucideAngularModule
+        LucideAngularModule,
+        AppDatePipe
     ],
     templateUrl: './pending-delegations.component.html'
 })

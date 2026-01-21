@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileText } from 'lucide-angular';
 import { RequestMetrics } from '@services/admin-analytics.service';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 /**
  * Request Metrics Card Component
@@ -11,7 +12,7 @@ import { RequestMetrics } from '@services/admin-analytics.service';
 @Component({
   selector: 'app-request-metrics-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe],
   template: `
     <div class="request-card">
       <div class="card-header">
@@ -69,7 +70,7 @@ import { RequestMetrics } from '@services/admin-analytics.service';
 
       <div class="card-footer">
         <div class="last-updated">
-          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | date:'short' }}
+          {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | appDateTime }}
         </div>
       </div>
     </div>

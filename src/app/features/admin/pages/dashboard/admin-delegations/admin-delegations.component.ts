@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '../../../core/services/user-delegation.service';
 import { UserDelegation } from '../../../core/models/user-delegation';
 import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw } from 'lucide-angular';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -12,7 +13,8 @@ import { finalize } from 'rxjs/operators';
     imports: [
         CommonModule,
         TranslateModule,
-        LucideAngularModule
+        LucideAngularModule,
+        AppDatePipe
     ],
     templateUrl: './admin-delegations.component.html',
     styleUrls: ['./admin-delegations.component.css']

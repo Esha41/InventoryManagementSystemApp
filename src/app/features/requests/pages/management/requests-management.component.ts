@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, Search, X, Filter } from 'lucide-angular';
-import { PaginationComponent, RowsPerPageComponent, DropdownComponent, DropdownOption } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@components/index';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
 import { RequestsManagementService } from './services/requests-management.service';
 import { getRequestStatusClass } from './utils/ui-helpers.utils';
@@ -18,7 +19,7 @@ import { CardStatus } from '@utils/status.utils';
 @Component({
   selector: 'app-requests-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, OrderDetailsModalComponent, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, OrderDetailsModalComponent, RequestFilterBarComponent, AppDatePipe],
   templateUrl: './requests-management.component.html',
   styleUrls: ['./requests-management.component.css']
 })
@@ -34,28 +35,10 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   filteredRequests: Request[] = [];
   loading = false;
 
-  // Search functionality
+  // Filter state (managed by shared component)
   searchQuery: string = '';
-
-  // Status filter
-  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
-    { label: 'dashboard.filters.all', value: 'all' },
-    { label: 'requestsManagement.actionRequired', value: 'action-required' },
-    { label: 'dashboard.statusLabels.new', value: 'new' },
-    { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-    { label: 'dashboard.statusLabels.approved', value: 'completed' },
-    { label: 'dashboard.statusLabels.rejected', value: 'declined' }
-  ];
-
-  // Priority filter
-  selectedPriorityFilter: 'all' | 'Normal' | 'Urgent' | 'VeryUrgent' = 'all';
-  readonly priorityFilterOptions: DropdownOption<'all' | 'Normal' | 'Urgent' | 'VeryUrgent'>[] = [
-    { label: 'dashboard.filters.all', value: 'all' },
-    { label: 'dashboard.priorityLabels.normal', value: 'Normal' },
-    { label: 'dashboard.priorityLabels.urgent', value: 'Urgent' },
-    { label: 'dashboard.priorityLabels.veryUrgent', value: 'VeryUrgent' }
-  ];
+  selectedStatusFilter: StatusFilter = 'all';
+  selectedPriorityFilter: PriorityFilter = 'all';
 
   currentPage: number = 1;
   rowsPerPage: number = 10;
@@ -192,15 +175,18 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.currentPage = 1; // Reset to first page when filtering
   }
 
-  onStatusFilterChange(): void {
+  onStatusFilterChange(status: StatusFilter): void {
+    this.selectedStatusFilter = status;
     this.applyFilters();
   }
 
-  onPriorityFilterChange(): void {
+  onPriorityFilterChange(priority: PriorityFilter): void {
+    this.selectedPriorityFilter = priority;
     this.applyFilters();
   }
 
-  onSearchChange(): void {
+  onSearchChange(query: string): void {
+    this.searchQuery = query;
     this.applyFilters();
   }
 
@@ -231,19 +217,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     return this.filteredRequests.length;
   }
 
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
-    if (typeof option === 'object' && option !== null && 'label' in option) {
-      return this.translate.instant(option.label as string);
-    }
-    return '';
-  };
 
-  readonly priorityFilterLabelFn = (option: DropdownOption<'all' | 'Normal' | 'Urgent' | 'VeryUrgent'> | 'all' | 'Normal' | 'Urgent' | 'VeryUrgent'): string => {
-    if (typeof option === 'object' && option !== null && 'label' in option) {
-      return this.translate.instant(option.label as string);
-    }
-    return '';
-  };
 
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.rowsPerPage);

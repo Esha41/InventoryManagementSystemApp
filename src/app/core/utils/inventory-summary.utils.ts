@@ -58,15 +58,15 @@ export class InventorySummaryUtils {
     }
 
     /**
-     * Format date to display format
+     * Format date to display format (DD/MM/YYYY)
      */
     static formatDate(date?: string): string {
         if (!date) return '-';
         const dateObj = new Date(date);
-        return dateObj.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
+        if (isNaN(dateObj.getTime())) return '-';
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        return `${day}/${month}/${year}`;
     }
 }

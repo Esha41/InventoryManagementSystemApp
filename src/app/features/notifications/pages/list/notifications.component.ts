@@ -42,6 +42,8 @@ import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@notifications/services/notification-detail.service';
 import { TranslationService } from '@services/translation.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 @Component({
   selector: 'app-notifications',
@@ -52,7 +54,9 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     TranslateModule,
     LucideAngularModule,
     ButtonComponent,
-    ModalComponent
+    ModalComponent,
+    AppDatePipe,
+    AppDateTimePipe
   ],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.css']

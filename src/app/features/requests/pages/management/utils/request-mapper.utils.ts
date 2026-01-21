@@ -11,11 +11,22 @@ import { formatDate } from '@utils/format.utils';
  * Map BaseRequestDto to Request UI model
  */
 export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
+  // Helper to convert date to string format that pipes can parse
+  const dateToString = (date: string | Date | null | undefined): string => {
+    if (!date) return '';
+    if (date instanceof Date) {
+      return date.toISOString();
+    }
+    return String(date);
+  };
+
   return {
     id: dto.id,
     orderId: `#${dto.requestNo || dto.id.toString().padStart(4, '0')}`,
-    requestDate: formatRequestDate(dto.requestDate),
-    creationDate: formatRequestDate(dto.creationDate || dto.requestDate), // Use creationDate if available, fallback to requestDate
+    // Keep raw date values (Date objects converted to ISO strings, or ISO strings) and let shared pipes handle formatting in the UI
+    // requestDate falls back to creationDate if not available
+    requestDate: dateToString(dto.requestDate || dto.creationDate),
+    creationDate: dateToString(dto.creationDate || dto.requestDate),
     priority: mapPriority(dto.priority),
     requestType: mapRequestType(dto.requestType),
     status: mapStatus(dto.status),

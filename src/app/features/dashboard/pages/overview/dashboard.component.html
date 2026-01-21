@@ -16,47 +16,12 @@
         <div *ngIf="allCards.length > 0"
           class="flex flex-col md:flex-row items-stretch md:items-center gap-5 animate-slide-in-right">
 
-          <!-- Unified Control Bar -->
-          <div
-            class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-2 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)]">
-
-            <!-- Optimized Search -->
-            <div class="relative flex items-center min-w-[400px] max-w-[500px] flex-1 group">
-              <div
-                class="absolute start-3.5 pointer-events-none transition-colors duration-200 group-focus-within:text-[var(--color-brand)]">
-                <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
-              </div>
-              <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
-                [placeholder]="'dashboard.searchOrders' | translate"
-                class="dashboard-search-input w-full ps-11 pe-10 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all">
-              <button *ngIf="searchQuery" (click)="searchQuery = ''; onSearchChange()"
-                class="absolute end-3 p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
-                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
-              </button>
-            </div>
-
-            <div class="hidden sm:block h-8 w-px bg-[var(--color-border)]"></div>
-
-            <!-- Balanced Filters -->
-            <div class="flex items-center gap-4 pe-2">
-              <div
-                class="flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider ps-1">
-                <lucide-angular [img]="Filter" class="w-4 h-4"></lucide-angular>
-                <span class="hidden xl:inline">{{ 'dashboard.filters.filterByStatus' | translate }}</span>
-              </div>
-
-              <app-dropdown class="w-44" [(ngModel)]="selectedStatusFilter" (ngModelChange)="onStatusFilterChange()"
-                [options]="statusFilterOptions" [optionLabelFn]="statusFilterLabelFn" optionValue="value"
-                [placeholderSelectable]="false">
-              </app-dropdown>
-
-              <div
-                class="flex items-center justify-center min-w-[34px] h-8.5 px-3 bg-[var(--color-brand)] text-white rounded-lg text-sm font-bold shadow-soft"
-                [title]="'dashboard.count' | translate">
-                {{ filteredCardsCount }}
-              </div>
-            </div>
-          </div>
+          <!-- Shared Filter Bar Component -->
+          <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
+            [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
+            [searchQuery]="searchQuery" [resultCount]="filteredCardsCount"
+            (statusFilterChange)="onStatusFilterChange($event)" (searchQueryChange)="onSearchChange($event)">
+          </app-request-filter-bar>
 
           <!-- Refined View Toggle -->
           <div

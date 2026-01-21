@@ -32,8 +32,7 @@
                     <div class="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mb-2">
                         <lucide-icon [img]="Calendar" [size]="16"></lucide-icon>
                         <span>
-                            {{ delegation.startDate | date:'yyyy-MM-dd' }} - {{ delegation.endDate | date:'yyyy-MM-dd'
-                            }}
+                            {{ delegation.startDate | appDate }} - {{ delegation.endDate | appDate }}
                         </span>
                     </div>
 

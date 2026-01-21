@@ -11,6 +11,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { formatDateShort } from '@utils/format.utils';
 
 type TabType = 'overview' | 'stock';
 
@@ -193,16 +194,12 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Format date for display
+   * Format date for display (delegates to shared dd/MM/yyyy helper)
    */
   formatDate(date?: Date | string): string {
     if (!date) return '-';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+    const formatted = formatDateShort(date);
+    return formatted === 'N/A' ? '-' : formatted;
   }
 
   /**

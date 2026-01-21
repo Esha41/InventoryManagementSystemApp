@@ -4,7 +4,7 @@
  */
 
 import { RequestType, Priority, RequestStatus, RequestItem, WorkflowApprovalStep, RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
-import { formatTimeToMilitary } from '@utils/format.utils';
+import { formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 
 /**
  * Request Type enum values (matching backend)
@@ -302,14 +302,8 @@ export function getApproverName(changedBy?: string): string {
 
 export function formatApprovalDate(date: string | Date | undefined): string {
   if (!date) return '';
-
-  const localDate = new Date(date);
-
-  return localDate.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  const formatted = formatDateShort(date);
+  return formatted === 'N/A' ? '' : formatted;
 }
 /**
  * Format approval date and time for display
@@ -319,19 +313,13 @@ export function formatApprovalDate(date: string | Date | undefined): string {
 export function formatApprovalDateTime(date: string | Date | undefined): string {
   if (!date) return '';
 
-  const localDate = new Date(date);
-
-  // Format date portion
-  const dateStr = localDate.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  const dateStr = formatDateShort(date);
+  if (dateStr === 'N/A') return '';
 
   // Format time in military format (HHmm)
-  const timeStr = formatTimeToMilitary(localDate);
+  const timeStr = formatTimeToMilitary(new Date(date));
 
-  return `${dateStr} ${timeStr}`;
+  return timeStr ? `${dateStr} ${timeStr}` : dateStr;
 }
 
 /**
@@ -403,7 +391,8 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     usageTimeTo: data['usageTimeTo'],
     numberOfOfficer: data['numberOfOfficer'],
     numberOfOtherRank: data['numberOfOtherRank'],
-    isFromAllowance: data['isFromAllowance']
+    isFromAllowance: data['isFromAllowance'],
+    creationDate: data.creationDate
   };
 }
 

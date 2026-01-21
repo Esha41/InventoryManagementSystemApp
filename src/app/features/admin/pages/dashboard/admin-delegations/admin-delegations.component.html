@@ -104,11 +104,11 @@
                     <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
                         <div class="flex items-center gap-2">
                             <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
-                            {{ delegation.startDate | date: 'dd/MM/yyyy' }}
+                            {{ delegation.startDate | appDate }}
                         </div>
                     </td>
                     <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                        {{ delegation.endDate | date: 'dd/MM/yyyy' }}
+                        {{ delegation.endDate | appDate }}
                     </td>
                     <td class="px-4 py-3 text-sm text-[var(--color-text-muted)] max-w-xs truncate">
                         {{ delegation.reason }}

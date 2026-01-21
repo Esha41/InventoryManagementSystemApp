@@ -379,6 +379,7 @@
     "createdAt": "تاريخ ووقت الإنشاء",
     "rejectedAt": "تاريخ ووقت الرفض",
     "returnedAt": "تاريخ ووقت الإرجاع",
+    "pendingAt": "تاريخ ووقت قيد الإجراء",
     "noApprovalWorkflowData": "لا توجد بيانات سير عمل الموافقة متاحة",
     "requestItems": "مواد الطلب",
     "item": "عنصر",

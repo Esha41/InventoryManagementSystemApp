@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, EMPTY, merge } from 'rxjs';
 import { catchError, debounceTime, filter, map } from 'rxjs/operators';
-import { LucideAngularModule, X, ShieldAlert, Grid, List, Eye, Search, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-angular';
+import { LucideAngularModule, ShieldAlert, Grid, List, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from './components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -26,10 +26,10 @@ import {
   getRequestStatusTranslationKey,
   CardStatus
 } from '@utils/dashboard.utils';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { formatTimeToMilitary } from '@utils/format.utils';
+import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
+import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,9 +41,9 @@ import { formatTimeToMilitary } from '@utils/format.utils';
     LucideAngularModule,
     StatusCardComponent,
     RequestDetailsModalComponent,
-    DropdownComponent,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    RequestFilterBarComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
@@ -62,15 +62,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly List = List;
   readonly Eye = Eye;
   readonly ShieldAlert = ShieldAlert;
-  readonly Search = Search;
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
-  readonly X = X;
-  readonly Filter = Filter;
 
-  // Search functionality
+  // Filter state (managed by shared component)
   searchQuery: string = '';
+  selectedStatusFilter: StatusFilter = 'all';
 
   // Sort state
   sortState: { column: string | null; direction: 'asc' | 'desc' } = {
@@ -84,17 +82,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Filtered cards based on user permissions and roles
   visibleCards: DashboardCard[] = [];
 
-  // Status filter
-  selectedStatusFilter: CardStatus | 'all' | 'action-required' = 'all';
-  readonly statusFilterOptions: DropdownOption<CardStatus | 'all' | 'action-required'>[] = [
-    { label: 'dashboard.filters.all', value: 'all' },
-    { label: 'requestsManagement.actionRequired', value: 'action-required' },
-    { label: 'dashboard.statusLabels.new', value: 'new' },
-    { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-    { label: 'dashboard.statusLabels.approved', value: 'completed' },
-    { label: 'dashboard.statusLabels.rejected', value: 'declined' },
-    { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
-  ];
+
 
   // Modal state (unified)
   isRequestModalOpen = false;
@@ -291,12 +279,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.showContactAdminNotice = result.showContactAdminNotice;
   }
 
-  onStatusFilterChange(): void {
+  onStatusFilterChange(status: StatusFilter): void {
+    this.selectedStatusFilter = status;
     this.filterCardsByPermissionsAndRoles();
     this.cdr.markForCheck();
   }
 
-  onSearchChange(): void {
+  onSearchChange(query: string): void {
+    this.searchQuery = query;
     this.filterCardsByPermissionsAndRoles();
     this.currentPage = 1; // Reset to first page when searching
     this.cdr.markForCheck();
@@ -326,15 +316,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.visibleCards.length;
   }
 
-  /**
-   * Translate function for dropdown labels
-   */
-  readonly statusFilterLabelFn = (option: DropdownOption<CardStatus | 'all' | 'action-required'> | CardStatus | 'all' | 'action-required'): string => {
-    if (typeof option === 'object' && option !== null && 'label' in option) {
-      return this.translate.instant(option.label as string);
-    }
-    return '';
-  };
+
 
   shouldShowCard(card: DashboardCard): boolean {
     return this.paginatedCards.includes(card);
@@ -399,25 +381,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Matches the format used in workflow-approval-detail component
    */
   formatApprovalDateTime(dateTime: string | Date | undefined): string {
-    if (!dateTime) return '';
-
-    try {
-      const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
-      if (isNaN(date.getTime())) return '';
-
-      // Format date as dd/MM/yyyy
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const formattedDate = `${day}/${month}/${year}`;
-
-      // Format time as HHmm
-      const formattedTime = formatTimeToMilitary(date);
-
-      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
-    } catch {
-      return '';
-    }
+    return formatDateTimeExtended(dateTime);
   }
 
 }

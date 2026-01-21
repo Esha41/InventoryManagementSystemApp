@@ -84,21 +84,7 @@
               }">{{ getPriorityTranslationKey(requestDetail.priority) | translate }}</p>
               </div>
 
-              <div *ngIf="orderData?.reason">
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.reason' | translate }}
-                </label>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ ('common.usagePurposes.' +
-                  orderData?.reason) | translate }}</p>
-              </div>
-
-              <div
-                *ngIf="orderData?.usagePurpose || orderData?.requestPurposeNameEn || orderData?.requestPurposeNameAr">
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.usagePurpose' | translate }}
-                </label>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveUsagePurpose() }}</p>
-              </div>
+              <!-- Reason / Usage Purpose removed here to avoid duplication with workflow-approval and other views -->
 
               <div *ngIf="orderData?.usageLocation">
                 <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">

@@ -29,9 +29,7 @@
                 </p>
                 <span class="text-[var(--color-text-muted)]">•</span>
                 <p class="text-sm text-[var(--color-text-muted)]">
-                  {{ requestDetail.requestDate | date:'dd/MM/yyyy' }}
-                  <span *ngIf="requestDetail.requestDate" class="ms-1">{{ formatTime(requestDetail.requestDate)
-                    }}</span>
+                  {{ requestDetail.requestDate | appDateTime }}
                 </p>
               </div>
             </div>
@@ -94,8 +92,7 @@
                 {{ 'common.requestDate' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ requestDetail.requestDate | date:'dd/MM/yyyy' }}
-                <span *ngIf="requestDetail.requestDate" class="ms-2">{{ formatTime(requestDetail.requestDate) }}</span>
+                {{ requestDetail.requestDate | appDateTime }}
               </p>
             </div>
 
@@ -149,9 +146,7 @@
                 {{ 'common.usageDateFrom' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ requestDetail.usageDateFrom | date:'dd/MM/yyyy' }}
-                <span *ngIf="requestDetail.usageTimeFrom" class="ms-2">{{ formatTime(requestDetail.usageTimeFrom)
-                  }}</span>
+                {{ requestDetail.usageDateFrom | appDateTime }}
               </p>
             </div>
 
@@ -161,22 +156,11 @@
                 {{ 'common.usageDateTo' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ requestDetail.usageDateTo | date:'dd/MM/yyyy' }}
-                <span *ngIf="requestDetail.usageTimeTo" class="ms-2">{{ formatTime(requestDetail.usageTimeTo) }}</span>
+                {{ requestDetail.usageDateTo | appDateTime }}
               </p>
             </div>
 
-            <!-- Usage Purpose (Only for Order requests) -->
-            <div
-              *ngIf="requestDetail.requestType === 'Order' && (requestDetail.usagePurpose || requestDetail.requestPurposeNameEn || requestDetail.requestPurposeNameAr)"
-              class="space-y-1">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'common.usagePurpose' | translate }}
-              </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                {{ ('common.usagePurposes.' + requestDetail.usagePurpose) | translate }}
-              </p>
-            </div>
+            <!-- Usage Purpose removed here to avoid duplication with other pages -->
 
             <div *ngIf="requestDetail.requesterName" class="md:col-span-2 space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
@@ -361,23 +345,27 @@
                             [ngClass]="getApprovalStatusClass(approval.status)">
                             {{ ('common.statuses.' + approval.status) | translate }}
                           </span>
-                          <p *ngIf="approval.approvedDateTime" class="text-xs text-[var(--color-text-muted)] mt-2"
-                            dir="ltr">
+                          <p *ngIf="approval.approvedDateTime || (approval.status === 'Pending' && approval.changedAt)"
+                            class="text-xs text-[var(--color-text-muted)] mt-2" dir="ltr">
                             <span *ngIf="approval.status === 'Submitted'">
-                              {{ 'workflowApprovalDetail.createdAt' | translate }}: {{
-                              formatApprovalDateTime(approval.approvedDateTime) }}
+                              {{ 'workflowApprovalDetail.createdAt' | translate }}:
+                              {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                             </span>
                             <span *ngIf="approval.status === 'Approved'">
-                              {{ 'workflowApprovalDetail.approvedAt' | translate }}: {{
-                              formatApprovalDateTime(approval.approvedDateTime) }}
+                              {{ 'workflowApprovalDetail.approvedAt' | translate }}:
+                              {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                             </span>
                             <span *ngIf="approval.status === 'Rejected'">
-                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}: {{
-                              formatApprovalDateTime(approval.approvedDateTime) }}
+                              {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
+                              {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                             </span>
                             <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">
-                              {{ 'workflowApprovalDetail.returnedAt' | translate }}: {{
-                              formatApprovalDateTime(approval.approvedDateTime) }}
+                              {{ 'workflowApprovalDetail.returnedAt' | translate }}:
+                              {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
+                            </span>
+                            <span *ngIf="approval.status === 'Pending' && approval.changedAt">
+                              {{ 'workflowApprovalDetail.pendingAt' | translate }}:
+                              {{ formatApprovalDateTime(approval.changedAt) }}
                             </span>
                           </p>
                         </div>
@@ -882,7 +870,11 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="grid grid-cols-1 gap-3 pt-2" [ngClass]="{
+                  'sm:grid-cols-3': canRejectRequest() && canReturnForReview(),
+                  'sm:grid-cols-2': (canRejectRequest() && !canReturnForReview()) || (!canRejectRequest() && canReturnForReview()),
+                  'sm:grid-cols-1': !canRejectRequest() && !canReturnForReview()
+                }">
                 <!-- Reject Button -->
                 <button *ngIf="canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
                   class="action-btn btn-reject">
@@ -933,9 +925,7 @@
                 </div>
 
                 <!-- Approve Button -->
-                <div [class.sm:col-span-3]="!canRejectRequest() && !canReturnForReview()"
-                  [class.sm:col-span-2]="canRejectRequest() && !canReturnForReview()"
-                  [class.sm:col-span-2]="!canRejectRequest() && canReturnForReview()" class="flex flex-col">
+                <div class="flex flex-col">
                   <button (click)="approveRequest()"
                     [disabled]="processing || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin)"
                     class="action-btn btn-approve">

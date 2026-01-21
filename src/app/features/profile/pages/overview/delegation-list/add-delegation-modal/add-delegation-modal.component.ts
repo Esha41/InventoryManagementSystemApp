@@ -2,10 +2,10 @@ import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { UserDelegationService } from '../../../../core/services/user-delegation.service';
-import { BackendUserDto } from '../../../../core/models/backend-user.model';
-import { CreateUserDelegation } from '../../../../core/models/user-delegation';
-import { DropdownComponent, DropdownOption } from '../../../../shared/components/dropdown/dropdown.component';
+import { UserDelegationService } from '@services/user-delegation.service';
+import { BackendUserDto } from '@models/backend-user.model';
+import { CreateUserDelegation } from '@models/user-delegation';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LucideAngularModule, X } from 'lucide-angular';
 
 @Component({

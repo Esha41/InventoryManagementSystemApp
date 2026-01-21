@@ -70,9 +70,9 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
 
-  // Format submitted date with time (for submittedOn field)
-  const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : '';
-  const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';
+  // Format submitted date with time (for submittedOn field) - use DD/MM/YYYY for dates
+  const fromDate = order.usageDateFrom ? formatDateShort(order.usageDateFrom) : '';
+  const toDate = order.usageDateTo ? formatDateShort(order.usageDateTo) : '';
   const fromTime = formatTimeToMilitary(order.usageTimeFrom);
   const toTime = formatTimeToMilitary(order.usageTimeTo);
 
