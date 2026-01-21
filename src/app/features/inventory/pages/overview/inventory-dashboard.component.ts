@@ -27,6 +27,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { InventoryDashboardCard, StatisticsData } from '@models/inventory-dashboard.model';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
+import { MonitoringService } from '@services/monitoring.service';
 import {
   mapRequestStatusToCardStatus,
   getRequestStatusTranslationKey,
@@ -96,6 +97,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     totalItems: 0,
     totalQuantity: 0,
     lowStock: 0,
+    expiringSoon: 0,
     monthlyActivity: Array(12).fill(0),
     monthlyActivityPercentages: Array(12).fill(0)
   };
@@ -127,7 +129,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly requestStatusUpdateService: RequestStatusUpdateService
+    private readonly requestStatusUpdateService: RequestStatusUpdateService,
+    private readonly monitoringService: MonitoringService
   ) { }
 
   ngOnInit(): void {
@@ -236,14 +239,30 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       })
     );
 
+    const expiringLotsCount$ = this.monitoringService.getExpiringLotsCount().pipe(
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
+        return of(0);
+      })
+    );
+
+    const lowStockCount$ = this.monitoringService.getLowStockItemsCount().pipe(
+      catchError((error) => {
+        this.errorHandlingService.resolveHttpErrorMessage(error);
+        return of(0);
+      })
+    );
+
     combineLatest({
       requests: requests$,
       inventories: inventories$,
-      summary: summary$
+      summary: summary$,
+      expiringLotsCount: expiringLotsCount$,
+      lowStockCount: lowStockCount$
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ requests, inventories, summary }) => {
+        next: ({ requests, inventories, summary, expiringLotsCount, lowStockCount }) => {
           // Transform BaseRequestDto to specific types
           const orders = requests.orders.map(o => mapToOrderDto(o));
           const returns = requests.returns.map(r => mapToReturnDto(r));
@@ -254,7 +273,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
           this.processRequestData(orders, returns, discards);
 
           // Process statistics
-          this.calculateStatistics(inventories, orders, summary);
+          this.calculateStatistics(inventories, orders, summary, expiringLotsCount, lowStockCount);
 
           this.filterCards();
           this.cdr.markForCheck();
@@ -582,24 +601,23 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   // Legacy individual load methods are removed as we use parallel loading now
 
-  private calculateStatistics(inventories: any[], orders: OrderDto[], summary: ItemInventorySummaryDto[]): void {
+  private calculateStatistics(inventories: any[], orders: OrderDto[], summary: ItemInventorySummaryDto[], expiringLotsCount: number = 0, lowStockCount: number = 0): void {
     const stats: StatisticsData = {
       totalItems: 0,
       totalQuantity: 0,
-      lowStock: 0,
+      lowStock: lowStockCount, // Use API value instead of calculating locally
+      expiringSoon: expiringLotsCount,
       monthlyActivity: Array(12).fill(0),
       monthlyActivityPercentages: Array(12).fill(0)
     };
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    const lowStockThreshold = 100; // Items below this are considered low stock
 
-    // Process Summary for Totals and Low Stock
+    // Process Summary for Totals only (low stock comes from API)
     if (summary && summary.length > 0) {
       stats.totalItems = summary.filter(x => x.remainingQuantity > 0).length;
       stats.totalQuantity = summary.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
-      stats.lowStock = summary.filter(item => (item.remainingQuantity || 0) < lowStockThreshold && (item.remainingQuantity || 0) > 0).length;
     }
 
 
@@ -1009,5 +1027,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   get annualActivityValues(): number[] {
     // Return actual counts for the chart (can be switched to percentages if needed)
     return this.statistics.monthlyActivity;
+  }
+
+  onExpiringSoonClick(): void {
+    this.router.navigate(['/inventory-dashboard/expiring-lots']);
+  }
+
+  onLowStockClick(): void {
+    this.router.navigate(['/inventory-dashboard/low-stock']);
   }
 }

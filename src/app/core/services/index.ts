@@ -54,6 +54,7 @@ export * from './template-generation.service';
 export * from './unified-request.service';
 export * from './user-delegation.service';
 export * from './weapon.service';
+export * from './monitoring.service';
 
 // Re-export commonly used types from supply.service for convenience
 export type {

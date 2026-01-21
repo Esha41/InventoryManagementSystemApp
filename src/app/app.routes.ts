@@ -50,6 +50,18 @@ export const routes: Routes = [
         data: { permissions: ['InventoryDashboard'] }
       },
       {
+        path: 'inventory-dashboard/expiring-lots',
+        loadComponent: () => import('@inventory/pages/expiring-lots/expiring-lots.component').then(m => m.ExpiringLotsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['expiringLotsReportPage'] }
+      },
+      {
+        path: 'inventory-dashboard/low-stock',
+        loadComponent: () => import('@inventory/pages/low-stock/low-stock.component').then(m => m.LowStockComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['lowStockReportPage'] }
+      },
+      {
         path: 'admin-dashboard',
         loadComponent: () => import('@admin/pages/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         canActivate: [permissionGuard],
@@ -233,7 +245,7 @@ export const routes: Routes = [
         path: 'inventory-summary',
         loadComponent: () => import('@warehouse/pages/summary/inventory-summary.component').then(m => m.InventorySummaryComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['inventorypage.page', 'inventorypage.view'] }
+        data: { permissions: ['inventorySummaryReportPage'] }
       },
       {
         path: 'add-asset',
