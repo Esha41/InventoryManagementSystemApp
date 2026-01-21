@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3 } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -164,12 +164,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     //   permissions: ['inventorypage.page', 'inventorypage.view']
     // },
     {
-      label: 'nav.inventorySummary',
-      icon: Package,
-      route: '/inventory-summary',
-      permissions: ['inventorySummaryReportPage']
-    },
-    {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
@@ -180,6 +174,34 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: Warehouse,
       route: '/depot-management',
       permissions: ['depots.page']
+    },
+    {
+      label: 'nav.reports',
+      icon: BarChart3,
+      permissions: ['inventorySummaryReportPage', 'lowStockReportPage', 'expiringLotsReportPage'],
+      children: [
+        {
+          label: 'nav.inventoryReports',
+          permissions: ['inventorySummaryReportPage', 'lowStockReportPage', 'expiringLotsReportPage'],
+          children: [
+            {
+              label: 'nav.inventorySummary',
+              route: '/inventory-summary',
+              permissions: ['inventorySummaryReportPage']
+            },
+            {
+              label: 'nav.lowStock',
+              route: '/inventory-dashboard/low-stock',
+              permissions: ['lowStockReportPage']
+            },
+            {
+              label: 'nav.expiringLots',
+              route: '/inventory-dashboard/expiring-lots',
+              permissions: ['expiringLotsReportPage']
+            }
+          ]
+        }
+      ]
     },
     {
       label: 'nav.admin',
@@ -281,6 +303,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedMenus.add('nav.department');
     }
 
+    // Auto-expand reports menu if on report routes
+    if (url.startsWith('/inventory-summary') || url.startsWith('/inventory-dashboard/low-stock') || url.startsWith('/inventory-dashboard/expiring-lots')) {
+      this.expandedMenus.add('nav.reports');
+      this.expandedMenus.add('nav.inventoryReports');
+    }
+
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
       this.expandedMenus.add('nav.requestManagement');
     }
@@ -302,30 +330,61 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // Filter menu items - sidebar always shows, but items are filtered by permissions
     this.menuItems = this.allMenuItems.map(item => {
-      // If item has children, filter the children first
+      // If item has children, filter the children first (including nested children)
       if (item.children && item.children.length > 0) {
-        const filteredChildren = item.children.filter(child => {
+        const filteredChildren = item.children.map(child => {
+          // If child has nested children, filter them recursively
+          if (child.children && child.children.length > 0) {
+            const filteredNestedChildren = child.children.filter(nestedChild => {
+              // Headers are always shown
+              if (nestedChild.isHeader) {
+                return true;
+              }
+              // Nested children without permissions inherit parent visibility
+              if (!nestedChild.permissions || nestedChild.permissions.length === 0) {
+                return true;
+              }
+              if (!isAuthenticated) {
+                return false;
+              }
+              if (!hasPermissionsLoaded) {
+                return false;
+              }
+              const hasNestedPermission = nestedChild.requireAll
+                ? this.authService.hasAllPermissions(nestedChild.permissions)
+                : this.authService.hasAnyPermission(nestedChild.permissions);
+              return hasNestedPermission;
+            });
+            return { ...child, children: filteredNestedChildren };
+          }
+          // Regular child without nested children
+          return child;
+        }).filter(child => {
+          // Headers are always shown (they don't have routes or permissions)
+          if (child.isHeader) {
+            return true;
+          }
+          // If child has nested children, only show if at least one nested child is visible
+          if (child.children && child.children.length > 0) {
+            const visibleNestedChildren = child.children.filter(nc => !nc.isHeader).length;
+            return visibleNestedChildren > 0;
+          }
           // Children without permissions inherit parent visibility
           if (!child.permissions || child.permissions.length === 0) {
             return true;
           }
-
           // If not authenticated, don't show children with permissions
           if (!isAuthenticated) {
             return false;
           }
-
           // If permissions haven't loaded yet, don't show children that require permissions
           if (!hasPermissionsLoaded) {
             return false;
           }
-
           // Check if user has required permissions for child
-          // If user doesn't have permission (e.g., 'allowanceitem.page'), child will be filtered out
           const hasChildPermission = child.requireAll
             ? this.authService.hasAllPermissions(child.permissions)
             : this.authService.hasAnyPermission(child.permissions);
-
           return hasChildPermission;
         });
 
@@ -365,13 +424,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
       // This ensures parent menus (like "Department") are hidden when all children 
       // (like "Allowance") are filtered out due to missing permissions
       if (item.children && item.children.length > 0) {
-        // Only show parent if at least one child is visible (regardless of parent permissions)
-        // Example: If user doesn't have 'allowanceitem.page', the "Allowance" child is filtered out,
-        // and the "Department" parent will also be hidden since children.length === 0
-        const shouldShow = item.children.length > 0;
-        if (item.label === 'nav.warehouse') {
-          // Auto-expand warehouse menu if it has visible children
-          if (shouldShow && item.children.length > 0) {
+        // Count only non-header children (headers don't count as visible items)
+        // For nested children, count children that have visible nested children
+        const visibleNonHeaderChildren = item.children.filter(child => {
+          if (child.isHeader) return false;
+          // If child has nested children, check if any nested child is visible
+          if (child.children && child.children.length > 0) {
+            return child.children.filter(nc => !nc.isHeader).length > 0;
+          }
+          return true;
+        }).length;
+        // Only show parent if at least one non-header child is visible (regardless of parent permissions)
+        const shouldShow = visibleNonHeaderChildren > 0;
+        // Auto-expand warehouse and inventory menus if they have visible children
+        // Reports should remain collapsed by default and only expand when on report routes
+        if (item.label === 'nav.warehouse' || item.label === 'nav.inventory') {
+          // Auto-expand menu if it has visible children
+          if (shouldShow && visibleNonHeaderChildren > 0) {
             this.expandedMenus.add(item.label);
           }
         }

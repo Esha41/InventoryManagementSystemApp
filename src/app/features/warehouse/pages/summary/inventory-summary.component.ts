@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, User, Building } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, ArrowLeft, User, Building } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AssetService } from '@services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
@@ -80,6 +80,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     readonly Download = Download;
     readonly History = History;
     readonly ArrowRight = ArrowRight;
+    readonly ArrowLeft = ArrowLeft;
     readonly User = User;
     readonly Building = Building;
 
@@ -93,11 +94,20 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private translationService: TranslationService,
         private excelExportService: ExcelExportService,
-        private toastService: ToastService
+        private toastService: ToastService,
+        private router: Router
     ) { }
 
     get isRTL(): boolean {
         return this.translationService?.isRTL() ?? false;
+    }
+
+    get backIcon() {
+        return this.isRTL ? ArrowRight : ArrowLeft;
+    }
+
+    onBack(): void {
+        this.router.navigate(['/inventory-dashboard']);
     }
 
     getExpandIcon(isExpanded: boolean): any {

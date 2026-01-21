@@ -18,6 +18,7 @@ export interface StatisticsData {
   totalItems: number;
   totalQuantity: number;
   lowStock: number; // Items below threshold
+  expiringSoon: number; // Lots expiring in next 30 days
   monthlyActivity: number[]; // Orders per month (current year only)
   monthlyActivityPercentages: number[]; // Percentage distribution
 }

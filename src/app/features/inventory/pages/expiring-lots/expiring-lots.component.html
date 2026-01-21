@@ -1,0 +1,156 @@
+<div class="page-wrapper">
+  <!-- Header Section -->
+  <div
+    class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)]">
+    <div class="page-container">
+      <div class="flex items-center gap-3">
+        <button (click)="onBack()"
+          class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+        </button>
+        <div>
+          <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">
+            {{ 'inventoryDashboard.expiringLots.title' | translate }}
+          </h1>
+          <p class="text-base text-[var(--color-text-muted)]">
+            {{ 'inventoryDashboard.expiringLots.subtitle' | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="page-container">
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="false">
+    </app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+      containerClass="mb-8" [actionText]="'common.back'" (action)="onBack()">
+    </app-error-state>
+
+    <!-- Table View -->
+    <div *ngIf="!loading && !error && expiringLots.length > 0"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-[var(--color-border)]">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.itemName' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.itemNo' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.lot' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.batchNo' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.expiryDate' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.daysUntilExpiry' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.remainingQuantity' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.depot' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.supplier' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'inventoryDashboard.expiringLots.manufacturer' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let lot of paginatedLots"
+              class="hover:bg-[var(--color-background-hover)] transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+                {{ lot.itemName || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ lot.itemNo || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ lot.lot }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ lot.batchNo || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ formatDate(lot.expiryDate) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                <span *ngIf="lot.daysUntilExpiry !== null && lot.daysUntilExpiry !== undefined"
+                  [class.text-[var(--color-error)]]="lot.daysUntilExpiry <= 7"
+                  [class.text-[var(--color-warning)]]="lot.daysUntilExpiry > 7 && lot.daysUntilExpiry <= 14"
+                  [class.text-[var(--color-text)]]="lot.daysUntilExpiry > 14">
+                  {{ lot.daysUntilExpiry }} {{ 'inventoryDashboard.expiringLots.days' | translate }}
+                </span>
+                <span *ngIf="lot.daysUntilExpiry === null || lot.daysUntilExpiry === undefined">N/A</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ lot.remainingQuantity | number }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ getDepotName(lot) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ getSupplierName(lot) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ getManufacturerName(lot) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="!loading && !error && expiringLots.length > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8">
+      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="expiringLots.length"
+        [visibleItems]="paginatedLots.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+      </app-rows-per-page>
+
+      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+        </app-pagination>
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+          {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+        </span>
+      </div>
+    </div>
+
+    <!-- No Data Message -->
+    <div *ngIf="!loading && !error && expiringLots.length === 0" class="flex items-center justify-center min-h-[60vh]">
+      <div class="text-center">
+        <div
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
+              <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-[var(--color-text-muted)]">
+              {{ 'inventoryDashboard.expiringLots.noLots' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
