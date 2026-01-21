@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil, switchMap, of, catchError } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, Edit2, Trash2 } from 'lucide-angular';
 
@@ -14,6 +15,10 @@ import { EditAssetModalComponent } from '../edit/components/edit-asset-modal/edi
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@utils/format.utils';
+import { WeaponDto } from '@models/weapon.model';
+import { AssetPropertyAccessor } from '@core/utils/asset-property.utils';
+import { LookupService } from '@services/lookup.service';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 @Component({
     selector: 'app-asset-details',
@@ -46,6 +51,10 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     showDeleteDialog = false;
     loadingAsset = false;
 
+    // Image state
+    imageUrl: string | null = null;
+    private blobUrls: Set<string> = new Set();
+
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -54,7 +63,11 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
         private assetService: AssetService,
         private toastService: ToastService,
         private translateService: TranslateService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        public propertyAccessor: AssetPropertyAccessor,
+        private lookupService: LookupService,
+        private fileUploadService: FileUploadService,
+        private http: HttpClient
     ) { }
 
     ngOnInit(): void {
@@ -71,6 +84,15 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        // Clean up all blob URLs to prevent memory leaks
+        this.blobUrls.forEach(url => {
+            try {
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                console.warn('Error revoking blob URL:', e);
+            }
+        });
+        this.blobUrls.clear();
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -78,12 +100,25 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     private loadAssetDetails(id: number): void {
         this.loading = true;
         this.cdr.markForCheck();
+        
+        // Initialize AssetPropertyAccessor with lookup data
+        this.lookupService.getUnits().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (units) => {
+                const tabParam = this.route.snapshot.queryParams['tab'] || 'weapon';
+                this.propertyAccessor.initialize(units, tabParam as 'ammunition' | 'weapon' | 'explosive');
+            }
+        });
+
         this.assetService.getById<AssetDto>(id)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (asset) => {
                     this.asset = asset;
                     this.loading = false;
+                    // Load image after asset data is loaded
+                    if (asset?.item?.id) {
+                        this.loadImage(asset.item.id);
+                    }
                     this.cdr.markForCheck();
                 },
                 error: (error) => {
@@ -239,5 +274,156 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     getDeleteMessage(): string {
         if (!this.asset) return '';
         return `${this.getItemName()} (${this.asset.serialNumber || 'No Serial'})`;
+    }
+
+    // Weapon details getters
+    getWeaponItem(): WeaponDto | null {
+        return this.asset?.item || null;
+    }
+
+    getCaliber(): string {
+        return this.propertyAccessor.getCaliber(this.getWeaponItem()) || '-';
+    }
+
+    getCaliberUnit(): string {
+        return this.propertyAccessor.getCaliberUnit(this.getWeaponItem()) || '-';
+    }
+
+    getModel(): string {
+        return this.propertyAccessor.getModel(this.getWeaponItem()) || '-';
+    }
+
+    getYearOfManufacture(): string {
+        return this.propertyAccessor.getYearOfManufacture(this.getWeaponItem()) || '-';
+    }
+
+    getCountryOfManufacture(): string {
+        return this.propertyAccessor.getCountryOfManufacture(this.getWeaponItem()) || '-';
+    }
+
+    getDistribution(): string {
+        return this.propertyAccessor.getDistributionForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getReferenceNo(): string {
+        return this.propertyAccessor.getReferenceNoForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getUnNumber(): string {
+        return this.propertyAccessor.getUnNumberForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getClassification(): string {
+        return this.propertyAccessor.getClassificationForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getWeaponType(): string {
+        return this.propertyAccessor.getTypeForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getWeaponNotes(): string {
+        return this.propertyAccessor.getNotesForWeapon(this.getWeaponItem()) || '-';
+    }
+
+    getPartNo(): string {
+        return this.getWeaponItem()?.partNo || '-';
+    }
+
+    getNSN(): string {
+        return this.getWeaponItem()?.nsn || '-';
+    }
+
+    getItemNo(): string {
+        return this.getWeaponItem()?.itemNo || '-';
+    }
+
+    getPrice(): string {
+        const price = this.getWeaponItem()?.price;
+        return price != null ? price.toString() : '-';
+    }
+
+    getMinimumQuantity(): string {
+        const minQty = this.getWeaponItem()?.minimumQuantity;
+        return minQty != null ? minQty.toString() : '-';
+    }
+
+    getExpiryDate(): string {
+        const expiryDate = this.getWeaponItem()?.expiryDate;
+        if (!expiryDate) return '-';
+        return this.formatDate(expiryDate);
+    }
+
+    getReadyForIssue(): string {
+        const ready = this.getWeaponItem()?.readyForIssue;
+        return ready != null ? (ready ? 'Yes' : 'No') : '-';
+    }
+
+    private loadImage(itemId: number): void {
+        // Clean up previous image URL
+        if (this.imageUrl) {
+            try {
+                URL.revokeObjectURL(this.imageUrl);
+                this.blobUrls.delete(this.imageUrl);
+            } catch (e) {
+                console.warn('Error revoking previous image blob URL:', e);
+            }
+        }
+        this.imageUrl = null;
+
+        // Load images from weapon item
+        this.fileUploadService.getFilesByEntity(FileEntityType.Weapon, itemId)
+            .pipe(
+                takeUntil(this.destroy$),
+                switchMap((files: any[]) => {
+                    if (!files || files.length === 0) {
+                        return of(null);
+                    }
+
+                    // Get main images (there might be multiple with isMain: true)
+                    const mainImages = files.filter((img: any) => img.isMain);
+                    let latestImage: any;
+                    
+                    if (mainImages.length > 0) {
+                        // If multiple main images exist, get the one with highest ID (latest uploaded)
+                        latestImage = mainImages.reduce((latest: any, current: any) => 
+                            (current.id > latest.id) ? current : latest
+                        );
+                    } else {
+                        // If no main image, get the image with highest ID (latest uploaded)
+                        latestImage = files.reduce((latest: any, current: any) => 
+                            (current.id > latest.id) ? current : latest
+                        );
+                    }
+                    
+                    if (!latestImage?.id) {
+                        return of(null);
+                    }
+
+                    // Get the download URL for the latest image
+                    const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
+                    
+                    // Fetch image as blob with authentication
+                    return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
+                        switchMap((blob) => {
+                            if (blob.type && blob.type.startsWith('image/')) {
+                                const blobUrl = URL.createObjectURL(blob);
+                                this.blobUrls.add(blobUrl);
+                                this.imageUrl = blobUrl;
+                                this.cdr.markForCheck();
+                            }
+                            return of(null);
+                        }),
+                        catchError((err) => {
+                            console.warn('Failed to load image blob:', err);
+                            return of(null);
+                        })
+                    );
+                }),
+                catchError((err) => {
+                    console.warn('Failed to get files:', err);
+                    return of(null);
+                })
+            )
+            .subscribe();
     }
 }

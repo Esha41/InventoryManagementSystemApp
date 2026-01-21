@@ -122,6 +122,21 @@
     "failedToDelete": "Failed to delete asset",
     "failedToLoad": "Failed to load asset details"
   },
+  "weapon": {
+    "specifications": "Specifications",
+    "caliber": "Caliber",
+    "caliberUnit": "Caliber Unit",
+    "model": "Model",
+    "yearOfManufacture": "Year of Manufacture",
+    "countryOfManufacture": "Country of Manufacture",
+    "weaponType": "Weapon Type",
+    "distribution": "Distribution",
+    "referenceNo": "Reference No",
+    "unNumber": "UN Number",
+    "classification": "Classification",
+    "type": "Type",
+    "notes": "Notes"
+  },
   "editAsset": {
     "title": "Edit Asset",
     "subtitle": "Update details for this weapon asset",

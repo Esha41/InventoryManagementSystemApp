@@ -127,6 +127,21 @@
     "subtitle": "تحديث تفاصيل أصل السلاح هذا",
     "saveChanges": "حفظ التغييرات"
   },
+  "weapon": {
+    "specifications": "المواصفات",
+    "caliber": "العيار",
+    "caliberUnit": "وحدة العيار",
+    "model": "الموديل",
+    "yearOfManufacture": "سنة الصنع",
+    "countryOfManufacture": "بلد الصنع",
+    "weaponType": "نوع السلاح",
+    "distribution": "التوزيع",
+    "referenceNo": "رقم المرجع",
+    "unNumber": "رقم الأمم المتحدة",
+    "classification": "التصنيف",
+    "type": "النوع",
+    "notes": "ملاحظات"
+  },
   "addAsset": {
     "title": "إضافة مادة",
     "formTitle": "نموذج إضافة مادة جديدة",

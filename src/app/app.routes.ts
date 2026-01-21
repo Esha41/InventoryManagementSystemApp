@@ -261,7 +261,7 @@ export const routes: Routes = [
       },
       {
         path: 'asset-list/:id',
-        loadComponent: () => import('@shared/components/item-details/item-details.component').then(m => m.ItemDetailsComponent),
+        loadComponent: () => import('@shared/components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
