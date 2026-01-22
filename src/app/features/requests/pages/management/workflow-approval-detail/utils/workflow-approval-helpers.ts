@@ -1,0 +1,339 @@
+/**
+ * Workflow Approval Helpers
+ * Utility functions for formatting, display, and status handling
+ */
+
+import { TranslateService } from '@ngx-translate/core';
+import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateTimeExtended } from '@utils/format.utils';
+import { RequestStatusEnum } from '@utils/request-mapper.utils';
+
+/**
+ * Get approval history with requester as the first step
+ */
+export function getDisplayApprovalHistory(
+  requestDetail: RequestDetail | null,
+  translateService: TranslateService
+): WorkflowApprovalStep[] {
+  if (!requestDetail) {
+    return [];
+  }
+
+  const currentLang = getCurrentLang(translateService);
+  let requesterDisplayName = 'Unknown Requester';
+
+  if (currentLang === 'ar' && requestDetail.requesterNameAr) {
+    requesterDisplayName = requestDetail.requesterNameAr;
+  } else if (requestDetail.requesterNameEn) {
+    requesterDisplayName = requestDetail.requesterNameEn;
+  } else if (requestDetail.requesterName) {
+    requesterDisplayName = requestDetail.requesterName;
+  }
+
+  const requesterStep: WorkflowApprovalStep = {
+    id: 0,
+    approverName: requesterDisplayName,
+    approverNameEn: requestDetail.requesterNameEn,
+    approverNameAr: requestDetail.requesterNameAr,
+    status: 'Submitted',
+    applicationRoleName: 'Requester (Order Requesting Entity)',
+    applicationRoleNameAr: 'مقدم الطلب (جهة طلب المواد)',
+    approvedDateTime: formatApprovalDateTime(
+      requestDetail.creationDate || requestDetail.requestDate,
+      undefined,
+      translateService
+    ),
+    isPending: false,
+    comments: requestDetail.notes
+  };
+
+  return [requesterStep, ...(requestDetail.approvalHistory || [])];
+}
+
+/**
+ * Format approval date-time for workflow display
+ */
+export function formatApprovalDateTime(
+  dateTime: string | Date | undefined,
+  changedAt?: string | Date | undefined,
+  translateService?: TranslateService
+): string {
+  // If primary date is missing, fall back to changedAt completely
+  if (!dateTime && changedAt) {
+    return formatDateTimeExtended(changedAt);
+  }
+
+  return formatDateTimeExtended(dateTime, changedAt);
+}
+
+/**
+ * Get workflow step display name (localized)
+ */
+export function getWorkflowStepDisplayName(
+  step: any,
+  translateService: TranslateService
+): string {
+  if (!step) return '';
+
+  // Get role name - backend only sends ApplicationRoleName (EN), not ApplicationRoleNameAr
+  // So we need to check the nested applicationRole object for Arabic name
+  let roleNameEn: string | undefined;
+  let roleNameAr: string | undefined;
+
+  // First check nested applicationRole object (has both EN and AR)
+  if (step.applicationRole) {
+    roleNameEn = step.applicationRole.name || step.applicationRole.nameEn;
+    roleNameAr = step.applicationRole.nameAr;
+  }
+
+  // Fallback to flat properties if nested object not available
+  if (!roleNameEn && step.applicationRoleName) {
+    roleNameEn = step.applicationRoleName;
+  }
+  if (!roleNameAr && step.applicationRoleNameAr) {
+    roleNameAr = step.applicationRoleNameAr;
+  }
+
+  // Use getLocalizedValue helper for role name
+  const roleName = getLocalizedValue(roleNameEn, roleNameAr, translateService) ||
+    translateService.instant('workflowApprovalDetail.unknownApprover');
+
+  // Use translate service for "Step" label
+  const stepLabel = translateService.instant('requestsManagement.orderReport.table.step');
+
+  return `${stepLabel} ${step.stepOrder}: ${roleName}`;
+}
+
+/**
+ * Get transition display name for dropdown
+ */
+export function getTransitionDisplayName(
+  option: any,
+  translateService: TranslateService
+): string {
+  if (!option) return '';
+
+  const transition = typeof option === 'object' && 'value' in option ? option.value : option;
+  if (!transition || !transition.targetStep) {
+    return '';
+  }
+
+  const targetStep = transition.targetStep;
+  const stepOrder = targetStep.stepOrder || '';
+
+  // Get role name - check nested applicationRole object for both EN and AR
+  let roleNameEn: string | undefined;
+  let roleNameAr: string | undefined;
+
+  // First check nested applicationRole object (has both EN and AR)
+  if (targetStep.applicationRole) {
+    roleNameEn = targetStep.applicationRole.name || targetStep.applicationRole.nameEn;
+    roleNameAr = targetStep.applicationRole.nameAr;
+  }
+
+  // Fallback to flat properties if nested object not available
+  if (!roleNameEn && targetStep.applicationRoleName) {
+    roleNameEn = targetStep.applicationRoleName;
+  }
+  if (!roleNameAr && targetStep.applicationRoleNameAr) {
+    roleNameAr = targetStep.applicationRoleNameAr;
+  }
+
+  // Use getLocalizedValue helper for role name
+  const roleName = getLocalizedValue(roleNameEn, roleNameAr, translateService) ||
+    translateService.instant('workflowApprovalDetail.unknownApprover');
+
+  // Use translate service for "Step" label
+  const stepLabel = translateService.instant('requestsManagement.orderReport.table.step');
+
+  return `${stepLabel} ${stepOrder}: ${roleName}`;
+}
+
+/**
+ * Get localized value based on current language
+ */
+export function getLocalizedValue(
+  en: string | undefined,
+  ar: string | undefined,
+  translateService: TranslateService
+): string {
+  const lang = translateService.currentLang;
+  if (lang === 'ar') {
+    return ar || en || '';
+  }
+  return en || ar || '';
+}
+
+/**
+ * Get localized approver name
+ */
+export function getApproverName(
+  approval: WorkflowApprovalStep,
+  translateService: TranslateService
+): string {
+  const currentLang = getCurrentLang(translateService);
+
+  // For pending steps, use role name (not user name)
+  if (approval.isPending) {
+    if (currentLang === 'ar' && approval.applicationRoleNameAr) {
+      return approval.applicationRoleNameAr;
+    } else if (approval.applicationRoleName) {
+      return approval.applicationRoleName;
+    }
+  }
+
+  // For completed steps, use user name
+  if (currentLang === 'ar' && approval.approverNameAr) {
+    return approval.approverNameAr;
+  } else if (approval.approverNameEn) {
+    return approval.approverNameEn;
+  } else if (approval.approverName) {
+    return approval.approverName;
+  }
+
+  return '';
+}
+
+/**
+ * Resolve usage purpose with proper localization
+ */
+export function resolveUsagePurpose(
+  requestDetail: RequestDetail | null,
+  translateService: TranslateService
+): string {
+  if (!requestDetail) {
+    return 'N/A';
+  }
+  const currentLang = getCurrentLang(translateService);
+  return getLocalizedName(
+    {
+      nameEn: requestDetail.requestPurposeNameEn,
+      nameAr: requestDetail.requestPurposeNameAr
+    },
+    currentLang
+  ) || requestDetail.usagePurpose || 'N/A';
+}
+
+/**
+ * Check if there is a pending step in the approval workflow
+ */
+export function hasPendingStep(requestDetail: RequestDetail | null): boolean {
+  if (!requestDetail || !requestDetail.approvalHistory) {
+    return false;
+  }
+  return requestDetail.approvalHistory.some(
+    step => step.status === 'Pending' && step.isPending === true
+  );
+}
+
+/**
+ * Check if the last approval is completed
+ */
+export function isLastApprovalCompleted(requestDetail: RequestDetail | null): boolean {
+  if (!requestDetail) {
+    return false;
+  }
+
+  // Check if request status is Approved using enum
+  const requestStatusEnum = normalizeStatusToEnum(requestDetail.status);
+  if (requestStatusEnum === RequestStatusEnum.Approved) {
+    return true;
+  }
+
+  // Check if there are no pending steps in the approval history
+  if (requestDetail.approvalHistory && requestDetail.approvalHistory.length > 0) {
+    const hasPendingStep = requestDetail.approvalHistory.some(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+    return !hasPendingStep;
+  }
+
+  return false;
+}
+
+/**
+ * Helper method to normalize status string to RequestStatusEnum value
+ */
+function normalizeStatusToEnum(status: string | undefined): RequestStatusEnum | null {
+  if (!status) return null;
+  const statusLower = status.toLowerCase().trim();
+  if (statusLower === 'approved' || statusLower === 'completed') {
+    return RequestStatusEnum.Approved;
+  }
+  if (statusLower === 'rejected' || statusLower === 'declined') {
+    return RequestStatusEnum.Rejected;
+  }
+  if (statusLower === 'new' || statusLower === 'pending') {
+    return RequestStatusEnum.New;
+  }
+  if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress') {
+    return RequestStatusEnum.UnderProcess;
+  }
+  if (statusLower === 'returnedforreview' || statusLower === 'returned') {
+    return RequestStatusEnum.ReturnedForReview;
+  }
+  return null;
+}
+
+/**
+ * Check if request has higher approval requirement
+ */
+export function hasHigherApproval(requestDetail: RequestDetail | null): boolean {
+  if (!requestDetail || !requestDetail.approvalHistory) {
+    return false;
+  }
+
+  // Find the current pending step
+  const pendingStep = requestDetail.approvalHistory.find(step => step.status === 'Pending' && step.isPending);
+
+  if (!pendingStep || !pendingStep.requireHigherApproval) {
+    return false;
+  }
+
+  const hasApprovedStepWithSameWorkflowStepId = requestDetail.approvalHistory.some(step =>
+    step.workflowStepId === pendingStep.workflowStepId &&
+    step.status === 'Approved'
+  );
+
+  return !hasApprovedStepWithSameWorkflowStepId;
+}
+
+/**
+ * Get current step transitions
+ */
+export function getCurrentStepTransitions(requestDetail: RequestDetail | null): any[] {
+  if (!requestDetail || !requestDetail.approvalHistory) {
+    return [];
+  }
+
+  const currentPendingStep = requestDetail.approvalHistory.find(
+    step => step.status === 'Pending' && step.isPending
+  );
+
+  if (!currentPendingStep) {
+    return [];
+  }
+
+  // Check for transitions property (may be in different formats from backend)
+  const transitions = currentPendingStep.transitions ||
+    (currentPendingStep as any).Transitions ||
+    [];
+
+  if (!Array.isArray(transitions) || transitions.length === 0) {
+    return [];
+  }
+
+  return transitions;
+}
+
+/**
+ * Get rank display name (localized)
+ */
+export function getRankDisplayName(
+  rank: any,
+  translateService: TranslateService
+): string {
+  if (!rank) return '';
+  return getLocalizedName(rank, getCurrentLang(translateService)) || rank.nameEn || '';
+}
