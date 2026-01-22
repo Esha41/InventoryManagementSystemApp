@@ -1,0 +1,55 @@
+/* Screen-only styles for order report header */
+.print-header {
+  background: var(--color-background);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border: 2px solid var(--color-border);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.print-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.print-logo-center {
+  display: flex;
+  align-items: center;
+}
+
+.print-logo {
+  max-width: 200px;
+  height: auto;
+}
+
+.print-qr-container {
+  text-align: center;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--color-background-muted);
+}
+
+.print-qr-code {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 8px auto;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  background: white;
+}
+
+.print-qr-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.print-divider {
+  border-bottom: none;
+  margin: 16px 0;
+}

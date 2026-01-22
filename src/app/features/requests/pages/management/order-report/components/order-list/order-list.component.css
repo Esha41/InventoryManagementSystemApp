@@ -1,0 +1,53 @@
+/* Priority Color Classes */
+.priority-normal {
+  color: #22c55e !important;
+  /* Green */
+}
+
+.priority-urgent {
+  color: #f97316 !important;
+  /* Orange */
+}
+
+.priority-veryurgent {
+  color: #ef4444 !important;
+  /* Red */
+}
+
+.priority-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Search Bar Enhancements */
+input[type="text"]:focus {
+  outline: none;
+}
+
+input[type="text"]::placeholder {
+  transition: opacity 0.2s ease;
+}
+
+input[type="text"]:focus::placeholder {
+  opacity: 0.6;
+}

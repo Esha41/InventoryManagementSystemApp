@@ -70,6 +70,7 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   // Use the same status translation key system as dashboard
   const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
 
+  // Keep submittedOn as formatted string since it's a complex date range with times
   // Format submitted date with time (for submittedOn field) - use DD/MM/YYYY for dates
   const fromDate = order.usageDateFrom ? formatDateShort(order.usageDateFrom) : '';
   const toDate = order.usageDateTo ? formatDateShort(order.usageDateTo) : '';
@@ -79,13 +80,6 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   const submittedDateTime = toDate
     ? `${fromDate}${fromTime ? ' · ' + fromTime : ''} - ${toDate}${toTime ? ' · ' + toTime : ''}`.trim()
     : `${fromDate}${fromTime ? ' · ' + fromTime : ''}`;
-
-  // Format usage date without time (for lastUpdated/usageDate field) - use DD/MM/YYYY format
-  const fromDateShort = order.usageDateFrom ? formatDateShort(order.usageDateFrom) : '';
-  const toDateShort = order.usageDateTo ? formatDateShort(order.usageDateTo) : '';
-  const usageDateOnly = fromDateShort
-    ? (toDateShort ? `${fromDateShort} - ${toDateShort}` : fromDateShort)
-    : '';
 
   // Get localized department name
   const currentLang = translateService ? getCurrentLang(translateService) : 'en';
@@ -149,12 +143,24 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     }
   }
 
+  // Return raw dates for pipe formatting
+  // Try to get requestDate from order creationDate or usageDateFrom as fallback
+  let requestDate: string | Date | null = null;
+  if (order.creationDate) {
+    requestDate = order.creationDate;
+  } else if (order.usageDateFrom) {
+    requestDate = order.usageDateFrom;
+  }
+
+  // Return raw date for lastUpdated (usageDateFrom)
+  const lastUpdated: string | Date | null = order.usageDateFrom || null;
+
   return {
     orderId: orderId,
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
     priority: mapOrderPriorityToString(order.priority),
-    submittedOn: submittedDateTime,
-    requestDate: '', // Will be set from BaseRequestDto
+    submittedOn: submittedDateTime, // Keep as formatted string (complex date range)
+    requestDate: requestDate, // Raw date for pipe formatting
     department: departmentName,
     requester: requesterName,
     usagePurpose: usagePurpose,
@@ -162,7 +168,7 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     requestPurposeNameAr: order.requestPurpose?.nameAr || order.requestPurposeNameAr,
     totalItems: order.requestItems?.length || 0,
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    lastUpdated: usageDateOnly, // Usage date without time
+    lastUpdated: lastUpdated, // Raw date for pipe formatting
     isFromAllowance: order.isFromAllowance || false,
     requestType: requestType
   };
