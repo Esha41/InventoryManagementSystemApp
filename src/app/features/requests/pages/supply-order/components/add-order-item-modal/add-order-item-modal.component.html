@@ -7,14 +7,19 @@
       </label>
       <app-dropdown class="w-full" formControlName="itemId" [options]="availableItems" optionValue="id"
         [optionLabelFn]="itemManagementOptionLabel" [disabled]="loadingItems" [placeholderSelectable]="false"
-        [placeholderValue]="null"
-        [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
+        [placeholderValue]="null" [error]="!!(addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched)"
         placeholder="{{ 'supplyOrder.selectItemPlaceholder' | translate }}">
       </app-dropdown>
       <p *ngIf="addItemForm.get('itemId')?.invalid && addItemForm.get('itemId')?.touched"
         class="mt-1 text-sm text-[var(--color-error)]">
         {{ 'supplyOrder.itemRequired' | translate }}
       </p>
+      <!-- Item Type Restriction Info -->
+      <div *ngIf="orderItems.length > 0"
+        class="mt-2 flex items-start gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
+        <span class="flex-shrink-0">ℹ️</span>
+        <span>{{ getItemTypeRestrictionMessage() }}</span>
+      </div>
     </div>
 
     <!-- Quantity -->
@@ -61,4 +66,3 @@
     </button>
   </div>
 </app-modal>
-

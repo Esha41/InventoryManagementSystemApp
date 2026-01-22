@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -8,24 +8,29 @@ type ButtonSize = 'sm' | 'md' | 'lg';
   selector: 'app-button',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.css']
 })
 export class ButtonComponent {
-  @Input() variant: ButtonVariant = 'primary';
-  @Input() size: ButtonSize = 'md';
-  @Input() disabled = false;
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
-  @Input() fullWidth = false;
-  @Output() clicked = new EventEmitter<Event>();
+  // Input signals
+  variant = input<ButtonVariant>('primary');
+  size = input<ButtonSize>('md');
+  disabled = input<boolean>(false);
+  type = input<'button' | 'submit' | 'reset'>('button');
+  fullWidth = input<boolean>(false);
+
+  // Output signal
+  clicked = output<Event>();
 
   onClick(event: Event): void {
-    if (!this.disabled) {
+    if (!this.disabled()) {
       this.clicked.emit(event);
     }
   }
 
-  get buttonClasses(): string {
+  // Computed signal for button classes
+  buttonClasses = computed(() => {
     const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     const variantClasses = {
@@ -42,10 +47,10 @@ export class ButtonComponent {
       lg: 'px-6 py-3 text-lg'
     };
 
-    const widthClass = this.fullWidth ? 'w-full' : '';
-    const disabledClass = this.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+    const widthClass = this.fullWidth() ? 'w-full' : '';
+    const disabledClass = this.disabled() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
-    return `${baseClasses} ${variantClasses[this.variant]} ${sizeClasses[this.size]} ${widthClass} ${disabledClass}`;
-  }
+    return `${baseClasses} ${variantClasses[this.variant()]} ${sizeClasses[this.size()]} ${widthClass} ${disabledClass}`;
+  });
 }
 

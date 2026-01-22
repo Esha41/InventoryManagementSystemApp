@@ -74,7 +74,6 @@ interface ExtendedFilterOptions extends FilterOptions {
     CommonModule,
     FormsModule,
     TranslateModule,
-    ButtonComponent,
     StepperComponent,
     StepperComponent,
     UsageFormComponent,
@@ -82,9 +81,6 @@ interface ExtendedFilterOptions extends FilterOptions {
     AllowanceSelectionComponent,
     OrderSuccessComponent,
     ErrorBannerComponent,
-    LoadingStateComponent,
-    ErrorStateComponent,
-    HasPermissionDirective,
     ConfirmationDialogComponent,
     StepSelectionComponent
   ],

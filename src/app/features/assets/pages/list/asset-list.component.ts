@@ -82,7 +82,6 @@ import { FileUploadService, FileEntityType } from '@services/file-upload.service
     RowsPerPageComponent,
     LoadingStateComponent,
     AssetEditModalComponent,
-    ImportDialogComponent,
     ImagePreviewTooltipComponent
   ],
   templateUrl: './asset-list.component.html',

@@ -36,11 +36,7 @@ import { ItemAssetSelectionComponent } from './components/item-asset-selection/i
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    HasPermissionDirective,
     LoadingStateComponent,
-    ModalComponent,
-    ButtonComponent,
-    DropdownComponent,
     ItemAssetSelectionComponent
   ],
   providers: [

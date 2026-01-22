@@ -86,7 +86,8 @@
 }
 
 .chart-item {
-    @apply min-h-[300px] md:min-h-[400px] bg-[var(--color-background)] rounded-lg border border-[var(--color-border-muted)] p-2 md:p-4 overflow-hidden;
+    @apply min-h-[300px] md:min-h-[400px] max-h-[500px] md:max-h-[600px] bg-[var(--color-background)] rounded-lg border border-[var(--color-border-muted)] p-2 md:p-4 overflow-hidden;
+    height: 400px; /* Fixed height to prevent growth */
 }
 
 .chart-wide {
