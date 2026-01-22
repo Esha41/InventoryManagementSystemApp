@@ -62,6 +62,8 @@ app-status-card {
   /* Ensure cards fill their grid cells */
   max-height: 750px;
   /* Increased card height for better scrolling */
+  /* Prevent cards from stretching too wide */
+  max-width: 100%;
 }
 
 app-status-card:hover {
@@ -95,6 +97,9 @@ app-status-card:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Cards grid inherits page-container max-width constraints */
+/* No additional CSS needed - page-container handles width constraints */
 
 /* Custom scrollbar for modal */
 .overflow-y-auto::-webkit-scrollbar {
@@ -213,4 +218,94 @@ app-status-card:hover {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Dashboard-specific filter bar sizing - Make search and status filter bigger */
+::ng-deep app-request-filter-bar[layout="unified"] {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Mobile: Full width, smaller sizes */
+@media (max-width: 640px) {
+  /* Make search bar container responsive on mobile */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown responsive on mobile */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Tablet: Medium sizes */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Make search bar container medium size on tablet */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 250px !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown medium size on tablet */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 220px !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Desktop/Large screens: Bigger sizes */
+@media (min-width: 1025px) {
+  /* Make search bar container bigger in dashboard */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 350px !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown bigger in dashboard - Target the dropdown element */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 300px !important;
+    width: 300px !important;
+    max-width: 300px !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 300px !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Make search input bigger in dashboard */
+::ng-deep app-request-filter-bar[layout="unified"] .dashboard-search-input {
+  min-width: 100% !important;
+  font-size: 0.875rem;
+}
+
+/* Ensure filters container has enough space and doesn't shrink */
+::ng-deep app-request-filter-bar[layout="unified"] > div > div:last-child {
+  flex-shrink: 0 !important;
+  min-width: fit-content !important;
 }
