@@ -1,0 +1,59 @@
+<!-- Order Information Section -->
+<section class="print-section order-info-section">
+  <div class="print-section-header">
+    <h2 class="print-section-title">{{ 'requestsManagement.orderReport.labels.orderInformation' | translate }}
+    </h2>
+    <div class="allowance-badge"
+      *ngIf="orderSummary.requestType !== 'Return' && orderSummary.requestType !== 'Discard' && orderSummary.isFromAllowance !== undefined">
+      {{ (orderSummary.isFromAllowance ? 'requestsManagement.orderReport.labels.fromAllowance' :
+      'requestsManagement.orderReport.labels.outsideOfAllowance') | translate }}
+    </div>
+  </div>
+
+  <div class="print-info-grid">
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requestType' | translate
+        }}:</span>
+      <span class="print-info-value">{{ ('requestsManagement.' + (orderSummary.requestType?.toLowerCase() ||
+        'order')) | translate }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.usagePurpose' | translate
+        }}:</span>
+      <span class="print-info-value">{{ resolveUsagePurpose() }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.department' | translate
+        }}:</span>
+      <span class="print-info-value">{{ orderSummary.department }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requester' | translate
+        }}:</span>
+      <span class="print-info-value">{{ orderSummary.requester }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.status' | translate
+        }}:</span>
+      <span class="print-info-value">{{ orderSummary.status | translate }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requestDate' | translate
+        }}:</span>
+      <span class="print-info-value">{{ orderSummary.requestDate | appDate }}</span>
+    </div>
+    <div class="print-info-item" *ngIf="orderSummary.requestType !== 'Return' && orderSummary.requestType !== 'Discard'">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.usageDate' | translate
+        }}:</span>
+      <span class="print-info-value">{{ (orderSummary.lastUpdated || orderSummary.requestDate) | appDate }}</span>
+    </div>
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.priority' | translate
+        }}:</span>
+      <span class="print-info-value priority-value"
+        [ngClass]="getPriorityColorClass(orderSummary.priority)">{{ ('common.priorityLevels.' +
+        orderSummary.priority) | translate
+        }}</span>
+    </div>
+  </div>
+</section>

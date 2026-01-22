@@ -144,7 +144,32 @@ export function formatDateTimeExtended(date: string | Date | undefined | null, f
       }
     }
 
-    return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    // If formatTimeToMilitary didn't return time, try extracting directly from the Date object
+    // This handles cases where the date string had time info but formatTimeToMilitary didn't catch it
+    if (!formattedTime && d instanceof Date && !isNaN(d.getTime())) {
+      const hours = d.getHours().toString().padStart(2, '0');
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      formattedTime = hours + minutes;
+    }
+
+    // Check if original date string had time information
+    const originalHasTime = date instanceof Date || 
+      (typeof date === 'string' && (date.includes('T') || date.includes(' ') || /:\d{2}/.test(date)));
+
+    // Always show time if we extracted it or if the original had time info
+    // This ensures datetime values show time even if it's 0000 (midnight)
+    if (formattedTime || originalHasTime) {
+      // If we still don't have formattedTime but original had time, extract from Date object
+      if (!formattedTime && originalHasTime) {
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        formattedTime = hours + minutes;
+      }
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    }
+
+    // Date-only string without time - return just the date
+    return formattedDate;
   } catch {
     return '';
   }
