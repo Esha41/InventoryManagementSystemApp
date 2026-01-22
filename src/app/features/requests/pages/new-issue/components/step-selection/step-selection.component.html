@@ -11,11 +11,14 @@
 </app-error-state>
 
 <!-- Cartridge Details View -->
-<app-item-details
-    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails"
-    [item]="cartridgeState.selectedCartridgeForView" [showActions]="true" [isModal]="false"
-    (select)="onSelectCartridge()" (cancel)="onCloseCartridgeDetails()">
-</app-item-details>
+<app-asset-details
+    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails && cartridgeState.selectedCartridgeForView"
+    [assetId]="cartridgeState.selectedCartridgeForView.id"
+    [assetType]="getAssetType(cartridgeState.selectedCartridgeForView)"
+    [isPage]="false"
+    [showInlineHeader]="true"
+    (close)="onCloseCartridgeDetails()">
+</app-asset-details>
 
 <!-- Cartridge List View -->
 <app-cartridge-list

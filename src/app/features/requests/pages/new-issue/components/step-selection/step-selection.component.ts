@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnInit
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CartridgeListComponent, Cartridge } from '../cartridge-list/cartridge-list.component';
-import { ItemDetailsComponent } from '@shared/components/item-details/item-details.component';
+import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
 import { FilterState, FilterOptions, CartridgeState } from '../../new-issue-request.state';
@@ -17,7 +17,7 @@ import { IssueRequestCartridgeManagementService } from '@requests/services/issue
         CommonModule,
         TranslateModule,
         CartridgeListComponent,
-        ItemDetailsComponent,
+        AssetDetailsComponent,
         LoadingStateComponent,
         ErrorStateComponent,
         ErrorBannerComponent
@@ -120,6 +120,16 @@ export class StepSelectionComponent {
     onCartridgeClick(cartridge: Cartridge): void {
         this.cartridgeState.selectedCartridgeForView = cartridge;
         this.cartridgeState.showCartridgeDetails = true;
+    }
+
+    // Helper method to convert Cartridge itemType to asset-details format
+    getAssetType(cartridge: Cartridge | null): 'ammunition' | 'weapon' | 'explosive' | undefined {
+        if (!cartridge || !cartridge.itemType) return undefined;
+        const itemType = cartridge.itemType.toLowerCase();
+        if (itemType === 'ammunition' || itemType === 'weapon' || itemType === 'explosive') {
+            return itemType as 'ammunition' | 'weapon' | 'explosive';
+        }
+        return undefined;
     }
 
     onCloseCartridgeDetails(): void {
