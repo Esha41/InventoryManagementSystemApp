@@ -3,7 +3,7 @@
   <div
     class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-8">
     <div class="page-container py-8">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div class="animate-fade-in">
           <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
           <p class="text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
@@ -62,7 +62,7 @@
 
 
       <!-- Low Stock Card -->
-      <div (click)="onLowStockClick()" 
+      <div (click)="onLowStockClick()"
         class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
         <div class="flex items-center justify-between">
           <div>
@@ -83,7 +83,7 @@
       </div>
 
       <!-- Expiring Soon Card -->
-      <div (click)="onExpiringSoonClick()" 
+      <div (click)="onExpiringSoonClick()"
         class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
         <div class="flex items-center justify-between">
           <div>
@@ -107,7 +107,56 @@
     <!-- Table View -->
     <div *ngIf="visibleCards.length > 0"
       class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
-      <div class="overflow-x-auto">
+      <!-- Mobile Card View -->
+      <div class="lg:hidden grid grid-cols-1 gap-4">
+        <div *ngFor="let card of paginatedCards"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
+          [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
+
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="font-bold text-[var(--color-text)] text-sm">{{ card.orders[0].orderId || card.title }}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">{{ formatApprovalDateTime(card.orders[0].requestDate)
+                || 'N/A' }}</span>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+              [ngClass]="getStatusBadgeClass(card.status)">
+              {{ getStatusTranslationKey(card.status) | translate }}
+            </span>
+          </div>
+
+          <!-- Details -->
+          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].departmentName || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].requesterName || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <!-- Footer / Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
+            <span *ngIf="card.isMyTurn"
+              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
+              {{ 'requestsManagement.actionRequired' | translate }}
+            </span>
+            <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
+
+            <button (click)="onTableAction(card)"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
+              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
+              <span>{{ 'common.view' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-x-auto">
         <table class="min-w-full divide-y divide-[var(--color-border)]">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
@@ -171,15 +220,15 @@
 
     <!-- Pagination Footer -->
     <div *ngIf="visibleCards.length > 0"
-      class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8">
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8 text-start">
       <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="visibleCards.length"
         [visibleItems]="paginatedCards.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
 
-      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
         </app-pagination>
-        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
           {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
         </span>
       </div>

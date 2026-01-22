@@ -15,60 +15,27 @@
     font-size: 0.875rem;
 }
 
-/* Dropdown styling for w-44 (11rem) */
-::ng-deep app-dropdown.w-44 {
-    width: 11rem !important;
-    min-width: 11rem !important;
-    max-width: 11rem !important;
-    flex-shrink: 0;
+/* Dropdown base styling - allows Tailwind classes to control width */
+::ng-deep app-dropdown.w-44,
+::ng-deep app-dropdown.w-40,
+::ng-deep app-dropdown.w-48,
+::ng-deep app-dropdown.w-52 {
     display: block;
 }
 
-::ng-deep app-dropdown.w-44 .app-dropdown,
-::ng-deep app-dropdown.w-44 .app-dropdown-trigger {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0;
-    height: 2.5rem !important;
-    border-radius: var(--radius-lg) !important;
-    border-color: var(--color-border) !important;
+::ng-deep app-dropdown .app-dropdown,
+::ng-deep app-dropdown .app-dropdown-trigger {
+    width: 100%;
+    height: 2.5rem;
+    border-radius: var(--radius-lg);
+    border-color: var(--color-border);
 }
 
-::ng-deep app-dropdown.w-44 .app-dropdown-panel {
-    width: 100% !important;
-    max-width: 11rem !important;
-    min-width: 0;
+::ng-deep app-dropdown .app-dropdown-panel {
+    width: 100%;
     margin-top: 0.5rem;
-    z-index: 100 !important;
-    box-shadow: var(--shadow-lg) !important;
-}
-
-/* Dropdown styling for w-40 (10rem) */
-::ng-deep app-dropdown.w-40 {
-    width: 10rem !important;
-    min-width: 10rem !important;
-    max-width: 10rem !important;
-    flex-shrink: 0;
-    display: block;
-}
-
-::ng-deep app-dropdown.w-40 .app-dropdown,
-::ng-deep app-dropdown.w-40 .app-dropdown-trigger {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0;
-    height: 2.25rem !important;
-    border-radius: var(--radius-md) !important;
-    border-color: var(--color-border) !important;
-}
-
-::ng-deep app-dropdown.w-40 .app-dropdown-panel {
-    width: 100% !important;
-    max-width: 10rem !important;
-    min-width: 0;
-    margin-top: 0.25rem;
-    z-index: 100 !important;
-    box-shadow: var(--shadow-md) !important;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
 }
 
 /* Soft shadow utility */

@@ -216,15 +216,18 @@
 
         <!-- Request Items -->
         <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
-          <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]">
-              </lucide-angular>
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--color-border)]">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+                <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]">
+                </lucide-angular>
+              </div>
+              <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'workflowApprovalDetail.requestItems' | translate }}
+              </h2>
             </div>
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'workflowApprovalDetail.requestItems' | translate }}
-            </h2>
-            <div class="ms-auto flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <span *ngIf="requestDetail.requestItems && requestDetail.requestItems.length > 0"
                 class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
                 {{ requestDetail.requestItems.length }} {{ requestDetail.requestItems.length === 1 ?
@@ -478,7 +481,8 @@
                   class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   [ngClass]="{'bg-[var(--color-background-active)] cursor-not-allowed': !isPickupDateEditable()}">
                 <p class="mt-2 text-xs text-[var(--color-text-muted)]">
-                  <span *ngIf="pickupDate && isPickupDateAlreadySet">{{ 'workflowApprovalDetail.dateSetLockedMessage' |
+                  <span *ngIf="pickupDate && isPickupDateAlreadySet">{{ 'workflowApprovalDetail.dateSetLockedMessage'
+                    |
                     translate }}</span>
                   <span *ngIf="!pickupDate">{{ 'workflowApprovalDetail.waitingForPickupDate' | translate }}</span>
                 </p>
@@ -616,7 +620,8 @@
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
+                      <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1
+                        ?
                         ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
@@ -823,7 +828,8 @@
                     </label>
                     <span class="text-sm text-[var(--color-text-muted)] flex-1">
                       <span *ngIf="approvalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                      <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1 ?
+                      <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1
+                        ?
                         ('common.file' | translate) : ('common.files' | translate) }}</span>
                     </span>
                   </div>
@@ -870,7 +876,7 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="grid grid-cols-1 gap-3 pt-2" [ngClass]="{
+              <div class="grid grid-cols-1 lg:grid-cols-1 gap-3 pt-2" [ngClass]="{
                   'sm:grid-cols-3': canRejectRequest() && canReturnForReview(),
                   'sm:grid-cols-2': (canRejectRequest() && !canReturnForReview()) || (!canRejectRequest() && canReturnForReview()),
                   'sm:grid-cols-1': !canRejectRequest() && !canReturnForReview()
@@ -951,10 +957,12 @@
         </div>
       </div>
 
-      <!-- Confirmation Dialog -->
       <app-confirmation-dialog [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title"
         [message]="confirmationDialog.message" [type]="confirmationDialog.type"
         [confirmText]="confirmationDialog.confirmText" [cancelText]="confirmationDialog.cancelText"
         [requireComment]="confirmationDialog.requireComment" [commentLabel]="confirmationDialog.commentLabel"
         [commentPlaceholder]="confirmationDialog.commentPlaceholder" (confirmed)="onConfirmationConfirmed($event)"
         (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
+    </div>
+  </div>
+</div>

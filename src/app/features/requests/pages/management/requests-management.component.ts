@@ -25,6 +25,7 @@ import { CardStatus } from '@utils/status.utils';
 })
 export class RequestsManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  readonly Math = Math;
 
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;

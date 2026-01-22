@@ -9,18 +9,62 @@
   </div>
 
   <!-- Filters -->
-  <app-lookup-filters 
-    [lookupTables]="lookupTables" 
-    [selectedTable]="selectedTable"
-    [searchTerm]="lookupSearchTerm"
-    [isLoading]="isLoadingLookups"
-    (tableSelect)="onTableSelect($event)"
-    (searchChange)="onSearchChange($event)">
+  <app-lookup-filters [lookupTables]="lookupTables" [selectedTable]="selectedTable" [searchTerm]="lookupSearchTerm"
+    [isLoading]="isLoadingLookups" (tableSelect)="onTableSelect($event)" (searchChange)="onSearchChange($event)">
   </app-lookup-filters>
 
   <!-- Lookup Items Table -->
   <app-card *ngIf="selectedTable">
-    <div class="overflow-x-auto">
+    <!-- Mobile & Tablet Card View -->
+    <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+      <div *ngFor="let item of filteredLookupItems"
+        class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
+
+        <!-- Header: English Name -->
+        <div class="flex items-start justify-between">
+          <h3 class="font-bold text-[var(--color-text)] text-sm">{{ item.nameEn }}</h3>
+
+          <div class="flex items-center gap-1">
+            <button (click)="onEditLookup(item)"
+              class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+              [title]="'lookupManagement.edit' | translate">
+              <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+            </button>
+            <button (click)="onDeleteLookup(item)"
+              class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+              [title]="'lookupManagement.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <!-- Arabic Name -->
+        <div class="text-sm font-medium text-[var(--color-text)]" dir="rtl">{{ item.nameAr }}</div>
+
+        <!-- Details Grid -->
+        <div *ngIf="selectedTable.hasCode || selectedTable.name === 'ItemType'"
+          class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3 mt-1">
+          <div *ngIf="selectedTable.hasCode">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.code' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)] font-mono">{{ item.code || '-' }}</span>
+          </div>
+          <div *ngIf="selectedTable.name === 'ItemType'">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.itemType' | translate
+              }}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium" [ngClass]="{
+                    'bg-blue-100 text-blue-800': getItemType(item) === 1,
+                    'bg-red-100 text-red-800': getItemType(item) === 2,
+                    'bg-orange-100 text-orange-800': getItemType(item) === 3
+                  }">
+              {{ getItemTypeName(item) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden lg:block overflow-x-auto">
       <table class="w-full">
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
@@ -112,4 +156,3 @@
   [message]="('lookupManagement.deleteConfirm' | translate) + ' ' + getLookupItemName(selectedLookupItem) + '?'"
   [confirmText]="'common.delete' | translate" confirmColor="error" (confirmed)="confirmLookupDelete()"
   (cancelled)="showLookupDeleteConfirm = false" />
-

@@ -8,7 +8,7 @@ import { map, catchError } from 'rxjs/operators';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, Download, Upload } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowUpDown, ArrowUp, ArrowDown, FilterX, Download, Upload, Image } from 'lucide-angular';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
@@ -103,6 +103,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   readonly FilterX = FilterX;
   readonly Download = Download;
   readonly Upload = Upload;
+  readonly Image = Image;
 
   // State
   assets: Asset[] = [];
@@ -426,19 +427,19 @@ export class AssetListComponent implements OnInit, OnDestroy {
         // Get main images (there might be multiple with isMain: true)
         const mainImages = originalData.images.filter((img: any) => img.isMain);
         let image: any;
-        
+
         if (mainImages.length > 0) {
           // If multiple main images exist, get the one with highest ID (latest uploaded)
-          image = mainImages.reduce((latest: any, current: any) => 
+          image = mainImages.reduce((latest: any, current: any) =>
             (current.id > latest.id) ? current : latest
           );
         } else {
           // If no main image, get the image with highest ID (latest uploaded)
-          image = originalData.images.reduce((latest: any, current: any) => 
+          image = originalData.images.reduce((latest: any, current: any) =>
             (current.id > latest.id) ? current : latest
           );
         }
-        
+
         if (!image?.id) {
           return null;
         }
@@ -578,19 +579,19 @@ export class AssetListComponent implements OnInit, OnDestroy {
             // Get main images (there might be multiple with isMain: true)
             const mainImages = files.filter((img: any) => img.isMain);
             let latestImage: any;
-            
+
             if (mainImages.length > 0) {
               // If multiple main images exist, get the one with highest ID (latest uploaded)
-              latestImage = mainImages.reduce((latest: any, current: any) => 
+              latestImage = mainImages.reduce((latest: any, current: any) =>
                 (current.id > latest.id) ? current : latest
               );
             } else {
               // If no main image, get the image with highest ID (latest uploaded)
-              latestImage = files.reduce((latest: any, current: any) => 
+              latestImage = files.reduce((latest: any, current: any) =>
                 (current.id > latest.id) ? current : latest
               );
             }
-            
+
             if (latestImage?.id) {
               this.imageState.editImageFileId = latestImage.id;
               // Fetch blob for preview

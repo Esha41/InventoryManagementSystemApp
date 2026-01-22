@@ -22,8 +22,8 @@
           <form #allowanceForm="ngForm" (ngSubmit)="onSend(allowanceForm)">
             <div class="space-y-6 max-w-3xl">
               <!-- Department Dropdown -->
-              <div class="flex items-start gap-8">
-                <label class="text-sm font-medium text-[var(--color-text)] w-40 shrink-0 pt-2.5">
+              <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-8">
+                <label class="text-sm font-medium text-[var(--color-text)] sm:w-40 sm:shrink-0 sm:pt-2.5">
                   {{ 'allowance.department' | translate }} <span class="text-[var(--color-error)]">*</span>
                 </label>
                 <div class="flex-1">
@@ -40,8 +40,8 @@
               </div>
 
               <!-- Year Input -->
-              <div class="flex items-start gap-8">
-                <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-8">
+                <label class="text-sm font-medium text-[#6B7280] sm:w-40 sm:shrink-0 sm:pt-2.5">
                   {{ 'allowance.year' | translate }} <span class="text-red-500">*</span>
                 </label>
                 <div class="flex-1">
@@ -56,8 +56,8 @@
               </div>
 
               <!-- Item Type Dropdown -->
-              <div class="flex items-start gap-8">
-                <label class="text-sm font-medium text-[#6B7280] w-40 shrink-0 pt-2.5">
+              <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-8">
+                <label class="text-sm font-medium text-[#6B7280] sm:w-40 sm:shrink-0 sm:pt-2.5">
                   {{ 'allowance.itemType' | translate }} <span class="text-red-500">*</span>
                 </label>
                 <div class="flex-1">

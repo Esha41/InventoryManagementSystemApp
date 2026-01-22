@@ -57,7 +57,90 @@
 
   <!-- Users Table -->
   <app-card>
-    <div class="overflow-x-auto">
+    <!-- Mobile & Tablet Card View -->
+    <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+      <div *ngFor="let user of paginatedUsers"
+        class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3"
+        [class.opacity-60]="!user.isActive">
+
+        <!-- Header: Avatar & Basic Info -->
+        <div class="flex items-start gap-4">
+          <div
+            class="w-12 h-12 rounded-full bg-[var(--color-accent)] text-white flex items-center justify-center font-semibold text-lg flex-shrink-0"
+            [class.bg-gray-400]="!user.isActive">
+            {{ getUserInitials(user) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-[var(--color-text)] text-sm truncate">{{ getFullName(user) }}</h3>
+            <p class="text-xs text-[var(--color-text-muted)] truncate">{{ getUserName(user) }}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <span
+                class="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-background-muted)] border border-[var(--color-border)] text-[var(--color-text-muted)]">
+                {{ getRankName(user) || 'No Rank' }}
+              </span>
+              <span class="text-[10px] text-[var(--color-text-muted)] font-mono">{{ getMilitaryId(user) }}</span>
+            </div>
+          </div>
+
+          <!-- Status Badge -->
+          <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+            class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+            {{ (user.isActive ? 'manageAdmins.active' : 'manageAdmins.inactive') | translate }}
+          </span>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
+          <div>
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'manageAdmins.department' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)] truncate block">{{ getDepartmentName(user) }}</span>
+          </div>
+          <div>
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'manageAdmins.ldapUser' | translate }}</span>
+            <span [ngClass]="user.isLdapUser ? 'text-green-600' : 'text-gray-400'" class="font-medium">
+              {{ user.isLdapUser ? ('common.yes' | translate) : ('common.no' | translate) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Roles -->
+        <div class="flex flex-wrap gap-1">
+          <span *ngFor="let role of getUserRoles(user.id)"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+            {{ role }}
+          </span>
+          <span *ngIf="getUserRoles(user.id).length === 0" class="text-xs text-[var(--color-text-muted)] italic">
+            {{ 'manageAdmins.noRolesAssigned' | translate }}
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <div
+          class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
+          <button *appHasPermission="'Users.Edit'" [disabled]="isUserSuperAdmin(user)" (click)="onToggleStatus(user)"
+            class="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            [ngClass]="user.isActive ? 'text-[var(--color-error)] bg-[var(--color-error)]/10' : 'text-[var(--color-success)] bg-[var(--color-success)]/10'"
+            [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
+            <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
+          </button>
+
+          <button *appHasPermission="'Users.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
+            class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            [title]="'manageAdmins.editUser' | translate">
+            <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+          </button>
+
+          <button *appHasPermission="'Users.Delete'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
+            class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            [title]="'manageAdmins.deleteUserTitle' | translate">
+            <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden lg:block overflow-x-auto">
       <table class="w-full">
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>

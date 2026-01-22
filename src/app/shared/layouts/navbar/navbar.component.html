@@ -1,15 +1,22 @@
 <nav class="navbar-theme shadow-custom-md h-16 flex items-center px-6 z-40 border-b border-[var(--color-border)]">
   <div class="flex items-center justify-between w-full">
     <!-- Left side - Logo -->
-    <div class="flex items-center">
-      <img src="assets/logo.png" alt="Logo" class="h-10 navbar-logo" [class.dark-mode-logo]="isDarkMode"
-        style="transform: scaleX(1); direction: ltr;" />
+    <div class="flex items-center gap-1 md:gap-2">
+      <button (click)="onMenuClick()"
+        class="md:hidden navbar-button-hover p-1.5 md:p-2 rounded-lg transition-colors duration-200"
+        aria-label="Toggle menu">
+        <lucide-angular [img]="Menu" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
+      </button>
+
+      <img src="assets/logo.png" alt="Logo" class="h-7 md:h-10 navbar-logo object-contain"
+        [class.dark-mode-logo]="isDarkMode" style="direction: ltr;" />
     </div>
 
     <!-- Right side - Actions -->
-    <div class="flex items-center gap-4">
-      <!-- Theme Toggle -->
-      <button (click)="toggleTheme()" class="navbar-button-hover p-2 rounded-lg transition-colors duration-200"
+    <div class="flex items-center gap-1 md:gap-4">
+      <!-- Theme Toggle - Visible on all screens -->
+      <button (click)="toggleTheme()"
+        class="flex navbar-button-hover p-1.5 md:p-2 rounded-lg transition-colors duration-200"
         [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
         [attr.title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
         <lucide-angular [img]="isDarkMode ? Sun : Moon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
@@ -17,32 +24,33 @@
 
       <!-- Language Toggle -->
       <button (click)="toggleLanguage()"
-        class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+        class="flex items-center gap-2 p-1.5 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
         aria-label="Change language">
         <lucide-angular [img]="Globe" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
-        <span class="text-sm font-medium text-[var(--color-text)]">{{ getCurrentLanguage() }}</span>
+        <span class="hidden md:inline text-sm font-medium text-[var(--color-text)]">{{ getCurrentLanguage() }}</span>
       </button>
 
       <!-- Notifications -->
       <button (click)="navigateToNotifications()"
-        class="relative p-2 rounded-lg hover:bg-white/20 transition-colors duration-200" aria-label="Notifications">
+        class="relative p-1.5 md:p-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+        aria-label="Notifications">
         <lucide-angular [img]="Bell" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
         <span *ngIf="notificationCount > 0"
           class="absolute top-1 h-5 w-5 bg-[var(--color-error)] rounded-full flex items-center justify-center"
           [class.right-1]="!isRTL" [class.left-1]="isRTL">
-          <span class="text-xs font-bold text-white">{{ notificationCount }}</span>
+          <span class="text-[10px] md:text-xs font-bold text-white leading-none">{{ notificationCount }}</span>
         </span>
       </button>
 
       <!-- User Profile Dropdown -->
       <div class="relative">
         <button (click)="toggleUserMenu()"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+          class="flex items-center gap-2 md:gap-3 p-1 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
           aria-label="User profile">
           <!-- User Avatar with Initials -->
           <div
-            class="h-9 w-9 rounded-full bg-[var(--color-background)] flex items-center justify-center shadow-sm border border-[var(--color-border)]">
-            <span class="text-sm font-bold text-[var(--color-brand)]">{{ getUserInitials() }}</span>
+            class="h-8 w-8 md:h-9 md:w-9 rounded-full bg-[var(--color-background)] flex items-center justify-center shadow-sm border border-[var(--color-border)]">
+            <span class="text-xs md:text-sm font-bold text-[var(--color-brand)]">{{ getUserInitials() }}</span>
           </div>
 
           <!-- User Info (Hidden on mobile) -->
@@ -52,7 +60,7 @@
 
           <!-- Chevron -->
           <lucide-angular [img]="ChevronDown"
-            class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
+            class="hidden md:block h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
             [class.rotate-180]="showUserMenu"></lucide-angular>
         </button>
 

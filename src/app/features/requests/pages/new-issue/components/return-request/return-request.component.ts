@@ -4,7 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Plus, X, ChevronDown, Search } from 'lucide-angular';
+import { LucideAngularModule, Plus, X, ChevronDown, Search, Send } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ReturnService } from '@services/return.service';
 import { CreateReturnDto } from '@models/return.model';
@@ -61,6 +61,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
   readonly X = X;
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
+  readonly Send = Send;
 
   // Item type selection
   selectedItemType: 'Ammunition' | 'Weapon' | 'Explosive' = 'Ammunition';

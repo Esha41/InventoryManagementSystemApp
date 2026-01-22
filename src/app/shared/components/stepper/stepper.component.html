@@ -1,22 +1,68 @@
-<div class="flex items-center justify-center w-full mb-8">
-  <div class="flex items-center gap-0">
-    <div *ngFor="let step of steps; let i = index" class="flex items-center">
-      <!-- Step Label and Line -->
-      <div class="flex items-center">
-        <span class="text-sm font-medium whitespace-nowrap px-4" [class.text-[var(--color-brand)]]="isStepActive(i)"
-          [class.font-semibold]="isStepActive(i)" [class.text-[var(--color-text-muted)]]="!isStepActive(i)">
-          {{ step.label | translate }}
-          <span *ngIf="step.isDelegation"
-            class="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded bg-blue-100 text-blue-800 border border-blue-200 inline-flex items-center">
-            {{ 'DELEGATION.DELEGATED' | translate }}
-          </span>
-        </span>
+<div class="w-full mb-6 sm:mb-8">
+  <div class="overflow-x-auto scrollbar-hide">
+    <div class="flex items-center justify-center min-w-max px-2 sm:px-4 py-2">
+      <div class="flex items-center gap-0">
+        <div *ngFor="let step of steps; let i = index" class="flex items-center">
+          <!-- Step Circle and Label -->
+          <div class="flex flex-col items-center gap-1.5 sm:gap-2">
+            <!-- Step Number Circle -->
+            <div
+              class="relative flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-full transition-all flex-shrink-0"
+              [ngClass]="{
+                'bg-[var(--color-brand)] text-white shadow-lg scale-105 sm:scale-110': isStepActive(i),
+                'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-2 border-[var(--color-border)]': !isStepActive(i)
+              }">
+              <span class="text-[10px] sm:text-sm font-bold">{{ i + 1 }}</span>
 
-        <!-- Connector Line -->
-        <div *ngIf="i < steps.length - 1" class="h-0.5 w-20" [class.bg-[var(--color-brand)]]="isStepActive(i)"
-          [class.bg-[var(--color-border)]]="!isStepActive(i)">
+              <!-- Active indicator -->
+              <div *ngIf="isStepActive(i)"
+                class="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white">
+              </div>
+            </div>
+
+            <!-- Step Label -->
+            <div class="flex flex-col items-center gap-0.5 sm:gap-1">
+              <span
+                class="text-[10px] sm:text-sm font-medium whitespace-nowrap text-center max-w-[60px] sm:max-w-none leading-tight"
+                [ngClass]="{
+                  'text-[var(--color-brand)] font-semibold': isStepActive(i),
+                  'text-[var(--color-text-muted)]': !isStepActive(i)
+                }">
+                {{ step.label | translate }}
+              </span>
+
+              <!-- Delegation Badge -->
+              <span *ngIf="step.isDelegation"
+                class="px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-xs font-semibold rounded bg-blue-100 text-blue-800 border border-blue-200 whitespace-nowrap">
+                {{ 'DELEGATION.DELEGATED' | translate }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Connector Line -->
+          <div *ngIf="i < steps.length - 1"
+            class="h-0.5 w-8 sm:w-16 lg:w-24 mx-1 sm:mx-4 mb-6 sm:mb-8 transition-all flex-shrink-0" [ngClass]="{
+              'bg-[var(--color-brand)]': isStepActive(i),
+              'bg-[var(--color-border)]': !isStepActive(i)
+            }">
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+  }
+</style>
