@@ -1,0 +1,192 @@
+<!-- Approval/Rejection Actions -->
+<div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+      <lucide-angular [img]="CheckCircle" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+    </div>
+    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+      {{ 'workflowApprovalDetail.takeAction' | translate }}
+    </h2>
+  </div>
+
+  <div class="space-y-6">
+    <!-- Higher Approval Dropdown -->
+    <div *ngIf="hasHigherApproval()">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}
+      </label>
+      <app-dropdown class="w-full" [(ngModel)]="sendToHigherApproval" [options]="higherApprovalOptions"
+        optionValue="value" [optionLabelFn]="higherApprovalOptionLabel" [placeholderSelectable]="false"
+        [placeholderValue]="null" [disabled]="processing"
+        placeholder="{{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}">
+      </app-dropdown>
+    </div>
+
+    <!-- Transitions (Skip-to Steps) Dropdown - User must manually select, no auto-selection -->
+    <div *ngIf="hasTransitions() && shouldShowTransitionsDropdown()">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.skipToStep' | translate }}
+        <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <app-dropdown class="w-full" [(ngModel)]="selectedNextStepId" [options]="getCurrentStepTransitions()"
+        [optionLabelFn]="getTransitionDisplayNameFn" optionValue="targetWorkflowStepId"
+        [placeholder]="'workflowApprovalDetail.selectSkipToStep' | translate" [disabled]="processing">
+      </app-dropdown>
+      <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+        {{ 'workflowApprovalDetail.skipToStepHint' | translate }}
+      </p>
+    </div>
+
+    <!-- File Upload for Approval/Rejection -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'newIssueRequest.attachments' | translate }} <span
+          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+      </label>
+      <div class="space-y-3">
+        <!-- File Input -->
+        <div class="relative flex items-center gap-2">
+          <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
+            [disabled]="processing || isProcessingAction" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+          <label (click)="!processing && approvalFileInput.click()" [class.opacity-50]="processing"
+            [class.cursor-not-allowed]="processing"
+            class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+            {{ 'common.chooseFiles' | translate }}
+          </label>
+          <span class="text-sm text-[var(--color-text-muted)] flex-1">
+            <span *ngIf="approvalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
+            <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1
+              ?
+              ('common.file' | translate) : ('common.files' | translate) }}</span>
+          </span>
+        </div>
+
+        <!-- Selected Files List -->
+        <div *ngIf="approvalFiles.length > 0" class="space-y-2">
+          <div *ngFor="let file of approvalFiles; let i = index"
+            class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+            </div>
+            <button type="button" (click)="removeApprovalFile(i)" [disabled]="processing"
+              class="ms-3 p-1 text-[var(--color-error)] hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Helper Text -->
+        <p class="text-xs text-[var(--color-text-muted)]">
+          {{ 'newIssueRequest.attachmentsHint' | translate }}
+        </p>
+        <p class="text-xs text-[var(--color-text-muted)] font-medium">
+          {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Comments Textarea -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.comments' | translate }} <span
+          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+      </label>
+      <textarea [(ngModel)]="comments" [disabled]="processing || isProcessingAction" rows="4"
+        [placeholder]="'workflowApprovalDetail.enterComments' | translate"
+        class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
+      </textarea>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+      <!-- Reject Button -->
+      <button *ngIf="canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
+        class="action-btn btn-reject flex-1">
+        <lucide-angular *ngIf="!processing" [img]="XCircle" class="h-4 w-4"></lucide-angular>
+        <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.reject' | translate }}</span>
+        <span *ngIf="processing || isProcessingAction" class="flex items-center gap-2">
+          <div class="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></div>
+          {{ 'common.processing' | translate }}...
+        </span>
+      </button>
+
+      <!-- Return for Review Dropdown Button -->
+      <div *ngIf="canReturnForReview()" class="relative flex-1">
+        <button type="button" (click)="toggleReturnForReview()" [disabled]="processing"
+          class="action-btn btn-return w-full">
+          <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
+          <span>{{ 'workflowApprovalDetail.returnForReview' | translate }}</span>
+          <lucide-angular [img]="ChevronDown" class="h-4 w-4 transition-transform duration-200"
+            [class.rotate-180]="showReturnForReview"></lucide-angular>
+        </button>
+
+        <!-- Dropdown Panel -->
+        <div *ngIf="showReturnForReview"
+          class="absolute bottom-full start-0 end-0 mb-3 p-5 bg-[var(--color-background)] border border-[var(--color-info)]/30 rounded-xl shadow-xl z-20 space-y-4 return-dropdown-panel backdrop-blur-md">
+          <div>
+            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              {{ 'workflowApprovalDetail.selectStepToReturn' | translate }} <span
+                class="text-[var(--color-error)]">*</span>
+            </label>
+            <app-dropdown [(ngModel)]="returnToStepId" [options]="previousWorkflowSteps"
+              [optionLabelFn]="getWorkflowStepDisplayNameFn" optionValue="id"
+              [placeholder]="loadingPreviousSteps ? ('common.loading' | translate) : ('workflowApprovalDetail.selectStep' | translate)"
+              [disabled]="processing || loadingPreviousSteps" class="w-full">
+            </app-dropdown>
+            <p *ngIf="previousWorkflowSteps.length === 0 && !loadingPreviousSteps"
+              class="mt-2 text-xs text-red-600 font-medium">
+              {{ 'workflowApprovalDetail.noPreviousSteps' | translate }}
+            </p>
+          </div>
+
+          <button (click)="returnForReview()"
+            [disabled]="processing || !returnToStepId || loadingPreviousSteps"
+            class="w-full action-btn btn-return">
+            <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.returnRequest' | translate }}</span>
+            <span *ngIf="processing || isProcessingAction">{{ 'common.processing' | translate }}...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Approve Button -->
+      <div class="flex flex-col flex-1">
+        <button (click)="approveRequest()"
+          [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin)"
+          class="action-btn btn-approve w-full">
+          <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="CheckCircle" class="h-4 w-4"></lucide-angular>
+          <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.approve' | translate }}</span>
+          <span *ngIf="processing || isProcessingAction" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            {{ 'common.processing' | translate }}...
+          </span>
+        </button>
+        <p *ngIf="canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin"
+          class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
+          {{ 'workflowApprovalDetail.errors.pickupDateRequired' | translate }}
+        </p>
+        <p *ngIf="canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin"
+          class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
+          {{ 'workflowApprovalDetail.errors.supplySubmissionRequired' | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <app-confirmation-dialog 
+    [isOpen]="confirmationDialog.isOpen" 
+    [title]="confirmationDialog.title" 
+    [message]="confirmationDialog.message" 
+    [type]="confirmationDialog.type"
+    [confirmText]="confirmationDialog.confirmText" 
+    [cancelText]="confirmationDialog.cancelText"
+    [requireComment]="confirmationDialog.requireComment" 
+    [commentLabel]="confirmationDialog.commentLabel"
+    [commentPlaceholder]="confirmationDialog.commentPlaceholder" 
+    (confirmed)="onConfirmationConfirmed($event)"
+    (cancelled)="onConfirmationCancelled()">
+  </app-confirmation-dialog>
+</div>

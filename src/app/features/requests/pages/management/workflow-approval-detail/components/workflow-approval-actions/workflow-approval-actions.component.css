@@ -1,0 +1,96 @@
+/* Workflow Approval Actions Component Styles */
+
+/* Refined Action Buttons Sizing and Styles */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  min-width: 0; /* Allow flex shrinking */
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Approve Button - Subtle Success */
+.btn-approve {
+  background-color: var(--color-success);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-approve:hover {
+  background-color: #059669;
+  /* Slightly darker success */
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Reject Button - Subtle Danger */
+.btn-reject {
+  background-color: transparent;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-reject:hover {
+  background-color: var(--color-error);
+  color: white;
+}
+
+/* Return Button - Subtle Info */
+.btn-return {
+  background-color: transparent;
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.btn-return:hover {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* Dropdown Panel Enhancement */
+.return-dropdown-panel {
+  transform-origin: bottom;
+  animation: dropdownAppear 0.2s ease-out;
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading spinner enhancement */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

@@ -1,0 +1,72 @@
+<!-- Request Items -->
+<div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+        <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]">
+        </lucide-angular>
+      </div>
+      <h2 class="text-lg font-semibold text-[var(--color-text)]">
+        {{ 'workflowApprovalDetail.requestItems' | translate }}
+      </h2>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+      <span *ngIf="hasItems"
+        class="px-3 py-1 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-semibold">
+        {{ requestItems.length }} {{ requestItems.length === 1 ?
+        ('workflowApprovalDetail.item' | translate) : ('workflowApprovalDetail.items' | translate) }}
+      </span>
+      <button *ngIf="canReviewWeaponSupply()" (click)="navigateToWeaponSupplyReview()"
+        class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 shadow-custom-sm">
+        {{ 'workflowApprovalDetail.reviewWeaponSupply' | translate }}
+      </button>
+      <button *ngIf="canReviewSupply()" (click)="navigateToSupplyReview()"
+        class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
+        {{ 'workflowApprovalDetail.review' | translate }}
+      </button>
+      <button *ngIf="canUpdateRequestAndSupply()" (click)="navigateToSupplyOrder()"
+        class="px-4 py-2 bg-[var(--color-success)] text-white rounded-lg font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2 shadow-custom-sm">
+        {{ 'workflowApprovalDetail.updateRequestAndSupply' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="hasItems" class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-[var(--color-background-muted)]">
+        <tr>
+          <th
+            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowApprovalDetail.itemName' | translate }}</th>
+          <th
+            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowApprovalDetail.itemCode' | translate }}</th>
+          <th
+            class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowApprovalDetail.quantity' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[var(--color-border)]">
+        <tr *ngFor="let item of requestItems"
+          (click)="navigateToItemDetails(item.itemId || item.id)"
+          class="transition-colors hover:bg-[var(--color-background-hover)] cursor-pointer">
+          <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
+          <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
+          <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!hasItems" class="text-center py-12">
+    <div
+      class="w-16 h-16 rounded-full bg-[var(--color-background-muted)] flex items-center justify-center mx-auto mb-3">
+      <lucide-angular [img]="Package" class="h-8 w-8 text-[var(--color-text-muted)]">
+      </lucide-angular>
+    </div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.noItemsFound' | translate }}
+    </p>
+  </div>
+</div>

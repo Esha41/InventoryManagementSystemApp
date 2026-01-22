@@ -1,0 +1,260 @@
+<!-- Receiver Information Section (Submit Supply) -->
+<div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+      <lucide-angular [img]="User" class="h-5 w-5 text-purple-600"></lucide-angular>
+    </div>
+    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+      {{ 'workflowApprovalDetail.submitSupplyReceiverInfo' | translate }}
+    </h2>
+  </div>
+
+  <!-- Supply Status Warning -->
+  <div *ngIf="!isSupplyReadyForSubmission()"
+    class="mb-6 p-4 bg-[var(--color-warning)]/20 border border-[var(--color-warning)]/40 rounded-lg">
+    <div class="flex items-start gap-3">
+      <lucide-angular [img]="AlertTriangle"
+        class="h-5 w-5 text-[var(--color-warning)] flex-shrink-0 mt-0.5"></lucide-angular>
+      <div class="flex-1">
+        <h3 class="text-sm font-semibold text-[var(--color-warning)] mb-1" *ngIf="!supplyId">{{
+          'workflowApprovalDetail.supplyNotCreated' | translate }}</h3>
+        <h3 class="text-sm font-semibold text-[var(--color-warning)] mb-1"
+          *ngIf="supplyId && supplyData?.submissionStatus === 2">
+          {{ 'workflowApprovalDetail.alreadySubmitted' |
+          translate }}</h3>
+        <p class="text-sm text-[var(--color-warning)]/90 mb-3" *ngIf="!supplyId">
+          {{ 'workflowApprovalDetail.supplyNotCreatedMessage' | translate }}
+        </p>
+        <p class="text-sm text-[var(--color-warning)]/90"
+          *ngIf="supplyId && supplyData?.submissionStatus === 2">
+          {{ 'workflowApprovalDetail.alreadySubmittedMessage' | translate }}
+        </p>
+        <button *ngIf="!supplyId && canUpdateRequestAndSupply" (click)="navigateToSupplyOrder()"
+          class="mt-3 px-4 py-2 bg-[var(--color-warning)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-warning)] focus:ring-offset-2">
+          {{ 'workflowApprovalDetail.goToSupplyManagement' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isSupplyReadyForSubmission() && !isSupplySubmitted()" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Receiver Name -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.receiverName' | translate }} <span
+            class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" [(ngModel)]="receiverInfo.recieverName"
+          [disabled]="isSubmittingSupply || isLastApprovalCompleted"
+          [placeholder]="'workflowApprovalDetail.enterReceiverName' | translate"
+          class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+      </div>
+
+      <!-- Receiver Rank -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.receiverRank' | translate }} <span
+            class="text-[var(--color-error)]">*</span>
+        </label>
+        <app-dropdown [(ngModel)]="receiverInfo.receiverRankId" [options]="ranks"
+          [optionLabelFn]="getRankDisplayNameFn" optionValue="id"
+          [placeholder]="'workflowApprovalDetail.selectRank' | translate"
+          [disabled]="isSubmittingSupply || isLoadingRanks || isLastApprovalCompleted" class="w-full">
+        </app-dropdown>
+      </div>
+
+      <!-- Military ID -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.militaryId' | translate }} <span
+            class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" [(ngModel)]="receiverInfo.recieverMilitaryId"
+          [disabled]="isSubmittingSupply || isLastApprovalCompleted"
+          [placeholder]="'workflowApprovalDetail.enterMilitaryId' | translate"
+          class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+      </div>
+    </div>
+
+    <!-- Notes (Full Width) -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.notes' | translate }} <span
+          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+      </label>
+      <textarea [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply || isLastApprovalCompleted"
+        rows="3" [placeholder]="'workflowApprovalDetail.enterAdditionalNotes' | translate"
+        class="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all">
+      </textarea>
+    </div>
+
+    <!-- File Upload (Full Width) -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.fileAttachments' | translate }} <span
+          class="text-[var(--color-error)]">*</span>
+      </label>
+      <div class="space-y-3">
+        <!-- File Input -->
+        <div class="relative flex items-center gap-2">
+          <input type="file" #fileInput (change)="onFilesSelected($event)"
+            [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
+            multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+          <label
+            (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && !isLastApprovalCompleted && fileInput.click()"
+            [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
+            [class.cursor-not-allowed]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
+            class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 cursor-pointer transition-all">
+            {{ 'common.chooseFiles' | translate }}
+          </label>
+          <span class="text-sm text-[var(--color-text-muted)] flex-1">
+            <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
+            <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1
+              ?
+              ('common.file' | translate) : ('common.files' | translate) }}</span>
+          </span>
+        </div>
+
+        <!-- Selected Files List -->
+        <div *ngIf="selectedFiles.length > 0" class="space-y-2">
+          <div *ngFor="let file of selectedFiles; let i = index"
+            class="flex items-center justify-between p-3 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+            </div>
+            <button type="button" (click)="removeFile(i)"
+              [disabled]="isSubmittingSupply || isLastApprovalCompleted"
+              class="ml-3 p-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12">
+                </path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Helper Text -->
+        <p class="text-xs text-[var(--color-text-muted)]">
+          {{ 'workflowApprovalDetail.fileAttachmentsHint' | translate }}
+        </p>
+        <p class="text-xs text-[var(--color-text-muted)] font-medium">
+          {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end">
+      <button (click)="submitSupply()"
+        [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus == 2 || !receiverInfo.recieverName || !receiverInfo.receiverRankId || !receiverInfo.recieverMilitaryId || selectedFiles.length === 0"
+        class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2">
+        <span *ngIf="!isSubmittingSupply">{{ 'workflowApprovalDetail.submitSupply' | translate }}</span>
+        <span *ngIf="isSubmittingSupply">{{ 'workflowApprovalDetail.submitting' | translate }}...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Existing Files Section (shown when supply exists, regardless of submission status) -->
+  <div *ngIf="supplyId && supplyData && existingFiles.length > 0"
+    class="space-y-6 mt-6 pt-6 border-t border-[var(--color-border)]">
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.existingFiles' | translate }}
+      </label>
+      <div class="space-y-2">
+        <div *ngFor="let file of existingFiles; let i = index"
+          class="flex items-center justify-between p-3 bg-[var(--color-info)]/20 rounded-lg border border-[var(--color-info)]/40">
+          <div class="flex-1 min-w-0 flex items-center">
+            <svg class="w-5 h-5 text-[var(--color-info)] me-2 flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.originalName ||
+                file.fileName }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.uploadedFile' |
+                translate }}</p>
+            </div>
+          </div>
+          <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
+            [disabled]="isSubmittingSupply || isUploadingAdditionalFiles"
+            class="ms-3 px-3 py-1.5 text-sm font-medium text-[var(--color-info)] bg-[var(--color-info)]/20 rounded-lg hover:bg-[var(--color-info)]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
+            <svg class="w-4 h-4 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            {{ 'workflowApprovalDetail.download' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional File Upload Section (for submitted supplies) -->
+  <div *ngIf="isSupplySubmitted()" class="space-y-6 mt-6 pt-6 border-t border-[var(--color-border)]">
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.addMoreAttachments' | translate }}
+      </label>
+      <div class="space-y-3">
+        <!-- File Input -->
+        <div class="relative flex items-center gap-2">
+          <input type="file" #additionalFileInput (change)="onAdditionalFilesSelected($event)"
+            [disabled]="isUploadingAdditionalFiles" multiple accept="*/*" class="hidden">
+          <label (click)="!isUploadingAdditionalFiles && additionalFileInput.click()"
+            [class.opacity-50]="isUploadingAdditionalFiles"
+            [class.cursor-not-allowed]="isUploadingAdditionalFiles"
+            class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 cursor-pointer transition-all">
+            {{ 'common.chooseFiles' | translate }}
+          </label>
+          <span class="text-sm text-[var(--color-text-muted)] flex-1">
+            <span *ngIf="additionalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
+            <span *ngIf="additionalFiles.length > 0">{{ additionalFiles.length }} {{ additionalFiles.length
+              === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+          </span>
+        </div>
+
+        <!-- Selected Additional Files List -->
+        <div *ngIf="additionalFiles.length > 0" class="space-y-2">
+          <div *ngFor="let file of additionalFiles; let i = index"
+            class="flex items-center justify-between p-3 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+              <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+            </div>
+            <button type="button" (click)="removeAdditionalFile(i)" [disabled]="isUploadingAdditionalFiles"
+              class="ms-3 p-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12">
+                </path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Helper Text -->
+        <p class="text-xs text-[var(--color-text-muted)] font-medium">
+          {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
+        </p>
+
+        <!-- Upload Button -->
+        <div class="flex justify-end">
+          <button type="button" (click)="uploadAdditionalFiles()"
+            [disabled]="isUploadingAdditionalFiles || additionalFiles.length === 0"
+            class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2">
+            <span *ngIf="!isUploadingAdditionalFiles">{{ 'workflowApprovalDetail.uploadFiles' | translate
+              }}</span>
+            <span *ngIf="isUploadingAdditionalFiles">{{ 'workflowApprovalDetail.uploading' | translate
+              }}...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
