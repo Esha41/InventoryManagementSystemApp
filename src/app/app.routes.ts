@@ -320,6 +320,14 @@ export const routes: Routes = [
         data: { permissions: ['inventory.edit', 'inventory.view'] }
       },
       {
+        path: 'report-designer',
+        loadComponent: () => import('@bi-tool/pages/report-designer/report-designer.component').then(m => m.ReportDesignerComponent)
+      },
+      {
+        path: 'report-designer/designer',
+        loadComponent: () => import('@bi-tool/pages/report-designer/components/devexpress-designer/devexpress-designer.component').then(m => m.DevExpressDesignerComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],

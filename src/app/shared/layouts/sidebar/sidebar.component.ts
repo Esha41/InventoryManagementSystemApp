@@ -16,7 +16,6 @@ interface MenuItem {
   permissions?: string[]; // Required permissions (any of these)
   requireAll?: boolean; // If true, all permissions required
 }
-
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -204,6 +203,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
       ]
     },
     {
+      label: 'nav.biTool',
+      icon: FileText,
+      children: [
+        {
+          label: 'nav.reportDesigner',
+          route: '/report-designer'
+        }
+      ]
+    },
+    {
       label: 'nav.admin',
       isHeader: true,
       permissions: ['systemusers.page']
@@ -311,6 +320,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
       this.expandedMenus.add('nav.requestManagement');
+    }
+
+    // Auto-expand BI Tool menu if on report designer route
+    if (url.startsWith('/report-designer')) {
+      this.expandedMenus.add('nav.biTool');
     }
   }
 

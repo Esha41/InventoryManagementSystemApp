@@ -31,6 +31,7 @@
     "refresh": "تحديث",
     "view": "عرض",
     "preview": "معاينة",
+    "print": "طباعة",
     "showing": "عرض",
     "of": "من",
     "page": "صفحة",
@@ -170,7 +171,9 @@
     "notifications": "الإشعارات",
     "integratedInventoryManagement": "نظام التسلح المتكامل",
     "supplyOrder": "طلب التوريد",
-    "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون"
+    "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون",
+    "biTool": "أداة BI",
+    "reportDesigner": "مصمم التقارير"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"
@@ -232,5 +235,27 @@
   "COMMON": {
     "SAVE": "حفظ",
     "CANCEL": "إلغاء"
+  },
+  "reportDesigner": {
+    "subtitle": "صمم وأدر تقاريرك المخصصة",
+    "createReport": "إنشاء تقرير",
+    "noReports": "لا توجد تقارير",
+    "noReportsDescription": "لم تقم بإنشاء أي تقارير بعد. انقر على الزر أدناه لإنشاء أول تقرير لك.",
+    "deleteReport": "حذف التقرير",
+    "deleteReportMessage": "هل أنت متأكد أنك تريد حذف هذا التقرير؟",
+    "deleteReportDescription": "سيؤدي هذا إلى حذف \"{{name}}\" نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+    "makePublic": "جعلها عامة",
+    "makePrivate": "جعلها خاصة",
+    "table": {
+      "reportName": "اسم التقرير",
+      "status": "الحالة",
+      "createdDate": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "published": "منشور",
+      "draft": "مسودة",
+      "archived": "مؤرشف"
+    }
   }
 }
