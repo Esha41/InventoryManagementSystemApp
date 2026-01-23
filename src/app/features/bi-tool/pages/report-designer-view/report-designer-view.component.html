@@ -1,0 +1,49 @@
+<div class="report-designer-container">
+  <!-- Header -->
+  <div class="designer-header">
+    <div class="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">
+        {{ reportUrl ? ('reportDesigner.editReport' | translate) : ('reportDesigner.createReport' | translate) }}
+      </h2>
+      <button 
+        type="button"
+        (click)="onClose()"
+        class="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background-muted)] hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
+        {{ 'common.close' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center" style="height: calc(100vh - 80px);">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4"></div>
+      <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="flex items-center justify-center" style="height: calc(100vh - 80px);">
+    <div class="text-center max-w-md">
+      <div class="text-red-500 mb-4">
+        <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-[var(--color-text)] mb-2">{{ 'common.error' | translate }}</h3>
+      <p class="text-[var(--color-text-muted)] mb-4">{{ error }}</p>
+      <button 
+        type="button"
+        (click)="onClose()"
+        class="px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 rounded-lg transition-colors">
+        {{ 'common.back' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Designer Host -->
+  <div *ngIf="!error" class="designer-content">
+    <div #designerHost class="dx-designer-host"></div>
+  </div>
+</div>
+
