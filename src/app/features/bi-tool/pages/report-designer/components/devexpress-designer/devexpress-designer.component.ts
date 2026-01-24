@@ -1,27 +1,15 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DxReportDesignerModule } from 'devexpress-reporting-angular/dx-report-designer';
+import { DxReportDesignerModule } from 'devexpress-reporting-angular';
+import 'devexpress-reporting/dx-richedit'
 import { ConfigService } from '@services/config.service';
 
 @Component({
   selector: 'app-devexpress-designer',
   standalone: true,
   imports: [CommonModule, DxReportDesignerModule],
-  template: `
-    <div class="devexpress-designer-container">
-      <dx-report-designer 
-        *ngIf="isReady && host"
-        [reportUrl]="reportUrl || ''" 
-        height="700px">
-        <dxrd-request-options 
-          [host]="host"
-          [invokeAction]="invokeAction"
-          [requestHeaders]="requestHeaders">
-        </dxrd-request-options>
-      </dx-report-designer>
-    </div>
-  `,
+  templateUrl: './devexpress-designer.component.html',
   styles: [`
     .devexpress-designer-container {
       width: 100%;
@@ -32,9 +20,9 @@ import { ConfigService } from '@services/config.service';
   `]
 })
 export class DevExpressDesignerComponent implements OnInit, AfterViewInit {
-  reportUrl?: string;
+  reportUrl: string = 'BaseReportTemplate';
   isReady = false;
-  host: string = '';
+  host: string = ''; 
   invokeAction: string = '/DXXRD';
   requestHeaders: any = {};
   constructor(
@@ -46,10 +34,10 @@ export class DevExpressDesignerComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     // Get reportUrl from query params if editing
-    this.route.queryParams.subscribe(params => {
-      this.reportUrl = params['reportUrl'];
-    });
-    
+    // this.route.queryParams.subscribe(params => {
+    //   this.reportUrl = params['BaseReportTemplate'];
+    // });
+    this.reportUrl ='BaseReportTemplate';
     // Setup request options
     this.setupRequestOptions();
   }
