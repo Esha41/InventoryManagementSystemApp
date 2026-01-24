@@ -257,5 +257,11 @@
       "draft": "Draft",
       "archived": "Archived"
     }
+  },
+  "reports": {
+    "designer": {
+      "title": "Report Designer Tool",
+      "subtitle": "Create and edit custom reports using the visual designer"
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -23,8 +23,9 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit, OnDestroy {
+export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   @Output() toggleSidebar = new EventEmitter<boolean>();
+  @Input() forceCollapsed: boolean = false;
 
   isCollapsed = false;
   readonly ChevronLeft = ChevronLeft;
@@ -37,6 +38,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['forceCollapsed']) {
+      if (this.forceCollapsed && !this.isCollapsed) {
+        this.isCollapsed = true;
+        this.toggleSidebar.emit(this.isCollapsed);
+      }
+      // Note: We don't auto-expand when forceCollapsed becomes false
+      // to respect user's manual collapse preference
+    }
+  }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -278,6 +290,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    // Check if sidebar should be force collapsed initially
+    if (this.forceCollapsed && !this.isCollapsed) {
+      this.isCollapsed = true;
+      this.toggleSidebar.emit(this.isCollapsed);
+    }
+
     // Subscribe to user changes and filter menu items
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))

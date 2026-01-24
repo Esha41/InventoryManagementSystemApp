@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[var(--color-background-muted)]">
+<div class="min-h-screen bg-[var(--color-background-muted)] relative">
   <!-- Header -->
   <div class="bg-[var(--color-background)] border-b border-[var(--color-border)] shadow-custom-sm mb-4">
     <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -24,10 +24,18 @@
     </div>
   </div>
 
+  <!-- Loading State -->
+  <app-loading-state *ngIf="isLoading" size="lg" [fullPage]="true" message="common.loading">
+  </app-loading-state>
+
   <!-- Report Designer Container -->
-  <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+  <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pb-8 transition-opacity duration-300" 
+       [class.opacity-0]="isLoading" 
+       [class.pointer-events-none]="isLoading"
+       [class.opacity-100]="!isLoading">
     <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)]">
       <dx-report-designer 
+        #reportDesigner
         [reportUrl]="reportName" 
         height="calc(100vh - 200px)"
         [width]="'100%'">
