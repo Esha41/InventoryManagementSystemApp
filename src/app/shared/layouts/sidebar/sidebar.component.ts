@@ -205,10 +205,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.biTool',
       icon: FileText,
+      permissions: ['Permissions.Report.View', 'Permissions.Report.Page'],
       children: [
         {
           label: 'nav.reportDesigner',
-          route: '/report-designer'
+          route: '/report-designer',
+          permissions: ['Permissions.Report.View', 'Permissions.Report.Page']
         }
       ]
     },

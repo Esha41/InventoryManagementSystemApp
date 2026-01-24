@@ -14,11 +14,6 @@ export interface Report {
   description?: string;
 }
 
-export interface CanDesignResponse {
-  canDesign: boolean;
-  message: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -29,13 +24,6 @@ export class ReportService {
     private apiService: ApiService,
     private config: ConfigService
   ) { }
-
-  /**
-   * Check if user has permission to design reports
-   */
-  canDesign(): Observable<CanDesignResponse> {
-    return this.apiService.get<CanDesignResponse>(`${this.endpoint}/can-design`);
-  }
 
   /**
    * Get list of reports

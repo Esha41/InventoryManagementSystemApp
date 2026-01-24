@@ -42,6 +42,7 @@ export class DevExpressReportDesignerComponent implements OnInit {
 
   ngOnInit(): void {
     // Check if report name is passed via route params
+    // Permission is already checked by route guard
     this.reportName = "BaseReportTemplate";
   }
 

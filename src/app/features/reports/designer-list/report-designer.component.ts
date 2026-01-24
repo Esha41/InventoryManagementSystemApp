@@ -8,6 +8,7 @@ import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 export interface Report {
   id: number;
@@ -56,14 +57,29 @@ export class ReportDesignerComponent implements OnInit {
   showDeleteDialog = false;
   reportToDelete: Report | null = null;
 
+  // Permissions
+  canCreateReport = false;
+  canEditReport = false;
+  canDeleteReport = false;
+
   constructor(
     private translationService: TranslationService,
     private translateService: TranslateService,
-    private router: Router
+    private router: Router,
+    private authService: BackendAuthService
   ) { }
 
   ngOnInit(): void {
+    // Check permissions using standard pattern
+    this.checkPermissions();
     this.loadReports();
+  }
+
+  checkPermissions(): void {
+    // Check permissions using BackendAuthService (same pattern as other components)
+    this.canCreateReport = this.authService.hasAnyPermission(['Permissions.Report.Create', 'Permissions.Report.Edit']);
+    this.canEditReport = this.authService.hasPermission('Permissions.Report.Edit');
+    this.canDeleteReport = this.authService.hasPermission('Permissions.Report.Delete');
   }
 
   get isRTL(): boolean {
@@ -108,6 +124,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onCreateReport(): void {
     // Navigate to DevExpress Report Designer
+    // Permission is already checked by route guard
     this.router.navigate(['/report-designer/designer']);
   }
 

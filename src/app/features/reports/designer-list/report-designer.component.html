@@ -9,7 +9,7 @@
         </div>
         
         <!-- Create Report Button - Right Side -->
-        <div *ngIf="!loading && !error">
+        <div *ngIf="!loading && !error && canCreateReport">
           <app-button variant="primary" (click)="onCreateReport()">
             <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
               <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
@@ -76,21 +76,21 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                     <!-- Edit Button -->
-                    <button type="button" (click)="onEdit(report)"
+                    <button type="button" *ngIf="canEditReport" (click)="onEdit(report)"
                       class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                       [title]="'common.edit' | translate">
                       <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
                     </button>
 
                     <!-- Delete Button -->
-                    <button type="button" (click)="onDelete(report)"
+                    <button type="button" *ngIf="canDeleteReport" (click)="onDelete(report)"
                       class="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                       [title]="'common.delete' | translate">
                       <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
                     </button>
 
                     <!-- Public/Private Toggle Button -->
-                    <button type="button" (click)="onTogglePublic(report)"
+                    <button type="button" *ngIf="canEditReport" (click)="onTogglePublic(report)"
                       class="p-2 rounded-lg transition-colors"
                       [ngClass]="report.isPublic ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)]'"
                       [title]="(report.isPublic ? 'reportDesigner.makePrivate' : 'reportDesigner.makePublic') | translate">
@@ -113,7 +113,7 @@
         </svg>
         <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'reportDesigner.noReports' | translate }}</h3>
         <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'reportDesigner.noReportsDescription' | translate }}</p>
-        <div class="mt-6">
+        <div *ngIf="canCreateReport" class="mt-6">
           <app-button variant="primary" (click)="onCreateReport()">
             <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
               <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
