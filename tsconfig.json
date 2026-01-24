@@ -108,8 +108,8 @@
       "@profile/*": [
         "src/app/features/profile/*"
       ],
-      "@bi-tool/*": [
-        "src/app/features/bi-tool/*"
+      "@reports/*": [
+        "src/app/features/reports/*"
       ]
     }
   },

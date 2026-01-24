@@ -321,11 +321,11 @@ export const routes: Routes = [
       },
       {
         path: 'report-designer',
-        loadComponent: () => import('@bi-tool/pages/report-designer/report-designer.component').then(m => m.ReportDesignerComponent)
+        loadComponent: () => import('@app/features/reports/designer-list/report-designer.component').then(m => m.ReportDesignerComponent)
       },
       {
         path: 'report-designer/designer',
-        loadComponent: () => import('@bi-tool/pages/report-designer/components/devexpress-designer/devexpress-designer.component').then(m => m.ReportDesignerComponent)
+        loadComponent: () => import('@app/features/reports/designer/devexpress-designer.component').then(m => m.DevExpressReportDesignerComponent)
       },
       {
         path: 'notifications',

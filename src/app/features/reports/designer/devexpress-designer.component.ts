@@ -20,7 +20,7 @@ import { environment } from '@environments/environment';
   ],
   templateUrl: './devexpress-designer.component.html'
 })
-export class ReportDesignerComponent implements OnInit {
+export class DevExpressReportDesignerComponent implements OnInit {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 
