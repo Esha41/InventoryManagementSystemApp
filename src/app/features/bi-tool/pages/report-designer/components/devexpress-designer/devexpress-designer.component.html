@@ -1,6 +1,41 @@
-<div>
-<dx-report-designer [reportUrl]="reportUrl" height="700px">
-  <dxrd-request-options [host]="host"></dxrd-request-options>
-</dx-report-designer>
+<div class="min-h-screen bg-[var(--color-background-muted)]">
+  <!-- Header -->
+  <div class="bg-[var(--color-background)] border-b border-[var(--color-border)] shadow-custom-sm mb-4">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button (click)="goBack()"
+            class="group inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)] rounded-lg transition-all duration-200">
+            <lucide-angular [img]="backIcon" class="h-4 w-4 group-hover:-translate-x-0.5 transition-transform"
+              [class.group-hover:translate-x-0.5]="isRTL"></lucide-angular>
+            {{ 'common.back' | translate }}
+          </button>
+          <div class="h-8 w-px bg-[var(--color-border)]"></div>
+          <div>
+            <h1 class="text-2xl font-bold text-[var(--color-text)]">
+              {{ 'reports.designer.title' | translate }}
+            </h1>
+            <p class="text-sm text-[var(--color-text-muted)] mt-0.5">
+              {{ 'reports.designer.subtitle' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Report Designer Container -->
+  <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)]">
+      <dx-report-designer 
+        [reportUrl]="reportName" 
+        height="calc(100vh - 200px)"
+        [width]="'100%'">
+        <dxrd-request-options 
+          [getDesignerModelAction]="getDesignerModelAction" 
+          [host]="host">
+        </dxrd-request-options>
+      </dx-report-designer>
+    </div>
+  </div>
 </div>

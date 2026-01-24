@@ -325,7 +325,7 @@ export const routes: Routes = [
       },
       {
         path: 'report-designer/designer',
-        loadComponent: () => import('@bi-tool/pages/report-designer/components/devexpress-designer/devexpress-designer.component').then(m => m.DevExpressDesignerComponent)
+        loadComponent: () => import('@bi-tool/pages/report-designer/components/devexpress-designer/devexpress-designer.component').then(m => m.ReportDesignerComponent)
       },
       {
         path: 'notifications',
