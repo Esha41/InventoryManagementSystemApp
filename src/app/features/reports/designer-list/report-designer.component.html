@@ -7,16 +7,16 @@
           <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'nav.reportDesigner' | translate }}</h1>
           <p class="text-[var(--color-text-muted)] mt-2">{{ 'reportDesigner.subtitle' | translate }}</p>
         </div>
-      </div>
-
-      <!-- Create Report Button -->
-      <div *ngIf="!loading && !error" class="flex items-center gap-4">
-        <app-button variant="primary" (click)="onCreateReport()">
-          <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
-            <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-            <span>{{ 'reportDesigner.createReport' | translate }}</span>
-          </span>
-        </app-button>
+        
+        <!-- Create Report Button - Right Side -->
+        <div *ngIf="!loading && !error">
+          <app-button variant="primary" (click)="onCreateReport()">
+            <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'reportDesigner.createReport' | translate }}</span>
+            </span>
+          </app-button>
+        </div>
       </div>
     </div>
 

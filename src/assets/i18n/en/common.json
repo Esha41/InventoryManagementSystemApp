@@ -173,7 +173,7 @@
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
     "biTool": "BI Tool",
-    "reportDesigner": "Report Designer"
+    "reportDesigner": "Report List"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
