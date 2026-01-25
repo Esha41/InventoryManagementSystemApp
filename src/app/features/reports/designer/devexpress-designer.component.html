@@ -35,6 +35,7 @@
        [class.opacity-100]="!isLoading">
     <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)]">
       <dx-report-designer 
+        *ngIf="reportName"
         #reportDesigner
         [reportUrl]="reportName" 
         height="calc(100vh - 200px)"

@@ -1,22 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { BackendAuthService } from '@services/backend-auth.service';
-
-export interface Report {
-  id: number;
-  name: string;
-  status: 'Draft' | 'Published' | 'Archived';
-  createdDate: Date;
-  isPublic: boolean;
-}
+import { ReportService, Report } from '@services/report.service';
+import { catchError, finalize } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-report-designer',
@@ -42,6 +37,7 @@ export class ReportDesignerComponent implements OnInit {
   readonly Trash2 = Trash2;
   readonly Globe = Globe;
   readonly Eye = Eye;
+  readonly Upload = Upload;
 
   reports: Report[] = [];
   filteredReports: Report[] = [];
@@ -57,6 +53,9 @@ export class ReportDesignerComponent implements OnInit {
   showDeleteDialog = false;
   reportToDelete: Report | null = null;
 
+  // File input reference
+  @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
+
   // Permissions
   canCreateReport = false;
   canEditReport = false;
@@ -66,7 +65,8 @@ export class ReportDesignerComponent implements OnInit {
     private translationService: TranslationService,
     private translateService: TranslateService,
     private router: Router,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private reportService: ReportService
   ) { }
 
   ngOnInit(): void {
@@ -90,47 +90,111 @@ export class ReportDesignerComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // TODO: Replace with actual API call
-    // For now, using mock data
-    setTimeout(() => {
-      this.reports = [
-        {
-          id: 1,
-          name: 'Inventory Summary Report',
-          status: 'Published',
-          createdDate: new Date('2024-01-15'),
-          isPublic: true
-        },
-        {
-          id: 2,
-          name: 'Monthly Sales Report',
-          status: 'Draft',
-          createdDate: new Date('2024-02-20'),
-          isPublic: false
-        },
-        {
-          id: 3,
-          name: 'Asset Tracking Report',
-          status: 'Published',
-          createdDate: new Date('2024-03-10'),
-          isPublic: true
-        }
-      ];
-      this.filteredReports = [...this.reports];
-      this.updatePagination();
-      this.loading = false;
-    }, 500);
+    this.reportService.getAll()
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading reports:', err);
+          this.error = this.translateService.instant('common.errorLoadingData');
+          return of([]);
+        }),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe((reports) => {
+        this.reports = reports;
+        this.filteredReports = [...this.reports];
+        this.updatePagination();
+      });
   }
 
   onCreateReport(): void {
-    // Navigate to DevExpress Report Designer
-    // Permission is already checked by route guard
-    this.router.navigate(['/report-designer/designer']);
+    // Navigate directly to designer (no dialog)
+    this.router.navigate(['/report-designer/designer'], {
+      queryParams: {
+        url: 'BaseReportTemplate'
+      }
+    });
+  }
+
+  onImportReport(): void {
+    // Trigger file input click
+    if (this.fileInput) {
+      this.fileInput.nativeElement.click();
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) {
+      return;
+    }
+
+    // Validate file type
+    const allowedExtensions = ['.repx', '.xml'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!allowedExtensions.includes(fileExtension)) {
+      this.error = this.translateService.instant('reportDesigner.import.invalidFileType', {
+        extensions: allowedExtensions.join(', ')
+      });
+      // Reset file input
+      input.value = '';
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      this.error = this.translateService.instant('reportDesigner.import.fileTooLarge', {
+        maxSize: '10MB'
+      });
+      input.value = '';
+      return;
+    }
+
+    // Import directly without dialog
+    this.loading = true;
+    this.error = null;
+
+    // Extract report name from filename (without extension)
+    const reportName = file.name.substring(0, file.name.lastIndexOf('.'));
+    // Generate URL from report name
+    const url = reportName.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '') || `report_${Date.now()}`;
+
+    // Import the report
+    this.reportService.import(file, reportName, url, undefined)
+      .pipe(
+        catchError((err) => {
+          console.error('Error importing report:', err);
+          const errorMessage = err?.error?.message || err?.message || this.translateService.instant('common.errorImportingData');
+          this.error = errorMessage;
+          return of(null);
+        }),
+        finalize(() => {
+          this.loading = false;
+          input.value = '';
+        })
+      )
+      .subscribe((reportId) => {
+        if (reportId) {
+          // Reload reports list
+          this.loadReports();
+        }
+      });
   }
 
   onEdit(report: Report): void {
-    // TODO: Navigate to edit report page
-    console.log('Edit report:', report);
+    // Navigate to DevExpress Report Designer with the report URL
+    this.router.navigate(['/report-designer/designer'], {
+      queryParams: { reportUrl: report.url }
+    });
+
+    //   const reportUrl = `${report.reportName}/${report.url}`;
+    // this.router.navigate(['/report-designer/designer'], {
+    //   queryParams: { reportUrl }
+    // });
   }
 
   onDelete(report: Report): void {
@@ -140,12 +204,28 @@ export class ReportDesignerComponent implements OnInit {
 
   onDeleteConfirm(): void {
     if (this.reportToDelete) {
-      // TODO: Replace with actual API call
-      this.reports = this.reports.filter(r => r.id !== this.reportToDelete!.id);
-      this.filteredReports = [...this.reports];
-      this.updatePagination();
-      this.showDeleteDialog = false;
-      this.reportToDelete = null;
+      this.loading = true;
+      this.reportService.delete(this.reportToDelete.id)
+        .pipe(
+          catchError((err) => {
+            console.error('Error deleting report:', err);
+            this.error = this.translateService.instant('common.errorDeletingData');
+            this.loading = false;
+            return of(false);
+          }),
+          finalize(() => {
+            this.loading = false;
+          })
+        )
+        .subscribe((success) => {
+          if (success) {
+            this.reports = this.reports.filter(r => r.id !== this.reportToDelete!.id);
+            this.filteredReports = [...this.reports];
+            this.updatePagination();
+            this.showDeleteDialog = false;
+            this.reportToDelete = null;
+          }
+        });
     }
   }
 
@@ -154,26 +234,56 @@ export class ReportDesignerComponent implements OnInit {
     this.reportToDelete = null;
   }
 
-  onTogglePublic(report: Report): void {
-    // TODO: Replace with actual API call
-    report.isPublic = !report.isPublic;
+  /** ReportStatuses.Published = 2 */
+  isPublished(report: Report): boolean {
+    return report.reportStatusId === 2;
+  }
+
+  onTogglePublicPrivate(report: Report): void {
+    const isPublic = !this.isPublished(report);
+    this.reportService.setReportPublic(report.id, isPublic)
+      .pipe(
+        catchError((err) => {
+          console.error('Error setting report public/private:', err);
+          this.error = this.translateService.instant('common.errorUpdatingData');
+          return of(null);
+        })
+      )
+      .subscribe((updated) => {
+        if (updated) {
+          const index = this.reports.findIndex(r => r.id === report.id);
+          if (index !== -1) {
+            this.reports[index] = updated;
+            this.filteredReports = [...this.reports];
+          }
+        }
+      });
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'Published':
-        return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30';
-      case 'Draft':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'Archived':
-        return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
-      default:
-        return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
+    // Map backend status names to CSS classes
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('published') || statusLower.includes('active')) {
+      return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30';
     }
+    if (statusLower.includes('draft') || statusLower.includes('pending')) {
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    }
+    if (statusLower.includes('archived') || statusLower.includes('inactive')) {
+      return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
+    }
+    return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
   }
 
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString();
+  getStatusDisplayName(report: Report): string {
+    // Use the appropriate status name based on current language
+    const isRTL = this.translationService.isRTL();
+    return isRTL && report.reportStatusNameAr ? report.reportStatusNameAr : report.reportStatusNameEn;
+  }
+
+  formatDate(date: Date | string): string {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString();
   }
 
   updatePagination(): void {

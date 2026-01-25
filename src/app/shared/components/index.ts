@@ -17,3 +17,4 @@ export * from './loading-state/loading-state.component';
 export * from './error-state/error-state.component';
 export * from './image-preview-tooltip/image-preview-tooltip.component';
 export * from './request-filter-bar/request-filter-bar.component';
+export * from './report-metadata-dialog/report-metadata-dialog.component';

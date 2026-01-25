@@ -239,6 +239,7 @@
   "reportDesigner": {
     "subtitle": "صمم وأدر تقاريرك المخصصة",
     "createReport": "إنشاء تقرير",
+    "importReport": "استيراد تقرير",
     "noReports": "لا توجد تقارير",
     "noReportsDescription": "لم تقم بإنشاء أي تقارير بعد. انقر على الزر أدناه لإنشاء أول تقرير لك.",
     "deleteReport": "حذف التقرير",
@@ -246,6 +247,10 @@
     "deleteReportDescription": "سيؤدي هذا إلى حذف \"{{name}}\" نهائياً. لا يمكن التراجع عن هذا الإجراء.",
     "makePublic": "جعلها عامة",
     "makePrivate": "جعلها خاصة",
+    "import": {
+      "invalidFileType": "نوع الملف غير صالح. يُسمح فقط بملفات {{extensions}}.",
+      "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو {{maxSize}}."
+    },
     "table": {
       "reportName": "اسم التقرير",
       "status": "الحالة",
@@ -256,6 +261,18 @@
       "published": "منشور",
       "draft": "مسودة",
       "archived": "مؤرشف"
+    },
+    "metadataDialog": {
+      "createTitle": "إنشاء تقرير جديد",
+      "importTitle": "استيراد تقرير",
+      "reportName": "اسم التقرير",
+      "reportNamePlaceholder": "أدخل اسم التقرير",
+      "url": "الرابط",
+      "urlPlaceholder": "أدخل الرابط (يتم إنشاؤه تلقائياً من الاسم)",
+      "urlHint": "يمكن أن يحتوي الرابط فقط على أحرف وأرقام وشرطات سفلية وشرطات",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أدخل وصف التقرير (اختياري)",
+      "invalidUrl": "تنسيق الرابط غير صالح. يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات."
     }
   },
   "reports": {

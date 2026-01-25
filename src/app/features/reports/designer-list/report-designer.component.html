@@ -9,7 +9,13 @@
         </div>
         
         <!-- Create Report Button - Right Side -->
-        <div *ngIf="!loading && !error && canCreateReport">
+        <div *ngIf="!loading && !error && canCreateReport" class="flex items-center gap-3">
+          <app-button variant="secondary" (click)="onImportReport()">
+            <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Upload" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'reportDesigner.importReport' | translate }}</span>
+            </span>
+          </app-button>
           <app-button variant="primary" (click)="onCreateReport()">
             <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
               <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
@@ -19,6 +25,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden File Input for Import -->
+    <input #fileInput type="file" accept=".repx,.xml" (change)="onFileSelected($event)" style="display: none;" />
 
     <!-- Loading State -->
     <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
@@ -61,17 +70,17 @@
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <div class="font-medium">
-                    {{ report.name }}
+                    {{ report.reportName }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border"
-                    [ngClass]="getStatusClass(report.status)">
-                    {{ 'reportDesigner.status.' + report.status.toLowerCase() | translate }}
+                    [ngClass]="getStatusClass(report.reportStatusNameEn)">
+                    {{ getStatusDisplayName(report) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
-                  {{ formatDate(report.createdDate) }}
+                  {{ formatDate(report.creationDate) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
@@ -89,11 +98,11 @@
                       <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
                     </button>
 
-                    <!-- Public/Private Toggle Button -->
-                    <button type="button" *ngIf="canEditReport" (click)="onTogglePublic(report)"
+                    <!-- Public/Private Toggle (always visible when can edit) -->
+                    <button type="button" *ngIf="canEditReport" (click)="onTogglePublicPrivate(report)"
                       class="p-2 rounded-lg transition-colors"
-                      [ngClass]="report.isPublic ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)]'"
-                      [title]="(report.isPublic ? 'reportDesigner.makePrivate' : 'reportDesigner.makePublic') | translate">
+                      [ngClass]="isPublished(report) ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)]'"
+                      [title]="(isPublished(report) ? 'reportDesigner.makePrivate' : 'reportDesigner.makePublic') | translate">
                       <lucide-angular [img]="Globe" class="h-4 w-4"></lucide-angular>
                     </button>
                   </div>
@@ -113,14 +122,7 @@
         </svg>
         <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'reportDesigner.noReports' | translate }}</h3>
         <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'reportDesigner.noReportsDescription' | translate }}</p>
-        <div *ngIf="canCreateReport" class="mt-6">
-          <app-button variant="primary" (click)="onCreateReport()">
-            <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
-              <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-              <span>{{ 'reportDesigner.createReport' | translate }}</span>
-            </span>
-          </app-button>
-        </div>
+    
       </div>
     </div>
 
@@ -147,7 +149,7 @@
     <!-- Delete Confirmation Dialog -->
     <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="'reportDesigner.deleteReport' | translate"
       [message]="'reportDesigner.deleteReportMessage' | translate"
-      [description]="(reportToDelete ? ('reportDesigner.deleteReportDescription' | translate: {name: reportToDelete.name}) : '')"
+      [description]="(reportToDelete ? ('reportDesigner.deleteReportDescription' | translate: {name: reportToDelete.reportName}) : '')"
       [confirmText]="'common.delete' | translate" [cancelText]="'common.cancel' | translate"
       (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()">
     </app-confirm-dialog>

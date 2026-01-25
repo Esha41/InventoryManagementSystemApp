@@ -5,13 +5,23 @@ import { ConfigService } from './config.service';
 
 export interface Report {
   id: string;
-  name: string;
+  reportName: string;
   url: string;
-  status: 'Draft' | 'Published' | 'Archived';
-  createdDate: Date;
-  modifiedDate?: Date;
-  isPublic: boolean;
+  reportStatusId: number;
+  reportStatusNameEn: string;
+  reportStatusNameAr: string;
   description?: string;
+  reportType?: string;
+  reportParameters?: string;
+  isTemplate: boolean;
+  isPublic: boolean;
+  creationDate: Date;
+  createdBy: string;
+  modificationDate?: Date;
+  modifiedBy?: string;
+  isDeleted: boolean;
+  deletionDate?: Date;
+  deletedBy?: string;
 }
 
 @Injectable({
@@ -26,23 +36,78 @@ export class ReportService {
   ) { }
 
   /**
-   * Get list of reports
+   * Get list of reports from backend
    */
-  getReports(): Observable<Report[]> {
-    // Backend returns { reports: [...] } directly (not wrapped in APIOperationResponse)
-    // So we use getRaw to get the full response, then extract reports
-    return this.apiService.getRaw<{ reports: Report[] }>(`${this.endpoint}/reports`).pipe(
+  getAll(): Observable<Report[]> {
+    return this.apiService.get<Report[]>(this.endpoint);
+  }
+
+  /**
+   * Get report by ID
+   */
+  getById(id: string): Observable<Report> {
+    return this.apiService.get<Report>(`${this.endpoint}/${id}`);
+  }
+
+  /**
+   * Get report by URL
+   */
+  getByUrl(url: string): Observable<Report> {
+    return this.apiService.get<Report>(`${this.endpoint}/url/${encodeURIComponent(url)}`);
+  }
+
+  /**
+   * Delete a report
+   */
+  delete(id: string): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
+  }
+
+  /**
+   * Update a report
+   */
+  update(id: string, data: Partial<Report>): Observable<Report> {
+    return this.apiService.put<Report>(`${this.endpoint}/${id}`, data);
+  }
+
+  /**
+   * Set report public (Published) or private (Draft).
+   * Returns the updated report.
+   */
+  setReportPublic(id: string, isPublic: boolean): Observable<Report> {
+    return this.apiService.patch<Report>(`${this.endpoint}/${id}/public`, { isPublic });
+  }
+
+  /**
+   * Create a new report
+   */
+  create(data: Partial<Report>): Observable<string> {
+    return this.apiService.post<string>(this.endpoint, data);
+  }
+
+  /**
+   * Import a report from file (.repx or .xml)
+   */
+  import(file: File, reportName?: string, url?: string, description?: string): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (reportName) {
+      formData.append('reportName', reportName);
+    }
+    if (url) {
+      formData.append('url', url);
+    }
+    if (description) {
+      formData.append('description', description);
+    }
+
+    // Use postRaw to handle FormData properly
+    return this.apiService.postRaw<string>(`${this.endpoint}/import`, formData).pipe(
       map(response => {
-        // If it's wrapped in APIOperationResponse, extract data first
-        if (response && 'succeeded' in response && response.succeeded && response.data) {
-          return (response.data as any).reports || [];
+        if (response.succeeded && response.data) {
+          return response.data;
         }
-        // If it's direct response
-        if (response && 'reports' in response) {
-          return (response as any).reports || [];
-        }
-        // Fallback
-        return [] as Report[];
+        throw new Error(response.message || 'Failed to import report');
       })
     );
   }

@@ -46,9 +46,11 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   }
 
   ngOnInit(): void {
-    // Check if report name is passed via route params
-    // Permission is already checked by route guard
-    this.reportName = "BaseReportTemplate";
+    // Resolve report URL synchronously from route (before first render).
+    // Using subscription would run async, so dx-report-designer would already
+    // initialize with "BaseReportTemplate" before we could pass the edit URL.
+    const reportUrl = this.route.snapshot.queryParamMap.get('reportUrl');
+    this.reportName = reportUrl ?? 'BaseReportTemplate';
   }
 
   ngAfterViewInit(): void {
