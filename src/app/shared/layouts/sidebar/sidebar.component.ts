@@ -42,11 +42,14 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['forceCollapsed']) {
       if (this.forceCollapsed && !this.isCollapsed) {
+        // Force collapse when entering designer
         this.isCollapsed = true;
         this.toggleSidebar.emit(this.isCollapsed);
+      } else if (!this.forceCollapsed && this.isCollapsed && changes['forceCollapsed'].previousValue === true) {
+        // Expand when navigating back from designer (forceCollapsed changes from true to false)
+        this.isCollapsed = false;
+        this.toggleSidebar.emit(this.isCollapsed);
       }
-      // Note: We don't auto-expand when forceCollapsed becomes false
-      // to respect user's manual collapse preference
     }
   }
 
