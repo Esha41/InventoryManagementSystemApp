@@ -251,6 +251,9 @@
       "invalidFileType": "نوع الملف غير صالح. يُسمح فقط بملفات {{extensions}}.",
       "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو {{maxSize}}."
     },
+    "errors": {
+      "reportNameExists": "تقرير بهذا الاسم موجود بالفعل، أعطِ اسماً آخر."
+    },
     "table": {
       "reportName": "اسم التقرير",
       "status": "الحالة",

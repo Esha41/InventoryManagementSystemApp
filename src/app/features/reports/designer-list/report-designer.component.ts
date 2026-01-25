@@ -112,7 +112,8 @@ export class ReportDesignerComponent implements OnInit {
     // Navigate directly to designer (no dialog)
     this.router.navigate(['/report-designer/designer'], {
       queryParams: {
-        url: 'BaseReportTemplate'
+        url: 'BaseReportTemplate',
+        mode: 'create'
       }
     });
   }

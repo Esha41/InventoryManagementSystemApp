@@ -251,6 +251,9 @@
       "invalidFileType": "Invalid file type. Only {{extensions}} files are allowed.",
       "fileTooLarge": "File size exceeds maximum allowed size of {{maxSize}}."
     },
+    "errors": {
+      "reportNameExists": "Report with this name already exists, give another."
+    },
     "table": {
       "reportName": "Report Name",
       "status": "Status",

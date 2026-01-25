@@ -31,6 +31,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   reportName: string = "BaseReportTemplate"; // Default report name, can be passed via route params
   host: string = '';
   isLoading = true;
+  isCreateMode = false;
 
   @ViewChild('reportDesigner', { static: false }) reportDesignerElement!: ElementRef;
 
@@ -51,6 +52,10 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     // initialize with "BaseReportTemplate" before we could pass the edit URL.
     const reportUrl = this.route.snapshot.queryParamMap.get('reportUrl');
     this.reportName = reportUrl ?? 'BaseReportTemplate';
+
+    // if coming from create, pass ?mode=create
+    const mode = this.route.snapshot.queryParamMap.get('mode');
+    this.isCreateMode = mode === 'create';
   }
 
   ngAfterViewInit(): void {
@@ -58,6 +63,11 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     setTimeout(() => {
       this.checkDesignerLoaded();
     }, 300);
+
+    // Adjust toolbar buttons after render
+    setTimeout(() => {
+      this.adjustToolbar();
+    }, 1200);
   }
 
   private checkDesignerLoaded(): void {
@@ -105,5 +115,28 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     // Remove the popstate listener before navigating
  
     this.router.navigate(['/report-designer']);
+  }
+
+  adjustToolbar() {
+    const timer = setInterval(() => {
+      const items = document.querySelectorAll('.dxrd-menu-item-text');
+  
+      if (!items || items.length === 0) return;
+  
+      items.forEach(i => {
+        const text = i.textContent?.trim().toLowerCase() || '';
+        const root = i.closest('.dxrd-menu-item') || i.parentElement;
+  
+        if (this.isCreateMode && text === 'save') {
+          root && ((root as HTMLElement).style.display = 'none');
+        }
+  
+        if (!this.isCreateMode && text === 'save as') {
+          root && ((root as HTMLElement).style.display = 'none');
+        }
+      });
+  
+      clearInterval(timer);
+    }, 300);
   }
 }
