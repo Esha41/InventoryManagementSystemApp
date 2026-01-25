@@ -19,6 +19,8 @@ import {
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { PaginatedList, PagedRequest } from '@models/api-response.model';
+import { RequestType } from '@utils/request-type-mapper.utils';
 
 /**
  * Dashboard Data Service
@@ -73,6 +75,89 @@ export class DashboardDataService {
   }
 
   /**
+   * Load paginated dashboard cards from unified endpoint
+   */
+  loadPaginatedDashboardCards(request: PagedRequest): Observable<PaginatedList<DashboardCard>> {
+    return this.unifiedRequestService.getUserActionRequestsPaginated(request).pipe(
+      map(paginatedResponse => {
+        const items = paginatedResponse.items || [];
+        const cards = items.map(base => {
+          let typeNum: number;
+          if (typeof base.requestType === 'number') {
+            typeNum = base.requestType;
+          } else {
+            const typeStr = String(base.requestType).toLowerCase();
+            if (typeStr === 'order' || typeStr === '1') typeNum = 1;
+            else if (typeStr === 'return' || typeStr === '2') typeNum = 2;
+            else if (typeStr === 'discard' || typeStr === '3') typeNum = 3;
+            else typeNum = parseInt(typeStr, 10);
+          }
+
+          if (typeNum === 1 || typeNum === RequestType.Order) {
+            const order = mapToOrderDto(base);
+            return {
+              title: getRequestTitle(order, order.orderNo),
+              status: mapRequestStatusToCardStatus(order.status),
+              orders: [{
+                orderId: getRequestTitle(order, order.orderNo),
+                requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
+                departmentName: this.resolveOrderDepartmentName(order),
+                requesterName: this.resolveRequesterName(order),
+                items: mapRequestItems(order.requestItems)
+              }],
+              permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+              orderRequestId: order.id,
+              isMyTurn: order.isMyTurn
+            } as DashboardCard;
+          } else if (typeNum === 2 || typeNum === RequestType.Return) {
+            const ret = mapToReturnDto(base);
+            return {
+              title: getRequestTitle(ret),
+              status: mapRequestStatusToCardStatus(ret.status),
+              orders: [{
+                orderId: getRequestTitle(ret),
+                requestDate: ret.creationDate ? (typeof ret.creationDate === 'string' ? ret.creationDate : ret.creationDate.toISOString()) : '',
+                departmentName: this.resolveReturnDepartmentName(ret),
+                requesterName: this.resolveRequesterName(ret),
+                items: mapRequestItems(ret.requestItems)
+              }],
+              permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+              returnRequestId: ret.id,
+              isMyTurn: ret.isMyTurn
+            } as DashboardCard;
+          } else if (typeNum === 3 || typeNum === RequestType.Discard) {
+            const discard = mapToDiscardDto(base);
+            return {
+              title: getRequestTitle(discard),
+              status: mapRequestStatusToCardStatus(discard.status),
+              orders: [{
+                orderId: getRequestTitle(discard),
+                requestDate: discard.creationDate ? (typeof discard.creationDate === 'string' ? discard.creationDate : discard.creationDate.toISOString()) : '',
+                departmentName: this.resolveDiscardDepartmentName(discard),
+                requesterName: this.resolveRequesterName(discard),
+                items: mapRequestItems(discard.requestItems)
+              }],
+              permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+              discardRequestId: discard.id,
+              isMyTurn: discard.isMyTurn
+            } as DashboardCard;
+          }
+          return null;
+        }).filter(c => !!c) as DashboardCard[];
+
+        return {
+          ...paginatedResponse,
+          items: cards
+        };
+      }),
+      catchError(error => {
+        console.error('DashboardDataService Paginated Error:', error);
+        return of({ items: [], totalCount: 0, pageIndex: 1, totalPages: 0, hasPreviousPage: false, hasNextPage: false });
+      })
+    );
+  }
+
+  /**
    * Process order requests and convert to dashboard cards
    */
   private processOrderRequests(orders: OrderDto[]): DashboardCard[] {
@@ -122,6 +207,70 @@ export class DashboardDataService {
       returnRequestId: ret.id,
       isMyTurn: ret.isMyTurn
     }));
+  }
+
+  /**
+   * Get dashboard requests with strict typing and centralized logic
+   */
+  getDashboardRequests(
+    page: number,
+    rowsPerPage: number,
+    searchQuery: string,
+    statusFilter: string,
+    sortState: { column: string | null; direction: 'asc' | 'desc' }
+  ): Observable<PaginatedList<DashboardCard>> {
+    const filters: any[] = []; // Use strict FilterData[] in implementation if possible, or build carefully
+
+    // Global search
+    if (searchQuery && searchQuery.trim()) {
+      filters.push({ value: searchQuery.trim() });
+    }
+
+    // Status filter mapping
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'action-required') {
+        filters.push({ field: 'IsMyTurn', operator: 'eq', value: 'true' });
+      } else {
+        const dashboardStatusToBackendStatus: Record<string, number> = {
+          'new': 1,
+          'on-progress': 2,
+          'completed': 3,
+          'declined': 4,
+          'returned': 6
+        };
+        const statusValue = dashboardStatusToBackendStatus[statusFilter];
+        if (statusValue) {
+          filters.push({ field: 'Status', operator: 'eq', value: statusValue.toString() });
+        }
+      }
+    }
+
+    const pagedRequest: PagedRequest = {
+      page: page,
+      pageSize: rowsPerPage,
+      filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
+    };
+
+    // Sorting mapping
+    if (sortState.column) {
+      const columnMap: Record<string, string> = {
+        'orderNumber': 'RequestNo',
+        'usageDate': 'CreationDate',
+        'department': 'Department.NameEn',
+        'requester': 'Requester.UserName',
+        'status': 'Status'
+      };
+      const backendColumn = columnMap[sortState.column];
+      if (backendColumn) {
+        if (!pagedRequest.filter) {
+          pagedRequest.filter = {};
+        }
+        pagedRequest.filter.sortField = backendColumn;
+        pagedRequest.filter.sortDirection = sortState.direction === 'asc' ? 1 : 2;
+      }
+    }
+
+    return this.loadPaginatedDashboardCards(pagedRequest);
   }
 
   /**

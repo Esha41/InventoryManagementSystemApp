@@ -7,6 +7,7 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { PaginatedList } from '@models/api-response.model';
 
 /**
  * Service to handle loading and managing lookup data (depots, users, ranks)
@@ -55,9 +56,10 @@ export class WeaponSupplyLookupService {
      */
     loadUsers(): Observable<BackendUserDto[]> {
         return new Observable(observer => {
-            this.backendUserService.getUsers().subscribe({
-                next: (users: BackendUserDto[]) => {
-                    this.availableUsers = users || [];
+            this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
+                next: (response: PaginatedList<BackendUserDto>) => {
+                    const users = response.items || [];
+                    this.availableUsers = users;
                     this.userDropdownOptions = this.createUserOptions();
                     observer.next(users);
                     observer.complete();

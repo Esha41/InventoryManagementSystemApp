@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ApiService } from './api.service';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
 
@@ -22,6 +22,29 @@ export class AmmunitionService {
     if (query?.search) params = params.set('search', query.search);
 
     return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  // Get paginated ammunitions
+  // Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+  // Backend returns AmmunitionDto, but we use AmmunitionReadDto type for compatibility
+  getAllPaginated(request: PagedRequest): Observable<PaginatedList<AmmunitionReadDto>> {
+    return this.apiService.post<PaginatedList<AmmunitionReadDto>>(
+      `${this.endpoint}/Paginated`,
+      request
+    ).pipe(
+      map(response => {
+        // Response is already unwrapped PaginatedList from apiService
+        if (!response || !response.items) {
+          throw new Error('Invalid response structure');
+        }
+        // Cast to expected type - backend AmmunitionDto should be compatible with AmmunitionReadDto
+        return response as PaginatedList<AmmunitionReadDto>;
+      }),
+      catchError(error => {
+        console.error('Error fetching paginated ammunitions:', error);
+        throw error;
+      })
+    );
   }
 
   // Get ammunition by ID

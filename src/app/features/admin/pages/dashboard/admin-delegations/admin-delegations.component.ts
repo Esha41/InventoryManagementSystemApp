@@ -4,7 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '../../../../../core/services/user-delegation.service';
 import { UserDelegation } from '../../../../../core/models/user-delegation';
 import { ApiResponse } from '@models/api-response.model';
-import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw, ArrowRight } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 
@@ -27,6 +27,7 @@ export class AdminDelegationsComponent implements OnInit {
     readonly AlertCircle = AlertCircle;
     readonly Filter = Filter;
     readonly RefreshCw = RefreshCw;
+    readonly ArrowRight = ArrowRight;
 
     delegations: UserDelegation[] = [];
     filteredDelegations: UserDelegation[] = [];

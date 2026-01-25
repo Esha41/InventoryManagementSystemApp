@@ -404,10 +404,12 @@
     "noWeaponItems": "لم يتم العثور على مواد أسلحة",
     "noExplosiveItems": "لم يتم العثور على مواد متفجرات",
     "errors": {
+      "failedToLoad": "فشل تحميل الأصول. يرجى المحاولة مرة أخرى.",
       "failedToLoadDetails": "فشل تحميل تفاصيل الذخيرة",
       "failedToDelete": "فشل حذف الذخيرة",
       "failedToUpdate": "فشل تحديث الذخيرة",
-      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة"
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+      "failedToExport": "فشل تصدير الأصول. يرجى المحاولة مرة أخرى."
     },
     "ready": "جاهز",
     "notReady": "غير جاهز",

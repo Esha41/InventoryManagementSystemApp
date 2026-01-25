@@ -7,11 +7,11 @@
       </h1>
 
       <!-- Search and Filter Section -->
-      <app-request-filter-bar *ngIf="requests.length > 0" layout="separate" [showStatusFilter]="true"
-        [showPriorityFilter]="true" [showSearchBar]="true" [showResultCount]="true"
-        [statusFilter]="selectedStatusFilter" [priorityFilter]="selectedPriorityFilter" [searchQuery]="searchQuery"
-        [resultCount]="filteredRequestsCount" (statusFilterChange)="onStatusFilterChange($event)"
-        (priorityFilterChange)="onPriorityFilterChange($event)" (searchQueryChange)="onSearchChange($event)"
+      <app-request-filter-bar layout="separate" [showStatusFilter]="true" [showPriorityFilter]="true"
+        [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
+        [priorityFilter]="selectedPriorityFilter" [searchQuery]="searchQuery" [resultCount]="filteredRequestsCount"
+        [useSearchButton]="true" (statusFilterChange)="onStatusFilterChange($event)"
+        (priorityFilterChange)="onPriorityFilterChange($event)" (searchTriggered)="onSearchChange($event)"
         class="animate-slide-in-right">
       </app-request-filter-bar>
     </div>
@@ -116,11 +116,6 @@
                 <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{
                   'requestsManagement.noRequestsFound' | translate }}</td>
               </tr>
-              <tr *ngIf="!loading && requests.length > 0 && filteredRequests.length === 0"
-                class="hover:bg-[var(--color-background-muted)] transition-colors">
-                <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{
-                  'dashboard.noOrders' | translate }}</td>
-              </tr>
               <tr *ngFor="let request of paginatedRequests" [class.action-required-highlight]="request.isMyTurn"
                 class="hover:bg-[var(--color-background-muted)] transition-colors">
                 <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
@@ -180,7 +175,3 @@
 
     </div>
   </div>
-
-  <!-- Order Details Modal -->
-  <app-order-details-modal [isOpen]="isModalOpen" [order]="selectedOrder" (close)="closeOrderDetails()">
-  </app-order-details-modal>

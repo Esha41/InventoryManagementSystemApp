@@ -76,11 +76,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     direction: 'asc'
   };
 
-  // All dashboard cards with their permission/role requirements
-  allCards: DashboardCard[] = [];
 
   // Filtered cards based on user permissions and roles
   visibleCards: DashboardCard[] = [];
+  totalItems = 0;
+  isLoading = false;
 
 
 
@@ -159,17 +159,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) { }
 
   get paginatedCards(): DashboardCard[] {
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.visibleCards.slice(startIndex, startIndex + this.rowsPerPage);
+    return this.visibleCards;
   }
 
   get totalPages(): number {
-    return Math.ceil(this.visibleCards.length / this.rowsPerPage);
+    return Math.ceil(this.totalItems / this.rowsPerPage);
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.cdr.markForCheck();
+    this.loadAllRequests();
     // Scroll to top of content
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -177,14 +176,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
     this.currentPage = 1;
-    this.cdr.markForCheck();
+    this.loadAllRequests();
   }
 
   toggleViewMode(mode: 'grid' | 'table'): void {
     this.viewMode = mode;
     this.rowsPerPage = mode === 'table' ? 10 : 9; // Different defaults for different views
     this.currentPage = 1;
-    this.cdr.markForCheck();
+    this.loadAllRequests();
   }
 
   ngOnInit(): void {
@@ -226,70 +225,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Business logic has been extracted to service following Angular best practices
    */
   private loadAllRequests(): void {
-    this.dashboardDataService.loadAllDashboardCards()
+    this.isLoading = true;
+    this.cdr.markForCheck();
+
+    this.dashboardDataService.getDashboardRequests(
+      this.currentPage,
+      this.rowsPerPage,
+      this.searchQuery,
+      this.selectedStatusFilter,
+      this.sortState
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (cards) => {
-          this.allCards = cards;
-          // Store requests in maps for modal access
-          this.updateRequestMaps(cards);
-          // Apply filters and update view
-          this.filterCardsByPermissionsAndRoles();
+        next: (response) => {
+          this.visibleCards = response.items;
+          this.totalItems = response.totalCount;
+          this.isLoading = false;
           this.cdr.markForCheck();
         },
         error: () => {
+          this.isLoading = false;
           this.cdr.markForCheck();
         }
       });
   }
-
-  /**
-   * Update request maps from cards for modal access
-   * This maintains backward compatibility with existing modal logic
-   */
-  private updateRequestMaps(cards: DashboardCard[]): void {
-    // Clear existing maps
-    this.orderRequestsMap.clear();
-    this.returnRequestsMap.clear();
-    this.discardRequestsMap.clear();
-
-    // Note: Maps are populated when modals are opened via getOrderById, etc.
-    // This method is kept for potential future use if we need to pre-populate maps
-  }
-
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private filterCardsByPermissionsAndRoles(): void {
-    const result = this.dashboardFilterService.filterCards(
-      this.allCards,
-      {
-        statusFilter: this.selectedStatusFilter,
-        searchQuery: this.searchQuery,
-        sortColumn: this.sortState.column,
-        sortDirection: this.sortState.direction
-      }
-    );
-
-    this.visibleCards = result.filteredCards;
-    this.currentPage = 1;
-    this.showContactAdminNotice = result.showContactAdminNotice;
-  }
-
   onStatusFilterChange(status: StatusFilter): void {
     this.selectedStatusFilter = status;
-    this.filterCardsByPermissionsAndRoles();
-    this.cdr.markForCheck();
+    this.currentPage = 1;
+    this.loadAllRequests();
   }
 
   onSearchChange(query: string): void {
     this.searchQuery = query;
-    this.filterCardsByPermissionsAndRoles();
-    this.currentPage = 1; // Reset to first page when searching
-    this.cdr.markForCheck();
+    this.currentPage = 1;
+    this.loadAllRequests();
   }
 
   sortByColumn(column: string): void {
@@ -299,9 +274,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.sortState.column = column;
       this.sortState.direction = 'asc';
     }
-    this.filterCardsByPermissionsAndRoles();
-    this.cdr.markForCheck();
+    this.currentPage = 1;
+    this.loadAllRequests();
   }
+
 
   /**
    * Sort cards based on column and direction
@@ -313,7 +289,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
   get filteredCardsCount(): number {
-    return this.visibleCards.length;
+    return this.totalItems;
   }
 
 

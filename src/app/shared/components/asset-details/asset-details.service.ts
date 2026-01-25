@@ -1,0 +1,162 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, switchMap, of } from 'rxjs';
+import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
+import { AssetDetailsData } from './asset-details.component';
+
+/**
+ * Service for asset details business logic
+ * Following Angular 21 best practices: inject() for DI
+ */
+@Injectable()
+export class AssetDetailsService {
+  private readonly ammunitionService = inject(AmmunitionService);
+  private readonly weaponService = inject(WeaponService);
+  private readonly explosiveService = inject(ExplosiveService);
+  private readonly fileUploadService = inject(FileUploadService);
+  private readonly http = inject(HttpClient);
+
+  /**
+   * Load asset by ID and type
+   */
+  loadAsset(
+    assetId: number,
+    assetType?: 'ammunition' | 'weapon' | 'explosive'
+  ): Observable<AssetDetailsData> {
+    let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto>;
+
+    if (assetType === 'weapon') {
+      service$ = this.weaponService.getById<WeaponDto>(assetId);
+    } else if (assetType === 'explosive') {
+      service$ = this.explosiveService.getById<ExplosiveDto>(assetId);
+    } else {
+      service$ = this.ammunitionService.getById<AmmunitionReadDto>(assetId);
+    }
+
+    return service$.pipe(
+      catchError(() => {
+        throw new Error('Failed to load asset details');
+      })
+    );
+  }
+
+  /**
+   * Determine asset type from asset data
+   */
+  detectAssetType(asset: AssetDetailsData): 'ammunition' | 'weapon' | 'explosive' | null {
+    if (!asset) return null;
+
+    if ('explosiveType' in asset) {
+      return 'explosive';
+    }
+    if ('caliber' in asset && !('armNumber' in asset)) {
+      return 'weapon';
+    }
+    if ('armNumber' in asset) {
+      return 'ammunition';
+    }
+
+    return null;
+  }
+
+  /**
+   * Get file entity type from asset type
+   */
+  getFileEntityType(assetType: 'ammunition' | 'weapon' | 'explosive'): FileEntityType {
+    switch (assetType) {
+      case 'weapon':
+        return FileEntityType.Weapon;
+      case 'explosive':
+        return FileEntityType.Explosive;
+      default:
+        return FileEntityType.Ammunition;
+    }
+  }
+
+  /**
+   * Load asset image as blob URL
+   */
+  loadAssetImage(
+    assetId: number,
+    assetType: 'ammunition' | 'weapon' | 'explosive'
+  ): Observable<string | null> {
+    const entityType = this.getFileEntityType(assetType);
+
+    return this.fileUploadService.getFilesByEntity(entityType, assetId).pipe(
+      switchMap((files: any[]) => {
+        console.log(`[AssetDetails] Loading images for ${assetType} ID: ${assetId}`, { files });
+
+        if (!files || files.length === 0) {
+          console.log('[AssetDetails] No files found for this asset.');
+          return of(null);
+        }
+
+        // Get main images (there might be multiple with isMain: true)
+        const mainImages = files.filter((img: any) => img.isMain);
+        let latestImage: any;
+
+        if (mainImages.length > 0) {
+          // If multiple main images exist, get the one with highest ID (latest uploaded)
+          latestImage = mainImages.reduce((latest: any, current: any) =>
+            current.id > latest.id ? current : latest
+          );
+          console.log('[AssetDetails] Selected main image:', latestImage);
+        } else {
+          // If no main image, get the image with highest ID (latest uploaded)
+          latestImage = files.reduce((latest: any, current: any) =>
+            current.id > latest.id ? current : latest
+          );
+          console.log('[AssetDetails] Selected latest non-main image:', latestImage);
+        }
+
+        if (!latestImage?.id) {
+          console.warn('[AssetDetails] Selected image has no ID:', latestImage);
+          return of(null);
+        }
+
+        // Get the download URL for the latest image
+        const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
+        console.log('[AssetDetails] Constructed image URL:', imageUrl);
+
+        // Fetch image as blob with authentication
+        return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
+          switchMap((blob: Blob) => {
+            console.log('Asset image blob loaded:', { type: blob.type, size: blob.size });
+            // Allow image/* types or generic octet-stream (browser will often render valid image bytes even if type is generic)
+            if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream')) {
+              const blobUrl = URL.createObjectURL(blob);
+              return of(blobUrl);
+            }
+            console.warn('Asset image rejected due to invalid type or empty size:', blob.type, blob.size);
+            return of(null);
+          }),
+          catchError((err) => {
+            console.warn('Failed to load image blob:', err);
+            return of(null);
+          })
+        );
+      }),
+      catchError(() => {
+        console.warn('Failed to get files');
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Get asset ID from asset data
+   */
+  getAssetId(asset: AssetDetailsData): number | null {
+    if (!asset) return null;
+    if ('id' in asset && typeof (asset as any).id === 'number') {
+      return (asset as any).id;
+    }
+    return null;
+  }
+}

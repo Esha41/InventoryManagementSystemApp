@@ -3,8 +3,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
+import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
 
 /**
  * Asset Service
@@ -20,8 +22,38 @@ export class AssetService {
 
     constructor(
         private http: HttpClient,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private apiService: ApiService
     ) { }
+
+    /**
+     * Get paginated assets
+     * Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+     */
+    getAssetsPaginated(depotId: number | null, request: PagedListRequest): Observable<PaginatedList<AssetDto>> {
+        let params = new HttpParams();
+        if (depotId) {
+            params = params.set('depotId', depotId.toString());
+        }
+
+        return this.apiService.post<PaginatedList<AssetDto>>(
+            '/Asset/search',
+            request,
+            params
+        ).pipe(
+            map(response => {
+                // Response is already unwrapped PaginatedList from apiService
+                if (!response || !response.items) {
+                    throw new Error('Invalid response structure');
+                }
+                return response;
+            }),
+            catchError(error => {
+                console.error('Error fetching paginated assets:', error);
+                throw error;
+            })
+        );
+    }
 
     /**
      * Get all assets

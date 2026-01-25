@@ -47,6 +47,7 @@
     /* Primary brand color - Pantone 4251 C */
     --color-brand-light: #d9bfa0;
     --color-brand-dark: #b89668;
+    --color-brand-hover: #b89668;
 
     /* Accent Colors */
     --color-accent: #0F60FF;
