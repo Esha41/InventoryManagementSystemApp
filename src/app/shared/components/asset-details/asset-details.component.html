@@ -282,22 +282,57 @@
             <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
 
             <div class="grid grid-cols-2 gap-4 text-sm">
-              <div *ngIf="getDistribution() !== '-'">
+              <div *ngIf="isAmmunition">
+                <p class="text-[var(--color-text-muted)] mb-1">ARM Number</p>
+                <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
+              </div>
+
+              <div *ngIf="isAmmunition">
+                <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+                <p class="text-[var(--color-text)]">{{ getBulletDiameter() }}</p>
+              </div>
+
+              <div *ngIf="isAmmunition">
+                <p class="text-[var(--color-text-muted)] mb-1">Unit</p>
+                <p class="text-[var(--color-text)]">{{ getUnit() }}</p>
+              </div>
+
+              <div>
+                <p class="text-[var(--color-text-muted)] mb-1">Compatibility</p>
+                <p class="text-[var(--color-text)]">{{ getCompatibility() }}</p>
+              </div>
+
+              <div>
+                <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
+                <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
+              </div>
+
+              <div>
                 <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
                 <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
               </div>
 
-              <div *ngIf="getReferenceNo() !== '-'">
-                <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
-                <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
-              </div>
-
-              <div *ngIf="isAmmunition && getUnNumberForAmmunition() !== '-'">
+              <div>
                 <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
                 <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
               </div>
 
-              <div *ngIf="getNotes() !== '-'" class="col-span-2">
+              <div>
+                <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+                <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+              </div>
+
+              <div>
+                <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+                <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+              </div>
+
+              <div>
+                <p class="text-[var(--color-text-muted)] mb-1">Item Type</p>
+                <p class="text-[var(--color-text)]">{{ getType() }}</p>
+              </div>
+
+              <div class="col-span-2">
                 <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
                 <p class="text-[var(--color-text)]">{{ getNotes() }}</p>
               </div>

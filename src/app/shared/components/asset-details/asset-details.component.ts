@@ -271,6 +271,9 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isAmmunition) {
       return this.propertyAccessor.getTotalWeight(this.asset as AmmunitionReadDto) || '-';
     }
+    if (this.isExplosive) {
+      return this.propertyAccessor.getTotalWeight(this.asset as ExplosiveDto) || '-';
+    }
     return '-';
   }
 
@@ -492,6 +495,20 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   getCapabilityGroup(): string {
     if (this.isAmmunition || this.isExplosive) {
       return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
+    }
+    return '-';
+  }
+
+  getCompatibility(): string {
+    if (this.isAmmunition || this.isExplosive) {
+      return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
+    }
+    return '-';
+  }
+
+  getUnit(): string {
+    if (this.isAmmunition) {
+      return this.propertyAccessor.getUnit(this.asset as AmmunitionReadDto) || '-';
     }
     return '-';
   }

@@ -11,7 +11,7 @@ import { RequestMetricsCardComponent } from './components/kpi-cards/request-metr
 import { RequestTrendsChartComponent } from './components/request-trends-chart/request-trends-chart.component';
 import { InventoryDistributionChartComponent } from './components/inventory-distribution-chart/inventory-distribution-chart.component';
 import { TopRequestedItemsChartComponent } from './components/top-requested-items-chart/top-requested-items-chart.component';
-import { NgxEchartsModule, provideEchartsCore, NgxEchartsConfig } from 'ngx-echarts';
+import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
 
 /**
  * Analytics Dashboard Component
