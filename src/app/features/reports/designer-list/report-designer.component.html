@@ -10,12 +10,12 @@
         
         <!-- Create Report Button - Right Side -->
         <div *ngIf="!loading && !error && canCreateReport" class="flex items-center gap-3">
-          <app-button variant="secondary" (click)="onImportReport()">
+          <!-- <app-button variant="secondary" (click)="onImportReport()">
             <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
               <lucide-angular [img]="Upload" class="h-4 w-4 flex-shrink-0"></lucide-angular>
               <span>{{ 'reportDesigner.importReport' | translate }}</span>
             </span>
-          </app-button>
+          </app-button> -->
           <app-button variant="primary" (click)="onCreateReport()">
             <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
               <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Hidden File Input for Import -->
-    <input #fileInput type="file" accept=".repx,.xml" (change)="onFileSelected($event)" style="display: none;" />
+    <input #fileInput type="file" accept=".repx" (change)="onFileSelected($event)" style="display: none;" />
 
     <!-- Loading State -->
     <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">

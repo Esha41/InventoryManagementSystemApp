@@ -132,13 +132,14 @@ export class ReportDesignerComponent implements OnInit {
       return;
     }
 
-    // Validate file type
-    const allowedExtensions = ['.repx', '.xml'];
+    // Validate file type - only .repx files allowed
+    const allowedExtensions = ['.repx'];
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     if (!allowedExtensions.includes(fileExtension)) {
-      this.error = this.translateService.instant('reportDesigner.import.invalidFileType', {
-        extensions: allowedExtensions.join(', ')
-      });
+      // Show alert for wrong file type
+      alert(this.translateService.instant('reportDesigner.import.invalidFileType', {
+        extensions: '.repx'
+      }));
       // Reset file input
       input.value = '';
       return;
@@ -147,9 +148,10 @@ export class ReportDesignerComponent implements OnInit {
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      this.error = this.translateService.instant('reportDesigner.import.fileTooLarge', {
+      // Show alert for file too large
+      alert(this.translateService.instant('reportDesigner.import.fileTooLarge', {
         maxSize: '10MB'
-      });
+      }));
       input.value = '';
       return;
     }
@@ -170,11 +172,13 @@ export class ReportDesignerComponent implements OnInit {
           console.error('Error importing report:', err);
           const errorMessage = err?.error?.message || err?.message || this.translateService.instant('common.errorImportingData');
           this.error = errorMessage;
+           alert(this.error);
           return of(null);
         }),
         finalize(() => {
-          this.loading = false;
+         this.loading = false;
           input.value = '';
+            this.loadReports();
         })
       )
       .subscribe((reportId) => {
