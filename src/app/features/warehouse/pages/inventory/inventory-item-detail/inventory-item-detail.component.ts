@@ -465,7 +465,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           
           // Fetch image as blob with authentication
           return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
-            switchMap((blob) => {
+            switchMap((blob: Blob) => {
               if (blob.type && blob.type.startsWith('image/')) {
                 const blobUrl = URL.createObjectURL(blob);
                 this.blobUrls.add(blobUrl);

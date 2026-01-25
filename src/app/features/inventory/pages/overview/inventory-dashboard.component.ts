@@ -51,13 +51,10 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    StatusCardComponent,
     RequestDetailsModalComponent,
-    OverstockCardComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    RequestFilterBarComponent,
-    AppDateTimePipe
+    RequestFilterBarComponent
   ],
   templateUrl: './inventory-dashboard.component.html',
   styleUrls: ['./inventory-dashboard.component.css'],

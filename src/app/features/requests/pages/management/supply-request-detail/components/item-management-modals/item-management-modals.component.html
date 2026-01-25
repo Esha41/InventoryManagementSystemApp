@@ -14,6 +14,15 @@
         [error]="!!(addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty))"
         placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">
       </app-dropdown>
+
+      <!-- Item Type Restriction Info -->
+      <div class="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-2">
+        <lucide-icon [name]="Info" class="w-4 h-4 text-blue-500 mt-0.5"></lucide-icon>
+        <p class="text-xs text-blue-700 leading-normal">
+          {{ getItemTypeRestrictionMessage() }}
+        </p>
+      </div>
+
       <p *ngIf="addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty)"
         class="mt-1 text-sm text-red-600">
         {{ 'supplyRequestDetail.itemRequired' | translate }}

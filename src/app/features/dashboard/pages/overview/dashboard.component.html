@@ -16,16 +16,18 @@
         <div *ngIf="allCards.length > 0"
           class="flex flex-col md:flex-row items-stretch md:items-center gap-5 animate-slide-in-right">
 
-          <!-- Shared Filter Bar Component -->
-          <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
-            [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
-            [searchQuery]="searchQuery" [resultCount]="filteredCardsCount"
-            (statusFilterChange)="onStatusFilterChange($event)" (searchQueryChange)="onSearchChange($event)">
-          </app-request-filter-bar>
+          <!-- Shared Filter Bar Component - Moved to left -->
+          <div class="w-full md:flex-1 md:min-w-0">
+            <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
+              [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
+              [searchQuery]="searchQuery" [resultCount]="filteredCardsCount"
+              (statusFilterChange)="onStatusFilterChange($event)" (searchQueryChange)="onSearchChange($event)">
+            </app-request-filter-bar>
+          </div>
 
-          <!-- Refined View Toggle -->
+          <!-- Refined View Toggle - Fixed width on right -->
           <div
-            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)]">
+            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] flex-shrink-0">
             <button (click)="toggleViewMode('grid')" [class.bg-[var(--color-brand)]]="viewMode === 'grid'"
               [class.text-white]="viewMode === 'grid'" [class.text-[var(--color-text-muted)]]="viewMode !== 'grid'"
               class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-soft"

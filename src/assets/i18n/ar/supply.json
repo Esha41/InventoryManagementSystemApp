@@ -250,7 +250,10 @@
       "itemAddedSuccessfully": "تمت إضافة الصنف بنجاح",
       "itemQuantityUpdatedSuccessfully": "تم تحديث كمية الصنف بنجاح",
       "itemRemovedSuccessfully": "تمت إزالة الصنف بنجاح"
-    }
+    },
+    "allItemTypesAllowed": "ملاحظة: يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب.",
+    "onlyWeaponsAllowed": "لا يمكن إضافة الأسلحة هنا.",
+    "ammunitionExplosivesAllowed": "يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب."
   },
   "weaponSupplyReview": {
     "title": "مراجعة توريد الأسلحة",

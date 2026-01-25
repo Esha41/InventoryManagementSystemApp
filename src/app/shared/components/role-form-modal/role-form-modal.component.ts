@@ -30,8 +30,7 @@ export interface ApplicationEntity {
     ReactiveFormsModule,
     ModalComponent,
     ButtonComponent,
-    TranslateModule,
-    DropdownComponent
+    TranslateModule
   ],
   templateUrl: './role-form-modal.component.html',
   styleUrls: ['./role-form-modal.component.css']

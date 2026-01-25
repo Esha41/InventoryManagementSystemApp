@@ -22,7 +22,6 @@ import { LoadingStateComponent } from '@components/index';
     TranslateModule,
     LucideAngularModule,
     CardComponent,
-    ButtonComponent,
     LoadingStateComponent
   ],
   providers: [InventorySummaryDataService],

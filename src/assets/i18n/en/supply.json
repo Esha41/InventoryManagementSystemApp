@@ -250,7 +250,10 @@
       "itemAddedSuccessfully": "Item added successfully",
       "itemQuantityUpdatedSuccessfully": "Item quantity updated successfully",
       "itemRemovedSuccessfully": "Item removed successfully"
-    }
+    },
+    "allItemTypesAllowed": "Please note: only Ammunition and Explosives can be added to this order.",
+    "onlyWeaponsAllowed": "Weapons cannot be added here.",
+    "ammunitionExplosivesAllowed": "Only Ammunition and Explosives can be added to this order."
   },
   "weaponSupplyReview": {
     "title": "Weapon Supply Review",

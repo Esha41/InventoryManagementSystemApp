@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { SupplyRequestDetailService } from './services/supply-request-detail.ser
 import { OrderItemManagementService } from './services/order-item-management.service';
 import { LotSelectionService } from './services/lot-selection.service';
 import { AmmunitionService } from '@services/ammunition.service';
+import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 
@@ -122,9 +123,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private lotSelectionService: LotSelectionService,
     private ammunitionService: AmmunitionService,
+    private supplyOrderDataService: SupplyOrderDataService,
     private toastService: ToastService,
     private translate: TranslateService,
-    private config: ConfigService
+    private config: ConfigService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -517,12 +520,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   private loadAvailableItems(): void {
     this.loadingItems = true;
-    this.ammunitionService.getAll()
+    const existingItemIds = (this.requestDetail?.items || []).map(item => item.itemId);
+
+    // We only allow Ammunition (1) and Explosives (3) here as well
+    const allowedTypes = [1, 3];
+
+    this.supplyOrderDataService.loadAvailableItems(existingItemIds, allowedTypes)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
           this.availableItems = items || [];
           this.loadingItems = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to load items', error);
@@ -530,6 +539,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loadingItems = false;
+          this.cdr.markForCheck();
         }
       });
   }

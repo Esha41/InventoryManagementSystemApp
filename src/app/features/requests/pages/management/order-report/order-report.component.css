@@ -1,5 +1,26 @@
 :host {
   display: block;
+  width: 100%;
+}
+
+/* Smooth transitions for layout changes */
+.order-report-container {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Grid container with smooth transitions */
+.grid {
+  transition: grid-template-columns 0.3s ease-in-out;
+}
+
+/* Sidebar smooth transitions */
+aside {
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Main content area smooth transitions */
+main {
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out;
 }
 
 /* Priority Color Classes */
@@ -912,5 +933,170 @@ img[alt="Order QR Code"] {
   .print-footer-text {
     font-size: 12px;
     color: var(--color-text-muted);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN IMPROVEMENTS
+   ============================================ */
+
+/* Mobile First - Base Styles */
+@media (max-width: 640px) {
+  /* Main Layout */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Order List Sidebar */
+  aside {
+    position: relative !important;
+    top: auto !important;
+    max-height: none !important;
+  }
+
+  /* Info Grid - Stack on mobile */
+  .print-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Approval Workflow Cards - Single column on mobile */
+  .approval-workflow-cards {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Tables - Horizontal scroll on mobile (standard responsive pattern) */
+  .print-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    min-width: 500px; /* Ensure minimum width for readability */
+  }
+
+  .print-table thead,
+  .print-table tbody,
+  .print-table tfoot,
+  .print-table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .print-table-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 100px;
+  }
+
+  /* Table wrapper for better mobile UX */
+  .print-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet - Medium Screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Grid Layout - Side by side on tablet with wider sidebar */
+  .grid {
+    grid-template-columns: minmax(320px, 380px) 1fr !important;
+  }
+
+  /* Info Grid - 2 columns on tablet */
+  .print-info-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Approval Workflow Cards - 2 columns on tablet */
+  .approval-workflow-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  /* Tables - Better spacing on tablet */
+  .print-table-cell {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Desktop - Large Screens */
+@media (min-width: 1025px) {
+  /* Ensure proper spacing on large screens */
+  .print-info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  }
+
+  .approval-workflow-cards {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  button,
+  .print-table-cell {
+    min-height: 44px;
+    padding: 12px !important;
+  }
+
+  /* Better spacing for touch */
+  .approval-card {
+    padding: 16px !important;
+  }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .print-logo,
+  .print-qr-code {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  /* Compact header in landscape */
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+}
+
+/* Print Media Query - Ensure tables are properly formatted */
+@media print {
+  .print-table {
+    display: table !important;
+  }
+
+  .print-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .print-table tr {
+    display: table-row !important;
+  }
+
+  .print-table td {
+    display: table-cell !important;
+  }
+
+  .print-table td::before {
+    display: none !important;
   }
 }

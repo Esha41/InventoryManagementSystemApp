@@ -77,7 +77,7 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
 @Component({
   selector: 'app-add-asset',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './add-asset.component.html',
   styleUrls: ['./add-asset.component.css']
 })

@@ -10,8 +10,8 @@
       <!-- Filters and Add Button -->
       <div *ngIf="!loading && !error"
         class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:flex-shrink-0">
-        <div class="flex flex-col sm:flex-row gap-3 flex-1">
-          <div class="flex-1 relative min-w-0">
+        <div class="flex flex-col sm:flex-row gap-3 flex-1 min-w-0">
+          <div class="flex-1 relative min-w-[180px] sm:min-w-[200px]">
             <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()"
               [options]="filteredDepartments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
               [disabled]="!isAdminUser" placeholder="{{ 'allowance.selectDepartment' | translate }}">
@@ -26,7 +26,7 @@
               <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
             </button>
           </div>
-          <div class="flex-1 relative min-w-0">
+          <div class="flex-1 relative min-w-[180px] sm:min-w-[200px]">
             <app-dropdown class="w-full" [(ngModel)]="selectedItemType" (ngModelChange)="onItemTypeChange()"
               [options]="itemTypeOptions" optionValue="value" [optionLabelFn]="itemTypeOptionLabel"
               placeholder="{{ 'allowance.selectItemType' | translate }}">
@@ -40,7 +40,7 @@
               <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
             </button>
           </div>
-          <div class="flex-1 relative min-w-0">
+          <div class="flex-1 relative min-w-[180px] sm:min-w-[200px]">
             <app-dropdown class="w-full" [(ngModel)]="selectedItem" (ngModelChange)="onItemChange()"
               [options]="filteredItems" optionValue="id" [optionLabelFn]="itemOptionLabel"
               placeholder="{{ 'allowance.selectItem' | translate }}">

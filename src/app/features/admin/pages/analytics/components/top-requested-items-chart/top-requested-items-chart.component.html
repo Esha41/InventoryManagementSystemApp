@@ -15,7 +15,7 @@
         </button>
     </div>
 
-    <div class="flex-1 relative min-h-[300px] p-4">
+    <div class="flex-1 relative min-h-[300px] max-h-[400px] p-4 overflow-hidden">
         <!-- Loading State -->
         <div *ngIf="loading"
             class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/80 backdrop-blur-sm z-10 rounded-b-xl gap-3">
@@ -42,6 +42,6 @@
         </div>
 
         <!-- Content -->
-        <div echarts [options]="chartOptions" class="w-full h-full" *ngIf="!loading && !error"></div>
+        <div echarts [options]="chartOptions" class="w-full h-full max-h-[400px]" *ngIf="!loading && !error"></div>
     </div>
 </div>

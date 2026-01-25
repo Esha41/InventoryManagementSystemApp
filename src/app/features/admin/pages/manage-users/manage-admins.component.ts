@@ -19,7 +19,6 @@ import { LookupManagementComponent } from './components/lookup-management/lookup
     CommonModule,
     LucideAngularModule,
     TranslateModule,
-    HasPermissionDirective,
     UserManagementComponent,
     LookupManagementComponent
   ],

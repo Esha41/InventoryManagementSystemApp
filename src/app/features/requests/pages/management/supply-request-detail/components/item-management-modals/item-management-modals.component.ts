@@ -7,6 +7,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LucideAngularModule, Info } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -23,6 +24,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    LucideAngularModule,
     ModalComponent,
     ConfirmDialogComponent,
     DropdownComponent
@@ -49,6 +51,8 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
 
   addItemForm!: FormGroup;
   editItemForm!: FormGroup;
+
+  readonly Info = Info;
 
   constructor(
     private fb: FormBuilder,
@@ -143,10 +147,11 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   };
 
   getItemProductId(item: OrderItem): string {
-    if (this.getItemProductIdFn) {
-      return this.getItemProductIdFn(item);
-    }
     return '-';
+  }
+
+  getItemTypeRestrictionMessage(): string {
+    return this.translate.instant('supplyRequestDetail.ammunitionExplosivesAllowed');
   }
 }
 

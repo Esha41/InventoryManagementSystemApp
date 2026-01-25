@@ -1,9 +1,9 @@
 <!-- Unified Layout (Dashboard Style) -->
 <div *ngIf="layout === 'unified'"
-    class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)]">
+    class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] min-w-0 w-full">
 
     <!-- Search Bar -->
-    <div *ngIf="showSearchBar" class="relative flex items-center w-full lg:flex-1 group">
+    <div *ngIf="showSearchBar" class="relative flex items-center w-full lg:flex-1 lg:min-w-0 group">
         <div
             class="absolute start-3.5 pointer-events-none transition-colors duration-200 group-focus-within:text-[var(--color-brand)]">
             <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -21,7 +21,7 @@
         class="hidden lg:block h-8 w-px bg-[var(--color-border)]"></div>
 
     <!-- Filters Container -->
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 lg:flex-1">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 lg:flex-shrink-0 min-w-0">
         <!-- Filter Icon & Label -->
         <div *ngIf="showStatusFilter || showPriorityFilter"
             class="hidden sm:flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex-shrink-0">
@@ -30,7 +30,7 @@
         </div>
 
         <!-- Status Filter -->
-        <app-dropdown *ngIf="showStatusFilter" class="w-full sm:flex-1" [(ngModel)]="statusFilter"
+        <app-dropdown *ngIf="showStatusFilter" class="w-full sm:w-[200px] sm:max-w-[200px] sm:flex-shrink-0" [(ngModel)]="statusFilter"
             (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
             [optionLabelFn]="statusFilterLabelFn" optionValue="value" [placeholderSelectable]="false">
         </app-dropdown>
@@ -76,7 +76,7 @@
     <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto lg:flex-shrink-0">
         <!-- Status Filter -->
         <div *ngIf="showStatusFilter"
-            class="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:min-w-[280px] transition-all duration-300">
+            class="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:w-[420px] transition-all duration-300">
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div
                     class="hidden sm:flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex-shrink-0">
@@ -84,7 +84,7 @@
                     <span class="hidden 2xl:inline whitespace-nowrap">{{ 'dashboard.filters.filterByStatus' | translate
                         }}</span>
                 </div>
-                <app-dropdown class="w-full sm:flex-1 min-w-0" [(ngModel)]="statusFilter"
+                <app-dropdown class="w-full sm:flex-1 min-w-0 flex-shrink-0" [(ngModel)]="statusFilter"
                     (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
                     [optionLabelFn]="statusFilterLabelFn" optionValue="value" [placeholderSelectable]="false"
                     placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
@@ -101,11 +101,11 @@
 
         <!-- Priority Filter -->
         <div *ngIf="showPriorityFilter"
-            class="flex items-center gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:min-w-[260px] transition-all duration-300">
+            class="flex items-center gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:w-[260px] transition-all duration-300">
             <span
                 class="hidden sm:inline text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap flex-shrink-0">{{
                 'requestsManagement.filterByPriority' | translate }}:</span>
-            <app-dropdown class="w-full sm:flex-1 min-w-0" [(ngModel)]="priorityFilter"
+            <app-dropdown class="w-full sm:flex-1 min-w-0 flex-shrink-0" [(ngModel)]="priorityFilter"
                 (ngModelChange)="onPriorityChange($event)" [options]="priorityFilterOptions"
                 [optionLabelFn]="priorityFilterLabelFn" optionValue="value" [placeholderSelectable]="false"
                 placeholder="{{ 'requestsManagement.filterByPriority' | translate }}">

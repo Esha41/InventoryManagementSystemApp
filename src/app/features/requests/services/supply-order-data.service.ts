@@ -6,6 +6,7 @@ import { OrderDto } from '@models/order.model';
 import { SupplyService, SupplyDto } from '@services/supply.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AmmunitionService } from '@services/ammunition.service';
+import { ExplosiveService } from '@services/explosive.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -33,6 +34,7 @@ export class SupplyOrderDataService {
     private readonly supplyService: SupplyService,
     private readonly inventoryService: InventoryService,
     private readonly ammunitionService: AmmunitionService,
+    private readonly explosiveService: ExplosiveService,
     private readonly apiService: ApiService,
     private readonly translateService: TranslateService
   ) { }
@@ -317,14 +319,49 @@ export class SupplyOrderDataService {
 
   /**
    * Load available items (ammunition) excluding already added items
+   * @param existingItemIds - IDs of items already in the order
+   * @param allowedItemTypes - Optional array of allowed item types to filter by
+   *                           1=Ammunition, 2=Weapon, 3=Explosive
+   *                           If not provided, all items are returned
    */
-  loadAvailableItems(existingItemIds: number[]): Observable<any[]> {
-    return this.ammunitionService.getAll().pipe(
-      map((items) => {
+  loadAvailableItems(existingItemIds: number[], allowedItemTypes?: number[]): Observable<any[]> {
+    const requests: Observable<any[]>[] = [];
+
+    // Map allowed types to service calls (Weapons removed)
+    const typeToService = {
+      1: () => this.ammunitionService.getAll(), // Ammunition
+      3: () => this.explosiveService.getAll()   // Explosive
+    };
+
+    if (allowedItemTypes && allowedItemTypes.length > 0) {
+      // Fetch only for specified types (excluding Weapons if passed)
+      allowedItemTypes.forEach(type => {
+        const serviceCall = (typeToService as any)[type];
+        if (serviceCall) {
+          requests.push(serviceCall().pipe(
+            catchError(() => of([])) // Silence errors for specific service and return empty
+          ));
+        }
+      });
+    } else {
+      // If none specified, fetch Ammunition and Explosives only
+      requests.push(this.ammunitionService.getAll().pipe(catchError(() => of([]))));
+      requests.push(this.explosiveService.getAll().pipe(catchError(() => of([]))));
+    }
+
+    if (requests.length === 0) return of([]);
+
+    return forkJoin(requests).pipe(
+      map((results: any[][]) => {
+        // Flatten combined results
+        const items = results.reduce((acc, val) => acc.concat(val), []);
+
+        // Filter out items already in the order
         return (items || []).filter(item => !existingItemIds.includes(item.id));
       }),
-      catchError(() => {
-        throw new Error('Failed to load items');
+      catchError((error) => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load items');
+        throw new Error(errorMessage);
       })
     );
   }

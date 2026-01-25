@@ -1,5 +1,25 @@
 /* Allowance List component styles */
 
+/* Ensure filter dropdowns have enough width to display placeholders */
+:host ::ng-deep .flex.flex-col.sm\\:flex-row.gap-3 app-dropdown {
+  min-width: 180px;
+}
+
+@media (min-width: 640px) {
+  :host ::ng-deep .flex.flex-col.sm\\:flex-row.gap-3 app-dropdown {
+    min-width: 200px;
+  }
+}
+
+/* Prevent placeholder text truncation in filter dropdowns */
+:host ::ng-deep .flex.flex-col.sm\\:flex-row.gap-3 app-dropdown .app-dropdown-label.app-dropdown-placeholder {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
 /* Ensure ACTIONS column header and cells are perfectly centered */
 :host ::ng-deep table th:nth-last-child(1),
 :host ::ng-deep table td:nth-last-child(1) {

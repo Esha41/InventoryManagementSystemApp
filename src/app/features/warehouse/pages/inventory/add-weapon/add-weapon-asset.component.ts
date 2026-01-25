@@ -37,7 +37,6 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
         LucideAngularModule,
         DropdownComponent,
         LoadingStateComponent,
-        ErrorStateComponent,
         HasPermissionDirective
     ],
     templateUrl: './add-weapon-asset.component.html',

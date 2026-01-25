@@ -45,7 +45,6 @@ import { InventoryFiltersComponent } from './components/inventory-filters/invent
     ConfirmDialogComponent,
     EditInventoryDetailModalComponent,
     EditAssetModalComponent,
-    DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent,
     HasPermissionDirective,

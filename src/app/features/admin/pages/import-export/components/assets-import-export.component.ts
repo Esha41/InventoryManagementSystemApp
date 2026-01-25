@@ -29,7 +29,6 @@ import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/
     TranslateModule,
     LucideAngularModule,
     CardComponent,
-    ButtonComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
     LoadingStateComponent

@@ -593,7 +593,8 @@
       "partial": "Partial",
       "confirmQuestion": "Do you want to continue with partial fulfillment?",
       "confirmButton": "Yes, Continue"
-    }
+    },
+    "ammunitionExplosivesAllowed": "Only Ammunition and Explosives can be added to this request."
   },
   "supplyRequestManagement": {
     "title": "Supply Request Management",

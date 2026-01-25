@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,7 +34,6 @@ import { saveAs } from 'file-saver';
     TranslateModule,
     LucideAngularModule,
     CardComponent,
-    ButtonComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
     DropdownComponent,
@@ -286,12 +285,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               return;
             }
             result = response.data;
+          } else {
+            // Unwrapped response
+            if ((response as any)?.successCount !== undefined || (response as any)?.successfulRecords !== undefined || (response as any)?.errors !== undefined) {
+              result = response;
             } else {
-              // Unwrapped response
-              if ((response as any)?.successCount !== undefined || (response as any)?.successfulRecords !== undefined || (response as any)?.errors !== undefined) {
-                result = response;
-              } else {
-                this.toastService.error('Unexpected response format from server');
+              this.toastService.error('Unexpected response format from server');
               this.cdr.markForCheck();
               return;
             }
@@ -363,7 +362,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
-          
+
           // Check if response is valid
           if (!res) {
             this.previewData = null;
@@ -402,7 +401,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             // Ensure arrays exist
             const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
             const errors = Array.isArray(result.errors) ? result.errors : [];
-            
+
             // Create a map to track which rows have errors (by row number)
             const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
             errors.forEach((error: any) => {
@@ -416,7 +415,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
             // Build preview rows with proper Excel row numbers
             const previewRows: any[] = [];
-            
+
             // Process successful records - use rowNumber from backend if available, otherwise calculate
             successfulRecords.forEach((record: any, index: number) => {
               // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
@@ -18,24 +18,23 @@ import { TranslationService } from '@services/translation.service';
     InventorySummaryComponent,
     WarehouseInventoryComponent
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-import-export.component.html',
   styleUrls: ['./admin-import-export.component.css']
 })
 export class AdminImportExportComponent {
-  activeSection: 'assets' | 'inventory-summary' | 'warehouse-inventory' = 'assets';
-  activeAssetTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+  // State as signals
+  activeSection = signal<'assets' | 'inventory-summary' | 'warehouse-inventory'>('assets');
+  activeAssetTab = signal<'ammunition' | 'weapon' | 'explosive'>('ammunition');
 
   constructor(
-    private translationService: TranslationService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private translationService: TranslationService
+  ) { }
 
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
+  // Computed signal for RTL
+  isRTL = computed(() => this.translationService?.isRTL() ?? false);
 
   switchSection(section: 'assets' | 'inventory-summary' | 'warehouse-inventory'): void {
-    this.activeSection = section;
-    this.cdr.markForCheck();
+    this.activeSection.set(section);
   }
 }
