@@ -255,12 +255,11 @@
       </div>
     </div>
 
-    <!-- Delegation Section (Commented out for this version)
+    <!-- Delegation Section -->
     <div *ngIf="!loading && currentUser"
       class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
       <app-delegation-list></app-delegation-list>
     </div>
-    -->
 
     <!-- Security Section -->
     <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"

@@ -1,22 +1,32 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, Optional } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  computed,
+  effect,
+  signal,
+  inject,
+  Input,
+  Output,
+  EventEmitter
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
-import { FileUploadService, FileEntityType } from '@services/file-upload.service';
-import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, catchError, switchMap, of, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, ArrowLeft, X } from 'lucide-angular';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { TranslationService } from '@services/translation.service';
+import { AssetDetailsService } from './asset-details.service';
+import { AssetDetailsFormatterService } from './asset-details-formatter.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
-import { AssetPropertyAccessor } from '@utils/asset-property.utils';
-import { getLookupDisplayName } from '@utils/asset-list.utils';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
-import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { TranslationService } from '@services/translation.service';
-import { TranslateService } from '@ngx-translate/core';
 
 export type AssetDetailsData = AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 
@@ -30,59 +40,178 @@ export type AssetDetailsData = AmmunitionReadDto | WeaponDto | ExplosiveDto | nu
     LoadingStateComponent,
     ErrorStateComponent
   ],
+  providers: [AssetDetailsService, AssetDetailsFormatterService],
   templateUrl: './asset-details.component.html',
   styleUrls: ['./asset-details.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() asset: AssetDetailsData = null;
-  @Input() assetType?: 'ammunition' | 'weapon' | 'explosive';
-  @Input() assetId?: number;
-  @Input() isPage: boolean = true; // Whether this is used as a standalone page (default) or inline component
-  @Input() showBackButton: boolean = true; // Whether to show back button (only in page mode)
-  @Input() showInlineHeader: boolean = false; // Whether to show header in inline mode (for new issue request)
-  @Output() close = new EventEmitter<void>(); // Emit when close button is clicked (for inline mode)
 
-  loading = false;
-  error: string | null = null;
+  private readonly assetDetailsService = inject(AssetDetailsService);
+  private readonly formatterService = inject(AssetDetailsFormatterService);
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  private readonly router = inject(Router, { optional: true });
+  private readonly translationService = inject(TranslationService, { optional: true });
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  // Internal signals - Angular 21 best practice
+  private readonly _asset = signal<AssetDetailsData>(null);
+  private readonly _assetType = signal<'ammunition' | 'weapon' | 'explosive' | undefined>(undefined);
+  private readonly _assetId = signal<number | undefined>(undefined);
+  private readonly _isPage = signal<boolean>(true);
+  private readonly _showBackButton = signal<boolean>(true);
+  private readonly _showInlineHeader = signal<boolean>(false);
+
+  // State signals
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
+  imageUrl = signal<SafeUrl | string | null>(null);
+  showFullImage = signal<boolean>(false);
+
+  // Computed signals - automatically update when dependencies change
+  readonly isRTL = computed(() => this.translationService?.isRTL() ?? false);
+
+  readonly isWeapon = computed(() => {
+    const type = this._assetType();
+    const asset = this._asset();
+    return type === 'weapon' ||
+      (asset !== null && 'caliber' in asset && !('armNumber' in asset) && !('explosiveType' in asset));
+  });
+
+  readonly isExplosive = computed(() => {
+    const type = this._assetType();
+    const asset = this._asset();
+    return type === 'explosive' || (asset !== null && 'explosiveType' in asset);
+  });
+
+  readonly isAmmunition = computed(() => {
+    const type = this._assetType();
+    const asset = this._asset();
+    return type === 'ammunition' || (asset !== null && 'armNumber' in asset);
+  });
+
+  readonly currentAssetId = computed(() => {
+    const asset = this._asset();
+    return this.assetDetailsService.getAssetId(asset);
+  });
+
+  // Formatted fields - all getter methods replaced with computed signals
+  readonly fields = this.formatterService.createFormattedFields(
+    this._asset,
+    this.isAmmunition,
+    this.isWeapon,
+    this.isExplosive
+  );
+
+  // Icons
   readonly ArrowLeft = ArrowLeft;
-  private destroy$ = new Subject<void>();
+  readonly X = X; // For modal close button
 
-  imageUrl: string | null = null;
-  private blobUrls: Set<string> = new Set();
+  // Cleanup
+  private readonly destroy$ = new Subject<void>();
+  private readonly blobUrls = new Set<string>();
+  private loadingImageFor: { assetId: number; assetType: string } | null = null;
+  private imageLoadedFor: { assetId: number; assetType: string } | null = null;
 
-  constructor(
-    private ammunitionService: AmmunitionService,
-    private weaponService: WeaponService,
-    private explosiveService: ExplosiveService,
-    private fileUploadService: FileUploadService,
-    private http: HttpClient,
-    public propertyAccessor: AssetPropertyAccessor,
-    private translateService: TranslateService,
-    @Optional() private route?: ActivatedRoute,
-    @Optional() private router?: Router,
-    @Optional() private translationService?: TranslationService,
-    private cdr?: ChangeDetectorRef
-  ) {}
+  constructor() {
+    // Effect to handle asset type detection from asset data
+    effect(() => {
+      const asset = this._asset();
+      if (asset && !this._assetType()) {
+        const detectedType = this.assetDetailsService.detectAssetType(asset);
+        if (detectedType) {
+          this._assetType.set(detectedType);
+        }
+      }
+    });
+
+    // Effect to load image when asset or asset type changes
+    // This ensures image loads when asset is set via @Input or route
+    effect(() => {
+      const assetId = this.currentAssetId();
+      const type = this._assetType();
+
+      // Only load if we have all required data
+      if (assetId && type) {
+        this.loadImage(assetId, type);
+      }
+    });
+  }
+
+  // Legacy @Input support... (skipped for brevity)
+  @Input()
+  set asset(value: AssetDetailsData) {
+    this._asset.set(value);
+  }
+  get asset(): AssetDetailsData {
+    return this._asset();
+  }
+
+  @Input()
+  set assetType(value: 'ammunition' | 'weapon' | 'explosive' | undefined) {
+    this._assetType.set(value);
+  }
+  get assetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
+    return this._assetType();
+  }
+
+  @Input()
+  set assetId(value: number | undefined) {
+    this._assetId.set(value);
+  }
+  get assetId(): number | undefined {
+    return this._assetId();
+  }
+
+  @Input()
+  set isPage(value: boolean) {
+    this._isPage.set(value);
+  }
+  get isPage(): boolean {
+    return this._isPage();
+  }
+
+  @Input()
+  set showBackButton(value: boolean) {
+    this._showBackButton.set(value);
+  }
+  get showBackButton(): boolean {
+    return this._showBackButton();
+  }
+
+  @Input()
+  set showInlineHeader(value: boolean) {
+    this._showInlineHeader.set(value);
+  }
+  get showInlineHeader(): boolean {
+    return this._showInlineHeader();
+  }
+
+  // Legacy @Output support
+  @Output() close = new EventEmitter<void>();
 
   ngOnInit(): void {
-    // If used as a page component (isPage=true and route params exist), load data from route params
-    if (this.isPage && this.route && this.route.snapshot.params['id']) {
-      this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
-        const itemId = parseInt(params['id'], 10);
-        
+    // If used as a page component, load data from route params
+    if (this._isPage() && this.route?.snapshot.params['id']) {
+      this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+        const itemId = parseInt(params['id'] || '', 10);
+
         // Get item type from query params
         const tabParam = this.route!.snapshot.queryParams['tab'];
         if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
-          this.assetType = tabParam;
+          this._assetType.set(tabParam);
         }
 
         if (itemId) {
+          // Optimization: Start loading image immediately if type is known from query params
+          if (this._assetType()) {
+            this.loadImage(itemId, this._assetType()!);
+          }
           this.loadAssetFromRoute(itemId);
         } else {
-          this.loading = false;
-          this.error = 'Invalid asset ID';
-          this.cdr?.markForCheck();
+          this.loading.set(false);
+          this.error.set('Invalid asset ID');
         }
       });
     } else {
@@ -93,83 +222,138 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     // Handle input changes for inline mode
-    if (!this.isPage && (changes['assetId'] || changes['assetType'] || changes['asset'])) {
+    if (!this._isPage() && (changes['assetId'] || changes['assetType'] || changes['asset'])) {
       this.tryLoadFromInputs();
     }
   }
 
   private tryLoadFromInputs(): void {
-    if (this.assetId && this.assetType) {
+    const assetId = this._assetId();
+    const assetType = this._assetType();
+
+    if (assetId && assetType) {
       // If assetId and assetType are provided as inputs (inline mode)
-      this.loadAssetFromRoute(this.assetId);
-    } else if (this.asset) {
-      // If asset is provided directly, just load the image
-      const assetId = this.getAssetId();
-      if (assetId) {
-        this.loadImage(assetId);
-      }
-    } else if (!this.isPage) {
+      this.loadAssetFromRoute(assetId);
+    } else if (this._asset()) {
+      // If asset is provided directly, image will be loaded via effect
+      // No action needed
+    } else if (!this._isPage()) {
       // For inline mode, don't show error if inputs aren't ready yet
-      // They might be set asynchronously
-      this.loading = true;
-      this.cdr?.markForCheck();
+      this.loading.set(true);
     }
   }
 
   private loadAssetFromRoute(assetId: number): void {
-    this.loading = true;
-    this.error = null;
-    this.cdr?.markForCheck();
+    this.loading.set(true);
+    this.error.set(null);
 
-    let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto>;
-    
-    if (this.assetType === 'weapon') {
-      service$ = this.weaponService.getById<WeaponDto>(assetId);
-    } else if (this.assetType === 'explosive') {
-      service$ = this.explosiveService.getById<ExplosiveDto>(assetId);
-    } else {
-      service$ = this.ammunitionService.getById<AmmunitionReadDto>(assetId);
-    }
+    const assetType = this._assetType();
 
-    service$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
-        this.asset = data;
-        this.loading = false;
-        // Load image after asset data is loaded
-        if (assetId) {
-          this.loadImage(assetId);
+    this.assetDetailsService
+      .loadAsset(assetId, assetType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this._asset.set(data);
+          this.loading.set(false);
+
+          // Detect type if not set
+          let finalAssetType = assetType;
+          if (!assetType && data) {
+            const detectedType = this.assetDetailsService.detectAssetType(data);
+            if (detectedType) {
+              this._assetType.set(detectedType);
+              finalAssetType = detectedType;
+            }
+          }
+
+          // Manually trigger image loading after asset is loaded
+          // The effect should handle this, but we ensure it happens
+          if (finalAssetType && this.currentAssetId()) {
+            this.loadImage(this.currentAssetId()!, finalAssetType);
+          }
+        },
+        error: () => {
+          this.error.set('Failed to load asset details');
+          this.loading.set(false);
         }
-        this.cdr?.markForCheck();
-      },
-      error: () => {
-        this.error = 'Failed to load asset details';
-        this.loading = false;
-        this.cdr?.markForCheck();
-      }
-    });
+      });
   }
 
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
+  private loadImage(assetId: number, assetType: 'ammunition' | 'weapon' | 'explosive'): void {
+    // Prevent duplicate concurrent loads for the same asset
+    const loadKey = `${assetId}-${assetType}`;
+    if (this.loadingImageFor && `${this.loadingImageFor.assetId}-${this.loadingImageFor.assetType}` === loadKey) {
+      return; // Already loading this image
+    }
+
+    // Check if we already have this image loaded to avoid reloading it
+    if (this.imageLoadedFor && this.imageLoadedFor.assetId === assetId && this.imageLoadedFor.assetType === assetType && this.imageUrl()) {
+      return; // Already loaded and displayed
+    }
+
+    this.loadingImageFor = { assetId, assetType };
+
+    // Only clear if we are loading a different asset
+    if (!this.imageLoadedFor || this.imageLoadedFor.assetId !== assetId || this.imageLoadedFor.assetType !== assetType) {
+      this.imageUrl.set(null);
+      this.imageLoadedFor = null;
+    }
+
+    this.cdr.markForCheck(); // Ensure change detection runs
+
+    this.assetDetailsService
+      .loadAssetImage(assetId, assetType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blobUrl) => {
+          this.loadingImageFor = null; // Clear loading flag
+          if (blobUrl) {
+            this.blobUrls.add(blobUrl);
+            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(blobUrl);
+            this.imageUrl.set(safeUrl);
+            this.imageLoadedFor = { assetId, assetType }; // Mark as loaded
+            this.cdr.detectChanges(); // Force immediate update
+          } else {
+            // No image found - this is normal, don't log as error
+            this.imageUrl.set(null);
+            this.imageLoadedFor = { assetId, assetType }; // Mark as loaded (empty) to avoid retry loops
+          }
+        },
+        error: (error) => {
+          this.loadingImageFor = null; // Clear loading flag
+          console.warn('Failed to load asset image:', error);
+          this.imageUrl.set(null);
+        }
+      });
+  }
+
+  openFullImage(): void {
+    if (this.imageUrl()) {
+      this.showFullImage.set(true);
+    }
+  }
+
+  closeFullImage(): void {
+    this.showFullImage.set(false);
   }
 
   onBack(): void {
-    if (this.router && this.assetType) {
+    if (this.router && this._assetType()) {
       // Navigate back to asset-list with tab query param
       this.router.navigate(['/asset-list'], {
-        queryParams: { tab: this.assetType }
+        queryParams: { tab: this._assetType() }
       });
     }
   }
 
   onClose(): void {
-    // Emit close event for inline mode
     this.close.emit();
   }
 
   ngOnDestroy(): void {
     // Clean up all blob URLs to prevent memory leaks
-    this.blobUrls.forEach(url => {
+    this.blobUrls.forEach((url) => {
       try {
         URL.revokeObjectURL(url);
       } catch (e) {
@@ -181,478 +365,205 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     this.destroy$.complete();
   }
 
-  getAssetId(): number | null {
-    if (!this.asset) return null;
-    if ('id' in this.asset && typeof (this.asset as any).id === 'number') {
-      return (this.asset as any).id;
-    }
-    return null;
-  }
-
-  get isWeapon(): boolean {
-    return this.assetType === 'weapon' || (this.asset !== null && 'caliber' in this.asset && !('armNumber' in this.asset) && !('explosiveType' in this.asset));
-  }
-
-  get isExplosive(): boolean {
-    return this.assetType === 'explosive' || (this.asset !== null && 'explosiveType' in this.asset);
-  }
-
-  get isAmmunition(): boolean {
-    return this.assetType === 'ammunition' || (this.asset !== null && 'armNumber' in this.asset);
-  }
-
-  // Getter methods for all fields
+  // Legacy getter methods for backward compatibility with template
+  // These delegate to computed signals for better performance
   getAssetName(): string {
-    return this.propertyAccessor.getAssetName(this.asset) || '-';
+    return this.fields.assetName();
   }
 
   getProductId(): string {
-    return this.asset?.itemNo || '-';
+    return this.fields.productId();
   }
 
   getNSN(): string {
-    return this.asset?.nsn || '-';
+    return this.fields.nsn();
   }
 
   getPartNo(): string {
-    return this.asset?.partNo || '-';
+    return this.fields.partNo();
   }
 
   getBatchNo(): string {
-    return this.propertyAccessor.getBatchNo(this.asset) || '-';
+    return this.fields.batchNo();
   }
 
   getPrice(): string {
-    return this.propertyAccessor.getPrice(this.asset) || '-';
+    return this.fields.price();
   }
 
   getMinimumQuantity(): string {
-    return this.propertyAccessor.getMinimumQuantity(this.asset) || '-';
+    return this.fields.minimumQuantity();
   }
 
   getExpiryDate(): string {
-    return this.propertyAccessor.getExpiryDate(this.asset) || '-';
+    return this.fields.expiryDate();
   }
 
   getReadyForIssue(): string {
-    return this.propertyAccessor.getReadyForIssue(this.asset) || '-';
+    return this.fields.readyForIssue();
   }
 
-  // Ammunition specific fields
   getArmNumber(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getArmNumber(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.armNumber();
   }
 
   getPrimaryPurpose(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getPrimaryPurpose(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.primaryPurpose();
   }
 
   getProjectileColor(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getProjectileColor(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.projectileColor();
   }
 
   getBulletDiameter(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getBulletDiameter(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.bulletDiameter();
   }
 
   getTotalWeight(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getTotalWeight(this.asset as AmmunitionReadDto) || '-';
-    }
-    if (this.isExplosive) {
-      return this.propertyAccessor.getTotalWeight(this.asset as ExplosiveDto) || '-';
-    }
-    return '-';
+    return this.fields.totalWeight();
   }
 
   getProjectileMaterial(): string {
-    if (this.isAmmunition && this.asset) {
-      const ammo = this.asset as AmmunitionReadDto;
-      return getLookupDisplayName(ammo.projectailMaterial, this.translateService) || '-';
-    }
-    return '-';
+    return this.fields.projectileMaterial();
   }
 
   getCaseType(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getCaseType(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.caseType();
   }
 
   getPrimer(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getPrimer(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.primer();
   }
 
   getPropellant(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getPropellant(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.propellant();
   }
 
   getNature(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getNature(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.nature();
   }
 
   getLinked(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getLinked(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.linked();
   }
 
   getDistribution(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getDistribution(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    return '-';
+    return this.fields.distribution();
   }
 
   getReferenceNo(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getReferenceNo(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    if (this.isWeapon) {
-      return this.propertyAccessor.getReferenceNoForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
+    return this.fields.referenceNo();
   }
 
   getUnNumberForAmmunition(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getUnNumberForAmmunition(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.unNumberForAmmunition();
   }
 
   getClassification(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getClassification(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    if (this.isWeapon) {
-      return this.propertyAccessor.getClassificationForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
+    return this.fields.classification();
   }
 
   getType(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getType(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    if (this.isWeapon) {
-      return this.propertyAccessor.getTypeForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getItemType(): string {
-    if (this.isWeapon && this.asset) {
-      const weapon = this.asset as WeaponDto;
-      if (weapon.itemType !== undefined && weapon.itemType !== null) {
-        // Handle both number and string types
-        let itemType: number | null = null;
-        
-        if (typeof weapon.itemType === 'number') {
-          itemType = weapon.itemType;
-        } else if (typeof weapon.itemType === 'string') {
-          const typeMap: { [key: string]: number } = {
-            'Weapon': 2,
-            '2': 2,
-            'Ammunition': 1,
-            '1': 1,
-            'Explosive': 3,
-            '3': 3
-          };
-          itemType = typeMap[weapon.itemType] || null;
-        }
-        
-        if (itemType === 2) {
-          return this.translateService.instant('warehouseInventory.tabs.weapon') || 'Weapon';
-        } else if (itemType === 1) {
-          return this.translateService.instant('warehouseInventory.tabs.ammunition') || 'Ammunition';
-        } else if (itemType === 3) {
-          return this.translateService.instant('warehouseInventory.tabs.explosive') || 'Explosive';
-        }
-      }
-    }
-    return '-';
-  }
-
-  getPriceForWeapon(): string {
-    if (this.isWeapon) {
-      return this.getPrice();
-    }
-    return '-';
-  }
-
-  getMinimumQuantityForWeapon(): string {
-    if (this.isWeapon) {
-      return this.getMinimumQuantity();
-    }
-    return '-';
-  }
-
-  getCountryOfManufactureForWeapon(): string {
-    if (this.isWeapon) {
-      return this.getCountryOfManufacture();
-    }
-    return '-';
+    return this.fields.type();
   }
 
   getNotes(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getNotes(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    if (this.isWeapon) {
-      return this.propertyAccessor.getNotesForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
+    return this.fields.notes();
   }
 
-  // Weapon specific fields
   getWeaponType(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getTypeForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
+    return this.fields.weaponType();
   }
 
   getCaliber(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getCaliber(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getCaliberUnit(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getCaliberUnit(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getModel(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getModel(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getYearOfManufacture(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getYearOfManufacture(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getCountryOfManufacture(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getCountryOfManufacture(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getDistributionForWeapon(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getDistributionForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getUnNumberForWeapon(): string {
-    if (this.isWeapon) {
-      return this.propertyAccessor.getUnNumberForWeapon(this.asset as WeaponDto) || '-';
-    }
-    return '-';
-  }
-
-  getBarrelLengthWithUnit(): string {
-    // WeaponDto doesn't have barrelLength property
-    // These properties exist in Asset interface but not in WeaponDto
-    return '-';
-  }
-
-  getOverallLengthWithUnit(): string {
-    // WeaponDto doesn't have overallLength property
-    // These properties exist in Asset interface but not in WeaponDto
-    return '-';
-  }
-
-  getWeightWithUnit(): string {
-    // WeaponDto doesn't have weight property
-    // These properties exist in Asset interface but not in WeaponDto
-    return '-';
-  }
-
-  getCapacity(): number | undefined {
-    // WeaponDto doesn't have capacity property
-    // These properties exist in Asset interface but not in WeaponDto
-    return undefined;
-  }
-
-  // Explosive specific fields
-  getExplosiveType(): string {
-    if (this.isExplosive) {
-      return this.propertyAccessor.getExplosiveTypeName(this.asset as ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  getUnNumber(): string {
-    if (this.isExplosive) {
-      return this.propertyAccessor.getUnNumber(this.asset as ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  getNetExplosiveQuantity(): string {
-    if (this.isExplosive) {
-      return this.propertyAccessor.getNetExplosiveQuantity(this.asset as ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  getTotalWeightForExplosive(): string {
-    if (this.isExplosive) {
-      return this.propertyAccessor.getTotalWeight(this.asset as ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  // Shared fields (Ammunition & Explosive)
-  getHazardDivision(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getHazardDivision(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  getCapabilityGroup(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    return '-';
-  }
-
-  getCompatibility(): string {
-    if (this.isAmmunition || this.isExplosive) {
-      return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
-    }
-    return '-';
+    return this.fields.caliber();
   }
 
   getUnit(): string {
-    if (this.isAmmunition) {
-      return this.propertyAccessor.getUnit(this.asset as AmmunitionReadDto) || '-';
-    }
-    return '-';
+    return this.fields.unit();
   }
 
-  // Helper method to get lookup name
-  private getLookupDisplayName(lookup: any): string {
-    if (!lookup) return '';
-    if (typeof lookup === 'string') return lookup;
-    if (typeof lookup === 'object' && 'nameAr' in lookup && 'nameEn' in lookup) {
-      return this.translationService?.isRTL() ? lookup.nameAr : lookup.nameEn;
-    }
-    return '';
+  getCompatibility(): string {
+    return this.fields.compatibility();
   }
 
-  private loadImage(assetId: number): void {
-    // Clean up previous image URL
-    if (this.imageUrl) {
-      try {
-        URL.revokeObjectURL(this.imageUrl);
-        this.blobUrls.delete(this.imageUrl);
-      } catch (e) {
-        console.warn('Error revoking previous image blob URL:', e);
-      }
-    }
-    this.imageUrl = null;
+  getPriceForWeapon(): string {
+    return this.fields.priceForWeapon();
+  }
 
-    // Determine entity type based on asset type
-    let entityType: FileEntityType;
-    if (this.isWeapon) {
-      entityType = FileEntityType.Weapon;
-    } else if (this.isExplosive) {
-      entityType = FileEntityType.Explosive;
-    } else {
-      entityType = FileEntityType.Ammunition;
-    }
+  getMinimumQuantityForWeapon(): string {
+    return this.fields.minimumQuantityForWeapon();
+  }
 
-    // Get all files to find the latest one
-    this.fileUploadService.getFilesByEntity(entityType, assetId)
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap((files: any[]) => {
-          if (!files || files.length === 0) {
-            return of(null);
-          }
+  getCountryOfManufactureForWeapon(): string {
+    return this.fields.countryOfManufactureForWeapon();
+  }
 
-          // Get main images (there might be multiple with isMain: true)
-          const mainImages = files.filter((img: any) => img.isMain);
-          let latestImage: any;
-          
-          if (mainImages.length > 0) {
-            // If multiple main images exist, get the one with highest ID (latest uploaded)
-            latestImage = mainImages.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          } else {
-            // If no main image, get the image with highest ID (latest uploaded)
-            latestImage = files.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          }
-          
-          if (!latestImage?.id) {
-            return of(null);
-          }
+  getItemType(): string {
+    return this.fields.itemType();
+  }
 
-          // Get the download URL for the latest image
-          const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
-          
-          // Fetch image as blob with authentication
-          return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
-            switchMap((blob: Blob) => {
-              if (blob.type && blob.type.startsWith('image/')) {
-                const blobUrl = URL.createObjectURL(blob);
-                this.blobUrls.add(blobUrl);
-                this.imageUrl = blobUrl;
-                this.cdr?.markForCheck();
-              }
-              return of(null);
-            }),
-            catchError((err) => {
-              console.warn('Failed to load image blob:', err);
-              return of(null);
-            })
-          );
-        }),
-        catchError((err) => {
-          console.warn('Failed to get files:', err);
-          return of(null);
-        })
-      )
-      .subscribe();
+  getCaliberUnit(): string {
+    return this.fields.caliberUnit();
+  }
+
+  getModel(): string {
+    return this.fields.model();
+  }
+
+  getYearOfManufacture(): string {
+    return this.fields.yearOfManufacture();
+  }
+
+  getCountryOfManufacture(): string {
+    return this.fields.countryOfManufacture();
+  }
+
+  getDistributionForWeapon(): string {
+    return this.fields.distributionForWeapon();
+  }
+
+  getUnNumberForWeapon(): string {
+    return this.fields.unNumberForWeapon();
+  }
+
+  getBarrelLengthWithUnit(): string {
+    return this.fields.barrelLengthWithUnit();
+  }
+
+  getOverallLengthWithUnit(): string {
+    return this.fields.overallLengthWithUnit();
+  }
+
+  getWeightWithUnit(): string {
+    return this.fields.weightWithUnit();
+  }
+
+  getCapacity(): number | undefined {
+    return this.fields.capacity();
+  }
+
+  getExplosiveType(): string {
+    return this.fields.explosiveType();
+  }
+
+  getUnNumber(): string {
+    return this.fields.unNumber();
+  }
+
+  getNetExplosiveQuantity(): string {
+    return this.fields.netExplosiveQuantity();
+  }
+
+  getTotalWeightForExplosive(): string {
+    return this.fields.totalWeightForExplosive();
+  }
+
+  getHazardDivision(): string {
+    return this.fields.hazardDivision();
+  }
+
+  getCapabilityGroup(): string {
+    return this.fields.capabilityGroup();
   }
 }

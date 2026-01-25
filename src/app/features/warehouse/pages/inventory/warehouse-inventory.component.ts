@@ -12,7 +12,8 @@ import { AssetService } from '@services/asset.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto, ItemType } from '@models/inventory.model';
+import { FilterData } from '@models/pagination.model';
 import { AssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -63,11 +64,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depoName: string = '';
   currentDepot: LookupItem | null = null;
   inventoryDetails: InventoryDetailDto[] = [];
+  // filteredInventoryDetails will now act as the data source for the table
+  // For server-side pagination, it holds the current page items
   filteredInventoryDetails: InventoryDetailDto[] = [];
   weaponAssets: AssetDto[] = [];
   filteredWeaponAssets: AssetDto[] = [];
   loading = true;
   error: string | null = null;
+  totalItems = 0; // Total count for server-side pagination
 
   // Tab management
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
@@ -152,7 +156,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       const id = params['id'];
       if (id) {
         this.depoId = parseInt(id, 10);
-        this.loadInventoryData();
+        this.loadDepotAndAssets(); // Initial load of depot info and assets
       }
     });
 
@@ -165,18 +169,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
 
-    // Subscribe to search changes
-    this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        startWith(this.searchControl.value),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.applyFilters();
-        this.cdr.markForCheck();
-      });
+  onSearch(): void {
+    this.currentPage = 1; // Reset to first page
+    this.applyFilters();
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -184,26 +182,83 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadInventoryData(): void {
+  private loadDepotAndAssets(): void {
     this.loading = true;
     this.error = null;
 
-    forkJoin({
-      depot: this.lookupService.getDepots(),
-      inventoryDetails: this.inventoryService.getWarehouseInventoryItems(this.depoId),
-      weaponAssets: this.assetService.getByDepotId<AssetDto>(this.depoId)
-    })
+    // Only load depot info initially. Data will be loaded based on active tab.
+    this.lookupService.getDepots()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depot, inventoryDetails, weaponAssets }) => {
-          // Find the specific depot
-          this.currentDepot = depot.find((d: LookupItem) => d.id === this.depoId) || null;
+        next: (depots) => {
+          this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
 
-          // Normalize inventory details using filter service
-          this.inventoryDetails = this.filterService.normalizeInventoryDetails(inventoryDetails);
-          this.weaponAssets = weaponAssets || [];
-          this.applyFilters();
+          // Initial tab load
+          this.loadTabContent();
+
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.error = 'Failed to load depot data';
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.translateService.get(['toast.failedToLoadInventory', 'toast.error']).subscribe(translations => {
+            this.toastService.error(translations['toast.failedToLoadInventory'] || 'Failed to load data', translations['toast.error']);
+          });
+        }
+      });
+  }
+
+  private loadTabContent(): void {
+    if (this.activeTab === 'weapon') {
+      this.loadServerSideAssets();
+    } else {
+      this.loadServerSideInventory();
+    }
+  }
+
+  private loadServerSideAssets(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const request = this.buildPagedRequest();
+
+    // We reuse buildPagedRequest but need to adapt filters for Asset DTO structure if needed
+    // Assets are filtered by SerialNumber, AssetTag, ItemName etc in backend
+
+    this.assetService.getAssetsPaginated(this.depoId, request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.weaponAssets = response.items || [];
+          this.filteredWeaponAssets = this.weaponAssets; // Direct assignment as filtering is done on server
+          this.totalItems = response.totalCount;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.error = 'Failed to load asset data';
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadServerSideInventory(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const request = this.buildPagedRequest();
+
+    this.inventoryService.getInventoryDetailsPaginated(this.depoId, request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.inventoryDetails = response.items || [];
+          this.filteredInventoryDetails = this.filterService.normalizeInventoryDetails(this.inventoryDetails);
+          this.totalItems = response.totalCount;
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -211,11 +266,59 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.error = 'Failed to load inventory data';
           this.loading = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.failedToLoadInventory', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToLoadInventory'] || 'Failed to load inventory data', translations['toast.error']);
-          });
         }
       });
+  }
+
+  private buildPagedRequest() {
+    const searchTerm = this.searchControl.value?.trim();
+    let filterData: FilterData | undefined;
+
+    if (this.activeTab === 'weapon') {
+      // Filter for Assets
+      if (searchTerm) {
+        filterData = {
+          logic: 'or',
+          filters: [
+            { field: 'Item.Name', operator: 'contains', value: searchTerm },
+            { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
+            { field: 'SerialNumber', operator: 'contains', value: searchTerm },
+            { field: 'AssetTag', operator: 'contains', value: searchTerm }
+          ]
+        };
+      }
+    } else {
+      // Filter for Inventory (Ammo/Explosive)
+      // 1. Determine ItemType based on activeTab
+      let itemType = ItemType.Ammunition;
+      if (this.activeTab === 'explosive') itemType = ItemType.Explosive;
+
+      filterData = {
+        logic: 'and',
+        filters: [
+          { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
+        ]
+      };
+
+      if (searchTerm && filterData.filters) {
+        filterData.filters.push({
+          logic: 'or',
+          filters: [
+            { field: 'Item.Name', operator: 'contains', value: searchTerm },
+            { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
+            { field: 'BatchNo', operator: 'contains', value: searchTerm },
+            { field: 'Supplier.NameEn', operator: 'contains', value: searchTerm },
+            { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm }
+          ]
+        });
+      }
+    }
+
+    return {
+      page: this.currentPage,
+      pageSize: this.rowsPerPage,
+      filter: filterData
+    };
   }
 
 
@@ -227,7 +330,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.currentPage = 1;
     this.updateQueryParams(tab);
-    this.applyFilters();
+
+    // Always load content (which handles switching strategy)
+    this.loadTabContent();
     this.cdr.markForCheck();
   }
 
@@ -248,53 +353,32 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Apply both tab filter and search filter
    */
   applyFilters(): void {
-    // For weapon tab, filter weapon assets
-    if (this.activeTab === 'weapon') {
-      this.filteredWeaponAssets = this.filterService.filterAssetsBySearch(
-        this.weaponAssets,
-        this.searchControl.value,
-        (asset) => this.formatterService.getAssetItemName(asset)
-      );
-    } else {
-      // For ammunition and explosive tabs, filter inventory items
-      let filtered = this.filterService.filterByTab(this.inventoryDetails, this.activeTab);
-      filtered = this.filterService.filterInventoryBySearch(
-        filtered,
-        this.searchControl.value,
-        (detail) => this.formatterService.getItemName(detail),
-        (detail) => this.formatterService.getItemNo(detail),
-        (detail) => this.formatterService.getSupplierName(detail)
-      );
-      this.filteredInventoryDetails = filtered;
-    }
-
-    this.validateCurrentPage();
+    // Both tabs now use server-side pagination, so reset page and reload
+    this.currentPage = 1;
+    this.loadTabContent();
     this.cdr.markForCheck();
   }
 
 
   get totalPages(): number {
-    const totalItems = this.activeTab === 'weapon'
-      ? this.filteredWeaponAssets.length
-      : this.filteredInventoryDetails.length;
-    if (totalItems === 0) {
-      return 1;
-    }
-    return Math.ceil(totalItems / this.rowsPerPage);
+    // Unified logic for server-side pagination
+    return this.totalItems === 0 ? 1 : Math.ceil(this.totalItems / this.rowsPerPage);
   }
 
   get paginatedItems(): InventoryDetailDto[] {
-    // Ensure currentPage is valid before slicing
-    this.validateCurrentPage();
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.filteredInventoryDetails.slice(startIndex, startIndex + this.rowsPerPage);
+    // For server-side, filteredInventoryDetails already contains ONLY the current page items
+    if (this.activeTab !== 'weapon') {
+      return this.filteredInventoryDetails;
+    }
+    return [];
   }
 
   get paginatedAssets(): AssetDto[] {
-    // Ensure currentPage is valid before slicing
-    this.validateCurrentPage();
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.filteredWeaponAssets.slice(startIndex, startIndex + this.rowsPerPage);
+    // For server-side, filteredWeaponAssets already contains ONLY the current page items
+    if (this.activeTab === 'weapon') {
+      return this.filteredWeaponAssets;
+    }
+    return [];
   }
 
   private validateCurrentPage(): void {
@@ -310,7 +394,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.cdr.markForCheck();
+      this.loadTabContent(); // Handles both Asset (now server-side) and Inventory
     }
   }
 
@@ -351,8 +435,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onRowsPerPageChange(newSize: number): void {
     this.rowsPerPage = newSize;
     this.currentPage = 1; // Reset to first page
-    this.validateCurrentPage();
-    this.cdr.markForCheck();
+    this.loadTabContent(); // Reload data with new page size
   }
 
   // Delegate formatting methods to formatter service
@@ -371,7 +454,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Refresh inventory data
    */
   refreshInventory(): void {
-    this.loadInventoryData();
+    this.loadTabContent();
     this.cdr.markForCheck();
   }
 
@@ -439,8 +522,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onEditAssetModalClosed(): void {
     this.showEditAssetModal = false;
     this.selectedAsset = null;
+    this.selectedAsset = null;
     // Reload weapon assets after edit
-    this.loadInventoryData();
+    this.loadDepotAndAssets();
     this.cdr.markForCheck();
   }
 
@@ -467,7 +551,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           if (result.success) {
-            this.loadInventoryData();
+            this.loadDepotAndAssets();
           } else {
             this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(translations => {
               this.toastService.error(
@@ -558,7 +642,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         next: (result) => {
           if (result.success && result.updatedInventory) {
             // Reload inventory data
-            this.loadInventoryData();
+            this.refreshInventory();
           } else {
             this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
               this.toastService.error(result.error || translations['toast.failedToUpdate'], translations['toast.error']);
@@ -590,7 +674,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (result) => {
           if (result.success) {
-            this.loadInventoryData();
+            this.refreshInventory();
           } else {
             this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
               this.toastService.error(result.error || translations['toast.failedToDelete'], translations['toast.error']);

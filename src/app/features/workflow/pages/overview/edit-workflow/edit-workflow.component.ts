@@ -8,7 +8,8 @@ import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
-import { RoleDto } from '@models/backend-user.model';
+import { RoleDto, BackendUserDto } from '@models/backend-user.model';
+import { PaginatedList } from '@models/api-response.model';
 import { WorkflowStepDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
@@ -635,11 +636,13 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
+
   private loadAllUsers(callback?: () => void): void {
     // Load users only once and cache them
-    this.backendUserService.getUsers().subscribe({
-      next: (users) => {
-        this.allUsers = (users || []).map((user: any) => ({
+    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
+      next: (response: PaginatedList<BackendUserDto>) => {
+        const users = response.items || [];
+        this.allUsers = users.map((user: BackendUserDto) => ({
           id: String(user.id),
           userName: user.userName || '',
           roles: user.roleIds || []
@@ -749,10 +752,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadNextStepsForStep(step: any, stepIndex: number): void {
-    // Use API to get next steps - only for existing steps with workflowStepId
-    // This populates the dropdown options - does not modify workflow data
-    // Each step maintains its own identity - skip steps don't affect step properties
-
     // Only call API for existing steps (those with workflowStepId)
     if (!step.workflowStepId) {
       // New steps don't have ID yet, so no next steps available
@@ -763,8 +762,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     // Call API to get next steps for this step
     this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).subscribe({
       next: (nextSteps: WorkflowStepDto[]) => {
-        // Set dropdown options - API returns only steps after current step
-        // Skip steps are just options, they don't change the step's own properties
         step.availableNextSteps = nextSteps.map((ns: WorkflowStepDto) => ({
           ...ns,
           displayName: this.getStepDisplayName(ns)
@@ -797,94 +794,53 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   getRoleNameById(roleId?: string | null): string {
     if (!roleId) return '';
     const r = this.roles.find(role => role.id === roleId);
-    return r ? getLocalizedName(r, getCurrentLang(this.translate)) || r.name : String(roleId);
+    if (!r) return roleId;
+    return (this.isRTL ? r.nameAr : r.nameEn) || r.name || roleId;
   }
 
   getEntityNameById(entityId?: number | null): string {
     if (entityId === undefined || entityId === null) return '';
     const e = this.allApplicationEntities.find(x => x.id === entityId);
-    if (e) {
-      const entity = (e as any).entity;
-      if (entity) {
-        return getLocalizedName(entity, getCurrentLang(this.translate)) || e.name || String(e.id);
-      }
-      return e.name || String(e.id);
-    }
-    return String(entityId);
+    return e ? (e.name || String(entityId)) : String(entityId);
   }
 
   orderLabel(n: number): string {
     if (n <= 0) {
+      return '';
+    }
+
+    // Try to get translation key for ordinal number
+    const key = this.getOrdinalKey(n);
+    if (!key) {
+      // Fallback to simple number
       return String(n);
     }
 
-    const key = this.getOrdinalKey(n);
-    if (key) {
-      if (key.includes('-')) {
-        return key.replace('-', ' ');
-      }
-      return this.translate.instant(key);
-    }
-
-    return this.translate.instant('workflow.stepNumber', { number: n });
+    return this.translate.instant(key);
   }
 
   private getOrdinalKey(n: number): string | null {
-    const predefined: { [k: number]: string } = {
-      1: 'workflow.first',
-      2: 'workflow.second',
-      3: 'workflow.third',
-      4: 'workflow.fourth',
-      5: 'workflow.fifth',
-      6: 'workflow.sixth',
-      7: 'workflow.seventh',
-      8: 'workflow.eighth',
-      9: 'workflow.ninth',
-      10: 'workflow.tenth',
-      11: 'workflow.eleventh',
-      12: 'workflow.twelfth',
-      13: 'workflow.thirteenth',
-      14: 'workflow.fourteenth',
-      15: 'workflow.fifteenth',
-      16: 'workflow.sixteenth',
-      17: 'workflow.seventeenth',
-      18: 'workflow.eighteenth',
-      19: 'workflow.nineteenth',
-      20: 'workflow.twentieth'
+    // Basic mapping for common ordinals (1st to 10th)
+    // You can expand this as needed or use a library
+    const predefined: { [key: number]: string } = {
+      1: 'common.ordinals.first',
+      2: 'common.ordinals.second',
+      3: 'common.ordinals.third',
+      4: 'common.ordinals.fourth',
+      5: 'common.ordinals.fifth',
+      6: 'common.ordinals.sixth',
+      7: 'common.ordinals.seventh',
+      8: 'common.ordinals.eighth',
+      9: 'common.ordinals.ninth',
+      10: 'common.ordinals.tenth'
     };
 
     if (predefined[n]) {
       return predefined[n];
     }
 
-    const tens: { [k: number]: string } = {
-      20: 'workflow.twentieth',
-      30: 'workflow.thirtieth',
-      40: 'workflow.fortieth',
-      50: 'workflow.fiftieth',
-      60: 'workflow.sixtieth',
-      70: 'workflow.seventieth',
-      80: 'workflow.eightieth',
-      90: 'workflow.ninetieth',
-      100: 'workflow.oneHundredth'
-    };
-
-    if (tens[n]) {
-      return tens[n];
-    }
-
-    if (n > 20 && n < 100) {
-      const ones = n % 10;
-      const base = n - ones;
-      const baseKey = tens[base];
-      const onesKey = predefined[ones];
-      if (baseKey && onesKey) {
-        const baseText = this.translate.instant(baseKey).replace(/th$/i, '').trim();
-        const onesText = this.translate.instant(onesKey).toLowerCase();
-        return `${baseText}-${onesText}`;
-      }
-    }
-
+    // For larger numbers, you might want a more complex logic
+    // or just return null to fallback to the number itself
     return null;
   }
 }

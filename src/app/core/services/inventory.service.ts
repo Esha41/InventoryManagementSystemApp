@@ -13,6 +13,7 @@ import {
   InventoryDetailDto,
   ItemInventorySummaryDto
 } from '@models/inventory.model';
+import { PagedRequest, PaginatedList } from '@models/api-response.model';
 
 /**
  * Warehouse Inventory Service
@@ -78,6 +79,14 @@ export class InventoryService {
         return details;
       })
     );
+  }
+
+  /**
+   * Get paginated inventory details by depot ID
+   */
+  getInventoryDetailsPaginated(depotId: number, request: PagedRequest): Observable<PaginatedList<InventoryDetailDto>> {
+    this.config.log('Fetching paginated warehouse inventory items', { depotId, page: request.page, pageSize: request.pageSize });
+    return this.apiService.post<PaginatedList<InventoryDetailDto>>(`${this.endpoint}/depot/${depotId}/details/search`, request);
   }
 
   /**

@@ -45,6 +45,7 @@ export class RequestFilterBarComponent {
     @Input() showResultCount = true;
     @Input() searchPlaceholder = 'dashboard.searchOrders';
     @Input() layout: 'unified' | 'separate' = 'unified'; // unified = dashboard style, separate = requests-management style
+    @Input() useSearchButton = false;
 
     // Filter values
     @Input() statusFilter: StatusFilter = 'all';
@@ -56,6 +57,7 @@ export class RequestFilterBarComponent {
     @Output() statusFilterChange = new EventEmitter<StatusFilter>();
     @Output() priorityFilterChange = new EventEmitter<PriorityFilter>();
     @Output() searchQueryChange = new EventEmitter<string>();
+    @Output() searchTriggered = new EventEmitter<string>();
 
     // Icons
     readonly Search = Search;
@@ -120,7 +122,16 @@ export class RequestFilterBarComponent {
      */
     onSearchChange(value: string): void {
         this.searchQuery = value;
-        this.searchQueryChange.emit(value);
+        if (!this.useSearchButton) {
+            this.searchQueryChange.emit(value);
+        }
+    }
+
+    /**
+     * Trigger search manually
+     */
+    onSearchClick(): void {
+        this.searchTriggered.emit(this.searchQuery);
     }
 
     /**

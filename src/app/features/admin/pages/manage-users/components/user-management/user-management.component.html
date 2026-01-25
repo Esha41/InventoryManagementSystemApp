@@ -51,8 +51,8 @@
   </div>
 
   <!-- Filters -->
-  <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" (searchChange)="onSearchChange($event)"
-    (statusFilterChange)="onStatusFilterChange($event)">
+  <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" [useSearchButton]="true"
+    (searchTriggered)="onSearchChange($event)" (statusFilterChange)="onStatusFilterChange($event)">
   </app-user-filters>
 
   <!-- Users Table -->
@@ -252,7 +252,7 @@
       class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
       <div class="flex items-center justify-between w-full flex-nowrap">
         <!-- Rows Per Page Selector -->
-        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredUsers.length"
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="getTotalUsers()"
           [visibleItems]="paginatedUsers.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 

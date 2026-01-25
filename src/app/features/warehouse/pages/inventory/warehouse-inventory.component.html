@@ -103,7 +103,7 @@
       </div>
 
       <!-- Search Bar -->
-      <app-inventory-filters [searchControl]="searchControl">
+      <app-inventory-filters [searchControl]="searchControl" (searchTriggered)="onSearch()">
       </app-inventory-filters>
 
       <!-- Loading State -->

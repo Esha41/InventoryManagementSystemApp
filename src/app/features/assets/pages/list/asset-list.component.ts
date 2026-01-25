@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, forkJoin, Subject, takeUntil, timer, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, skip } from 'rxjs/operators';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -12,6 +12,7 @@ import { LucideAngularModule, Search, Filter, Edit, Trash2, Eye, Plus, X, ArrowU
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
+import { AssetService as AssetHttpService } from '@services/asset.service';
 import { LookupService } from '@services/lookup.service';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
@@ -20,8 +21,8 @@ import { AmmunitionReadDto, AmmunitionCreateDto, LookupDto } from '@models/ammun
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { LookupItem } from '@models/lookup.model';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ImagePreviewTooltipComponent, ImagePreviewData } from '@components/index';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
+import { ImagePreviewTooltipComponent, ImagePreviewData } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
@@ -43,12 +44,7 @@ import {
 } from '@utils/asset-list.mapper';
 import {
   getLookupDisplayName,
-  createFilterOptions,
-  filterAssets,
-  sortAssets,
-  paginateAssets,
-  calculateTotalPages,
-  validateCurrentPage
+  createFilterOptions
 } from '@utils/asset-list.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import {
@@ -61,8 +57,16 @@ import {
 } from '@utils/asset-list.state';
 import { AssetPropertyAccessor } from '@utils/asset-property.utils';
 import { AssetEditModalComponent } from './components/asset-edit-modal/asset-edit-modal.component';
-import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { AssetFilterBarComponent } from './components/asset-filter-bar/asset-filter-bar.component';
+import { AssetTableComponent } from './components/asset-table/asset-table.component';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { AssetListService } from './services/asset-list.service';
+import { AssetImageService } from './services/asset-image.service';
+import { AssetExportService } from './services/asset-export.service';
+import { AssetImportService } from './services/asset-import.service';
+import { AssetModalService } from './services/asset-modal.service';
+import { AssetFilterService } from './services/asset-filter.service';
+import { PaginatedList } from '@models/api-response.model';
 
 @Component({
   selector: 'app-asset-list',
@@ -76,13 +80,10 @@ import { FileUploadService, FileEntityType } from '@services/file-upload.service
     ConfirmDialogComponent,
     LucideAngularModule,
     TranslateModule,
-    DropdownComponent,
     HasPermissionDirective,
-    PaginationComponent,
-    RowsPerPageComponent,
-    LoadingStateComponent,
     AssetEditModalComponent,
-    ImagePreviewTooltipComponent
+    AssetFilterBarComponent,
+    AssetTableComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -108,6 +109,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   assets: Asset[] = [];
   loading = false;
   activeTab: AssetType = 'ammunition';
+  totalItems: number = 0;
 
   // Filter state
   filterState: AssetFilterState = createInitialFilterState();
@@ -154,70 +156,119 @@ export class AssetListComponent implements OnInit, OnDestroy {
     { label: 'assetList.editModal.linked', value: true }
   ];
 
-  private blobUrls: Set<string> = new Set();
-
   // Computed properties
   get isRTL(): boolean {
     return this.translationService.isRTL();
   }
 
   get totalPages(): number {
-    return calculateTotalPages(this.filteredAssets.length, this.paginationState.rowsPerPage);
+    return this.totalItems === 0 ? 1 : Math.ceil(this.totalItems / this.paginationState.rowsPerPage);
   }
 
+  // Filter options - delegated to AssetFilterService
   get caseTypeFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.caseTypeList, this.translateService);
+    return this.assetFilterService.getAmmunitionFilterOptions(
+      this.caseTypeList,
+      this.hazardDivisionList,
+      this.compatibilityList,
+      this.propellantList
+    ).caseType;
   }
 
   get hazardDivisionFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.hazardDivisionList, this.translateService);
+    return this.assetFilterService.getAmmunitionFilterOptions(
+      this.caseTypeList,
+      this.hazardDivisionList,
+      this.compatibilityList,
+      this.propellantList
+    ).hazardDivision;
   }
 
   get compatibilityFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.compatibilityList, this.translateService);
+    return this.assetFilterService.getAmmunitionFilterOptions(
+      this.caseTypeList,
+      this.hazardDivisionList,
+      this.compatibilityList,
+      this.propellantList
+    ).compatibility;
   }
 
   // Weapon filter options
   get weaponTypeFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.itemTypes, this.translateService);
+    return this.assetFilterService.getWeaponFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.countries
+    ).weaponType;
   }
 
   get weaponClassificationFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.classifications, this.translateService);
+    return this.assetFilterService.getWeaponFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.countries
+    ).weaponClassification;
   }
 
   get countryFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.countries, this.translateService);
+    return this.assetFilterService.getWeaponFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.countries
+    ).countryOfManufacture;
   }
 
   // Explosive filter options
   get explosiveTypeFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.itemTypes, this.translateService);
+    return this.assetFilterService.getExplosiveFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.hazardDivisionList,
+      this.compatibilityList
+    ).explosiveType;
   }
 
   get explosiveClassificationFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.classifications, this.translateService);
+    return this.assetFilterService.getExplosiveFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.hazardDivisionList,
+      this.compatibilityList
+    ).explosiveClassification;
   }
 
   get explosiveHazardDivisionFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.hazardDivisionList, this.translateService);
+    return this.assetFilterService.getExplosiveFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.hazardDivisionList,
+      this.compatibilityList
+    ).explosiveHazardDivision;
   }
 
   get explosiveCompatibilityFilterOptions(): Array<{ label: string; value: number }> {
-    return createFilterOptions(this.compatibilityList, this.translateService);
+    return this.assetFilterService.getExplosiveFilterOptions(
+      this.itemTypes,
+      this.classifications,
+      this.hazardDivisionList,
+      this.compatibilityList
+    ).explosiveCompatibility;
   }
 
   get paginatedAssets(): Asset[] {
-    const filtered = filterAssets(this.assets, this.filterState, this.activeTab);
-    const sorted = sortAssets(filtered, this.sortState);
-    return paginateAssets(sorted, this.paginationState.currentPage, this.paginationState.rowsPerPage);
+    // With server-side pagination, assets already contains only the current page items
+    return this.assets;
   }
 
   get filteredAssets(): Asset[] {
-    return filterAssets(this.assets, this.filterState, this.activeTab);
+    // For export, we still need all filtered items
+    // This will be handled differently - export will need to fetch all filtered data
+    return this.assets;
   }
 
   constructor(
+    private assetListService: AssetListService,
+    private assetService: AssetHttpService,
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
@@ -231,7 +282,11 @@ export class AssetListComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private propertyAccessor: AssetPropertyAccessor,
     private cdr: ChangeDetectorRef,
-    private excelExportService: ExcelExportService
+    private assetImageService: AssetImageService,
+    private assetExportService: AssetExportService,
+    private assetImportService: AssetImportService,
+    private assetModalService: AssetModalService,
+    private assetFilterService: AssetFilterService
   ) { }
 
   ngOnDestroy(): void {
@@ -244,14 +299,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     }
 
     // Clean up all blob URLs to prevent memory leaks
-    this.blobUrls.forEach((url: string) => {
-      try {
-        URL.revokeObjectURL(url);
-      } catch {
-        // Silently handle blob URL revocation errors
-      }
-    });
-    this.blobUrls.clear();
+    this.assetImageService.cleanup();
   }
 
   ngOnInit(): void {
@@ -260,8 +308,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
       this.loadDropdowns();
 
       // Subscribe to language changes to reload assets with new localized names
+      // Skip the first emission to avoid duplicate call on init
       this.translateService.onLangChange
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          skip(1), // Skip initial emission to prevent duplicate call
+          takeUntil(this.destroy$)
+        )
         .subscribe(() => {
           // Reload assets to get new localized names
           this.loadAssets();
@@ -299,8 +351,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
   switchTab(tab: AssetType): void {
     this.activeTab = tab;
     this.initializePropertyAccessor();
-    this.clearFilters();
-    this.loadAssets();
+    this.paginationState.currentPage = 1;
+    this.clearFilters(); // clearFilters() already calls onFilterChange() which calls loadAssets()
     this.cdr.markForCheck();
   }
 
@@ -312,168 +364,34 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.markForCheck();
 
-    try {
-      if (this.activeTab === 'ammunition') {
-        this.loadAmmunition();
-      } else if (this.activeTab === 'weapon') {
-        this.loadWeapons();
-      } else if (this.activeTab === 'explosive') {
-        this.loadExplosives();
-      } else {
-        this.activeTab = 'ammunition';
-        this.loadAmmunition();
-      }
-    } catch {
-      this.loading = false;
-      this.assets = [];
-      this.cdr.markForCheck();
-    }
-  }
-
-  private loadAmmunition(): void {
-    this.ammunitionService.getAll<AmmunitionReadDto>()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          try {
-            this.assets = mapAmmunitionArrayToAssets(items || [], this.translateService);
-            this.finishLoading();
-          } catch {
-            this.assets = [];
-            this.loading = false;
-            this.cdr.markForCheck();
-          }
-        },
-        error: () => {
-          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
-          this.assets = [];
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
-      });
-  }
-
-  private loadWeapons(): void {
-    this.weaponService.getAll<WeaponDto>()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          try {
-            this.assets = mapWeaponArrayToAssets(items || [], this.translateService);
-            this.finishLoading();
-          } catch {
-            this.assets = [];
-            this.loading = false;
-            this.cdr.markForCheck();
-          }
-        },
-        error: () => {
-          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
-          this.assets = [];
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
-      });
-  }
-
-  private loadExplosives(): void {
-    this.explosiveService.getAll<ExplosiveDto>()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          try {
-            this.assets = mapExplosiveArrayToAssets(items || [], this.translateService);
-            this.finishLoading();
-          } catch {
-            this.assets = [];
-            this.loading = false;
-            this.cdr.markForCheck();
-          }
-        },
-        error: () => {
-          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
-          this.assets = [];
-          this.loading = false;
-          this.cdr.markForCheck();
-        }
-      });
-  }
-
-  private finishLoading(): void {
-    this.paginationState.currentPage = 1;
-    this.loadAssetImages();
-    this.loading = false;
-    this.paginationState.currentPage = validateCurrentPage(
+    this.assetListService.getAssets(
+      this.activeTab,
       this.paginationState.currentPage,
-      calculateTotalPages(this.assets.length, this.paginationState.rowsPerPage)
-    );
-    this.cdr.markForCheck();
+      this.paginationState.rowsPerPage,
+      this.filterState,
+      this.sortState
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: PaginatedList<Asset>) => {
+          this.assets = response.items || [];
+          this.totalItems = response.totalCount || 0;
+          this.loadAssetImages();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.showErrorToast(this.translateService.instant('assetList.errors.failedToLoad'));
+          this.assets = [];
+          this.totalItems = 0;
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private loadAssetImages(): void {
-    // Extract image IDs from response and fetch as blobs for all asset types
-    this.loadImagesFromResponse();
-  }
-
-  private loadImagesFromResponse(): void {
-    const imageRequests = this.assets
-      .map(asset => {
-        const originalData = asset.originalData as any;
-        if (!originalData?.images || originalData.images.length === 0) {
-          return null;
-        }
-
-        // Get main images (there might be multiple with isMain: true)
-        const mainImages = originalData.images.filter((img: any) => img.isMain);
-        let image: any;
-
-        if (mainImages.length > 0) {
-          // If multiple main images exist, get the one with highest ID (latest uploaded)
-          image = mainImages.reduce((latest: any, current: any) =>
-            (current.id > latest.id) ? current : latest
-          );
-        } else {
-          // If no main image, get the image with highest ID (latest uploaded)
-          image = originalData.images.reduce((latest: any, current: any) =>
-            (current.id > latest.id) ? current : latest
-          );
-        }
-
-        if (!image?.id) {
-          return null;
-        }
-
-        // Get the appropriate service based on active tab
-        let fileBlob$: Observable<Blob>;
-        if (this.activeTab === 'ammunition') {
-          fileBlob$ = this.ammunitionService.getFileBlob(image.id);
-        } else if (this.activeTab === 'weapon') {
-          fileBlob$ = this.weaponService.getFileBlob(image.id);
-        } else if (this.activeTab === 'explosive') {
-          fileBlob$ = this.explosiveService.getFileBlob(image.id);
-        } else {
-          return null;
-        }
-
-        return fileBlob$.pipe(
-          map((blob: Blob) => {
-            if (blob.type && blob.type.startsWith('image/')) {
-              const blobUrl = URL.createObjectURL(blob);
-              return { assetId: asset.id, url: blobUrl };
-            }
-            return { assetId: asset.id, url: null };
-          }),
-          catchError((err) => {
-            console.error(`Failed to load image for asset ${asset.id}:`, err);
-            return of({ assetId: asset.id, url: null });
-          })
-        );
-      })
-      .filter((req): req is Observable<{ assetId: string; url: string | null }> => req !== null);
-
-    if (imageRequests.length === 0) return;
-
-    forkJoin(imageRequests)
+    this.assetImageService.loadAssetImages(this.assets, this.activeTab)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (results) => {
@@ -481,25 +399,26 @@ export class AssetListComponent implements OnInit, OnDestroy {
             const asset = this.assets.find(a => a.id === assetId);
             if (asset && url) {
               asset.imageUrl = url;
-              this.blobUrls.add(url);
             }
           });
-          this.cdr.markForCheck();
+          // Create new array reference to trigger OnPush detection in child components
+          this.assets = [...this.assets];
+          this.cdr.detectChanges();
         },
         error: () => { /* Silently handle image loading errors - images are optional */ }
       });
   }
 
-  private getAssetService(): AssetService<AmmunitionReadDto | WeaponDto | ExplosiveDto, AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto> {
+  private getAssetService(): any {
     switch (this.activeTab) {
       case 'ammunition':
-        return this.ammunitionService as AssetService<AmmunitionReadDto, AmmunitionCreateDto>;
+        return this.ammunitionService;
       case 'weapon':
-        return this.weaponService as AssetService<WeaponDto, CreateUpdateWeaponDto>;
+        return this.weaponService;
       case 'explosive':
-        return this.explosiveService as AssetService<ExplosiveDto, CreateUpdateExplosiveDto>;
+        return this.explosiveService;
       default:
-        return this.ammunitionService as AssetService<AmmunitionReadDto, AmmunitionCreateDto>;
+        return this.ammunitionService;
     }
   }
 
@@ -537,7 +456,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     service.getById(numericId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (data: any) => {
           this.modalState.selectedAsset = data;
 
           // Load image for edit first, then open modal
@@ -599,7 +518,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
                 .subscribe({
                   next: (blob: Blob) => {
                     this.imageState.editImageUrl = URL.createObjectURL(blob);
-                    this.blobUrls.add(this.imageState.editImageUrl!);
+                    this.assetImageService.addBlobUrl(this.imageState.editImageUrl!);
                     // Create a new object reference to trigger change detection
                     this.imageState = { ...this.imageState };
                     this.cdr.markForCheck();
@@ -625,8 +544,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   }
 
   closeEditModal(): void {
-    this.modalState.showEditModal = false;
-    this.modalState.selectedAsset = null;
+    this.assetModalService.closeEditModal(this.modalState, this.imageState);
     this.imageState = createInitialImageState();
     this.cdr.markForCheck();
   }
@@ -646,7 +564,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     service.update(id, event.dto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
+        next: (res: APIOperationResponse<any>) => {
           if (res.succeeded) {
             // Handle Image Update
             if (event.imageFile) {
@@ -675,7 +593,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
             this.cdr.markForCheck();
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Update failed'));
           this.loading = false;
           this.cdr.markForCheck();
@@ -685,14 +603,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   onDelete(assetId: string): void {
     const asset = this.assets.find(a => a.id === assetId);
-    this.modalState.selectedAsset = asset || null;
-    this.modalState.showDeleteModal = true;
-    this.cdr.markForCheck();
+    if (asset) {
+      this.assetModalService.openDeleteModal(asset, this.modalState);
+      this.cdr.markForCheck();
+    }
   }
 
   closeDeleteModal(): void {
-    this.modalState.showDeleteModal = false;
-    this.modalState.selectedAsset = null;
+    this.assetModalService.closeDeleteModal(this.modalState);
     this.cdr.markForCheck();
   }
 
@@ -711,7 +629,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     service.delete(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
+        next: (res: APIOperationResponse<void>) => {
           if (res.succeeded) {
             this.toastService.success('Deleted successfully');
             this.closeDeleteModal();
@@ -722,7 +640,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
             this.cdr.markForCheck();
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Delete failed'));
           this.loading = false;
           this.cdr.markForCheck();
@@ -791,178 +709,27 @@ export class AssetListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           this.loading = false;
+          this.assetImportService.handleImportResponse(res);
           if (res.succeeded) {
-            const result = res.data;
-            if (result.errors && result.errors.length > 0) {
-              let msg = `Imported ${result.successCount} items. ${result.failureCount} failed.`;
-
-              // If only 1-2 errors, show the first reason
-              if (result.failureCount <= 2 && result.errors[0]?.errorMessage) {
-                // Clean up the message a bit if it's too long
-                let reason = result.errors[0].errorMessage;
-
-                // Extract inner exception if present for cleaner message
-                if (reason.includes("(Inner:")) {
-                  const parts = reason.split("(Inner:");
-                  if (parts.length > 1) {
-                    reason = parts[1].replace(")", "").trim();
-                  }
-                }
-
-                if (reason.length > 300) reason = reason.substring(0, 300) + '...';
-                msg += ` Reason: ${reason}`;
-              }
-              else {
-                // Check for common issues in bulk
-                const hasDuplicates = result.errors.some((e: any) =>
-                  e.errorMessage?.toLowerCase().includes('duplicate') ||
-                  e.errorMessage?.toLowerCase().includes('already exists')
-                );
-                if (hasDuplicates) msg += " (Duplicates found)";
-                else msg += ` (${result.errors.length} errors found)`;
-              }
-
-              this.toastService.warning(msg);
-            } else {
-              this.toastService.success(`Imported ${result.successCount} items successfully.`);
-            }
             this.loadAssets();
-          } else {
-            this.toastService.error(res.message || 'Import failed');
           }
           this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
-          this.toastService.error('Import failed');
+          this.assetImportService.handleImportError();
           this.cdr.markForCheck();
         }
       });
   }
 
   downloadImportTemplate(): void {
-    let headers: ExcelColumn[] = [];
-    let sampleData: any[] = [];
-
-    if (this.activeTab === 'ammunition') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Arm Number', key: 'armNumber' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'Bullet Diameter', key: 'bulletDiameter' },
-        { header: 'Is Linked', key: 'isLinked' },
-        { header: 'Primer', key: 'primer' },
-        { header: 'Total Weight', key: 'totalWeight' },
-        { header: 'NSN', key: 'nsn' }
-      ];
-
-      sampleData = [
-        {
-          name: '6.5×55mm Swedish',
-          itemNo: 'AMM-111',
-          partNo: 'P-655-SWE',
-          armNumber: 'ARM-111',
-          price: 4.8,
-          minimumQuantity: 100,
-          bulletDiameter: 6.5,
-          isLinked: false,
-          primer: 'Boxer',
-          totalWeight: 25.1,
-          nsn: '1305-01-612-4419'
-        },
-        {
-          name: '7.62×51mm NATO',
-          itemNo: 'AMM-112',
-          partNo: 'P-762-NATO',
-          armNumber: 'ARM-112',
-          price: 5.2,
-          minimumQuantity: 200,
-          bulletDiameter: 7.62,
-          isLinked: true,
-          primer: 'Berdan',
-          totalWeight: 25.4,
-          nsn: '1305-01-234-5678'
-        }
-      ];
-    } else if (this.activeTab === 'weapon') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'NSN', key: 'nsn' },
-        { header: 'Weapon Type', key: 'weaponType' },
-        { header: 'Caliber', key: 'caliber' },
-        { header: 'Action Type', key: 'actionType' },
-        { header: 'Barrel Length', key: 'barrelLength' },
-        { header: 'Overall Length', key: 'overallLength' },
-        { header: 'Weight', key: 'weight' },
-        { header: 'Capacity', key: 'capacity' }
-      ];
-
-      sampleData = [
-        {
-          name: 'M4 Carbine',
-          itemNo: 'WPN-001',
-          partNo: 'M4-5.56',
-          price: 850.00,
-          minimumQuantity: 10,
-          nsn: '1005-01-231-0973',
-          weaponType: 'Rifle',
-          caliber: '5.56×45mm NATO',
-          actionType: 'SemiAutomatic',
-          barrelLength: 14.5,
-          overallLength: 33,
-          weight: 6.9,
-          capacity: 30
-        }
-      ];
-    } else if (this.activeTab === 'explosive') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Item No', key: 'itemNo' },
-        { header: 'Part No', key: 'partNo' },
-        { header: 'Price', key: 'price' },
-        { header: 'Minimum Quantity', key: 'minimumQuantity' },
-        { header: 'NSN', key: 'nsn' },
-        { header: 'Explosive Type', key: 'explosiveType' },
-        { header: 'UN Number', key: 'unNumber' },
-        { header: 'Net Explosive Quantity', key: 'netExplosiveQuantity' },
-        { header: 'Total Weight', key: 'totalWeight' }
-      ];
-
-      sampleData = [
-        {
-          name: 'C-4 Plastic Explosive',
-          itemNo: 'EXP-001',
-          partNo: 'C4-1.25',
-          price: 125.00,
-          minimumQuantity: 5,
-          nsn: '1375-00-122-2956',
-          explosiveType: 'PlasticExplosive',
-          unNumber: 'UN0056',
-          netExplosiveQuantity: 1.25,
-          totalWeight: 1.5
-        }
-      ];
-    }
-
-    this.excelExportService.exportToExcel({
-      fileName: `${this.activeTab}_import_template`,
-      columns: headers,
-      data: sampleData,
-      sheetName: 'Import Template',
-      includeTimestamp: false
-    });
+    this.assetExportService.downloadImportTemplate(this.activeTab);
   }
 
   onFilterChange(): void {
     this.paginationState.currentPage = 1;
-    this.cdr.markForCheck();
+    this.loadAssets();
   }
 
   clearFilters(): void {
@@ -977,7 +744,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
       this.sortState.column = column;
       this.sortState.direction = 'asc';
     }
-    this.cdr.markForCheck();
+    this.paginationState.currentPage = 1;
+    this.loadAssets();
   }
 
   // Template Helpers
@@ -1013,12 +781,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
   onRowsPerPageChange(rows: number): void {
     this.paginationState.rowsPerPage = rows;
     this.paginationState.currentPage = 1;
-    this.cdr.markForCheck();
+    this.loadAssets();
   }
 
   onPageChange(page: number): void {
     this.paginationState.currentPage = page;
-    this.cdr.markForCheck();
+    this.loadAssets();
   }
 
   // Error handling
@@ -1059,115 +827,34 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   /**
    * Export filtered assets to Excel
+   * Fetches ALL filtered items (not just current page) for export
    */
   exportToExcel(): void {
-    const columns: ExcelColumn[] = [
-      {
-        header: this.translateService.instant('assetList.table.name'),
-        key: 'name',
-        width: 30,
-        format: (value: string) => value || '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.itemNo'),
-        key: 'itemNo',
-        width: 15,
-        format: (value: string) => value || '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.partNo'),
-        key: 'partNo',
-        width: 15,
-        format: (value: string) => value || '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.nsn'),
-        key: 'nsn',
-        width: 15,
-        format: (value: string) => value || '-'
-      }
-    ];
+    this.loading = true;
+    this.cdr.markForCheck();
 
-    // Add tab-specific columns
-    if (this.activeTab === 'ammunition') {
-      columns.push(
-        {
-          header: this.translateService.instant('assetList.table.caseType'),
-          key: 'caseType',
-          width: 20,
-          format: (value: string) => value || '-'
+    // Fetch all filtered items for export
+    this.assetListService.getAllFilteredAssetsForExport(
+      this.activeTab,
+      this.filterState,
+      this.sortState
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allFilteredAssets) => {
+          this.assetExportService.exportToExcel(allFilteredAssets, this.activeTab);
+          this.loading = false;
+          this.cdr.markForCheck();
+
+          this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+            this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+          });
         },
-        {
-          header: this.translateService.instant('assetList.table.hazardDivision'),
-          key: 'hazardDivision',
-          width: 20,
-          format: (value: string | LookupDto) => {
-            if (!value) return '-';
-            if (typeof value === 'string') return value;
-            return getLookupDisplayName(value, this.translateService) || '-';
-          }
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.toastService.error(this.translateService.instant('assetList.errors.failedToExport'));
         }
-      );
-    } else if (this.activeTab === 'weapon') {
-      columns.push(
-        {
-          header: this.translateService.instant('addAsset.weaponType'),
-          key: 'weaponType',
-          width: 20,
-          format: (value: string) => value || '-'
-        },
-        {
-          header: this.translateService.instant('addAsset.caliber'),
-          key: 'caliber',
-          width: 15,
-          format: (value: string) => value || '-'
-        }
-      );
-    } else if (this.activeTab === 'explosive') {
-      columns.push(
-        {
-          header: this.translateService.instant('addAsset.explosiveType'),
-          key: 'explosiveType',
-          width: 20,
-          format: (value: string) => value || '-'
-        },
-        {
-          header: this.translateService.instant('addAsset.unNumber'),
-          key: 'unNumber',
-          width: 15,
-          format: (value: string) => value || '-'
-        }
-      );
-    }
-
-    // Add common columns
-    columns.push(
-      {
-        header: this.translateService.instant('assetList.table.price'),
-        key: 'price',
-        width: 15,
-        format: (value: number) => value ? value.toString() : '-'
-      },
-      {
-        header: this.translateService.instant('assetList.table.minimumQuantity'),
-        key: 'minimumQuantity',
-        width: 18,
-        format: (value: number) => value ? value.toString() : '-'
-      }
-    );
-
-    const fileName = `Asset_List_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
-
-    this.excelExportService.exportToExcel({
-      fileName: fileName,
-      sheetName: this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1),
-      columns: columns,
-      data: this.filteredAssets,
-      includeTimestamp: true
-    });
-
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
-      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-    });
+      });
   }
 }

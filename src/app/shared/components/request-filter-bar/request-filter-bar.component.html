@@ -9,12 +9,20 @@
             <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
         </div>
         <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
-            [placeholder]="searchPlaceholder | translate"
-            class="dashboard-search-input w-full ps-11 pe-10 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate">
-        <button *ngIf="searchQuery" (click)="clearSearch()"
-            class="absolute end-3 p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
-            <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
-        </button>
+            (keyup.enter)="onSearchClick()" [placeholder]="searchPlaceholder | translate"
+            class="dashboard-search-input w-full ps-11 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate"
+            [class.pe-24]="useSearchButton" [class.pe-10]="!useSearchButton">
+
+        <div class="absolute end-2 flex items-center gap-1">
+            <button *ngIf="searchQuery" (click)="clearSearch()"
+                class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+            </button>
+            <button *ngIf="useSearchButton" (click)="onSearchClick()"
+                class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+                {{ 'common.search' | translate }}
+            </button>
+        </div>
     </div>
 
     <div *ngIf="showSearchBar && (showStatusFilter || showPriorityFilter)"
@@ -30,8 +38,8 @@
         </div>
 
         <!-- Status Filter -->
-        <app-dropdown *ngIf="showStatusFilter" class="w-full sm:w-[200px] sm:max-w-[200px] sm:flex-shrink-0" [(ngModel)]="statusFilter"
-            (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
+        <app-dropdown *ngIf="showStatusFilter" class="w-full sm:w-[200px] sm:max-w-[200px] sm:flex-shrink-0"
+            [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
             [optionLabelFn]="statusFilterLabelFn" optionValue="value" [placeholderSelectable]="false">
         </app-dropdown>
 
@@ -63,12 +71,20 @@
                 <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
             </div>
             <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
-                [placeholder]="searchPlaceholder | translate"
-                class="dashboard-search-input w-full ps-11 pe-10 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate">
-            <button *ngIf="searchQuery" (click)="clearSearch()"
-                class="absolute end-3 p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
-                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
-            </button>
+                (keyup.enter)="onSearchClick()" [placeholder]="searchPlaceholder | translate"
+                class="dashboard-search-input w-full ps-11 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate"
+                [class.pe-24]="useSearchButton" [class.pe-10]="!useSearchButton">
+
+            <div class="absolute end-2 flex items-center gap-1">
+                <button *ngIf="searchQuery" (click)="clearSearch()"
+                    class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+                    <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+                </button>
+                <button *ngIf="useSearchButton" (click)="onSearchClick()"
+                    class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+                    {{ 'common.search' | translate }}
+                </button>
+            </div>
         </div>
     </div>
 

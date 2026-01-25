@@ -80,4 +80,3 @@ export interface AllowanceReserveDetailsByItemDto {
   totalUsedQuantity: number;
   items: AllowanceItemReserveDetailsDto[];
 }
-

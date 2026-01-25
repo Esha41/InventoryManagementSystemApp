@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
+import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -20,6 +21,12 @@ import {
 } from '@models/backend-user.model';
 import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
 import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
+
+export interface UserSummaryDto {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+}
 
 /**
  * Backend User Service
@@ -45,21 +52,42 @@ export class BackendUserService {
   /**
    * Get all users
    */
-  getUsers(): Observable<BackendUserDto[]> {
-    this.configService.log('Fetching all users');
+  getUsers(request?: PagedRequest): Observable<PaginatedList<BackendUserDto>> {
+    this.configService.log('Fetching users', request);
 
-    return this.apiService.get<BackendUserDto[]>(
-      API_ENDPOINTS.USERS.BASE
+    // Construct query parameters
+    let params = new HttpParams()
+      .set('Page', (request?.page || 1).toString())
+      .set('PageSize', (request?.pageSize || 10).toString());
+
+    if (request?.filter?.field) {
+      params = params.set('Filter.Field', request.filter.field);
+    }
+    if (request?.filter?.operator) {
+      params = params.set('Filter.Operator', request.filter.operator);
+    }
+    if (request?.filter?.value) {
+      params = params.set('Filter.Value', request.filter.value);
+    }
+
+    return this.apiService.get<PaginatedList<BackendUserDto>>(
+      API_ENDPOINTS.USERS.BASE,
+      params
     ).pipe(
-      map(users => {
-        // Normalize militoryId to militaryId for all users
-        return (users || []).map(rawUser => {
+      map(response => {
+        // Handle paginated response structure
+        const items = response.items || [];
+
+        // Normalize user data (similar to previous implementation but for paginated items)
+        const normalizedItems = items.map(rawUser => {
           const user = { ...rawUser } as BackendUserDto;
 
+          // Normalize militoryId
           if ((rawUser as any).militoryId && !user.militaryId) {
             user.militaryId = (rawUser as any).militoryId;
           }
 
+          // Normalize roles
           const rawRoles = Array.isArray((rawUser as any).roles) ? (rawUser as any).roles : [];
           if (rawRoles.length > 0) {
             const mappedRoles: RoleDto[] = rawRoles.map((role: any) => ({
@@ -67,11 +95,10 @@ export class BackendUserService {
               name: role.name ?? role.roleName ?? '',
               isDefaultRole: !!(role.isDefaultRole ?? role.isDefault),
               isSuperAdmin: !!(role.isSuperAdmin ?? role.superAdmin),
-              applicationEntityIds: Array.isArray(role.applicationEntityIds)
-                ? role.applicationEntityIds
-                : undefined
+              applicationEntityIds: Array.isArray(role.applicationEntityIds) ? role.applicationEntityIds : undefined
             }));
             user.roles = mappedRoles;
+            // Extract role IDs
             const roleIdsFromRoles = mappedRoles
               .map(role => role.id)
               .filter((id): id is string => !!id);
@@ -81,12 +108,14 @@ export class BackendUserService {
             user.roleIds = Array.isArray(user.roleIds) ? user.roleIds : [];
           }
 
+          // Normalize department
           const department = (rawUser as any).department;
           if (department) {
             user.departmentId = department.id ?? user.departmentId;
             user.departmentName = department.nameEn ?? department.nameAr ?? user.departmentName;
           }
 
+          // Normalize rank
           const rank = (rawUser as any).rank;
           if (rank) {
             user.rankId = rank.id ?? user.rankId;
@@ -94,7 +123,7 @@ export class BackendUserService {
             user.rankNameAr = rank.nameAr ?? user.rankNameAr;
           }
 
-          // Normalize full names if provided separately
+          // Normalize full names
           if (!user.nameEn) {
             user.nameEn = (rawUser as any).fullNameEN ?? user.nameEn;
           }
@@ -104,16 +133,35 @@ export class BackendUserService {
 
           return user;
         });
+
+        return {
+          ...response,
+          items: normalizedItems
+        };
       }),
-      tap(users => {
-        this.usersSubject.next(users);
-        this.configService.log(`Fetched ${users.length} users`);
+      tap(paginatedList => {
+        // Update local state with the items from the current page
+        this.usersSubject.next(paginatedList.items);
+        this.configService.log(`Fetched ${paginatedList.items.length} users (Page ${paginatedList.pageIndex})`);
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch users', error);
         return throwError(() => new Error(
           error.userMessage || 'Failed to fetch users'
         ));
+      })
+    );
+  }
+
+  /**
+   * Get users summary (total, active, inactive)
+   */
+  getUsersSummary(): Observable<UserSummaryDto> {
+    return this.apiService.get<UserSummaryDto>(API_ENDPOINTS.USERS.BASE + '/Summary').pipe(
+      map(data => data || { totalUsers: 0, activeUsers: 0, inactiveUsers: 0 }),
+      catchError(error => {
+        this.configService.logError('Failed to fetch users summary', error);
+        return throwError(() => new Error('Failed to fetch users summary'));
       })
     );
   }

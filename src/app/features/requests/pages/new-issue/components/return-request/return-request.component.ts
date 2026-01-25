@@ -16,7 +16,7 @@ import { ExplosiveService } from '@services/explosive.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PaginatedList } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
 import { Observable } from 'rxjs';
@@ -227,11 +227,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.backendUserService.getUsers()
+    this.backendUserService.getUsers({ page: 1, pageSize: 1000 })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (users) => {
-          this.requesters = users.map(user => ({
+        next: (response: PaginatedList<BackendUserDto>) => {
+          const users = response.items || [];
+          this.requesters = users.map((user: BackendUserDto) => ({
             id: Number(user.id) || 0,
             nameEn: user.nameEn || user.userName || '',
             nameAr: user.nameAr || user.userName || '',

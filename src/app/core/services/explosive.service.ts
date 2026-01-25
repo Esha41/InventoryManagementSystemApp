@@ -3,7 +3,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
 
@@ -24,6 +24,27 @@ export class ExplosiveService {
     if (query?.search) params = params.set('search', query.search);
 
     return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  // Get paginated explosives
+  // Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+  getAllPaginated(request: PagedRequest): Observable<PaginatedList<ExplosiveDto>> {
+    return this.apiService.post<PaginatedList<ExplosiveDto>>(
+      `${this.endpoint}/Paginated`,
+      request
+    ).pipe(
+      map(response => {
+        // Response is already unwrapped PaginatedList from apiService
+        if (!response || !response.items) {
+          throw new Error('Invalid response structure');
+        }
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error fetching paginated explosives:', error);
+        throw error;
+      })
+    );
   }
 
   // Get explosive by ID

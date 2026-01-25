@@ -4,7 +4,7 @@ import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { RankDto } from '@models/rank.model';
 import { DepartmentDto } from '@models/lookup.model';
 import { RequestItemDto } from '@models/common.model';
@@ -220,6 +220,27 @@ export class UnifiedRequestService {
                 this.config.logError('Failed to fetch department requests', error);
                 return of([]);
             })
+        );
+    }
+    /**
+     * Get all requests where the current user can take action (paginated)
+     */
+    getUserActionRequestsPaginated(request: PagedRequest): Observable<PaginatedList<BaseRequestDto>> {
+        this.config.log('Fetching user action requests (paginated)', request);
+        return this.apiService.post<PaginatedList<BaseRequestDto>>(
+            API_ENDPOINTS.REQUESTS.USER_ACTIONS_PAGINATED,
+            request
+        );
+    }
+
+    /**
+     * Get all requests (paginated)
+     */
+    getAllRequestsPaginated(request: PagedRequest): Observable<PaginatedList<BaseRequestDto>> {
+        this.config.log('Fetching all requests (paginated)', request);
+        return this.apiService.post<PaginatedList<BaseRequestDto>>(
+            API_ENDPOINTS.REQUESTS.PAGINATED,
+            request
         );
     }
 }

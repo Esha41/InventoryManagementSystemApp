@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { LookupItem } from '@models/lookup.model';
-import { BackendUserService } from './backend-user.service';
+import { PagedRequest, FilterData } from '@models/api-response.model';
+import { BackendUserService, UserSummaryDto } from './backend-user.service';
 import { LookupService } from './lookup.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -16,6 +17,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 })
 export class UserManagementService {
   private userRolesMap: Map<string, string[]> = new Map();
+  private userSummary: UserSummaryDto = { totalUsers: 0, activeUsers: 0, inactiveUsers: 0 };
 
   constructor(
     private backendUserService: BackendUserService,
@@ -26,12 +28,58 @@ export class UserManagementService {
   /**
    * Load all users
    */
-  loadUsers(): Observable<BackendUserDto[]> {
-    return this.backendUserService.getUsers().pipe(
-      map(users => {
+  // Pagination state
+  private currentPage = 1;
+  private pageSize = 10;
+  private totalCount = 0;
+  private searchTerm = '';
+
+  get paginationState() {
+    return {
+      currentPage: this.currentPage,
+      pageSize: this.pageSize,
+      totalCount: this.totalCount,
+      totalPages: Math.ceil(this.totalCount / this.pageSize)
+    };
+  }
+
+  /**
+   * Load users with pagination and filtering
+   */
+  loadUsers(page: number = 1, pageSize: number = 10, searchTerm: string = '', status: 'all' | 'active' | 'inactive' = 'all'): Observable<BackendUserDto[]> {
+    this.currentPage = page;
+    this.pageSize = pageSize;
+    this.searchTerm = searchTerm;
+
+    const filters: FilterData[] = [];
+
+    if (searchTerm) {
+      filters.push({ value: searchTerm }); // Backend handles multi-field search if field is missing
+    }
+
+    if (status !== 'all') {
+      filters.push({
+        field: 'IsActive',
+        operator: 'eq',
+        value: status === 'active' ? 'true' : 'false'
+      });
+    }
+
+    const request: PagedRequest = {
+      page,
+      pageSize,
+      filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : {
+        logic: 'and',
+        filters: filters
+      }) : undefined
+    };
+
+    return this.backendUserService.getUsers(request).pipe(
+      map(paginatedList => {
+        this.totalCount = paginatedList.totalCount;
         this.userRolesMap.clear();
-        users.forEach(user => this.cacheUserRoles(user));
-        return users;
+        paginatedList.items.forEach(user => this.cacheUserRoles(user));
+        return paginatedList.items;
       })
     );
   }
@@ -72,19 +120,25 @@ export class UserManagementService {
   }
 
   /**
+   * Load user summary
+   */
+  loadUserSummary(): Observable<UserSummaryDto> {
+    return this.backendUserService.getUsersSummary().pipe(
+      map(summary => {
+        this.userSummary = summary;
+        return summary;
+      })
+    );
+  }
+
+  /**
    * Filter users by search term
+   * @deprecated Use loadUsers with searchTerm instead
    */
   filterUsers(users: BackendUserDto[], searchTerm: string): BackendUserDto[] {
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) {
-      return users;
-    }
-
-    return users.filter(user => {
-      const name = (user.userName || '').toLowerCase();
-      const email = (user.email || '').toLowerCase();
-      return name.includes(term) || email.includes(term);
-    });
+    // Logic moved to backend. This is kept for compatibility if needed or local filtering of small lists.
+    // For now, return as is or implement client side if strictly required (not recommended with server pagination)
+    return users;
   }
 
   /**
@@ -220,21 +274,21 @@ export class UserManagementService {
    * Get total users count
    */
   getTotalUsers(users: BackendUserDto[]): number {
-    return users.length;
+    return this.userSummary.totalUsers;
   }
 
   /**
    * Get total active users count
    */
   getTotalActiveUsers(users: BackendUserDto[]): number {
-    return users.filter(user => user.isActive).length;
+    return this.userSummary.activeUsers;
   }
 
   /**
    * Get total inactive users count
    */
   getTotalInactiveUsers(users: BackendUserDto[]): number {
-    return users.filter(user => !user.isActive).length;
+    return this.userSummary.inactiveUsers;
   }
 
   /**
@@ -280,6 +334,18 @@ export class UserManagementService {
         this.userRolesMap.set(userId, []);
       }
     });
+  }
+
+  onPageChange(page: number): void {
+    this.loadUsers(page, this.pageSize, this.searchTerm).subscribe();
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.loadUsers(1, rows, this.searchTerm).subscribe();
+  }
+
+  onSearchChange(searchTerm: string): void {
+    this.loadUsers(1, this.pageSize, searchTerm).subscribe();
   }
 }
 

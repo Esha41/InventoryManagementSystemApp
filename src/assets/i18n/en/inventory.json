@@ -402,10 +402,12 @@
     "noWeaponItems": "No weapon items found",
     "noExplosiveItems": "No explosive items found",
     "errors": {
+      "failedToLoad": "Failed to load assets. Please try again.",
       "failedToLoadDetails": "Failed to load ammunition details",
       "failedToDelete": "Failed to delete ammunition",
       "failedToUpdate": "Failed to update ammunition",
-      "fillRequiredFields": "Please fill all required fields"
+      "fillRequiredFields": "Please fill all required fields",
+      "failedToExport": "Failed to export assets. Please try again."
     },
     "ready": "Ready",
     "notReady": "Not Ready",

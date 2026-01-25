@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Search } from 'lucide-angular';
+import { LucideAngularModule, Search, X } from 'lucide-angular';
 
 @Component({
   selector: 'app-inventory-filters',
@@ -21,12 +21,18 @@ import { LucideAngularModule, Search } from 'lucide-angular';
 export class InventoryFiltersComponent {
   @Input() searchControl: FormControl<string> = new FormControl<string>('', { nonNullable: true });
 
-  @Output() searchChange = new EventEmitter<string>();
+  @Output() searchTriggered = new EventEmitter<void>();
 
   readonly Search = Search;
+  readonly X = X;
 
-  onSearchChange(): void {
-    this.searchChange.emit(this.searchControl.value);
+  onSearchClick(): void {
+    this.searchTriggered.emit();
+  }
+
+  clearSearch(): void {
+    this.searchControl.setValue('');
+    this.searchTriggered.emit();
   }
 }
 
