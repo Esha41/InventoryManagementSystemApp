@@ -483,5 +483,92 @@ export class SupplyRequestDetailService {
   getSupplySuggestion(orderId: number): Observable<OrderSupplySuggestionDto> {
     return this.supplyService.getSupplySuggestion(orderId);
   }
+
+  /**
+   * Determine allowed item types based on existing items in the supply request
+   * Rules:
+   * - If request has only ammunition items, only allow ammunition (type 1)
+   * - If request has only explosives, only allow explosives (type 3)
+   * - If request has both ammunition and explosives, allow both (types 1 and 3)
+   * - If request is empty, default to both (types 1 and 3)
+   * Item types: 1=Ammunition, 2=Weapon, 3=Explosive
+   */
+  getAllowedItemTypes(orderData: OrderDto | null, requestDetail: SupplyRequestDetail | null): number[] {
+    // Helper function to convert itemType (string or number) to numeric type
+    const normalizeItemType = (itemType: number | string | undefined): number | null => {
+      if (!itemType) return null;
+      
+      if (typeof itemType === 'number') {
+        return itemType;
+      }
+      
+      // Convert string to number (case-insensitive)
+      const itemTypeMap: { [key: string]: number } = {
+        'Ammunition': 1,
+        'ammunition': 1,
+        'Weapon': 2,
+        'weapon': 2,
+        'Explosive': 3,
+        'explosive': 3
+      };
+      
+      return itemTypeMap[itemType] || null;
+    };
+
+    const existingTypes = new Set<number>();
+
+    // First, try to get item types from orderData.requestItems
+    if (orderData?.requestItems && orderData.requestItems.length > 0) {
+      orderData.requestItems.forEach(item => {
+        const numericType = normalizeItemType(item.itemType);
+        if (numericType) {
+          existingTypes.add(numericType);
+        }
+      });
+    }
+
+    // Also check requestDetail.items (has string itemType) - don't skip if orderData has items
+    // because requestDetail might have more accurate data
+    if (requestDetail?.items && requestDetail.items.length > 0) {
+      requestDetail.items.forEach(item => {
+        const numericType = normalizeItemType(item.itemType);
+        if (numericType) {
+          existingTypes.add(numericType);
+        }
+      });
+    }
+
+    // Determine allowed types based on what exists
+    if (existingTypes.size === 0) {
+      // Empty request - default to both ammunition and explosives
+      return [1, 3];
+    }
+
+    // If only ammunition exists, return only ammunition
+    if (existingTypes.size === 1 && existingTypes.has(1)) {
+      return [1];
+    }
+
+    // If only explosives exists, return only explosives
+    if (existingTypes.size === 1 && existingTypes.has(3)) {
+      return [3];
+    }
+
+    // If both ammunition and explosives exist, return both
+    if (existingTypes.has(1) && existingTypes.has(3)) {
+      return [1, 3];
+    }
+
+    // If only ammunition or explosives (but not both), return what exists
+    if (existingTypes.has(1)) {
+      return [1];
+    }
+    if (existingTypes.has(3)) {
+      return [3];
+    }
+
+    // Default fallback
+    return [1, 3];
+  }
 }
 

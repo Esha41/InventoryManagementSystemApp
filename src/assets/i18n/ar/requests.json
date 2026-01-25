@@ -592,7 +592,9 @@
       "confirmQuestion": "هل تريد الاستمرار في التلبية الجزئية؟",
       "confirmButton": "نعم، استمر"
     },
-    "ammunitionExplosivesAllowed": "يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب."
+    "ammunitionExplosivesAllowed": "يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب.",
+    "ammunitionOnlyAllowed": "يمكن إضافة الذخيرة فقط إلى هذا الطلب.",
+    "explosivesOnlyAllowed": "يمكن إضافة المتفجرات فقط إلى هذا الطلب."
   },
   "weapon": {
     "weaponType": "نوع السلاح",

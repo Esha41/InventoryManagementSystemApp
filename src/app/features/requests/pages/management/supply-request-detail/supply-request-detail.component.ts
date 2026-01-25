@@ -114,6 +114,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   availableItems: any[] = [];
   loadingItems: boolean = false;
   savingItem: boolean = false;
+  allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives
 
   constructor(
     private route: ActivatedRoute,
@@ -490,6 +491,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   // ==================== ITEM MANAGEMENT ====================
 
   openAddItemModal(): void {
+    // Determine allowed item types based on existing items before loading
+    this.allowedItemTypes = this.supplyRequestDetailService.getAllowedItemTypes(this.orderData, this.requestDetail);
+    // Debug log to verify the logic
+    this.config.log(`Allowed item types: ${JSON.stringify(this.allowedItemTypes)}`);
     this.loadAvailableItems();
     this.isAddItemModalOpen = true;
   }
@@ -518,12 +523,13 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.selectedItemForRemove = null;
   }
 
+
   private loadAvailableItems(): void {
     this.loadingItems = true;
     const existingItemIds = (this.requestDetail?.items || []).map(item => item.itemId);
 
-    // We only allow Ammunition (1) and Explosives (3) here as well
-    const allowedTypes = [1, 3];
+    // Use the determined allowed item types
+    const allowedTypes = this.allowedItemTypes;
 
     this.supplyOrderDataService.loadAvailableItems(existingItemIds, allowedTypes)
       .pipe(takeUntil(this.destroy$))

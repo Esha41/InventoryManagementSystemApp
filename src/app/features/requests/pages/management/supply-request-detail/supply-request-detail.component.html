@@ -270,8 +270,8 @@
 <app-item-management-modals [isAddItemModalOpen]="isAddItemModalOpen" [isEditItemModalOpen]="isEditItemModalOpen"
   [isRemoveItemModalOpen]="isRemoveItemModalOpen" [selectedItemForEdit]="selectedItemForEdit"
   [selectedItemForRemove]="selectedItemForRemove" [availableItems]="availableItems" [loadingItems]="loadingItems"
-  [savingItem]="savingItem" [getItemProductIdFn]="getItemProductId.bind(this)" (addItemClosed)="closeAddItemModal()"
-  (editItemClosed)="closeEditItemModal()" (removeItemClosed)="closeRemoveItemModal()"
+  [savingItem]="savingItem" [allowedItemTypes]="allowedItemTypes" [getItemProductIdFn]="getItemProductId.bind(this)"
+  (addItemClosed)="closeAddItemModal()" (editItemClosed)="closeEditItemModal()" (removeItemClosed)="closeRemoveItemModal()"
   (saveAddItem)="onSaveAddItem($event)" (saveEditItem)="onSaveEditItem($event)"
   (confirmRemoveItem)="onConfirmRemoveItem($event)">
 </app-item-management-modals>

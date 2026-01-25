@@ -271,6 +271,9 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isAmmunition) {
       return this.propertyAccessor.getTotalWeight(this.asset as AmmunitionReadDto) || '-';
     }
+    if (this.isExplosive) {
+      return this.propertyAccessor.getTotalWeight(this.asset as ExplosiveDto) || '-';
+    }
     return '-';
   }
 
@@ -357,6 +360,60 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     }
     if (this.isWeapon) {
       return this.propertyAccessor.getTypeForWeapon(this.asset as WeaponDto) || '-';
+    }
+    return '-';
+  }
+
+  getItemType(): string {
+    if (this.isWeapon && this.asset) {
+      const weapon = this.asset as WeaponDto;
+      if (weapon.itemType !== undefined && weapon.itemType !== null) {
+        // Handle both number and string types
+        let itemType: number | null = null;
+        
+        if (typeof weapon.itemType === 'number') {
+          itemType = weapon.itemType;
+        } else if (typeof weapon.itemType === 'string') {
+          const typeMap: { [key: string]: number } = {
+            'Weapon': 2,
+            '2': 2,
+            'Ammunition': 1,
+            '1': 1,
+            'Explosive': 3,
+            '3': 3
+          };
+          itemType = typeMap[weapon.itemType] || null;
+        }
+        
+        if (itemType === 2) {
+          return this.translateService.instant('warehouseInventory.tabs.weapon') || 'Weapon';
+        } else if (itemType === 1) {
+          return this.translateService.instant('warehouseInventory.tabs.ammunition') || 'Ammunition';
+        } else if (itemType === 3) {
+          return this.translateService.instant('warehouseInventory.tabs.explosive') || 'Explosive';
+        }
+      }
+    }
+    return '-';
+  }
+
+  getPriceForWeapon(): string {
+    if (this.isWeapon) {
+      return this.getPrice();
+    }
+    return '-';
+  }
+
+  getMinimumQuantityForWeapon(): string {
+    if (this.isWeapon) {
+      return this.getMinimumQuantity();
+    }
+    return '-';
+  }
+
+  getCountryOfManufactureForWeapon(): string {
+    if (this.isWeapon) {
+      return this.getCountryOfManufacture();
     }
     return '-';
   }
@@ -492,6 +549,20 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   getCapabilityGroup(): string {
     if (this.isAmmunition || this.isExplosive) {
       return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
+    }
+    return '-';
+  }
+
+  getCompatibility(): string {
+    if (this.isAmmunition || this.isExplosive) {
+      return this.propertyAccessor.getCompatibility(this.asset as AmmunitionReadDto | ExplosiveDto) || '-';
+    }
+    return '-';
+  }
+
+  getUnit(): string {
+    if (this.isAmmunition) {
+      return this.propertyAccessor.getUnit(this.asset as AmmunitionReadDto) || '-';
     }
     return '-';
   }

@@ -41,6 +41,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   @Input() availableItems: AmmunitionReadDto[] = [];
   @Input() loadingItems: boolean = false;
   @Input() savingItem: boolean = false;
+  @Input() allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives
   @Input() getItemProductIdFn?: (item: OrderItem) => string;
   @Output() addItemClosed = new EventEmitter<void>();
   @Output() editItemClosed = new EventEmitter<void>();
@@ -68,6 +69,23 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     if (changes['selectedItemForEdit'] && this.selectedItemForEdit) {
       this.initializeEditItemForm(this.selectedItemForEdit);
     }
+    
+    // Reset add item form when modal opens to prevent showing stale values
+    if (changes['isAddItemModalOpen'] && 
+        changes['isAddItemModalOpen'].currentValue === true && 
+        changes['isAddItemModalOpen'].previousValue === false &&
+        this.addItemForm) {
+      // Use setTimeout to ensure the form reset happens after Angular's change detection
+      setTimeout(() => {
+        this.addItemForm.patchValue({
+          itemId: null,
+          quantity: 1,
+          notes: ''
+        });
+        this.addItemForm.markAsUntouched();
+        this.addItemForm.markAsPristine();
+      }, 0);
+    }
   }
 
   private initializeAddItemForm(): void {
@@ -87,8 +105,15 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   }
 
   onCloseAddItemModal(): void {
-    this.addItemForm.reset();
-    this.initializeAddItemForm();
+    if (this.addItemForm) {
+      this.addItemForm.reset({
+        itemId: null,
+        quantity: 1,
+        notes: ''
+      });
+      this.addItemForm.markAsUntouched();
+      this.addItemForm.markAsPristine();
+    }
     this.addItemClosed.emit();
   }
 
@@ -151,6 +176,21 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   }
 
   getItemTypeRestrictionMessage(): string {
+    // Determine message based on allowed item types
+    if (this.allowedItemTypes.length === 1) {
+      if (this.allowedItemTypes.includes(1)) {
+        // Only ammunition allowed
+        return this.translate.instant('supplyRequestDetail.ammunitionOnlyAllowed');
+      } else if (this.allowedItemTypes.includes(3)) {
+        // Only explosives allowed
+        return this.translate.instant('supplyRequestDetail.explosivesOnlyAllowed');
+      }
+    } else if (this.allowedItemTypes.includes(1) && this.allowedItemTypes.includes(3)) {
+      // Both ammunition and explosives allowed
+      return this.translate.instant('supplyRequestDetail.ammunitionExplosivesAllowed');
+    }
+    
+    // Default fallback
     return this.translate.instant('supplyRequestDetail.ammunitionExplosivesAllowed');
   }
 }
