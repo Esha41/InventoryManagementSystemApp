@@ -319,6 +319,7 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permissions: ['inventory.edit', 'inventory.view'] }
       },
+
       {
         path: 'notifications',
         loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),

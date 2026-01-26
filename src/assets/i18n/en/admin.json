@@ -512,6 +512,18 @@
     "ALL_DELEGATIONS": "All Delegations",
     "HISTORY": "Delegation History",
     "TIME_STATUS": "Time Status",
-    "NO_DELEGATIONS_FOUND": "No delegations found matching your criteria"
+    "NO_DELEGATIONS_FOUND": "No delegations found matching your criteria",
+    "SETTINGS": {
+      "TITLE": "Delegation Settings",
+      "DESCRIPTION": "Configure system-wide delegation rules.",
+      "CROSS_DEPARTMENT_TITLE": "Cross-Department Delegation",
+      "CROSS_DEPARTMENT_DESC": "Allow users to delegate permissions to users in other departments. If disabled, delegation is restricted to the same department.",
+      "DELEGATOR_ACTION_TITLE": "Delegator Authority",
+      "DELEGATOR_ACTION_DESC": "Allow delegators to retain their authority to perform actions while a delegation is active.",
+      "UPDATE_SUCCESS": "Delegation settings updated successfully",
+      "RESTRICTED_ACCESS_TITLE": "Authority Delegated",
+      "RESTRICTED_ACCESS_MSG": "Your authority is currently delegated to another user. You cannot perform actions while delegation is active. To regain your authority, please revoke the active delegation from your profile."
+    },
+    "ACTIONS": "Actions"
   }
 }

@@ -63,6 +63,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.adminAnalyticsService.stopAutoRefresh();
         this.destroy$.next();
         this.destroy$.complete();
     }

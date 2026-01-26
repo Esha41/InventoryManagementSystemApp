@@ -5,7 +5,7 @@ import { UserDelegationService } from '@services/user-delegation.service';
 import { UserDelegation } from '@models/user-delegation';
 import { AddDelegationModalComponent } from './add-delegation-modal/add-delegation-modal.component';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
-import { LucideAngularModule, Plus, Trash2, Calendar, User, AlertCircle, CheckCircle, XCircle } from 'lucide-angular';
+import { LucideAngularModule, Plus, Trash2, Calendar, User, AlertCircle, CheckCircle, XCircle, Ban } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 
@@ -29,6 +29,7 @@ export class DelegationListComponent implements OnInit {
     readonly User = User;
     readonly AlertCircle = AlertCircle;
     readonly CheckCircle = CheckCircle;
+    readonly Ban = Ban;
     readonly XCircle = XCircle;
 
     activeTab: 'my-delegations' | 'pending-requests' = 'my-delegations';
@@ -141,14 +142,17 @@ export class DelegationListComponent implements OnInit {
                 next: (res) => {
                     if (res?.succeeded) {
                         this.loadPendingDelegations();
+                        this.loadDelegations();
                     } else {
                         // If checking failed (e.g. revoked), reload to update list
                         this.loadPendingDelegations();
+                        this.loadDelegations();
                     }
                 },
                 error: (err) => {
                     // On error also reload to be safe and sync state
                     this.loadPendingDelegations();
+                    this.loadDelegations();
                 }
             });
         }
@@ -167,14 +171,17 @@ export class DelegationListComponent implements OnInit {
                 next: (res) => {
                     if (res?.succeeded) {
                         this.loadPendingDelegations();
+                        this.loadDelegations();
                     } else {
                         // If checking failed (e.g. revoked), reload to update list
                         this.loadPendingDelegations();
+                        this.loadDelegations();
                     }
                 },
                 error: (err) => {
                     // On error also reload to be safe and sync state
                     this.loadPendingDelegations();
+                    this.loadDelegations();
                 }
             });
         }

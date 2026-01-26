@@ -9,10 +9,6 @@
                 <h3 class="text-lg font-bold text-[var(--color-text)]">
                     {{ 'DELEGATION.TITLE' | translate }}
                 </h3>
-                <p class="text-sm text-[var(--color-text-muted)]">
-                    {{ activeTab === 'my-delegations' ? ('DELEGATION.MY_DELEGATIONS' | translate) :
-                    ('DELEGATION.PENDING_REQUESTS' | translate) }}
-                </p>
             </div>
         </div>
         <button (click)="openAddModal()"
@@ -134,9 +130,10 @@
                         </td>
                         <td class="px-4 py-3 text-end">
                             <button *ngIf="element.isActive && !element.isIncoming" (click)="revoke(element)"
-                                class="p-2 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 rounded-lg transition-colors"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
                                 [title]="'DELEGATION.REVOKE' | translate">
-                                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                                <lucide-angular [img]="Ban" class="h-3.5 w-3.5"></lucide-angular>
+                                <span class="hidden xl:inline">{{ 'DELEGATION.REVOKE' | translate }}</span>
                             </button>
                         </td>
                     </tr>

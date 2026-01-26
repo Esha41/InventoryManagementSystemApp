@@ -49,4 +49,24 @@ export class UserDelegationService {
     getDelegationHistory(): Observable<ApiResponse<UserDelegation[]>> {
         return this.apiService.getWithAuth<ApiResponse<UserDelegation[]>>(`${this.endpoint}/admin/history`);
     }
+
+    getCrossDepartmentSetting(): Observable<ApiResponse<boolean>> {
+        return this.apiService.getWithAuth<ApiResponse<boolean>>(`${this.endpoint}/settings/cross-department`);
+    }
+
+    updateCrossDepartmentSetting(allow: boolean): Observable<ApiResponse<boolean>> {
+        return this.apiService.putWithAuth<ApiResponse<boolean>>(`${this.endpoint}/settings/cross-department`, allow);
+    }
+
+    getDelegatorActionSetting(): Observable<ApiResponse<boolean>> {
+        return this.apiService.getWithAuth<ApiResponse<boolean>>(`${this.endpoint}/settings/delegator-action`);
+    }
+
+    updateDelegatorActionSetting(allow: boolean): Observable<ApiResponse<boolean>> {
+        return this.apiService.putWithAuth<ApiResponse<boolean>>(`${this.endpoint}/settings/delegator-action`, allow);
+    }
+
+    checkUserRestriction(): Observable<ApiResponse<boolean>> {
+        return this.apiService.getWithAuth<ApiResponse<boolean>>(`${this.endpoint}/is-restricted`);
+    }
 }
