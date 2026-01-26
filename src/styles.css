@@ -65,6 +65,8 @@
     /* Main background */
     --color-background-muted: #F9FAFB;
     /* Slightly gray background */
+    --color-background-soft: #F3F4F6;
+    /* Soft background for cards */
     --color-background-hover: #F3F4F8;
     /* Hover state background */
     --color-background-active: #F1F2F6;
@@ -167,6 +169,8 @@
     /* Dark background */
     --color-background-muted: #13161B;
     /* Darker background */
+    --color-background-soft: #252932;
+    /* Soft background for cards */
     --color-background-hover: #252932;
     /* Hover state background */
     --color-background-active: #2D3138;

@@ -18,6 +18,7 @@ export class WorkflowApprovalPermissionsService {
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
   private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
+  private readonly UPDATE_REQUEST_ITEMS_PERMISSION = 'UpdateRequestItems';
 
   constructor(private authService: BackendAuthService) { }
 
@@ -233,13 +234,8 @@ export class WorkflowApprovalPermissionsService {
       return false;
     }
 
-    // Hide for weapon orders - only show for ammunition and explosives
-    if (isWeaponOrder) {
-      return false;
-    }
-
     try {
-      // Super admin should always see the Review button (for non-weapon orders)
+      // Super admin should always see the Review button (for both weapon and non-weapon orders)
       if (this.authService.isSuperAdmin()) {
         return true;
       }
@@ -257,6 +253,12 @@ export class WorkflowApprovalPermissionsService {
         return false;
       }
 
+      // For weapon orders, require UpdateRequestItems permission
+      if (isWeaponOrder) {
+        return this.authService.hasPermission(this.UPDATE_REQUEST_ITEMS_PERMISSION);
+      }
+
+      // For non-weapon orders, use the standard supply review permission
       return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
     } catch (error) {
       return false;

@@ -469,7 +469,21 @@
       "daily": "يومي",
       "weekly": "أسبوعي",
       "monthly": "شهري",
-      "yearly": "سنوي"
+      "yearly": "سنوي",
+      "userLoginAnalytics": "تحليلات تسجيل دخول المستخدمين",
+      "loginActivity": "نشاط تسجيل الدخول ومدة الجلسة",
+      "loginTrend": "اتجاه تسجيل الدخول",
+      "uniqueUsers": "المستخدمون الفريدون",
+      "loginCount": "عدد تسجيلات الدخول",
+      "date": "التاريخ",
+      "topUsers": "أفضل المستخدمين",
+      "loginDuration": "مدة تسجيل الدخول",
+      "hours": "ساعات",
+      "totalLogins": "إجمالي تسجيلات الدخول",
+      "averageDuration": "المدة المتوسطة",
+      "activeUsersToday": "المستخدمون النشطون اليوم",
+      "topUsersByDuration": "أفضل المستخدمين حسب مدة تسجيل الدخول",
+      "loading": "جاري التحميل..."
     }
   },
   "DELEGATION": {

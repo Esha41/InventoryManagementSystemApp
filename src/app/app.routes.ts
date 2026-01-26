@@ -74,6 +74,12 @@ export const routes: Routes = [
         data: { permissions: ['analytics.page', 'analytics.view'] }
       },
       {
+        path: 'advanced-analytics-dashboard',
+        loadComponent: () => import('@admin/pages/advanced-analytics/advanced-analytics-dashboard.component').then(m => m.AdvancedAnalyticsDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['analytics.page', 'analytics.view', 'advancedAnalytics.page', 'advancedAnalytics.view'] }
+      },
+      {
         path: 'supply-request-management',
         loadComponent: () => import('@requests/pages/supply-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
         canActivate: [permissionGuard],
@@ -267,7 +273,7 @@ export const routes: Routes = [
       },
       {
         path: 'item-detail/:id',
-        loadComponent: () => import('@inventory/pages/detail/item-detail.component').then(m => m.ItemDetailComponent),
+        loadComponent: () => import('@components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },

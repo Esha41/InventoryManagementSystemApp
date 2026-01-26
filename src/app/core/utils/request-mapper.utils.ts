@@ -182,7 +182,8 @@ export function mapRequestItems(items: any[]): RequestItem[] {
       itemName: item.itemName || item.name || 'Unknown Item',
       itemNo: item.itemNo || item.itemCode || item.code || '-',
       quantity: item.quantity || item.requestedQuantity || 0,
-      unit: item.unit || item.unitName || '-'
+      unit: item.unit || item.unitName || '-',
+      nsn: item.nsn || undefined // National Stock Number
     }));
 }
 

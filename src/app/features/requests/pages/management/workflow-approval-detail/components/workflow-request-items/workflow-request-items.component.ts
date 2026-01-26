@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package } from 'lucide-angular';
@@ -21,6 +21,7 @@ export class WorkflowRequestItemsComponent {
   readonly Package = Package;
 
   @Input() requestDetail: RequestDetail | null = null;
+  @Output() reviewClick = new EventEmitter<void>();
 
   constructor(
     private stateService: WorkflowApprovalStateService,
@@ -53,6 +54,17 @@ export class WorkflowRequestItemsComponent {
     return this.stateService.hasPendingStep();
   }
 
+  isWeaponOrder(): boolean {
+    const state = this.stateService.getState();
+    return state.isWeaponOrder || false;
+  }
+
+  getReviewButtonText(): string {
+    return this.isWeaponOrder() 
+      ? 'workflowApprovalDetail.reviewItems' 
+      : 'workflowApprovalDetail.review';
+  }
+
   // Navigation methods
   navigateToWeaponSupplyReview(): void {
     const state = this.stateService.getState();
@@ -63,8 +75,14 @@ export class WorkflowRequestItemsComponent {
 
   navigateToSupplyReview(): void {
     const state = this.stateService.getState();
-    if (state.requestId) {
-      this.navigationService.navigateToSupplyReview(state.requestId, state.isWeaponOrder);
+    // For weapon orders, open modal instead of navigating
+    if (state.isWeaponOrder) {
+      this.reviewClick.emit();
+    } else {
+      // For non-weapon orders, navigate as before
+      if (state.requestId) {
+        this.navigationService.navigateToSupplyReview(state.requestId, state.isWeaponOrder);
+      }
     }
   }
 
@@ -81,7 +99,10 @@ export class WorkflowRequestItemsComponent {
     }
     const state = this.stateService.getState();
     if (state.requestId) {
-      this.navigationService.navigateToItemDetails(itemId, state.requestId);
+      // Try to get itemType from the request item
+      const item = this.requestItems.find(i => (i.itemId || i.id) === itemId);
+      const itemType = item && 'itemType' in item ? (item as any).itemType : undefined;
+      this.navigationService.navigateToItemDetails(itemId, state.requestId, itemType);
     }
   }
 }

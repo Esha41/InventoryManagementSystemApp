@@ -24,10 +24,27 @@ export class AssetDetailsService {
 
   /**
    * Load asset by ID and type
+   * If type is not provided or the specified type fails, tries all three types in sequence
    */
   loadAsset(
     assetId: number,
     assetType?: 'ammunition' | 'weapon' | 'explosive'
+  ): Observable<AssetDetailsData> {
+    // If assetType is provided, try that specific type first
+    if (assetType) {
+      return this.loadAssetByType(assetId, assetType);
+    } else {
+      // If assetType is not provided, try all three types in sequence
+      return this.tryLoadAssetFromAllTypes(assetId);
+    }
+  }
+
+  /**
+   * Load asset by specific type, with fallback to all types if it fails
+   */
+  private loadAssetByType(
+    assetId: number,
+    assetType: 'ammunition' | 'weapon' | 'explosive'
   ): Observable<AssetDetailsData> {
     let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto>;
 
@@ -41,7 +58,31 @@ export class AssetDetailsService {
 
     return service$.pipe(
       catchError(() => {
-        throw new Error('Failed to load asset details');
+        // If the specified type fails, try all types as fallback
+        return this.tryLoadAssetFromAllTypes(assetId);
+      })
+    );
+  }
+
+  /**
+   * Try loading asset from all three types in sequence: ammunition -> weapon -> explosive
+   */
+  private tryLoadAssetFromAllTypes(assetId: number): Observable<AssetDetailsData> {
+    // Try ammunition first, then weapon, then explosive
+    return this.ammunitionService.getById<AmmunitionReadDto>(assetId).pipe(
+      catchError(() => {
+        // If ammunition fails, try weapon
+        return this.weaponService.getById<WeaponDto>(assetId).pipe(
+          catchError(() => {
+            // If weapon fails, try explosive
+            return this.explosiveService.getById<ExplosiveDto>(assetId).pipe(
+              catchError((err) => {
+                // All three failed
+                throw new Error('Failed to load asset details: asset not found in ammunition, weapon, or explosive');
+              })
+            );
+          })
+        );
       })
     );
   }
