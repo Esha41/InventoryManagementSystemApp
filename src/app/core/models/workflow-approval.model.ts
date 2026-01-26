@@ -87,6 +87,7 @@ export interface RequestItem {
   itemNo?: string;
   quantity: number;
   unit?: string;
+  nsn?: string; // National Stock Number
 }
 
 

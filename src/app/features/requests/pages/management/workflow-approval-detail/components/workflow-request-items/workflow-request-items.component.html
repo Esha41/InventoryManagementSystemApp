@@ -23,7 +23,7 @@
       </button>
       <button *ngIf="canReviewSupply()" (click)="navigateToSupplyReview()"
         class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
-        {{ 'workflowApprovalDetail.review' | translate }}
+        {{ getReviewButtonText() | translate }}
       </button>
       <button *ngIf="canUpdateRequestAndSupply()" (click)="navigateToSupplyOrder()"
         class="px-4 py-2 bg-[var(--color-success)] text-white rounded-lg font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2 shadow-custom-sm">

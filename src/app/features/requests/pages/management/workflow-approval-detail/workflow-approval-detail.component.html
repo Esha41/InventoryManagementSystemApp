@@ -55,7 +55,8 @@
 
         <!-- Request Items -->
         <app-workflow-request-items
-          [requestDetail]="requestDetail">
+          [requestDetail]="requestDetail"
+          (reviewClick)="openWeaponReviewItemsModal()">
         </app-workflow-request-items>
 
         <!-- Approval Workflow Timeline -->
@@ -119,6 +120,16 @@
         [requireComment]="confirmationDialog.requireComment" [commentLabel]="confirmationDialog.commentLabel"
         [commentPlaceholder]="confirmationDialog.commentPlaceholder" (confirmed)="onConfirmationConfirmed($event)"
         (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
+
+      <!-- Weapon Review Items Modal -->
+      <app-weapon-review-items-modal
+        [isOpen]="isWeaponReviewItemsModalOpen"
+        [requestDetail]="requestDetail"
+        (closed)="closeWeaponReviewItemsModal()"
+        (itemAdded)="onWeaponItemChanged()"
+        (itemUpdated)="onWeaponItemChanged()"
+        (itemDeleted)="onWeaponItemChanged()">
+      </app-weapon-review-items-modal>
     </div>
   </div>
 </div>

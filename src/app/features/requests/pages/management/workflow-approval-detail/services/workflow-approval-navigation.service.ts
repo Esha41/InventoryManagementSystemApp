@@ -77,11 +77,35 @@ export class WorkflowApprovalNavigationService {
   /**
    * Navigate to item detail page to view item details (same view as new issue request)
    */
-  navigateToItemDetails(itemId: number, requestId: number): void {
+  navigateToItemDetails(itemId: number, requestId: number, itemType?: number | string): void {
     if (itemId && itemId > 0) {
-      // Pass requestId as query parameter so we can navigate back
+      const queryParams: any = { requestId: requestId };
+      
+      // Convert itemType to tab query param if available
+      if (itemType !== undefined && itemType !== null) {
+        let tabValue: string | undefined;
+        if (typeof itemType === 'number') {
+          if (itemType === 1) tabValue = 'ammunition';
+          else if (itemType === 2) tabValue = 'weapon';
+          else if (itemType === 3) tabValue = 'explosive';
+        } else if (typeof itemType === 'string') {
+          const normalizedType = itemType.toLowerCase();
+          if (normalizedType === 'ammunition' || normalizedType === '1') {
+            tabValue = 'ammunition';
+          } else if (normalizedType === 'weapon' || normalizedType === '2') {
+            tabValue = 'weapon';
+          } else if (normalizedType === 'explosive' || normalizedType === '3') {
+            tabValue = 'explosive';
+          }
+        }
+        if (tabValue) {
+          queryParams.tab = tabValue;
+        }
+      }
+      
+      // Pass requestId and tab (itemType) as query parameters
       this.router.navigate(['/item-detail', itemId], {
-        queryParams: { requestId: requestId }
+        queryParams: queryParams
       });
     }
   }

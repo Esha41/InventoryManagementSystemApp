@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, X } from 'lucide-angular';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
@@ -113,6 +113,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private readonly blobUrls = new Set<string>();
   private loadingImageFor: { assetId: number; assetType: string } | null = null;
   private imageLoadedFor: { assetId: number; assetType: string } | null = null;
+  private requestId: number | null = null; // For back navigation to workflow approval
 
   constructor() {
     // Effect to handle asset type detection from asset data
@@ -194,26 +195,38 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     // If used as a page component, load data from route params
     if (this._isPage() && this.route?.snapshot.params['id']) {
-      this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-        const itemId = parseInt(params['id'] || '', 10);
+      // Combine params and queryParams to get all route information at once
+      combineLatest([this.route.params, this.route.queryParams])
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(([params, queryParams]) => {
+          const itemId = parseInt(params['id'] || '', 10);
 
-        // Get item type from query params
-        const tabParam = this.route!.snapshot.queryParams['tab'];
-        if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
-          this._assetType.set(tabParam);
-        }
-
-        if (itemId) {
-          // Optimization: Start loading image immediately if type is known from query params
-          if (this._assetType()) {
-            this.loadImage(itemId, this._assetType()!);
+          // Get item type from query params (support both 'tab' and 'itemType')
+          const tabParam = queryParams['tab'] || queryParams['itemType'];
+          if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+            this._assetType.set(tabParam);
           }
-          this.loadAssetFromRoute(itemId);
-        } else {
-          this.loading.set(false);
-          this.error.set('Invalid asset ID');
-        }
-      });
+
+          // Get requestId from query params for back navigation
+          const requestIdParam = queryParams['requestId'];
+          if (requestIdParam) {
+            this.requestId = parseInt(requestIdParam, 10);
+            if (isNaN(this.requestId) || this.requestId <= 0) {
+              this.requestId = null;
+            }
+          }
+
+          if (itemId) {
+            // Optimization: Start loading image immediately if type is known from query params
+            if (this._assetType()) {
+              this.loadImage(itemId, this._assetType()!);
+            }
+            this.loadAssetFromRoute(itemId);
+          } else {
+            this.loading.set(false);
+            this.error.set('Invalid asset ID');
+          }
+        });
     } else {
       // For inline mode, try to load if inputs are available
       this.tryLoadFromInputs();
@@ -339,11 +352,19 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onBack(): void {
-    if (this.router && this._assetType()) {
-      // Navigate back to asset-list with tab query param
+    if (!this.router) return;
+    
+    // If requestId is available, navigate back to workflow approval page
+    if (this.requestId) {
+      this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+    } else if (this._assetType()) {
+      // Otherwise, navigate back to asset-list with tab query param
       this.router.navigate(['/asset-list'], {
         queryParams: { tab: this._assetType() }
       });
+    } else {
+      // Fallback: navigate to requests management
+      this.router.navigate(['/requests-management']);
     }
   }
 
