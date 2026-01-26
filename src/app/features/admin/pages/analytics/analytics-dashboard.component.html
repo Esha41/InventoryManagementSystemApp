@@ -3,8 +3,7 @@
     <div class="dashboard-header">
         <div class="header-content">
             <div class="title-section">
-                <!-- Use a new translation key or reuse adminDashboard.analytics -->
-                <h1 class="dashboard-title text-2xl sm:text-3xl">{{ 'nav.analytics' | translate }}</h1>
+                <h1 class="dashboard-title">{{ 'nav.analytics' | translate }}</h1>
             </div>
 
             <div class="header-actions">
@@ -33,7 +32,7 @@
         <!-- Overview Section -->
         <div class="space-y-6">
             <!-- KPI Cards Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="kpi-grid">
                 <!-- Inventory Overview Card -->
                 <app-inventory-overview-card *ngIf="inventoryMetrics()" [metrics]="inventoryMetrics()!"
                     class="kpi-card">
@@ -51,7 +50,7 @@
                     <h2 class="section-title">{{ 'nav.analytics' | translate }}</h2>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="charts-grid">
                     <div class="chart-item chart-wide">
                         <app-request-trends-chart period="weekly"></app-request-trends-chart>
                     </div>
