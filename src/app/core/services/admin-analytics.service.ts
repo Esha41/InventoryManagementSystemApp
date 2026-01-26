@@ -219,9 +219,20 @@ export class AdminAnalyticsService implements OnDestroy {
      * Start auto-refresh interval
      */
     startAutoRefresh(): void {
+        this.stopAutoRefresh(); // Clear existing subscription
         this.autoRefreshSubscription = interval(this.refreshInterval).pipe(
             tap(() => this.refresh())
         ).subscribe();
+    }
+
+    /**
+     * Stop auto-refresh interval
+     */
+    stopAutoRefresh(): void {
+        if (this.autoRefreshSubscription) {
+            this.autoRefreshSubscription.unsubscribe();
+            this.autoRefreshSubscription = undefined;
+        }
     }
 
     /**

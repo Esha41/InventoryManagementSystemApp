@@ -20,6 +20,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { UserDelegationService } from '@services/user-delegation.service';
 // Import extracted services
 import { WorkflowApprovalDataService } from './services/workflow-approval-data.service';
 import { WorkflowApprovalPermissionsService } from './services/workflow-approval-permissions.service';
@@ -144,6 +145,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   supplyData: SupplyDto | null = null;
   ranks: LookupItem[] = [];
   isLoadingRanks: boolean = false;
+  isUserRestricted: boolean = false;
 
   // Weapon Review Items Modal
   isWeaponReviewItemsModalOpen: boolean = false;
@@ -160,6 +162,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private supplyService: SupplyService,
     public translationService: TranslationService,
     private translateService: TranslateService,
+    private userDelegationService: UserDelegationService,
     // Extracted services
     private dataService: WorkflowApprovalDataService,
     private permissionsService: WorkflowApprovalPermissionsService,
@@ -247,6 +250,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    // Check delegation restriction status
+    this.userDelegationService.checkUserRestriction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.succeeded) {
+            this.isUserRestricted = res.data;
+            this.cdr.markForCheck();
+          }
+        }
+      });
+
     // Initialize isSuperAdmin in state service
     const isSuperAdmin = this.authService.isSuperAdmin();
     this.stateService.updateState({ isSuperAdmin });
@@ -302,10 +317,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           // If supply exists and has a supply date, populate the pickup date field
           if (supply.supplyDate) {
             this.pickupDate = this.supplyServiceHelper.formatDateForInput(supply.supplyDate);
-              // Mark that the date has already been set to lock the "Set Supply Pickup Date" section
-              // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
-              // This applies to both weapon orders and ammunitions/explosives
-              this.isPickupDateAlreadySet = true;
+            // Mark that the date has already been set to lock the "Set Supply Pickup Date" section
+            // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
+            // This applies to both weapon orders and ammunitions/explosives
+            this.isPickupDateAlreadySet = true;
           }
 
           // Update state service with supply data
@@ -318,7 +333,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           if (this.canSubmitSupply()) {
             this.loadRanks();
           }
-          
+
           // Trigger change detection for OnPush strategy
           this.cdr.markForCheck();
         }
@@ -455,7 +470,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             if (baseRequest.requestItems && baseRequest.requestType === 'Order') {
               this.isWeaponOrder = this.dataService.checkIfWeaponOrder(baseRequest.requestItems);
               this.orderSupplyDate = this.dataService.extractSupplyDate(baseRequest as any);
-              
+
               // Format pickup date if available
               if (this.isWeaponOrder && this.orderSupplyDate) {
                 this.pickupDate = this.supplyServiceHelper.formatDateForInput(this.orderSupplyDate);
@@ -466,7 +481,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             // Update requestDetail - this triggers change detection for timeline component
             // The timeline component uses @Input() requestDetail and will automatically update
             this.requestDetail = mapToRequestDetail(baseRequest);
-            
+
             // Update state service to ensure all child components get updated data
             this.stateService.updateState({
               requestId: this.requestId,
@@ -474,16 +489,16 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               processing: this.processing,
               isWeaponOrder: this.isWeaponOrder
             });
-            
+
             // Load supply data if needed (for Order requests)
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
-            
+
             if (showLoading) {
               this.loading = false;
             }
-            
+
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           }).catch(() => {
@@ -500,11 +515,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
             }
-            
+
             if (showLoading) {
               this.loading = false;
             }
-            
+
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           });

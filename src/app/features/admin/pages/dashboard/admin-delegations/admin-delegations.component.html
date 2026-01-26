@@ -1,38 +1,93 @@
-<div class="admin-delegations-container p-6">
+<div class="admin-delegations-container p-6 space-y-6">
 
-
-    <!-- Filters -->
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap gap-2">
-            <button (click)="setFilter('all')" class="filter-btn" [class.filter-btn--active]="filterStatus === 'all'">
-                {{ 'common.all' | translate }}
-            </button>
-            <button (click)="setFilter('pending')" class="filter-btn"
-                [class.filter-btn--active]="filterStatus === 'pending'">
-                {{ 'DELEGATION.PENDING' | translate }}
-            </button>
-            <button (click)="setFilter('approved')" class="filter-btn"
-                [class.filter-btn--active]="filterStatus === 'approved'">
-                {{ 'DELEGATION.APPROVED' | translate }}
-            </button>
-            <button (click)="setFilter('rejected')" class="filter-btn"
-                [class.filter-btn--active]="filterStatus === 'rejected'">
-                {{ 'DELEGATION.REJECTED' | translate }}
-            </button>
-            <button (click)="setFilter('active')" class="filter-btn"
-                [class.filter-btn--active]="filterStatus === 'active'">
-                {{ 'DELEGATION.STATUS_ACTIVE' | translate }}
-            </button>
-            <button (click)="setFilter('expired')" class="filter-btn"
-                [class.filter-btn--active]="filterStatus === 'expired'">
-                {{ 'DELEGATION.STATUS_EXPIRED' | translate }}
-            </button>
+    <!-- Configuration Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Cross-Department Setting -->
+        <div
+            class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 rounded-md bg-blue-50 text-blue-600">
+                            <lucide-angular [img]="Network" class="h-4 w-4"></lucide-angular>
+                        </div>
+                        <h3 class="text-sm font-bold text-[var(--color-text)]">
+                            {{ 'DELEGATION.SETTINGS.CROSS_DEPARTMENT_TITLE' | translate }}
+                        </h3>
+                    </div>
+                    <p class="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                        {{ 'DELEGATION.SETTINGS.CROSS_DEPARTMENT_DESC' | translate }}
+                    </p>
+                </div>
+                <button type="button" (click)="toggleCrossDepartment()"
+                    [class.bg-[var(--color-brand)]]="allowCrossDepartment" [class.bg-gray-200]="!allowCrossDepartment"
+                    [disabled]="isSettingsLoading"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 disabled:opacity-50 mt-1"
+                    [attr.dir]="'ltr'">
+                    <span class="sr-only">Toggle</span>
+                    <span aria-hidden="true" [class.translate-x-5]="allowCrossDepartment"
+                        [class.translate-x-0]="!allowCrossDepartment"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out">
+                    </span>
+                </button>
+            </div>
         </div>
 
-        <button (click)="refresh()"
-            class="flex items-center gap-2 px-4 py-2 bg-[var(--color-background-soft)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-muted)] transition-colors">
-            <lucide-angular [img]="RefreshCw" class="h-4 w-4"></lucide-angular>
-            <span>{{ 'common.refresh' | translate }}</span>
+        <!-- Delegator Authority Setting -->
+        <div
+            class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 rounded-md bg-purple-50 text-purple-600">
+                            <lucide-angular [img]="ShieldCheck" class="h-4 w-4"></lucide-angular>
+                        </div>
+                        <h3 class="text-sm font-bold text-[var(--color-text)]">
+                            {{ 'DELEGATION.SETTINGS.DELEGATOR_ACTION_TITLE' | translate }}
+                        </h3>
+                    </div>
+                    <p class="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                        {{ 'DELEGATION.SETTINGS.DELEGATOR_ACTION_DESC' | translate }}
+                    </p>
+                </div>
+                <button type="button" (click)="toggleDelegatorAction()"
+                    [class.bg-[var(--color-brand)]]="allowDelegatorAction" [class.bg-gray-200]="!allowDelegatorAction"
+                    [disabled]="isSettingsLoading"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 disabled:opacity-50 mt-1"
+                    [attr.dir]="'ltr'">
+                    <span class="sr-only">Toggle</span>
+                    <span aria-hidden="true" [class.translate-x-5]="allowDelegatorAction"
+                        [class.translate-x-0]="!allowDelegatorAction"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out">
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-2 pb-2">
+        <button (click)="setFilter('all')" class="filter-btn" [class.filter-btn--active]="filterStatus === 'all'">
+            {{ 'common.all' | translate }}
+        </button>
+        <button (click)="setFilter('pending')" class="filter-btn"
+            [class.filter-btn--active]="filterStatus === 'pending'">
+            {{ 'DELEGATION.PENDING' | translate }}
+        </button>
+        <button (click)="setFilter('approved')" class="filter-btn"
+            [class.filter-btn--active]="filterStatus === 'approved'">
+            {{ 'DELEGATION.APPROVED' | translate }}
+        </button>
+        <button (click)="setFilter('rejected')" class="filter-btn"
+            [class.filter-btn--active]="filterStatus === 'rejected'">
+            {{ 'DELEGATION.REJECTED' | translate }}
+        </button>
+        <button (click)="setFilter('active')" class="filter-btn" [class.filter-btn--active]="filterStatus === 'active'">
+            {{ 'DELEGATION.STATUS_ACTIVE' | translate }}
+        </button>
+        <button (click)="setFilter('expired')" class="filter-btn"
+            [class.filter-btn--active]="filterStatus === 'expired'">
+            {{ 'DELEGATION.STATUS_EXPIRED' | translate }}
         </button>
     </div>
 
@@ -43,7 +98,7 @@
 
     <!-- Delegations Table -->
     <div *ngIf="!isLoading"
-        class="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]">
+        class="bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] shadow-sm overflow-hidden">
 
         <!-- Mobile Card View -->
         <div class="md:hidden grid grid-cols-1 gap-4 p-4">
@@ -52,7 +107,6 @@
 
                 <!-- Header: Delegator -> Delegatee -->
                 <div class="flex items-center gap-2">
-                    <!-- Delegator -->
                     <div class="flex items-center gap-2 flex-1 min-w-0">
                         <div
                             class="w-8 h-8 rounded-full bg-[var(--color-brand)]/10 flex-shrink-0 flex items-center justify-center text-[var(--color-brand)] text-xs font-bold">
@@ -64,11 +118,9 @@
                         </div>
                     </div>
 
-                    <!-- Arrow -->
                     <lucide-angular [img]="ArrowRight"
-                        class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
+                        class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0 rtl:rotate-180"></lucide-angular>
 
-                    <!-- Delegatee -->
                     <div class="flex items-center gap-2 flex-1 min-w-0 justify-end">
                         <div class="text-right truncate">
                             <div class="font-bold text-sm truncate">{{ delegation.delegateeFullName ||
@@ -94,7 +146,10 @@
                     <div>
                         <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'DELEGATION.END_DATE' | translate
                             }}</span>
-                        <span class="font-medium text-[var(--color-text)]">{{ delegation.endDate | appDate }}</span>
+                        <div class="flex items-center gap-1.5 font-medium text-[var(--color-text)]">
+                            <lucide-angular [img]="Calendar" class="h-3 w-3"></lucide-angular>
+                            {{ delegation.endDate | appDate }}
+                        </div>
                     </div>
                 </div>
 
@@ -120,6 +175,16 @@
                     <span class="font-semibold block mb-0.5">{{ 'DELEGATION.REASON' | translate }}:</span>
                     {{ delegation.reason }}
                 </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end pt-3 mt-1 border-t border-[var(--color-border-muted)]"
+                    *ngIf="delegation.delegationStatus !== 2 && delegation.status !== 'Expired' && delegation.status !== 'Revoked'">
+                    <button (click)="revokeDelegation(delegation)"
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                        <lucide-angular [img]="Ban" class="h-3.5 w-3.5"></lucide-angular>
+                        {{ 'DELEGATION.REVOKE' | translate }}
+                    </button>
+                </div>
             </div>
 
             <div *ngIf="filteredDelegations.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
@@ -132,106 +197,116 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        <th class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.DELEGATOR' | translate }}
                         </th>
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        <th class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.DELEGATEE' | translate }}
                         </th>
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        <th class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.START_DATE' | translate }}
                         </th>
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        <th class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.END_DATE' | translate }}
                         </th>
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                            {{ 'DELEGATION.REASON' | translate }}
-                        </th>
-                        <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                        <th class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.STATUS' | translate }}
                         </th>
                         <th
-                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                            {{ 'DELEGATION.TIME_STATUS' | translate }}
+                            class="px-6 py-4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider text-right">
+                            {{ 'DELEGATION.ACTIONS' | translate }}
                         </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--color-border)]">
                     <tr *ngFor="let delegation of filteredDelegations"
-                        class="hover:bg-[var(--color-background-muted)]/50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-[var(--color-text)]">
-                            <div class="flex items-center gap-2">
+                        class="group hover:bg-[var(--color-background-muted)]/30 transition-colors">
+                        <!-- Delegator -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center text-[var(--color-brand)] text-xs font-bold">
+                                    class="w-9 h-9 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center text-[var(--color-brand)] text-xs font-bold ring-2 ring-white">
                                     {{ delegation.delegatorUserName?.charAt(0) || 'U' }}
                                 </div>
                                 <div>
-                                    <div class="font-medium">{{ delegation.delegatorFullName ||
-                                        delegation.delegatorUserName
-                                        }}</div>
+                                    <div class="text-sm font-semibold text-[var(--color-text)]">{{
+                                        delegation.delegatorFullName || delegation.delegatorUserName }}</div>
                                     <div class="text-xs text-[var(--color-text-muted)]">{{ delegation.delegatorUserName
-                                        }}
-                                    </div>
+                                        }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-[var(--color-text)]">
-                            <div class="flex items-center gap-2">
+                        <!-- Delegatee -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold">
+                                    class="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center text-green-600 text-xs font-bold ring-2 ring-white">
                                     {{ delegation.delegateeUserName?.charAt(0) || 'U' }}
                                 </div>
                                 <div>
-                                    <div class="font-medium">{{ delegation.delegateeFullName ||
-                                        delegation.delegateeUserName
-                                        }}</div>
+                                    <div class="text-sm font-semibold text-[var(--color-text)]">{{
+                                        delegation.delegateeFullName || delegation.delegateeUserName }}</div>
                                     <div class="text-xs text-[var(--color-text-muted)]">{{ delegation.delegateeUserName
-                                        }}
-                                    </div>
+                                        }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
+                        <!-- Dates -->
+                        <td class="px-6 py-4 text-sm text-[var(--color-text-muted)]">
                             <div class="flex items-center gap-2">
-                                <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
-                                {{ delegation.startDate | appDate }}
+                                <lucide-angular [img]="Calendar"
+                                    class="h-4 w-4 text-[var(--color-text-tertiary)]"></lucide-angular>
+                                <span>{{ delegation.startDate | appDate }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                            {{ delegation.endDate | appDate }}
+                        <td class="px-6 py-4 text-sm text-[var(--color-text-muted)]">
+                            <div class="flex items-center gap-2">
+                                <lucide-angular [img]="Calendar"
+                                    class="h-4 w-4 text-[var(--color-text-tertiary)]"></lucide-angular>
+                                <span>{{ delegation.endDate | appDate }}</span>
+                            </div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-[var(--color-text-muted)] max-w-xs truncate">
-                            {{ delegation.reason }}
+                        <!-- Status -->
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1.5 items-start">
+                                <span [ngClass]="getStatusBadgeClass(delegation)"
+                                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border border-current/10">
+                                    {{ delegation.delegationStatus === 0 ? ('DELEGATION.PENDING' | translate) :
+                                    delegation.delegationStatus === 1 ? ('DELEGATION.APPROVED' | translate) :
+                                    ('DELEGATION.REJECTED' | translate) }}
+                                </span>
+                                <span [ngClass]="getTimeBadgeClass(delegation)"
+                                    class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border border-current/10">
+                                    {{ delegation.status === 'Active' ? ('DELEGATION.STATUS_ACTIVE' | translate) :
+                                    delegation.status === 'Future' ? ('DELEGATION.STATUS_FUTURE' | translate) :
+                                    ('DELEGATION.STATUS_EXPIRED' | translate) }}
+                                </span>
+                            </div>
                         </td>
-                        <td class="px-4 py-3">
-                            <span [ngClass]="getStatusBadgeClass(delegation)"
-                                class="px-3 py-1 rounded-full text-xs font-semibold">
-                                {{ delegation.delegationStatus === 0 ? ('DELEGATION.PENDING' | translate) :
-                                delegation.delegationStatus === 1 ? ('DELEGATION.APPROVED' | translate) :
-                                ('DELEGATION.REJECTED' | translate) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">
-                            <span [ngClass]="getTimeBadgeClass(delegation)"
-                                class="px-3 py-1 rounded-full text-xs font-semibold">
-                                {{ delegation.status === 'Active' ? ('DELEGATION.STATUS_ACTIVE' | translate) :
-                                delegation.status === 'Future' ? ('DELEGATION.STATUS_FUTURE' | translate) :
-                                ('DELEGATION.STATUS_EXPIRED' | translate) }}
-                            </span>
+                        <!-- Actions -->
+                        <td class="px-6 py-4 text-right">
+                            <button
+                                *ngIf="delegation.delegationStatus !== 2 && delegation.status !== 'Expired' && delegation.status !== 'Revoked'"
+                                (click)="revokeDelegation(delegation)"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-transparent hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                                [title]="'DELEGATION.REVOKE' | translate">
+                                <lucide-angular [img]="Ban" class="h-4 w-4"></lucide-angular>
+                                <span class="hidden lg:inline">{{ 'DELEGATION.REVOKE' | translate }}</span>
+                            </button>
                         </td>
                     </tr>
                     <tr *ngIf="filteredDelegations.length === 0">
-                        <td colspan="7" class="px-4 py-12 text-center text-[var(--color-text-muted)]">
-                            <div class="flex flex-col items-center gap-3">
-                                <lucide-angular [img]="AlertCircle" class="h-12 w-12 opacity-50"></lucide-angular>
-                                <p class="text-lg font-medium">{{ 'common.noData' | translate }}</p>
-                                <p class="text-sm">{{ 'DELEGATION.NO_DELEGATIONS_FOUND' | translate }}</p>
+                        <td colspan="6" class="px-6 py-16 text-center text-[var(--color-text-muted)]">
+                            <div class="flex flex-col items-center gap-4">
+                                <div class="p-4 rounded-full bg-[var(--color-background-muted)]">
+                                    <lucide-angular [img]="AlertCircle"
+                                        class="h-8 w-8 text-[var(--color-text-tertiary)]"></lucide-angular>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-semibold text-[var(--color-text)]">{{ 'common.noData' |
+                                        translate }}</p>
+                                    <p class="text-sm">{{ 'DELEGATION.NO_DELEGATIONS_FOUND' | translate }}</p>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -240,3 +315,9 @@
         </div>
     </div>
 </div>
+
+<app-confirmation-dialog [isOpen]="showRevokeDialog" [title]="'DELEGATION.REVOKE_CONFIRM_TITLE' | translate"
+    [message]="'DELEGATION.REVOKE_CONFIRM' | translate" [type]="'danger'"
+    [confirmText]="'DELEGATION.REVOKE' | translate" [cancelText]="'common.cancel' | translate"
+    (confirmed)="onRevokeConfirmed()" (cancelled)="onRevokeCancelled()">
+</app-confirmation-dialog>

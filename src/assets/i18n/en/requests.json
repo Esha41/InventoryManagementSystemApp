@@ -647,5 +647,9 @@
     "unNumber": "UN Number",
     "netExplosiveQuantity": "Net Explosive Quantity",
     "specifications": "Specifications"
+  },
+  "DELEGATION": {
+    "RESTRICTED_ACCESS_TITLE": "Authority Delegated",
+    "RESTRICTED_ACCESS_MSG": "Your authority is currently delegated to another user. You cannot perform actions while delegation is active. To regain your authority, please revoke the active delegation from your profile."
   }
 }
