@@ -11,10 +11,7 @@ export interface Report {
   reportStatusNameEn: string;
   reportStatusNameAr: string;
   description?: string;
-  reportType?: string;
   reportParameters?: string;
-  isTemplate: boolean;
-  isPublic: boolean;
   creationDate: Date;
   createdBy: string;
   modificationDate?: Date;
@@ -75,7 +72,10 @@ export class ReportService {
    * Returns the updated report.
    */
   setReportPublic(id: string, isPublic: boolean): Observable<Report> {
-    return this.apiService.patch<Report>(`${this.endpoint}/${id}/public`, { isPublic });
+    return this.apiService.patch<Report>(
+    `${this.endpoint}/${id}/public?isPublic=${isPublic}`,
+    null
+  );
   }
 
   /**
