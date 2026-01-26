@@ -137,6 +137,7 @@
     "inventoryDashboard": "لوحة تحكم المخزون",
     "adminDashboard": "لوحة تحكم المسؤول",
     "analytics": "التحليلات",
+    "advancedAnalytics": "التحليلات المتقدمة",
     "supplyManagement": "إدارة الطلبات",
     "warehouse": "المستودعات",
     "warehouseList": "قائمة المستودعات",
@@ -234,5 +235,72 @@
   "COMMON": {
     "SAVE": "حفظ",
     "CANCEL": "إلغاء"
+  },
+  "advancedAnalytics": {
+    "title": "لوحة تحليلات متقدمة",
+    "subtitle": "مؤشرات الأداء الرئيسية والتحليلات في الوقت الفعلي لاتخاذ القرارات الاستراتيجية",
+    "lastUpdated": "آخر تحديث",
+    "lastRefresh": "آخر تحديث",
+    "autoRefresh": "التحديث التلقائي",
+    "kpis": {
+      "title": "مؤشرات الأداء الرئيسية",
+      "missionReadiness": "معدل جاهزية المهمة",
+      "stockAvailability": "توفر المخزون",
+      "orderCycleTime": "وقت دورة الطلب",
+      "consumptionForecast": "الاستهلاك مقابل التوقعات",
+      "totalUnits": "إجمالي الوحدات",
+      "missionReady": "جاهز للمهمة",
+      "underMaintenance": "قيد الصيانة",
+      "unavailable": "غير متاح",
+      "requiredItems": "العناصر المطلوبة",
+      "availableItems": "العناصر المتاحة",
+      "days": "أيام",
+      "min": "الحد الأدنى",
+      "max": "الحد الأقصى",
+      "consumptionRatio": "نسبة الاستهلاك",
+      "alerts": "التنبيهات",
+      "shortage": "النقص",
+      "dataPoints": "نقاط البيانات",
+      "status": "الحالة",
+      "variance": "التباين",
+      "average": "المتوسط",
+      "importExport": "إحصائيات الاستيراد/التصدير",
+      "totalImports": "إجمالي الاستيراد",
+      "totalExports": "إجمالي التصدير",
+      "importPercentage": "نسبة الاستيراد",
+      "lastImport": "آخر استيراد",
+      "operations": "العمليات",
+      "active": "نشط"
+    },
+    "charts": {
+      "title": "التصورات التفاعلية",
+      "importExport": "اتجاهات الاستيراد/التصدير",
+      "missionReadinessTrend": "اتجاه جاهزية المهمة",
+      "stockByWarehouse": "توفر المخزون حسب المستودع",
+      "orderCycleTimeTrend": "اتجاه وقت دورة الطلب",
+      "consumptionForecast": "الاستهلاك مقابل التوقعات"
+    },
+    "additionalCharts": {
+      "title": "رسوم بيانية تحليلية إضافية",
+      "orderStatusDistribution": "توزيع حالة الطلب",
+      "requestTrends": "اتجاهات الطلبات مع مرور الوقت",
+      "inventoryValue": "قيمة المخزون حسب المستودع",
+      "assetAssignmentStatus": "حالة تعيين الأصول",
+      "supplyFulfillmentStatus": "حالة تنفيذ الإمداد",
+      "departmentRequestVolume": "حجم طلبات القسم",
+      "notificationTrends": "اتجاهات الإشعارات مع مرور الوقت",
+      "notificationByType": "الإشعارات حسب نوع الكيان",
+      "notificationReadStatus": "حالة قراءة الإشعارات حسب الكيان",
+      "userLoginAnalytics": "تحليلات تسجيل دخول المستخدمين"
+    },
+    "customize": "تخصيص",
+    "customizePanel": {
+      "title": "تخصيص لوحة التحكم",
+      "presets": "إعدادات لوحة التحكم",
+      "visibleKpis": "مؤشرات الأداء المرئية",
+      "visibleCharts": "الرسوم البيانية المرئية",
+      "additionalCharts": "رسوم بيانية تحليلية إضافية"
+    },
+    "dashboard": "لوحة التحكم"
   }
 }

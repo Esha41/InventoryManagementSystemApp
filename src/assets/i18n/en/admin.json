@@ -469,7 +469,24 @@
       "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly",
-      "yearly": "Yearly"
+      "yearly": "Yearly",
+      "userLoginAnalytics": "User Login Analytics",
+      "loginActivity": "User login activity and session duration",
+      "loginTrend": "Login Trend",
+      "uniqueUsers": "Unique Users",
+      "loginCount": "Login Count",
+      "date": "Date",
+      "topUsers": "Top Users",
+      "loginDuration": "Login Duration",
+      "hours": "hours",
+      "totalLogins": "Total Logins",
+      "averageDuration": "Average Duration",
+      "activeUsersToday": "Active Users Today",
+      "topUsersByDuration": "Top Users by Login Duration",
+      "loading": "Loading...",
+      "noData": "No data available",
+      "failedToLoad": "Failed to load chart data",
+      "retry": "Retry"
     }
   },
   "DELEGATION": {

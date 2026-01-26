@@ -137,6 +137,7 @@
     "inventoryDashboard": "Inventory Dashboard",
     "adminDashboard": "Admin Dashboard",
     "analytics": "Analytics",
+    "advancedAnalytics": "Advanced Analytics",
     "supplyManagement": "Supply Management",
     "warehouse": "Depots",
     "warehouseList": "Warehouse List",
@@ -234,5 +235,72 @@
   "COMMON": {
     "SAVE": "Save",
     "CANCEL": "Cancel"
+  },
+  "advancedAnalytics": {
+    "title": "Advanced Analytics Dashboard",
+    "subtitle": "Real-time KPIs and analytics for strategic decision-making",
+    "lastUpdated": "Last Updated",
+    "lastRefresh": "Last Refresh",
+    "autoRefresh": "Auto Refresh",
+    "kpis": {
+      "title": "Key Performance Indicators",
+      "missionReadiness": "Mission Readiness Rate",
+      "stockAvailability": "Stock Availability",
+      "orderCycleTime": "Order Cycle Time",
+      "consumptionForecast": "Consumption vs Forecast",
+      "totalUnits": "Total Units",
+      "missionReady": "Mission Ready",
+      "underMaintenance": "Under Maintenance",
+      "unavailable": "Unavailable",
+      "requiredItems": "Required Items",
+      "availableItems": "Available Items",
+      "days": "days",
+      "min": "Min",
+      "max": "Max",
+      "consumptionRatio": "Consumption Ratio",
+      "alerts": "Alerts",
+      "shortage": "Shortage",
+      "dataPoints": "Data Points",
+      "status": "Status",
+      "variance": "Variance",
+      "average": "Average",
+      "importExport": "Import/Export Statistics",
+      "totalImports": "Total Imports",
+      "totalExports": "Total Exports",
+      "importPercentage": "Import %",
+      "lastImport": "Last Import",
+      "operations": "Operations",
+      "active": "Active"
+    },
+    "charts": {
+      "title": "Interactive Visualizations",
+      "importExport": "Import/Export Trends",
+      "missionReadinessTrend": "Mission Readiness Trend",
+      "stockByWarehouse": "Stock Availability by Warehouse",
+      "orderCycleTimeTrend": "Order Cycle Time Trend",
+      "consumptionForecast": "Consumption vs Forecast"
+    },
+    "additionalCharts": {
+      "title": "Additional Analytics Charts",
+      "orderStatusDistribution": "Order Status Distribution",
+      "requestTrends": "Request Trends Over Time",
+      "inventoryValue": "Inventory Value by Warehouse",
+      "assetAssignmentStatus": "Asset Assignment Status",
+      "supplyFulfillmentStatus": "Supply Fulfillment Status",
+      "departmentRequestVolume": "Department Request Volume",
+      "notificationTrends": "Notification Trends Over Time",
+      "notificationByType": "Notifications by Entity Type",
+      "notificationReadStatus": "Notification Read Status by Entity",
+      "userLoginAnalytics": "User Login Analytics"
+    },
+    "customize": "Customize",
+    "customizePanel": {
+      "title": "Customize Dashboard",
+      "presets": "Dashboard Presets",
+      "visibleKpis": "Visible KPIs",
+      "visibleCharts": "Visible Charts",
+      "additionalCharts": "Additional Analytics Charts"
+    },
+    "dashboard": "Dashboard"
   }
 }
