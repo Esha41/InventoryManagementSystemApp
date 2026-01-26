@@ -48,6 +48,7 @@ import { WorkflowPickupDateComponent } from './components/workflow-pickup-date/w
 import { WorkflowApprovalTimelineComponent } from './components/workflow-approval-timeline/workflow-approval-timeline.component';
 import { WorkflowRequestInformationComponent } from './components/workflow-request-information/workflow-request-information.component';
 import { WorkflowRequestItemsComponent } from './components/workflow-request-items/workflow-request-items.component';
+import { WeaponReviewItemsModalComponent } from './components/weapon-review-items-modal/weapon-review-items-modal.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -66,7 +67,8 @@ import { WorkflowRequestItemsComponent } from './components/workflow-request-ite
     WorkflowPickupDateComponent,
     WorkflowApprovalTimelineComponent,
     WorkflowRequestInformationComponent,
-    WorkflowRequestItemsComponent
+    WorkflowRequestItemsComponent,
+    WeaponReviewItemsModalComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css'],
@@ -142,6 +144,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   supplyData: SupplyDto | null = null;
   ranks: LookupItem[] = [];
   isLoadingRanks: boolean = false;
+
+  // Weapon Review Items Modal
+  isWeaponReviewItemsModalOpen: boolean = false;
 
   // Use state service for supply submission check
   isSupplySubmitted(): boolean {
@@ -387,6 +392,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     // Silently refresh request detail without showing full page loading
     // This ensures approval history updates correctly while maintaining smooth UX
     this.processing = false;
+    this.loadRequestDetailInternal(false);
+  }
+
+  // Weapon Review Items Modal
+  openWeaponReviewItemsModal(): void {
+    this.isWeaponReviewItemsModalOpen = true;
+  }
+
+  closeWeaponReviewItemsModal(): void {
+    this.isWeaponReviewItemsModalOpen = false;
+  }
+
+  onWeaponItemChanged(): void {
+    // Reload request detail after weapon item add/edit/delete
     this.loadRequestDetailInternal(false);
   }
 
