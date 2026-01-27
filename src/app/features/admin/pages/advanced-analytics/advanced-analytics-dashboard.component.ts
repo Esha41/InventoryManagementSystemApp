@@ -28,7 +28,7 @@ import {
 } from '@models/advanced-analytics.model';
 import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import * as echarts from 'echarts';
+import { createEcharts } from '@core/echarts.factory';
 import { UserLoginAnalyticsChartComponent } from '../analytics/components/user-login-analytics-chart/user-login-analytics-chart.component';
 
 /**
@@ -47,7 +47,8 @@ import { UserLoginAnalyticsChartComponent } from '../analytics/components/user-l
     DragDropModule
   ],
   providers: [
-    provideEchartsCore({ echarts: () => import('echarts') })
+    // Use shared factory so we can configure ECharts (e.g. log level) once.
+    provideEchartsCore({ echarts: () => Promise.resolve(createEcharts()) })
   ],
   templateUrl: './advanced-analytics-dashboard.component.html',
   styleUrls: ['./advanced-analytics-dashboard.component.css'],
@@ -129,10 +130,8 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
 
   // Chart instances for event handling
   private chartInstances: Map<string, any> = new Map();
-  
-  // Cached chart options to prevent unnecessary re-initialization
-  private cachedChartOptions: Map<string, EChartsOption> = new Map();
-  private chartDataHashes: Map<string, string> = new Map();
+  // Flag to avoid handling chart events after component is destroyed
+  private isDestroyed = false;
   
   // Flag to prevent chart re-initialization during data updates
   isUpdatingCharts = false;
@@ -185,16 +184,9 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Dispose all chart instances
-    this.chartInstances.forEach((chartInstance, chartId) => {
-      if (chartInstance && typeof chartInstance.dispose === 'function') {
-        try {
-          chartInstance.dispose();
-        } catch (error) {
-          this.loggingService.error(`Error disposing chart ${chartId}`, error);
-        }
-      }
-    });
+    this.isDestroyed = true;
+    // Let ngx-echarts directives manage disposal of chart instances.
+    // We only clear our references to avoid double-dispose warnings.
     this.chartInstances.clear();
 
     if (this.autoRefreshSubscription) {
@@ -307,19 +299,15 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
           this.departmentRequestVolume = (data as any).departmentRequestVolume || (data as any).DepartmentRequestVolume || null;
           this.notificationStatistics = (data as any).notificationStatistics || (data as any).NotificationStatistics || null;
           this.importExportStatistics = (data as any).importExportStatistics || (data as any).ImportExportStatistics || null;
-          
-          // Clear cached chart options to force recalculation with new data
-          this.cachedChartOptions.clear();
-          this.chartDataHashes.clear();
-          
+                    
           // Update ordered arrays after all data loads
           this.updateOrderedArrays();
-          
+
           this.isLoading = false;
           this.isRefreshing = false;
           this.error = null;
           this.lastRefreshTime = new Date();
-          this.isUpdatingCharts = false; // Allow charts to render immediately
+          this.isUpdatingCharts = false;
           
           this.cdr.markForCheck();
         },
@@ -471,25 +459,6 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
       return {};
     }
 
-    // Create a hash of the data to check if it has changed
-    const dataHash = JSON.stringify(this.importExportStatistics.trendData);
-    const chartId = 'importExport';
-    
-    // Return cached options if data hasn't changed
-    if (this.chartDataHashes.get(chartId) === dataHash && this.cachedChartOptions.has(chartId)) {
-      // Update existing instance if available instead of returning new options
-      const instance = this.chartInstances.get(chartId);
-      if (instance && typeof instance.setOption === 'function') {
-        try {
-          const cached = this.cachedChartOptions.get(chartId)!;
-          instance.setOption(cached, { notMerge: false });
-        } catch (error) {
-          // Error updating instance
-        }
-      }
-      return this.cachedChartOptions.get(chartId)!;
-    }
-
     const dates = this.importExportStatistics.trendData.map(d => new Date(d.date).toLocaleDateString());
     const importCounts = this.importExportStatistics.trendData.map(d => d.importCount);
     const exportCounts = this.importExportStatistics.trendData.map(d => d.exportCount);
@@ -526,27 +495,6 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
         }
       ]
     } as EChartsOption;
-    
-    // Cache the options and data hash
-    this.cachedChartOptions.set(chartId, options);
-    this.chartDataHashes.set(chartId, dataHash);
-    
-    // Update existing instance if available
-    const instance = this.chartInstances.get(chartId);
-    if (instance && typeof instance.setOption === 'function') {
-      try {
-        // Check if instance is disposed before trying to update
-        const isDisposed = typeof instance.isDisposed === 'function' 
-          ? instance.isDisposed() 
-          : false;
-        
-        if (!isDisposed) {
-          instance.setOption(options, { notMerge: false });
-        }
-      } catch (error) {
-        // Error updating instance
-      }
-    }
     
     return options;
   }
@@ -1541,102 +1489,26 @@ export class AdvancedAnalyticsDashboardComponent implements OnInit, OnDestroy {
    * Handle chart initialization
    */
   onChartInit(chartInstance: any, chartId: string): void {
-    if (!chartInstance) {
+    // Ignore late emissions after component has been destroyed
+    if (this.isDestroyed || !chartInstance) {
       return;
     }
 
-    // Get the DOM element from the chart instance
-    let domElement: HTMLElement | null = null;
-    try {
-      // ECharts instances have a `getDom()` method to get the DOM element
-      if (chartInstance && typeof chartInstance.getDom === 'function') {
-        domElement = chartInstance.getDom();
-      }
-    } catch (error) {
-      // Error getting DOM element
-    }
-
-    // Check if there's already an instance on the DOM element using getInstanceByDom
-    if (domElement) {
-      try {
-        const existingDomInstance = echarts.getInstanceByDom(domElement);
-        if (existingDomInstance && existingDomInstance !== chartInstance) {
-          try {
-            if (typeof existingDomInstance.dispose === 'function') {
-              const isDisposed = typeof existingDomInstance.isDisposed === 'function' 
-                ? existingDomInstance.isDisposed() 
-                : false;
-              if (!isDisposed) {
-                existingDomInstance.dispose();
-              }
-            }
-          } catch (error) {
-            // Error disposing existing DOM instance
-          }
-        }
-      } catch (error) {
-        // Error checking for existing DOM instance
-      }
-    }
-
-    // Check if instance already exists in our map
-    const existingInstance = this.chartInstances.get(chartId);
-    
-    // If we already have this exact instance, don't do anything
-    if (existingInstance === chartInstance) {
-      return;
-    }
-
-    // If we have a different instance, dispose it first
-    if (existingInstance && existingInstance !== chartInstance) {
-      try {
-        // Check if the existing instance is disposed
-        const isDisposed = typeof existingInstance.isDisposed === 'function' 
-          ? existingInstance.isDisposed() 
-          : false;
-        
-        if (!isDisposed) {
-          // Dispose the old instance
-          if (typeof existingInstance.dispose === 'function') {
-            existingInstance.dispose();
-          }
-        }
-      } catch (error) {
-        // Error disposing old instance
-      }
-    }
-
-    // Store the new instance
+    // Store the latest instance for this chartId (used only for event wiring).
     this.chartInstances.set(chartId, chartInstance);
     
     // Attach click event listener (only for charts that need drill-down)
     if (chartId === 'stockAvailability' || chartId === 'orderCycleTime' || chartId === 'consumptionForecast') {
-      chartInstance.off('click'); // Remove any existing listeners first
-      chartInstance.on('click', (params: any) => {
-        this.handleChartClick(params, chartId);
-      });
+      try {
+        chartInstance.off('click'); // Remove any existing listeners first
+        chartInstance.on('click', (params: any) => {
+          this.handleChartClick(params, chartId);
+        });
+      } catch (error) {
+        // Error attaching click listener - continue
+      }
     }
     
-    // Update chart with cached options if available
-    const cachedOptions = this.cachedChartOptions.get(chartId);
-    if (cachedOptions) {
-      setTimeout(() => {
-        if (chartInstance && typeof chartInstance.setOption === 'function') {
-          try {
-            // Check if instance is disposed before trying to update
-            const isDisposed = typeof chartInstance.isDisposed === 'function' 
-              ? chartInstance.isDisposed() 
-              : false;
-            
-            if (!isDisposed) {
-              chartInstance.setOption(cachedOptions, { notMerge: false });
-            }
-          } catch (error) {
-            // Error setting cached options
-          }
-        }
-      }, 0);
-    }
   }
 
   /**

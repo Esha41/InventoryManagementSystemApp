@@ -693,7 +693,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.charts.importExport' | translate }}</h3>
-            <div echarts [options]="getImportExportChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'importExport')" class="chart-container"></div>
+            <div echarts [options]="getImportExportChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'importExport')" class="chart-container"></div>
           </div>
 
           <!-- Stock Availability by Warehouse -->
@@ -711,7 +711,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.charts.stockByWarehouse' | translate }}</h3>
-            <div echarts [options]="getStockAvailabilityChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'stockAvailability')" class="chart-container" style="cursor: pointer;"></div>
+            <div echarts [options]="getStockAvailabilityChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'stockAvailability')" class="chart-container" style="cursor: pointer;"></div>
           </div>
 
           <!-- Order Cycle Time Trend -->
@@ -729,7 +729,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.charts.orderCycleTimeTrend' | translate }}</h3>
-            <div echarts [options]="getOrderCycleTimeChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'orderCycleTime')" class="chart-container" style="cursor: pointer;"></div>
+            <div echarts [options]="getOrderCycleTimeChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'orderCycleTime')" class="chart-container" style="cursor: pointer;"></div>
           </div>
 
           <!-- Consumption vs Forecast -->
@@ -747,7 +747,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.charts.consumptionForecast' | translate }}</h3>
-            <div echarts [options]="getConsumptionForecastChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'consumptionForecast')" class="chart-container" style="cursor: pointer;"></div>
+            <div echarts [options]="getConsumptionForecastChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'consumptionForecast')" class="chart-container" style="cursor: pointer;"></div>
           </div>
         </ng-container>
       </div>
@@ -777,7 +777,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.orderStatusDistribution' | translate }}</h3>
-            <div echarts [options]="getOrderStatusDistributionChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'orderStatusDistribution')" class="chart-container"></div>
+            <div echarts [options]="getOrderStatusDistributionChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'orderStatusDistribution')" class="chart-container"></div>
           </div>
 
           <!-- Request Trends -->
@@ -795,7 +795,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.requestTrends' | translate }}</h3>
-            <div echarts [options]="getRequestTrendsChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'requestTrends')" class="chart-container"></div>
+            <div echarts [options]="getRequestTrendsChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'requestTrends')" class="chart-container"></div>
           </div>
 
           <!-- Inventory Value by Warehouse -->
@@ -813,7 +813,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.inventoryValue' | translate }}</h3>
-            <div echarts [options]="getInventoryValueChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'inventoryValue')" class="chart-container"></div>
+            <div echarts [options]="getInventoryValueChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'inventoryValue')" class="chart-container"></div>
           </div>
 
           <!-- Asset Assignment Status -->
@@ -831,7 +831,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.assetAssignmentStatus' | translate }}</h3>
-            <div echarts [options]="getAssetAssignmentStatusChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'assetAssignmentStatus')" class="chart-container"></div>
+            <div echarts [options]="getAssetAssignmentStatusChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'assetAssignmentStatus')" class="chart-container"></div>
           </div>
 
           <!-- Supply Fulfillment Status -->
@@ -849,7 +849,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.supplyFulfillmentStatus' | translate }}</h3>
-            <div echarts [options]="getSupplyFulfillmentStatusChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'supplyFulfillmentStatus')" class="chart-container"></div>
+            <div echarts [options]="getSupplyFulfillmentStatusChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'supplyFulfillmentStatus')" class="chart-container"></div>
           </div>
 
           <!-- Department Request Volume -->
@@ -867,7 +867,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.departmentRequestVolume' | translate }}</h3>
-            <div echarts [options]="getDepartmentRequestVolumeChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'departmentRequestVolume')" class="chart-container"></div>
+            <div echarts [options]="getDepartmentRequestVolumeChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'departmentRequestVolume')" class="chart-container"></div>
           </div>
 
           <!-- Notification Trends -->
@@ -885,7 +885,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.notificationTrends' | translate }}</h3>
-            <div echarts [options]="getNotificationTrendsChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationTrends')" class="chart-container"></div>
+            <div echarts [options]="getNotificationTrendsChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationTrends')" class="chart-container"></div>
           </div>
 
           <!-- Notification By Type -->
@@ -903,7 +903,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.notificationByType' | translate }}</h3>
-            <div echarts [options]="getNotificationByTypeChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationByType')" class="chart-container"></div>
+            <div echarts [options]="getNotificationByTypeChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationByType')" class="chart-container"></div>
           </div>
 
           <!-- Notification Read Status -->
@@ -921,7 +921,7 @@
               </svg>
             </div>
             <h3 class="chart-title">{{ 'advancedAnalytics.additionalCharts.notificationReadStatus' | translate }}</h3>
-            <div echarts [options]="getNotificationReadStatusChartOptions()" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationReadStatus')" class="chart-container"></div>
+            <div echarts [options]="getNotificationReadStatusChartOptions()" [merge]="chartMerge" [initOpts]="chartInitOpts" [loading]="isLoading" (chartInit)="onChartInit($event, 'notificationReadStatus')" class="chart-container"></div>
           </div>
 
           <!-- User Login Analytics -->

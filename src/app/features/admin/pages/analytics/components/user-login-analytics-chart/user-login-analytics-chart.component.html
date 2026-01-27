@@ -68,14 +68,14 @@
         <div *ngIf="!loading && !error && chartOptions && userChartOptions" class="flex flex-col gap-6 h-full">
             <!-- Login Trend Chart -->
             <div class="flex-1 min-h-[250px]" style="height: 300px;">
-                <h4 class="text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'adminDashboard.charts.loginTrend' | translate }}</h4>
-                <div echarts [options]="chartOptions" [initOpts]="chartInitOpts" [loading]="loading" (chartInit)="onTrendChartInit($event)" class="w-full" style="height: 250px;"></div>
+            <h4 class="text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'adminDashboard.charts.loginTrend' | translate }}</h4>
+            <div echarts [options]="chartOptions" [initOpts]="chartInitOpts" [loading]="loading" class="w-full" style="height: 250px;"></div>
             </div>
 
             <!-- Top Users by Login Duration Chart -->
             <div class="flex-1 min-h-[250px]" style="height: 300px;">
-                <h4 class="text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'adminDashboard.charts.topUsersByDuration' | translate }}</h4>
-                <div echarts [options]="userChartOptions" [initOpts]="chartInitOpts" [loading]="loading" (chartInit)="onUserChartInit($event)" class="w-full" style="height: 250px;"></div>
+            <h4 class="text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'adminDashboard.charts.topUsersByDuration' | translate }}</h4>
+            <div echarts [options]="userChartOptions" [initOpts]="chartInitOpts" [loading]="loading" class="w-full" style="height: 250px;"></div>
             </div>
         </div>
         

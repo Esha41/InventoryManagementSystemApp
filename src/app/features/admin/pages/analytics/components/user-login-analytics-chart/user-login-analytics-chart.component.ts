@@ -24,8 +24,6 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private isInitializing = false;
-    private trendChartInstance: any = null;
-    private userChartInstance: any = null;
     chartOptions: EChartsOption | null = null;
     userChartOptions: EChartsOption | null = null;
     loading = true;
@@ -58,15 +56,6 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // Dispose chart instances
-        if (this.trendChartInstance) {
-            this.trendChartInstance.dispose();
-            this.trendChartInstance = null;
-        }
-        if (this.userChartInstance) {
-            this.userChartInstance.dispose();
-            this.userChartInstance = null;
-        }
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -524,6 +513,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                 }
             ]
         };
+        
 
         // Update existing chart instances if they exist using setOption
         // This prevents re-initialization and uses ECharts' built-in update mechanism
