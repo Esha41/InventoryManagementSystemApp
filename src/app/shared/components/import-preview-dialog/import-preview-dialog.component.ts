@@ -83,4 +83,49 @@ export class ImportPreviewDialogComponent implements OnInit {
     getErrorsForRow(row: PreviewRow): string {
         return row.errors.join(', ');
     }
+
+    /**
+     * Get a translated header for a property name
+     */
+    getColumnHeader(column: string): string {
+        if (!column) return '';
+
+        // Try different translation paths
+        const paths = [
+            `warehouseInventory.fields.${column}`,
+            `warehouseInventory.${column}`,
+            `assetList.table.${column}`,
+            `addAsset.${column}`,
+            `assetDetails.${column}`,
+            `weapon.${column}`,
+            `common.${column}`
+        ];
+
+        for (const path of paths) {
+            const translated = this.translationService.getTranslation(path);
+            if (translated && translated !== path) {
+                return translated;
+            }
+        }
+
+        // Handle specific common overrides
+        const commonMap: { [key: string]: string } = {
+            'itemName': 'warehouseInventory.itemName',
+            'itemNo': 'warehouseInventory.itemNo',
+            'itemType': 'addAsset.type',
+            'status': 'common.status'
+        };
+
+        if (commonMap[column]) {
+            const translated = this.translationService.getTranslation(commonMap[column]);
+            if (translated && translated !== commonMap[column]) {
+                return translated;
+            }
+        }
+
+        // Fallback: convert camelCase to Title Case
+        return column
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase());
+    }
 }

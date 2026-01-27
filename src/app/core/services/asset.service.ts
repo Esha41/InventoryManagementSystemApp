@@ -8,6 +8,9 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
 
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models';
+
 /**
  * Asset Service
  * Handles CRUD operations for individual tracked items (weapons)
@@ -15,7 +18,7 @@ import { ApiService } from './api.service';
 @Injectable({
     providedIn: 'root'
 })
-export class AssetService {
+export class AssetService implements IImportableService {
     private get baseUrl(): string {
         return `${this.configService.apiUrl}/Asset`;
     }
@@ -237,10 +240,12 @@ export class AssetService {
     /**
      * Import assets from Excel file
      */
-    importData(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
+    importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('depotId', depotId.toString());
+        if (depotId) {
+            formData.append('depotId', depotId.toString());
+        }
         const params = new HttpParams().set('language', language);
 
         return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params }).pipe(
@@ -254,10 +259,12 @@ export class AssetService {
     /**
      * Preview asset import from Excel file (validation only)
      */
-    importPreview(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
+    importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('depotId', depotId.toString());
+        if (depotId) {
+            formData.append('depotId', depotId.toString());
+        }
         const params = new HttpParams().set('language', language);
 
         return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params }).pipe(
@@ -271,8 +278,8 @@ export class AssetService {
     /**
      * Download asset import template
      */
-    downloadImportTemplate(depotId: number, language: string = 'en'): Observable<Blob> {
-        return this.http.get(`${this.baseUrl}/template?depotId=${depotId}&language=${language}`, {
+    generateImportTemplate(language: string = 'en', depotId?: number): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/template?depotId=${depotId || ''}&language=${language}`, {
             responseType: 'blob',
             observe: 'body'
         }).pipe(

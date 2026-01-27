@@ -34,5 +34,6 @@ export * from './user.model';
 export * from './warehouse-inventory.model';
 export * from './warehouse.model';
 export * from './weapon.model';
+export * from './import-result.model';
 export * from './workflow-approval.model';
 export * from './workflow.model';

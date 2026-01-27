@@ -46,7 +46,7 @@
                     <tr>
                         <th class="row-number-header">#</th>
                         <th class="status-header">{{ 'common.status' | translate }}</th>
-                        <th *ngFor="let column of previewData.columns">{{ column }}</th>
+                        <th *ngFor="let column of previewData.columns">{{ getColumnHeader(column) }}</th>
                         <th class="errors-header">{{ 'common.errors' | translate }}</th>
                     </tr>
                 </thead>
