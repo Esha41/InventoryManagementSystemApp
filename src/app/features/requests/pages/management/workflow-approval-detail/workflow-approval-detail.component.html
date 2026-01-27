@@ -34,7 +34,14 @@
               </div>
             </div>
           </div>
+
+          <!-- Actions moved to right -->
           <div class="flex items-center gap-3">
+            <button (click)="openOrderHistory()"
+              class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+              <lucide-angular [img]="HistoryIcon" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              {{ 'ORDER_TRACKING.HISTORY' | translate }}
+            </button>
             <span
               class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm shadow-sm {{ getStatusClass(requestDetail.status) }}">
               {{ ('common.statuses.' + requestDetail.status) | translate }}
@@ -42,80 +49,87 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Main Content -->
-      <div class="space-y-6">
-        <!-- Request Information -->
-        <app-workflow-request-information [requestDetail]="requestDetail" [orderFiles]="orderFiles"
-          [destroy$]="destroy$">
-        </app-workflow-request-information>
+    <!-- Main Content -->
+    <div class="space-y-6">
+      <!-- Request Information -->
+      <app-workflow-request-information [requestDetail]="requestDetail" [orderFiles]="orderFiles" [destroy$]="destroy$">
+      </app-workflow-request-information>
 
 
-        <!-- Request Items -->
-        <app-workflow-request-items [requestDetail]="requestDetail" (reviewClick)="openWeaponReviewItemsModal()">
-        </app-workflow-request-items>
+      <!-- Request Items -->
+      <app-workflow-request-items [requestDetail]="requestDetail" (reviewClick)="openWeaponReviewItemsModal()"
+        (historyClick)="openItemTracking($event)">
+      </app-workflow-request-items>
 
-        <!-- Approval Workflow Timeline -->
-        <app-workflow-approval-timeline [requestDetail]="requestDetail" [destroy$]="destroy$">
-        </app-workflow-approval-timeline>
-      </div>
+      <!-- Approval Workflow Timeline -->
+      <app-workflow-approval-timeline [requestDetail]="requestDetail" [destroy$]="destroy$">
+      </app-workflow-approval-timeline>
+    </div>
 
-      <!-- Sidebar -->
-      <div class="space-y-6">
+    <!-- Sidebar -->
+    <div class="space-y-6">
 
-        <!-- Pickup Date Management -->
-        <app-workflow-pickup-date *ngIf="!loading && !error && requestDetail && hasPendingStep()"
-          [requestId]="requestId" [requestDetail]="requestDetail" [(pickupDate)]="pickupDate" [destroy$]="destroy$"
-          (pickupDateSet)="onPickupDateSet()" (pickupDateConfirmed)="onPickupDateConfirmed()"
-          (pickupDateChanged)="onPickupDateChanged()">
-        </app-workflow-pickup-date>
+      <!-- Pickup Date Management -->
+      <app-workflow-pickup-date *ngIf="!loading && !error && requestDetail && hasPendingStep()" [requestId]="requestId"
+        [requestDetail]="requestDetail" [(pickupDate)]="pickupDate" [destroy$]="destroy$"
+        (pickupDateSet)="onPickupDateSet()" (pickupDateConfirmed)="onPickupDateConfirmed()"
+        (pickupDateChanged)="onPickupDateChanged()">
+      </app-workflow-pickup-date>
 
-        <!-- Receiver Information Section (Submit Supply) -->
-        <!-- Hide for weapon orders as submission is handled in weapon supply page -->
-        <app-workflow-supply-submission *ngIf="!loading && !error && requestDetail && canSubmitSupply()" class="mt-6"
-          [supplyId]="supplyId" [supplyData]="supplyData" [ranks]="ranks" [isLoadingRanks]="isLoadingRanks"
-          [destroy$]="destroy$" (supplySubmitted)="onSupplySubmitted()" (supplyDataChanged)="loadSupplyData()">
-        </app-workflow-supply-submission>
+      <!-- Receiver Information Section (Submit Supply) -->
+      <!-- Hide for weapon orders as submission is handled in weapon supply page -->
+      <app-workflow-supply-submission *ngIf="!loading && !error && requestDetail && canSubmitSupply()" class="mt-6"
+        [supplyId]="supplyId" [supplyData]="supplyData" [ranks]="ranks" [isLoadingRanks]="isLoadingRanks"
+        [destroy$]="destroy$" (supplySubmitted)="onSupplySubmitted()" (supplyDataChanged)="loadSupplyData()">
+      </app-workflow-supply-submission>
 
-        <!-- Delegation Restriction Warning -->
-        <div *ngIf="isUserRestricted" class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div class="flex items-start">
-            <div class="flex-shrink-0">
-              <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-red-400"></lucide-angular>
-            </div>
-            <div class="ml-3 rtl:mr-3 rtl:ml-0 flex-1">
-              <h3 class="text-sm font-medium text-red-800">
-                {{ 'DELEGATION.RESTRICTED_ACCESS_TITLE' | translate }}
-              </h3>
-              <div class="mt-2 text-sm text-red-700">
-                <p>{{ 'DELEGATION.RESTRICTED_ACCESS_MSG' | translate }}</p>
-              </div>
+      <!-- Delegation Restriction Warning -->
+      <div *ngIf="isUserRestricted" class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-red-400"></lucide-angular>
+          </div>
+          <div class="ml-3 rtl:mr-3 rtl:ml-0 flex-1">
+            <h3 class="text-sm font-medium text-red-800">
+              {{ 'DELEGATION.RESTRICTED_ACCESS_TITLE' | translate }}
+            </h3>
+            <div class="mt-2 text-sm text-red-700">
+              <p>{{ 'DELEGATION.RESTRICTED_ACCESS_MSG' | translate }}</p>
             </div>
           </div>
         </div>
-
-        <!-- Approval/Rejection Actions - At the end -->
-        <app-workflow-approval-actions
-          *ngIf="!loading && !error && requestDetail && canApproveOrReject() && !isUserRestricted" class="mt-6"
-          [requestId]="requestId" [requestDetail]="requestDetail" [processing]="processing"
-          [previousWorkflowSteps]="previousWorkflowSteps" [loadingPreviousSteps]="loadingPreviousSteps"
-          [destroy$]="destroy$" (approved)="onActionCompleted()" (rejected)="onActionCompleted()"
-          (returnedForReview)="onActionCompleted()" (actionCompleted)="onActionCompleted()"
-          (loadPreviousSteps)="loadPreviousWorkflowSteps()">
-        </app-workflow-approval-actions>
       </div>
 
-      <app-confirmation-dialog *ngIf="confirmationDialog$ | async as confirmationDialog"
-        [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title" [message]="confirmationDialog.message"
-        [type]="confirmationDialog.type" [confirmText]="confirmationDialog.confirmText"
-        [cancelText]="confirmationDialog.cancelText" [requireComment]="confirmationDialog.requireComment"
-        [commentLabel]="confirmationDialog.commentLabel" [commentPlaceholder]="confirmationDialog.commentPlaceholder"
-        (confirmed)="onConfirmationConfirmed($event)" (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
-
-      <!-- Weapon Review Items Modal -->
-      <app-weapon-review-items-modal [isOpen]="isWeaponReviewItemsModalOpen" [requestDetail]="requestDetail"
-        (closed)="closeWeaponReviewItemsModal()" (itemAdded)="onWeaponItemChanged()"
-        (itemUpdated)="onWeaponItemChanged()" (itemDeleted)="onWeaponItemChanged()">
-      </app-weapon-review-items-modal>
+      <!-- Approval/Rejection Actions - At the end -->
+      <app-workflow-approval-actions
+        *ngIf="!loading && !error && requestDetail && canApproveOrReject() && !isUserRestricted" class="mt-6"
+        [requestId]="requestId" [requestDetail]="requestDetail" [processing]="processing"
+        [previousWorkflowSteps]="previousWorkflowSteps" [loadingPreviousSteps]="loadingPreviousSteps"
+        [destroy$]="destroy$" (approved)="onActionCompleted()" (rejected)="onActionCompleted()"
+        (returnedForReview)="onActionCompleted()" (actionCompleted)="onActionCompleted()"
+        (loadPreviousSteps)="loadPreviousWorkflowSteps()">
+      </app-workflow-approval-actions>
     </div>
+
+    <app-confirmation-dialog *ngIf="confirmationDialog$ | async as confirmationDialog"
+      [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title" [message]="confirmationDialog.message"
+      [type]="confirmationDialog.type" [confirmText]="confirmationDialog.confirmText"
+      [cancelText]="confirmationDialog.cancelText" [requireComment]="confirmationDialog.requireComment"
+      [commentLabel]="confirmationDialog.commentLabel" [commentPlaceholder]="confirmationDialog.commentPlaceholder"
+      (confirmed)="onConfirmationConfirmed($event)" (cancelled)="onConfirmationCancelled()"></app-confirmation-dialog>
+
+    <!-- Weapon Review Items Modal -->
+    <app-weapon-review-items-modal [isOpen]="isWeaponReviewItemsModalOpen" [requestDetail]="requestDetail"
+      (closed)="closeWeaponReviewItemsModal()" (itemAdded)="onWeaponItemChanged()" (itemUpdated)="onWeaponItemChanged()"
+      (itemDeleted)="onWeaponItemChanged()">
+    </app-weapon-review-items-modal>
+
+    <!-- Order History Modal -->
+    <app-order-item-tracking-modal [isOpen]="isTrackingModalOpen" [orderId]="requestId"
+      [requestNo]="requestDetail?.requestNo || null" [specificItemId]="trackingItemId"
+      [specificItemName]="trackingItemName" (closed)="closeTrackingModal()">
+    </app-order-item-tracking-modal>
   </div>
+</div>

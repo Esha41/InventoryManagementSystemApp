@@ -163,6 +163,60 @@
         </table>
       </div>
 
+      <!-- Invoice Information Section -->
+      <div
+        *ngIf="inventoryDetail?.invoiceNumber || inventoryDetail?.invoiceDate || inventoryDetail?.recievedDate || inventoryDetail?.notes"
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
+        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+            {{ 'editInventoryDetail.invoiceInformation' | translate }}
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Invoice Number -->
+            <div *ngIf="inventoryDetail?.invoiceNumber">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceNumber' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ inventoryDetail.invoiceNumber }}
+              </p>
+            </div>
+
+            <!-- Invoice Date -->
+            <div *ngIf="inventoryDetail?.invoiceDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.invoiceDate) }}
+              </p>
+            </div>
+
+            <!-- Received Date -->
+            <div *ngIf="inventoryDetail?.recievedDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.receivedDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.recievedDate) }}
+              </p>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.notes' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
+                {{ inventoryDetail.notes }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Lot Details Section -->
       <div
         class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">

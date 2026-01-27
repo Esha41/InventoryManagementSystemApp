@@ -211,7 +211,8 @@
           <app-inventory-table *ngIf="activeTab !== 'weapon'" [items]="paginatedItems"
             [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
             [formatNumber]="formatNumber" [formatDate]="formatDate" (editItem)="onEditItem($event)"
-            (deleteItem)="onDeleteItem($event)" (viewItem)="onViewItem($event)">
+            (deleteItem)="onDeleteItem($event)" (viewItem)="onViewItem($event)"
+            (filterByInvoice)="searchByInvoice($event)">
           </app-inventory-table>
         </div>
 
@@ -247,7 +248,8 @@
 
   <!-- Edit Modal -->
   <app-edit-inventory-detail-modal [isOpen]="showEditModal" [inventoryDetail]="selectedDetail"
-    [inventoryId]="selectedDetail?.inventoryId || 0" (closed)="onEditModalClose()" (saved)="onEditSave($event)">
+    [inventory]="currentInventory" [inventoryId]="selectedDetail?.inventoryId || 0" (closed)="onEditModalClose()"
+    (saved)="onEditSave($event)">
   </app-edit-inventory-detail-modal>
 
   <!-- Delete Confirmation Dialog -->

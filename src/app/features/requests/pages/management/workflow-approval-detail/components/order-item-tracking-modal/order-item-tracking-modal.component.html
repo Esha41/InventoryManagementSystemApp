@@ -1,0 +1,130 @@
+<app-modal [isOpen]="isOpen"
+    [title]="(specificItemId ? 'ORDER_TRACKING.ITEM_HISTORY_TITLE' : 'ORDER_TRACKING.ORDER_HISTORY_TITLE') | translate"
+    size="xl" (closed)="onClose()">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--color-brand)]"></div>
+        <p class="mt-4 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="flex flex-col items-center justify-center py-12">
+        <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <lucide-angular [img]="Activity" class="h-6 w-6 text-red-600"></lucide-angular>
+        </div>
+        <p class="text-[var(--color-text)] font-medium">{{ 'common.errorOccurred' | translate }}</p>
+        <button (click)="loadHistory()" class="mt-4 text-[var(--color-brand)] font-medium hover:underline">
+            {{ 'common.retry' | translate }}
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!loading && !error && history.length > 0" class="overflow-hidden">
+
+        <div *ngIf="specificItemName"
+            class="mb-4 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] flex items-center gap-3">
+            <div class="p-2 bg-white rounded-md border border-[var(--color-border)]">
+                <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <div>
+                <p class="text-xs text-[var(--color-text-muted)] uppercase tracking-wide font-semibold">{{
+                    'workflowApprovalDetail.item' | translate }}</p>
+                <p class="text-base font-bold text-[var(--color-text)]">{{ specificItemName }}</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+            <table class="w-full">
+                <thead class="bg-[var(--color-background-muted)]">
+                    <tr>
+                        <th
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-40">
+                            {{ 'ORDER_TRACKING.DATE' | translate }}
+                        </th>
+                        <th
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                            {{ 'ORDER_TRACKING.USER' | translate }}
+                        </th>
+                        <th
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                            {{ 'ORDER_TRACKING.ACTION' | translate }}
+                        </th>
+                        <th
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                            {{ 'ORDER_TRACKING.CHANGES' | translate }}
+                        </th>
+                        <th
+                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-1/4">
+                            {{ 'ORDER_TRACKING.NOTES' | translate }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--color-border)] bg-white">
+                    <tr *ngFor="let item of history" class="hover:bg-[var(--color-background-hover)] transition-colors">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2 text-sm text-[var(--color-text)]">
+                                <lucide-angular [img]="Clock"
+                                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                                <span>{{ item.actionDate | date:'medium' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="h-6 w-6 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center">
+                                    <lucide-angular [img]="User"
+                                        class="h-3 w-3 text-[var(--color-brand)]"></lucide-angular>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-medium text-[var(--color-text)]">{{ getUserName(item)
+                                        }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                [ngClass]="getActionColorClass(item.actionType)">
+                                {{ getActionLabelKey(item.actionType) | translate }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div *ngIf="item.previousQuantity !== null || item.newQuantity !== null"
+                                class="flex items-center gap-2 text-sm">
+                                <span class="font-mono text-[var(--color-text-muted)]">{{ item.previousQuantity ?? '-'
+                                    }}</span>
+                                <lucide-angular [img]="ArrowRight"
+                                    class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
+                                <span class="font-mono font-bold text-[var(--color-text)]">{{ item.newQuantity ?? '-'
+                                    }}</span>
+                            </div>
+                            <div *ngIf="!specificItemId && item.itemName"
+                                class="text-xs text-[var(--color-text-muted)] mt-1">
+                                {{ item.itemName }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
+                            {{ item.notes || item.description || '-' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && !error && history.length === 0" class="text-center py-12">
+        <div
+            class="w-16 h-16 rounded-full bg-[var(--color-background-muted)] flex items-center justify-center mx-auto mb-3">
+            <lucide-angular [img]="FileText" class="h-8 w-8 text-[var(--color-text-muted)]"></lucide-angular>
+        </div>
+        <p class="text-[var(--color-text-muted)] font-medium">{{ 'ORDER_TRACKING.NO_HISTORY' | translate }}</p>
+    </div>
+
+    <div modal-footer>
+        <button (click)="onClose()"
+            class="px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+            {{ 'common.close' | translate }}
+        </button>
+    </div>
+</app-modal>

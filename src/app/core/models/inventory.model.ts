@@ -56,6 +56,12 @@ export interface InventoryDetailDto {
   remainingQuantity: number;
   isLotEmpty: boolean;
 
+  // Invoice Information (from parent Inventory)
+  invoiceNumber?: string;
+  invoiceDate?: Date | string;
+  recievedDate?: Date | string;
+  notes?: string;
+
   // Navigation properties
   item?: BaseItemDto;
   supplier?: SupplierDto;

@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { LucideAngularModule, CheckCircle, AlertTriangle, Clock, FileText, Eye, ChevronDown, ChevronUp } from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, AlertTriangle, Clock, FileText, Eye, ChevronDown, ChevronUp, Download } from 'lucide-angular';
 import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import {
@@ -30,6 +30,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
   readonly Clock = Clock;
   readonly FileText = FileText;
   readonly Eye = Eye;
+  readonly Download = Download;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
 
@@ -42,7 +43,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
   constructor(
     private translateService: TranslateService,
     private supplyServiceHelper: WorkflowApprovalSupplyService
-  ) {}
+  ) { }
 
   ngOnDestroy(): void {
     // Component cleanup if needed
@@ -112,7 +113,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
       return;
     }
     const fileName = file.originalName || file.fileName || 'download';
-    
+
     this.supplyServiceHelper.downloadFile(file.id, fileName, this.destroy$)
       .subscribe({
         next: (blob: Blob) => {
