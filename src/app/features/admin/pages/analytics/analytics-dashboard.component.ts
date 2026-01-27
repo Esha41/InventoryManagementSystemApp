@@ -12,6 +12,7 @@ import { RequestTrendsChartComponent } from './components/request-trends-chart/r
 import { InventoryDistributionChartComponent } from './components/inventory-distribution-chart/inventory-distribution-chart.component';
 import { TopRequestedItemsChartComponent } from './components/top-requested-items-chart/top-requested-items-chart.component';
 import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
+import { createEcharts } from '@core/echarts.factory';
 
 /**
  * Analytics Dashboard Component
@@ -32,7 +33,8 @@ import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
         NgxEchartsModule
     ],
     providers: [
-        provideEchartsCore({ echarts: () => import('echarts') })
+        // Use shared factory so we can configure ECharts (e.g. log level) once.
+        provideEchartsCore({ echarts: () => Promise.resolve(createEcharts()) })
     ],
     templateUrl: './analytics-dashboard.component.html',
     styleUrls: ['./analytics-dashboard.component.css'],
@@ -89,6 +91,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
         private loggingService: LoggingService
     ) {
         // Effect to handle loading state
+        // Note: allowSignalWrites is deprecated - writes are always allowed in effects
         effect(() => {
             const metrics = this.metricsSignal();
             // Check if we have data (not initial null values)
@@ -96,7 +99,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
                 this.isLoading.set(false);
                 this.isRefreshing.set(false);
             }
-        }, { allowSignalWrites: true });
+        });
     }
 
     ngOnInit(): void {

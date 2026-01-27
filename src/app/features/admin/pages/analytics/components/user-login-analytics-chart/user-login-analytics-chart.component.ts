@@ -24,8 +24,6 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private isInitializing = false;
-    private trendChartInstance: any = null;
-    private userChartInstance: any = null;
     chartOptions: EChartsOption | null = null;
     userChartOptions: EChartsOption | null = null;
     loading = true;
@@ -58,89 +56,8 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // Dispose chart instances
-        if (this.trendChartInstance) {
-            this.trendChartInstance.dispose();
-            this.trendChartInstance = null;
-        }
-        if (this.userChartInstance) {
-            this.userChartInstance.dispose();
-            this.userChartInstance = null;
-        }
         this.destroy$.next();
         this.destroy$.complete();
-    }
-
-    onTrendChartInit(chartInstance: any): void {
-        if (!chartInstance) {
-            return;
-        }
-        
-        // Only store if it's a new instance
-        if (this.trendChartInstance !== chartInstance) {
-            // If we have a different instance that's not disposed, dispose it
-            if (this.trendChartInstance) {
-                try {
-                    const isDisposed = typeof this.trendChartInstance.isDisposed === 'function' 
-                        ? this.trendChartInstance.isDisposed() 
-                        : false;
-                    if (typeof this.trendChartInstance.dispose === 'function' && 
-                        !isDisposed &&
-                        this.trendChartInstance !== chartInstance) {
-                        this.trendChartInstance.dispose();
-                    }
-                } catch (error) {
-                    // Error disposing old instance
-                }
-            }
-            this.trendChartInstance = chartInstance;
-        }
-        
-        // Resize chart after initialization to ensure proper rendering
-        setTimeout(() => {
-            if (chartInstance && typeof chartInstance.isDisposed === 'function' && !chartInstance.isDisposed()) {
-                chartInstance.resize();
-            } else if (chartInstance && typeof chartInstance.isDisposed !== 'function') {
-                // Fallback if isDisposed method doesn't exist
-                chartInstance.resize();
-            }
-        }, 50);
-    }
-
-    onUserChartInit(chartInstance: any): void {
-        if (!chartInstance) {
-            return;
-        }
-        
-        // Only store if it's a new instance
-        if (this.userChartInstance !== chartInstance) {
-            // If we have a different instance that's not disposed, dispose it
-            if (this.userChartInstance) {
-                try {
-                    const isDisposed = typeof this.userChartInstance.isDisposed === 'function' 
-                        ? this.userChartInstance.isDisposed() 
-                        : false;
-                    if (typeof this.userChartInstance.dispose === 'function' && 
-                        !isDisposed &&
-                        this.userChartInstance !== chartInstance) {
-                        this.userChartInstance.dispose();
-                    }
-                } catch (error) {
-                    // Error disposing old instance
-                }
-            }
-            this.userChartInstance = chartInstance;
-        }
-        
-        // Resize chart after initialization to ensure proper rendering
-        setTimeout(() => {
-            if (chartInstance && typeof chartInstance.isDisposed === 'function' && !chartInstance.isDisposed()) {
-                chartInstance.resize();
-            } else if (chartInstance && typeof chartInstance.isDisposed !== 'function') {
-                // Fallback if isDisposed method doesn't exist
-                chartInstance.resize();
-            }
-        }, 50);
     }
 
     loadData(): void {
@@ -524,45 +441,6 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                 }
             ]
         };
-        
-        // Update existing chart instances if they exist using setOption
-        // This prevents re-initialization and uses ECharts' built-in update mechanism
-        setTimeout(() => {
-            try {
-                if (this.trendChartInstance && this.chartOptions) {
-                    // Check if instance is valid before updating
-                    if (typeof this.trendChartInstance.setOption === 'function') {
-                        if (typeof this.trendChartInstance.isDisposed === 'function') {
-                            if (!this.trendChartInstance.isDisposed()) {
-                                this.trendChartInstance.setOption(this.chartOptions as any, { notMerge: false });
-                                this.trendChartInstance.resize();
-                            }
-                        } else {
-                            // Fallback if isDisposed doesn't exist
-                            this.trendChartInstance.setOption(this.chartOptions as any, { notMerge: false });
-                            this.trendChartInstance.resize();
-                        }
-                    }
-                }
-                if (this.userChartInstance && this.userChartOptions) {
-                    // Check if instance is valid before updating
-                    if (typeof this.userChartInstance.setOption === 'function') {
-                        if (typeof this.userChartInstance.isDisposed === 'function') {
-                            if (!this.userChartInstance.isDisposed()) {
-                                this.userChartInstance.setOption(this.userChartOptions as any, { notMerge: false });
-                                this.userChartInstance.resize();
-                            }
-                        } else {
-                            // Fallback if isDisposed doesn't exist
-                            this.userChartInstance.setOption(this.userChartOptions as any, { notMerge: false });
-                            this.userChartInstance.resize();
-                        }
-                    }
-                }
-            } catch (error) {
-                // Ignore errors during update - charts will be recreated if needed
-            }
-        }, 100);
         
         this.cdr.detectChanges();
     }
