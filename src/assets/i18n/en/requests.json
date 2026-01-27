@@ -386,7 +386,6 @@
     "pendingAt": "Pending at",
     "noApprovalWorkflowData": "No approval workflow data available",
     "requestItems": "Request Items",
-    "item": "item",
     "items": "items",
     "review": "Review",
     "reviewItems": "Review Items",
@@ -651,5 +650,33 @@
   "DELEGATION": {
     "RESTRICTED_ACCESS_TITLE": "Authority Delegated",
     "RESTRICTED_ACCESS_MSG": "Your authority is currently delegated to another user. You cannot perform actions while delegation is active. To regain your authority, please revoke the active delegation from your profile."
+  },
+  "ORDER_TRACKING": {
+    "TITLE": "Order History",
+    "ORDER_HISTORY_TITLE": "Order History",
+    "ITEM_HISTORY_TITLE": "Item History",
+    "HISTORY": "History",
+    "VIEW_HISTORY": "View History",
+    "NO_HISTORY_TITLE": "No History Available",
+    "NO_HISTORY_DESC": "There are no tracking records for this order yet.",
+    "ERROR_TITLE": "Something went wrong",
+    "ERROR_DESC": "We couldn't load the history records. Please try again.",
+    "RETRY": "Retry",
+    "DATE": "Date",
+    "USER": "User",
+    "ACTION": "Action",
+    "CHANGES": "Changes",
+    "NOTES": "Notes",
+    "QUANTITY_FROM": "From",
+    "QUANTITY_TO": "To",
+    "ITEM": "Item",
+    "ORDER": "Order",
+    "ACTION_ADDED": "Item Added",
+    "ACTION_QUANTITYMODIFIED": "Quantity Updated",
+    "ACTION_DELETED": "Item Removed",
+    "ACTION_FINALAPPROVED": "Final Approval",
+    "ACTION_SUPPLIED": "Item Supplied",
+    "ACTION_ASSETSUPPLIED": "Asset Supplied",
+    "ACTION_UNKNOWN": "Other Action"
   }
 }

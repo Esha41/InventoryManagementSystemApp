@@ -31,7 +31,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
     loading = true;
     error = false;
     analyticsData: UserLoginAnalyticsDto | null = null;
-    
+
     // Chart initialization options
     chartInitOpts: any = {
         renderer: 'canvas',
@@ -75,16 +75,16 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
         if (!chartInstance) {
             return;
         }
-        
+
         // Only store if it's a new instance
         if (this.trendChartInstance !== chartInstance) {
             // If we have a different instance that's not disposed, dispose it
             if (this.trendChartInstance) {
                 try {
-                    const isDisposed = typeof this.trendChartInstance.isDisposed === 'function' 
-                        ? this.trendChartInstance.isDisposed() 
+                    const isDisposed = typeof this.trendChartInstance.isDisposed === 'function'
+                        ? this.trendChartInstance.isDisposed()
                         : false;
-                    if (typeof this.trendChartInstance.dispose === 'function' && 
+                    if (typeof this.trendChartInstance.dispose === 'function' &&
                         !isDisposed &&
                         this.trendChartInstance !== chartInstance) {
                         this.trendChartInstance.dispose();
@@ -95,7 +95,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
             }
             this.trendChartInstance = chartInstance;
         }
-        
+
         // Resize chart after initialization to ensure proper rendering
         setTimeout(() => {
             if (chartInstance && typeof chartInstance.isDisposed === 'function' && !chartInstance.isDisposed()) {
@@ -111,16 +111,16 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
         if (!chartInstance) {
             return;
         }
-        
+
         // Only store if it's a new instance
         if (this.userChartInstance !== chartInstance) {
             // If we have a different instance that's not disposed, dispose it
             if (this.userChartInstance) {
                 try {
-                    const isDisposed = typeof this.userChartInstance.isDisposed === 'function' 
-                        ? this.userChartInstance.isDisposed() 
+                    const isDisposed = typeof this.userChartInstance.isDisposed === 'function'
+                        ? this.userChartInstance.isDisposed()
                         : false;
-                    if (typeof this.userChartInstance.dispose === 'function' && 
+                    if (typeof this.userChartInstance.dispose === 'function' &&
                         !isDisposed &&
                         this.userChartInstance !== chartInstance) {
                         this.userChartInstance.dispose();
@@ -131,7 +131,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
             }
             this.userChartInstance = chartInstance;
         }
-        
+
         // Resize chart after initialization to ensure proper rendering
         setTimeout(() => {
             if (chartInstance && typeof chartInstance.isDisposed === 'function' && !chartInstance.isDisposed()) {
@@ -174,7 +174,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                         averageLoginDurationHours: data.averageLoginDurationHours || data.AverageLoginDurationHours || 0,
                         activeUsersToday: data.activeUsersToday || data.ActiveUsersToday || 0
                     };
-                    
+
                     // Normalize nested objects
                     if (normalizedData.userLogins.length > 0) {
                         normalizedData.userLogins = normalizedData.userLogins.map((u: any) => ({
@@ -187,7 +187,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                             lastLoginDate: u.lastLoginDate || u.LastLoginDate
                         }));
                     }
-                    
+
                     if (normalizedData.trendData.length > 0) {
                         normalizedData.trendData = normalizedData.trendData.map((t: any) => ({
                             date: t.date || t.Date || '',
@@ -196,7 +196,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                             averageDurationHours: t.averageDurationHours || t.AverageDurationHours || 0
                         }));
                     }
-                    
+
                     this.analyticsData = normalizedData;
                     // Initialize charts - this will set chartOptions and userChartOptions
                     this.initCharts(normalizedData);
@@ -284,7 +284,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
         }).filter(d => d !== '');
         const loginCounts = (data.trendData || []).map(t => t.loginCount || 0);
         const uniqueUsersData = (data.trendData || []).map(t => t.uniqueUsers || 0);
-        
+
         // If no data, show empty chart with message
         if (trendDates.length === 0) {
             trendDates.push('No Data');
@@ -425,7 +425,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
 
         // User Login Duration Chart (Top users by login duration)
         const topUsers = (data.userLogins || []).slice(0, 10); // Top 10 users
-        const userNames = topUsers.length > 0 
+        const userNames = topUsers.length > 0
             ? topUsers.map(u => u.fullName || u.username || 'Unknown')
             : ['No Data'];
         const loginDurations = topUsers.length > 0
@@ -524,7 +524,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                 }
             ]
         };
-        
+
         // Update existing chart instances if they exist using setOption
         // This prevents re-initialization and uses ECharts' built-in update mechanism
         setTimeout(() => {
@@ -563,7 +563,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                 // Ignore errors during update - charts will be recreated if needed
             }
         }, 100);
-        
+
         this.cdr.detectChanges();
     }
 }

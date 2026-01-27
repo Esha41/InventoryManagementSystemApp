@@ -5,8 +5,7 @@
     <h2 class="text-lg font-semibold text-[var(--color-text)]">
       {{ 'workflowApprovalDetail.approvalWorkflow' | translate }}
     </h2>
-    <lucide-angular [img]="isExpanded ? ChevronUp : ChevronDown"
-      class="h-5 w-5 text-[var(--color-text-muted)]">
+    <lucide-angular [img]="isExpanded ? ChevronUp : ChevronDown" class="h-5 w-5 text-[var(--color-text-muted)]">
     </lucide-angular>
   </button>
 
@@ -97,7 +96,7 @@
                     class="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--color-brand)]/10 hover:bg-[var(--color-brand)]/20 text-[var(--color-brand)] rounded-lg text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
                     <lucide-angular [img]="FileText" class="h-4 w-4"></lucide-angular>
                     <span class="truncate max-w-[200px]">{{ file.originalName || file.fileName }}</span>
-                    <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                    <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
                   </button>
                 </div>
               </div>

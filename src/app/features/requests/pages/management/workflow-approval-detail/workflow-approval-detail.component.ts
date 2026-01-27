@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle, History as HistoryIcon } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
@@ -50,6 +50,7 @@ import { WorkflowApprovalTimelineComponent } from './components/workflow-approva
 import { WorkflowRequestInformationComponent } from './components/workflow-request-information/workflow-request-information.component';
 import { WorkflowRequestItemsComponent } from './components/workflow-request-items/workflow-request-items.component';
 import { WeaponReviewItemsModalComponent } from './components/weapon-review-items-modal/weapon-review-items-modal.component';
+import { OrderItemTrackingModalComponent } from './components/order-item-tracking-modal/order-item-tracking-modal.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -69,7 +70,8 @@ import { WeaponReviewItemsModalComponent } from './components/weapon-review-item
     WorkflowApprovalTimelineComponent,
     WorkflowRequestInformationComponent,
     WorkflowRequestItemsComponent,
-    WeaponReviewItemsModalComponent
+    WeaponReviewItemsModalComponent,
+    OrderItemTrackingModalComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css'],
@@ -91,6 +93,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   readonly X = X;
   readonly Check = Check;
   readonly XCircle = XCircle;
+  readonly HistoryIcon = HistoryIcon; // Add History Icon
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -149,6 +152,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   // Weapon Review Items Modal
   isWeaponReviewItemsModalOpen: boolean = false;
+
+  // Tracking Modal
+  isTrackingModalOpen: boolean = false;
+  trackingItemId: number | null = null;
+  trackingItemName: string | null = null;
 
   // Use state service for supply submission check
   isSupplySubmitted(): boolean {
@@ -422,6 +430,28 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   onWeaponItemChanged(): void {
     // Reload request detail after weapon item add/edit/delete
     this.loadRequestDetailInternal(false);
+  }
+
+  // Tracking Modal
+  openOrderHistory(): void {
+    this.trackingItemId = null;
+    this.trackingItemName = null;
+    this.isTrackingModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  openItemTracking(item: any): void {
+    this.trackingItemId = item.itemId || item.id;
+    this.trackingItemName = item.itemName;
+    this.isTrackingModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeTrackingModal(): void {
+    this.isTrackingModalOpen = false;
+    this.trackingItemId = null;
+    this.trackingItemName = null;
+    this.cdr.markForCheck();
   }
 
   /**

@@ -12,7 +12,7 @@ import { AssetService } from '@services/asset.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto, ItemType } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, ItemType } from '@models/inventory.model';
 import { FilterData } from '@models/pagination.model';
 import { AssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
@@ -177,6 +177,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  searchByInvoice(invoiceNumber: string): void {
+    this.searchControl.setValue(invoiceNumber);
+    this.onSearch();
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -270,14 +275,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  private buildPagedRequest() {
+  buildPagedRequest() {
     const searchTerm = this.searchControl.value?.trim();
     let filterData: FilterData | undefined;
 
     if (this.activeTab === 'weapon') {
       // Filter for Assets
+      const filters: any[] = [];
       if (searchTerm) {
-        filterData = {
+        filters.push({
           logic: 'or',
           filters: [
             { field: 'Item.Name', operator: 'contains', value: searchTerm },
@@ -285,7 +291,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             { field: 'SerialNumber', operator: 'contains', value: searchTerm },
             { field: 'AssetTag', operator: 'contains', value: searchTerm }
           ]
-        };
+        });
+      }
+      if (filters.length > 0) {
+        filterData = { logic: 'and', filters };
       }
     } else {
       // Filter for Inventory (Ammo/Explosive)
@@ -293,25 +302,29 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       let itemType = ItemType.Ammunition;
       if (this.activeTab === 'explosive') itemType = ItemType.Explosive;
 
-      filterData = {
-        logic: 'and',
-        filters: [
-          { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
-        ]
-      };
+      const filters: any[] = [
+        { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
+      ];
 
-      if (searchTerm && filterData.filters) {
-        filterData.filters.push({
+      // Add search term filters if provided
+      if (searchTerm) {
+        filters.push({
           logic: 'or',
           filters: [
             { field: 'Item.Name', operator: 'contains', value: searchTerm },
             { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
             { field: 'BatchNo', operator: 'contains', value: searchTerm },
             { field: 'Supplier.NameEn', operator: 'contains', value: searchTerm },
-            { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm }
+            { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm },
+            { field: 'Inventory.InvoiceNumber', operator: 'contains', value: searchTerm }
           ]
         });
       }
+
+      filterData = {
+        logic: 'and',
+        filters
+      };
     }
 
     return {
@@ -592,14 +605,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Open edit modal for inventory detail
    */
   onEditItem(detail: InventoryDetailDto): void {
-    this.selectedDetail = detail;
-
     // Load the full inventory record for this detail
     this.inventoryService.getById(detail.inventoryId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (inventory) => {
           this.currentInventory = inventory || undefined;
+
+          // Find the updated detail from the loaded inventory to ensure we have the latest data
+          if (inventory && inventory.inventoryDetails) {
+            const updatedDetail = inventory.inventoryDetails.find(d => d.id === detail.id);
+            this.selectedDetail = updatedDetail || detail; // Fallback to original if not found
+          } else {
+            this.selectedDetail = detail;
+          }
+
           this.showEditModal = true;
           this.cdr.markForCheck();
         },
@@ -623,7 +643,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Handle edit modal save
    */
-  onEditSave(updateDetailDto: UpdateInventoryDetailDto): void {
+  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto }): void {
     if (!this.currentInventory || !this.selectedDetail) return;
 
     // Store references before clearing
@@ -636,7 +656,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.currentInventory = undefined;
     this.cdr.markForCheck();
 
-    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, updateDetailDto)
+    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
