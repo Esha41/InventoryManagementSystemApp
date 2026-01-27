@@ -40,6 +40,13 @@ export class ReportService {
   }
 
   /**
+   * Get list of public reports (Published status) from backend
+   */
+  getPublicReports(): Observable<Report[]> {
+    return this.apiService.get<Report[]>(`${this.endpoint}/public`);
+  }
+
+  /**
    * Get report by ID
    */
   getById(id: string): Observable<Report> {

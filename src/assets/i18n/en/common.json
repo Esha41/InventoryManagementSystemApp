@@ -173,7 +173,8 @@
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
     "biTool": "BI Tool",
-    "reportDesigner": "Report Designer"
+    "reportDesigner": "Report Designer",
+    "reportDashboard": "Report Dashboard"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
@@ -282,6 +283,20 @@
     "designer": {
       "title": "Report Designer Tool",
       "subtitle": "Create and edit custom reports using the visual designer"
+    }
+  },
+  "reportDashboard": {
+    "subtitle": "Browse and view published reports",
+    "noReports": "No Public Reports",
+    "noReportsDescription": "There are no published reports available at the moment.",
+    "viewReport": "View Report",
+    "noDescription": "No description available",
+    "table": {
+      "reportName": "Report Name",
+      "status": "Status",
+      "createdDate": "Created Date",
+      "description": "Description",
+      "actions": "Actions"
     }
   }
 }

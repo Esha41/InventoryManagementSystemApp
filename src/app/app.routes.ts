@@ -332,6 +332,14 @@ export const routes: Routes = [
         data: { permissions: ['Permissions.Report.Create', 'Permissions.Report.Edit'] }
       },
       {
+        path: 'report-dashboard',
+        loadComponent: () => import('@app/features/reports/dashboard/report-dashboard.component').then(m => m.ReportDashboardComponent)
+      },
+      {
+        path: 'report-viewer',
+        loadComponent: () => import('@app/features/reports/viewer/report-viewer.component').then(m => m.ReportViewerComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],

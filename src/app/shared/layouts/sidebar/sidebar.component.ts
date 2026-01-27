@@ -226,6 +226,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           label: 'nav.reportDesigner',
           route: '/report-designer',
           permissions: ['Permissions.Report.View', 'Permissions.Report.Page']
+        },
+        {
+          label: 'nav.reportDashboard',
+          route: '/report-dashboard'
         }
       ]
     },

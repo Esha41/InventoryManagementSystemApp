@@ -173,7 +173,8 @@
     "supplyOrder": "طلب التوريد",
     "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون",
     "biTool": "أداة BI",
-    "reportDesigner": "مصمم التقارير"
+    "reportDesigner": "مصمم التقارير",
+    "reportDashboard": "لوحة التقارير"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"
@@ -282,6 +283,20 @@
     "designer": {
       "title": "مصمم التقارير",
       "subtitle": "إنشاء وتعديل التقارير المخصصة باستخدام المصمم المرئي"
+    }
+  },
+  "reportDashboard": {
+    "subtitle": "تصفح وعرض التقارير المنشورة",
+    "noReports": "لا توجد تقارير عامة",
+    "noReportsDescription": "لا توجد تقارير منشورة متاحة في الوقت الحالي.",
+    "viewReport": "عرض التقرير",
+    "noDescription": "لا يوجد وصف متاح",
+    "table": {
+      "reportName": "اسم التقرير",
+      "status": "الحالة",
+      "createdDate": "تاريخ الإنشاء",
+      "description": "الوصف",
+      "actions": "الإجراءات"
     }
   }
 }
