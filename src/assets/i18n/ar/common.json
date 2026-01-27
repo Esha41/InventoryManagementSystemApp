@@ -103,8 +103,12 @@
       "Cancelled": "ملغاة",
       "New": "جديدة",
       "Active": "نشط",
-      "Inactive": "غير نشط"
+      "Inactive": "غير نشط",
+      "Draft": "مسودة"
     },
+    "country": "البلد",
+    "manufacturer": "المصنع",
+    "supplier": "المورد",
     "item": "ماده",
     "items": "مواد"
   },

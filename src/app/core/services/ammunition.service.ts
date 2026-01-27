@@ -5,9 +5,11 @@ import { ApiService } from './api.service';
 import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models/import-result.model';
 
 @Injectable({ providedIn: 'root' })
-export class AmmunitionService {
+export class AmmunitionService implements IImportableService {
   private readonly endpoint = '/Ammunition';
 
   constructor(
@@ -169,24 +171,23 @@ export class AmmunitionService {
   }
 
   // Import ammunition data
-  importData(file: File, language: string = 'en'): Observable<any> {
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    // Use postRaw because import might return a different structure or we might want full control
-    return this.apiService.post<any>(`${this.endpoint}/Import`, formData);
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/Import`, formData, params);
   }
 
   // Preview import data without saving
-  importPreview(file: File, language: string = 'en'): Observable<any> {
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    return this.apiService.post<any>(`${this.endpoint}/ImportPreview`, formData);
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/ImportPreview`, formData, params);
   }
 
   // Download import template
-  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+  generateImportTemplate(language: string = 'en'): Observable<Blob> {
     const params = new HttpParams().set('language', language);
     return this.http.get(`${this.apiService['baseUrl']}${this.endpoint}/template`, { params, responseType: 'blob' });
   }
