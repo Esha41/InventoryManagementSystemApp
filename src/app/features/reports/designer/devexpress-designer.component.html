@@ -44,6 +44,8 @@
           [getDesignerModelAction]="getDesignerModelAction" 
           [host]="host">
         </dxrd-request-options>
+        <dxrd-callbacks (ReportSaved)="onReportSaved($event)">
+        </dxrd-callbacks>
       </dx-report-designer>
     </div>
   </div>

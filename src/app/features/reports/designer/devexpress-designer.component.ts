@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { DxReportDesignerModule } from 'devexpress-reporting-angular';
+import { DxReportDesignerModule, DxReportDesignerComponent } from 'devexpress-reporting-angular';
 import 'devexpress-reporting/dx-richedit';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
@@ -34,6 +34,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   isCreateMode = false;
 
   @ViewChild('reportDesigner', { static: false }) reportDesignerElement!: ElementRef;
+  @ViewChild(DxReportDesignerComponent, { static: false }) dxDesigner!: DxReportDesignerComponent;
 
   constructor(
     private router: Router,
@@ -47,15 +48,96 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   }
 
   ngOnInit(): void {
-    // Resolve report URL synchronously from route (before first render).
-    // Using subscription would run async, so dx-report-designer would already
-    // initialize with "BaseReportTemplate" before we could pass the edit URL.
-    const reportUrl = this.route.snapshot.queryParamMap.get('reportUrl');
+    const reportUrl = this.route.snapshot.queryParamMap.get('reportUrl')
+      ?? this.route.snapshot.queryParamMap.get('url');
     this.reportName = reportUrl ?? 'BaseReportTemplate';
 
     // if coming from create, pass ?mode=create
     const mode = this.route.snapshot.queryParamMap.get('mode');
     this.isCreateMode = mode === 'create';
+  }
+
+  /**
+   * Called when the user saves a report in the designer.
+   * When in create mode, we update the browser URL to the saved report URL
+   * so that refresh/reload opens the saved report instead of create mode again.
+   * 
+   * IMPORTANT: We update the URL WITHOUT changing the reportName binding to avoid
+   * causing the designer to reload and lose unsaved changes.
+   */
+  onReportSaved(event: { sender?: unknown; args?: unknown }): void {
+    // Only act on FIRST save (create mode)
+    if (!this.isCreateMode) {
+      return;
+    }
+
+    // Try to get the saved report URL from the event args
+    // DevExpress passes the saved URL in the args
+    const savedReportUrl = (event?.args as { Url?: string })?.Url 
+      ?? this.getCurrentReportUrlFromEvent(event);
+
+    if (!savedReportUrl || savedReportUrl === 'BaseReportTemplate') {
+      return;
+    }
+
+    // Switch to edit mode (affects toolbar visibility)
+    this.isCreateMode = false;
+
+    // Update the browser URL WITHOUT changing reportName binding
+    // This prevents the designer from reloading and losing unsaved changes
+    // We use window.history.replaceState to update URL without triggering Angular change detection
+    // The designer already has the correct report loaded in memory, so we don't need to change the binding
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('reportUrl', savedReportUrl);
+    currentUrl.searchParams.delete('mode');
+    window.history.replaceState({}, '', currentUrl.toString());
+
+    // NOTE: We intentionally do NOT update this.reportName here because:
+    // 1. The designer already has the saved report loaded in memory
+    // 2. Changing reportName would trigger Angular change detection
+    // 3. This would cause the [reportUrl] binding to update
+    // 4. DevExpress would then reload the report from the server, losing any unsaved changes
+    // 
+    // The URL is updated so that if the user refreshes, they'll get the saved report.
+    // But while they're working, the designer keeps the current state in memory.
+
+    // Re-apply toolbar rules after a delay to let DevExpress finish its save cycle
+    setTimeout(() => {
+      this.adjustToolbar();
+    }, 300);
+  }
+
+  private getCurrentReportUrlFromEvent(event: { sender?: unknown; args?: unknown }): string | null {
+    // Try to get URL from event args first (most reliable)
+    const argsUrl = (event?.args as { Url?: string })?.Url;
+    if (argsUrl) return argsUrl;
+
+    // Fallback: try to get from sender's designer model
+    const sender = event?.sender as { 
+      reportUrl?: string | (() => string); 
+      GetDesignerModel?: () => { reportUrl?: string | (() => string) };
+      GetCurrentTab?: () => { reportUrl?: string | (() => string) };
+    } | undefined;
+    
+    if (!sender) return null;
+
+    // Try GetCurrentTab first (most current)
+    if (typeof sender.GetCurrentTab === 'function') {
+      const tab = sender.GetCurrentTab();
+      if (tab?.reportUrl) {
+        const ru = tab.reportUrl;
+        return typeof ru === 'function' ? (ru as () => string)() : (ru as string);
+      }
+    }
+
+    // Try direct reportUrl property
+    let ru = sender.reportUrl;
+    if (ru == null && typeof sender.GetDesignerModel === 'function') {
+      const model = sender.GetDesignerModel();
+      ru = model?.reportUrl;
+    }
+    if (ru == null) return null;
+    return typeof ru === 'function' ? (ru as () => string)() : (ru as string);
   }
 
   ngAfterViewInit(): void {
@@ -134,6 +216,10 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
         if (!this.isCreateMode && text === 'save as') {
           root && ((root as HTMLElement).style.display = 'none');
         }
+
+        if (!this.isCreateMode && text === 'save') {
+          root && ((root as HTMLElement).style.display = '');
+}
       });
   
       clearInterval(timer);

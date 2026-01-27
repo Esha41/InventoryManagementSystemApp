@@ -109,10 +109,11 @@ export class ReportDesignerComponent implements OnInit {
   }
 
   onCreateReport(): void {
-    // Navigate directly to designer (no dialog)
+    // Navigate directly to designer (no dialog).
+    // Use reportUrl (same param the designer reads) so refresh loads the correct report after save.
     this.router.navigate(['/report-designer/designer'], {
       queryParams: {
-        url: 'BaseReportTemplate',
+        reportUrl: 'BaseReportTemplate',
         mode: 'create'
       }
     });
