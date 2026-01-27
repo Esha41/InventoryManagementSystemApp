@@ -61,6 +61,17 @@ export class ReportDesignerComponent implements OnInit {
   canEditReport = false;
   canDeleteReport = false;
 
+  /**
+   * Warm up the lazy-loaded designer chunk so navigation feels instant.
+   * (The DevExpress designer is heavy; without prefetch the first navigation waits for the chunk download.)
+   */
+  private designerChunkPrefetch?: Promise<unknown>;
+  private prefetchDesignerChunk(): void {
+    if (!this.designerChunkPrefetch) {
+      this.designerChunkPrefetch = import('@app/features/reports/designer/devexpress-designer.component');
+    }
+  }
+
   constructor(
     private translationService: TranslationService,
     private translateService: TranslateService,
@@ -73,6 +84,9 @@ export class ReportDesignerComponent implements OnInit {
     // Check permissions using standard pattern
     this.checkPermissions();
     this.loadReports();
+
+    // Prefetch designer route in background to reduce first-click delay.
+    this.prefetchDesignerChunk();
   }
 
   checkPermissions(): void {
@@ -109,6 +123,9 @@ export class ReportDesignerComponent implements OnInit {
   }
 
   onCreateReport(): void {
+    // Ensure prefetch started (in case ngOnInit didn't run yet / hot reload).
+    this.prefetchDesignerChunk();
+
     // Navigate directly to designer (no dialog).
     // Use reportUrl (same param the designer reads) so refresh loads the correct report after save.
     this.router.navigate(['/report-designer/designer'], {
