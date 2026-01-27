@@ -41,6 +41,7 @@ export class ReportDesignerComponent implements OnInit {
 
   reports: Report[] = [];
   filteredReports: Report[] = [];
+  searchTerm = '';
   loading = false;
   error: string | null = null;
 
@@ -120,6 +121,22 @@ export class ReportDesignerComponent implements OnInit {
         this.filteredReports = [...this.reports];
         this.updatePagination();
       });
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term;
+    const normalized = term.toLowerCase().trim();
+
+    if (!normalized) {
+      this.filteredReports = [...this.reports];
+    } else {
+      this.filteredReports = this.reports.filter(report =>
+        report.reportName?.toLowerCase().includes(normalized)
+      );
+    }
+
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   onCreateReport(): void {
