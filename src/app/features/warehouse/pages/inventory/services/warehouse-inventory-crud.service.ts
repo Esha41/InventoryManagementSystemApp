@@ -48,34 +48,36 @@ export class WarehouseInventoryCrudService {
   editInventoryDetail(
     detail: InventoryDetailDto,
     inventory: InventoryDto,
-    updateDetailDto: UpdateInventoryDetailDto
+    updateDetailDto: UpdateInventoryDetailDto,
+    updateInventoryDto?: UpdateInventoryDto
   ): Observable<EditInventoryDetailResult> {
-    // Update the inventory with modified detail
-    const updateInventoryDto: UpdateInventoryDto = {
+    // Update the inventory with modified detail and invoice information
+    const finalUpdateInventoryDto: UpdateInventoryDto = updateInventoryDto || {
       depoId: inventory.depoId,
       invoiceNumber: inventory.invoiceNumber,
       invoiceDate: inventory.invoiceDate,
       recievedDate: inventory.recievedDate,
       notes: inventory.notes,
-      inventoryDetails: (inventory.inventoryDetails || []).map((d: InventoryDetailDto) =>
-        d.id === detail.id ? updateDetailDto : {
-          id: d.id,
-          itemId: d.itemId,
-          lot: d.lot,
-          supplierId: d.supplierId,
-          manufacturerId: d.manufacturerId,
-          countryId: d.countryId,
-          originalQuantity: d.originalQuantity,
-          batchNo: d.batchNo,
-          expiryDate: d.expiryDate,
-          readyForIssue: d.readyForIssue ?? true
-        }
-      )
+      inventoryDetails: []
     };
 
-    const detailIdToUpdate = detail.id;
+    // Map all inventory details, updating the one being edited
+    finalUpdateInventoryDto.inventoryDetails = (inventory.inventoryDetails || []).map((d: InventoryDetailDto) =>
+      d.id === detail.id ? updateDetailDto : {
+        id: d.id,
+        itemId: d.itemId,
+        lot: d.lot,
+        supplierId: d.supplierId,
+        manufacturerId: d.manufacturerId,
+        countryId: d.countryId,
+        originalQuantity: d.originalQuantity,
+        batchNo: d.batchNo,
+        expiryDate: d.expiryDate,
+        readyForIssue: d.readyForIssue ?? true
+      }
+    );
 
-    return this.inventoryService.update(inventory.id, updateInventoryDto)
+    return this.inventoryService.update(inventory.id, finalUpdateInventoryDto)
       .pipe(
         switchMap((updatedInventory: InventoryDto) => {
           // Show success message

@@ -29,6 +29,7 @@ export class InventoryTableComponent {
   @Output() editItem = new EventEmitter<InventoryDetailDto>();
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();
   @Output() viewItem = new EventEmitter<InventoryDetailDto>();
+  @Output() filterByInvoice = new EventEmitter<string>();
 
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;

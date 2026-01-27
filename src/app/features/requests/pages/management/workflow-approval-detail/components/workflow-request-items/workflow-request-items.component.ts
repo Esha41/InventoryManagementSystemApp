@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Package } from 'lucide-angular';
+import { LucideAngularModule, Package, History as HistoryIcon } from 'lucide-angular';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
@@ -19,14 +19,22 @@ import { WorkflowApprovalNavigationService } from '../../services/workflow-appro
 })
 export class WorkflowRequestItemsComponent {
   readonly Package = Package;
+  readonly HistoryIcon = HistoryIcon;
 
   @Input() requestDetail: RequestDetail | null = null;
   @Output() reviewClick = new EventEmitter<void>();
+  @Output() historyClick = new EventEmitter<any>();
 
   constructor(
     private stateService: WorkflowApprovalStateService,
     private navigationService: WorkflowApprovalNavigationService
-  ) {}
+  ) { }
+
+  onHistoryClick(event: MouseEvent, item: any): void {
+    event.stopPropagation();
+    this.historyClick.emit(item);
+  }
+
 
   // Helper getter for safe access to requestItems
   get requestItems() {
@@ -60,8 +68,8 @@ export class WorkflowRequestItemsComponent {
   }
 
   getReviewButtonText(): string {
-    return this.isWeaponOrder() 
-      ? 'workflowApprovalDetail.reviewItems' 
+    return this.isWeaponOrder()
+      ? 'workflowApprovalDetail.reviewItems'
       : 'workflowApprovalDetail.review';
   }
 

@@ -36,24 +36,30 @@
     <table class="w-full">
       <thead class="bg-[var(--color-background-muted)]">
         <tr>
-          <th
-            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowApprovalDetail.itemName' | translate }}</th>
-          <th
-            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowApprovalDetail.itemCode' | translate }}</th>
-          <th
-            class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowApprovalDetail.quantity' | translate }}</th>
+          <th
+            class="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-10">
+          </th>
         </tr>
       </thead>
       <tbody class="divide-y divide-[var(--color-border)]">
-        <tr *ngFor="let item of requestItems"
-          (click)="navigateToItemDetails(item.itemId || item.id)"
+        <tr *ngFor="let item of requestItems" (click)="navigateToItemDetails(item.itemId || item.id)"
           class="transition-colors hover:bg-[var(--color-background-hover)] cursor-pointer">
           <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
           <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
           <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
+          </td>
+          <td class="px-4 py-3 text-center">
+            <button (click)="onHistoryClick($event, item)"
+              class="p-1.5 hover:bg-[var(--color-background-muted)] rounded-lg transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+              title="{{ 'ORDER_TRACKING.VIEW_HISTORY' | translate }}">
+              <lucide-angular [img]="HistoryIcon" class="h-4 w-4"></lucide-angular>
+            </button>
           </td>
         </tr>
       </tbody>
