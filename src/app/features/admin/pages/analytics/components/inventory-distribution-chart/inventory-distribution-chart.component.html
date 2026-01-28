@@ -7,43 +7,11 @@
             <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'adminDashboard.charts.itemsByCategory' |
                 translate }}</p>
         </div>
-        <button (click)="loadData()" [disabled]="loading"
-            class="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
-            [title]="'adminDashboard.refresh' | translate">
-            <lucide-icon [img]="RefreshCw"
-                class="w-5 h-5 transition-transform duration-700 ease-in-out group-hover:rotate-180"
-                [class.animate-spin]="loading"></lucide-icon>
-        </button>
     </div>
 
-    <div class="flex-1 relative min-h-[300px] max-h-[400px] p-4 overflow-hidden">
-        <!-- Loading State -->
-        <div *ngIf="loading"
-            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/80 backdrop-blur-sm z-10 rounded-b-xl gap-3">
-            <div
-                class="w-10 h-10 border-4 border-[var(--color-brand)]/30 border-t-[var(--color-brand)] rounded-full animate-spin">
-            </div>
-            <span class="text-[var(--color-text-muted)] text-sm font-medium">{{
-                'adminDashboard.charts.categorizingInventory' | translate }}</span>
-        </div>
-
-        <!-- Error State -->
-        <div *ngIf="error"
-            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/90 z-10 rounded-b-xl gap-4 p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <lucide-icon [img]="AlertCircle" class="w-6 h-6 text-red-500"></lucide-icon>
-            </div>
-            <div>
-                <p class="text-[var(--color-text)] font-medium mb-1">{{ 'adminDashboard.charts.failedToLoad' | translate
-                    }}</p>
-                <button (click)="loadData()" class="text-sm text-[var(--color-brand)] hover:underline font-medium">
-                    {{ 'adminDashboard.charts.retry' | translate }}
-                </button>
-            </div>
-        </div>
-
+    <div class="flex-1 relative h-[350px] p-4 overflow-hidden">
         <!-- Content -->
-        <div class="relative w-full h-full max-h-[400px] overflow-hidden" *ngIf="!loading && !error">
+        <div class="relative w-full h-full max-h-[400px] overflow-hidden">
             <div echarts [options]="chartOptions" class="w-full h-full max-h-[400px]"></div>
 
             <!-- Center Label (Donut Hole) -->

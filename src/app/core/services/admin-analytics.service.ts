@@ -1,9 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, interval, of, Subscription } from 'rxjs';
-import { map, shareReplay, switchMap, filter, take, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, interval, of, Subscription, forkJoin } from 'rxjs';
+import { map, shareReplay, switchMap, filter, take, tap, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { InventoryService } from './inventory.service';
 import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
+import { MonitoringService } from './monitoring.service';
 
 /**
  * System Health Metrics Interface
@@ -25,6 +26,8 @@ export interface InventoryMetrics {
     totalItems: number;
     totalQuantity: number;
     lowStockItems: number;
+    expiringItems: number;
+    inventoryDistribution?: InventoryDistribution;
     lastUpdated: Date;
 }
 
@@ -122,7 +125,8 @@ export class AdminAnalyticsService implements OnDestroy {
 
     constructor(
         private apiService: ApiService,
-        private inventoryService: InventoryService
+        private inventoryService: InventoryService,
+        private monitoringService: MonitoringService
     ) { }
 
     ngOnDestroy(): void {
@@ -251,21 +255,50 @@ export class AdminAnalyticsService implements OnDestroy {
     }
 
     private fetchInventoryMetrics(): Observable<InventoryMetrics> {
-        return this.inventoryService.getAllItemsSummary().pipe(
-            map(items => {
-                const lowStockThreshold = DASHBOARD_CONSTANTS.LOW_STOCK_THRESHOLD;
+        return forkJoin({
+            items: this.inventoryService.getAllItemsSummary(),
+            lowStock: this.monitoringService.getLowStockItemsCount().pipe(catchError(() => of(0))),
+            expiring: this.monitoringService.getExpiringLotsCount().pipe(catchError(() => of(0)))
+        }).pipe(
+            map((data: { items: any[], lowStock: number, expiring: number }) => {
+                const { items, lowStock, expiring } = data;
+                const activeItems = items.filter(x => (x.remainingQuantity || 0) > 0);
 
-                const totalItems = items.filter(x => (x.remainingQuantity || 0) > 0).length;
-                const totalQuantity = items.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
-                const lowStockItems = items.filter(item =>
-                    (item.remainingQuantity || 0) < lowStockThreshold &&
-                    (item.remainingQuantity || 0) > 0
-                ).length;
+                const totalItems = activeItems.length;
+                const totalQuantity = activeItems.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
+
+                // Calculate Distribution from Active Items
+                const categoriesMap = new Map<string, number>();
+                const itemTypeNames: { [key: number]: string } = {
+                    1: 'Ammunition',
+                    2: 'Weapon',
+                    3: 'Explosive',
+                    4: 'Accessory'
+                };
+
+                activeItems.forEach(item => {
+                    const typeName = itemTypeNames[item.itemType] || 'Other';
+                    categoriesMap.set(typeName, (categoriesMap.get(typeName) || 0) + 1);
+                });
+
+                const categories: CategoryDistribution[] = [];
+                categoriesMap.forEach((value, name) => {
+                    categories.push({
+                        name: name,
+                        value: value,
+                        percentage: totalItems > 0 ? (value / totalItems) * 100 : 0
+                    });
+                });
+
+                // Sort categories by value desc
+                categories.sort((a, b) => b.value - a.value);
 
                 return {
                     totalItems,
                     totalQuantity,
-                    lowStockItems,
+                    lowStockItems: lowStock,
+                    expiringItems: expiring,
+                    inventoryDistribution: { categories },
                     lastUpdated: new Date()
                 };
             })

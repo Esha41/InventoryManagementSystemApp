@@ -110,7 +110,19 @@
     "manufacturer": "المصنع",
     "supplier": "المورد",
     "item": "ماده",
-    "items": "مواد"
+    "items": "مواد",
+    "ordinals": {
+      "first": "الأول",
+      "second": "الثاني",
+      "third": "الثالث",
+      "fourth": "الرابع",
+      "fifth": "الخامس",
+      "sixth": "السادس",
+      "seventh": "السابع",
+      "eighth": "الثامن",
+      "ninth": "التاسع",
+      "tenth": "العاشر"
+    }
   },
   "importDialog": {
     "description": "قم بتحميل ملف Excel لاستيراد بيانات {{entityName}}. يرجى التأكد من أن ملفك يتبع التنسيق المطلوب.",

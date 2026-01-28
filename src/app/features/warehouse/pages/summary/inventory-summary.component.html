@@ -30,11 +30,11 @@
                     <button (click)="switchTab('ammunition')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
-            }"
-                        class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
+            }" class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
                         [class.flex-row-reverse]="isRTL">
                         <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
-                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0" [ngClass]="{
+                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0"
+                                [ngClass]="{
                      'bg-white': activeTab === 'ammunition',
                      'bg-[var(--color-brand)]': activeTab !== 'ammunition'
                    }"></div>
@@ -48,11 +48,11 @@
                     <button (click)="switchTab('explosive')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
-            }"
-                        class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
+            }" class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
                         [class.flex-row-reverse]="isRTL">
                         <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
-                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0" [ngClass]="{
+                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0"
+                                [ngClass]="{
                      'bg-white': activeTab === 'explosive',
                      'bg-[var(--color-brand)]': activeTab !== 'explosive'
                    }"></div>
@@ -66,11 +66,11 @@
                     <button (click)="switchTab('weapon')" [ngClass]="{
               'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
               'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
-            }"
-                        class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
+            }" class="flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group whitespace-nowrap"
                         [class.flex-row-reverse]="isRTL">
                         <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
-                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0" [ngClass]="{
+                            <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-200 flex-shrink-0"
+                                [ngClass]="{
                      'bg-white': activeTab === 'weapon',
                      'bg-[var(--color-brand)]': activeTab !== 'weapon'
                    }"></div>
@@ -260,7 +260,7 @@
                                                 <div class="text-xs flex justify-between">
                                                     <span class="font-medium">{{ entry.actionTypeName }}</span>
                                                     <span class="text-[var(--color-text-muted)]">{{
-                                                        formatDate(entry.actionDate) }}</span>
+                                                        entry.actionDate | appDate:'military' }}</span>
                                                 </div>
                                                 <p class="text-[10px] text-[var(--color-text-secondary)]">{{
                                                     entry.description }}</p>
@@ -599,7 +599,8 @@
                                                                                             }}</span>
                                                                                         <span
                                                                                             class="text-xs text-[var(--color-text-muted)]">{{
-                                                                                            formatDate(entry.actionDate)
+                                                                                            entry.actionDate |
+                                                                                            appDate:'military'
                                                                                             }}</span>
                                                                                     </div>
 

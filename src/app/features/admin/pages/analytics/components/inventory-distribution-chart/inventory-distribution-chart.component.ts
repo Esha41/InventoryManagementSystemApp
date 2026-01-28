@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
@@ -15,32 +15,36 @@ import { ThemeService } from '@services/theme.service';
     templateUrl: './inventory-distribution-chart.component.html',
     styleUrl: './inventory-distribution-chart.component.css'
 })
-export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
+export class InventoryDistributionChartComponent implements OnInit, OnDestroy, OnChanges {
+    @Input() distribution: InventoryDistribution | undefined;
+
     // Icons
     readonly RefreshCw = RefreshCw;
     readonly AlertCircle = AlertCircle;
 
     private destroy$ = new Subject<void>();
     chartOptions: EChartsOption = {};
-    loading = true;
-    error = false;
     totalItems = 0;
 
     constructor(
-        private analyticsService: AdminAnalyticsService,
         private translate: TranslateService,
         private themeService: ThemeService
     ) { }
 
     ngOnInit(): void {
-        this.loadData();
         // Subscribe to theme changes and reload chart when theme changes
         this.themeService.currentTheme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-            if (this.chartOptions && Object.keys(this.chartOptions).length > 0) {
-                // Reload data to reinitialize chart with new theme colors
-                this.loadData();
+            if (this.distribution) {
+                this.initChart();
             }
         });
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['distribution'] && this.distribution) {
+            this.totalItems = this.distribution.categories.reduce((acc, curr) => acc + curr.value, 0);
+            this.initChart();
+        }
     }
 
     ngOnDestroy(): void {
@@ -48,26 +52,9 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    loadData(): void {
-        this.loading = true;
-        this.analyticsService.getInventoryDistribution()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (data: InventoryDistribution) => {
-                    this.totalItems = data.categories.reduce((acc: number, curr: { value: number }) => acc + curr.value, 0);
-                    this.initChart(data);
-                    this.loading = false;
-                    this.error = false;
-                },
-                error: (err: any) => {
-                    console.error('Error loading inventory distribution:', err);
-                    this.loading = false;
-                    this.error = true;
-                }
-            });
-    }
+    private initChart(): void {
+        if (!this.distribution) return;
 
-    private initChart(data: InventoryDistribution): void {
         const isDarkMode = this.themeService.isDarkMode();
         const textColor = isDarkMode ? '#E5E7EB' : '#1f2937';
         const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6b7280';
@@ -76,10 +63,11 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy {
         const borderColor = isDarkMode ? '#1e293b' : '#ffffff';
 
         forkJoin(
-            data.categories.map((cat: any) => {
+            this.distribution.categories.map((cat: any) => {
                 const translationKey = `adminDashboard.charts.${cat.name.toLowerCase()}`;
                 return this.translate.get(translationKey).pipe(
                     map((translatedName: string) => ({
+                        // If translation is missing (returns key), use original name
                         name: translatedName === translationKey ? cat.name : translatedName,
                         value: cat.value
                     }))

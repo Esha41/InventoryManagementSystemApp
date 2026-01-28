@@ -1,9 +1,10 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Package, TrendingDown, AlertTriangle, TrendingUp, Archive } from 'lucide-angular';
+import { LucideAngularModule, Package, TrendingDown, AlertTriangle, TrendingUp, Archive, Clock } from 'lucide-angular';
 import { InventoryMetrics } from '@services/admin-analytics.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { Router } from '@angular/router';
 
 /**
  * Inventory Overview Card Component
@@ -32,14 +33,27 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
       </div>
 
       <div class="flex flex-col gap-3 flex-1 overflow-hidden">
-        <div class="flex items-center gap-3 p-3 bg-[var(--color-background)] rounded-lg border-l-[3px] transition-all duration-200"
-             [ngClass]="(metrics?.lowStockItems || 0) > 0 ? 'border-l-red-500 bg-red-500/5' : 'border-l-transparent'">
+        <div class="flex items-center gap-3 p-3 bg-[var(--color-background)] rounded-lg border-l-[3px] transition-all duration-200 cursor-pointer hover:shadow-md hover:bg-[var(--color-background-hover)]/50"
+             (click)="navigateToLowStock()"
+             [ngClass]="(metrics?.lowStockItems || 0) > 0 ? 'border-l-red-500 bg-red-500/5 hover:bg-red-500/10' : 'border-l-transparent'">
           <lucide-icon [img]="TrendingDown" class="w-6 h-6 text-[var(--color-text-muted)] flex-shrink-0" 
                        [class.text-red-500]="(metrics?.lowStockItems || 0) > 0"></lucide-icon>
           <div class="flex-1 min-w-0">
             <div class="text-xl font-bold text-[var(--color-text)] truncate" 
                  [class.text-red-500]="(metrics?.lowStockItems || 0) > 0">{{ metrics?.lowStockItems || 0 }}</div>
             <div class="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{{ 'adminDashboard.inventory.lowStock' | translate }}</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 p-3 bg-[var(--color-background)] rounded-lg border-l-[3px] transition-all duration-200 cursor-pointer hover:shadow-md hover:bg-[var(--color-background-hover)]/50"
+             (click)="navigateToExpiring()"
+             [ngClass]="(metrics?.expiringItems || 0) > 0 ? 'border-l-orange-500 bg-orange-500/5 hover:bg-orange-500/10' : 'border-l-transparent'">
+          <lucide-icon [img]="Clock" class="w-6 h-6 text-[var(--color-text-muted)] flex-shrink-0" 
+                       [class.text-orange-500]="(metrics?.expiringItems || 0) > 0"></lucide-icon>
+          <div class="flex-1 min-w-0">
+            <div class="text-xl font-bold text-[var(--color-text)] truncate" 
+                 [class.text-orange-500]="(metrics?.expiringItems || 0) > 0">{{ metrics?.expiringItems || 0 }}</div>
+            <div class="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{{ 'adminDashboard.inventory.expiringSoon' | translate }}</div>
           </div>
         </div>
       </div>
@@ -64,4 +78,15 @@ export class InventoryOverviewCardComponent {
   readonly AlertTriangle = AlertTriangle;
   readonly TrendingUp = TrendingUp;
   readonly Archive = Archive;
+  readonly Clock = Clock;
+
+  constructor(private router: Router) { }
+
+  navigateToLowStock(): void {
+    this.router.navigate(['/inventory-dashboard/low-stock']);
+  }
+
+  navigateToExpiring(): void {
+    this.router.navigate(['/inventory-dashboard/expiring-lots']);
+  }
 }

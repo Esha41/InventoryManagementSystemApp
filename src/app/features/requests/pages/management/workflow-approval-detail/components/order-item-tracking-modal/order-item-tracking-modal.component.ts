@@ -7,6 +7,7 @@ import { OrderItemTrackingService, OrderItemHistoryDto, OrderItemActionType } fr
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
     selector: 'app-order-item-tracking-modal',
@@ -15,7 +16,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
         CommonModule,
         TranslateModule,
         LucideAngularModule,
-        ModalComponent
+        ModalComponent,
+        AppDatePipe
     ],
     templateUrl: './order-item-tracking-modal.component.html',
     styles: [`

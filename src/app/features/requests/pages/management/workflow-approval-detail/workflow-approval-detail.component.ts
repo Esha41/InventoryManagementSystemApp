@@ -623,8 +623,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Handle supply submission event from child component
    */
   onSupplySubmitted(): void {
-    // Supply was submitted successfully, no action needed as child component handles it
-    // This method exists for potential future use (e.g., showing notifications, updating UI)
+    this.loadRequestDetailInternal(false);
   }
 
 

@@ -55,7 +55,8 @@
                         <app-request-trends-chart period="weekly"></app-request-trends-chart>
                     </div>
                     <div class="chart-item">
-                        <app-inventory-distribution-chart></app-inventory-distribution-chart>
+                        <app-inventory-distribution-chart
+                            [distribution]="inventoryMetrics()?.inventoryDistribution"></app-inventory-distribution-chart>
                     </div>
                     <div class="chart-item">
                         <app-top-requested-items-chart></app-top-requested-items-chart>

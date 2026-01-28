@@ -66,7 +66,7 @@
                             <div class="flex items-center gap-2 text-sm text-[var(--color-text)]">
                                 <lucide-angular [img]="Clock"
                                     class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                                <span>{{ item.actionDate | date:'medium' }}</span>
+                                <span>{{ item.actionDate | appDate:'military' }}</span>
                             </div>
                         </td>
                         <td class="px-4 py-3">

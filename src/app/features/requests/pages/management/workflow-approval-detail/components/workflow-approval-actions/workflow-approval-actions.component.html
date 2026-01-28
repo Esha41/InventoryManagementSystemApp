@@ -40,14 +40,15 @@
     <!-- File Upload for Approval/Rejection -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'newIssueRequest.attachments' | translate }} <span
-          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+        {{ 'newIssueRequest.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
+          'common.optional' | translate }})</span>
       </label>
       <div class="space-y-3">
         <!-- File Input -->
         <div class="relative flex items-center gap-2">
           <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
-            [disabled]="processing || isProcessingAction" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+            [disabled]="processing || isProcessingAction" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx"
+            class="hidden">
           <label (click)="!processing && approvalFileInput.click()" [class.opacity-50]="processing"
             [class.cursor-not-allowed]="processing"
             class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
@@ -72,8 +73,7 @@
             <button type="button" (click)="removeApprovalFile(i)" [disabled]="processing"
               class="ms-3 p-1 text-[var(--color-error)] hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
@@ -92,8 +92,8 @@
     <!-- Comments Textarea -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'workflowApprovalDetail.comments' | translate }} <span
-          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+        {{ 'workflowApprovalDetail.comments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
+          'common.optional' | translate }})</span>
       </label>
       <textarea [(ngModel)]="comments" [disabled]="processing || isProcessingAction" rows="4"
         [placeholder]="'workflowApprovalDetail.enterComments' | translate"
@@ -143,21 +143,22 @@
             </p>
           </div>
 
-          <button (click)="returnForReview()"
-            [disabled]="processing || !returnToStepId || loadingPreviousSteps"
+          <button (click)="returnForReview()" [disabled]="processing || !returnToStepId || loadingPreviousSteps"
             class="w-full action-btn btn-return">
-            <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.returnRequest' | translate }}</span>
+            <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.returnRequest' | translate
+              }}</span>
             <span *ngIf="processing || isProcessingAction">{{ 'common.processing' | translate }}...</span>
           </button>
         </div>
       </div>
 
       <!-- Approve Button -->
-      <div class="flex flex-col flex-1">
+      <div class="flex flex-col flex-1" *ngIf="shouldShowApproveButton()">
         <button (click)="approveRequest()"
           [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin)"
           class="action-btn btn-approve w-full">
-          <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="CheckCircle" class="h-4 w-4"></lucide-angular>
+          <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="CheckCircle"
+            class="h-4 w-4"></lucide-angular>
           <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.approve' | translate }}</span>
           <span *ngIf="processing || isProcessingAction" class="flex items-center gap-2">
             <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -176,17 +177,11 @@
     </div>
   </div>
 
-  <app-confirmation-dialog 
-    [isOpen]="confirmationDialog.isOpen" 
-    [title]="confirmationDialog.title" 
-    [message]="confirmationDialog.message" 
-    [type]="confirmationDialog.type"
-    [confirmText]="confirmationDialog.confirmText" 
-    [cancelText]="confirmationDialog.cancelText"
-    [requireComment]="confirmationDialog.requireComment" 
-    [commentLabel]="confirmationDialog.commentLabel"
-    [commentPlaceholder]="confirmationDialog.commentPlaceholder" 
-    (confirmed)="onConfirmationConfirmed($event)"
+  <app-confirmation-dialog [isOpen]="confirmationDialog.isOpen" [title]="confirmationDialog.title"
+    [message]="confirmationDialog.message" [type]="confirmationDialog.type"
+    [confirmText]="confirmationDialog.confirmText" [cancelText]="confirmationDialog.cancelText"
+    [requireComment]="confirmationDialog.requireComment" [commentLabel]="confirmationDialog.commentLabel"
+    [commentPlaceholder]="confirmationDialog.commentPlaceholder" (confirmed)="onConfirmationConfirmed($event)"
     (cancelled)="onConfirmationCancelled()">
   </app-confirmation-dialog>
 </div>

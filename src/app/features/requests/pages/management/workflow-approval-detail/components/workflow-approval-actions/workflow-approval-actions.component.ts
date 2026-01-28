@@ -42,7 +42,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
   @Input() previousWorkflowSteps: any[] = [];
   @Input() loadingPreviousSteps: boolean = false;
   @Input() destroy$!: Subject<void>;
-  
+
   @Output() loadPreviousSteps = new EventEmitter<void>();
 
   @Output() approved = new EventEmitter<void>();
@@ -54,17 +54,17 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
   comments: string = '';
   sendToHigherApproval: string = 'no';
   isProcessingAction: boolean = false; // Local processing state for this component's actions
-  
+
   // File upload for approval/rejection
   approvalFiles: File[] = [];
-  
+
   // Higher approval dropdown options
   higherApprovalOptions: { value: string; label: string }[] = [];
-  
+
   // Return for review
   showReturnForReview: boolean = false;
   returnToStepId: number | null = null;
-  
+
   // Transitions (skip-to steps) for current step
   selectedNextStepId: number | null = null;
 
@@ -102,7 +102,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
     private stateService: WorkflowApprovalStateService,
     private translateService: TranslateService,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Initialize higher approval options with translations
@@ -152,6 +152,17 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
 
   canSubmitSupply(): boolean {
     return this.stateService.canSubmitSupply();
+  }
+
+  canReviewWeaponSupply(): boolean {
+    return this.stateService.canReviewWeaponSupply();
+  }
+
+  shouldShowApproveButton(): boolean {
+    if (this.isSuperAdmin) {
+      return true;
+    }
+    return !this.canSubmitSupply() && !this.canReviewWeaponSupply();
   }
 
   isSupplySubmitted(): boolean {

@@ -159,7 +159,9 @@
 }
 
 .chart-item {
-    min-height: 400px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
 }
 
 .chart-wide {

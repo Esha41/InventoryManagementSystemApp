@@ -29,6 +29,8 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
     loading = true;
     error = false;
     analyticsData: UserLoginAnalyticsDto | null = null;
+    private trendChartInstance: any;
+    private userChartInstance: any;
 
     // Chart initialization options
     chartInitOpts: any = {
@@ -513,7 +515,7 @@ export class UserLoginAnalyticsChartComponent implements OnInit, OnDestroy {
                 }
             ]
         };
-        
+
 
         // Update existing chart instances if they exist using setOption
         // This prevents re-initialization and uses ECharts' built-in update mechanism
