@@ -418,7 +418,7 @@ export class SupplyOrderDataService {
   addOrderItem(orderId: number, item: CreateRequestItemDto): Observable<APIOperationResponse<number>> {
     return this.orderService.addOrderItem(orderId, item).pipe(
       catchError((error) => {
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add item');
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translateService);
         throw new Error(errorMessage);
       })
     );
@@ -430,7 +430,7 @@ export class SupplyOrderDataService {
   updateOrderItemQuantity(orderId: number, itemId: number, quantity: number): Observable<APIOperationResponse<boolean>> {
     return this.orderService.updateOrderItemQuantity(orderId, itemId, quantity).pipe(
       catchError((error) => {
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item quantity');
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translateService);
         throw new Error(errorMessage);
       })
     );

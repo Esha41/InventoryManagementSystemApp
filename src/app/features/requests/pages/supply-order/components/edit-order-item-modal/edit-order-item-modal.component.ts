@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,6 +9,7 @@ import { SupplyOrderDataService } from '@requests/services/supply-order-data.ser
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getItemProductId } from '@utils/supply-order-format.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Edit Order Item Modal Component
@@ -48,7 +49,8 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
     private fb: FormBuilder,
     private translateService: TranslateService,
     private toastService: ToastService,
-    private supplyOrderDataService: SupplyOrderDataService
+    private supplyOrderDataService: SupplyOrderDataService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -82,6 +84,8 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
     });
   }
 
+
+
   onSaveEditOrderItem(): void {
     if (!this.selectedItem || this.editItemForm.invalid) {
       this.editItemForm.markAllAsTouched();
@@ -91,8 +95,12 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
     const formValue = this.editItemForm.value;
     const newQuantity = formValue.quantity;
 
+    this.proceedToUpdateItem(newQuantity);
+  }
+
+  private proceedToUpdateItem(newQuantity: number): void {
     this.savingItem = true;
-    this.supplyOrderDataService.updateOrderItemQuantity(this.orderId, this.selectedItem.id, newQuantity)
+    this.supplyOrderDataService.updateOrderItemQuantity(this.orderId, this.selectedItem!.id, newQuantity)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
@@ -103,18 +111,21 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
             this.closeModal();
             this.itemUpdated.emit();
           } else {
-            this.translateService.get(['toast.error', 'toast.failedToUpdateItemQuantity']).subscribe(translations => {
-              this.toastService.error(response.message || translations['toast.failedToUpdateItemQuantity'], translations['toast.error']);
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to update item quantity', this.translateService);
+            this.translateService.get(['toast.error']).subscribe(translations => {
+              this.toastService.error(errorMessage, translations['toast.error']);
             });
           }
           this.savingItem = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to update item quantity';
-          this.translateService.get(['toast.error', 'toast.failedToUpdateItemQuantity']).subscribe(translations => {
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translateService);
+          this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.savingItem = false;
+          this.cdr.markForCheck();
         }
       });
   }

@@ -489,7 +489,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     // Collect selected cartridges from cache that match the current item type
     this.cartridgeState.selectedCartridgesCache.forEach((cachedCartridge, id) => {
       const cartridgeItemType = cachedCartridge.itemType || inferItemType(cachedCartridge);
-      
+
       // Only include selected items that match the current filter type
       if (cartridgeItemType === currentItemType) {
         // Create a copy to avoid mutating the cache

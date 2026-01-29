@@ -44,7 +44,7 @@
     "usageTimeTo": "Usage Time To",
     "totalReserve": "Total Allowance",
     "availableReserve": "Available Allowance",
-    "orderedQuantity": "Ordered Quantity",
+    "orderedQuantity": "Hold Quantity",
     "usedQuantity": "Used Quantity",
     "itemName": "Item Name",
     "itemNo": "Item No.",
@@ -606,7 +606,10 @@
     },
     "ammunitionExplosivesAllowed": "Only Ammunition and Explosives can be added to this request.",
     "ammunitionOnlyAllowed": "Only Ammunition can be added to this request.",
-    "explosivesOnlyAllowed": "Only Explosives can be added to this request."
+    "explosivesOnlyAllowed": "Only Explosives can be added to this request.",
+    "errors": {
+      "allowanceExceeded": "Exceeded allowance quantity. Available: {{availableQuantity}}"
+    }
   },
   "supplyRequestManagement": {
     "title": "Supply Request Management",
