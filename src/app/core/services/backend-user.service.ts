@@ -95,6 +95,7 @@ export class BackendUserService {
               name: role.name ?? role.roleName ?? '',
               isDefaultRole: !!(role.isDefaultRole ?? role.isDefault),
               isSuperAdmin: !!(role.isSuperAdmin ?? role.superAdmin),
+              isAdmin: !!(role.isAdmin ?? role.admin),
               applicationEntityIds: Array.isArray(role.applicationEntityIds) ? role.applicationEntityIds : undefined
             }));
             user.roles = mappedRoles;

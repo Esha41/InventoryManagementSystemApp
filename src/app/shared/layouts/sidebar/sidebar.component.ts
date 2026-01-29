@@ -59,12 +59,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/inventory-dashboard',
       permissions: ['inventoryDashboard']
     },
-    {
-      label: 'nav.adminDashboard',
-      icon: Badge,
-      route: '/admin-dashboard',
-      permissions: ['systemusers.page']
-    },
+
     {
       label: 'nav.analytics',
       icon: TrendingUp,
@@ -214,6 +209,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.admin',
       isHeader: true,
+      permissions: ['systemusers.page']
+    },
+    {
+      label: 'nav.adminDashboard',
+      icon: Badge,
+      route: '/admin-dashboard',
       permissions: ['systemusers.page']
     },
     {

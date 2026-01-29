@@ -110,6 +110,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
       nameEn: [this.role?.nameEn || this.role?.name || '', [Validators.required, Validators.minLength(3)]],
       nameAr: [this.role?.nameAr || '', [Validators.required, Validators.minLength(3)]],
       isSuperAdmin: [this.role?.isSuperAdmin || false],
+      isAdmin: [this.role?.isAdmin || false],
       applicationEntityId: [null] // Single entity selection
     });
   }
@@ -177,6 +178,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         nameEn: this.roleForm.value.nameEn,
         nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
+        isAdmin: this.roleForm.value.isAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
 
@@ -204,6 +206,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         nameEn: this.roleForm.value.nameEn,
         nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
+        isAdmin: this.roleForm.value.isAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
 

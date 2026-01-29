@@ -159,37 +159,43 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         id: '1',
         name: 'Administrator',
         isDefaultRole: false,
-        isSuperAdmin: true
+        isSuperAdmin: true,
+        isAdmin: true
       },
       {
         id: '2',
         name: 'Warehouse Manager',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '3',
         name: 'Inventory Clerk',
         isDefaultRole: true,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '4',
         name: 'Viewer',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '5',
         name: 'Editor',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '6',
         name: 'Moderator',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       }
     ];
   }
@@ -262,7 +268,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
             id: r.roleId,
             name: r.roleName,
             isDefaultRole: r.isDefaultRole || false,  // set default if missing
-            isSuperAdmin: r.isSuperAdmin || false     // set default if missing
+            isSuperAdmin: r.isSuperAdmin || false,     // set default if missing
+            isAdmin: r.isAdmin || false               // set default if missing
           }));
         }
 
