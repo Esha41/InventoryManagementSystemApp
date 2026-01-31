@@ -38,7 +38,9 @@
     "cannotToggleSuperAdmin": "لا يمكن تعطيل مستخدمي المدير الفائق.",
     "cannotDeleteSuperAdmin": "لا يمكن حذف مستخدمي المدير الفائق.",
     "userEnabledSuccess": "تم تفعيل المستخدم بنجاح",
-    "userDisabledSuccess": "تم تعطيل المستخدم بنجاح"
+    "userDisabledSuccess": "تم تعطيل المستخدم بنجاح",
+    "activeUsers": "المستخدمين النشطين",
+    "inactiveUsers": "المستخدمين غير النشطين"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
@@ -132,6 +134,7 @@
     "nameEnPlaceholder": "أدخل الاسم بالإنجليزية",
     "nameArPlaceholder": "أدخل الاسم بالعربية",
     "superAdmin": "مدير فائق (وصول كامل)",
+    "admin": "مدير",
     "defaultRole": "دور افتراضي (يُعيَّن تلقائياً للمستخدمين الجدد)",
     "applicationEntity": "كيان التطبيق",
     "selectEntity": "اختر كيان التطبيق",

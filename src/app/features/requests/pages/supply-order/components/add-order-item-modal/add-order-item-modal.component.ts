@@ -10,6 +10,7 @@ import { SupplyOrderDataService } from '@requests/services/supply-order-data.ser
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getItemManagementOptionLabel } from '@utils/supply-order-format.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Add Order Item Modal Component
@@ -122,6 +123,8 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
     return getItemManagementOptionLabel(item, this.translateService);
   };
 
+
+
   onSaveAddOrderItem(): void {
     if (this.addItemForm.invalid) {
       this.addItemForm.markAllAsTouched();
@@ -137,6 +140,10 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
       return;
     }
 
+    this.proceedToAddItem(formValue);
+  }
+
+  private proceedToAddItem(formValue: any): void {
     const itemDto: CreateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
@@ -155,18 +162,21 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
             this.closeModal();
             this.itemAdded.emit();
           } else {
-            this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
-              this.toastService.error(response.message || translations['toast.failedToAddItem'], translations['toast.error']);
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to add item', this.translateService);
+            this.translateService.get(['toast.error']).subscribe(translations => {
+              this.toastService.error(errorMessage, translations['toast.error']);
             });
           }
           this.savingItem = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to add item';
-          this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translateService);
+          this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.savingItem = false;
+          this.cdr.markForCheck();
         }
       });
   }

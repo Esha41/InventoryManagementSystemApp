@@ -19,7 +19,7 @@ export class OrderItemManagementService {
     private orderService: OrderService,
     private toastService: ToastService,
     private translate: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Add new item to order
@@ -54,9 +54,9 @@ export class OrderItemManagementService {
   /**
    * Show error message for item operations
    */
-  showErrorMessage(key: string, fallbackMessage?: string): void {
+  showErrorMessage(key: string, messageOverride?: string): void {
     this.translate.get([key, 'toast.error']).subscribe(translations => {
-      const message = translations[key] || fallbackMessage || 'Operation failed';
+      const message = messageOverride || translations[key] || 'Operation failed';
       this.toastService.error(message, translations['toast.error']);
     });
   }

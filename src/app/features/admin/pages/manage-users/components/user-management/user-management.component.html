@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <!-- Header with Add Button -->
   <div class="flex items-center justify-end">
-    <button *appHasPermission="'Users.Create'" (click)="onAddUser()"
+    <button *appHasPermission="'SystemUsers.Create'" (click)="onAddUser()"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="UserPlus" class="h-4 w-4"></lucide-angular>
       {{ 'manageAdmins.addUser' | translate }}
@@ -32,20 +32,20 @@
     <app-card>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'manageAdmins.active' | translate }}</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'manageAdmins.activeUsers' | translate }}</p>
           <p class="text-2xl font-bold text-[var(--color-success)]">{{ getTotalActiveUsers() }}</p>
         </div>
-        <lucide-angular [img]="Power" class="h-8 w-8 text-[var(--color-success)]"></lucide-angular>
+        <lucide-angular [img]="UserIcon" class="h-8 w-8 text-[var(--color-success)]"></lucide-angular>
       </div>
     </app-card>
 
     <app-card>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'manageAdmins.inactive' | translate }}</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'manageAdmins.inactiveUsers' | translate }}</p>
           <p class="text-2xl font-bold text-[var(--color-error)]">{{ getTotalInactiveUsers() }}</p>
         </div>
-        <lucide-angular [img]="Power" class="h-8 w-8 text-[var(--color-error)]"></lucide-angular>
+        <lucide-angular [img]="UserIcon" class="h-8 w-8 text-[var(--color-error)]"></lucide-angular>
       </div>
     </app-card>
   </div>
@@ -117,20 +117,21 @@
         <!-- Actions -->
         <div
           class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
-          <button *appHasPermission="'Users.Edit'" [disabled]="isUserSuperAdmin(user)" (click)="onToggleStatus(user)"
+          <button *appHasPermission="'SystemUsers.Edit'" [disabled]="isUserSuperAdmin(user)"
+            (click)="onToggleStatus(user)"
             class="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             [ngClass]="user.isActive ? 'text-[var(--color-error)] bg-[var(--color-error)]/10' : 'text-[var(--color-success)] bg-[var(--color-success)]/10'"
             [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
             <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
           </button>
 
-          <button *appHasPermission="'Users.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
+          <button *appHasPermission="'SystemUsers.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
             class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             [title]="'manageAdmins.editUser' | translate">
             <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
           </button>
 
-          <button *appHasPermission="'Users.Delete'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
+          <button *appHasPermission="'SystemUsers.Delete'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
             class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             [title]="'manageAdmins.deleteUserTitle' | translate">
             <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -213,19 +214,20 @@
             </td>
             <td class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <button *appHasPermission="'Users.Edit'" [disabled]="isUserSuperAdmin(user)"
+                <button *appHasPermission="'SystemUsers.Edit'" [disabled]="isUserSuperAdmin(user)"
                   (click)="onToggleStatus(user)"
                   class="p-2 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   [class]="user.isActive ? 'text-[var(--color-error)] hover:bg-[var(--color-error)]/10' : 'text-[var(--color-success)] hover:bg-[var(--color-success)]/10'"
                   [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
                   <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
                 </button>
-                <button *appHasPermission="'Users.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
+                <button *appHasPermission="'SystemUsers.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
                   class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   [title]="'manageAdmins.editUser' | translate">
                   <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                 </button>
-                <button *appHasPermission="'Users.Delete'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
+                <button *appHasPermission="'SystemUsers.Delete'" [disabled]="isUserSuperAdmin(user)"
+                  (click)="onDelete(user)"
                   class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   [title]="'manageAdmins.deleteUserTitle' | translate">
                   <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>

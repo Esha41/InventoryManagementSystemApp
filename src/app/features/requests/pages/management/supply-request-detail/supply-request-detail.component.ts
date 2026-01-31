@@ -40,6 +40,7 @@ import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@compone
 import { TranslationService } from '@services/translation.service';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -563,16 +564,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               this.loadRequestDetail();
             }, 300);
           } else {
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to add item', this.translate);
             this.orderItemManagementService.showErrorMessage(
               'supplyRequestDetail.failedToAddItem',
-              response.message
+              errorMessage
             );
           }
           this.savingItem = false;
         },
         error: (error) => {
           this.config.logError('Failed to add item', error);
-          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translate);
+          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem', errorMessage);
           this.savingItem = false;
         }
       });
@@ -598,7 +601,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.config.logError('Failed to update item quantity', error);
-          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translate);
+          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity', errorMessage);
           this.savingItem = false;
         }
       });

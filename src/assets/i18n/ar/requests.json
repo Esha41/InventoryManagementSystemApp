@@ -604,7 +604,10 @@
     },
     "ammunitionExplosivesAllowed": "يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب.",
     "ammunitionOnlyAllowed": "يمكن إضافة الذخيرة فقط إلى هذا الطلب.",
-    "explosivesOnlyAllowed": "يمكن إضافة المتفجرات فقط إلى هذا الطلب."
+    "explosivesOnlyAllowed": "يمكن إضافة المتفجرات فقط إلى هذا الطلب.",
+    "errors": {
+      "allowanceExceeded": "تجاوز الكمية المقررة. المتاح: {{availableQuantity}}"
+    }
   },
   "weapon": {
     "weaponType": "نوع السلاح",

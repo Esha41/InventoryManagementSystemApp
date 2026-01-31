@@ -64,12 +64,18 @@ export class LoginComponent implements OnInit {
     } else {
       this.isLdapMode = true; // LDAP first in production/staging
     }
-    
+
     this.applyPasswordValidators();
 
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
+      if (this.backendAuth.hasPermission('dashboard_view')) {
+        this.router.navigate(['/dashboard']);
+      } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+        this.router.navigate(['/admin-dashboard']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
       return;
     }
 
@@ -377,9 +383,15 @@ export class LoginComponent implements OnInit {
         this.captchaId = '';
         this.loginForm.get('captcha')?.setValue('');
 
-        // Navigate to dashboard
+        // Navigate to appropriate dashboard based on permissions
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          if (this.backendAuth.hasPermission('dashboard_view')) {
+            this.router.navigate(['/dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+            this.router.navigate(['/admin-dashboard']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }, 400);
       },
       error: (error) => {

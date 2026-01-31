@@ -23,6 +23,7 @@ import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface LoadRequestDetailResult {
   orderData: OrderDto;
@@ -58,7 +59,7 @@ export class SupplyRequestDetailService {
       map((order: OrderDto) => {
         // Ensure nested objects and flat properties are populated
         this.populateOrderData(order);
-        
+
         const issueNo = order.requestNo || order.orderNo || `#${order.id}`;
         const requestDetail = mapOrderToRequestDetail(order);
         return { orderData: order, requestDetail, issueNo };
@@ -83,9 +84,9 @@ export class SupplyRequestDetailService {
     // Populate requester flat properties from nested object if missing
     if (order.requester) {
       if (!order.requesterName) {
-        order.requesterName = order.requester.fullNameEN || 
-                             order.requester.fullNameAR || 
-                             order.requester.userName;
+        order.requesterName = order.requester.fullNameEN ||
+          order.requester.fullNameAR ||
+          order.requester.userName;
       }
       if (!order.requesterNameEn && order.requester.fullNameEN) {
         order.requesterNameEn = order.requester.fullNameEN;
@@ -344,21 +345,14 @@ export class SupplyRequestDetailService {
     return this.supplyService.checkDraftSupplyExists(orderId).pipe(
       switchMap((existingSupply) => {
         if (existingSupply) {
+          // If a draft exists, we use the update/replace logic explicitly
           return this.supplyService.getById(existingSupply.id).pipe(
             switchMap((supply) => this.updateExistingSupply(supply, requestDetail))
           );
         } else {
+          // No draft exists, call create
           return this.createNewSupply(orderId, requestDetail);
         }
-      }),
-      catchError((error) => {
-        const errorMessage = error?.error?.message || error?.message || '';
-        if (errorMessage.includes('Draft supply already exists') || errorMessage.includes('already exists for this order')) {
-          return this.supplyService.getByOrderId(orderId).pipe(
-            switchMap((supply) => this.updateExistingSupply(supply, requestDetail))
-          );
-        }
-        return this.createNewSupply(orderId, requestDetail);
       })
     );
   }
@@ -424,7 +418,7 @@ export class SupplyRequestDetailService {
       map(() => supply.id),
       catchError((error) => {
         this.config.logError('Failed to update existing supply', error);
-        const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToUpdateDraft');
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('supplyRequestDetail.failedToUpdateDraft'), this.translate);
         const title = this.translate.instant('toast.error');
         this.toastService.error(errorMessage, title);
         throw error;
@@ -497,11 +491,11 @@ export class SupplyRequestDetailService {
     // Helper function to convert itemType (string or number) to numeric type
     const normalizeItemType = (itemType: number | string | undefined): number | null => {
       if (!itemType) return null;
-      
+
       if (typeof itemType === 'number') {
         return itemType;
       }
-      
+
       // Convert string to number (case-insensitive)
       const itemTypeMap: { [key: string]: number } = {
         'Ammunition': 1,
@@ -511,7 +505,7 @@ export class SupplyRequestDetailService {
         'Explosive': 3,
         'explosive': 3
       };
-      
+
       return itemTypeMap[itemType] || null;
     };
 

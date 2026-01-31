@@ -101,6 +101,7 @@ export interface RoleDto {
   nameAr?: string;
   isDefaultRole: boolean;
   isSuperAdmin: boolean;
+  isAdmin: boolean;
   applicationEntityIds?: number[]; // Optional: Array of application entity IDs associated with the role
 }
 
@@ -118,6 +119,7 @@ export interface CreateRoleDto {
   nameAr?: string;
   isDefaultRole?: boolean;
   isSuperAdmin?: boolean;
+  isAdmin?: boolean;
   permissions?: string[];
   applicationEntityIds?: number[]; // Optional: Array of application entity IDs to associate with the role (must be numbers)
 }
@@ -132,6 +134,7 @@ export interface UpdateRoleDto {
   nameAr?: string;
   isDefaultRole?: boolean;
   isSuperAdmin?: boolean;
+  isAdmin?: boolean;
   permissions?: string[];
   applicationEntityIds?: number[]; // Optional: Array of application entity IDs to associate with the role (must be numbers)
 }

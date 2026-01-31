@@ -38,7 +38,9 @@
     "cannotToggleSuperAdmin": "Super admin users cannot be deactivated.",
     "cannotDeleteSuperAdmin": "Super admin users cannot be deleted.",
     "userEnabledSuccess": "User enabled successfully",
-    "userDisabledSuccess": "User disabled successfully"
+    "userDisabledSuccess": "User disabled successfully",
+    "activeUsers": "Active Users",
+    "inactiveUsers": "Inactive Users"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -132,6 +134,7 @@
     "nameEnPlaceholder": "Enter English name",
     "nameArPlaceholder": "Enter Arabic name",
     "superAdmin": "Super Administrator (Full Access)",
+    "admin": "Admin",
     "defaultRole": "Default Role (Auto-assigned to new users)",
     "applicationEntity": "Application Entity",
     "selectEntity": "Select Application Entity",
@@ -458,7 +461,7 @@
       "analyzingTrends": "Analyzing trends...",
       "analyzingItems": "Analyzing items...",
       "categorizingInventory": "Categorizing inventory...",
-      "failedToLoad": "Failed to load data",
+      "failedToLoad": "Failed to load chart data",
       "retry": "Retry",
       "orders": "Orders",
       "returns": "Returns",
@@ -484,9 +487,7 @@
       "activeUsersToday": "Active Users Today",
       "topUsersByDuration": "Top Users by Login Duration",
       "loading": "Loading...",
-      "noData": "No data available",
-      "failedToLoad": "Failed to load chart data",
-      "retry": "Retry"
+      "noData": "No data available"
     }
   },
   "DELEGATION": {

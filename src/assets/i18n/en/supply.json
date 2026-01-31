@@ -141,7 +141,10 @@
     "daysRemaining": "Days Remaining",
     "enterLotNumber": "Enter Lot Number",
     "lotNumberPlaceholder": "Enter lot number...",
-    "getDetails": "Get Details"
+    "getDetails": "Get Details",
+    "errors": {
+      "allowanceExceeded": "Exceeded allowance quantity. Available: {{availableQuantity}}"
+    }
   },
   "supplyOrder": {
     "title": "Supply Order",
@@ -249,7 +252,8 @@
       "itemAlreadyExists": "Item already exists in this order. Please use Edit to update the quantity instead.",
       "itemAddedSuccessfully": "Item added successfully",
       "itemQuantityUpdatedSuccessfully": "Item quantity updated successfully",
-      "itemRemovedSuccessfully": "Item removed successfully"
+      "itemRemovedSuccessfully": "Item removed successfully",
+      "allowanceExceeded": "Exceeded allowance quantity. Available: {{availableQuantity}}"
     },
     "allItemTypesAllowed": "Please note: only Ammunition and Explosives can be added to this order.",
     "onlyWeaponsAllowed": "Weapons cannot be added here.",
