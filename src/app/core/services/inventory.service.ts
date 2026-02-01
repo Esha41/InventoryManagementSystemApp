@@ -164,9 +164,13 @@ export class InventoryService implements IImportableService {
 
   /**
    * Get available lots for a specific item and quantity (FEFO logic, excludes expired and empty lots)
+   * @param itemId Item ID
+   * @param requiredQuantity Required quantity
+   * @param depotIds Optional list of depot IDs to filter by
+   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (useful when replacing supply details)
    */
-  getAvailableLotsForQuantity(itemId: number, requiredQuantity: number, depotIds?: number[]): Observable<LotDetailDto[]> {
-    this.config.log(`Fetching available lots for item ${itemId}, quantity ${requiredQuantity}`);
+  getAvailableLotsForQuantity(itemId: number, requiredQuantity: number, depotIds?: number[], excludeSupplyId?: number): Observable<LotDetailDto[]> {
+    this.config.log(`Fetching available lots for item ${itemId}, quantity ${requiredQuantity}`, { excludeSupplyId });
 
     let url = `${this.endpoint}/item/${itemId}/available-lots?quantity=${requiredQuantity}`;
 
@@ -174,6 +178,10 @@ export class InventoryService implements IImportableService {
       depotIds.forEach(depotId => {
         url += `&depotIds=${depotId}`;
       });
+    }
+
+    if (excludeSupplyId) {
+      url += `&excludeSupplyId=${excludeSupplyId}`;
     }
 
     return this.apiService.get<LotDetailDto[]>(url);

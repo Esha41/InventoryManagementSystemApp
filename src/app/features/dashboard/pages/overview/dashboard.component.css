@@ -62,8 +62,31 @@ app-status-card {
   /* Ensure cards fill their grid cells */
   max-height: 750px;
   /* Increased card height for better scrolling */
-  /* Prevent cards from stretching too wide */
+  /* Prevent cards from stretching too wide - set reasonable max width */
   max-width: 100%;
+  width: 100%;
+}
+
+/* Prevent cards from stretching too much on large screens */
+@media (min-width: 1280px) {
+  app-status-card {
+    max-width: 400px;
+    /* Reasonable max width for cards on large screens */
+    margin-left: auto;
+    margin-right: auto;
+    /* Center cards when they hit max-width constraint */
+  }
+}
+
+/* On 2xl screens, allow slightly wider cards but still constrain */
+@media (min-width: 1536px) {
+  app-status-card {
+    max-width: 450px;
+    /* Slightly wider for 2xl screens but still constrained */
+    margin-left: auto;
+    margin-right: auto;
+    /* Center cards when they hit max-width constraint */
+  }
 }
 
 app-status-card:hover {
@@ -80,7 +103,8 @@ app-status-card:hover {
 .grid.grid-cols-1>app-status-card,
 .grid.md\\:grid-cols-2>app-status-card,
 .grid.lg\\:grid-cols-3>app-status-card,
-.grid.xl\\:grid-cols-4>app-status-card {
+.grid.xl\\:grid-cols-4>app-status-card,
+.grid.\\32xl\\:grid-cols-5>app-status-card {
   max-height: 750px;
   /* Increased card height for better scrolling */
 }
@@ -99,7 +123,7 @@ app-status-card:hover {
 }
 
 /* Cards grid inherits page-container max-width constraints */
-/* No additional CSS needed - page-container handles width constraints */
+/* Grid items will naturally respect card max-width constraints */
 
 /* Custom scrollbar for modal */
 .overflow-y-auto::-webkit-scrollbar {

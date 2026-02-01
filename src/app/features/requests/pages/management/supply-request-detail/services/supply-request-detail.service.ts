@@ -248,10 +248,14 @@ export class SupplyRequestDetailService {
 
   /**
    * Load lots for items with existing selections but no suggestions
+   * @param requestDetail Request detail
+   * @param supplyDetails Existing supply details
+   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (when replacing supply)
    */
   loadLotsForExistingSelections(
     requestDetail: SupplyRequestDetail,
-    supplyDetails: any[]
+    supplyDetails: any[],
+    excludeSupplyId?: number
   ): Observable<void> {
     if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
       return of(undefined);
@@ -273,7 +277,7 @@ export class SupplyRequestDetailService {
       const item = requestDetail.items.find(i => i.itemId === itemId);
       if (item) {
         loadPromises.push(
-          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity).pipe(
+          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity, undefined, excludeSupplyId).pipe(
             map((lots) => ({ item, lots, details }))
           )
         );
@@ -323,9 +327,12 @@ export class SupplyRequestDetailService {
 
   /**
    * Load available lots for an item and quantity
+   * @param itemId Item ID
+   * @param quantity Required quantity
+   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (when replacing supply)
    */
-  loadAvailableLotsForQuantity(itemId: number, quantity: number): Observable<LotDetailDto[]> {
-    return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity);
+  loadAvailableLotsForQuantity(itemId: number, quantity: number, excludeSupplyId?: number): Observable<LotDetailDto[]> {
+    return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity, undefined, excludeSupplyId);
   }
 
   /**

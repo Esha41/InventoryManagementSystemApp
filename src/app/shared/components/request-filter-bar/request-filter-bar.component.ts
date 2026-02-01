@@ -140,5 +140,6 @@ export class RequestFilterBarComponent {
     clearSearch(): void {
         this.searchQuery = '';
         this.searchQueryChange.emit('');
+        this.searchTriggered.emit('');
     }
 }

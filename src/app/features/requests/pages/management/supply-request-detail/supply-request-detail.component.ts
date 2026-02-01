@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 // Services
 import { SupplyRequestDetailService } from './services/supply-request-detail.service';
@@ -30,6 +30,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 // Utils
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { mapLotDetailsToLotItems } from '@utils/lot.utils';
+import { LotDetailDto } from '@services/inventory.service';
 import {
   getLotConditionClass,
   getItemTypeIcon as getItemTypeIconUtil,
@@ -87,6 +89,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   issueNo: string = '';
   requestDetail: SupplyRequestDetail | null = null;
   orderData: OrderDto | null = null;
+  currentSupplyId: number | undefined = undefined; // Store current draft supply ID to exclude from lot availability calculations
 
   // UI State
   isRequestInfoExpanded: boolean = true;
@@ -193,13 +196,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             return;
           }
 
+          // Store the current supply ID to exclude it from lot availability calculations
+          this.currentSupplyId = existingSupply?.id;
+
           const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
           const hasExistingSupply = existingSupply && existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
 
           if (hasEmptySuggestions && hasExistingSupply) {
+            // Pass the supply ID to exclude it from availability calculations when replacing
             this.supplyRequestDetailService.loadLotsForExistingSelections(
               this.requestDetail,
-              existingSupply.supplyDetails
+              existingSupply.supplyDetails,
+              existingSupply.id
             ).pipe(takeUntil(this.destroy$)).subscribe();
           } else {
             this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
@@ -327,9 +335,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.loadingAllLots = true;
     const currentSelections = new Map(this.tempLotSelections);
 
-    this.lotSelectionService.loadAvailableLotsForQuantity(item, currentSelections)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
+    // Use the service method that supports excludeSupplyId
+    this.supplyRequestDetailService.loadAvailableLotsForQuantity(
+      item.itemId,
+      item.approvedQuantity,
+      this.currentSupplyId
+    ).pipe(
+      map((lots: LotDetailDto[]) => {
+        const mappedLots = mapLotDetailsToLotItems(lots, currentSelections);
+        return { lots: mappedLots, success: true };
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
         next: (result) => {
           item.availableLots = result.lots;
           this.loadingAllLots = false;
