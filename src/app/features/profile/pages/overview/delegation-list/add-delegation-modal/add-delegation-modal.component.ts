@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { UserDelegationService } from '@services/user-delegation.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { CreateUserDelegation } from '@models/user-delegation';
+import { DelegationScope, getAvailableDelegationScopes } from '@models/delegation-scope.enum';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LucideAngularModule, X } from 'lucide-angular';
 
@@ -31,6 +32,9 @@ export class AddDelegationModalComponent implements OnInit {
     loading = false;
     minDate = new Date().toISOString().split('T')[0]; // Current date as string YYYY-MM-DD
 
+    // Delegation scopes
+    availableScopes: DelegationScope[] = getAvailableDelegationScopes();
+
     constructor(
         private fb: FormBuilder,
         private delegationService: UserDelegationService
@@ -39,7 +43,8 @@ export class AddDelegationModalComponent implements OnInit {
             delegateeUserId: ['', Validators.required],
             startDate: [this.minDate, Validators.required],
             endDate: ['', Validators.required],
-            reason: ['', Validators.required]
+            reason: ['', Validators.required],
+            delegationScopes: [[], Validators.required]
         });
     }
 
@@ -62,13 +67,14 @@ export class AddDelegationModalComponent implements OnInit {
     }
 
     submit(): void {
-        if (this.form.valid) {
+        if (this.form.valid && this.form.value.delegationScopes?.length > 0) {
             this.loading = true;
             const dto: CreateUserDelegation = {
                 delegateeUserId: this.form.value.delegateeUserId,
                 startDate: new Date(this.form.value.startDate).toISOString(),
                 endDate: new Date(this.form.value.endDate).toISOString(),
-                reason: this.form.value.reason
+                reason: this.form.value.reason,
+                delegationScopes: this.form.value.delegationScopes
             };
 
             this.delegationService.create(dto).subscribe({
@@ -76,7 +82,10 @@ export class AddDelegationModalComponent implements OnInit {
                     this.loading = false;
                     if (res && res.succeeded) {
                         this.closeModal.emit(true);
-                        this.form.reset({ startDate: this.minDate });
+                        this.form.reset({ 
+                            startDate: this.minDate,
+                            delegationScopes: []
+                        });
                     }
                 },
                 error: () => {
@@ -84,6 +93,32 @@ export class AddDelegationModalComponent implements OnInit {
                 }
             });
         }
+    }
+
+    /**
+     * Toggle a scope selection on/off
+     */
+    toggleScope(scope: DelegationScope, event: Event): void {
+        const checked = (event.target as HTMLInputElement).checked;
+        const currentScopes: string[] = this.form.value.delegationScopes || [];
+        
+        if (checked) {
+            this.form.patchValue({
+                delegationScopes: [...currentScopes, scope]
+            });
+        } else {
+            this.form.patchValue({
+                delegationScopes: currentScopes.filter((s: string) => s !== scope)
+            });
+        }
+    }
+
+    /**
+     * Check if a scope is currently selected
+     */
+    isScopeSelected(scope: DelegationScope): boolean {
+        const currentScopes: string[] = this.form.value.delegationScopes || [];
+        return currentScopes.includes(scope);
     }
 
     cancel(): void {

@@ -542,6 +542,9 @@
       "RESTRICTED_ACCESS_TITLE": "Authority Delegated",
       "RESTRICTED_ACCESS_MSG": "Your authority is currently delegated to another user. You cannot perform actions while delegation is active. To regain your authority, please revoke the active delegation from your profile."
     },
-    "ACTIONS": "Actions"
+    "ACTIONS": "Actions",
+    "SCOPES": "Delegation Scopes",
+    "SCOPES_REQUIRED": "At least one scope must be selected",
+    "SCOPE_WORKFLOWAPPROVAL": "Approve or Reject Requests"
   }
 }
