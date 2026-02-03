@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DxReportDesignerModule, DxReportDesignerComponent } from 'devexpress-reporting-angular';
@@ -32,6 +32,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   host: string = '';
   isLoading = true;
   isCreateMode = false;
+  private removeShortcutKeyListener: (() => void) | null = null;
 
   @ViewChild('reportDesigner', { static: false }) reportDesignerElement!: ElementRef;
   @ViewChild(DxReportDesignerComponent, { static: false }) dxDesigner!: DxReportDesignerComponent;
@@ -150,6 +151,35 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     setTimeout(() => {
       this.adjustToolbar();
     }, 1200);
+
+    // Disable DevExpress shortcut keys that should not be available in current mode
+    this.installShortcutKeyGuards();
+  }
+
+  ngOnDestroy(): void {
+    this.removeShortcutKeyListener?.();
+    this.removeShortcutKeyListener = null;
+  }
+
+  private installShortcutKeyGuards(): void {
+    // Ensure we only register once (ngAfterViewInit can run once, but keep it safe)
+    this.removeShortcutKeyListener?.();
+
+    const handler = (e: KeyboardEvent) => {
+      const isSaveKey = (e.key || '').toLowerCase() === 's';
+      const hasCmdOrCtrl = e.ctrlKey || e.metaKey;
+
+      // Block both Ctrl/Cmd+S and Ctrl/Cmd+Shift+S in all modes
+      if (hasCmdOrCtrl && isSaveKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    };
+
+    // Capture phase so we can stop DevExpress/other listeners early
+    document.addEventListener('keydown', handler, true);
+    this.removeShortcutKeyListener = () => document.removeEventListener('keydown', handler, true);
   }
 
   private checkDesignerLoaded(): void {
