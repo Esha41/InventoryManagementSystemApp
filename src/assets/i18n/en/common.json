@@ -242,6 +242,11 @@
     "failedToRemoveItem": "Failed to remove item",
     "failedToConfirmPickupDate": "Failed to confirm pickup date"
   },
+  "depotManagement": {
+    "errors": {
+      "fillRequiredFields": "Please fill in all required fields"
+    }
+  },
   "accessDenied": {
     "title": "Access denied",
     "message": "You do not have permission to view this page. Please contact an administrator or choose another section.",

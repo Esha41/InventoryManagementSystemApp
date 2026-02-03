@@ -242,6 +242,11 @@
     "failedToRemoveItem": "فشل إزالة العنصر",
     "failedToConfirmPickupDate": "فشل تأكيد تاريخ الاستلام"
   },
+  "depotManagement": {
+    "errors": {
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة"
+    }
+  },
   "accessDenied": {
     "title": "تم رفض الوصول",
     "message": "ليس لديك صلاحية لعرض هذه الصفحة. يرجى التواصل مع المسؤول أو اختيار قسم آخر.",
