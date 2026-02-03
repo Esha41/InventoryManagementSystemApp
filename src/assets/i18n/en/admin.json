@@ -148,6 +148,7 @@
   },
   "lookupManagement": {
     "title": "Lookup Tables",
+    "subtitle": "Manage system lookup tables and reference data",
     "selectTable": "Select Lookup Table",
     "selectTablePlaceholder": "Select a table to manage...",
     "searchPlaceholder": "Search by name or code...",

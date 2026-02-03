@@ -181,6 +181,7 @@
     "depotManagement": "Depot Management",
     "admin": "ADMIN",
     "manageAdmins": "Manage Users",
+    "lookupTables": "Lookup Tables",
     "adminRoles": "Role Management",
     "rolePermissions": "Role Permissions",
     "ldapSettings": "LDAP Settings",

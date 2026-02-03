@@ -148,6 +148,7 @@
   },
   "lookupManagement": {
     "title": "جداول البحث",
+    "subtitle": "إدارة جداول البحث والبيانات المرجعية",
     "selectTable": "اختر جدول البحث",
     "selectTablePlaceholder": "اختر جدولاً للإدارة...",
     "searchPlaceholder": "البحث بالاسم أو الرمز...",

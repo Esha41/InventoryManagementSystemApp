@@ -14,7 +14,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 
 /**
  * Lookup Management Component
- * Handles lookup management tab content
+ * Handles lookup management functionality
  */
 @Component({
   selector: 'app-lookup-management',
@@ -249,4 +249,3 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     return this.lookupManagementService.getItemType(item);
   }
 }
-

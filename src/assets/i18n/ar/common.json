@@ -181,6 +181,7 @@
     "depotManagement": "إدارة المستودعات",
     "admin": "الإدارة",
     "manageAdmins": "إدارة المستخدمين",
+    "lookupTables": "جداول البحث",
     "adminRoles": "إدارة الأدوار",
     "rolePermissions": "صلاحيات الأدوار",
     "ldapSettings": "إعدادات LDAP",

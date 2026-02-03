@@ -45,4 +45,3 @@ export class LookupFiltersComponent {
     this.searchChange.emit(this.searchTerm);
   }
 }
-

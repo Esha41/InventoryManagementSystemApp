@@ -8,36 +8,7 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="border-b border-[var(--color-border)] overflow-x-auto">
-      <nav class="flex space-x-8 min-w-max">
-        <button (click)="setActiveTab('users')" [class.border-b-2]="activeTab === 'users'"
-          [class.border-[var(--color-brand)]]="activeTab === 'users'"
-          [class.text-[var(--color-brand)]]="activeTab === 'users'"
-          [class.text-[var(--color-text-muted)]]="activeTab !== 'users'"
-          class="px-1 py-4 text-sm font-medium transition-colors">
-          <div class="flex items-center gap-2">
-            <lucide-angular [img]="UserIcon" class="h-4 w-4"></lucide-angular>
-            {{ 'manageAdmins.usersTab' | translate }}
-          </div>
-        </button>
-        <button (click)="setActiveTab('lookups')" [class.border-b-2]="activeTab === 'lookups'"
-          [class.border-[var(--color-brand)]]="activeTab === 'lookups'"
-          [class.text-[var(--color-brand)]]="activeTab === 'lookups'"
-          [class.text-[var(--color-text-muted)]]="activeTab !== 'lookups'"
-          class="px-1 py-4 text-sm font-medium transition-colors">
-          <div class="flex items-center gap-2">
-            <lucide-angular [img]="Database" class="h-4 w-4"></lucide-angular>
-            {{ 'lookupManagement.title' | translate }}
-          </div>
-        </button>
-      </nav>
-    </div>
-
-    <!-- Users Tab Content -->
-    <app-user-management *ngIf="activeTab === 'users'"></app-user-management>
-
-    <!-- Lookup Tables Tab Content -->
-    <app-lookup-management *ngIf="activeTab === 'lookups'"></app-lookup-management>
+    <!-- User Management Content -->
+    <app-user-management></app-user-management>
   </div>
 </div>

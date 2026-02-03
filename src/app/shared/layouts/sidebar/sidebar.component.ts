@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3 } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -37,6 +37,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   readonly Package = Package;
   readonly Building2 = Building2;
   readonly GitBranch = GitBranch;
+  readonly Database = Database;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -222,6 +223,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: Users,
       route: '/manage-admins',
       permissions: ['systemusers.page']
+    },
+    {
+      label: 'nav.lookupTables',
+      icon: Database,
+      route: '/lookup-tables',
+      permissions: ['Permissions.Units.Page', 'Permissions.Departments.Page', 'Permissions.ItemTypes.Page']
     },
     {
       label: 'nav.adminRoles',
