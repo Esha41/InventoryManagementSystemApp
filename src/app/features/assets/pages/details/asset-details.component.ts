@@ -17,6 +17,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@utils/format.utils';
 import { WeaponDto } from '@models/weapon.model';
 import { AssetPropertyAccessor } from '@core/utils/asset-property.utils';
+import { ItemType } from '@models/inventory.model';
 import { LookupService } from '@services/lookup.service';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
@@ -157,7 +158,7 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Check if asset is a weapon (itemType === 2)
+     * Check if asset is a weapon
      * Handles both number and string types from backend
      */
     get isWeapon(): boolean {
@@ -165,7 +166,7 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
         if (itemType === undefined || itemType === null) return false;
         // Handle number type (ItemType enum)
         if (typeof itemType === 'number') {
-            return itemType === 2;
+            return itemType === ItemType.Weapon;
         }
         // Handle string type (from backend serialization)
         if (typeof itemType === 'string') {

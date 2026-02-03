@@ -118,11 +118,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     } else if (this.activeTab === 'weapon') {
       dto = formData as CreateUpdateWeaponDto;
     } else {
-      // For explosives, ensure unit field is set (default to 1 = Gram)
-      dto = {
-        ...formData,
-        unit: formData.unit || 1
-      } as CreateUpdateExplosiveDto;
+      // For explosives
+      dto = formData as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

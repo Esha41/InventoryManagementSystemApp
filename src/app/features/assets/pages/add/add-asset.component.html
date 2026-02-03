@@ -239,12 +239,12 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Unit (ExplosiveUnit) -->
+                <!-- Unit -->
                 <div>
                   <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unit' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.unit" name="unit" [options]="explosiveUnitOptions"
-                    optionValue="value" [optionLabelFn]="explosiveUnitOptionLabel" [placeholderSelectable]="false"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.unitId" name="unitId" [options]="units"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
                   </app-dropdown>
                 </div>

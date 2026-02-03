@@ -435,6 +435,16 @@
                     [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
                 </div>
 
+                <!-- Unit -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unit' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="unitId" [options]="units" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholder]="'addAsset.selectUnit' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Item Type -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate

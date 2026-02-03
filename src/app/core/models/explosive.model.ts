@@ -22,11 +22,12 @@ export interface ExplosiveDto extends BaseItemDto {
   notes?: string;
   classificationId?: number;
   typeId?: number;
-  unit?: number; // ExplosiveUnit enum: 1 = Gram, 3 = Meter
+  unitId?: number; // Unit lookup ID
 
   // Navigation properties
   netExplosiveQuantityUnit?: LookupDto;
   totalWeightUnit?: LookupDto;
+  unit?: LookupDto; // Unit navigation property
   hazardDivision?: LookupDto;
   compatibility?: LookupDto;
   classification?: LookupDto;
@@ -72,5 +73,5 @@ export interface CreateUpdateExplosiveDto {
   notes?: string;
   classificationId?: number;
   typeId?: number;
-  unit?: number; // ExplosiveUnit enum: 1 = Gram, 3 = Meter
+  unitId?: number; // Unit lookup ID
 }

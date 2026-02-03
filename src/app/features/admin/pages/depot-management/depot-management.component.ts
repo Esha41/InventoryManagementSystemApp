@@ -224,8 +224,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.showDeleteDialog = false;
 
-    // Convert DepotDto to CreateUpdateDepotDto for the delete request body
-    // The backend DELETE endpoint expects a body with the depot data
+   
     const deleteDto = {
       Code: this.depotToDelete.code || this.depotToDelete.Code || '',
       NameAr: this.depotToDelete.nameAr || '',
@@ -236,7 +235,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       IsDeleted: this.depotToDelete.isDeleted || false
     };
 
-    // Use deleteRaw to send the full APIOperationResponse and include body
+  
     this.apiService
       .deleteRaw<DepotDto>(
         `${API_ENDPOINTS.DEPOT.BASE}/${this.depotToDelete.id}`,

@@ -47,6 +47,7 @@ import {
   createFilterOptions
 } from '@utils/asset-list.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
+import { ItemType } from '@models/inventory.model';
 import {
   createInitialFilterState,
   createInitialSortState,
@@ -350,10 +351,37 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   switchTab(tab: AssetType): void {
     this.activeTab = tab;
+    this.loadUnitsForTab(tab);
     this.initializePropertyAccessor();
     this.paginationState.currentPage = 1;
     this.clearFilters(); // clearFilters() already calls onFilterChange() which calls loadAssets()
     this.cdr.markForCheck();
+  }
+
+  loadUnitsForTab(tab: AssetType): void {
+    let itemType: number | undefined;
+    if (tab === 'ammunition') {
+      itemType = ItemType.Ammunition;
+    } else if (tab === 'weapon') {
+      itemType = ItemType.Weapon;
+    } else if (tab === 'explosive') {
+      itemType = ItemType.Explosive;
+    }
+
+    this.lookupService.getUnitsByItemType(itemType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (units) => {
+          this.units = units;
+          this.initializePropertyAccessor();
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          const errorMsg = this.translateService.instant('assetList.errors.failedToLoadUnits') || 'Failed to load units';
+          this.toastService.error(errorMsg);
+          console.error('Error loading units:', error);
+        }
+      });
   }
 
   private initializePropertyAccessor(): void {
@@ -650,7 +678,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   loadDropdowns(): void {
     forkJoin({
-      units: this.lookupService.getUnits(),
       caseTypes: this.lookupService.getCaseTypes(),
       propellants: this.lookupService.getPropellants(),
       compatibilities: this.lookupService.getCompatibilities(),
@@ -665,7 +692,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
-        this.units = data.units;
         this.caseTypeList = data.caseTypes;
         this.propellantList = data.propellants;
         this.compatibilityList = data.compatibilities;
@@ -677,6 +703,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
         this.classifications = data.classifications;
         this.itemTypes = data.itemTypes;
         this.countries = data.countries;
+        // Load units for the active tab
+        this.loadUnitsForTab(this.activeTab);
         this.initializePropertyAccessor();
         this.cdr.markForCheck();
       });

@@ -42,13 +42,13 @@
       </p>
     </div>
 
-    <!-- Item Type (for ItemType lookup only) -->
-    <div *ngIf="tableConfig?.name === 'ItemType'">
+    <!-- Item Type (for ItemType and Unit lookup tables) -->
+    <div *ngIf="tableConfig?.name === 'ItemType' || tableConfig?.name === 'Unit'">
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'lookupFormModal.itemType' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
       <app-dropdown formControlName="itemType" [options]="itemTypeOptions"
-        [placeholder]="'lookupFormModal.selectItemType' | translate" [disabled]="mode === 'edit'"
+        [placeholder]="'lookupFormModal.selectItemType' | translate"
         [error]="!!getFieldError('itemType')">
       </app-dropdown>
       <p *ngIf="getFieldError('itemType')" class="mt-2 text-sm text-[var(--color-error)]">

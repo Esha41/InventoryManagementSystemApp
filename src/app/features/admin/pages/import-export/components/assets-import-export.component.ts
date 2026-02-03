@@ -719,26 +719,14 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: this.translateService.instant('addAsset.explosiveType'),
-          key: 'explosiveType',
-          width: 20,
-          format: (value: string) => value || '-'
-        },
-        {
           header: this.translateService.instant('addAsset.unNumber'),
           key: 'unNumber',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('addAsset.netExplosiveQuantity') || 'Net Explosive Quantity',
-          key: 'netExplosiveQuantity',
-          width: 20,
-          format: (value: number) => value ? value.toString() : '-'
-        },
-        {
-          header: this.translateService.instant('addAsset.netExplosiveQuantityUnit') || 'NEQ Unit',
-          key: 'netExplosiveQuantityUnit',
+          header: this.translateService.instant('addAsset.unit') || 'Unit',
+          key: 'unit',
           width: 15,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
@@ -753,6 +741,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.hazardDivision') || 'Hazard Division',
+          key: 'hazardDivision',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.classification') || 'Classification',
