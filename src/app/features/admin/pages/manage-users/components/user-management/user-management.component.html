@@ -117,25 +117,38 @@
         <!-- Actions -->
         <div
           class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
-          <button *appHasPermission="'SystemUsers.Edit'" [disabled]="isUserSuperAdmin(user)"
-            (click)="onToggleStatus(user)"
-            class="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            [ngClass]="user.isActive ? 'text-[var(--color-error)] bg-[var(--color-error)]/10' : 'text-[var(--color-success)] bg-[var(--color-success)]/10'"
-            [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
-            <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
-          </button>
+          <ng-container *appHasPermission="'SystemUsers.Edit'">
+            <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
+              (click)="onToggleStatus(user)"
+              class="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              [ngClass]="user.isActive ? 'text-[var(--color-error)] bg-[var(--color-error)]/10' : 'text-[var(--color-success)] bg-[var(--color-success)]/10'"
+              [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
+              <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
 
-          <button *appHasPermission="'SystemUsers.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
-            class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            [title]="'manageAdmins.editUser' | translate">
-            <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
-          </button>
+          <ng-container *appHasPermission="'SystemUsers.Edit'">
+            <button *ngIf="statusFilter !== 'deleted'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
+              class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              [title]="'manageAdmins.editUser' | translate">
+              <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
 
-          <button *appHasPermission="'SystemUsers.Delete'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
-            class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            [title]="'manageAdmins.deleteUserTitle' | translate">
-            <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-          </button>
+          <ng-container *appHasPermission="'SystemUsers.Delete'">
+            <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
+              class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              [title]="'manageAdmins.deleteUserTitle' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
+          <ng-container *appHasPermission="'SystemUsers.Edit'">
+            <button *ngIf="statusFilter === 'deleted'" (click)="onRestore(user)"
+              class="p-2 text-[var(--color-success)] bg-[var(--color-success)]/10 rounded-lg transition-colors"
+              [title]="'manageAdmins.restoreUser' | translate">
+              <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -214,24 +227,37 @@
             </td>
             <td class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <button *appHasPermission="'SystemUsers.Edit'" [disabled]="isUserSuperAdmin(user)"
-                  (click)="onToggleStatus(user)"
-                  class="p-2 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  [class]="user.isActive ? 'text-[var(--color-error)] hover:bg-[var(--color-error)]/10' : 'text-[var(--color-success)] hover:bg-[var(--color-success)]/10'"
-                  [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
-                  <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
-                </button>
-                <button *appHasPermission="'SystemUsers.Edit'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
-                  class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  [title]="'manageAdmins.editUser' | translate">
-                  <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
-                </button>
-                <button *appHasPermission="'SystemUsers.Delete'" [disabled]="isUserSuperAdmin(user)"
-                  (click)="onDelete(user)"
-                  class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  [title]="'manageAdmins.deleteUserTitle' | translate">
-                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                </button>
+                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                  <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
+                    (click)="onToggleStatus(user)"
+                    class="p-2 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    [class]="user.isActive ? 'text-[var(--color-error)] hover:bg-[var(--color-error)]/10' : 'text-[var(--color-success)] hover:bg-[var(--color-success)]/10'"
+                    [title]="(user.isActive ? 'manageAdmins.deactivate' : 'manageAdmins.activate') | translate">
+                    <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </ng-container>
+                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                  <button *ngIf="statusFilter !== 'deleted'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
+                    class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    [title]="'manageAdmins.editUser' | translate">
+                    <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </ng-container>
+                <ng-container *appHasPermission="'SystemUsers.Delete'">
+                  <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
+                    (click)="onDelete(user)"
+                    class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    [title]="'manageAdmins.deleteUserTitle' | translate">
+                    <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </ng-container>
+                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                  <button *ngIf="statusFilter === 'deleted'" (click)="onRestore(user)"
+                    class="p-2 text-[var(--color-success)] hover:bg-[var(--color-success)]/10 rounded-lg transition-colors"
+                    [title]="'manageAdmins.restoreUser' | translate">
+                    <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </ng-container>
               </div>
             </td>
           </tr>
