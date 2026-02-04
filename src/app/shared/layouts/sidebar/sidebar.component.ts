@@ -210,13 +210,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.admin',
       isHeader: true,
-      permissions: ['systemusers.page']
+      permissions: ['systemusers.page', 'admindashboard.page']
     },
     {
       label: 'nav.adminDashboard',
       icon: Badge,
       route: '/admin-dashboard',
-      permissions: ['systemusers.page']
+      permissions: ['admindashboard.page', 'admindashboard.view']
     },
     {
       label: 'nav.manageAdmins',
@@ -228,7 +228,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.lookupTables',
       icon: Database,
       route: '/lookup-tables',
-      permissions: ['Permissions.Units.Page', 'Permissions.Departments.Page', 'Permissions.ItemTypes.Page']
+      permissions: ['Permissions.LookupTables.Page']
     },
     {
       label: 'nav.adminRoles',

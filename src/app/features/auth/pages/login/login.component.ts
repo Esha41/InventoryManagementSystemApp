@@ -71,8 +71,15 @@ export class LoginComponent implements OnInit {
     if (this.backendAuth.isAuthenticated()) {
       if (this.backendAuth.hasPermission('dashboard_view')) {
         this.router.navigate(['/dashboard']);
-      } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+      } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
+                 this.backendAuth.hasPermission('admindashboard.page') ||
+                 this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+        // User with admin dashboard permissions - redirect to admin dashboard
         this.router.navigate(['/admin-dashboard']);
+      } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
+                 this.backendAuth.hasPermission('systemusers.page')) {
+        // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
+        this.router.navigate(['/manage-admins']);
       } else {
         this.router.navigate(['/dashboard']);
       }
@@ -387,8 +394,15 @@ export class LoginComponent implements OnInit {
         setTimeout(() => {
           if (this.backendAuth.hasPermission('dashboard_view')) {
             this.router.navigate(['/dashboard']);
-          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
+                     this.backendAuth.hasPermission('admindashboard.page') ||
+                     this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+            // User with admin dashboard permissions - redirect to admin dashboard
             this.router.navigate(['/admin-dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
+                     this.backendAuth.hasPermission('systemusers.page')) {
+            // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
+            this.router.navigate(['/manage-admins']);
           } else {
             this.router.navigate(['/dashboard']);
           }

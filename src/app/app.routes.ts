@@ -293,7 +293,7 @@ export const routes: Routes = [
         path: 'lookup-tables',
         loadComponent: () => import('@admin/pages/lookup-tables/lookup-tables.component').then(m => m.LookupTablesComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['Permissions.Units.Page', 'Permissions.Departments.Page', 'Permissions.ItemTypes.Page'] }
+        data: { permissions: ['Permissions.LookupTables.Page'] }
       },
       {
         path: 'admin-roles',
