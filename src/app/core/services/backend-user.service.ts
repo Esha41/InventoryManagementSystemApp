@@ -219,9 +219,30 @@ export class BackendUserService {
       }),
       catchError(error => {
         this.configService.logError('Failed to create user', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to create user'
-        ));
+        
+        // Extract error message from various possible locations
+        let errorMessage = 'Failed to create user';
+        
+        if (error instanceof Error) {
+          errorMessage = error.message || errorMessage;
+        } else if (error?.error) {
+          // HTTP error response
+          if (error.error.message) {
+            errorMessage = error.error.message;
+          } else if (typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error.data?.message) {
+            errorMessage = error.error.data.message;
+          } else if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          }
+        } else if (error?.message) {
+          errorMessage = error.message;
+        } else if (error?.userMessage) {
+          errorMessage = error.userMessage;
+        }
+        
+        return throwError(() => new Error(errorMessage));
       })
     );
   }
@@ -259,9 +280,30 @@ export class BackendUserService {
       }),
       catchError(error => {
         this.configService.logError('Failed to update user', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to update user'
-        ));
+        
+        // Extract error message from various possible locations
+        let errorMessage = 'Failed to update user';
+        
+        if (error instanceof Error) {
+          errorMessage = error.message || errorMessage;
+        } else if (error?.error) {
+          // HTTP error response
+          if (error.error.message) {
+            errorMessage = error.error.message;
+          } else if (typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error.data?.message) {
+            errorMessage = error.error.data.message;
+          } else if (error.error.error?.message) {
+            errorMessage = error.error.error.message;
+          }
+        } else if (error?.message) {
+          errorMessage = error.message;
+        } else if (error?.userMessage) {
+          errorMessage = error.userMessage;
+        }
+        
+        return throwError(() => new Error(errorMessage));
       })
     );
   }
@@ -323,6 +365,34 @@ export class BackendUserService {
         this.configService.logError('Failed to delete user', error);
         return throwError(() => new Error(
           error.userMessage || 'Failed to delete user'
+        ));
+      })
+    );
+  }
+
+  /**
+   * Restore deleted user
+   */
+  restoreUser(id: string): Observable<boolean> {
+    this.configService.log('Restoring user', { id });
+
+    return this.apiService.putRaw<any>(
+      API_ENDPOINTS.USERS.RESTORE(id),
+      {}
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to restore user');
+        }
+        return true;
+      }),
+      tap(() => {
+        this.configService.log('User restored successfully', { id });
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to restore user', error);
+        return throwError(() => new Error(
+          error.userMessage || error.message || 'Failed to restore user'
         ));
       })
     );

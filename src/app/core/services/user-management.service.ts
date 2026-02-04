@@ -46,7 +46,7 @@ export class UserManagementService {
   /**
    * Load users with pagination and filtering
    */
-  loadUsers(page: number = 1, pageSize: number = 10, searchTerm: string = '', status: 'all' | 'active' | 'inactive' = 'all'): Observable<BackendUserDto[]> {
+  loadUsers(page: number = 1, pageSize: number = 10, searchTerm: string = '', status: 'all' | 'active' | 'inactive' | 'deleted' = 'all'): Observable<BackendUserDto[]> {
     this.currentPage = page;
     this.pageSize = pageSize;
     this.searchTerm = searchTerm;
@@ -57,13 +57,21 @@ export class UserManagementService {
       filters.push({ value: searchTerm }); // Backend handles multi-field search if field is missing
     }
 
-    if (status !== 'all') {
+    if (status === 'deleted') {
+      filters.push({
+        field: 'IsDeleted',
+        operator: 'eq',
+        value: 'true'
+      });
+    } else if (status !== 'all') {
       filters.push({
         field: 'IsActive',
         operator: 'eq',
         value: status === 'active' ? 'true' : 'false'
       });
+      // Backend already excludes deleted users by default, so no need to add IsDeleted filter
     }
+    // When status is 'all', backend already excludes deleted users by default, so no filter needed
 
     const request: PagedRequest = {
       page,
@@ -110,6 +118,13 @@ export class UserManagementService {
    */
   deleteUser(userId: string): Observable<boolean> {
     return this.backendUserService.deleteUser(userId);
+  }
+
+  /**
+   * Restore deleted user
+   */
+  restoreUser(userId: string): Observable<boolean> {
+    return this.backendUserService.restoreUser(userId);
   }
 
   /**

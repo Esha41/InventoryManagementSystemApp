@@ -40,7 +40,11 @@
     "userEnabledSuccess": "User enabled successfully",
     "userDisabledSuccess": "User disabled successfully",
     "activeUsers": "Active Users",
-    "inactiveUsers": "Inactive Users"
+    "inactiveUsers": "Inactive Users",
+    "deleted": "Deleted",
+    "restoreUser": "Restore User",
+    "userRestoredSuccess": "User {{userName}} has been restored successfully",
+    "userRestoredError": "Failed to restore user"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -124,7 +128,9 @@
     "createSuccess": "User created successfully",
     "updateSuccess": "User updated successfully",
     "createError": "Failed to create user",
-    "updateError": "Failed to update user"
+    "updateError": "Failed to update user",
+    "invalidDomain": "Invalid domain. Please use the correct domain: {{domain}}",
+    "ldapSettingsUnavailable": "Unable to retrieve LDAP settings"
   },
   "roleFormModal": {
     "roleName": "Role Name",

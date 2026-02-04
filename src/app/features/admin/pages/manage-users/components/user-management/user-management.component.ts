@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { LucideAngularModule, UserPlus, UserIcon, Power, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, UserPlus, UserIcon, Power, Edit, Trash2, RotateCcw } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { LookupItem } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -47,6 +47,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   readonly Power = Power;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly RotateCcw = RotateCcw;
 
   users: BackendUserDto[] = [];
   roles: RoleDto[] = [];
@@ -55,7 +56,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   searchTerm = '';
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
 
   // Super admin check
   isSuperAdmin = false;
@@ -288,7 +289,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
-  onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive'): void {
+  onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = statusFilter;
     this.currentPage = 1;
     this.loadUsers();
@@ -415,6 +416,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   getTotalInactiveUsers(): number {
     return this.userManagementService.getTotalInactiveUsers(this.users);
+  }
+
+  onRestore(user: BackendUserDto): void {
+    this.userManagementService.restoreUser(user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.toastService.success(
+              this.translateService.instant('manageAdmins.userRestoredSuccess', { userName: user.userName || this.translateService.instant('manageAdmins.user') }),
+              this.translateService.instant('common.success')
+            );
+            this.loadUsers();
+            this.loadUserSummary();
+          }
+        },
+        error: (error) => {
+          this.toastService.error(
+            error.message || this.translateService.instant('manageAdmins.userRestoredError'),
+            this.translateService.instant('common.error')
+          );
+        }
+      });
   }
 }
 

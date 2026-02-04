@@ -26,11 +26,11 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
   readonly Search = Search;
 
   @Input() searchTerm: string = '';
-  @Input() statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  @Input() statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
   @Input() useSearchButton: boolean = false;
   @Output() searchChange = new EventEmitter<string>();
   @Output() searchTriggered = new EventEmitter<string>();
-  @Output() statusFilterChange = new EventEmitter<'all' | 'active' | 'inactive'>();
+  @Output() statusFilterChange = new EventEmitter<'all' | 'active' | 'inactive' | 'deleted'>();
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -62,7 +62,7 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
     this.searchTriggered.emit(this.searchTerm);
   }
 
-  onStatusFilterChange(status: 'all' | 'active' | 'inactive'): void {
+  onStatusFilterChange(status: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = status;
     this.statusFilterChange.emit(this.statusFilter);
   }

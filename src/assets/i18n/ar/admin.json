@@ -40,7 +40,11 @@
     "userEnabledSuccess": "تم تفعيل المستخدم بنجاح",
     "userDisabledSuccess": "تم تعطيل المستخدم بنجاح",
     "activeUsers": "المستخدمين النشطين",
-    "inactiveUsers": "المستخدمين غير النشطين"
+    "inactiveUsers": "المستخدمين غير النشطين",
+    "deleted": "محذوف",
+    "restoreUser": "استعادة المستخدم",
+    "userRestoredSuccess": "تم استعادة المستخدم {{userName}} بنجاح",
+    "userRestoredError": "فشل استعادة المستخدم"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
@@ -124,7 +128,9 @@
     "createSuccess": "تم إنشاء المستخدم بنجاح",
     "updateSuccess": "تم تحديث المستخدم بنجاح",
     "createError": "فشل إنشاء المستخدم",
-    "updateError": "فشل تحديث المستخدم"
+    "updateError": "فشل تحديث المستخدم",
+    "invalidDomain": "النطاق غير صحيح. يرجى استخدام النطاق الصحيح: {{domain}}",
+    "ldapSettingsUnavailable": "تعذر استرداد إعدادات LDAP"
   },
   "roleFormModal": {
     "roleName": "اسم الدور",

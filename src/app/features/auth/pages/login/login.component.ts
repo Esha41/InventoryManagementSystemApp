@@ -421,9 +421,6 @@ export class LoginComponent implements OnInit {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
-    if (fieldName === 'password' && this.isLdapMode) {
-      return '';
-    }
 
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
@@ -461,10 +458,6 @@ export class LoginComponent implements OnInit {
       return;
     }
     this.isLdapMode = shouldUseLdap;
-    if (shouldUseLdap) {
-      this.showPassword = false;
-    }
-    this.applyPasswordValidators();
 
     // Reset captcha when switching modes
     if (this.showCaptcha) {
@@ -483,13 +476,8 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    if (this.isLdapMode) {
-      passwordControl.setValidators([]);
-      passwordControl.setValue('');
-    } else {
-      passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
-    }
-
+    // Password is always required for both regular login and LDAP login
+    passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
     passwordControl.updateValueAndValidity({ emitEvent: false });
   }
 
@@ -564,6 +552,15 @@ export class LoginComponent implements OnInit {
       errorCode === 'LDAP_NOT_AVAILABLE' ||
       errorCode === 'LDAP_ERROR') {
       return this.translate.instant('auth.login.errors.invalidLdapSettings');
+    }
+
+    // Check for account deleted
+    if (errorCode === 'ACCOUNT_DELETED' ||
+      errorCode === '0015' ||
+      lowerMessage.includes('account deleted') ||
+      lowerMessage.includes('user account has been deleted') ||
+      lowerMessage.includes('server.accountdeleted')) {
+      return this.translate.instant('auth.login.errors.accountDeleted');
     }
 
     // Check for account locked/disabled
