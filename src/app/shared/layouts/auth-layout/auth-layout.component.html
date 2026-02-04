@@ -25,10 +25,11 @@
 
   <div class="w-full max-w-[480px]">
     <!-- Logo and Header Section -->
-    <div class="text-center mb-8">
-      <div class="inline-block mb-6">
-        <img src="assets/logo.png" alt="Barzan Holdings" class="h-16 w-auto drop-shadow-sm transition-all duration-200"
-          [class.dark-mode-logo]="themeService.isDarkMode()" style="transform: scaleX(1); direction: ltr;" />
+    <div class="text-center mb-1">
+      <div class="inline-block mb-0">
+        <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo" class="h-56 md:h-64 w-auto drop-shadow-sm transition-all duration-200"
+          [style.filter]="themeService.isDarkMode() ? 'brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%)' : 'none'"
+          style="transform: scaleX(1); direction: ltr;" />
       </div>
     </div>
 
