@@ -30,7 +30,8 @@
 .notification-item {
   cursor: pointer;
   padding: 1rem;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border-inline-start: none;
+  transition: background-color 0.2s ease;
 }
 
 .notification-item:hover {
@@ -39,7 +40,7 @@
 
 .notification-item--active {
   background-color: var(--color-background-soft);
-  border-inline-start: 4px solid var(--color-brand);
+  border-inline-start: 4px solid var(--color-brand) !important;
 }
 
 .notification-item__message {
