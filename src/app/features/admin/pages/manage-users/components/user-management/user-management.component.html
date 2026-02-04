@@ -51,9 +51,11 @@
   </div>
 
   <!-- Filters -->
-  <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" [useSearchButton]="true"
-    (searchTriggered)="onSearchChange($event)" (statusFilterChange)="onStatusFilterChange($event)">
-  </app-user-filters>
+  <div class="mb-6">
+    <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" [useSearchButton]="true"
+      (searchTriggered)="onSearchChange($event)" (statusFilterChange)="onStatusFilterChange($event)">
+    </app-user-filters>
+  </div>
 
   <!-- Users Table -->
   <app-card>
