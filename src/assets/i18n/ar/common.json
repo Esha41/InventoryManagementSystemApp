@@ -146,7 +146,16 @@
     "previewMessage": "راجع البيانات أدناه. سيتم تخطي الصفوف غير الصحيحة أثناء الاستيراد.",
     "confirmImport": "تأكيد الاستيراد",
     "noDataToPreview": "لا توجد بيانات للمعاينة",
-    "invalidRowsWarning": "سيتم تخطي {{count}} صفوف غير صحيحة"
+    "invalidRowsWarning": "سيتم تخطي {{count}} صفوف غير صحيحة",
+    "errorBannerTitle": "تم حظر الاستيراد - تم اكتشاف صفوف غير صحيحة",
+    "errorBannerMessage": "{{count}} صف يحتوي على أخطاء. يرجى تنزيل تقرير الأخطاء وإصلاح المشكلات وإعادة تحميل الملف.",
+    "downloadErrorReport": "تحميل تقرير الأخطاء",
+    "allRowsValid": "جميع الصفوف صحيحة وجاهزة للاستيراد!",
+    "filterAll": "جميع الصفوف",
+    "filterValid": "الصحيحة فقط",
+    "filterInvalid": "الخاطئة فقط",
+    "cannotImportWithErrors": "لا يمكن الاستيراد: يرجى إصلاح جميع الأخطاء أولاً",
+    "readyToImport": "جاهز لاستيراد {{count}} صف صحيح"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

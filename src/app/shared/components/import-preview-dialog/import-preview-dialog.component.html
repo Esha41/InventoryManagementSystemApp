@@ -33,10 +33,43 @@
             </div>
         </div>
 
-        <!-- Info Message -->
-        <div class="info-message">
-            <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
-            <span>{{ 'import.previewMessage' | translate }}</span>
+        <!-- Error Banner (shown when invalid rows exist) -->
+        <div *ngIf="hasInvalidRows()" class="error-banner">
+            <div class="error-banner-content">
+                <lucide-icon [img]="AlertCircle" [size]="20"></lucide-icon>
+                <div class="error-banner-text">
+                    <strong>{{ 'import.errorBannerTitle' | translate }}</strong>
+                    <p>{{ 'import.errorBannerMessage' | translate: { count: previewData?.invalidRows } }}</p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-download-errors" (click)="downloadErrorReport()">
+                <lucide-icon [img]="Download" [size]="16"></lucide-icon>
+                {{ 'import.downloadErrorReport' | translate }}
+            </button>
+        </div>
+
+        <!-- Success Banner (shown when all rows are valid) -->
+        <div *ngIf="!hasInvalidRows() && previewData && previewData.validRows > 0" class="success-banner">
+            <lucide-icon [img]="CheckCircle" [size]="20"></lucide-icon>
+            <span>{{ 'import.allRowsValid' | translate }}</span>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" *ngIf="previewData">
+            <button type="button" class="filter-tab" [class.active]="activeFilter === 'all'" (click)="setFilter('all')">
+                <lucide-icon [img]="Filter" [size]="16"></lucide-icon>
+                {{ 'import.filterAll' | translate }} ({{ previewData.totalRows }})
+            </button>
+            <button type="button" class="filter-tab" [class.active]="activeFilter === 'valid'"
+                (click)="setFilter('valid')">
+                <lucide-icon [img]="CheckCircle" [size]="16"></lucide-icon>
+                {{ 'import.filterValid' | translate }} ({{ previewData.validRows }})
+            </button>
+            <button type="button" class="filter-tab" [class.active]="activeFilter === 'invalid'"
+                [disabled]="previewData.invalidRows === 0" (click)="setFilter('invalid')">
+                <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
+                {{ 'import.filterInvalid' | translate }} ({{ previewData.invalidRows }})
+            </button>
         </div>
 
         <!-- Preview Table -->
@@ -51,7 +84,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let row of previewData.rows; let i = index" [ngClass]="getRowClass(row)">
+                    <tr *ngFor="let row of getFilteredRows(); let i = index" [ngClass]="getRowClass(row)">
                         <!-- Row Number -->
                         <td class="row-number">{{ row.rowNumber }}</td>
 
@@ -94,8 +127,13 @@
         <!-- Footer Actions -->
         <div class="modal-footer">
             <div class="footer-info">
-                <span *ngIf="previewData && previewData.invalidRows > 0" class="warning-text">
-                    {{ 'import.invalidRowsWarning' | translate: { count: previewData.invalidRows } }}
+                <span *ngIf="hasInvalidRows()" class="error-footer-text">
+                    <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
+                    {{ 'import.cannotImportWithErrors' | translate }}
+                </span>
+                <span *ngIf="!hasInvalidRows() && previewData && previewData.validRows > 0" class="success-footer-text">
+                    <lucide-icon [img]="CheckCircle" [size]="16"></lucide-icon>
+                    {{ 'import.readyToImport' | translate: { count: previewData.validRows } }}
                 </span>
             </div>
             <div class="footer-actions">
@@ -103,6 +141,7 @@
                     {{ 'common.cancel' | translate }}
                 </button>
                 <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="onConfirm()">
+                    <lucide-icon [img]="Upload" [size]="16"></lucide-icon>
                     {{ 'import.confirmImport' | translate }}
                 </button>
             </div>

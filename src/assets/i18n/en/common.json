@@ -146,7 +146,16 @@
     "previewMessage": "Review the data below. Invalid rows will be skipped during import.",
     "confirmImport": "Confirm Import",
     "noDataToPreview": "No data available to preview",
-    "invalidRowsWarning": "{{count}} invalid rows will be skipped"
+    "invalidRowsWarning": "{{count}} invalid rows will be skipped",
+    "errorBannerTitle": "Import Blocked - Invalid Rows Detected",
+    "errorBannerMessage": "{{count}} row(s) contain errors. Please download the error report, fix the issues, and re-upload the file.",
+    "downloadErrorReport": "Download Error Report",
+    "allRowsValid": "All rows are valid and ready to import!",
+    "filterAll": "All Rows",
+    "filterValid": "Valid Only",
+    "filterInvalid": "Invalid Only",
+    "cannotImportWithErrors": "Cannot import: Please fix all errors first",
+    "readyToImport": "Ready to import {{count}} valid row(s)"
   },
   "nav": {
     "dashboard": "Dashboard",
