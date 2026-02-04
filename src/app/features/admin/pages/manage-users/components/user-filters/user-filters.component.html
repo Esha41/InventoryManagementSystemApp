@@ -28,13 +28,13 @@
 
       <button (click)="onStatusFilterChange('inactive')" [class.active]="statusFilter === 'inactive'"
         class="filter-btn inactive">
-        <div class="status-dot bg-[var(--color-error)]"></div>
+        <div class="status-dot bg-[var(--color-warning)]"></div>
         {{ 'manageAdmins.inactive' | translate }}
       </button>
 
       <button (click)="onStatusFilterChange('deleted')" [class.active]="statusFilter === 'deleted'"
         class="filter-btn deleted">
-        <div class="status-dot bg-[var(--color-warning)]"></div>
+        <div class="status-dot bg-[var(--color-error)]"></div>
         {{ 'manageAdmins.deleted' | translate }}
       </button>
     </div>

@@ -43,9 +43,9 @@
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-[var(--color-text-muted)]">{{ 'manageAdmins.inactiveUsers' | translate }}</p>
-          <p class="text-2xl font-bold text-[var(--color-error)]">{{ getTotalInactiveUsers() }}</p>
+          <p class="text-2xl font-bold text-[var(--color-warning)]">{{ getTotalInactiveUsers() }}</p>
         </div>
-        <lucide-angular [img]="UserIcon" class="h-8 w-8 text-[var(--color-error)]"></lucide-angular>
+        <lucide-angular [img]="UserIcon" class="h-8 w-8 text-[var(--color-warning)]"></lucide-angular>
       </div>
     </app-card>
   </div>
@@ -85,7 +85,7 @@
           </div>
 
           <!-- Status Badge -->
-          <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+          <span [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
             class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
             {{ (user.isActive ? 'manageAdmins.active' : 'manageAdmins.inactive') | translate }}
           </span>
@@ -217,7 +217,7 @@
               <div class="text-sm text-[var(--color-text)]">{{ getDepartmentName(user) }}</div>
             </td>
             <td class="px-6 py-4">
-              <span [class]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+              <span [class]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                 {{ (user.isActive ? 'manageAdmins.active' : 'manageAdmins.inactive') | translate }}
               </span>
