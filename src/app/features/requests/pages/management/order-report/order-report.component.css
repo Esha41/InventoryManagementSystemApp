@@ -194,8 +194,8 @@ img[alt="Order QR Code"] {
   .print-logo {
     display: block !important;
     visibility: visible !important;
-    max-width: 200px;
-    max-height: 100px;
+    max-width: 300px;
+    max-height: 150px;
     height: auto;
     object-fit: contain;
     -webkit-print-color-adjust: exact;
@@ -627,7 +627,7 @@ img[alt="Order QR Code"] {
   }
 
   .print-logo {
-    max-width: 200px;
+    max-width: 300px;
     height: auto;
   }
 
@@ -942,6 +942,7 @@ img[alt="Order QR Code"] {
 
 /* Mobile First - Base Styles */
 @media (max-width: 640px) {
+
   /* Main Layout */
   .grid {
     grid-template-columns: 1fr !important;
@@ -972,7 +973,8 @@ img[alt="Order QR Code"] {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    min-width: 500px; /* Ensure minimum width for readability */
+    min-width: 500px;
+    /* Ensure minimum width for readability */
   }
 
   .print-table thead,
@@ -1000,6 +1002,7 @@ img[alt="Order QR Code"] {
 
 /* Tablet - Medium Screens */
 @media (min-width: 641px) and (max-width: 1024px) {
+
   /* Grid Layout - Side by side on tablet with wider sidebar */
   .grid {
     grid-template-columns: minmax(320px, 380px) 1fr !important;
@@ -1026,6 +1029,7 @@ img[alt="Order QR Code"] {
 
 /* Desktop - Large Screens */
 @media (min-width: 1025px) {
+
   /* Ensure proper spacing on large screens */
   .print-info-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
@@ -1038,6 +1042,7 @@ img[alt="Order QR Code"] {
 
 /* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
+
   /* Larger touch targets */
   button,
   .print-table-cell {
@@ -1052,7 +1057,9 @@ img[alt="Order QR Code"] {
 }
 
 /* High DPI / Retina Displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
   .print-logo,
   .print-qr-code {
     image-rendering: -webkit-optimize-contrast;
@@ -1062,8 +1069,9 @@ img[alt="Order QR Code"] {
 
 /* Landscape Mobile */
 @media (max-width: 896px) and (orientation: landscape) {
+
   /* Reduce vertical spacing in landscape */
-  .space-y-6 > * + * {
+  .space-y-6>*+* {
     margin-top: 1rem !important;
   }
 

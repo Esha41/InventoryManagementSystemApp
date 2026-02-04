@@ -1,15 +1,16 @@
-<nav class="navbar-theme shadow-custom-md h-16 flex items-center px-6 z-40 border-b border-[var(--color-border)]">
+<nav class="navbar-theme shadow-custom-md h-16 flex items-center pl-0 pr-6 z-40 border-b border-[var(--color-border)]">
   <div class="flex items-center justify-between w-full">
     <!-- Left side - Logo -->
-    <div class="flex items-center gap-1 md:gap-2">
+    <div class="flex items-center gap-0">
       <button (click)="onMenuClick()"
-        class="md:hidden navbar-button-hover p-1.5 md:p-2 rounded-lg transition-colors duration-200"
+        class="md:hidden navbar-button-hover p-0.5 md:p-1.5 rounded-lg transition-colors duration-200"
         aria-label="Toggle menu">
         <lucide-angular [img]="Menu" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
       </button>
 
-      <img src="assets/logo.png" alt="Logo" class="h-7 md:h-10 navbar-logo object-contain"
-        [class.dark-mode-logo]="isDarkMode" style="direction: ltr;" />
+      <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo" class="h-32 md:h-36 navbar-logo object-contain -ml-2 md:-ml-4"
+        [style.filter]="isDarkMode ? 'brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%)' : 'none'"
+        style="direction: ltr;" />
     </div>
 
     <!-- Right side - Actions -->

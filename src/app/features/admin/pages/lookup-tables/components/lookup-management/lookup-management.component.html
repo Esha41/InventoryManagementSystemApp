@@ -17,7 +17,7 @@
   <app-card *ngIf="selectedTable">
     <!-- Mobile & Tablet Card View -->
     <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-      <div *ngFor="let item of filteredLookupItems"
+      <div *ngFor="let item of paginatedLookupItems"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
         <!-- Header: English Name -->
@@ -91,7 +91,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[var(--color-border)]">
-          <tr *ngFor="let item of filteredLookupItems"
+          <tr *ngFor="let item of paginatedLookupItems"
             class="hover:bg-[var(--color-background-muted)] transition-colors">
             <td class="px-6 py-4 text-center align-middle">
               <span class="font-medium text-[var(--color-text)]">{{ item.nameEn }}</span>
@@ -138,6 +138,23 @@
       <app-loading-state *ngIf="isLoadingLookups" message="lookupManagement.loading" size="sm"
         containerClass="text-center py-12">
       </app-loading-state>
+
+      <!-- Pagination Footer -->
+      <div *ngIf="filteredLookupItems.length > 0 && !isLoadingLookups"
+        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
+          <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredLookupItems.length"
+            [visibleItems]="paginatedLookupItems.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+          </app-rows-per-page>
+          <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+            </app-pagination>
+            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </app-card>
 

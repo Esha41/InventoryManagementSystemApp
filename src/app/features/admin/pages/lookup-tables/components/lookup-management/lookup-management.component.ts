@@ -11,6 +11,7 @@ import { LookupManagementService } from '@services/lookup-management.service';
 import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.component';
 import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 
 /**
  * Lookup Management Component
@@ -28,7 +29,9 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
     ErrorStateComponent,
     LookupFiltersComponent,
     LookupFormModalComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './lookup-management.component.html',
   styleUrls: ['./lookup-management.component.css'],
@@ -45,6 +48,10 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   lookupSearchTerm = '';
   isLoadingLookups = false;
   lookupErrorMessage = '';
+
+  // Pagination
+  currentPage = 1;
+  rowsPerPage = 10;
 
   // Lookup modal states
   showLookupModal = false;
@@ -77,6 +84,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   onTableSelect(table: LookupTableConfig | undefined): void {
     this.selectedTable = table;
+    this.currentPage = 1;
     if (table) {
       this.loadLookupItems();
     }
@@ -108,8 +116,40 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     return this.lookupManagementService.filterLookupItems(this.lookupItems, this.lookupSearchTerm);
   }
 
+  get totalPages(): number {
+    const total = this.filteredLookupItems.length;
+    if (total === 0) return 1;
+    return Math.ceil(total / this.rowsPerPage);
+  }
+
+  get paginatedLookupItems(): LookupItem[] {
+    this.validateCurrentPage();
+    const start = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredLookupItems.slice(start, start + this.rowsPerPage);
+  }
+
+  private validateCurrentPage(): void {
+    const max = this.totalPages;
+    if (this.currentPage > max && max > 0) this.currentPage = max;
+    if (this.currentPage < 1) this.currentPage = 1;
+  }
+
+  onPageChange(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+    this.validateCurrentPage();
+    this.cdr.markForCheck();
+  }
+
   onSearchChange(searchTerm: string): void {
     this.lookupSearchTerm = searchTerm;
+    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 
