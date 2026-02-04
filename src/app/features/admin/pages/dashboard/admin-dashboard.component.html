@@ -7,21 +7,15 @@
             </div>
 
             <div class="header-actions">
-                <button 
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 
+                <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 
                            bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] 
                            text-white font-semibold text-sm rounded-lg
                            transition-all duration-200 ease-in-out
                            disabled:opacity-60 disabled:cursor-not-allowed
                            hover:shadow-md hover:-translate-y-0.5
-                           focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50"
-                    (click)="onRefresh()"
-                    [disabled]="isRefreshing" 
-                    [attr.aria-label]="'adminDashboard.refresh' | translate">
-                    <lucide-angular 
-                        [img]="RefreshCw" 
-                        class="w-4 h-4 flex-shrink-0"
-                        [class.animate-spin]="isRefreshing">
+                           focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50" (click)="onRefresh()"
+                    [disabled]="isRefreshing" [attr.aria-label]="'adminDashboard.refresh' | translate">
+                    <lucide-angular [img]="RefreshCw" class="w-4 h-4 flex-shrink-0" [class.animate-spin]="isRefreshing">
                     </lucide-angular>
                     <span class="whitespace-nowrap">{{ 'adminDashboard.refresh' | translate }}</span>
                 </button>
@@ -144,13 +138,13 @@
         </div>
 
         <!-- Delegations Section -->
-        <div class="delegations-section">
+        <!-- <div class="delegations-section">
             <div class="section-header">
                 <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>
             </div>
             <div class="delegations-view">
                 <app-admin-delegations></app-admin-delegations>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>

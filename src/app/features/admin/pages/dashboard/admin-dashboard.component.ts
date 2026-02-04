@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch } from 'lucide-angular';
 import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
-import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
+// import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
 
 /**
  * Admin Dashboard Component
@@ -21,7 +21,7 @@ import { AdminDelegationsComponent } from './admin-delegations/admin-delegations
         TranslateModule,
         LucideAngularModule,
         UserActivityCardComponent,
-        AdminDelegationsComponent,
+        // AdminDelegationsComponent,
     ],
     templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css'],
@@ -57,7 +57,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         // Start auto-refresh timer BEFORE subscribing to ensure it's active
         this.adminAnalyticsService.startAutoRefresh();
-        
+
         // Subscribe to the observable stream - this will automatically update on refresh
         // The observable uses shareReplay and reacts to refresh$ subject changes
         this.adminAnalyticsService.getUserActivityMetrics()

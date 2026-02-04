@@ -44,16 +44,8 @@ export class AdvancedAnalyticsService {
     endDate?: Date,
     warehouseId?: number
   ): Observable<AdvancedAnalyticsDashboardDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
-    if (warehouseId) params = params.set('warehouseId', warehouseId.toString());
-
-    this.config.log('Fetching Advanced Analytics Dashboard', { startDate, endDate, warehouseId });
-    return this.apiService.get<AdvancedAnalyticsDashboardDto>(
-      `${this.endpoint}/dashboard`,
-      params
-    );
+    // Service logic disabled
+    return new Observable<AdvancedAnalyticsDashboardDto>(observer => observer.error('Advanced Analytics is disabled'));
   }
 
   /**
@@ -63,29 +55,18 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<MissionReadinessDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<MissionReadinessDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching Mission Readiness', { startDate, endDate });
-    return this.apiService.get<MissionReadinessDto>(
-      `${this.endpoint}/mission-readiness`,
-      params
-    );
   }
 
   /**
    * Get Stock Availability KPI
    */
   getStockAvailability(warehouseId?: number): Observable<StockAvailabilityDto> {
-    let params = new HttpParams();
-    if (warehouseId) params = params.set('warehouseId', warehouseId.toString());
+    // Service logic disabled
+    return new Observable<StockAvailabilityDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching Stock Availability', { warehouseId });
-    return this.apiService.get<StockAvailabilityDto>(
-      `${this.endpoint}/stock-availability`,
-      params
-    );
   }
 
   /**
@@ -95,15 +76,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<OrderCycleTimeDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<OrderCycleTimeDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching Order Cycle Time', { startDate, endDate });
-    return this.apiService.get<OrderCycleTimeDto>(
-      `${this.endpoint}/order-cycle-time`,
-      params
-    );
   }
 
   /**
@@ -113,23 +88,18 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<ConsumptionForecastDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<ConsumptionForecastDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching Consumption Forecast', { startDate, endDate });
-    return this.apiService.get<ConsumptionForecastDto>(
-      `${this.endpoint}/consumption-forecast`,
-      params
-    );
   }
 
   /**
    * Drill down into specific KPI data
    */
   drillDown(request: DrillDownRequestDto): Observable<any> {
-    this.config.log('Drilling down into KPI', request);
-    return this.apiService.post<any>(`${this.endpoint}/drill-down`, request);
+    // Service logic disabled
+    return new Observable<any>(observer => observer.error('Advanced Analytics is disabled'));
+
   }
 
   /**
@@ -139,14 +109,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<OrderStatusDistributionDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<OrderStatusDistributionDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<OrderStatusDistributionDto>(
-      `${this.endpoint}/order-status-distribution`,
-      params
-    );
   }
 
   /**
@@ -156,36 +121,27 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<RequestTrendsDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<RequestTrendsDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<RequestTrendsDto>(
-      `${this.endpoint}/request-trends`,
-      params
-    );
   }
 
   /**
    * Get Inventory Value by Warehouse
    */
   getInventoryValue(warehouseId?: number): Observable<InventoryValueDto> {
-    let params = new HttpParams();
-    if (warehouseId) params = params.set('warehouseId', warehouseId.toString());
+    // Service logic disabled
+    return new Observable<InventoryValueDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<InventoryValueDto>(
-      `${this.endpoint}/inventory-value`,
-      params
-    );
   }
 
   /**
    * Get Asset Assignment Status
    */
   getAssetAssignmentStatus(): Observable<AssetAssignmentStatusDto> {
-    return this.apiService.get<AssetAssignmentStatusDto>(
-      `${this.endpoint}/asset-assignment-status`
-    );
+    // Service logic disabled
+    return new Observable<AssetAssignmentStatusDto>(observer => observer.error('Advanced Analytics is disabled'));
+
   }
 
   /**
@@ -195,14 +151,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<SupplyFulfillmentStatusDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<SupplyFulfillmentStatusDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<SupplyFulfillmentStatusDto>(
-      `${this.endpoint}/supply-fulfillment-status`,
-      params
-    );
   }
 
   /**
@@ -212,14 +163,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<DepartmentRequestVolumeDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<DepartmentRequestVolumeDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<DepartmentRequestVolumeDto>(
-      `${this.endpoint}/department-request-volume`,
-      params
-    );
   }
 
   /**
@@ -229,14 +175,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<NotificationStatisticsDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<NotificationStatisticsDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    return this.apiService.get<NotificationStatisticsDto>(
-      `${this.endpoint}/notification-statistics`,
-      params
-    );
   }
 
   /**
@@ -246,15 +187,9 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<ImportExportStatisticsDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<ImportExportStatisticsDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching Import/Export Statistics', { startDate, endDate });
-    return this.apiService.get<ImportExportStatisticsDto>(
-      `${this.endpoint}/import-export-statistics`,
-      params
-    );
   }
 
   /**
@@ -264,14 +199,8 @@ export class AdvancedAnalyticsService {
     startDate?: Date,
     endDate?: Date
   ): Observable<UserLoginAnalyticsDto> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate.toISOString());
-    if (endDate) params = params.set('endDate', endDate.toISOString());
+    // Service logic disabled
+    return new Observable<UserLoginAnalyticsDto>(observer => observer.error('Advanced Analytics is disabled'));
 
-    this.config.log('Fetching User Login Analytics', { startDate, endDate });
-    return this.apiService.get<UserLoginAnalyticsDto>(
-      `${this.endpoint}/user-login-analytics`,
-      params
-    );
   }
 }

@@ -67,12 +67,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/analytics-dashboard',
       permissions: ['analytics.page']
     },
-    {
-      label: 'nav.advancedAnalytics',
-      icon: BarChart3,
-      route: '/advanced-analytics-dashboard',
-      permissions: ['advancedAnalytics.page', 'advancedAnalytics.view']
-    },
+    // {
+    //   label: 'nav.advancedAnalytics',
+    //   icon: BarChart3,
+    //   route: '/advanced-analytics-dashboard',
+    //   permissions: ['advancedAnalytics.page', 'advancedAnalytics.view']
+    // },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
     //   label: 'nav.supplyManagement',
