@@ -9,9 +9,10 @@ import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ReportService, Report } from '@services/report.service';
+import { ReportService, Report, ReportTemplate } from '@services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { TemplateSelectDialogComponent } from '../template-select-dialog/template-select-dialog.component';
 
 @Component({
   selector: 'app-report-designer',
@@ -26,7 +27,8 @@ import { of } from 'rxjs';
     RowsPerPageComponent,
     LoadingStateComponent,
     ErrorStateComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TemplateSelectDialogComponent
   ],
   templateUrl: './report-designer.component.html',
   styleUrls: ['./report-designer.component.css']
@@ -53,6 +55,9 @@ export class ReportDesignerComponent implements OnInit {
   // Delete dialog
   showDeleteDialog = false;
   reportToDelete: Report | null = null;
+
+  // Template selection dialog
+  showTemplateDialog = false;
 
   // File input reference
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
@@ -143,14 +148,24 @@ export class ReportDesignerComponent implements OnInit {
     // Ensure prefetch started (in case ngOnInit didn't run yet / hot reload).
     this.prefetchDesignerChunk();
 
-    // Navigate directly to designer (no dialog).
-    // Use reportUrl (same param the designer reads) so refresh loads the correct report after save.
+    // Show template selection dialog
+    this.showTemplateDialog = true;
+  }
+
+  onTemplateSelected(template: ReportTemplate): void {
+    this.showTemplateDialog = false;
+    
+    // Navigate to designer with selected template
     this.router.navigate(['/report-designer/designer'], {
       queryParams: {
-        reportUrl: 'BaseReportTemplate',
+        reportUrl: template.url,
         mode: 'create'
       }
     });
+  }
+
+  onTemplateDialogCancel(): void {
+    this.showTemplateDialog = false;
   }
 
   onImportReport(): void {

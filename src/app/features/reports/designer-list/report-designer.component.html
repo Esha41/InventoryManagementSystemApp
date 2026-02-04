@@ -168,5 +168,12 @@
       [confirmText]="'common.delete' | translate" [cancelText]="'common.cancel' | translate"
       (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()">
     </app-confirm-dialog>
+
+    <!-- Template Selection Dialog -->
+    <app-template-select-dialog
+      [isOpen]="showTemplateDialog"
+      (templateSelected)="onTemplateSelected($event)"
+      (cancelled)="onTemplateDialogCancel()">
+    </app-template-select-dialog>
   </div>
 </div>

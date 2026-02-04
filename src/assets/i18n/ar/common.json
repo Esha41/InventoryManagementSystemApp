@@ -4,6 +4,7 @@
     "save": "حفظ",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
+    "select": "اختر",
     "delete": "حذف",
     "edit": "تعديل",
     "add": "إضافة",
@@ -277,7 +278,9 @@
       "description": "الوصف",
       "descriptionPlaceholder": "أدخل وصف التقرير (اختياري)",
       "invalidUrl": "تنسيق الرابط غير صالح. يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات."
-    }
+    },
+    "selectTemplate": "اختر قالب التقرير",
+    "noTemplates": "لا توجد قوالب متاحة"
   },
   "reports": {
     "designer": {

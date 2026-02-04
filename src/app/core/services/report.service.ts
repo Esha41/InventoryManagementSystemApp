@@ -140,5 +140,26 @@ export class ReportService {
     const baseUrl = this.config.apiUrl.replace('/api', ''); // Remove /api to get base URL
     return `${baseUrl}/DXXRDV?reportUrl=${encodeURIComponent(reportUrl)}`;
   }
+
+  /**
+   * Get all available report templates
+   */
+  getTemplates(): Observable<ReportTemplate[]> {
+    return this.apiService.get<ReportTemplate[]>(`${this.endpoint}/templates`).pipe(
+      map(response => {
+        // Handle both direct array and response wrapper
+        if (Array.isArray(response)) {
+          return response;
+        }
+        return (response as any)?.data || [];
+      })
+    );
+  }
+}
+
+export interface ReportTemplate {
+  url: string;
+  name: string;
+  description?: string;
 }
 

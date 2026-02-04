@@ -5,6 +5,7 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "select": "Select",
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
@@ -277,7 +278,9 @@
       "description": "Description",
       "descriptionPlaceholder": "Enter report description (optional)",
       "invalidUrl": "Invalid URL format. Only letters, numbers, underscores, and hyphens are allowed."
-    }
+    },
+    "selectTemplate": "Choose Report Template",
+    "noTemplates": "No templates available"
   },
   "reports": {
     "designer": {
