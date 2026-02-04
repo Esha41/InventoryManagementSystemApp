@@ -380,6 +380,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Only maintain existing selection if it still exists in the filtered list
     if (this.selectedNotification) {
       const existing = notifications.find(notification => notification.id === this.selectedNotification?.id);
       if (existing) {
@@ -387,13 +388,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         this.loadNotificationDetail(existing);
         // Don't auto-mark as read during sync - only when user clicks
         return;
+      } else {
+        // Selected notification is no longer in the filtered list, clear selection
+        this.selectedNotification = null;
+        this.resetDetailState();
       }
     }
-
-    // Auto-select first notification but don't mark as read yet
-    this.selectedNotification = notifications[0];
-    this.loadNotificationDetail(this.selectedNotification);
-    // Don't auto-mark as read during sync - only when user clicks
+    // Don't auto-select first notification - wait for user to click
   }
 
   private loadNotificationDetail(notification: Notification | null): void {
