@@ -515,6 +515,8 @@
   },
   "addInventory": {
     "title": "Add Inventory to",
+    "add": "Add",
+    "to": "to",
     "subtitle": "Create a new inventory record with items for this warehouse",
     "invoiceInformation": "Invoice Information",
     "invoiceNumber": "Invoice Number",

@@ -17,7 +17,7 @@
     <!-- Page Title -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-        {{ 'addInventory.title' | translate }} {{ warehouseName }}
+        {{ 'addInventory.add' | translate }} {{ (activeTab === 'ammunition' ? ('warehouseInventory.tabs.ammunition' | translate) : ('warehouseInventory.tabs.explosive' | translate)) }} {{ 'addInventory.to' | translate }} {{ warehouseName }}
       </h1>
       <p class="text-sm text-[var(--color-text-muted)]">
         {{ 'addInventory.subtitle' | translate }}
@@ -31,41 +31,6 @@
 
     <!-- Form -->
     <form *ngIf="!loading" [formGroup]="inventoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
-      <!-- Item Type Tabs -->
-      <div
-        class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] overflow-hidden">
-        <div class="flex border-b border-[var(--color-border)]">
-          <button type="button" (click)="switchTab('ammunition')" [ngClass]="{
-              'border-b-3': activeTab === 'ammunition',
-              'border-[var(--color-brand)]': activeTab === 'ammunition',
-              'bg-[var(--color-brand)]/10': activeTab === 'ammunition',
-              'text-[var(--color-brand)]': activeTab === 'ammunition',
-              'font-semibold': activeTab === 'ammunition',
-              'text-[var(--color-text-muted)]': activeTab !== 'ammunition'
-            }" class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
-            {{ 'warehouseInventory.tabs.ammunition' | translate }}
-          </button>
-          <button type="button" (click)="switchTab('explosive')" [ngClass]="{
-              'border-b-3': activeTab === 'explosive',
-              'border-[var(--color-brand)]': activeTab === 'explosive',
-              'bg-[var(--color-brand)]/10': activeTab === 'explosive',
-              'text-[var(--color-brand)]': activeTab === 'explosive',
-              'font-semibold': activeTab === 'explosive',
-              'text-[var(--color-text-muted)]': activeTab !== 'explosive'
-            }" class="flex-1 px-6 py-3 font-medium transition-all hover:bg-[var(--color-background-hover)]">
-            {{ 'warehouseInventory.tabs.explosive' | translate }}
-          </button>
-          <!-- Weapon tab button hidden (will be enabled later) -->
-          <!-- <button type="button" (click)="switchTab('weapon')" [class.border-b-3]="activeTab === 'weapon'"
-            [class.border-[var(--color-brand)]="activeTab === 'weapon'" [class.bg-blue-50]="activeTab === 'weapon'"
-            [class.text-[var(--color-brand)]="activeTab === 'weapon'" [class.font-semibold]="activeTab === 'weapon'"
-            [class.text-gray-600]="activeTab !== 'weapon'"
-            class="flex-1 px-6 py-3 font-medium transition-all hover:bg-gray-50">
-            {{ 'warehouseInventory.tabs.weapon' | translate }}
-          </button> -->
-        </div>
-      </div>
-
       <!-- Inventory Items Card -->
       <div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
         <div class="flex items-center justify-between mb-4">

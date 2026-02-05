@@ -89,6 +89,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
+  invoiceFilter: string | null = null; // Track specific invoice filter
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -172,14 +173,20 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
+    // Clear invoice filter when doing general search
+    this.invoiceFilter = null;
     this.currentPage = 1; // Reset to first page
     this.applyFilters();
     this.cdr.markForCheck();
   }
 
   searchByInvoice(invoiceNumber: string): void {
-    this.searchControl.setValue(invoiceNumber);
-    this.onSearch();
+    // Set invoice filter specifically and clear general search
+    this.invoiceFilter = invoiceNumber;
+    this.searchControl.setValue('');
+    this.currentPage = 1; // Reset to first page
+    this.applyFilters();
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -306,8 +313,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
       ];
 
-      // Add search term filters if provided
-      if (searchTerm) {
+      // If filtering by specific invoice number, use exact match
+      if (this.invoiceFilter) {
+        filters.push({
+          field: 'Inventory.InvoiceNumber',
+          operator: 'eq',
+          value: this.invoiceFilter
+        });
+      } else if (searchTerm) {
+        // Add search term filters if provided (general search)
         filters.push({
           logic: 'or',
           filters: [
@@ -342,6 +356,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
     this.activeTab = tab;
     this.currentPage = 1;
+    this.invoiceFilter = null; // Clear invoice filter when switching tabs
     this.updateQueryParams(tab);
 
     // Always load content (which handles switching strategy)
@@ -476,7 +491,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Navigate to add inventory page
    */
   onAddInventory(): void {
-    this.router.navigate(['/warehouse', this.depoId, 'inventory', 'add']);
+    this.router.navigate(['/warehouse', this.depoId, 'inventory', 'add'], {
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge'
+    });
   }
 
   /**

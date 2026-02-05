@@ -188,6 +188,15 @@
               </div>
             </div>
           </div>
+          
+          <!-- View Inventory Button -->
+          <div *ngIf="getSelectedWarehouse()" class="mt-6 pt-4 border-t border-[var(--color-border)]">
+            <button 
+              (click)="navigateToWarehouseInventory(getSelectedWarehouse()!.id)"
+              class="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200">
+              <span>{{ 'warehouse.viewInventory' | translate }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
