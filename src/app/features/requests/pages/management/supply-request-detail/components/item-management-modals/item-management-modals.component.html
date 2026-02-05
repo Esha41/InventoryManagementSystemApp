@@ -1,0 +1,138 @@
+<!-- Add Item Modal -->
+<app-modal [isOpen]="isAddItemModalOpen" [title]="'supplyRequestDetail.addItem' | translate" size="md"
+  (closed)="onCloseAddItemModal()">
+
+  <form [formGroup]="addItemForm" class="space-y-4">
+    <!-- Item Selection -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.selectItem' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <app-dropdown class="w-full" formControlName="itemId" [options]="availableItems" optionValue="id"
+        [optionLabelFn]="itemOptionLabel" [disabled]="loadingItems" [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        [error]="!!(addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty))"
+        placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <!-- Item Type Restriction Info -->
+      <div class="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-2">
+        <lucide-icon [name]="Info" class="w-4 h-4 text-blue-500 mt-0.5"></lucide-icon>
+        <p class="text-xs text-blue-700 leading-normal">
+          {{ getItemTypeRestrictionMessage() }}
+        </p>
+      </div>
+
+      <p *ngIf="addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.itemRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input type="number" formControlName="quantity" min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)" />
+      <p *ngIf="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.notes' | translate }}
+      </label>
+      <textarea formControlName="notes" rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyRequestDetail.notesPlaceholder' | translate }}"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="onCloseAddItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onSaveAddItem()" [disabled]="addItemForm.invalid || savingItem || loadingItems"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingItems,
+        'bg-gray-400': addItemForm.invalid || savingItem || loadingItems
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Edit Item Quantity Modal -->
+<app-modal [isOpen]="isEditItemModalOpen" [title]="'supplyRequestDetail.editItemQuantity' | translate" size="md"
+  (closed)="onCloseEditItemModal()">
+
+  <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <p class="text-sm font-semibold text-gray-700 mb-1">{{ 'supplyRequestDetail.item' | translate }}:</p>
+    <p class="text-base text-gray-900">{{ selectedItemForEdit.itemName }}</p>
+    <p class="text-xs text-gray-600 mt-1">{{ 'supplyRequestDetail.productId' | translate }}: {{
+      getItemProductId(selectedItemForEdit) }}</p>
+  </div>
+
+  <form [formGroup]="editItemForm" class="space-y-4">
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input type="number" formControlName="quantity" min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="editItemForm.get('quantity')?.invalid && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)" />
+      <p *ngIf="editItemForm.get('quantity')?.hasError('required') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityRequired' | translate }}
+      </p>
+      <p *ngIf="editItemForm.get('quantity')?.hasError('min') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityMinError' | translate: { min: selectedItemForEdit?.totalSelectedForDischarge ||
+        1 } }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        {{ 'supplyRequestDetail.notes' | translate }}
+      </label>
+      <textarea formControlName="notes" rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'supplyRequestDetail.notesPlaceholder' | translate }}"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="onCloseEditItemModal()"
+      class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onSaveEditItem()" [disabled]="editItemForm.invalid || savingItem"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
+        'bg-gray-400': editItemForm.invalid || savingItem
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Remove Item Confirmation Modal -->
+<app-confirm-dialog [isOpen]="isRemoveItemModalOpen" [title]="'supplyRequestDetail.removeItem' | translate"
+  [message]="('supplyRequestDetail.removeItemConfirm' | translate) + ' ' + (selectedItemForRemove?.itemName || '') + '?'"
+  [confirmText]="'common.remove' | translate" [cancelText]="'common.cancel' | translate" confirmVariant="danger"
+  (confirmed)="onConfirmRemoveItem()" (cancelled)="onCloseRemoveItemModal()">
+</app-confirm-dialog>

@@ -6,6 +6,9 @@
 /**
  * Standard API Response wrapper from backend
  */
+
+
+// Standard API Response wrapper from backend
 export interface ApiResponse<T = any> {
   succeeded: boolean;
   message: string;
@@ -14,9 +17,7 @@ export interface ApiResponse<T = any> {
   statusCode?: number;
 }
 
-/**
- * Backend APIOperationResponse structure 
- */
+// Backend APIOperationResponse structure
 export interface APIOperationResponse<T> {
   succeeded: boolean;
   data: T;
@@ -36,8 +37,13 @@ export enum ResponseType {
   ValidationError = 6
 }
 
+// Re-export strict types from pagination.model.ts
+export { FilterData, PagedListRequest as PagedRequest, PaginatedList } from './pagination.model';
+
+
+
 /**
- * Paginated response wrapper
+ * Paginated response wrapper (Legacy)
  */
 export interface PagedResponse<T> {
   succeeded: boolean;
@@ -48,29 +54,6 @@ export interface PagedResponse<T> {
   totalPages: number;
   totalRecords: number;
   errors?: string[];
-}
-
-/**
- * Backend PaginatedList structure
- */
-export interface PaginatedList<T> {
-  items: T[];
-  pageIndex: number;
-  totalPages: number;
-  totalCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
-}
-
-/**
- * Pagination request parameters
- */
-export interface PagedRequest {
-  pageNumber: number;
-  pageSize: number;
-  searchTerm?: string;
-  orderBy?: string;
-  isAscending?: boolean;
 }
 
 /**

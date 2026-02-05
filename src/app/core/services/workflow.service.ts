@@ -83,14 +83,10 @@ export class WorkflowService {
   getWorkflows(): Observable<WorkflowDto[]> {
     this.configService.log('Fetching all workflows');
 
-    return this.apiService.getWithAuth<ApiResponse<BackendWorkflowDto[]>>(
+    return this.apiService.get<BackendWorkflowDto[]>(
       API_ENDPOINTS.WORKFLOWS.ALL_LIST
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch workflows');
-        }
-        const rawItems = response.data || [];
+      map(rawItems => {
 
         // Map backend fields to UI model expected by components
         const mapped: WorkflowDto[] = rawItems.map(w => {
@@ -127,14 +123,14 @@ export class WorkflowService {
   getWorkflowById(id: number): Observable<WorkflowDto> {
     this.configService.log('Fetching workflow', { id });
 
-    return this.apiService.getWithAuth<ApiResponse<WorkflowDto>>(
+    return this.apiService.get<WorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch workflow');
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to fetch workflow');
         }
-        return response.data;
+        return data;
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch workflow', error);
@@ -151,14 +147,14 @@ export class WorkflowService {
   getWorkflowDetailById(id: number): Observable<any> {
     this.configService.log('Fetching workflow detail', { id });
 
-    return this.apiService.getWithAuth<ApiResponse<any>>(
+    return this.apiService.get<any>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch workflow');
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to fetch workflow');
         }
-        return response.data;
+        return data;
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch workflow detail', error);
@@ -173,15 +169,15 @@ export class WorkflowService {
   createWorkflow(workflow: CreateWorkflowDto): Observable<WorkflowDto> {
     this.configService.log('Creating workflow', { name: workflow.name });
 
-    return this.apiService.postWithAuth<ApiResponse<WorkflowDto>>(
+    return this.apiService.post<WorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       workflow
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to create workflow');
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to create workflow');
         }
-        return response.data;
+        return data;
       }),
       tap(newWorkflow => {
         // Update local workflows list
@@ -204,14 +200,11 @@ export class WorkflowService {
   createBackendWorkflow(payload: BackendCreateWorkflowDto): Observable<boolean> {
     this.configService.log('Creating backend workflow', { name: payload.workflowName });
 
-    return this.apiService.postWithAuth<ApiResponse<any>>(
+    return this.apiService.post<any>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       payload
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to create workflow');
-        }
+      map(() => {
         return true;
       }),
       tap(() => this.configService.log('Backend workflow created successfully')),
@@ -228,14 +221,11 @@ export class WorkflowService {
   updateBackendWorkflow(payload: BackendUpdateWorkflowDto): Observable<boolean> {
     this.configService.log('Updating backend workflow', { id: payload.id });
 
-    return this.apiService.putWithAuth<ApiResponse<any>>(
+    return this.apiService.put<any>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       payload
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to update workflow');
-        }
+      map(() => {
         return true;
       }),
       tap(() => this.configService.log('Backend workflow updated successfully')),
@@ -252,15 +242,15 @@ export class WorkflowService {
   updateWorkflow(id: number, workflow: UpdateWorkflowDto): Observable<WorkflowDto> {
     this.configService.log('Updating workflow', { id });
 
-    return this.apiService.putWithAuth<ApiResponse<WorkflowDto>>(
+    return this.apiService.put<WorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id),
       { ...workflow, id }
     ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to update workflow');
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to update workflow');
         }
-        return response.data;
+        return data;
       }),
       tap(updatedWorkflow => {
         // Update local workflows list
@@ -288,13 +278,10 @@ export class WorkflowService {
   deleteWorkflow(id: number): Observable<boolean> {
     this.configService.log('Deleting workflow', { id });
 
-    return this.apiService.deleteWithAuth<ApiResponse<any>>(
+    return this.apiService.delete<any>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete workflow');
-        }
+      map(() => {
         return true;
       }),
       tap(() => {
@@ -318,14 +305,11 @@ export class WorkflowService {
   getStepNotifiers(stepId: number): Observable<WorkflowStepNotifierDto[]> {
     this.configService.log('Fetching step notifiers', { stepId });
 
-    return this.apiService.getWithAuth<ApiResponse<WorkflowStepNotifierDto[]>>(
+    return this.apiService.get<WorkflowStepNotifierDto[]>(
       API_ENDPOINTS.WORKFLOW_STEP_NOTIFIERS.BY_STEP_ID(stepId)
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch step notifiers');
-        }
-        return response.data || [];
+      map(data => {
+        return data || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch step notifiers', error);
@@ -348,14 +332,11 @@ export class WorkflowService {
       userIds: userIds || []
     };
 
-    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+    return this.apiService.put<boolean>(
       API_ENDPOINTS.WORKFLOW_STEP_NOTIFIERS.UPDATE_STEP(stepId),
       payload
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to update step notifiers');
-        }
+      map(() => {
         return true;
       }),
       catchError(error => {
@@ -373,14 +354,11 @@ export class WorkflowService {
   getNextStepsForWorkflowStep(stepId: number): Observable<WorkflowStepDto[]> {
     this.configService.log('Fetching next steps for workflow step', { stepId });
 
-    return this.apiService.getWithAuth<ApiResponse<WorkflowStepDto[]>>(
+    return this.apiService.get<WorkflowStepDto[]>(
       `/Workflows/step/${stepId}/next-steps`
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch next steps');
-        }
-        return response.data || [];
+      map(data => {
+        return data || [];
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch next steps', error);
@@ -402,14 +380,11 @@ export class WorkflowService {
       targetStepIds: targetStepIds || []
     };
 
-    return this.apiService.putWithAuth<ApiResponse<boolean>>(
+    return this.apiService.put<boolean>(
       '/Workflows/step-transition',
       payload
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to set step transitions');
-        }
+      map(() => {
         return true;
       }),
       catchError(error => {

@@ -46,14 +46,14 @@ export class TemplateGenerationService {
     // Get current language from TranslateService
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    service.downloadImportTemplate(currentLang)
+    service.generateImportTemplate(currentLang)
       .pipe(
         catchError(error => {
           this.toastService.error(`Failed to download ${type} template. Please try again.`);
           return of(null);
         })
       )
-      .subscribe(blob => {
+      .subscribe((blob: Blob | null) => {
         if (blob) {
           const fileName = `${typeName}_Import_Template_${new Date().getTime()}.xlsx`;
           saveAs(blob, fileName);
@@ -75,7 +75,7 @@ export class TemplateGenerationService {
     // Get current language from TranslateService
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
-    this.inventoryService.downloadImportTemplate(depotId, currentLang)
+    this.inventoryService.generateImportTemplate(currentLang, depotId)
       .pipe(
         catchError(() => {
           this.toastService.error('Failed to download template. Please try again.');

@@ -108,6 +108,18 @@ export function processAllowanceData(
     const itemNo = item.itemNo || (itemData as any)?.itemNo || '';
     const batchNo = (itemData as any)?.batchNo || '';
 
+    // Infer itemType if not provided by checking which map contains the item
+    let inferredItemType = item.itemType || ItemType.Ammunition;
+    if (!item.itemType) {
+      if (weaponMap.has(item.itemId)) {
+        inferredItemType = ItemType.Weapon;
+      } else if (explosiveMap.has(item.itemId)) {
+        inferredItemType = ItemType.Explosive;
+      } else if (ammunitionMap.has(item.itemId)) {
+        inferredItemType = ItemType.Ammunition;
+      }
+    }
+
     return {
       id: item.id,
       departmentId: item.departmentId,
@@ -117,7 +129,7 @@ export function processAllowanceData(
       itemName: itemName,
       itemNo: itemNo,
       batchNo: batchNo,
-      itemType: item.itemType || 1,
+      itemType: inferredItemType,
       quantity: item.quantity,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
       reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,

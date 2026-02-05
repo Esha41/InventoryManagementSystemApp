@@ -1,16 +1,9 @@
+import { FileUploadDto } from './file-upload.model';
+import { RequestItemDto } from './common.model';
 
-/**
- * File upload DTO matching backend structure
- */
-export interface FileUploadDto {
-  id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: number;
-  entityId: number;
-}
+// Re-export for backward compatibility
+export { FileUploadDto };
+
 
 /**
  * Approval step in the workflow (for workflow approval detail view)
@@ -57,7 +50,7 @@ export interface WorkflowApprovalStep {
   approverNameAr?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Returned' | 'ReturnedForReview' | 'Submitted';
   approvedDate?: string;
-  approvedDateTime?: string;
+  approvedDateTime?: string | Date;
   applicationRoleName?: string;
   applicationRoleNameAr?: string;
   isPending?: boolean;
@@ -94,6 +87,7 @@ export interface RequestItem {
   itemNo?: string;
   quantity: number;
   unit?: string;
+  nsn?: string; // National Stock Number
 }
 
 
@@ -131,6 +125,8 @@ export interface RequestDetail {
   usageTimeTo?: string;
   numberOfOfficer?: number;
   numberOfOtherRank?: number;
+  isFromAllowance?: boolean;
+  creationDate?: string | Date;
 }
 
 /**
@@ -155,8 +151,8 @@ export interface BaseRequestDto {
   requesterNameAr?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
-  requestItems?: any[];
-  approvalHistory?: any[];
+  requestItems?: RequestItemDto[];
+  approvalHistory?: WorkflowApprovalStep[];
   files?: FileUploadDto[];
   isMyTurn?: boolean;
   [key: string]: any;

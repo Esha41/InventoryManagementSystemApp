@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, AlertTriangle, X } from 'lucide-angular';
@@ -13,75 +13,83 @@ import { LucideAngularModule, AlertTriangle, X } from 'lucide-angular';
   imports: [CommonModule, TranslateModule, LucideAngularModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div *ngIf="error" [class]="computedContainerClass" role="alert" aria-live="assertive">
-      <div [class]="computedContentClass">
-        <!-- Icon -->
-        <div [class]="computedIconContainerClass" aria-hidden="true">
-          <lucide-angular 
-            [img]="AlertTriangle" 
-            [class]="computedIconClass">
-          </lucide-angular>
+    @if (error()) {
+      <div [class]="computedContainerClass()" role="alert" aria-live="assertive">
+        <div [class]="computedContentClass()">
+          <!-- Icon -->
+          <div [class]="computedIconContainerClass()" aria-hidden="true">
+            <lucide-angular 
+              [img]="AlertTriangle" 
+              [class]="computedIconClass()">
+            </lucide-angular>
+          </div>
+
+          <!-- Content -->
+          <div [class]="computedTextContainerClass()">
+            @if (title()) {
+              <h3 [class]="computedTitleClass()">
+                {{ title() | translate }}
+              </h3>
+            }
+            <p [class]="computedMessageClass()">
+              {{ error() | translate }}
+            </p>
+          </div>
+
+          <!-- Close Button (if dismissible) -->
+          @if (dismissible()) {
+            <button
+              type="button"
+              (click)="onDismiss()"
+              [class]="computedCloseButtonClass()"
+              [attr.aria-label]="'common.close' | translate">
+              <lucide-angular [img]="X" [class]="computedCloseIconClass()"></lucide-angular>
+            </button>
+          }
         </div>
 
-        <!-- Content -->
-        <div [class]="computedTextContainerClass">
-          <h3 *ngIf="title" [class]="computedTitleClass">
-            {{ title | translate }}
-          </h3>
-          <p [class]="computedMessageClass">
-            {{ error | translate }}
-          </p>
-        </div>
-
-        <!-- Close Button (if dismissible) -->
-        <button
-          *ngIf="dismissible"
-          type="button"
-          (click)="onDismiss()"
-          [class]="computedCloseButtonClass"
-          [attr.aria-label]="'common.close' | translate">
-          <lucide-angular [img]="X" [class]="computedCloseIconClass"></lucide-angular>
-        </button>
+        <!-- Action Button (optional) -->
+        @if (actionText()) {
+          <button
+            (click)="onAction()"
+            [class]="computedActionButtonClass()">
+            {{ actionText() | translate }}
+          </button>
+        }
       </div>
-
-      <!-- Action Button (optional) -->
-      <button
-        *ngIf="actionText"
-        (click)="onAction()"
-        [class]="computedActionButtonClass">
-        {{ actionText | translate }}
-      </button>
-    </div>
+    }
   `,
   styles: []
 })
 export class ErrorStateComponent {
-  @Input() error: string | null = null;
-  @Input() title?: string;
-  @Input() variant: 'inline' | 'centered' | 'banner' = 'inline';
-  @Input() dismissible: boolean = false;
-  @Input() actionText?: string;
-  @Input() containerClass: string = '';
-  @Input() contentClass: string = '';
-  @Input() iconContainerClass: string = '';
-  @Input() iconClass: string = '';
-  @Input() textContainerClass: string = '';
-  @Input() titleClass: string = '';
-  @Input() messageClass: string = '';
-  @Input() closeButtonClass: string = '';
-  @Input() closeIconClass: string = '';
-  @Input() actionButtonClass: string = '';
+  // Input signals
+  error = input<string | null>(null);
+  title = input<string | undefined>(undefined);
+  variant = input<'inline' | 'centered' | 'banner'>('inline');
+  dismissible = input<boolean>(false);
+  actionText = input<string | undefined>(undefined);
+  containerClass = input<string>('');
+  contentClass = input<string>('');
+  iconContainerClass = input<string>('');
+  iconClass = input<string>('');
+  textContainerClass = input<string>('');
+  titleClass = input<string>('');
+  messageClass = input<string>('');
+  closeButtonClass = input<string>('');
+  closeIconClass = input<string>('');
+  actionButtonClass = input<string>('');
 
-  @Output() dismissed = new EventEmitter<void>();
-  @Output() action = new EventEmitter<void>();
+  // Output signals
+  dismissed = output<void>();
+  action = output<void>();
 
   readonly AlertTriangle = AlertTriangle;
   readonly X = X;
 
-  get computedContainerClass(): string {
-    if (this.containerClass) return this.containerClass;
+  computedContainerClass = computed(() => {
+    if (this.containerClass()) return this.containerClass();
 
-    switch (this.variant) {
+    switch (this.variant()) {
       case 'centered':
         return 'flex flex-col items-center justify-center py-20';
       case 'banner':
@@ -90,12 +98,12 @@ export class ErrorStateComponent {
       default:
         return '';
     }
-  }
+  });
 
-  get computedContentClass(): string {
-    if (this.contentClass) return this.contentClass;
+  computedContentClass = computed(() => {
+    if (this.contentClass()) return this.contentClass();
 
-    switch (this.variant) {
+    switch (this.variant()) {
       case 'centered':
         return 'bg-white rounded-xl shadow-custom-md p-8 max-w-md w-full border border-[var(--color-border)] flex flex-col items-center text-center';
       case 'banner':
@@ -104,10 +112,11 @@ export class ErrorStateComponent {
       default:
         return 'bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3';
     }
-  }
+  });
 
-  get defaultIconContainerClass(): string {
-    switch (this.variant) {
+  // Computed default classes based on variant
+  defaultIconContainerClass = computed(() => {
+    switch (this.variant()) {
       case 'centered':
         return 'w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4';
       case 'banner':
@@ -115,10 +124,10 @@ export class ErrorStateComponent {
       default:
         return 'flex-shrink-0';
     }
-  }
+  });
 
-  get defaultIconClass(): string {
-    switch (this.variant) {
+  defaultIconClass = computed(() => {
+    switch (this.variant()) {
       case 'centered':
         return 'h-8 w-8 text-[var(--color-error)]';
       case 'banner':
@@ -126,10 +135,10 @@ export class ErrorStateComponent {
       default:
         return 'h-5 w-5 text-red-600';
     }
-  }
+  });
 
-  get defaultTextContainerClass(): string {
-    switch (this.variant) {
+  defaultTextContainerClass = computed(() => {
+    switch (this.variant()) {
       case 'centered':
         return 'flex-1';
       case 'banner':
@@ -137,10 +146,10 @@ export class ErrorStateComponent {
       default:
         return 'flex-1';
     }
-  }
+  });
 
-  get defaultTitleClass(): string {
-    switch (this.variant) {
+  defaultTitleClass = computed(() => {
+    switch (this.variant()) {
       case 'centered':
         return 'text-lg font-semibold text-[var(--color-text)] mb-2';
       case 'banner':
@@ -148,10 +157,10 @@ export class ErrorStateComponent {
       default:
         return 'text-sm font-medium text-red-800 mb-1';
     }
-  }
+  });
 
-  get defaultMessageClass(): string {
-    switch (this.variant) {
+  defaultMessageClass = computed(() => {
+    switch (this.variant()) {
       case 'centered':
         return 'text-sm text-[var(--color-text-muted)] mb-6';
       case 'banner':
@@ -159,52 +168,52 @@ export class ErrorStateComponent {
       default:
         return 'text-sm text-red-800';
     }
-  }
+  });
 
-  get defaultCloseButtonClass(): string {
+  defaultCloseButtonClass = computed(() => {
     return 'flex-shrink-0 text-red-600 hover:text-red-800 transition-colors';
-  }
+  });
 
-  get defaultCloseIconClass(): string {
+  defaultCloseIconClass = computed(() => {
     return 'h-5 w-5';
-  }
+  });
 
-  get defaultActionButtonClass(): string {
+  defaultActionButtonClass = computed(() => {
     return 'mt-6 px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2';
-  }
+  });
 
-  // Computed getters that use custom classes if provided, otherwise defaults
-  get computedIconContainerClass(): string {
-    return this.iconContainerClass || this.defaultIconContainerClass;
-  }
+  // Computed classes - use custom if provided, otherwise defaults
+  computedIconContainerClass = computed(() => {
+    return this.iconContainerClass() || this.defaultIconContainerClass();
+  });
 
-  get computedIconClass(): string {
-    return this.iconClass || this.defaultIconClass;
-  }
+  computedIconClass = computed(() => {
+    return this.iconClass() || this.defaultIconClass();
+  });
 
-  get computedTextContainerClass(): string {
-    return this.textContainerClass || this.defaultTextContainerClass;
-  }
+  computedTextContainerClass = computed(() => {
+    return this.textContainerClass() || this.defaultTextContainerClass();
+  });
 
-  get computedTitleClass(): string {
-    return this.titleClass || this.defaultTitleClass;
-  }
+  computedTitleClass = computed(() => {
+    return this.titleClass() || this.defaultTitleClass();
+  });
 
-  get computedMessageClass(): string {
-    return this.messageClass || this.defaultMessageClass;
-  }
+  computedMessageClass = computed(() => {
+    return this.messageClass() || this.defaultMessageClass();
+  });
 
-  get computedCloseButtonClass(): string {
-    return this.closeButtonClass || this.defaultCloseButtonClass;
-  }
+  computedCloseButtonClass = computed(() => {
+    return this.closeButtonClass() || this.defaultCloseButtonClass();
+  });
 
-  get computedCloseIconClass(): string {
-    return this.closeIconClass || this.defaultCloseIconClass;
-  }
+  computedCloseIconClass = computed(() => {
+    return this.closeIconClass() || this.defaultCloseIconClass();
+  });
 
-  get computedActionButtonClass(): string {
-    return this.actionButtonClass || this.defaultActionButtonClass;
-  }
+  computedActionButtonClass = computed(() => {
+    return this.actionButtonClass() || this.defaultActionButtonClass();
+  });
 
   onDismiss(): void {
     this.dismissed.emit();

@@ -1,0 +1,489 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subject, takeUntil, switchMap, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
+import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { LookupService } from '@services/lookup.service';
+import { InventoryDetailDto, ItemType } from '@models/inventory.model';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
+import { formatDateShort } from '@utils/format.utils';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { HttpClient } from '@angular/common/http';
+
+type TabType = 'overview' | 'stock';
+
+@Component({
+  selector: 'app-inventory-item-detail',
+  standalone: true,
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, AssetDetailsComponent],
+  templateUrl: './inventory-item-detail.component.html',
+  styleUrls: ['./inventory-item-detail.component.css']
+})
+export class InventoryItemDetailComponent implements OnInit, OnDestroy {
+  inventoryDetailId: number = 0;
+  warehouseId: number = 0;
+  inventoryDetail: InventoryDetailDto | null = null;
+  activeTab: TabType = 'overview';
+  loading = true;
+  error: string | null = null;
+
+  // Stock tab data
+  lots: LotDetailDto[] = [];
+  loadingLots = false;
+  itemId: number = 0;
+
+  // Image data
+  imageUrl: string | null = null;
+  private blobUrls: Set<string> = new Set();
+
+  readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+  private destroy$ = new Subject<void>();
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get backIcon() {
+    return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private inventoryService: InventoryService,
+    private lookupService: LookupService,
+    private translateService: TranslateService,
+    private translationService: TranslationService,
+    private fileUploadService: FileUploadService,
+    private http: HttpClient
+  ) { }
+
+  ngOnInit(): void {
+    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      this.warehouseId = parseInt(params['warehouseId'], 10);
+      this.inventoryDetailId = parseInt(params['itemId'], 10);
+
+      if (this.warehouseId && this.inventoryDetailId) {
+        this.loadItemDetails();
+      }
+    });
+
+    // Also check query params for tab (asset type) as fallback
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(queryParams => {
+      const tabParam = queryParams['tab'];
+      if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+        // Store tab for potential use if item.itemType is not available
+        this.activeTab = queryParams['tab'] === 'ammunition' ? 'overview' : this.activeTab;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    
+    // Clean up blob URLs
+    this.blobUrls.forEach(url => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.warn('Error revoking blob URL:', e);
+      }
+    });
+    this.blobUrls.clear();
+  }
+
+  private loadItemDetails(): void {
+    this.loading = true;
+    this.error = null;
+
+    // Fetch all inventory details for the warehouse and find the specific item
+    this.inventoryService.getWarehouseInventoryItems(this.warehouseId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (details) => {
+          this.inventoryDetail = details.find(d => d.id === this.inventoryDetailId) || null;
+
+          if (!this.inventoryDetail) {
+            this.translateService.get('warehouseInventory.itemNotFound').subscribe(text => {
+              this.error = text;
+            });
+          } else {
+            // Store itemId for loading lots
+            this.itemId = this.inventoryDetail.itemId;
+            // Load image for stock tab
+            if (this.itemId) {
+              this.loadImage(this.itemId);
+            }
+            // Load lots if stock tab is active
+            if (this.activeTab === 'stock') {
+              this.loadLots();
+            }
+          }
+
+          this.loading = false;
+        },
+        error: () => {
+          this.translateService.get('warehouseInventory.failedToLoadItem').subscribe(text => {
+            this.error = text;
+          });
+          this.loading = false;
+        }
+      });
+  }
+
+  setActiveTab(tab: TabType): void {
+    this.activeTab = tab;
+    // Load lots when switching to stock tab
+    if (tab === 'stock' && this.itemId && this.lots.length === 0) {
+      this.loadLots();
+    }
+  }
+
+  /**
+   * Load lot details for the current item
+   */
+  private loadLots(): void {
+    if (!this.itemId) return;
+
+    this.loadingLots = true;
+    this.inventoryService.getLotsByItemId(this.itemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots) => {
+          this.lots = lots;
+          this.loadingLots = false;
+        },
+        error: () => {
+          this.loadingLots = false;
+        }
+      });
+  }
+
+  onBack(): void {
+    // Preserve tab query parameter when navigating back
+    const tabParam = this.route.snapshot.queryParams['tab'];
+    const queryParams = tabParam ? { tab: tabParam } : {};
+    
+    this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+      queryParams
+    });
+  }
+
+  onMapView(): void {
+    this.router.navigate(['/warehouse', this.warehouseId, 'inventory', this.inventoryDetailId, 'map']);
+  }
+
+  /**
+   * Get item name
+   */
+  getItemName(): string {
+    const lang = getCurrentLang(this.translateService);
+    const localized = getLocalizedName(this.inventoryDetail?.item, lang);
+    return localized || this.inventoryDetail?.item?.itemNo || 'Unknown Item';
+  }
+
+  /**
+   * Get item number / caliber
+   */
+  getItemNo(): string {
+    return this.inventoryDetail?.item?.itemNo || '-';
+  }
+
+  /**
+   * Get HCC name
+   */
+  getHccName(): string {
+    return getLocalizedName(this.inventoryDetail?.item?.hcc, getCurrentLang(this.translateService)) || '-';
+  }
+
+  /**
+   * Get supplier name
+   */
+  getSupplierName(): string {
+    return getLocalizedName(this.inventoryDetail?.supplier, getCurrentLang(this.translateService)) || '-';
+  }
+
+  /**
+   * Get manufacturer name
+   */
+  getManufacturerName(): string {
+    return getLocalizedName(this.inventoryDetail?.manufacturer, getCurrentLang(this.translateService)) || '-';
+  }
+
+  /**
+   * Get country name
+   */
+  getCountryName(): string {
+    return getLocalizedName(this.inventoryDetail?.country, getCurrentLang(this.translateService)) || '-';
+  }
+
+  /**
+   * Format date for display (delegates to shared dd/MM/yyyy helper)
+   */
+  formatDate(date?: Date | string): string {
+    if (!date) return '-';
+    const formatted = formatDateShort(date);
+    return formatted === 'N/A' ? '-' : formatted;
+  }
+
+  /**
+   * Format number with thousands separator
+   */
+  formatNumber(num: number): string {
+    return num.toLocaleString();
+  }
+
+  /**
+   * Calculate utilization percentage
+   */
+  getUtilizationPercentage(): number {
+    if (!this.inventoryDetail) return 0;
+    const total = this.inventoryDetail.originalQuantity;
+    const current = this.inventoryDetail.currentQuantity;
+    if (total === 0) return 0;
+    return Math.round(((total - current) / total) * 100);
+  }
+
+  /**
+   * Get stock status
+   */
+  getStockStatus(): string {
+    const utilization = this.getUtilizationPercentage();
+    if (utilization === 0) return this.translateService.instant('warehouseInventory.new');
+    if (utilization < 50) return this.translateService.instant('warehouseInventory.good');
+    return this.translateService.instant('warehouseInventory.used');
+  }
+
+  /**
+   * Get stock status class
+   */
+  getStockStatusClass(): string {
+    const status = this.getStockStatus();
+    switch (status) {
+      case 'New': return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-2 border-[var(--color-success)]/30';
+      case 'Good': return 'bg-[var(--color-info)]/20 text-[var(--color-info)] border-2 border-[var(--color-info)]/30';
+      case 'Used': return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
+      default: return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
+    }
+  }
+
+  /**
+   * Calculate totals from lots, fallback to inventoryDetail if lots not loaded
+   */
+  getTotalQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.originalQuantity, 0);
+    }
+    return this.inventoryDetail?.originalQuantity || 0;
+  }
+
+  getTotalUsedQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.usedQuantity, 0);
+    }
+    return this.inventoryDetail?.usedQuantity || 0;
+  }
+
+  getTotalReservedQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.reservedQuantityByOrdersOnProcessing, 0);
+    }
+    return this.inventoryDetail?.reservedQuantityByOrdersOnProcessing || 0;
+  }
+
+  getTotalRemainingQuantity(): number {
+    if (this.lots.length > 0) {
+      return this.lots.reduce((sum, lot) => sum + lot.remainingQuantity, 0);
+    }
+    return this.inventoryDetail?.remainingQuantity || 0;
+  }
+
+  /**
+   * Get depot name for lot
+   */
+  getDepotName(lot: LotDetailDto): string {
+    return lot.depot ? getLocalizedName(lot.depot, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get supplier name for lot
+   */
+  getSupplierNameForLot(lot: LotDetailDto): string {
+    return lot.supplier ? getLocalizedName(lot.supplier, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get manufacturer name for lot
+   */
+  getManufacturerNameForLot(lot: LotDetailDto): string {
+    return lot.manufacturer ? getLocalizedName(lot.manufacturer, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get country name for lot
+   */
+  getCountryNameForLot(lot: LotDetailDto): string {
+    return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get asset type from inventory detail item type or query param
+   */
+  getAssetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
+    // First try to get from item.itemType
+    if (this.inventoryDetail?.item?.itemType) {
+      const itemType = this.inventoryDetail.item.itemType;
+      if (itemType === ItemType.Ammunition) return 'ammunition';
+      if (itemType === ItemType.Weapon) return 'weapon';
+      if (itemType === ItemType.Explosive) return 'explosive';
+    }
+    
+    // Fallback to query param if item is not populated
+    const tabParam = this.route?.snapshot.queryParams['tab'];
+    if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+      return tabParam as 'ammunition' | 'weapon' | 'explosive';
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Get item ID for asset details
+   */
+  getItemIdForAssetDetails(): number | undefined {
+    return this.inventoryDetail?.itemId;
+  }
+
+  /**
+   * Get item type display name
+   */
+  getItemTypeDisplay(): string {
+    if (!this.inventoryDetail?.item?.itemType) {
+      return this.translateService.instant('warehouseInventory.tabs.explosive');
+    }
+
+    const itemType: any = this.inventoryDetail.item.itemType;
+    
+    // Handle string values from backend
+    if (typeof itemType === 'string') {
+      const lowerType = itemType.toLowerCase();
+      if (lowerType === 'ammunition') {
+        return this.translateService.instant('warehouseInventory.tabs.ammunition');
+      }
+      if (lowerType === 'weapon') {
+        return this.translateService.instant('warehouseInventory.tabs.weapon');
+      }
+      if (lowerType === 'explosive') {
+        return this.translateService.instant('warehouseInventory.tabs.explosive');
+      }
+    }
+    
+    // Handle numeric/enum values
+    const numericValue = typeof itemType === 'number' ? itemType : (itemType as ItemType);
+    if (numericValue === ItemType.Ammunition || numericValue === 1) {
+      return this.translateService.instant('warehouseInventory.tabs.ammunition');
+    }
+    if (numericValue === ItemType.Weapon || numericValue === 2) {
+      return this.translateService.instant('warehouseInventory.tabs.weapon');
+    }
+    if (numericValue === ItemType.Explosive || numericValue === 3) {
+      return this.translateService.instant('warehouseInventory.tabs.explosive');
+    }
+    
+    // Default fallback
+    return this.translateService.instant('warehouseInventory.tabs.explosive');
+  }
+
+  /**
+   * Load image for the item
+   */
+  private loadImage(itemId: number): void {
+    if (!this.inventoryDetail?.item?.itemType) return;
+
+    // Clean up previous image URL
+    if (this.imageUrl) {
+      try {
+        URL.revokeObjectURL(this.imageUrl);
+        this.blobUrls.delete(this.imageUrl);
+      } catch (e) {
+        console.warn('Error revoking previous image blob URL:', e);
+      }
+    }
+    this.imageUrl = null;
+
+    // Determine entity type based on item type
+    let entityType: FileEntityType;
+    const itemType = this.inventoryDetail.item.itemType;
+    if (itemType === ItemType.Weapon) {
+      entityType = FileEntityType.Weapon;
+    } else if (itemType === ItemType.Explosive) {
+      entityType = FileEntityType.Explosive;
+    } else {
+      entityType = FileEntityType.Ammunition;
+    }
+
+    // Get all files to find the latest one
+    this.fileUploadService.getFilesByEntity(entityType, itemId)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((files: any[]) => {
+          if (!files || files.length === 0) {
+            return of(null);
+          }
+
+          // Get main images (there might be multiple with isMain: true)
+          const mainImages = files.filter((img: any) => img.isMain);
+          let latestImage: any;
+          
+          if (mainImages.length > 0) {
+            // If multiple main images exist, get the one with highest ID (latest uploaded)
+            latestImage = mainImages.reduce((latest: any, current: any) => 
+              (current.id > latest.id) ? current : latest
+            );
+          } else {
+            // If no main image, get the image with highest ID (latest uploaded)
+            latestImage = files.reduce((latest: any, current: any) => 
+              (current.id > latest.id) ? current : latest
+            );
+          }
+          
+          if (!latestImage?.id) {
+            return of(null);
+          }
+
+          // Get the download URL for the latest image
+          const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
+          
+          // Fetch image as blob with authentication
+          return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
+            switchMap((blob: Blob) => {
+              if (blob.type && blob.type.startsWith('image/')) {
+                const blobUrl = URL.createObjectURL(blob);
+                this.blobUrls.add(blobUrl);
+                this.imageUrl = blobUrl;
+              }
+              return of(null);
+            }),
+            catchError((err) => {
+              console.warn('Failed to load image blob:', err);
+              return of(null);
+            })
+          );
+        }),
+        catchError((err) => {
+          console.warn('Failed to get files:', err);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+}

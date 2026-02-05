@@ -3,6 +3,7 @@
     "title": "لوحة التحكم",
     "subtitle": "نظرة عامة على حالة الطلبات",
     "orderStatusOverview": "نظرة عامة على حالة الطلبات",
+    "count": "العدد",
     "newIssue": "إصدار جديد",
     "newIssueOrders": "طلبات الإصدار الجديدة",
     "newReturns": "الإرجاعات الجديدة",
@@ -40,6 +41,7 @@
     "depot": "المستودع",
     "itemName": "اسم مادة",
     "itemNo": "رقم مادة",
+    "nsn": "NSN",
     "priorityLabels": {
       "normal": "عادية",
       "urgent": "مستعجل",
@@ -77,6 +79,35 @@
       "lowStock": "مخزون منخفض",
       "next30Days": "الـ 30 يوم القادمة",
       "belowThreshold": "أقل من الحد الأدنى"
+    },
+    "expiringLots": {
+      "title": "لوتات علي وشك الانتهاء",
+      "subtitle": "اللوتات التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
+      "itemName": "اسم المادة",
+      "itemNo": "رقم المادة",
+      "lot": "اللوت",
+      "batchNo": "رقم التشغيلة",
+      "expiryDate": "تاريخ الانتهاء",
+      "daysUntilExpiry": "الأيام حتى الانتهاء",
+      "days": "أيام",
+      "remainingQuantity": "الكمية المتبقية",
+      "depot": "المستودع",
+      "supplier": "المورد",
+      "manufacturer": "الشركة المصنعة",
+      "noLots": "لا توجد لوتات ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
+    },
+    "lowStock": {
+      "title": "المواد ذات المخزون المنخفض",
+      "subtitle": "المواد التي تقل عن الحد الأدنى للمخزون",
+      "itemName": "اسم المادة",
+      "itemNo": "رقم المادة",
+      "nsn": "NSN",
+      "minimumQuantity": "الحد الأدنى للكمية",
+      "totalStock": "إجمالي المخزون",
+      "holdQuantity": "الكمية المحجوزة",
+      "suppliedQuantity": "الكمية المستخدمة",
+      "remaining": "المتبقي",
+      "noItems": "لا توجد مواد تقل عن الحد الأدنى للمخزون"
     },
     "annualSupplyActivity": "نشاط التوريد السنوي",
     "overstock": "الفائض"

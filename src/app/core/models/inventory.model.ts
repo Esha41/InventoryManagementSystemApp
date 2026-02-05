@@ -56,6 +56,13 @@ export interface InventoryDetailDto {
   remainingQuantity: number;
   isLotEmpty: boolean;
 
+  // Invoice Information (from parent Inventory)
+  invoiceNumber?: string;
+  invoiceDate?: Date | string;
+  recievedDate?: Date | string;
+  contractNumber?: string;
+  notes?: string;
+
   // Navigation properties
   item?: BaseItemDto;
   supplier?: SupplierDto;
@@ -72,6 +79,7 @@ export interface InventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
 
   // Navigation properties
@@ -94,6 +102,7 @@ export interface CreateInventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
   inventoryDetails: CreateInventoryDetailDto[];
 }
@@ -118,6 +127,7 @@ export interface UpdateInventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
   inventoryDetails: UpdateInventoryDetailDto[];
 }

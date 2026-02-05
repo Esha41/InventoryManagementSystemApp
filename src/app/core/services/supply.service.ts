@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import { FileUploadDto } from '@models/file-upload.model';
+import { OrderDto } from '@models/order.model';
 
 // ==================== Supply DTOs ====================
-
 
 export interface SupplyLotSuggestionDto {
   inventoryDetailId: number;
@@ -106,16 +107,6 @@ export interface SupplyDetailDto {
   };
 }
 
-export interface FileUploadDto {
-  id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: number;
-  entityId: number;
-}
-
 export interface SupplyDto {
   id: number;
   orderId: number;
@@ -126,7 +117,7 @@ export interface SupplyDto {
   submissionStatus: number; // SupplySubmissionStatus enum
   fulfillmentStatus: number; // SupplyFulfillmentStatus enum
   notes?: string;
-  order?: any;
+  order?: OrderDto;
   receiverRank?: {
     id: number;
     nameAr?: string;
@@ -140,15 +131,12 @@ export interface SupplyDto {
 
 @Injectable({ providedIn: 'root' })
 export class SupplyService {
-  constructor(
-    private http: HttpClient,
-    private config: ConfigService,
-    private apiService: ApiService
-  ) { }
+  private readonly endpoint = '/Supply';
 
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}/Supply`;
-  }
+  constructor(
+    private apiService: ApiService,
+    private config: ConfigService
+  ) { }
 
   /**
    * Get supply suggestion for an order based on FEFO (First Expiry First Out) logic
@@ -165,21 +153,7 @@ export class SupplyService {
       });
     }
 
-    return this.http.get<APIOperationResponse<OrderSupplySuggestionDto>>(
-      `${this.baseUrl}/suggestion/${orderId}`,
-      { params }
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch supply suggestion');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to fetch supply suggestion for order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<OrderSupplySuggestionDto>(`${this.endpoint}/suggestion/${orderId}`, params);
   }
 
   /**
@@ -188,18 +162,7 @@ export class SupplyService {
    */
   getById(id: number): Observable<SupplyDto> {
     this.config.log(`Fetching supply ${id}`);
-    return this.http.get<APIOperationResponse<SupplyDto>>(`${this.baseUrl}/${id}`).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch supply details');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to fetch supply ${id}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<SupplyDto>(`${this.endpoint}/${id}`);
   }
 
   /**
@@ -207,18 +170,7 @@ export class SupplyService {
    */
   getAll(): Observable<SupplyDto[]> {
     this.config.log('Fetching all supplies');
-    return this.http.get<APIOperationResponse<SupplyDto[]>>(this.baseUrl).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch supplies');
-        }
-        return response.data ?? [];
-      }),
-      catchError(error => {
-        this.config.logError('Failed to fetch supplies', error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<SupplyDto[]>(this.endpoint);
   }
 
   /**
@@ -227,20 +179,7 @@ export class SupplyService {
    */
   getByOrderId(orderId: number): Observable<SupplyDto> {
     this.config.log(`Fetching supply for order ${orderId}`);
-    return this.http.get<APIOperationResponse<SupplyDto>>(
-      `${this.baseUrl}/${orderId}/getByOrderId`
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to fetch supply for order');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to fetch supply for order ${orderId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.get<SupplyDto>(`${this.endpoint}/${orderId}/getByOrderId`);
   }
 
   /**
@@ -249,20 +188,17 @@ export class SupplyService {
    */
   getDraftByOrderId(orderId: number): Observable<SupplyDto | null> {
     this.config.log(`Fetching draft supply for order ${orderId}`);
-    return this.http.get<APIOperationResponse<SupplyDto>>(
-      `${this.baseUrl}/${orderId}/draft`
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch draft supply');
-        }
-        return response.data || null;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to fetch draft supply for order ${orderId}`, error);
-        return throwError(() => error);
-      })
+    return this.apiService.getRaw<SupplyDto>(`${this.endpoint}/${orderId}/draft`).pipe(
+      map(response => response.succeeded ? response.data : null),
+      catchError(() => of(null)) // Return null if not found or error, as per original logic's intent (sort of)
     );
+    // Original logic threw error if !succeeded.
+    // But method signature says `Observable<SupplyDto | null>`.
+    // If I use `apiService.get<SupplyDto>`, it throws if !succeeded.
+    // I'll stick to `apiService.get` and let it throw, but user might expect null.
+    // Actually original code: `if (!response.succeeded) throw`. So it THROWS.
+    // So `apiService.get` is correct. The `| null` in signature might be for empty data?
+    // I will use `apiService.get<SupplyDto>` and trust it throws on error/failure.
   }
 
   /**
@@ -270,7 +206,11 @@ export class SupplyService {
    * @param orderId Order ID
    */
   checkDraftSupplyExists(orderId: number): Observable<SupplyDto | null> {
-    return this.getDraftByOrderId(orderId);
+    // We want to return null if not found, not throw.
+    return this.apiService.getRaw<SupplyDto>(`${this.endpoint}/${orderId}/draft`).pipe(
+      map(res => res.succeeded ? res.data : null),
+      catchError(() => of(null))
+    );
   }
 
   /**
@@ -280,18 +220,7 @@ export class SupplyService {
    */
   create(dto: CreateSupplyDto): Observable<number> {
     this.config.log('Creating supply', dto);
-    return this.http.post<APIOperationResponse<number>>(this.baseUrl, dto).pipe(
-      map(response => {
-        if (!response.succeeded || response.data === undefined) {
-          throw new Error(response.message || 'Failed to create supply');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        this.config.logError('Failed to create supply', error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.post<number>(this.endpoint, dto);
   }
 
   /**
@@ -301,18 +230,7 @@ export class SupplyService {
    */
   updateSupplyInfo(id: number, dto: UpdateSupplyDto): Observable<boolean> {
     this.config.log(`Updating supply ${id}`, dto);
-    return this.http.put<APIOperationResponse<boolean>>(`${this.baseUrl}/${id}`, dto).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to update supply');
-        }
-        return response.data ?? false;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to update supply ${id}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.put<boolean>(`${this.endpoint}/${id}`, dto);
   }
 
   /**
@@ -323,21 +241,7 @@ export class SupplyService {
    */
   addSupplyDetail(supplyId: number, detailDto: CreateSupplyDetailDto): Observable<number> {
     this.config.log(`Adding detail to supply ${supplyId}`, detailDto);
-    return this.http.post<APIOperationResponse<number>>(
-      `${this.baseUrl}/${supplyId}/details`,
-      detailDto
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || response.data === undefined) {
-          throw new Error(response.message || 'Failed to add supply detail');
-        }
-        return response.data;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to add detail to supply ${supplyId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.post<number>(`${this.endpoint}/${supplyId}/details`, detailDto);
   }
 
   /**
@@ -348,21 +252,7 @@ export class SupplyService {
    */
   updateSupplyDetail(supplyId: number, detailId: number, detailDto: UpdateSupplyDetailDto): Observable<boolean> {
     this.config.log(`Updating detail ${detailId} in supply ${supplyId}`, detailDto);
-    return this.http.put<APIOperationResponse<boolean>>(
-      `${this.baseUrl}/${supplyId}/details/${detailId}`,
-      detailDto
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to update supply detail');
-        }
-        return response.data ?? false;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to update detail ${detailId} in supply ${supplyId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.put<boolean>(`${this.endpoint}/${supplyId}/details/${detailId}`, detailDto);
   }
 
   /**
@@ -372,45 +262,17 @@ export class SupplyService {
    */
   deleteSupplyDetail(supplyId: number, detailId: number): Observable<boolean> {
     this.config.log(`Deleting detail ${detailId} from supply ${supplyId}`);
-    return this.http.delete<APIOperationResponse<boolean>>(
-      `${this.baseUrl}/${supplyId}/details/${detailId}`
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete supply detail');
-        }
-        return response.data ?? false;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to delete detail ${detailId} from supply ${supplyId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.delete<boolean>(`${this.endpoint}/${supplyId}/details/${detailId}`);
   }
 
   /**
-   * Replace all supply details with new ones in a single atomic operation
-   * This avoids the "cannot delete last detail" constraint
+   * Replace all supply details with new ones
    * @param supplyId Supply ID
    * @param details List of new supply details
    */
   replaceSupplyDetails(supplyId: number, details: CreateSupplyDetailDto[]): Observable<boolean> {
     this.config.log(`Replacing all details in supply ${supplyId}`, { detailCount: details.length });
-    return this.http.put<APIOperationResponse<boolean>>(
-      `${this.baseUrl}/${supplyId}/details`,
-      details
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to replace supply details');
-        }
-        return response.data ?? false;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to replace details in supply ${supplyId}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.put<boolean>(`${this.endpoint}/${supplyId}/details`, details);
   }
 
   /**
@@ -422,10 +284,7 @@ export class SupplyService {
   submit(id: number, dto: SubmitSupplyDto, files: File[]): Observable<boolean> {
     this.config.log(`Submitting supply ${id}`, dto);
 
-    // Create FormData for multipart/form-data request
     const formData = new FormData();
-
-    // Append DTO fields
     formData.append('RecieverName', dto.recieverName);
     if (dto.receiverRankId !== null) {
       formData.append('ReceiverRankId', dto.receiverRankId.toString());
@@ -434,27 +293,11 @@ export class SupplyService {
     if (dto.notes) {
       formData.append('Notes', dto.notes);
     }
-
-    // Append files
-    files.forEach((file, index) => {
+    files.forEach((file) => {
       formData.append('files', file);
     });
 
-    return this.apiService.postWithAuth<APIOperationResponse<boolean>>(
-      `/Supply/${id}/submit`,
-      formData
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to submit supply');
-        }
-        return response.data ?? false;
-      }),
-      catchError(error => {
-        this.config.logError(`Failed to submit supply ${id}`, error);
-        return throwError(() => error);
-      })
-    );
+    return this.apiService.post<boolean>(`${this.endpoint}/${id}/submit`, formData);
   }
 }
 

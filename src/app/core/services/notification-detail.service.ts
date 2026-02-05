@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Notification, RequestDetail, NotificationDetailType, NotificationDetailResult } from '@models/notification.model';
+import { Notification, NotificationRequestDetail, NotificationDetailType, NotificationDetailResult } from '@models/notification.model';
 import { OrderService } from './order.service';
 import { ReturnService } from './return.service';
 import { DiscardService } from './discard.service';
@@ -17,7 +17,7 @@ export class NotificationDetailService {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
     private readonly translateService: TranslateService
-  ) {}
+  ) { }
 
   /**
    * Load notification detail based on entity type
@@ -70,7 +70,7 @@ export class NotificationDetailService {
     return this.orderService.getOrderById(id).pipe(
       map(detail => ({
         type: 'order' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -88,7 +88,7 @@ export class NotificationDetailService {
     return this.returnService.getReturnById(id).pipe(
       map(detail => ({
         type: 'return' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -106,7 +106,7 @@ export class NotificationDetailService {
     return this.discardService.getDiscardById(id).pipe(
       map(detail => ({
         type: 'discard' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -124,21 +124,21 @@ export class NotificationDetailService {
     return this.orderService.getOrderById(id).pipe(
       map(detail => ({
         type: determineDetailType(detail),
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(() => {
         return this.returnService.getReturnById(id).pipe(
           map(detail => ({
             type: determineDetailType(detail),
-            detail: detail as RequestDetail,
+            detail: detail as NotificationRequestDetail,
             error: null
           })),
           catchError(() => {
             return this.discardService.getDiscardById(id).pipe(
               map(detail => ({
                 type: determineDetailType(detail),
-                detail: detail as RequestDetail,
+                detail: detail as NotificationRequestDetail,
                 error: null
               })),
               catchError(error => of({

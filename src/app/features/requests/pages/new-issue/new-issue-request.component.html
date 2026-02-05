@@ -1,0 +1,78 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate
+        }}</h1>
+    </div>
+
+    <!-- Stepper -->
+    <app-stepper [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
+    </app-stepper>
+
+    <app-error-banner *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
+      [error]="orderSubmissionState.orderSubmitError">
+    </app-error-banner>
+
+    <!-- Step 0: Allowance Selection -->
+    <app-allowance-selection *ngIf="currentStep === 0" [fromReserve]="fromReserve"
+      (fromReserveChange)="onFromReserveChange($event)" (next)="onNext()">
+    </app-allowance-selection>
+
+    <!-- Step 1: Selection -->
+    <app-step-selection *ngIf="currentStep === 1" [cartridgeState]="cartridgeState" [filterState]="filterState"
+      [filterOptions]="filterOptions" [fromReserve]="fromReserve" [canProceed]="canProceedFromSelection"
+      [selectedCartridges]="selectedCartridges" [displayedItemTypeOptions]="displayedItemTypeOptions" (next)="onNext()"
+      (previous)="onPrevious()" (retryLoad)="retryLoadCartridges()" (filterChange)="filterCartridges()"
+      (itemTypeChange)="onItemTypeChange($event)" (clearFilters)="onClearFilters()"
+      (addSelection)="onCartridgeAdded($event)" (removeSelection)="onRemoveSelectedCartridge($event)">
+    </app-step-selection>
+
+    <!-- Step 2: Usage -->
+    <app-usage-form *ngIf="currentStep === 2" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
+      [selectedUsePurposeId]="requestPurposeState.selectedRequestPurposeId"
+      [usePurposeOptions]="requestPurposeState.requestPurposeOptions" [usageLocation]="usageFormData.usageLocation"
+      [numberOfOfficers]="usageFormData.numberOfOfficers" [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
+      [usageDateFrom]="usageFormData.usageDateFrom" [usageTimeFrom]="usageFormData.usageTimeFrom"
+      [usageDateTo]="usageFormData.usageDateTo" [usageTimeTo]="usageFormData.usageTimeTo"
+      [orderPriority]="usageFormData.orderPriority" [orderPriorities]="filterOptions.orderPriorities"
+      [requesterComments]="reviewFormData.requesterComments" [selectedFiles]="usageFormFiles"
+      [totalReserve]="selectedTotalReserve" [availableReserve]="selectedAvailableReserve"
+      [orderedQuantity]="selectedOrderedQuantity" [usedQuantity]="selectedUsedQuantity"
+      [reserveDetailsByItem]="selectedItemsReserveDetails" [selectedCartridges]="selectedCartridges"
+      (removeCartridge)="onRemoveSelectedCartridge($event)" (usePurposeChange)="usageFormData.usePurpose = $event"
+      (selectedUsePurposeIdChange)="onUsePurposeIdChange($event)"
+      (usageLocationChange)="usageFormData.usageLocation = $event"
+      (numberOfOfficersChange)="usageFormData.numberOfOfficers = $event"
+      (numberOfOtherRanksChange)="usageFormData.numberOfOtherRanks = $event"
+      (usageDateFromChange)="usageFormData.usageDateFrom = $event"
+      (usageTimeFromChange)="usageFormData.usageTimeFrom = $event"
+      (usageDateToChange)="usageFormData.usageDateTo = $event" (usageTimeToChange)="usageFormData.usageTimeTo = $event"
+      (orderPriorityChange)="usageFormData.orderPriority = $event"
+      (requesterCommentsChange)="reviewFormData.requesterComments = $event" (filesChange)="usageFormFiles = $event"
+      (previous)="onPrevious()" (next)="onNext()">
+    </app-usage-form>
+
+    <!-- Step 3: Review -->
+    <app-review-form *ngIf="currentStep === 3" [requesterName]="currentRequesterName"
+      [requesterComments]="reviewFormData.requesterComments" [orderType]="reviewFormData.orderType"
+      [orderPriority]="usageFormData.orderPriority" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
+      [usageLocation]="usageFormData.usageLocation" [numberOfOfficers]="usageFormData.numberOfOfficers"
+      [numberOfOtherRanks]="usageFormData.numberOfOtherRanks" [usageDateFrom]="usageFormData.usageDateFrom"
+      [usageTimeFrom]="usageFormData.usageTimeFrom" [usageDateTo]="usageFormData.usageDateTo"
+      [usageTimeTo]="usageFormData.usageTimeTo" [selectedCartridges]="selectedCartridges" [files]="usageFormFiles"
+      (previous)="onPrevious()" (next)="onNext()">
+    </app-review-form>
+
+    <!-- Step 4: Send -->
+    <app-order-success *ngIf="currentStep === 4" [orderNumber]="orderSubmissionState.orderNumber"
+      [createdOrderId]="orderSubmissionState.createdOrderId" (trackOrder)="onTrackOrder()">
+    </app-order-success>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog [isOpen]="showConfirmDialog" [title]="confirmDialogConfig.title"
+    [message]="confirmDialogConfig.message" [type]="confirmDialogConfig.type"
+    [confirmText]="confirmDialogConfig.confirmText" [cancelText]="confirmDialogConfig.cancelText"
+    [closeOnBackdrop]="true" (confirmed)="onConfirmSubmit()" (cancelled)="onCancelConfirm()"></app-confirmation-dialog>
+</div>

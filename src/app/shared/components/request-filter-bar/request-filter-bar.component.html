@@ -1,0 +1,131 @@
+<!-- Unified Layout (Dashboard Style) -->
+<div *ngIf="layout === 'unified'"
+    class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] min-w-0 w-full">
+
+    <!-- Search Bar -->
+    <div *ngIf="showSearchBar" class="relative flex items-center w-full lg:flex-1 lg:min-w-0 group">
+        <div
+            class="absolute start-3.5 pointer-events-none transition-colors duration-200 group-focus-within:text-[var(--color-brand)]">
+            <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
+        </div>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
+            (keyup.enter)="onSearchClick()" [placeholder]="searchPlaceholder | translate"
+            class="dashboard-search-input w-full ps-11 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate"
+            [class.pe-24]="useSearchButton" [class.pe-10]="!useSearchButton">
+
+        <div class="absolute end-2 flex items-center gap-1">
+            <button *ngIf="searchQuery" (click)="clearSearch()"
+                class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+            </button>
+            <button *ngIf="useSearchButton" (click)="onSearchClick()"
+                class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+                {{ 'common.search' | translate }}
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="showSearchBar && (showStatusFilter || showPriorityFilter)"
+        class="hidden lg:block h-8 w-px bg-[var(--color-border)]"></div>
+
+    <!-- Filters Container -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-4 lg:flex-shrink-0 min-w-0">
+        <!-- Filter Icon & Label -->
+        <div *ngIf="showStatusFilter || showPriorityFilter"
+            class="hidden sm:flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex-shrink-0">
+            <lucide-angular [img]="Filter" class="w-4 h-4"></lucide-angular>
+            <span class="hidden xl:inline whitespace-nowrap">{{ 'dashboard.filters.filterByStatus' | translate }}</span>
+        </div>
+
+        <!-- Status Filter -->
+        <app-dropdown *ngIf="showStatusFilter" class="w-full sm:w-[200px] sm:max-w-[200px] sm:flex-shrink-0"
+            [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
+            [optionLabelFn]="statusFilterLabelFn" optionValue="value" [placeholderSelectable]="false">
+        </app-dropdown>
+
+        <!-- Priority Filter -->
+        <app-dropdown *ngIf="showPriorityFilter" class="w-full sm:flex-1" [(ngModel)]="priorityFilter"
+            (ngModelChange)="onPriorityChange($event)" [options]="priorityFilterOptions"
+            [optionLabelFn]="priorityFilterLabelFn" optionValue="value" [placeholderSelectable]="false">
+        </app-dropdown>
+
+        <!-- Result Count Badge -->
+        <div *ngIf="showResultCount"
+            class="hidden sm:flex items-center justify-center min-w-[34px] h-8.5 px-3 bg-[var(--color-brand)] text-white rounded-lg text-sm font-bold shadow-soft flex-shrink-0"
+            [title]="'dashboard.count' | translate">
+            {{ resultCount }}
+        </div>
+    </div>
+</div>
+
+<!-- Separate Layout (Requests Management Style) -->
+<div *ngIf="layout === 'separate'"
+    class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto lg:flex-shrink-0">
+
+    <!-- Search Bar (wrapped in styled container like unified layout) -->
+    <div *ngIf="showSearchBar"
+        class="flex items-center p-2 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] w-full lg:flex-1 min-w-0 transition-all duration-300">
+        <div class="relative flex items-center w-full group">
+            <div
+                class="absolute start-3.5 pointer-events-none transition-colors duration-200 group-focus-within:text-[var(--color-brand)]">
+                <lucide-angular [img]="Search" class="w-4.5 h-4.5 text-[var(--color-text-muted)]"></lucide-angular>
+            </div>
+            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
+                (keyup.enter)="onSearchClick()" [placeholder]="searchPlaceholder | translate"
+                class="dashboard-search-input w-full ps-11 py-2.5 bg-[var(--color-background-muted)]/40 rounded-lg border-none text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] transition-all truncate"
+                [class.pe-24]="useSearchButton" [class.pe-10]="!useSearchButton">
+
+            <div class="absolute end-2 flex items-center gap-1">
+                <button *ngIf="searchQuery" (click)="clearSearch()"
+                    class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+                    <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+                </button>
+                <button *ngIf="useSearchButton" (click)="onSearchClick()"
+                    class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+                    {{ 'common.search' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Row (Mobile: Stacked or Grid, Desktop: Row) -->
+    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto lg:flex-shrink-0">
+        <!-- Status Filter -->
+        <div *ngIf="showStatusFilter"
+            class="flex items-center justify-between gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:w-[420px] transition-all duration-300">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                    class="hidden sm:flex items-center gap-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex-shrink-0">
+                    <lucide-angular [img]="Filter" class="w-4 h-4"></lucide-angular>
+                    <span class="hidden 2xl:inline whitespace-nowrap">{{ 'dashboard.filters.filterByStatus' | translate
+                        }}</span>
+                </div>
+                <app-dropdown class="w-full sm:flex-1 min-w-0 flex-shrink-0" [(ngModel)]="statusFilter"
+                    (ngModelChange)="onStatusChange($event)" [options]="statusFilterOptions"
+                    [optionLabelFn]="statusFilterLabelFn" optionValue="value" [placeholderSelectable]="false"
+                    placeholder="{{ 'dashboard.filters.filterByStatus' | translate }}">
+                </app-dropdown>
+            </div>
+
+            <!-- Result Count Badge - Mobile optimized position -->
+            <div *ngIf="showResultCount"
+                class="flex-shrink-0 flex items-center justify-center min-w-[30px] h-7 px-2 bg-[var(--color-brand)] text-white rounded-md text-xs font-bold shadow-soft"
+                [title]="'dashboard.count' | translate">
+                {{ resultCount }}
+            </div>
+        </div>
+
+        <!-- Priority Filter -->
+        <div *ngIf="showPriorityFilter"
+            class="flex items-center gap-3 px-3 py-2 bg-[var(--color-background)] rounded-lg shadow-custom-sm border border-[var(--color-border)] w-full sm:w-auto lg:w-[260px] transition-all duration-300">
+            <span
+                class="hidden sm:inline text-sm font-medium text-[var(--color-text-muted)] whitespace-nowrap flex-shrink-0">{{
+                'requestsManagement.filterByPriority' | translate }}:</span>
+            <app-dropdown class="w-full sm:flex-1 min-w-0 flex-shrink-0" [(ngModel)]="priorityFilter"
+                (ngModelChange)="onPriorityChange($event)" [options]="priorityFilterOptions"
+                [optionLabelFn]="priorityFilterLabelFn" optionValue="value" [placeholderSelectable]="false"
+                placeholder="{{ 'requestsManagement.filterByPriority' | translate }}">
+            </app-dropdown>
+        </div>
+    </div>
+</div>

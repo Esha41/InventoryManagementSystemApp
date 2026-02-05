@@ -1,0 +1,26 @@
+<div
+    class="flex flex-col h-full bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] shadow-sm transition-all duration-300 hover:shadow-md">
+    <div class="flex justify-between items-start p-6 pb-0">
+        <div>
+            <h3 class="text-lg font-semibold text-[var(--color-text)] m-0 leading-tight">{{
+                'adminDashboard.charts.inventoryComposition' | translate }}</h3>
+            <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'adminDashboard.charts.itemsByCategory' |
+                translate }}</p>
+        </div>
+    </div>
+
+    <div class="flex-1 relative h-[350px] p-4 overflow-hidden">
+        <!-- Content -->
+        <div class="relative w-full h-full max-h-[400px] overflow-hidden">
+            <div echarts [options]="chartOptions" class="w-full h-full max-h-[400px]"></div>
+
+            <!-- Center Label (Donut Hole) -->
+            <div
+                class="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+                <span class="text-3xl font-bold text-[var(--color-text)] leading-none">{{ totalItems | number }}</span>
+                <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mt-1">{{
+                    'adminDashboard.inventory.totalItems' | translate }}</span>
+            </div>
+        </div>
+    </div>
+</div>

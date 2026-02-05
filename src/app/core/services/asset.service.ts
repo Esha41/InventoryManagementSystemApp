@@ -3,8 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
+import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
+import { ApiService } from './api.service';
+
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models';
 
 /**
  * Asset Service
@@ -13,15 +18,45 @@ import { ConfigService } from './config.service';
 @Injectable({
     providedIn: 'root'
 })
-export class AssetService {
+export class AssetService implements IImportableService {
     private get baseUrl(): string {
         return `${this.configService.apiUrl}/Asset`;
     }
 
     constructor(
         private http: HttpClient,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private apiService: ApiService
     ) { }
+
+    /**
+     * Get paginated assets
+     * Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+     */
+    getAssetsPaginated(depotId: number | null, request: PagedListRequest): Observable<PaginatedList<AssetDto>> {
+        let params = new HttpParams();
+        if (depotId) {
+            params = params.set('depotId', depotId.toString());
+        }
+
+        return this.apiService.post<PaginatedList<AssetDto>>(
+            '/Asset/search',
+            request,
+            params
+        ).pipe(
+            map(response => {
+                // Response is already unwrapped PaginatedList from apiService
+                if (!response || !response.items) {
+                    throw new Error('Invalid response structure');
+                }
+                return response;
+            }),
+            catchError(error => {
+                console.error('Error fetching paginated assets:', error);
+                throw error;
+            })
+        );
+    }
 
     /**
      * Get all assets
@@ -205,10 +240,12 @@ export class AssetService {
     /**
      * Import assets from Excel file
      */
-    importData(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
+    importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('depotId', depotId.toString());
+        if (depotId) {
+            formData.append('depotId', depotId.toString());
+        }
         const params = new HttpParams().set('language', language);
 
         return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params }).pipe(
@@ -222,10 +259,12 @@ export class AssetService {
     /**
      * Preview asset import from Excel file (validation only)
      */
-    importPreview(file: File, depotId: number, language: string = 'en'): Observable<APIOperationResponse<any>> {
+    importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('depotId', depotId.toString());
+        if (depotId) {
+            formData.append('depotId', depotId.toString());
+        }
         const params = new HttpParams().set('language', language);
 
         return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params }).pipe(
@@ -239,8 +278,8 @@ export class AssetService {
     /**
      * Download asset import template
      */
-    downloadImportTemplate(depotId: number, language: string = 'en'): Observable<Blob> {
-        return this.http.get(`${this.baseUrl}/template?depotId=${depotId}&language=${language}`, {
+    generateImportTemplate(language: string = 'en', depotId?: number): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/template?depotId=${depotId || ''}&language=${language}`, {
             responseType: 'blob',
             observe: 'body'
         }).pipe(

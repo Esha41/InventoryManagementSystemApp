@@ -12,9 +12,12 @@ import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EmailService } from './email.service';
 import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
-import { OrderService, OrderDto } from './order.service';
-import { ReturnService, ReturnDto } from './return.service';
-import { DiscardService, DiscardDto } from './discard.service';
+import { OrderService } from './order.service';
+import { ReturnService } from './return.service';
+import { DiscardService } from './discard.service';
+import { OrderDto } from '@models/order.model';
+import { ReturnDto } from '@models/return.model';
+import { DiscardDto } from '@models/discard.model';
 
 interface NotificationDto {
   id?: number;
@@ -73,8 +76,7 @@ export class NotificationService implements OnDestroy {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService
   ) {
-    // Check email configuration on initialization
-    this.checkEmailConfiguration();
+    // Moved checkEmailConfiguration to initialize() to avoid 401 on login page
   }
 
   initialize(): void {
@@ -95,6 +97,9 @@ export class NotificationService implements OnDestroy {
             this.stopHubConnection();
             this.loadInitialData();
             this.startHubConnection();
+
+            // Check email config when user logs in
+            this.checkEmailConfiguration();
           }
         } else {
           this.currentUser = null;
@@ -116,21 +121,35 @@ export class NotificationService implements OnDestroy {
   }
 
   markAsRead(id: number): Observable<void> {
-    const notification = this.notificationsSubject.getValue().find(item => item.id === id);
-    const wasUnread = notification ? !notification.isRead : false;
+    const notifications = this.notificationsSubject.getValue();
+    const notification = notifications.find(item => item.id === id);
+
+    if (!notification) {
+      return of(void 0);
+    }
+
+    const wasUnread = !notification.isRead;
 
     const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(id);
 
-    return this.apiService.patchWithAuth(endpoint, {})
+    return this.apiService.patch<void>(endpoint, {})
       .pipe(
         catchError(error => {
           if (error?.status === 405) {
-            return this.apiService.postWithAuth(endpoint, {});
+            return this.apiService.post<void>(endpoint, {});
           }
           return throwError(() => error);
         }),
         tap(() => {
+          // Check if notification was unread BEFORE we update it
+          const notifications = this.notificationsSubject.getValue();
+          const notification = notifications.find(item => item.id === id);
+          const wasUnread = notification ? !notification.isRead : false;
+
+          // Update the notification to mark it as read
           this.applyNotificationUpdate(id, { isRead: true });
+
+          // Only decrement count if it was actually unread
           if (wasUnread) {
             this.decrementUnreadCount();
           }
@@ -146,11 +165,11 @@ export class NotificationService implements OnDestroy {
   markAllAsRead(): Observable<void> {
     const endpoint = API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_AS_READ;
 
-    return this.apiService.patchWithAuth(endpoint, {})
+    return this.apiService.patch<void>(endpoint, {})
       .pipe(
         catchError(error => {
           if (error?.status === 405) {
-            return this.apiService.postWithAuth(endpoint, {});
+            return this.apiService.post<void>(endpoint, {});
           }
           return throwError(() => error);
         }),
@@ -179,7 +198,7 @@ export class NotificationService implements OnDestroy {
       'confirm'
     ]) ?? API_ENDPOINTS.NOTIFICATIONS.CONFIRM_PICKUP(id);
 
-    return this.apiService.postWithAuth(endpoint, {})
+    return this.apiService.post<void>(endpoint, {})
       .pipe(
         tap(() => {
           this.toastService.success(
@@ -225,7 +244,7 @@ export class NotificationService implements OnDestroy {
       );
     };
 
-    return this.apiService.postWithAuth(endpoint, payload).pipe(
+    return this.apiService.post<void>(endpoint, payload).pipe(
       tap(() => applySuccessUpdates()),
       map(() => void 0),
       catchError(error => {
@@ -256,13 +275,13 @@ export class NotificationService implements OnDestroy {
   private loadNotifications(): void {
     this.loadingSubject.next(true);
 
-    this.apiService.getWithAuth<any>(API_ENDPOINTS.NOTIFICATIONS.BASE)
+    this.apiService.get<any>(API_ENDPOINTS.NOTIFICATIONS.BASE)
       .pipe(finalize(() => this.loadingSubject.next(false)))
       .subscribe({
         next: (response) => {
           const items: NotificationDto[] = Array.isArray(response)
             ? response
-            : (response?.data ?? []);
+            : (response ?? []);
 
           const notifications = (items || []).map(dto => this.mapDtoToNotification(dto));
           notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -275,10 +294,10 @@ export class NotificationService implements OnDestroy {
   }
 
   private loadUnreadCount(): void {
-    this.apiService.getWithAuth<any>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT)
+    this.apiService.get<any>(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT)
       .subscribe({
         next: (response) => {
-          const count = typeof response === 'number' ? response : response?.data ?? 0;
+          const count = typeof response === 'number' ? response : response ?? 0;
           this.unreadCountSubject.next(count ?? 0);
         },
         error: (error) => {
@@ -308,7 +327,9 @@ export class NotificationService implements OnDestroy {
     });
 
     this.hubConnection.on('UnreadCountUpdated', (count: number) => {
-      this.ngZone.run(() => this.unreadCountSubject.next(count ?? 0));
+      this.ngZone.run(() => {
+        this.unreadCountSubject.next(count ?? 0);
+      });
     });
 
     this.hubConnection.onreconnected(() => {

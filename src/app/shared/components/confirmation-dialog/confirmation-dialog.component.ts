@@ -63,9 +63,10 @@ export class ConfirmationDialogComponent {
      * Handle ESC key press to close dialog
      */
     @HostListener('document:keydown.escape', ['$event'])
-    handleEscapeKey(event: KeyboardEvent): void {
+    handleEscapeKey(event: Event): void {
+        const keyboardEvent = event as KeyboardEvent;
         if (this.isOpen && this.closeOnBackdrop) {
-            event.preventDefault();
+            keyboardEvent.preventDefault();
             this.onCancel();
         }
     }

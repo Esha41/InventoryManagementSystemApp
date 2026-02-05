@@ -141,7 +141,10 @@
     "daysRemaining": "الأيام المتبقية",
     "enterLotNumber": "أدخل رقم اللوت",
     "lotNumberPlaceholder": "أدخل رقم اللوت...",
-    "getDetails": "الحصول على التفاصيل"
+    "getDetails": "الحصول على التفاصيل",
+    "errors": {
+      "allowanceExceeded": "تجاوز الكمية المقررة. المتاح: {{availableQuantity}}"
+    }
   },
   "supplyOrder": {
     "title": "طلب التوريد",
@@ -249,8 +252,12 @@
       "itemAlreadyExists": "الصنف موجود بالفعل في هذا الطلب. يرجى استخدام التعديل لتحديث الكمية بدلاً من ذلك.",
       "itemAddedSuccessfully": "تمت إضافة الصنف بنجاح",
       "itemQuantityUpdatedSuccessfully": "تم تحديث كمية الصنف بنجاح",
-      "itemRemovedSuccessfully": "تمت إزالة الصنف بنجاح"
-    }
+      "itemRemovedSuccessfully": "تمت إزالة الصنف بنجاح",
+      "allowanceExceeded": "تجاوز الكمية المقررة. المتاح: {{availableQuantity}}"
+    },
+    "allItemTypesAllowed": "ملاحظة: يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب.",
+    "onlyWeaponsAllowed": "لا يمكن إضافة الأسلحة هنا.",
+    "ammunitionExplosivesAllowed": "يمكن إضافة الذخيرة والمتفجرات فقط إلى هذا الطلب."
   },
   "weaponSupplyReview": {
     "title": "مراجعة توريد الأسلحة",

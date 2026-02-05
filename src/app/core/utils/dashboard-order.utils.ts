@@ -4,10 +4,32 @@
  */
 
 import { TranslateService } from '@ngx-translate/core';
-import { OrderDto } from '@services/order.service';
+import { OrderDto } from '@models/order.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { formatTimeToMilitary } from './format.utils';
 import { getRequestStatusTranslationKey } from './dashboard.utils';
+
+/**
+ * Format date to DD/MM/YYYY format
+ * Helper function to ensure consistent date formatting across all modals
+ */
+function formatDateDDMMYYYY(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return 'N/A';
+
+  try {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    if (isNaN(date.getTime())) return 'N/A';
+
+    // Format date as DD/MM/YYYY
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  } catch {
+    return 'N/A';
+  }
+}
 
 /**
  * Format order date for display
@@ -15,20 +37,35 @@ import { getRequestStatusTranslationKey } from './dashboard.utils';
 export function formatOrderDate(order: OrderDto): string {
   if (!order.usageDateFrom) return 'N/A';
 
-  const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
-  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : '';
+  const fromDate = formatDateDDMMYYYY(order.usageDateFrom);
+  const toDate = order.usageDateTo ? formatDateDDMMYYYY(order.usageDateTo) : '';
 
   return toDate ? `${fromDate} - ${toDate}` : fromDate;
 }
 
 /**
- * Format creation date for display
+ * Format creation date for display with military time
+ * Format: "DD/MM/YYYY HHMM"
  */
 export function formatCreationDate(order: OrderDto | null): string {
   if (!order) return 'N/A';
   const creationDate = order.creationDate;
   if (!creationDate) return 'N/A';
-  return new Date(creationDate).toLocaleDateString();
+
+  try {
+    const date = new Date(creationDate);
+    if (isNaN(date.getTime())) return 'N/A';
+
+    // Format date as DD/MM/YYYY
+    const dateStr = formatDateDDMMYYYY(date);
+
+    // Format time as military time (HHMM)
+    const timeStr = formatTimeToMilitary(date);
+
+    return timeStr ? `${dateStr} ${timeStr}` : dateStr;
+  } catch {
+    return 'N/A';
+  }
 }
 
 /**
@@ -196,14 +233,14 @@ export function formatOrderUsageTime(order: OrderDto | null): string {
 /**
  * Format order usage date and time together
  * Combines usage date range with usage time range in one line
- * Format: "From Date (From Time) - To Date (To Time)"
+ * Format: "From Date From Time - To Date To Time"
  * Uses centralized formatTimeToMilitary function for consistency
  */
 export function formatOrderUsageDateAndTime(order: OrderDto | null): string {
   if (!order) return 'N/A';
 
-  const fromDate = order.usageDateFrom ? new Date(order.usageDateFrom).toLocaleDateString() : null;
-  const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleDateString() : null;
+  const fromDate = order.usageDateFrom ? formatDateDDMMYYYY(order.usageDateFrom) : null;
+  const toDate = order.usageDateTo ? formatDateDDMMYYYY(order.usageDateTo) : null;
 
   const fromTime = formatTimeToMilitary(order.usageTimeFrom);
   const toTime = formatTimeToMilitary(order.usageTimeTo);
@@ -212,11 +249,11 @@ export function formatOrderUsageDateAndTime(order: OrderDto | null): string {
   let result = '';
 
   if (fromDate) {
-    result = fromTime ? `${fromDate} (${fromTime})` : fromDate;
+    result = fromTime ? `${fromDate} ${fromTime}` : fromDate;
   }
 
   if (toDate) {
-    const toPart = toTime ? `${toDate} (${toTime})` : toDate;
+    const toPart = toTime ? `${toDate} ${toTime}` : toDate;
     if (result) {
       result = `${result} - ${toPart}`;
     } else {
@@ -233,7 +270,7 @@ export function formatOrderUsageDateAndTime(order: OrderDto | null): string {
 export function formatOrderUsageDateFrom(order: OrderDto | null): string {
   if (!order || !order.usageDateFrom) return 'N/A';
 
-  const fromDate = new Date(order.usageDateFrom).toLocaleDateString();
+  const fromDate = formatDateDDMMYYYY(order.usageDateFrom);
   const timeRange = formatOrderUsageTime(order);
 
   // Extract just the "from" time (before the dash)
@@ -244,7 +281,7 @@ export function formatOrderUsageDateFrom(order: OrderDto | null): string {
     timePart = timeRange;
   }
 
-  return timePart !== 'N/A' ? `${fromDate} (${timePart})` : fromDate;
+  return timePart !== 'N/A' ? `${fromDate} ${timePart}` : fromDate;
 }
 
 /**
@@ -253,7 +290,7 @@ export function formatOrderUsageDateFrom(order: OrderDto | null): string {
 export function formatOrderUsageDateTo(order: OrderDto | null): string {
   if (!order || !order.usageDateTo) return 'N/A';
 
-  const toDate = new Date(order.usageDateTo).toLocaleDateString();
+  const toDate = formatDateDDMMYYYY(order.usageDateTo);
   const timeRange = formatOrderUsageTime(order);
 
   // Extract just the "to" time (after the dash)
@@ -265,6 +302,6 @@ export function formatOrderUsageDateTo(order: OrderDto | null): string {
     timePart = timeRange;
   }
 
-  return timePart !== 'N/A' ? `${toDate} (${timePart})` : toDate;
+  return timePart !== 'N/A' ? `${toDate} ${timePart}` : toDate;
 }
 

@@ -3,6 +3,7 @@ import { AmmunitionReadDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
+import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -27,7 +28,7 @@ export function mapAmmunitionToAsset(
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     expiryDateRaw: dto.expiryDate
       ? typeof dto.expiryDate === 'string'
         ? dto.expiryDate
@@ -57,7 +58,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     nsn: dto.nsn || '-',
     weaponType: dto.type ? getLocalizedName(dto.type, currentLang) : '-',
     caliber: dto.caliber,
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
@@ -98,7 +99,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
     totalWeightUnit: dto.totalWeightUnit,
     hazardDivision: dto.hazardDivision,
     compatibility: dto.compatibility,
-    expiryDate: dto.expiryDate ? new Date(dto.expiryDate).toLocaleDateString() : '-',
+    expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,

@@ -1,0 +1,274 @@
+<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'workflow.title' | translate }}</h1>
+  </div>
+
+  <!-- Search and Add Button Bar -->
+  <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
+    <!-- Search Input -->
+    <div class="flex-1 relative">
+      <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="{{ 'workflow.search' | translate }}"
+        class="w-full ps-10 pe-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-[var(--color-background)] text-[var(--color-text)]" />
+      <lucide-angular [img]="Search"
+        class="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+    </div>
+
+    <!-- Add Work Flow Button -->
+    <button *ngIf="isSuperAdmin" type="button" (click)="onAddWorkflow()"
+      class="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-brand-dark)] transition-colors whitespace-nowrap w-full sm:w-auto">
+      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+      <span>{{ 'workflow.addWorkFlow' | translate }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-state *ngIf="loading" message="common.loading" size="sm"
+    containerClass="bg-[var(--color-background)] rounded-lg shadow-custom-md p-12">
+  </app-loading-state>
+
+  <!-- Error State -->
+  <app-error-state *ngIf="errorMessage && !loading" [error]="errorMessage || ''" variant="banner" containerClass="mb-4">
+  </app-error-state>
+
+  <!-- Table -->
+  <div class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)]"
+    *ngIf="!loading">
+    <!-- Mobile Card View -->
+    <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
+      <div *ngFor="let workflow of paginatedWorkflows"
+        class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] space-y-3">
+        <!-- Header -->
+        <div class="flex justify-between items-start gap-3">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-[var(--color-text)] text-sm truncate">{{ getWorkflowName(workflow) }}</h3>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ getWorkflowType(workflow.workflowType) }}</p>
+          </div>
+          <button type="button"
+            class="inline-flex items-center px-2 py-1 border rounded-md text-xs font-medium transition-colors flex-shrink-0"
+            [ngClass]="getStatusButtonClass(workflow.status)">
+            {{ workflow.status === 'Active' ? ('workflow.active' | translate) : ('workflow.inactive' | translate) }}
+          </button>
+        </div>
+
+        <!-- Details -->
+        <div class="text-sm">
+          <p class="text-[var(--color-text-muted)] text-xs mb-1">{{ 'workflow.approvalStages' | translate }}</p>
+          <p class="font-medium text-[var(--color-text)]">{{ workflow.approvalStages }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-border-muted)]">
+          <button type="button" (click)="onViewDetails(workflow.id)"
+            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-info)]/10 text-[var(--color-info)] rounded-lg text-xs font-medium hover:bg-[var(--color-info)]/20 transition-colors"
+            title="{{ 'workflow.view' | translate }}">
+            <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'workflow.view' | translate }}</span>
+          </button>
+          <button *ngIf="isSuperAdmin" type="button" (click)="onEdit(workflow.id)"
+            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-medium hover:bg-[var(--color-brand)]/20 transition-colors"
+            title="{{ 'workflow.edit' | translate }}">
+            <lucide-angular [img]="FileEdit" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'workflow.edit' | translate }}</span>
+          </button>
+          <button *ngIf="isSuperAdmin" type="button" (click)="onDelete(workflow.id)"
+            class="px-3 py-2 bg-[var(--color-error)]/10 text-[var(--color-error)] rounded-lg hover:bg-[var(--color-error)]/20 transition-colors"
+            title="{{ 'common.delete' | translate }}">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View -->
+    <div class="hidden lg:block overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
+          <tr>
+            <th
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'workflow.name' | translate }}
+            </th>
+            <th
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'workflow.workflowType' | translate }}
+            </th>
+            <th
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'workflow.approvalStages' | translate }}
+            </th>
+            <th
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'workflow.status' | translate }}
+            </th>
+            <th class="px-6 py-3">
+              <div class="actions-header">
+                {{ 'workflow.actions' | translate }}
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-[var(--color-background)]">
+          <tr *ngFor="let workflow of paginatedWorkflows; let i = index"
+            [ngClass]="{'bg-[var(--color-background-muted)]': i % 2 === 1}"
+            class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+              {{ getWorkflowName(workflow) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+              {{ getWorkflowType(workflow.workflowType) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+              {{ workflow.approvalStages }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button type="button"
+                class="inline-flex items-center px-3 py-1 border rounded-md text-xs font-medium transition-colors"
+                [ngClass]="getStatusButtonClass(workflow.status)">
+                {{ workflow.status === 'Active' ? ('workflow.active' | translate) : ('workflow.inactive' | translate) }}
+              </button>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <div class="flex items-center gap-2 justify-center">
+                <button type="button" (click)="onViewDetails(workflow.id)" class="action-icon-button"
+                  title="{{ 'workflow.view' | translate }}">
+                  <lucide-angular [img]="Eye" class="h-4 w-4 action-icon"></lucide-angular>
+                </button>
+                <button *ngIf="isSuperAdmin" type="button" (click)="onEdit(workflow.id)" class="action-icon-button"
+                  title="{{ 'workflow.edit' | translate }}">
+                  <lucide-angular [img]="FileEdit" class="h-4 w-4 action-icon"></lucide-angular>
+                </button>
+                <button *ngIf="isSuperAdmin" type="button" (click)="onDelete(workflow.id)"
+                  class="action-icon-button action-icon-button-danger" title="{{ 'common.delete' | translate }}">
+                  <svg class="h-4 w-4 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="filteredWorkflows.length > 0 && !loading"
+      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredWorkflows.length"
+          [visibleItems]="paginatedWorkflows.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+        </app-rows-per-page>
+
+        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="paginatedWorkflows.length === 0" class="text-center py-12">
+    <div
+      class="w-16 h-16 mx-auto mb-4 bg-[var(--color-background-muted)] rounded-full flex items-center justify-center">
+      <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-[var(--color-text)] mb-2">{{ 'workflow.noWorkflows' | translate }}</h3>
+    <p class="text-[var(--color-text-muted)]">{{ 'workflow.noWorkflowsDescription' | translate }}</p>
+  </div>
+
+  <!-- View Modal -->
+  <div *ngIf="showViewModal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+    <div
+      class="bg-[var(--color-background)] rounded-lg shadow-custom-xl border-2 border-[var(--color-border)] w-full max-w-[98vw] max-h-[95vh] p-8 overflow-hidden">
+      <div class="flex items-start justify-between mb-4 gap-4">
+        <div class="flex items-center gap-3">
+          <h3 class="text-2xl font-semibold text-[var(--color-text)]">{{ selectedWorkflow?.workflowName }}</h3>
+          <span class="inline-flex items-center rounded-full px-4 py-1 text-sm font-semibold"
+            [ngClass]="selectedWorkflow?.isActive ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]' : 'bg-[var(--color-background-active)] text-[var(--color-text-muted)]'">
+            {{ selectedWorkflow?.isActive ? ('workflow.active' | translate) : ('workflow.inactive' | translate) }}
+          </span>
+        </div>
+        <button
+          class="px-3 py-1.5 border-2 border-[var(--color-border)] rounded text-lg hover:bg-[var(--color-background-hover)] transition-colors"
+          (click)="closeModals()">×</button>
+      </div>
+      <h4 class="text-lg font-medium text-[var(--color-text)] mb-3">{{ 'workflow.steps' | translate }}</h4>
+      <div class="max-h-[60vh] overflow-auto border-2 border-[var(--color-border)] rounded-lg">
+        <table class="min-w-full">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">#</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.role' |
+                translate }}</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
+                'workflow.applicationEntity' | translate }}</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
+                'workflow.higherApprovalRole' | translate }}</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{
+                'workflow.higherApprovalEntity' | translate }}</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">{{ 'workflow.skipTo'
+                | translate }}</th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
+                {{ 'workflow.rolesToBeNotified' | translate }}
+                <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
+                  'workflow.whenApproveRejectReturn' | translate }}</span>
+              </th>
+              <th class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
+                {{ 'workflow.usersToBeNotified' | translate }}
+                <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
+                  'workflow.whenApproveRejectReturn' | translate }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of (selectedWorkflow?.workflowSteps || []); let i = index"
+              class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <td class="px-4 py-2">{{ orderLabel(s.stepOrder || (i + 1)) }}</td>
+              <td class="px-4 py-2">{{ getRoleNameById(s.applicationRoleId) }}</td>
+              <td class="px-4 py-2">{{ getEntityNameById(s.applicationEntityId) }}</td>
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getRoleNameById(resolveHigherApprovalRoleId(s)) : '' }}
+              </td>
+              <td class="px-4 py-2">{{ s.requireHigherApproval ? getEntityNameById(resolveHigherApplicationEntityId(s))
+                : '' }}</td>
+              <td class="px-4 py-2 text-sm">
+                <div *ngIf="getSkipToSteps(s).length > 0; else noSkipTo" class="space-y-1">
+                  <div *ngFor="let skipStep of getSkipToSteps(s)" class="block">{{ skipStep }}</div>
+                </div>
+                <ng-template #noSkipTo>
+                  <span>-</span>
+                </ng-template>
+              </td>
+              <td class="px-4 py-2 text-sm">{{ getNotifyingRoles(s) }}</td>
+              <td class="px-4 py-2 text-sm">{{ getNotifyingUsers(s) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-6 text-end">
+        <button
+          class="px-5 py-2 border-2 border-[var(--color-border)] rounded hover:bg-[var(--color-background-hover)] transition-colors"
+          (click)="closeModals()">{{ 'common.close' | translate }}</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Delete Confirmation Dialog -->
+  <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="deleteDialogTitle" [message]="deleteDialogMessage"
+    [description]="deleteDialogDescription" [confirmText]="'common.delete' | translate"
+    [cancelText]="'common.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteConfirm()"
+    (cancelled)="onDeleteCancel()">
+  </app-confirm-dialog>
+</div>

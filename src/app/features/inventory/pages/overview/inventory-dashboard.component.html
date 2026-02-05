@@ -1,0 +1,284 @@
+<div class="page-wrapper">
+  <!-- Enhanced Header Section -->
+  <div
+    class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-8">
+    <div class="page-container py-8">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div class="animate-fade-in">
+          <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
+          <p class="text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
+        </div>
+
+        <!-- Shared Filter Bar Component -->
+        <app-request-filter-bar layout="separate" [showStatusFilter]="true" [showPriorityFilter]="false"
+          [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
+          [searchQuery]="searchQuery" [resultCount]="filteredCardsCount" [useSearchButton]="true"
+          (statusFilterChange)="onStatusFilterChange($event)" (searchTriggered)="onSearchChange($event)"
+          class="animate-slide-in-right">
+        </app-request-filter-bar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="page-container">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Items Card -->
+      <div class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
+              'inventoryDashboard.statistics.totalItems' | translate }}</p>
+            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.totalItems | number }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-lg bg-[var(--color-info)]/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--color-info)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Quantity Card -->
+      <div class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
+              'inventoryDashboard.statistics.totalQuantity' | translate }}</p>
+            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.totalQuantity | number }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-lg bg-[var(--color-success)]/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--color-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Low Stock Card -->
+      <div (click)="onLowStockClick()"
+        class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
+              'inventoryDashboard.statistics.lowStock' | translate }}</p>
+            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.lowStock | number }}</p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.belowThreshold' |
+              translate }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-lg bg-[var(--color-error)]/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expiring Soon Card -->
+      <div (click)="onExpiringSoonClick()"
+        class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
+              'inventoryDashboard.statistics.expiringSoon' | translate }}</p>
+            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.expiringSoon | number }}</p>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.next30Days' |
+              translate }}</p>
+          </div>
+          <div class="w-12 h-12 rounded-lg bg-[var(--color-warning)]/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--color-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table View -->
+    <div *ngIf="visibleCards.length > 0"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      <!-- Mobile Card View -->
+      <div class="lg:hidden grid grid-cols-1 gap-4">
+        <div *ngFor="let card of paginatedCards"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
+          [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
+
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="font-bold text-[var(--color-text)] text-sm">{{ card.orders[0].orderId || card.title }}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">{{ formatApprovalDateTime(card.orders[0].requestDate)
+                || 'N/A' }}</span>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+              [ngClass]="getStatusBadgeClass(card.status)">
+              {{ getStatusTranslationKey(card.status) | translate }}
+            </span>
+          </div>
+
+          <!-- Details -->
+          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].departmentName || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].requesterName || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <!-- Footer / Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
+            <span *ngIf="card.isMyTurn"
+              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
+              {{ 'requestsManagement.actionRequired' | translate }}
+            </span>
+            <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
+
+            <button (click)="onTableAction(card)"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
+              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
+              <span>{{ 'common.view' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-x-auto">
+        <table class="min-w-full divide-y divide-[var(--color-border)]">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'dashboard.orderNumber' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'dashboard.requestDate' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'dashboard.department' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'dashboard.requester' | translate }}</th>
+              <th
+                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'dashboard.status' | translate }}</th>
+              <th
+                class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                {{ 'common.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let card of paginatedCards" [class.action-required-highlight]="card.isMyTurn"
+              class="hover:bg-[var(--color-background-hover)] transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+                {{ card.orders[0].orderId || card.title }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ formatApprovalDateTime(card.orders[0].requestDate) || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ card.orders[0].departmentName || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ card.orders[0].requesterName || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getStatusBadgeClass(card.status)">
+                    {{ getStatusTranslationKey(card.status) | translate }}
+                  </span>
+                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow">
+                    {{ 'requestsManagement.actionRequired' | translate }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                <button (click)="onTableAction(card)"
+                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors">
+                  <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="visibleCards.length > 0"
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8 text-start">
+      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedCards.length"
+        (rowsPerPageChange)="onRowsPerPageChange($event)">
+      </app-rows-per-page>
+
+      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+        </app-pagination>
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
+          {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+        </span>
+      </div>
+    </div>
+
+    <!-- No Cards Message -->
+    <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
+      <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
+        <div
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">
+          <div class="flex flex-col items-center gap-6 text-center">
+            <div
+              class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
+              <lucide-angular [img]="ShieldAlert" class="w-10 h-10 text-[var(--color-error)]"></lucide-angular>
+            </div>
+            <div class="space-y-3">
+              <h2 class="text-2xl font-bold text-[var(--color-text)]">Access Needed</h2>
+              <p class="text-base text-[var(--color-text-muted)] leading-relaxed max-w-md mx-auto">
+                Your account is connected through LDAP but no permissions are currently assigned. Please contact your
+                system administrator to request access.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noOrdersMessage>
+        <div class="text-center">
+          <div
+            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
+                <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                  </path>
+                </svg>
+              </div>
+              <p class="text-lg font-medium text-[var(--color-text-muted)]">
+                {{ 'dashboard.noOrders' | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+</div>
+
+<!-- Unified Request Details Modal -->
+<app-request-details-modal [isOpen]="isRequestModalOpen" [request]="selectedRequest" (close)="closeRequestModal()">
+</app-request-details-modal>

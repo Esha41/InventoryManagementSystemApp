@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { fromEvent, Subject } from 'rxjs';
 import { takeUntil, throttleTime, debounceTime } from 'rxjs/operators';
 import { TranslationService } from '@services/translation.service';
@@ -45,7 +46,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
 
   // Preview state
   show = false;
-  imageUrl: string | null = null;
+  imageUrl: SafeUrl | string | null = null;
   altText = '';
   left = 0;
   top = 0;
@@ -58,7 +59,8 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -99,7 +101,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
         this.imageUrl = null;
         this.altText = '';
         this.currentImageElement = null;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
       this.previewTimeout = null;
     }, this.delay);
@@ -154,6 +156,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
   }
 
   private updateTooltipPosition(): void {
+    // We can't easily check src equality with SafeUrl, so we skip that check
     if (!this.currentImageElement || !this.imageUrl) {
       this.hide();
       return;
@@ -164,7 +167,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
     const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight &&
       rect.left >= 0 && rect.right <= window.innerWidth;
 
-    if (!isVisible || this.currentImageElement.getAttribute('src') !== this.imageUrl) {
+    if (!isVisible) {
       this.hide();
       return;
     }
@@ -176,10 +179,6 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
       ...({} as Partial<MouseEvent>)
     } as unknown as MouseEvent;
 
-    this.calculateAndSetPosition(syntheticEvent, {
-      imageUrl: this.imageUrl,
-      altText: this.altText
-    });
   }
 
   private calculateAndSetPosition(event: MouseEvent, data: ImagePreviewData): void {
@@ -233,14 +232,17 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
 
     // Update state
     this.show = true;
-    this.imageUrl = data.imageUrl;
+
+    // Sanitize URL for blob
+    this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(data.imageUrl);
+
     this.altText = data.altText;
     this.left = left;
     this.top = top;
     this.arrowLeft = arrowLeft;
     this.arrowPosition = arrowPosition;
 
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 }
 

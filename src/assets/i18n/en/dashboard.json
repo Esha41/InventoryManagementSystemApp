@@ -3,6 +3,7 @@
     "title": "Dashboard",
     "subtitle": "Order status overview",
     "orderStatusOverview": "Order status overview",
+    "count": "Count",
     "newIssue": "New Issue",
     "newIssueOrders": "New Issue Orders",
     "newReturns": "New Returns",
@@ -41,6 +42,7 @@
     "depot": "Depot",
     "itemName": "Item Name",
     "itemNo": "Item Number",
+    "nsn": "NSN",
     "priorityLabels": {
       "normal": "Normal",
       "urgent": "Urgent",
@@ -78,6 +80,35 @@
       "lowStock": "Low Stock",
       "next30Days": "Next 30 days",
       "belowThreshold": "Below threshold"
+    },
+    "expiringLots": {
+      "title": "Expiring Lots",
+      "subtitle": "Lots expiring in the next 30 days",
+      "itemName": "Item Name",
+      "itemNo": "Item No",
+      "lot": "Lot",
+      "batchNo": "Batch No",
+      "expiryDate": "Expiry Date",
+      "daysUntilExpiry": "Days Until Expiry",
+      "days": "days",
+      "remainingQuantity": "Remaining Quantity",
+      "depot": "Depot",
+      "supplier": "Supplier",
+      "manufacturer": "Manufacturer",
+      "noLots": "No lots expiring in the next 30 days"
+    },
+    "lowStock": {
+      "title": "Low Stock Items",
+      "subtitle": "Items below minimum stock threshold",
+      "itemName": "Item Name",
+      "itemNo": "Item No",
+      "nsn": "NSN",
+      "minimumQuantity": "Minimum Quantity",
+      "totalStock": "Total Stock",
+      "holdQuantity": "Hold Quantity",
+      "suppliedQuantity": "Used Quantity",
+      "remaining": "Remaining",
+      "noItems": "No items below minimum stock threshold"
     },
     "annualSupplyActivity": "Annual Supply Activity",
     "overstock": "Overstock"

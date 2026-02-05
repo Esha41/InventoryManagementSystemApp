@@ -1,3 +1,5 @@
+import { DelegationScope } from './delegation-scope.enum';
+
 export interface UserDelegation {
     id: number;
     delegatorUserId: string;
@@ -14,6 +16,7 @@ export interface UserDelegation {
     status: string;
     delegationStatus: number; // 0 = Pending, 1 = Approved, 2 = Rejected
     isIncoming: boolean;
+    delegationScopes: string[]; // Array of DelegationScope enum values as strings
 }
 
 export interface CreateUserDelegation {
@@ -21,4 +24,5 @@ export interface CreateUserDelegation {
     startDate: string;
     endDate: string;
     reason: string;
+    delegationScopes: string[]; // Array of DelegationScope enum values as strings
 }

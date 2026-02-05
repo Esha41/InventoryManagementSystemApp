@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown, Moon, Sun } from 'lucide-angular';
+import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown, Moon, Sun, Menu } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
@@ -28,6 +28,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Moon = Moon;
   readonly Sun = Sun;
+  readonly Menu = Menu;
+
+  @Output() menuClick = new EventEmitter<void>();
 
   currentUser: AuthenticatedUser | null = null;
   userDetails: BackendUserDto | null = null;
@@ -44,7 +47,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private translateService: TranslateService,
     public themeService: ThemeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.notificationService.initialize();
@@ -98,23 +101,23 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (!fullName || fullName === 'User') {
       return 'U';
     }
-    
+
     // Remove email-like patterns and split by space
     const cleanName = fullName.split('@')[0].trim();
     const parts = cleanName.split(/\s+/);
-    
+
     if (parts.length >= 2) {
       // Get first letter of first and last name
       const first = parts[0][0]?.toUpperCase() || '';
       const last = parts[parts.length - 1][0]?.toUpperCase() || '';
       return (first + last) || 'U';
     }
-    
+
     // Single name - use first two letters if available
     if (cleanName.length >= 2) {
       return cleanName.substring(0, 2).toUpperCase();
     }
-    
+
     return cleanName[0]?.toUpperCase() || 'U';
   }
 
@@ -171,7 +174,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.closeUserMenu();
-    
+
     this.authService.logout().subscribe({
       next: () => {
         this.router.navigate(['/auth/login']);
@@ -181,5 +184,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.router.navigate(['/auth/login']);
       }
     });
+  }
+
+  onMenuClick(): void {
+    this.menuClick.emit();
   }
 }

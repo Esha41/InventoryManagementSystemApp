@@ -2,75 +2,71 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
-import { APIOperationResponse } from '@models/api-response.model';
+import { ApiService } from './api.service';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
-
-interface ApiListResponse<T> {
-  succeeded?: boolean;
-  data?: T[];
-  result?: T[];
-}
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models/import-result.model';
 
 @Injectable({ providedIn: 'root' })
-export class ExplosiveService {
+export class ExplosiveService implements IImportableService {
+  private readonly endpoint = '/Explosive';
+
   constructor(
-    private http: HttpClient,
+    private apiService: ApiService,
+    private http: HttpClient, // Kept for Blob operations
     private config: ConfigService,
     private fileUploadService: FileUploadService
   ) { }
-
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}/Explosive`;
-  }
 
   // Fetch list of explosives
   getAll<T = ExplosiveDto>(query?: { search?: string }): Observable<T[]> {
     let params = new HttpParams();
     if (query?.search) params = params.set('search', query.search);
 
-    return this.http.get<APIOperationResponse<T[]> | ApiListResponse<T> | T[]>(this.baseUrl, { params }).pipe(
-      map((res: APIOperationResponse<T[]> | ApiListResponse<T> | T[] | unknown) => {
-        if (res && typeof res === 'object' && 'succeeded' in res && 'data' in res) {
-          const apiOpResponse = res as APIOperationResponse<T[]>;
-          if (apiOpResponse.succeeded && apiOpResponse.data && Array.isArray(apiOpResponse.data)) {
-            return apiOpResponse.data as T[];
-          }
+    return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  // Get paginated explosives
+  // Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+  getAllPaginated(request: PagedRequest): Observable<PaginatedList<ExplosiveDto>> {
+    return this.apiService.post<PaginatedList<ExplosiveDto>>(
+      `${this.endpoint}/Paginated`,
+      request
+    ).pipe(
+      map(response => {
+        // Response is already unwrapped PaginatedList from apiService
+        if (!response || !response.items) {
+          throw new Error('Invalid response structure');
         }
-        if (Array.isArray(res)) return res as T[];
-        const apiResponse = res as ApiListResponse<T>;
-        if (apiResponse?.data && Array.isArray(apiResponse.data)) return apiResponse.data as T[];
-        if (apiResponse?.result && Array.isArray(apiResponse.result)) return apiResponse.result as T[];
-        return [] as T[];
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error fetching paginated explosives:', error);
+        throw error;
       })
     );
   }
 
   // Get explosive by ID
-  getById<T = ExplosiveDto>(id: number): Observable<T | null> {
-    return this.http.get<ApiListResponse<T> | T>(`${this.baseUrl}/${id}`).pipe(
-      map((res: ApiListResponse<T> | T | unknown) => {
-        const apiResponse = res as ApiListResponse<T>;
-        if (apiResponse?.data) return apiResponse.data as T;
-        if (apiResponse?.result) return apiResponse.result as T;
-        return res as T;
-      })
-    );
+  getById<T = ExplosiveDto>(id: number): Observable<T> {
+    return this.apiService.get<T>(`${this.endpoint}/${id}`);
   }
 
   // Update explosive
   update<T = ExplosiveDto>(id: number, data: CreateUpdateExplosiveDto): Observable<APIOperationResponse<T>> {
-    return this.http.put<APIOperationResponse<T>>(`${this.baseUrl}/${id}`, data);
+    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, data);
   }
 
   // Delete explosive
   delete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.http.delete<APIOperationResponse<boolean>>(`${this.baseUrl}/${id}`);
+    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
   }
 
   // Create explosive
   create<T = ExplosiveDto>(data: CreateUpdateExplosiveDto): Observable<APIOperationResponse<T>> {
-    return this.http.post<APIOperationResponse<T>>(this.baseUrl, data);
+    return this.apiService.postRaw<T>(this.endpoint, data);
   }
 
   // Get file info for an explosive (returns file ID and URL)
@@ -189,24 +185,26 @@ export class ExplosiveService {
   }
 
   // Import explosives from Excel file
-  importData(file: File, language: string = 'en'): Observable<any> {
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    return this.http.post<any>(`${this.baseUrl}/Import`, formData, { params });
+    // Use postRaw to get the full response if needed, or post for data only
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/Import`, formData, params);
   }
 
   // Preview import data without saving
-  importPreview(file: File, language: string = 'en'): Observable<any> {
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    return this.http.post<any>(`${this.baseUrl}/ImportPreview`, formData, { params });
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/ImportPreview`, formData, params);
   }
 
   // Download import template with all fields and data validation
-  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+  generateImportTemplate(language: string = 'en'): Observable<Blob> {
     const params = new HttpParams().set('language', language);
-    return this.http.get(`${this.baseUrl}/template`, { params, responseType: 'blob' });
+    // Use http directly for blob response as ApiService doesn't support it yet
+    return this.http.get(`${this.config.apiUrl}${this.endpoint}/template`, { params, responseType: 'blob' });
   }
 }

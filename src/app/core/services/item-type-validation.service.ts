@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { Cartridge } from '@pages/new-issue-request/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
 
 export interface ItemTypeValidationResult {
   isValid: boolean;
@@ -19,7 +19,7 @@ export interface ItemTypeValidationResult {
   providedIn: 'root'
 })
 export class ItemTypeValidationService {
-  constructor(private translate: TranslateService) {}
+  constructor(private translate: TranslateService) { }
 
   /**
    * Validates if a new item can be added to the existing selection

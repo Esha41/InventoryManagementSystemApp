@@ -5,77 +5,7 @@ import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
-
-/**
- * Return Request DTOs matching backend structure
- */
-export interface CreateReturnDto {
-  reason?: string;
-  priority: number;
-  notes?: string;
-  departmentId: number;
-  requesterId?: string;
-  requestPurposeId: number;
-  returnItems: CreateReturnItemDto[];
-}
-
-export interface CreateReturnItemDto {
-  itemId: number;
-  quantity: number;
-  notes?: string;
-}
-
-export interface ReturnDto {
-  id: number;
-  requestNo: string;
-  requestType: number;
-  reason?: string;
-  priority: number;
-  status: number;
-  notes?: string;
-  departmentId: number;
-  requesterId?: string;
-  recieverId?: number;
-  depotId?: number;
-  requestPurposeId: number;
-  // Nested objects from backend BaseRequestDto
-  department?: {
-    id: number;
-    code: string;
-    nameAr: string;
-    nameEn: string;
-    isDeleted: boolean;
-  };
-  requester?: {
-    id: string;
-    userName: string;
-    fullNameEN: string;
-    fullNameAR: string;
-    militoryId?: string | null;
-    email?: string;
-    rank?: any;
-    department?: any;
-  };
-  requestPurpose?: {
-    id: number;
-    nameAr: string;
-    nameEn: string;
-    requestType: number;
-  };
-  requestItems?: ReturnItemDto[];
-  creationDate?: string | Date; // From BaseRequestDto
-  isMyTurn?: boolean;
-}
-
-export interface ReturnItemDto {
-  id: number;
-  itemId: number;
-  quantity: number;
-  requestId: number;
-  notes?: string;
-  itemName?: string;
-  itemNo?: string;
-}
+import { CreateReturnDto, ReturnDto } from '@models/return.model';
 
 /**
  * Return Service

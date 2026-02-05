@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
@@ -67,7 +67,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     private lookupService: LookupService,
     private toastService: ToastService,
     private translate: TranslateService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.isCurrentUserSuperAdmin = this.authService.isSuperAdmin();
     this.initializeForm();
@@ -145,7 +146,6 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         }
       },
       error: (error: any) => {
-        console.error('Failed to load roles from API:', error);
         this.errorMessage = 'Failed to load roles';
         // Load fallback roles on error
         this.loadFallbackRoles();
@@ -160,66 +160,81 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         id: '1',
         name: 'Administrator',
         isDefaultRole: false,
-        isSuperAdmin: true
+        isSuperAdmin: true,
+        isAdmin: true
       },
       {
         id: '2',
         name: 'Warehouse Manager',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '3',
         name: 'Inventory Clerk',
         isDefaultRole: true,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '4',
         name: 'Viewer',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '5',
         name: 'Editor',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       },
       {
         id: '6',
         name: 'Moderator',
         isDefaultRole: false,
-        isSuperAdmin: false
+        isSuperAdmin: false,
+        isAdmin: false
       }
     ];
-    console.log('Using fallback roles:', this.roles);
   }
 
   private loadDepartments(): void {
     this.isLoadingDepartments = true;
+    const control = this.userForm?.get('departmentId');
+    if (control) control.disable({ emitEvent: false });
+
     this.lookupService.getLookupItems('Department').subscribe({
       next: (deps: DepartmentDto[]) => {
         this.departments = deps ?? [];
         this.isLoadingDepartments = false;
+        if (control) control.enable({ emitEvent: false });
       },
       error: () => {
         this.departments = [];
         this.isLoadingDepartments = false;
+        if (control) control.enable({ emitEvent: false });
       }
     });
   }
 
   private loadRanks(): void {
     this.isLoadingRanks = true;
+    const control = this.userForm?.get('rankId');
+    if (control) control.disable({ emitEvent: false });
+
     this.lookupService.getLookupItems('Rank').subscribe({
       next: (items: LookupItem[]) => {
         this.ranks = items ?? [];
         this.isLoadingRanks = false;
+        if (control) control.enable({ emitEvent: false });
       },
       error: () => {
         this.ranks = [];
         this.isLoadingRanks = false;
+        if (control) control.enable({ emitEvent: false });
       }
     });
   }
@@ -254,7 +269,8 @@ export class UserFormModalComponent implements OnInit, OnChanges {
             id: r.roleId,
             name: r.roleName,
             isDefaultRole: r.isDefaultRole || false,  // set default if missing
-            isSuperAdmin: r.isSuperAdmin || false     // set default if missing
+            isSuperAdmin: r.isSuperAdmin || false,     // set default if missing
+            isAdmin: r.isAdmin || false               // set default if missing
           }));
         }
 
@@ -273,15 +289,12 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         if (deptId != null) {
           this.userForm.patchValue({ departmentId: deptId });
         }
-
-        console.log('Selected roles for user:', selectedRoleIds.length > 0 ? selectedRoleIds : this.user?.roleIds);
       },
       error: (error: any) => {
         // If getUserRoles fails, still try to set the roles from user data
         if (this.user?.roleIds && this.user.roleIds.length > 0) {
           this.userForm.patchValue({ roleIds: this.user.roleIds });
         }
-        console.error('Failed to load user roles:', error);
         // Don't show error message as roles might already be loaded from loadRoles()
       }
     });
@@ -341,13 +354,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: formValue.militaryId != null ? String(formValue.militaryId).trim() : undefined
       };
 
-      console.log('Creating user with DTO:', JSON.stringify(dto, null, 2));
-      console.log('Selected roles:', dto.roleIds);
-      console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId, 'In DTO (militoryId):', dto.militoryId);
-
       this.backendUserService.createUser(dto).subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
+          this.errorMessage = '';
           this.toastService.success(
             this.translate.instant('userFormModal.createSuccess'),
             this.translate.instant('userFormModal.createTitle')
@@ -357,13 +367,46 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         },
         error: (error: unknown) => {
           this.isLoading = false;
-          const errorMsg = error instanceof Error ? error.message : 'Failed to create user';
+          
+          // Extract error message from various possible locations
+          let errorMsg = this.translate.instant('userFormModal.createError');
+          
+          if (error instanceof Error) {
+            errorMsg = error.message || errorMsg;
+          } else if (error && typeof error === 'object') {
+            // Handle HTTP error response
+            const httpError = error as any;
+            if (httpError.error?.message) {
+              errorMsg = httpError.error.message;
+            } else if (httpError.error?.data?.message) {
+              errorMsg = httpError.error.data.message;
+            } else if (httpError.error?.error?.message) {
+              errorMsg = httpError.error.error.message;
+            } else if (typeof httpError.error === 'string') {
+              errorMsg = httpError.error;
+            } else if (httpError.message) {
+              errorMsg = httpError.message;
+            }
+          }
+          
+          // Check for domain-related errors and translate them
+          if (errorMsg.includes('Invalid domain') || errorMsg.includes('domain')) {
+            const domainMatch = errorMsg.match(/domain:\s*([^\s]+)/i);
+            if (domainMatch && domainMatch[1]) {
+              errorMsg = this.translate.instant('userFormModal.invalidDomain', { domain: domainMatch[1] });
+            } else {
+              errorMsg = this.translate.instant('userFormModal.invalidDomain', { domain: '' });
+            }
+          } else if (errorMsg.includes('Unable to retrieve LDAP settings')) {
+            errorMsg = this.translate.instant('userFormModal.ldapSettingsUnavailable');
+          }
+          
           this.errorMessage = errorMsg;
+          this.cdr.detectChanges();
           this.toastService.error(
-            errorMsg || this.translate.instant('userFormModal.createError'),
+            errorMsg,
             this.translate.instant('userFormModal.createTitle')
           );
-          console.error('Error creating user:', error);
         }
       });
     } else if (this.user) {
@@ -396,14 +439,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: militaryIdValue // Include even if empty string to allow clearing
       };
 
-      console.log('Updating user with DTO:', JSON.stringify(dto, null, 2));
-      console.log('Selected roles:', dto.roleIds);
-      console.log('Military ID - Raw form value:', formValue.militaryId, 'Type:', typeof formValue.militaryId);
-      console.log('Military ID - Processed value (militoryId):', dto.militoryId);
-
       this.backendUserService.updateUser(this.user.id, dto).subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
+          this.errorMessage = '';
           this.toastService.success(
             this.translate.instant('userFormModal.updateSuccess'),
             this.translate.instant('userFormModal.updateTitle')
@@ -413,13 +452,46 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         },
         error: (error: unknown) => {
           this.isLoading = false;
-          const errorMsg = error instanceof Error ? error.message : 'Failed to update user';
+          
+          // Extract error message from various possible locations
+          let errorMsg = this.translate.instant('userFormModal.updateError');
+          
+          if (error instanceof Error) {
+            errorMsg = error.message || errorMsg;
+          } else if (error && typeof error === 'object') {
+            // Handle HTTP error response
+            const httpError = error as any;
+            if (httpError.error?.message) {
+              errorMsg = httpError.error.message;
+            } else if (httpError.error?.data?.message) {
+              errorMsg = httpError.error.data.message;
+            } else if (httpError.error?.error?.message) {
+              errorMsg = httpError.error.error.message;
+            } else if (typeof httpError.error === 'string') {
+              errorMsg = httpError.error;
+            } else if (httpError.message) {
+              errorMsg = httpError.message;
+            }
+          }
+          
+          // Check for domain-related errors and translate them
+          if (errorMsg.includes('Invalid domain') || errorMsg.includes('domain')) {
+            const domainMatch = errorMsg.match(/domain:\s*([^\s]+)/i);
+            if (domainMatch && domainMatch[1]) {
+              errorMsg = this.translate.instant('userFormModal.invalidDomain', { domain: domainMatch[1] });
+            } else {
+              errorMsg = this.translate.instant('userFormModal.invalidDomain', { domain: '' });
+            }
+          } else if (errorMsg.includes('Unable to retrieve LDAP settings')) {
+            errorMsg = this.translate.instant('userFormModal.ldapSettingsUnavailable');
+          }
+          
           this.errorMessage = errorMsg;
+          this.cdr.detectChanges();
           this.toastService.error(
-            errorMsg || this.translate.instant('userFormModal.updateError'),
+            errorMsg,
             this.translate.instant('userFormModal.updateTitle')
           );
-          console.error('Error updating user:', error);
         }
       });
     }

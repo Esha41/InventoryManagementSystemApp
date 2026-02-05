@@ -88,10 +88,10 @@
       "discardRejected": "تم رفض طلب الإتلاف {{requestNo}}."
     },
     "entityTypes": {
-      "order": "طلب",
+      "order": "صرف",
       "return": "إرجاع",
       "discard": "إتلاف",
-      "Order": "طلب",
+      "Order": "صرف",
       "Return": "إرجاع",
       "Discard": "إتلاف"
     }

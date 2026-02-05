@@ -12,7 +12,7 @@ export interface LowStockNotificationSettingsDto {
 };
 
 export interface LowStockNotificationScheduleDto {
-  scheduleTime: string,
+  scheduleTime: string | Date,
 };
 
 @Injectable({
@@ -39,7 +39,7 @@ export class StockNotificationService {
     );
   }
 
-  getSchedule<T = LowStockNotificationScheduleDto>(): Observable<APIOperationResponse<T>> {
+  getSchedule<T = Date | null>(): Observable<APIOperationResponse<T>> {
     const endpoint = `${this.config.apiUrl}${API_ENDPOINTS.STOCK_NOTIFICATION.SCHEDULE}`;
     return this.http.get<APIOperationResponse<T>>(endpoint).pipe(
       catchError(this.handleError)

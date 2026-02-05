@@ -1,5 +1,5 @@
-import { OrderItem } from '@pages/dashboard/components/status-card/status-card.component';
-import { OverstockItemView } from '@pages/dashboard/components/overstock-card/overstock-card.component';
+import { OrderItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
+import { OverstockItemView } from '@dashboard/pages/overview/components/overstock-card/overstock-card.component';
 import { CardStatus } from '@utils/dashboard.utils';
 
 export interface InventoryDashboardCard {
@@ -18,6 +18,7 @@ export interface StatisticsData {
   totalItems: number;
   totalQuantity: number;
   lowStock: number; // Items below threshold
+  expiringSoon: number; // Lots expiring in next 30 days
   monthlyActivity: number[]; // Orders per month (current year only)
   monthlyActivityPercentages: number[]; // Percentage distribution
 }

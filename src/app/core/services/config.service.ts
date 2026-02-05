@@ -16,7 +16,7 @@ export class ConfigService {
   private runtimeConfig: RuntimeConfig | null = null;
   private configLoaded = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Loads runtime-config.json BEFORE Angular bootstrap
@@ -52,6 +52,10 @@ export class ConfigService {
 
   get isProduction(): boolean {
     return environment.production;
+  }
+
+  get enableLogging(): boolean {
+    return environment.enableLogging;
   }
 
   get isLoggingEnabled(): boolean {

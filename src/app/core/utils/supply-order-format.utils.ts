@@ -4,7 +4,7 @@
  * Following Angular best practices: extract formatting logic to utils
  */
 
-import { OrderDto, OrderRequestItemDto } from '@services/order.service';
+import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { SupplyItemDisplay } from '@models/supply-order.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';

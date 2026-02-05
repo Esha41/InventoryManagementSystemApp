@@ -14,9 +14,14 @@ import { ToastComponent } from '@components/toast/toast.component';
 })
 export class MainLayoutComponent {
   isSidebarCollapsed = false;
+  mobileSidebarOpen = false;
 
   onSidebarToggle(collapsed: boolean): void {
     this.isSidebarCollapsed = collapsed;
+  }
+
+  onMobileMenuToggle(): void {
+    this.mobileSidebarOpen = !this.mobileSidebarOpen;
   }
 }
 
