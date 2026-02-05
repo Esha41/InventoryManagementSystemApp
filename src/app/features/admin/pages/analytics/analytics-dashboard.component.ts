@@ -99,7 +99,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
                 this.isLoading.set(false);
                 this.isRefreshing.set(false);
             }
-        });
+        }, { allowSignalWrites: true });
     }
 
     ngOnInit(): void {
