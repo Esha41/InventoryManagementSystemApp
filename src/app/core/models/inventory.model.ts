@@ -60,6 +60,7 @@ export interface InventoryDetailDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
 
   // Navigation properties
@@ -78,6 +79,7 @@ export interface InventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
 
   // Navigation properties
@@ -100,6 +102,7 @@ export interface CreateInventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
   inventoryDetails: CreateInventoryDetailDto[];
 }
@@ -124,6 +127,7 @@ export interface UpdateInventoryDto {
   invoiceNumber?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
+  contractNumber?: string;
   notes?: string;
   inventoryDetails: UpdateInventoryDetailDto[];
 }

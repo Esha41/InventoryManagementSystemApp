@@ -31,7 +31,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   @Input() inventoryDetail?: InventoryDetailDto;
   @Input() inventory?: InventoryDto;
   @Input() inventoryId!: number;
-  
+
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<{ detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto }>();
 
@@ -82,6 +82,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || ''],
       invoiceDate: [this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate)],
       recievedDate: [this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate)],
+      contractNumber: [this.inventoryDetail?.contractNumber || this.inventory?.contractNumber || ''],
       notes: [this.inventoryDetail?.notes || this.inventory?.notes || '']
     });
   }
@@ -101,6 +102,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
         invoiceNumber: this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '',
         invoiceDate: this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate),
         recievedDate: this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate),
+        contractNumber: this.inventoryDetail?.contractNumber || this.inventory?.contractNumber || '',
         notes: this.inventoryDetail?.notes || this.inventory?.notes || ''
       });
     }
@@ -154,6 +156,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       invoiceNumber: this.detailForm.value.invoiceNumber?.trim() || undefined,
       invoiceDate: this.parseDateFromDisplay(this.detailForm.value.invoiceDate) || undefined,
       recievedDate: this.parseDateFromDisplay(this.detailForm.value.recievedDate) || undefined,
+      contractNumber: this.detailForm.value.contractNumber?.trim() || undefined,
       notes: this.detailForm.value.notes?.trim() || undefined,
       inventoryDetails: [] // Will be populated by the parent component
     };
@@ -177,11 +180,13 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     const originalInvoiceNumber = (this.inventory?.invoiceNumber || this.inventoryDetail?.invoiceNumber || '').trim();
     const originalInvoiceDate = this.inventory?.invoiceDate || this.inventoryDetail?.invoiceDate;
     const originalReceivedDate = this.inventory?.recievedDate || this.inventoryDetail?.recievedDate;
+    const originalContractNumber = (this.inventory?.contractNumber || this.inventoryDetail?.contractNumber || '').trim();
     const originalNotes = (this.inventory?.notes || this.inventoryDetail?.notes || '').trim();
 
     const newInvoiceNumber = (updateInventoryDto.invoiceNumber || '').trim();
     const newInvoiceDate = updateInventoryDto.invoiceDate;
     const newReceivedDate = updateInventoryDto.recievedDate;
+    const newContractNumber = (updateInventoryDto.contractNumber || '').trim();
     const newNotes = (updateInventoryDto.notes || '').trim();
 
     // Compare invoice number
@@ -210,6 +215,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     const originalReceivedDateStr = normalizeDate(originalReceivedDate);
     const newReceivedDateStr = newReceivedDate ? normalizeDate(newReceivedDate) : undefined;
     if (newReceivedDateStr !== originalReceivedDateStr) {
+      return true;
+    }
+
+    // Compare contract number
+    if (newContractNumber !== originalContractNumber) {
       return true;
     }
 
@@ -306,21 +316,21 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
    */
   private parseDateFromDisplay(dateString: string | undefined | null): string | undefined {
     if (!dateString || !dateString.trim()) return undefined;
-    
+
     const trimmed = dateString.trim();
-    
+
     // If already in YYYY-MM-DD format, return as-is
     if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
       return trimmed;
     }
-    
+
     // Try to parse DD/MM/YYYY format
     const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (ddmmyyyyMatch) {
       const day = parseInt(ddmmyyyyMatch[1], 10);
       const month = parseInt(ddmmyyyyMatch[2], 10);
       const year = parseInt(ddmmyyyyMatch[3], 10);
-      
+
       // Validate date
       if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year > 1900) {
         const date = new Date(year, month - 1, day);
@@ -333,7 +343,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
         }
       }
     }
-    
+
     // Try to parse as Date object and convert to YYYY-MM-DD
     try {
       const date = new Date(trimmed);
@@ -346,7 +356,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     } catch {
       // Invalid date format
     }
-    
+
     return undefined;
   }
 }

@@ -144,6 +144,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       invoiceNumber: [''],
       invoiceDate: [''],
       receivedDate: [''],
+      contractNumber: [''],
       notes: [''],
       items: this.fb.array([])
     });
@@ -406,6 +407,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       invoiceNumber: formValue.invoiceNumber?.trim() || undefined,
       invoiceDate: formValue.invoiceDate && formValue.invoiceDate.trim() ? formValue.invoiceDate : undefined,
       recievedDate: formValue.receivedDate && formValue.receivedDate.trim() ? formValue.receivedDate : undefined,
+      contractNumber: formValue.contractNumber?.trim() || undefined,
       notes: formValue.notes?.trim() || undefined,
       inventoryDetails: formValue.items.map((item: {
         itemId: number;
