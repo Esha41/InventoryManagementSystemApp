@@ -1,0 +1,33 @@
+<div class="report-viewer-container">
+  <div class="viewer-header">
+    <button 
+      type="button" 
+      (click)="goBack()"
+      class="back-button"
+      [title]="'common.back' | translate">
+      <lucide-angular [img]="isRTL ? ArrowRight : ArrowLeft" class="h-5 w-5"></lucide-angular>
+    </button>
+    <h2 class="viewer-title">{{ reportName }}</h2>
+    <button 
+      type="button" 
+      (click)="closeViewer()"
+      class="close-button"
+      [title]="'common.close' | translate">
+      <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
+    </button>
+  </div>
+  <div class="viewer-content" *ngIf="reportUrl">
+    <dx-report-viewer 
+      [reportUrl]="reportUrl"
+      [height]="'calc(100vh - 80px)'">
+      <dxrv-request-options 
+        [host]="host"
+        [invokeAction]="invokeAction">
+      </dxrv-request-options>
+    </dx-report-viewer>
+  </div>
+  <div *ngIf="!reportUrl" class="error-message">
+    <p>{{ 'reportViewer.noReportSelected' | translate }}</p>
+  </div>
+</div>
+
