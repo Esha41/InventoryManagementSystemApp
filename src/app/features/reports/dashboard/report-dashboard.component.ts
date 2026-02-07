@@ -93,10 +93,13 @@ export class ReportDashboardComponent implements OnInit {
   }
 
   onViewReport(report: Report): void {
-    // Open report in DevExpress Web Document Viewer in a new window
-    // Using new window instead of iframe to avoid CSP (Content Security Policy) issues
-    const viewerUrl = this.reportService.getViewerUrl(report.url);
-    window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+    // Navigate to report viewer component with report URL and name as query parameters
+    this.router.navigate(['/report-viewer'], {
+      queryParams: {
+        reportUrl: report.url,
+        reportName: report.reportName
+      }
+    });
   }
 
   getStatusClass(status: string): string {

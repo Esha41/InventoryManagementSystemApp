@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
+import { DxReportViewerModule } from 'devexpress-reporting-angular';
 import { TranslationService } from '@services/translation.service';
 import { ReportService } from '@services/report.service';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-report-viewer',
@@ -13,7 +14,8 @@ import { ReportService } from '@services/report.service';
   imports: [
     CommonModule,
     TranslateModule,
-    LucideAngularModule
+    LucideAngularModule,
+    DxReportViewerModule
   ],
   template: `
     <div class="report-viewer-container">
@@ -34,12 +36,22 @@ import { ReportService } from '@services/report.service';
           <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
         </button>
       </div>
-      <iframe 
-        [src]="viewerUrl" 
-        class="viewer-iframe"
-        frameborder="0"
-        allowfullscreen>
-      </iframe>
+      <div class="viewer-content" *ngIf="reportUrl">
+        <dx-report-viewer 
+          [reportUrl]="reportUrl"
+          [height]="'calc(100vh - 80px)'"
+          (onExport)="onExport($event)"
+          (onPrint)="onPrint($event)"
+          (onCustomizeMenuActions)="onCustomizeMenuActions($event)">
+          <dxrv-request-options 
+            [host]="host"
+            [invokeAction]="invokeAction">
+          </dxrv-request-options>
+        </dx-report-viewer>
+      </div>
+      <div *ngIf="!reportUrl" class="error-message">
+        <p>{{ 'reportViewer.noReportSelected' | translate }}</p>
+      </div>
     </div>
   `,
   styles: [`
@@ -59,6 +71,7 @@ import { ReportService } from '@services/report.service';
       background: var(--color-background-muted);
       border-bottom: 1px solid var(--color-border);
       gap: 1rem;
+      flex-shrink: 0;
     }
 
     .back-button,
@@ -90,11 +103,26 @@ import { ReportService } from '@services/report.service';
       margin: 0;
     }
 
-    .viewer-iframe {
+    .viewer-content {
       flex: 1;
       width: 100%;
-      border: none;
-      background: white;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .error-message {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+    }
+
+    /* Ensure DevExpress Report Viewer takes full space */
+    ::ng-deep .dx-report-viewer {
+      width: 100%;
+      height: 100%;
     }
   `]
 })
@@ -105,24 +133,31 @@ export class ReportViewerComponent implements OnInit {
 
   reportUrl: string = '';
   reportName: string = '';
-  viewerUrl: SafeResourceUrl | string = '';
+  host: string = '';
+  invokeAction: string = '/DXXRDV';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
-    private reportService: ReportService,
-    private sanitizer: DomSanitizer
-  ) {}
+    private reportService: ReportService
+  ) {
+    // Extract base URL from environment - same pattern as designer
+    const apiUrl = environment.apiUrl;
+    // Remove /api suffix if present, as DevExpress endpoints are at root level
+    this.host = apiUrl.replace('/api', '');
+  }
 
   ngOnInit(): void {
     this.reportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
     this.reportName = this.route.snapshot.queryParamMap.get('reportName') || 'Report';
     
-    if (this.reportUrl) {
-      const url = this.reportService.getViewerUrl(this.reportUrl);
-      this.viewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-    }
+    console.log('Report Viewer Configuration:', {
+      reportUrl: this.reportUrl,
+      reportName: this.reportName,
+      host: this.host,
+      invokeAction: this.invokeAction
+    });
   }
 
   get isRTL(): boolean {
@@ -136,4 +171,17 @@ export class ReportViewerComponent implements OnInit {
   closeViewer(): void {
     this.router.navigate(['/report-dashboard']);
   }
+
+  onExport(event: any): void {
+    console.log('Export event:', event);
+  }
+
+  onPrint(event: any): void {
+    console.log('Print event:', event);
+  }
+
+  onCustomizeMenuActions(event: any): void {
+    console.log('Customize menu actions:', event);
+  }
 }
+
