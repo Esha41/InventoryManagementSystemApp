@@ -142,7 +142,7 @@ export class ReportViewerComponent implements OnInit {
     private translationService: TranslationService,
     private reportService: ReportService
   ) {
-    // Extract base URL from environment - same pattern as designer
+    // Extract base URL from environment
     const apiUrl = environment.apiUrl;
     // Remove /api suffix if present, as DevExpress endpoints are at root level
     this.host = apiUrl.replace('/api', '');
@@ -170,18 +170,6 @@ export class ReportViewerComponent implements OnInit {
 
   closeViewer(): void {
     this.router.navigate(['/report-dashboard']);
-  }
-
-  onExport(event: any): void {
-    console.log('Export event:', event);
-  }
-
-  onPrint(event: any): void {
-    console.log('Print event:', event);
-  }
-
-  onCustomizeMenuActions(event: any): void {
-    console.log('Customize menu actions:', event);
   }
 }
 
