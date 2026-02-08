@@ -1,18 +1,19 @@
-<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+<div class="min-h-screen bg-[var(--color-background-muted)] p-4 sm:p-6">
   <!-- Header -->
-  <div class="mb-6 relative flex items-center justify-center">
+  <div class="mb-6 relative flex items-center justify-between sm:justify-center">
     <button (click)="onCancel()"
-      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute start-0"
+      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors sm:absolute sm:start-0"
       title="{{ 'common.back' | translate }}">
       <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
     </button>
-    <h1 class="text-2xl font-bold text-[var(--color-text)] text-center w-full">{{ 'workflow.addWorkFlow' | translate }}
+    <h1 class="text-xl sm:text-2xl font-bold text-[var(--color-text)] text-center flex-1 sm:w-full">{{
+      'workflow.addWorkFlow' | translate }}
     </h1>
   </div>
 
   <!-- Form Card -->
   <div
-    class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-6 w-full max-w-full overflow-x-hidden">
+    class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
     <!-- Error Message -->
     <div *ngIf="errorMessage"
       class="mb-4 p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 rounded-lg flex items-center justify-between">
@@ -144,8 +145,8 @@
                   </td>
                   <td class="px-3 py-2">
                     <label class="inline-flex items-center gap-2 text-sm">
-                      <input type="checkbox" [(ngModel)]="step.canReturn"
-                        (ngModelChange)="onStepFieldBlur(i)" name="canReturn-{{i}}" class="h-4 w-4" />
+                      <input type="checkbox" [(ngModel)]="step.canReturn" (ngModelChange)="onStepFieldBlur(i)"
+                        name="canReturn-{{i}}" class="h-4 w-4" />
                       <span>{{ 'workflow.canReturn' | translate }}</span>
                     </label>
                   </td>
@@ -162,14 +163,15 @@
       </div>
 
       <!-- Form Actions -->
-      <div class="flex items-center gap-4 pt-4 border-t-2 border-[var(--color-border)] justify-end">
+      <div
+        class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-4 border-t-2 border-[var(--color-border)] sm:justify-end">
         <button type="button" (click)="onCancel()" [disabled]="submitting"
-          class="flex items-center gap-2 px-6 py-2 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg font-medium hover:bg-[var(--color-background-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          class="flex items-center justify-center gap-2 px-6 py-2 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg font-medium hover:bg-[var(--color-background-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
           <span>{{ 'common.cancel' | translate }}</span>
         </button>
         <button *appHasPermission="'workflow.create'" type="submit" [disabled]="submitting || !workflowForm.name"
-          class="flex items-center gap-2 px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          class="flex items-center justify-center gap-2 px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <lucide-angular [img]="Save" class="h-4 w-4" *ngIf="!submitting"></lucide-angular>
           <span *ngIf="submitting">{{ 'common.saving' | translate }}...</span>
           <span *ngIf="!submitting">{{ 'common.save' | translate }}</span>

@@ -55,24 +55,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        // Load metrics initially
-        this.loadMetrics();
-
-        // Start auto-refresh timer (30 seconds)
+        // Start auto-refresh timer BEFORE subscribing to ensure it's active
         this.adminAnalyticsService.startAutoRefresh();
-    }
 
-    ngOnDestroy(): void {
-        this.destroy$.next();
-        this.destroy$.complete();
-    }
-
-    /**
-     * Load dashboard metrics
-     */
-    private loadMetrics(): void {
-        this.isLoading = true;
-
+        // Subscribe to the observable stream - this will automatically update on refresh
+        // The observable uses shareReplay and reacts to refresh$ subject changes
         this.adminAnalyticsService.getUserActivityMetrics()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -80,7 +67,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                     this.userActivityMetrics = metrics;
                     this.isLoading = false;
                     this.isRefreshing = false;
-                    this.cdr.markForCheck();
+                    this.cdr.markForCheck(); // Trigger change detection for OnPush
                 },
                 error: (error) => {
                     console.error('Error loading dashboard metrics:', error);
@@ -91,13 +78,20 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             });
     }
 
+    ngOnDestroy(): void {
+        this.adminAnalyticsService.stopAutoRefresh();
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     /**
      * Manually refresh metrics
      */
     onRefresh(): void {
         this.isRefreshing = true;
+        this.cdr.markForCheck(); // Update UI immediately to show loading state
         this.adminAnalyticsService.refresh();
-        this.cdr.markForCheck();
+        // The subscription will automatically pick up the new data via refresh$ subject
     }
 
 

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { Subject, takeUntil, combineLatest } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest, catchError, of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, LayoutDashboard, TrendingUp, RefreshCw } from 'lucide-angular';
 import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@services/admin-analytics.service';
@@ -11,7 +11,8 @@ import { RequestMetricsCardComponent } from './components/kpi-cards/request-metr
 import { RequestTrendsChartComponent } from './components/request-trends-chart/request-trends-chart.component';
 import { InventoryDistributionChartComponent } from './components/inventory-distribution-chart/inventory-distribution-chart.component';
 import { TopRequestedItemsChartComponent } from './components/top-requested-items-chart/top-requested-items-chart.component';
-import { NgxEchartsModule, provideEcharts } from 'ngx-echarts';
+import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
+import { createEcharts } from '@core/echarts.factory';
 
 /**
  * Analytics Dashboard Component
@@ -22,7 +23,6 @@ import { NgxEchartsModule, provideEcharts } from 'ngx-echarts';
     standalone: true,
     imports: [
         CommonModule,
-        RouterLink,
         TranslateModule,
         LucideAngularModule,
         InventoryOverviewCardComponent,
@@ -33,81 +33,92 @@ import { NgxEchartsModule, provideEcharts } from 'ngx-echarts';
         NgxEchartsModule
     ],
     providers: [
-        provideEcharts()
+        // Use shared factory so we can configure ECharts (e.g. log level) once.
+        provideEchartsCore({ echarts: () => Promise.resolve(createEcharts()) })
     ],
     templateUrl: './analytics-dashboard.component.html',
     styleUrls: ['./analytics-dashboard.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
-    private readonly destroy$ = new Subject<void>();
-
     // Icons
     readonly TrendingUp = TrendingUp;
     readonly RefreshCw = RefreshCw;
     readonly LayoutDashboard = LayoutDashboard;
 
-    // Metrics
-    inventoryMetrics: InventoryMetrics | null = null;
-    requestMetrics: RequestMetrics | null = null;
+    // Loading states - using Signals
+    isLoading = signal(true);
+    isRefreshing = signal(false);
 
-    // Loading states
-    isLoading = true;
-    isRefreshing = false;
+    // Convert Observables to Signals using toSignal() with error handling
+    private inventoryMetrics$ = this.adminAnalyticsService.getInventoryMetrics().pipe(
+        catchError((error) => {
+            this.loggingService.error('Error loading inventory metrics', error);
+            return of(null as InventoryMetrics | null);
+        })
+    );
+    
+    private requestMetrics$ = this.adminAnalyticsService.getRequestMetrics().pipe(
+        catchError((error) => {
+            this.loggingService.error('Error loading request metrics', error);
+            return of(null as RequestMetrics | null);
+        })
+    );
+
+    // Combined metrics as Signal
+    private metricsSignal = toSignal(
+        combineLatest({
+            inventory: this.inventoryMetrics$,
+            requests: this.requestMetrics$
+        }),
+        { 
+            initialValue: { inventory: null as InventoryMetrics | null, requests: null as RequestMetrics | null } as { inventory: InventoryMetrics | null, requests: RequestMetrics | null }
+        }
+    );
+
+    // Computed Signals for individual metrics
+    inventoryMetrics = computed(() => {
+        const metrics = this.metricsSignal();
+        return metrics.inventory;
+    });
+    requestMetrics = computed(() => {
+        const metrics = this.metricsSignal();
+        return metrics.requests;
+    });
 
     constructor(
         private adminAnalyticsService: AdminAnalyticsService,
-        private cdr: ChangeDetectorRef,
         private loggingService: LoggingService
-    ) { }
+    ) {
+        // Effect to handle loading state
+        // Note: allowSignalWrites is deprecated - writes are always allowed in effects
+        effect(() => {
+            const metrics = this.metricsSignal();
+            // Check if we have data (not initial null values)
+            if (metrics && (metrics.inventory !== null || metrics.requests !== null)) {
+                this.isLoading.set(false);
+                this.isRefreshing.set(false);
+            }
+        }, { allowSignalWrites: true });
+    }
 
     ngOnInit(): void {
-        // Load metrics initially
-        this.loadAllMetrics();
-
         // Start auto-refresh timer (30 seconds)
         this.adminAnalyticsService.startAutoRefresh();
+        
+        // Metrics are automatically loaded via toSignal() - no manual subscription needed!
     }
 
     ngOnDestroy(): void {
-        this.destroy$.next();
-        this.destroy$.complete();
-    }
-
-    /**
-     * Load all dashboard metrics
-     */
-    private loadAllMetrics(): void {
-        this.isLoading = true;
-
-        combineLatest({
-            inventory: this.adminAnalyticsService.getInventoryMetrics(),
-            requests: this.adminAnalyticsService.getRequestMetrics()
-        })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (metrics) => {
-                    this.inventoryMetrics = metrics.inventory;
-                    this.requestMetrics = metrics.requests;
-                    this.isLoading = false;
-                    this.isRefreshing = false;
-                    this.cdr.markForCheck();
-                },
-                error: (error) => {
-                    this.loggingService.error('Error loading analytics metrics', error);
-                    this.isLoading = false;
-                    this.isRefreshing = false;
-                    this.cdr.markForCheck();
-                }
-            });
+        // Signals automatically clean up - no manual unsubscribe needed
     }
 
     /**
      * Manually refresh all metrics
      */
     onRefresh(): void {
-        this.isRefreshing = true;
+        this.isRefreshing.set(true);
         this.adminAnalyticsService.refresh();
-        this.cdr.markForCheck();
+        // Loading state will be updated automatically by the effect
     }
 }

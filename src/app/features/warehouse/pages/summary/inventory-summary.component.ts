@@ -21,6 +21,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { ToastService } from '@services/toast.service';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -35,7 +36,8 @@ import { ToastService } from '@services/toast.service';
         LoadingStateComponent,
         ErrorStateComponent,
         PaginationComponent,
-        RowsPerPageComponent
+        RowsPerPageComponent,
+        AppDatePipe
     ],
     providers: [InventorySummaryDataService],
     templateUrl: './inventory-summary.component.html',

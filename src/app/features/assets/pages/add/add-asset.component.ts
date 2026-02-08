@@ -25,6 +25,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
+import { ItemType } from '@models/inventory.model';
 
 interface AssetForm {
   name: string;
@@ -69,7 +70,7 @@ interface AssetForm {
   explosiveType: string;
   netExplosiveQuantity: string;
   netExplosiveQuantityUnitId: string;
-  unit: string; // ExplosiveUnit enum: 1 = Gram, 3 = Meter
+  unitId: string; // Unit lookup ID
 }
 
 type AssetType = 'ammunition' | 'weapon' | 'explosive';
@@ -77,7 +78,7 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
 @Component({
   selector: 'app-add-asset',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, ButtonComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, CardComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './add-asset.component.html',
   styleUrls: ['./add-asset.component.css']
 })
@@ -107,19 +108,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   // Enum Options
   explosiveTypeOptions = getExplosiveTypeOptions();
 
-  // ExplosiveUnit enum options: 1 = Gram, 3 = Meter
-  explosiveUnitOptions = [
-    { label: 'Gram', value: '1' },
-    { label: 'Meter', value: '3' }
-  ];
-
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) => this.getLocalizedName(this.unwrapOption(option));
-  readonly explosiveUnitOptionLabel = (option: DropdownOption<string> | string): string => {
-    if (typeof option === 'string') {
-      return option;
-    }
-    return (option as any).label || '';
-  };
   readonly linkedOptions = [
     { label: 'common.no', value: 'false' },
     { label: 'common.yes', value: 'true' }
@@ -192,7 +181,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       explosiveType: '',
       netExplosiveQuantity: '',
       netExplosiveQuantityUnitId: '',
-      unit: '1' // Default to Gram (ExplosiveUnit enum: 1 = Gram, 3 = Meter)
+      unitId: ''
     };
   }
 
@@ -217,6 +206,31 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.formSubmitted = false;
     this.errorMessage = null;
+    this.loadUnitsForTab(tab);
+  }
+
+  loadUnitsForTab(tab: AssetType): void {
+    let itemType: number | undefined;
+    if (tab === 'ammunition') {
+      itemType = ItemType.Ammunition;
+    } else if (tab === 'weapon') {
+      itemType = ItemType.Weapon;
+    } else if (tab === 'explosive') {
+      itemType = ItemType.Explosive;
+    }
+
+    this.lookupService.getUnitsByItemType(itemType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (units) => {
+          this.units = units;
+        },
+        error: (error) => {
+          const errorMsg = this.translationService.getTranslation('addAsset.errorLoadingUnits') || 'Failed to load units';
+          this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
+          console.error('Error loading units:', error);
+        }
+      });
   }
 
   loadLookupData(): void {
@@ -224,7 +238,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     forkJoin({
-      units: this.lookupService.getUnits(),
       caseTypes: this.lookupService.getCaseTypes(),
       propellants: this.lookupService.getPropellants(),
       compatibilities: this.lookupService.getCompatibilities(),
@@ -240,7 +253,6 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.units = data.units;
           this.caseTypes = data.caseTypes;
           this.propellants = data.propellants;
           this.compatibilities = data.compatibilities;
@@ -253,6 +265,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.itemTypes = data.itemTypes;
           this.countries = data.countries;
           this.loading = false;
+          // Load units for the active tab
+          this.loadUnitsForTab(this.activeTab);
         },
         error: () => {
           this.errorMessage = 'Failed to load lookup data. Please try again.';
@@ -403,7 +417,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
     if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
-    if (this.assetForm.unit) dto.unit = parseInt(this.assetForm.unit);
+    if (this.assetForm.unitId) dto.unitId = parseInt(this.assetForm.unitId);
 
     const formData = new FormData();
     Object.keys(dto).forEach(key => {

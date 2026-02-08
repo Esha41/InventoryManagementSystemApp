@@ -74,7 +74,6 @@ interface ExtendedFilterOptions extends FilterOptions {
     CommonModule,
     FormsModule,
     TranslateModule,
-    ButtonComponent,
     StepperComponent,
     StepperComponent,
     UsageFormComponent,
@@ -82,9 +81,6 @@ interface ExtendedFilterOptions extends FilterOptions {
     AllowanceSelectionComponent,
     OrderSuccessComponent,
     ErrorBannerComponent,
-    LoadingStateComponent,
-    ErrorStateComponent,
-    HasPermissionDirective,
     ConfirmationDialogComponent,
     StepSelectionComponent
   ],
@@ -493,7 +489,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     // Collect selected cartridges from cache that match the current item type
     this.cartridgeState.selectedCartridgesCache.forEach((cachedCartridge, id) => {
       const cartridgeItemType = cachedCartridge.itemType || inferItemType(cachedCartridge);
-      
+
       // Only include selected items that match the current filter type
       if (cartridgeItemType === currentItemType) {
         // Create a copy to avoid mutating the cache

@@ -112,14 +112,6 @@
                 </div>
               </ng-container>
 
-              <!-- Expiry Date -->
-              <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                  'assetList.viewModal.expiryDate' | translate }}</label>
-                <input type="date" formControlName="expiryDate"
-                  class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none" />
-              </div>
-
               <!-- Ammunition Specific Fields -->
               <ng-container *ngIf="activeTab === 'ammunition'">
                 <div>
@@ -441,6 +433,16 @@
                   <input type="number" formControlName="minimumQuantity"
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
+                </div>
+
+                <!-- Unit -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.unit' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" formControlName="unitId" [options]="units" optionValue="id"
+                    [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholder]="'addAsset.selectUnit' | translate">
+                  </app-dropdown>
                 </div>
 
                 <!-- Item Type -->

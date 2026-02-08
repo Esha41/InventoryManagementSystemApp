@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10,6 +10,7 @@ import { SupplyOrderDataService } from '@requests/services/supply-order-data.ser
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getItemManagementOptionLabel } from '@utils/supply-order-format.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Add Order Item Modal Component
@@ -49,7 +50,8 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
     private fb: FormBuilder,
     private translateService: TranslateService,
     private toastService: ToastService,
-    private supplyOrderDataService: SupplyOrderDataService
+    private supplyOrderDataService: SupplyOrderDataService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -80,12 +82,17 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
   private loadAvailableItems(): void {
     this.loadingItems = true;
     const existingItemIds = this.orderItems.map(item => item.itemId);
-    this.supplyOrderDataService.loadAvailableItems(existingItemIds)
+
+    // Determine allowed item types based on existing order items
+    const allowedItemTypes = this.getAllowedItemTypes();
+
+    this.supplyOrderDataService.loadAvailableItems(existingItemIds, allowedItemTypes)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
           this.availableItems = items;
           this.loadingItems = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load items';
@@ -93,13 +100,30 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingItems = false;
+          this.cdr.markForCheck();
         }
       });
+  }
+
+  /**
+   * Determine allowed item types based on existing order items
+   * Rules:
+   * - If order has weapons (type 2), only allow weapons
+   * - If order has ammunition (type 1) or explosives (type 3), allow both but not weapons
+   * - If order is empty, allow all types
+   * Item types: 1=Ammunition, 2=Weapon, 3=Explosive
+   */
+  private getAllowedItemTypes(): number[] | undefined {
+    // Weapons (type 2) are not handled in this modal anymore
+    // We only allow Ammunition (1) and Explosives (3)
+    return [1, 3];
   }
 
   itemManagementOptionLabel = (item: any): string => {
     return getItemManagementOptionLabel(item, this.translateService);
   };
+
+
 
   onSaveAddOrderItem(): void {
     if (this.addItemForm.invalid) {
@@ -116,6 +140,10 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
       return;
     }
 
+    this.proceedToAddItem(formValue);
+  }
+
+  private proceedToAddItem(formValue: any): void {
     const itemDto: CreateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
@@ -134,18 +162,21 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
             this.closeModal();
             this.itemAdded.emit();
           } else {
-            this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
-              this.toastService.error(response.message || translations['toast.failedToAddItem'], translations['toast.error']);
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to add item', this.translateService);
+            this.translateService.get(['toast.error']).subscribe(translations => {
+              this.toastService.error(errorMessage, translations['toast.error']);
             });
           }
           this.savingItem = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to add item';
-          this.translateService.get(['toast.error', 'toast.failedToAddItem']).subscribe(translations => {
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translateService);
+          this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.savingItem = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -159,6 +190,14 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
   onOpen(): void {
     this.initializeForm();
     this.loadAvailableItems();
+  }
+
+  /**
+   * Get a user-friendly message about item type restrictions
+   */
+  getItemTypeRestrictionMessage(): string {
+    // Since we only allow 1 and 3 now, we show the combined message
+    return this.translateService.instant('supplyOrder.ammunitionExplosivesAllowed');
   }
 }
 

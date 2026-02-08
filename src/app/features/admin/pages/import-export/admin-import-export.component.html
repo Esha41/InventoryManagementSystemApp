@@ -2,9 +2,9 @@
   <!-- Header -->
   <div class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
     <div class="page-container py-4">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-2">
             {{ 'adminImportExport.title' | translate }}
           </h1>
           <p class="text-sm text-[var(--color-text-muted)]">
@@ -19,26 +19,26 @@
     <!-- Section Tabs -->
     <app-card [shadow]="true" class="mb-6 overflow-hidden">
       <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
-        <nav class="flex gap-1 p-2" aria-label="Sections">
+        <nav class="flex gap-1 p-2 overflow-x-auto" aria-label="Sections">
           <button (click)="switchSection('assets')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'assets',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'assets'
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection() === 'assets',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection() !== 'assets'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap">
             <span>{{ 'adminImportExport.sections.assets' | translate }}</span>
           </button>
           <button (click)="switchSection('inventory-summary')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'inventory-summary',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'inventory-summary'
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection() === 'inventory-summary',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection() !== 'inventory-summary'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap">
             <span>{{ 'adminImportExport.sections.inventorySummary' | translate }}</span>
           </button>
           <button (click)="switchSection('warehouse-inventory')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection === 'warehouse-inventory',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection !== 'warehouse-inventory'
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeSection() === 'warehouse-inventory',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeSection() !== 'warehouse-inventory'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap">
             <span>{{ 'adminImportExport.sections.warehouseInventory' | translate }}</span>
           </button>
         </nav>
@@ -46,15 +46,21 @@
     </app-card>
 
     <!-- Assets Section -->
-    <app-assets-import-export *ngIf="activeSection === 'assets'" [activeTab]="activeAssetTab">
+    @if (activeSection() === 'assets') {
+    <app-assets-import-export [activeTab]="activeAssetTab()">
     </app-assets-import-export>
+    }
 
     <!-- Inventory Summary Section -->
-    <app-inventory-summary *ngIf="activeSection === 'inventory-summary'">
+    @if (activeSection() === 'inventory-summary') {
+    <app-inventory-summary>
     </app-inventory-summary>
+    }
 
     <!-- Warehouse Inventory Section -->
-    <app-warehouse-inventory *ngIf="activeSection === 'warehouse-inventory'">
+    @if (activeSection() === 'warehouse-inventory') {
+    <app-warehouse-inventory>
     </app-warehouse-inventory>
+    }
   </div>
 </div>

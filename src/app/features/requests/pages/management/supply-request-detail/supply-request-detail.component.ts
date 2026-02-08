@@ -1,17 +1,18 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 // Services
 import { SupplyRequestDetailService } from './services/supply-request-detail.service';
 import { OrderItemManagementService } from './services/order-item-management.service';
 import { LotSelectionService } from './services/lot-selection.service';
 import { AmmunitionService } from '@services/ammunition.service';
+import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 
@@ -29,6 +30,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 // Utils
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { mapLotDetailsToLotItems } from '@utils/lot.utils';
+import { LotDetailDto } from '@services/inventory.service';
 import {
   getLotConditionClass,
   getItemTypeIcon as getItemTypeIconUtil,
@@ -39,6 +42,7 @@ import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@compone
 import { TranslationService } from '@services/translation.service';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -85,6 +89,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   issueNo: string = '';
   requestDetail: SupplyRequestDetail | null = null;
   orderData: OrderDto | null = null;
+  currentSupplyId: number | undefined = undefined; // Store current draft supply ID to exclude from lot availability calculations
 
   // UI State
   isRequestInfoExpanded: boolean = true;
@@ -113,6 +118,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   availableItems: any[] = [];
   loadingItems: boolean = false;
   savingItem: boolean = false;
+  allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives
 
   constructor(
     private route: ActivatedRoute,
@@ -122,9 +128,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private lotSelectionService: LotSelectionService,
     private ammunitionService: AmmunitionService,
+    private supplyOrderDataService: SupplyOrderDataService,
     private toastService: ToastService,
     private translate: TranslateService,
-    private config: ConfigService
+    private config: ConfigService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -188,13 +196,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             return;
           }
 
+          // Store the current supply ID to exclude it from lot availability calculations
+          this.currentSupplyId = existingSupply?.id;
+
           const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
           const hasExistingSupply = existingSupply && existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
 
           if (hasEmptySuggestions && hasExistingSupply) {
+            // Pass the supply ID to exclude it from availability calculations when replacing
             this.supplyRequestDetailService.loadLotsForExistingSelections(
               this.requestDetail,
-              existingSupply.supplyDetails
+              existingSupply.supplyDetails,
+              existingSupply.id
             ).pipe(takeUntil(this.destroy$)).subscribe();
           } else {
             this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
@@ -322,9 +335,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.loadingAllLots = true;
     const currentSelections = new Map(this.tempLotSelections);
 
-    this.lotSelectionService.loadAvailableLotsForQuantity(item, currentSelections)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
+    // Use the service method that supports excludeSupplyId
+    this.supplyRequestDetailService.loadAvailableLotsForQuantity(
+      item.itemId,
+      item.approvedQuantity,
+      this.currentSupplyId
+    ).pipe(
+      map((lots: LotDetailDto[]) => {
+        const mappedLots = mapLotDetailsToLotItems(lots, currentSelections);
+        return { lots: mappedLots, success: true };
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
         next: (result) => {
           item.availableLots = result.lots;
           this.loadingAllLots = false;
@@ -487,6 +509,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   // ==================== ITEM MANAGEMENT ====================
 
   openAddItemModal(): void {
+    // Determine allowed item types based on existing items before loading
+    this.allowedItemTypes = this.supplyRequestDetailService.getAllowedItemTypes(this.orderData, this.requestDetail);
+    // Debug log to verify the logic
+    this.config.log(`Allowed item types: ${JSON.stringify(this.allowedItemTypes)}`);
     this.loadAvailableItems();
     this.isAddItemModalOpen = true;
   }
@@ -515,14 +541,21 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.selectedItemForRemove = null;
   }
 
+
   private loadAvailableItems(): void {
     this.loadingItems = true;
-    this.ammunitionService.getAll()
+    const existingItemIds = (this.requestDetail?.items || []).map(item => item.itemId);
+
+    // Use the determined allowed item types
+    const allowedTypes = this.allowedItemTypes;
+
+    this.supplyOrderDataService.loadAvailableItems(existingItemIds, allowedTypes)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
           this.availableItems = items || [];
           this.loadingItems = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to load items', error);
@@ -530,6 +563,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loadingItems = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -547,16 +581,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               this.loadRequestDetail();
             }, 300);
           } else {
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to add item', this.translate);
             this.orderItemManagementService.showErrorMessage(
               'supplyRequestDetail.failedToAddItem',
-              response.message
+              errorMessage
             );
           }
           this.savingItem = false;
         },
         error: (error) => {
           this.config.logError('Failed to add item', error);
-          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translate);
+          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem', errorMessage);
           this.savingItem = false;
         }
       });
@@ -582,7 +618,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.config.logError('Failed to update item quantity', error);
-          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translate);
+          this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity', errorMessage);
           this.savingItem = false;
         }
       });

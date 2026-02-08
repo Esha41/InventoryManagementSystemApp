@@ -113,6 +113,35 @@ export function formatTimeToMilitary(time?: string | Date | null): string {
 }
 
 /**
+ * Format date for HTML date input (YYYY-MM-DD format)
+ * This is used for input type="date" fields which require YYYY-MM-DD format
+ * 
+ * @param date - Date value in various formats (string, Date, null, undefined)
+ * @returns Date in YYYY-MM-DD format or empty string if invalid
+ * 
+ * @example
+ * formatDateForInput("2024-01-15T10:30:00Z") // returns "2024-01-15"
+ * formatDateForInput(new Date(2024, 0, 15)) // returns "2024-01-15"
+ * formatDateForInput(null) // returns ""
+ */
+export function formatDateForInput(date: string | Date | undefined | null): string {
+  if (!date) return '';
+  try {
+    const d = date instanceof Date ? date : new Date(date);
+    // Check if date is valid
+    if (isNaN(d.getTime())) return '';
+    // Use local date methods to avoid timezone conversion issues
+    // This ensures the date displayed matches the date stored
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Format date and time to a standard extended format
  * Returns "dd/MM/yyyy HHmm" or "dd/MM/yyyy"
  * Optional fallbackDate used if primary date has 0000 time
@@ -144,7 +173,32 @@ export function formatDateTimeExtended(date: string | Date | undefined | null, f
       }
     }
 
-    return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    // If formatTimeToMilitary didn't return time, try extracting directly from the Date object
+    // This handles cases where the date string had time info but formatTimeToMilitary didn't catch it
+    if (!formattedTime && d instanceof Date && !isNaN(d.getTime())) {
+      const hours = d.getHours().toString().padStart(2, '0');
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      formattedTime = hours + minutes;
+    }
+
+    // Check if original date string had time information
+    const originalHasTime = date instanceof Date || 
+      (typeof date === 'string' && (date.includes('T') || date.includes(' ') || /:\d{2}/.test(date)));
+
+    // Always show time if we extracted it or if the original had time info
+    // This ensures datetime values show time even if it's 0000 (midnight)
+    if (formattedTime || originalHasTime) {
+      // If we still don't have formattedTime but original had time, extract from Date object
+      if (!formattedTime && originalHasTime) {
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        formattedTime = hours + minutes;
+      }
+      return formattedTime ? `${formattedDate} ${formattedTime}` : formattedDate;
+    }
+
+    // Date-only string without time - return just the date
+    return formattedDate;
   } catch {
     return '';
   }

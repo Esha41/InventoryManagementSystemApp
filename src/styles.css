@@ -16,8 +16,27 @@
       - Centers content
       - Uses a readable max-width on large screens
       - Still fills smaller screens with comfortable side padding
+      - Allows more stretching on 2xl screens while preventing extreme widths
     */
-    @apply w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px];
+    @apply w-full mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 2xl:max-w-[1800px];
+  }
+
+  /* Full-width page container (like analytics page) */
+  .page-container-full {
+    @apply w-full mx-auto px-4 md:px-6 lg:px-8;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 }
 
@@ -28,6 +47,7 @@
     /* Primary brand color - Pantone 4251 C */
     --color-brand-light: #d9bfa0;
     --color-brand-dark: #b89668;
+    --color-brand-hover: #b89668;
 
     /* Accent Colors */
     --color-accent: #0F60FF;
@@ -45,6 +65,8 @@
     /* Main background */
     --color-background-muted: #F9FAFB;
     /* Slightly gray background */
+    --color-background-soft: #F3F4F6;
+    /* Soft background for cards */
     --color-background-hover: #F3F4F8;
     /* Hover state background */
     --color-background-active: #F1F2F6;
@@ -147,6 +169,8 @@
     /* Dark background */
     --color-background-muted: #13161B;
     /* Darker background */
+    --color-background-soft: #252932;
+    /* Soft background for cards */
     --color-background-hover: #252932;
     /* Hover state background */
     --color-background-active: #2D3138;
@@ -293,6 +317,10 @@ footer {
     color var(--transition-base),
     border-color var(--transition-base);
 }
+
+/* Global smooth transitions for layout elements */
+/* Transitions are handled by Tailwind utility classes in components */
+/* Only base theme transitions are defined here */
 
 /* RTL Support */
 [dir="rtl"] {

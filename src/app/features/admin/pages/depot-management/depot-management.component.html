@@ -1,10 +1,10 @@
 <div class="page-wrapper">
   <div class="page-container">
     <!-- Header -->
-    <div class="mb-8 flex justify-between items-center">
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'depot.title' | translate }}</h1>
       <button *ngIf="isSuperAdmin" (click)="openAddModal()"
-        class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
+        class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto justify-center">
         <lucide-icon [img]="Plus" [size]="20"></lucide-icon>
         {{ 'depot.addDepot' | translate }}
       </button>
@@ -27,9 +27,59 @@
       containerClass="flex justify-center items-center py-12">
     </app-loading-state>
 
+    <!-- Mobile/Tablet Card View -->
+    <div *ngIf="!loading || showModal" class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div *ngFor="let depot of depots"
+        class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="font-bold text-[var(--color-text)] text-base md:text-lg mb-1">{{ depot.nameEn }}</h3>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ depot.nameAr }}</p>
+          </div>
+          <span
+            class="inline-flex px-2 py-1 rounded text-xs font-mono bg-blue-100 text-blue-800 border border-blue-200 font-bold">
+            {{ depot.Code || depot.code }}
+          </span>
+        </div>
+
+        <div
+          class="grid grid-cols-1 gap-1 text-sm text-[var(--color-text-secondary)] mt-1 border-t border-[var(--color-border-muted)] pt-3">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="font-medium text-[var(--color-text-muted)] w-24 flex-shrink-0">{{ 'depot.location' | translate
+              }}:</span>
+            <span class="truncate">{{ depot.location }}</span>
+          </div>
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="font-medium text-[var(--color-text-muted)] w-24 flex-shrink-0">{{ 'depot.coordinates' |
+              translate }}:</span>
+            <span class="font-mono text-xs truncate">{{ depot.latitude }}, {{ depot.longitude }}</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-2 pt-2 border-t border-[var(--color-border-muted)]">
+          <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
+            class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
+            [title]="'depot.edit' | translate">
+            <lucide-icon [img]="Edit" [size]="18"></lucide-icon>
+          </button>
+          <button *appHasPermission="'Depots.Delete'" (click)="deleteDepot(depot)"
+            class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+            [title]="'depot.delete' | translate">
+            <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- No Depots Message for Mobile -->
+      <div *ngIf="depots.length === 0"
+        class="col-span-full text-center py-8 text-[var(--color-text-muted)] bg-[var(--color-background)] rounded-xl border border-[var(--color-border)]">
+        {{ 'depot.noDepots' | translate }}
+      </div>
+    </div>
+
     <!-- Depots Table -->
     <div *ngIf="!loading || showModal"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
+      class="hidden lg:block bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
       <table class="w-full">
         <thead class="bg-[var(--color-background)]">
           <tr>

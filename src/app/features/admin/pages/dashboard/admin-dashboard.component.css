@@ -76,45 +76,11 @@
     gap: 1.5rem;
 }
 
-.refresh-button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    background: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.refresh-button:hover:not(:disabled) {
-    background: var(--color-primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.refresh-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.refresh-icon {
-    width: 1.125rem;
-    height: 1.125rem;
-}
-
-.refresh-icon.spinning {
-    animation: spin 1s linear infinite;
-}
-
+/* Refresh button animation - uses Tailwind animate-spin, this is fallback */
 @keyframes spin {
     from {
         transform: rotate(0deg);
     }
-
     to {
         transform: rotate(360deg);
     }

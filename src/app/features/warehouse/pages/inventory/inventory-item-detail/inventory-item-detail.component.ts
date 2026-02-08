@@ -2,23 +2,27 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, switchMap, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
-import { InventoryDetailDto } from '@models/inventory.model';
+import { InventoryDetailDto, ItemType } from '@models/inventory.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { HttpClient } from '@angular/common/http';
 
 type TabType = 'overview' | 'stock';
 
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, AssetDetailsComponent],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css']
 })
@@ -34,6 +38,10 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   lots: LotDetailDto[] = [];
   loadingLots = false;
   itemId: number = 0;
+
+  // Image data
+  imageUrl: string | null = null;
+  private blobUrls: Set<string> = new Set();
 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
@@ -53,7 +61,9 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private inventoryService: InventoryService,
     private lookupService: LookupService,
     private translateService: TranslateService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private fileUploadService: FileUploadService,
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -65,11 +75,30 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
         this.loadItemDetails();
       }
     });
+
+    // Also check query params for tab (asset type) as fallback
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(queryParams => {
+      const tabParam = queryParams['tab'];
+      if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+        // Store tab for potential use if item.itemType is not available
+        this.activeTab = queryParams['tab'] === 'ammunition' ? 'overview' : this.activeTab;
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    
+    // Clean up blob URLs
+    this.blobUrls.forEach(url => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.warn('Error revoking blob URL:', e);
+      }
+    });
+    this.blobUrls.clear();
   }
 
   private loadItemDetails(): void {
@@ -90,6 +119,10 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           } else {
             // Store itemId for loading lots
             this.itemId = this.inventoryDetail.itemId;
+            // Load image for stock tab
+            if (this.itemId) {
+              this.loadImage(this.itemId);
+            }
             // Load lots if stock tab is active
             if (this.activeTab === 'stock') {
               this.loadLots();
@@ -300,5 +333,157 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    */
   getCountryNameForLot(lot: LotDetailDto): string {
     return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Get asset type from inventory detail item type or query param
+   */
+  getAssetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
+    // First try to get from item.itemType
+    if (this.inventoryDetail?.item?.itemType) {
+      const itemType = this.inventoryDetail.item.itemType;
+      if (itemType === ItemType.Ammunition) return 'ammunition';
+      if (itemType === ItemType.Weapon) return 'weapon';
+      if (itemType === ItemType.Explosive) return 'explosive';
+    }
+    
+    // Fallback to query param if item is not populated
+    const tabParam = this.route?.snapshot.queryParams['tab'];
+    if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+      return tabParam as 'ammunition' | 'weapon' | 'explosive';
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Get item ID for asset details
+   */
+  getItemIdForAssetDetails(): number | undefined {
+    return this.inventoryDetail?.itemId;
+  }
+
+  /**
+   * Get item type display name
+   */
+  getItemTypeDisplay(): string {
+    if (!this.inventoryDetail?.item?.itemType) {
+      return this.translateService.instant('warehouseInventory.tabs.explosive');
+    }
+
+    const itemType: any = this.inventoryDetail.item.itemType;
+    
+    // Handle string values from backend
+    if (typeof itemType === 'string') {
+      const lowerType = itemType.toLowerCase();
+      if (lowerType === 'ammunition') {
+        return this.translateService.instant('warehouseInventory.tabs.ammunition');
+      }
+      if (lowerType === 'weapon') {
+        return this.translateService.instant('warehouseInventory.tabs.weapon');
+      }
+      if (lowerType === 'explosive') {
+        return this.translateService.instant('warehouseInventory.tabs.explosive');
+      }
+    }
+    
+    // Handle numeric/enum values
+    const numericValue = typeof itemType === 'number' ? itemType : (itemType as ItemType);
+    if (numericValue === ItemType.Ammunition || numericValue === 1) {
+      return this.translateService.instant('warehouseInventory.tabs.ammunition');
+    }
+    if (numericValue === ItemType.Weapon || numericValue === 2) {
+      return this.translateService.instant('warehouseInventory.tabs.weapon');
+    }
+    if (numericValue === ItemType.Explosive || numericValue === 3) {
+      return this.translateService.instant('warehouseInventory.tabs.explosive');
+    }
+    
+    // Default fallback
+    return this.translateService.instant('warehouseInventory.tabs.explosive');
+  }
+
+  /**
+   * Load image for the item
+   */
+  private loadImage(itemId: number): void {
+    if (!this.inventoryDetail?.item?.itemType) return;
+
+    // Clean up previous image URL
+    if (this.imageUrl) {
+      try {
+        URL.revokeObjectURL(this.imageUrl);
+        this.blobUrls.delete(this.imageUrl);
+      } catch (e) {
+        console.warn('Error revoking previous image blob URL:', e);
+      }
+    }
+    this.imageUrl = null;
+
+    // Determine entity type based on item type
+    let entityType: FileEntityType;
+    const itemType = this.inventoryDetail.item.itemType;
+    if (itemType === ItemType.Weapon) {
+      entityType = FileEntityType.Weapon;
+    } else if (itemType === ItemType.Explosive) {
+      entityType = FileEntityType.Explosive;
+    } else {
+      entityType = FileEntityType.Ammunition;
+    }
+
+    // Get all files to find the latest one
+    this.fileUploadService.getFilesByEntity(entityType, itemId)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((files: any[]) => {
+          if (!files || files.length === 0) {
+            return of(null);
+          }
+
+          // Get main images (there might be multiple with isMain: true)
+          const mainImages = files.filter((img: any) => img.isMain);
+          let latestImage: any;
+          
+          if (mainImages.length > 0) {
+            // If multiple main images exist, get the one with highest ID (latest uploaded)
+            latestImage = mainImages.reduce((latest: any, current: any) => 
+              (current.id > latest.id) ? current : latest
+            );
+          } else {
+            // If no main image, get the image with highest ID (latest uploaded)
+            latestImage = files.reduce((latest: any, current: any) => 
+              (current.id > latest.id) ? current : latest
+            );
+          }
+          
+          if (!latestImage?.id) {
+            return of(null);
+          }
+
+          // Get the download URL for the latest image
+          const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
+          
+          // Fetch image as blob with authentication
+          return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
+            switchMap((blob: Blob) => {
+              if (blob.type && blob.type.startsWith('image/')) {
+                const blobUrl = URL.createObjectURL(blob);
+                this.blobUrls.add(blobUrl);
+                this.imageUrl = blobUrl;
+              }
+              return of(null);
+            }),
+            catchError((err) => {
+              console.warn('Failed to load image blob:', err);
+              return of(null);
+            })
+          );
+        }),
+        catchError((err) => {
+          console.warn('Failed to get files:', err);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 }

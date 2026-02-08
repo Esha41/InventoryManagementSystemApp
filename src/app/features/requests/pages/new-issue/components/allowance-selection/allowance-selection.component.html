@@ -1,9 +1,10 @@
-<div class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
-  <h2 class="text-2xl font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectOrderSource' | translate }}
+<div class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 lg:p-8 shadow-sm">
+  <h2 class="text-xl sm:text-2xl font-bold text-[var(--color-text)] mb-4 sm:mb-6">{{ 'newIssueRequest.selectOrderSource'
+    | translate }}
   </h2>
 
-  <div class="mb-8">
-    <p class="text-sm text-[var(--color-text-muted)] mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' |
+  <div class="mb-6 sm:mb-8">
+    <p class="text-sm text-[var(--color-text-muted)] mb-4 sm:mb-6">{{ 'newIssueRequest.selectOrderSourceDescription' |
       translate }}</p>
 
     <div class="flex flex-col space-y-4">
@@ -13,9 +14,10 @@
           (ngModelChange)="onFromReserveChange($event)"
           class="w-5 h-5 mt-0.5 text-[var(--color-brand)] border-[var(--color-border)] focus:ring-[var(--color-brand)] focus:ring-2">
         <div class="ms-4">
-          <span class="block text-base font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.fromAllowance' |
+          <span class="block text-sm sm:text-base font-semibold text-[var(--color-text)]">{{
+            'newIssueRequest.fromAllowance' |
             translate }}</span>
-          <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
+          <span class="block text-xs sm:text-sm text-[var(--color-text-muted)] mt-1">{{
             'newIssueRequest.fromAllowanceDescription' | translate }}</span>
         </div>
       </label>
@@ -26,17 +28,17 @@
           (ngModelChange)="onFromReserveChange($event)"
           class="w-5 h-5 mt-0.5 text-[var(--color-brand)] border-[var(--color-border)] focus:ring-[var(--color-brand)] focus:ring-2">
         <div class="ms-4">
-          <span class="block text-base font-semibold text-[var(--color-text)]">{{
+          <span class="block text-sm sm:text-base font-semibold text-[var(--color-text)]">{{
             'newIssueRequest.fromAllAmmunition' | translate }}</span>
-          <span class="block text-sm text-[var(--color-text-muted)] mt-1">{{
+          <span class="block text-xs sm:text-sm text-[var(--color-text-muted)] mt-1">{{
             'newIssueRequest.fromAllAmmunitionDescription' | translate }}</span>
         </div>
       </label>
     </div>
   </div>
 
-  <div class="flex justify-end">
-    <app-button variant="primary" (clicked)="onNext()">
+  <div class="flex flex-col sm:flex-row justify-end gap-3">
+    <app-button variant="primary" (clicked)="onNext()" class="w-full sm:w-auto">
       {{ 'newIssueRequest.next' | translate }}
     </app-button>
   </div>

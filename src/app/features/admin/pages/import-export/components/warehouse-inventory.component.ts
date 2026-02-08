@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,6 +24,9 @@ import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
 import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { saveAs } from 'file-saver';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -34,7 +37,6 @@ import { saveAs } from 'file-saver';
     TranslateModule,
     LucideAngularModule,
     CardComponent,
-    ButtonComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
     DropdownComponent,
@@ -251,7 +253,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Prevent multiple simultaneous import requests
     if (this.isImportInProgress) {
       this.toastService.warning('Import is already in progress. Please wait...');
       return;
@@ -262,67 +263,33 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.closeImportModal();
     this.cdr.markForCheck();
 
-    // For weapons, use asset import (includes serial number, RFID, asset tag, etc.)
-    // For ammunition/explosives, use inventory import (includes lots, batches, quantities)
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    const importService = this.activeTab === 'weapon'
-      ? this.assetService.importData(file, this.selectedDepotId, currentLang)
-      : this.inventoryService.importData(file, this.selectedDepotId, currentLang);
+    const service = this.getService();
 
-    importService
+    service.importData(file, currentLang, this.selectedDepotId!)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
+        next: (res: APIOperationResponse<ImportResult>) => {
           this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
 
-          // Handle both wrapped and unwrapped responses
-          let result: any;
-          if (response?.succeeded !== undefined) {
-            // Wrapped response
-            if (!response.succeeded || !response.data) {
-              this.toastService.error(response.message || 'Import failed');
-              this.cdr.markForCheck();
-              return;
-            }
-            result = response.data;
-            } else {
-              // Unwrapped response
-              if ((response as any)?.successCount !== undefined || (response as any)?.successfulRecords !== undefined || (response as any)?.errors !== undefined) {
-                result = response;
-              } else {
-                this.toastService.error('Unexpected response format from server');
-              this.cdr.markForCheck();
-              return;
-            }
+          if (res && res.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successfulRecords?.length || 0,
+              failureCount: result.errors?.length || 0,
+              errors: result.errors || []
+            });
+
+            this.loadWarehouseInventory();
           }
-
-          if (result) {
-            const successCount = result.successCount || 0;
-            const failureCount = result.failureCount || 0;
-            const errors = result.errors || [];
-
-            if (failureCount > 0 || errors.length > 0) {
-              let msg = `Imported ${successCount} items. ${failureCount} failed.`;
-              if (errors.length > 0 && errors.length <= 3) {
-                msg += ` Errors: ${errors.slice(0, 3).map((e: any) => e.errorMessage || e).join('; ')}`;
-              } else if (errors.length > 3) {
-                msg += ` (${errors.length} errors found)`;
-              }
-              this.toastService.warning(msg);
-            } else {
-              this.toastService.success(`Imported ${successCount} items successfully.`);
-            }
-          }
-
-          this.loadWarehouseInventory();
           this.cdr.markForCheck();
         },
         error: (error: any) => {
           this.isImportInProgress = false;
+          this.loadingWarehouseInventory = false;
           const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
           this.toastService.error(`Failed to import ${entityType}: ` + (error.message || 'Unknown error'));
-          this.loadingWarehouseInventory = false;
           this.cdr.markForCheck();
         }
       });
@@ -334,110 +301,57 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Prevent multiple simultaneous preview requests
     if (this.isPreviewInProgress) {
       this.toastService.warning('Preview is already in progress. Please wait...');
       return;
     }
 
-    // Clear previous preview data before starting new preview
     this.previewData = null;
     this.showPreviewModal = false;
     this.isPreviewInProgress = true;
     this.loadingWarehouseInventory = true;
     this.closeImportModal();
-    this.pendingImportFile = file; // Store file for later import
-    this.pendingDepotId = this.selectedDepotId; // Store depot ID for later import
+    this.pendingImportFile = file;
+    this.pendingDepotId = this.selectedDepotId;
     this.cdr.markForCheck();
 
-    // For weapons, use asset preview (includes serial number, RFID, asset tag, etc.)
-    // For ammunition/explosives, use inventory preview (includes lots, batches, quantities)
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    const previewService = this.activeTab === 'weapon'
-      ? this.assetService.importPreview(file, this.selectedDepotId, currentLang)
-      : this.inventoryService.importPreview(file, this.selectedDepotId, currentLang);
+    const service = this.getService();
 
-    previewService
+    service.importPreview(file, currentLang, this.selectedDepotId!)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res: any) => {
+        next: (res: APIOperationResponse<ImportResult>) => {
           this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
-          
-          // Check if response is valid
-          if (!res) {
-            this.previewData = null;
-            this.toastService.error('Invalid response from server');
-            this.cdr.markForCheck();
-            return;
-          }
 
-          // Handle both wrapped (APIOperationResponse) and unwrapped responses
-          // If response has 'succeeded' property, it's wrapped; otherwise it's the data directly
-          let result: any;
-          if (res.succeeded !== undefined) {
-            // Wrapped response: {succeeded: true, data: {...}}
-            if (!res.succeeded || !res.data) {
-              this.previewData = null;
-              const errorMsg = res.message || res.Message || 'Preview failed';
-              this.toastService.error(errorMsg);
-              this.cdr.markForCheck();
-              return;
-            }
-            result = res.data;
-          } else {
-            // Unwrapped response: the data is directly in res
-            // Check if it looks like ImportResult structure
-            if (res.successfulRecords !== undefined || res.errors !== undefined || res.successCount !== undefined) {
-              result = res;
-            } else {
-              this.previewData = null;
-              this.toastService.error('Unexpected response format from server');
-              this.cdr.markForCheck();
-              return;
-            }
-          }
-
-          if (result) {
-            // Ensure arrays exist
+          if (res && res.succeeded && res.data) {
+            const result = res.data;
             const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
-            const errors = Array.isArray(result.errors) ? result.errors : [];
-            
-            // Create a map to track which rows have errors (by row number)
+            const errors = result.errors || [];
+
             const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
             errors.forEach((error: any) => {
-              const rowNum = error.rowNumber || error.RowNumber || 0;
+              const rowNum = error.rowNumber || 0;
               if (!errorsByRow.has(rowNum)) {
-                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || error.RowData || {} });
+                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
               }
-              const errorMsg = error.errorMessage || error.ErrorMessage || 'Unknown error';
-              errorsByRow.get(rowNum)!.errors.push(errorMsg);
+              errorsByRow.get(rowNum)!.errors.push(error.errorMessage || 'Unknown error');
             });
 
-            // Build preview rows with proper Excel row numbers
             const previewRows: any[] = [];
-            
-            // Process successful records - use rowNumber from backend if available, otherwise calculate
             successfulRecords.forEach((record: any, index: number) => {
-              // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2
-              // But if backend provides rowNumber, use that instead
-              const rowNum = record.rowNumber || record.RowNumber || (index + 2);
+              const rowNum = (record as any).rowNumber || (index + 2);
               const errorInfo = errorsByRow.get(rowNum);
-
               previewRows.push({
                 rowNumber: rowNum,
                 data: record,
                 isValid: !errorInfo || errorInfo.errors.length === 0,
                 errors: errorInfo ? errorInfo.errors : []
               });
-
-              // Remove from errorsByRow since we've processed it
-              if (errorInfo) {
-                errorsByRow.delete(rowNum);
-              }
+              if (errorInfo) errorsByRow.delete(rowNum);
             });
 
-            // Process errors that don't have corresponding successful records
             errorsByRow.forEach((errorInfo, rowNum) => {
               previewRows.push({
                 rowNumber: rowNum,
@@ -447,19 +361,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               });
             });
 
-            // Sort by row number to maintain Excel row order
             previewRows.sort((a, b) => a.rowNumber - b.rowNumber);
-
-            // Calculate valid/invalid counts
-            const validRows = previewRows.filter(r => r.isValid).length;
-            const invalidRows = previewRows.filter(r => !r.isValid).length;
 
             this.previewData = {
               rows: previewRows,
               totalRows: previewRows.length,
-              validRows: validRows,
-              invalidRows: invalidRows,
-              columns: previewRows.length > 0 && previewRows[0].data ? this.getOrderedColumns(previewRows[0].data) : []
+              validRows: previewRows.filter(r => r.isValid).length,
+              invalidRows: previewRows.filter(r => !r.isValid).length,
+              columns: result.importHeaders && result.importHeaders.length > 0
+                ? result.importHeaders
+                : (previewRows.length > 0 ? Object.keys(previewRows[0].data) : [])
             };
             this.showPreviewModal = true;
           }
@@ -468,178 +379,30 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         error: (error: any) => {
           this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
-          // Clear preview data on error
           this.previewData = null;
-          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
-          this.toastService.error(`Preview failed: ${errorMessage}`);
+          this.toastService.error(`Preview failed: ${error?.message || 'Unknown error'}`);
           this.cdr.markForCheck();
         }
       });
   }
 
   onPreviewConfirmed(validRows: any[]): void {
-    this.showPreviewModal = false;
-    this.previewData = null;
-
-    // Validate that we have the file and depot ID
-    if (!this.pendingImportFile || !this.pendingDepotId) {
-      this.toastService.error('Import file or depot not found. Please try uploading again.');
-      this.cdr.markForCheck();
-      return;
+    if (this.pendingImportFile) {
+      this.onImportConfirmed(this.pendingImportFile);
     }
-
-    // Prevent multiple simultaneous import requests
-    if (this.isImportInProgress) {
-      this.toastService.warning('Import is already in progress. Please wait...');
-      this.cdr.markForCheck();
-      return;
-    }
-
-    this.isImportInProgress = true;
-    this.loadingWarehouseInventory = true;
-    this.cdr.markForCheck();
-
-    const file = this.pendingImportFile;
-    const depotId = this.pendingDepotId;
-    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-
-    // For weapons, use asset import; for ammunition/explosives, use inventory import
-    const importService = this.activeTab === 'weapon'
-      ? this.assetService.importData(file, depotId, currentLang)
-      : this.inventoryService.importData(file, depotId, currentLang);
-
-    importService
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          const resp = response as any;
-          this.isImportInProgress = false;
-          this.loadingWarehouseInventory = false;
-          this.pendingImportFile = null; // Clear the stored file
-          this.pendingDepotId = null; // Clear the stored depot ID
-
-          // Handle both wrapped and unwrapped responses
-          // Use resp (already cast to any above) for all checks
-          let result: any;
-          if (resp?.succeeded !== undefined) {
-            // Wrapped response
-            if (!resp.succeeded || !resp.data) {
-              this.toastService.error(resp.message || 'Import failed');
-              this.cdr.markForCheck();
-              return;
-            }
-            result = resp.data;
-          } else {
-            // Unwrapped response - check for ImportResult properties
-            if (resp?.successCount !== undefined || resp?.successfulRecords !== undefined || resp?.errors !== undefined) {
-              result = resp;
-            } else {
-              this.toastService.error('Unexpected response format from server');
-              this.cdr.markForCheck();
-              return;
-            }
-          }
-
-          if (result) {
-            const successCount = result.successCount || 0;
-            const failureCount = result.failureCount || 0;
-            const errors = result.errors || [];
-
-            if (failureCount > 0 || errors.length > 0) {
-              let msg = `Imported ${successCount} items. ${failureCount} failed.`;
-              if (errors.length > 0 && errors.length <= 3) {
-                msg += ` Errors: ${errors.slice(0, 3).map((e: any) => e.errorMessage || e).join('; ')}`;
-              } else if (errors.length > 3) {
-                msg += ` (${errors.length} errors found)`;
-              }
-              this.toastService.warning(msg);
-            } else {
-              this.toastService.success(`Imported ${successCount} items successfully.`);
-            }
-
-            this.loadWarehouseInventory();
-          }
-          this.cdr.markForCheck();
-        },
-        error: (error: any) => {
-          this.isImportInProgress = false;
-          this.loadingWarehouseInventory = false;
-          this.pendingImportFile = null; // Clear the stored file
-          this.pendingDepotId = null; // Clear the stored depot ID
-
-          const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
-          const errorMessage = error?.error?.message || error?.message || error?.statusText || 'Unknown error';
-          this.toastService.error(`Failed to import ${entityType}: ${errorMessage}`);
-          this.cdr.markForCheck();
-        }
-      });
   }
 
   onPreviewCancelled(): void {
     this.showPreviewModal = false;
     this.previewData = null;
-    this.pendingImportFile = null; // Clear the stored file
-    this.pendingDepotId = null; // Clear the stored depot ID
-    this.isPreviewInProgress = false; // Reset preview flag
+    this.pendingImportFile = null;
+    this.pendingDepotId = null;
+    this.isPreviewInProgress = false;
     this.cdr.markForCheck();
   }
 
-  /**
-   * Get ordered columns for preview dialog
-   * Matches the exact column order from backend GetColumnMappings
-   * For weapons: Uses AssetService.GetColumnMappings (serial number, RFID, asset tag, etc.)
-   * For ammunition/explosives: Uses InventoryService.GetColumnMappings (lots, batches, quantities)
-   */
-  private getOrderedColumns(record: any): string[] {
-    if (!record) return [];
-
-    const allKeys = Object.keys(record);
-
-    // Define column order based on backend GetColumnMappings
-    let priorityOrder: string[];
-
-    if (this.activeTab === 'weapon') {
-      // Asset import columns (from AssetService.GetColumnMappings)
-      priorityOrder = [
-        'itemName',
-        'itemNo',
-        'itemId',
-        'serialNumber',
-        'rfid',
-        'assetTag',
-        'purchaseDate',
-        'warrantyExpiryDate',
-        'condition',
-        'purchasePrice',
-        'notes'
-      ];
-    } else {
-      // Inventory import columns (from InventoryService.GetColumnMappings)
-      priorityOrder = [
-        'itemName',
-        'itemNo',
-        'itemId',
-        'lot',
-        'supplier',
-        'manufacturer',
-        'country',
-        'originalQuantity',
-        'batchNo',
-        'expiryDate',
-        'readyForIssue',
-        'invoiceNumber',
-        'invoiceDate',
-        'receivedDate',
-        'notes'
-      ];
-    }
-
-    // Separate keys into priority (matching template) and remaining
-    const priorityKeys = priorityOrder.filter(key => allKeys.includes(key));
-    const remainingKeys = allKeys.filter(key => !priorityOrder.includes(key));
-
-    // Return priority keys first (matching template order), then remaining keys
-    return [...priorityKeys, ...remainingKeys];
+  private getService(): IImportableService {
+    return this.activeTab === 'weapon' ? this.assetService : this.inventoryService;
   }
 
   downloadTemplate(): void {
@@ -648,25 +411,26 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // For weapons, use asset template (includes serial number, RFID, asset tag, etc.)
-    // For ammunition/explosives, use inventory template (includes lots, batches, quantities)
-    if (this.activeTab === 'weapon') {
-      const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-      this.assetService.downloadImportTemplate(this.selectedDepotId, currentLang)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (blob) => {
-            const fileName = `Asset_Import_Template_Depot_${this.selectedDepotId}_${new Date().getTime()}.xlsx`;
-            saveAs(blob, fileName);
-            this.toastService.success('Asset template downloaded successfully');
-          },
-          error: () => {
-            this.toastService.error('Failed to download asset template. Please try again.');
-          }
-        });
-    } else {
-      this.templateGenerationService.generateWarehouseInventoryTemplate(this.selectedDepotId);
-    }
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getService();
+
+    service.generateImportTemplate(currentLang, this.selectedDepotId!)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const fileName = this.activeTab === 'weapon'
+            ? `Weapon_Asset_Import_Template_Depot_${this.selectedDepotId}.xlsx`
+            : `Inventory_Import_Template_Depot_${this.selectedDepotId}.xlsx`;
+
+          saveAs(blob, fileName);
+          this.toastService.success('Template downloaded successfully');
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.toastService.error('Failed to download template');
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   exportToExcel(): void {
@@ -680,8 +444,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       ? getLocalizedName(selectedDepot, getCurrentLang(this.translateService)) || `Depot ${this.selectedDepotId}`
       : `Depot ${this.selectedDepotId}`;
 
-    // For weapons, export assets with serial numbers, RFID, etc.
-    // For ammunition/explosives, export inventory with lots, batches, quantities
     if (this.activeTab === 'weapon') {
       const columns: ExcelColumn[] = [
         {
@@ -701,43 +463,43 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: 'Serial Number',
+          header: this.translateService.instant('warehouseInventory.serialNumber') || 'Serial Number',
           key: 'serialNumber',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'RFID',
+          header: this.translateService.instant('warehouseInventory.rfidTag') || 'RFID',
           key: 'rfid',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Asset Tag',
+          header: this.translateService.instant('warehouseInventory.assetTag') || 'Asset Tag',
           key: 'assetTag',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Purchase Date',
+          header: this.translateService.instant('assetDetails.purchaseDate') || 'Purchase Date',
           key: 'purchaseDate',
           width: 15,
-          format: (date) => this.importExportService.formatDate(date)
+          format: (date: any) => this.importExportService.formatDate(date)
         },
         {
-          header: 'Warranty Expiry Date',
+          header: this.translateService.instant('assetDetails.warrantyExpiryDate') || 'Warranty Expiry Date',
           key: 'warrantyExpiryDate',
           width: 20,
-          format: (date) => this.importExportService.formatDate(date)
+          format: (date: any) => this.importExportService.formatDate(date)
         },
         {
-          header: 'Condition',
+          header: this.translateService.instant('warehouseInventory.condition') || 'Condition',
           key: 'condition',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Purchase Price',
+          header: this.translateService.instant('assetDetails.purchasePrice') || 'Purchase Price',
           key: 'purchasePrice',
           width: 15,
           format: (value: number) => value ? value.toString() : '-'
@@ -761,19 +523,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Year Of Manufacture',
+          header: this.translateService.instant('weapon.yearOfManufacture') || 'Year Of Manufacture',
           key: 'item.yearOfManufacture',
           width: 20,
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: 'Country Of Manufacture',
+          header: this.translateService.instant('weapon.countryOfManufacture') || 'Country Of Manufacture',
           key: 'item.countryOfManufacture',
           width: 25,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Model',
+          header: this.translateService.instant('weapon.model') || 'Model',
           key: 'item.model',
           width: 20,
           format: (value: string) => value || '-'
@@ -785,25 +547,25 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: 'Distribution',
+          header: this.translateService.instant('weapon.distribution') || 'Distribution',
           key: 'item.distribution',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Reference No',
+          header: this.translateService.instant('weapon.referenceNo') || 'Reference No',
           key: 'item.referenceNo',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Location',
+          header: this.translateService.instant('warehouseInventory.location') || 'Location',
           key: 'location',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Status',
+          header: this.translateService.instant('warehouseInventory.status') || 'Status',
           key: 'status',
           width: 15,
           format: (status: number) => {
@@ -817,7 +579,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           }
         },
         {
-          header: 'Notes',
+          header: this.translateService.instant('warehouseInventory.notes') || 'Notes',
           key: 'notes',
           width: 30,
           format: (value: string) => value || '-'
@@ -837,70 +599,80 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       // Export inventory for ammunition/explosives
       const columns: ExcelColumn[] = [
         {
-          header: this.translateService.instant('warehouseInventory.itemName'),
+          header: this.translateService.instant('warehouseInventory.itemName') || 'Item Name',
           key: 'item',
           width: 30,
-          format: (item) => this.getItemName({ item } as InventoryDetailDto)
+          format: (item: any) => {
+            if (!item) return '-';
+            const lang = getCurrentLang(this.translateService);
+            return getLocalizedName(item, lang) || item.itemNo || '-';
+          }
         },
         {
-          header: this.translateService.instant('warehouseInventory.itemNo'),
+          header: this.translateService.instant('warehouseInventory.itemNo') || 'Item No',
           key: 'item.itemNo',
-          width: 15
+          width: 15,
+          format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('common.supplier'),
+          header: this.translateService.instant('common.supplier') || 'Supplier',
           key: 'supplier',
           width: 20,
-          format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
+          format: (supplier: any) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
         },
         {
-          header: this.translateService.instant('warehouseInventory.lot'),
+          header: this.translateService.instant('warehouseInventory.lot') || 'Lot',
           key: 'lot',
-          width: 10
+          width: 10,
+          format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('warehouseInventory.batchNo'),
+          header: this.translateService.instant('warehouseInventory.batchNo') || 'Batch No',
           key: 'batchNo',
           width: 15,
-          format: (value) => value || '-'
+          format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('warehouseInventory.originalQty'),
+          header: this.translateService.instant('warehouseInventory.originalQty') || 'Original Quantity',
           key: 'originalQuantity',
-          width: 15
+          width: 15,
+          format: (value: number) => value ? value.toString() : '0'
         },
         {
-          header: this.translateService.instant('warehouseInventory.currentQty'),
+          header: this.translateService.instant('warehouseInventory.currentQty') || 'Current Quantity',
           key: 'currentQuantity',
-          width: 15
+          width: 15,
+          format: (value: number) => value ? value.toString() : '0'
         },
         {
-          header: this.translateService.instant('warehouseInventory.usedQty'),
+          header: this.translateService.instant('warehouseInventory.usedQty') || 'Used Quantity',
           key: 'usedQuantity',
-          width: 15
+          width: 15,
+          format: (value: number) => value ? value.toString() : '0'
         },
         {
-          header: this.translateService.instant('warehouseInventory.remainingQty'),
+          header: this.translateService.instant('warehouseInventory.remainingQty') || 'Remaining Quantity',
           key: 'remainingQuantity',
-          width: 15
+          width: 15,
+          format: (value: number) => value ? value.toString() : '0'
         },
         {
-          header: this.translateService.instant('warehouseInventory.expiryDate'),
+          header: this.translateService.instant('warehouseInventory.expiryDate') || 'Expiry Date',
           key: 'expiryDate',
           width: 15,
-          format: (date) => this.importExportService.formatDate(date)
+          format: (date: any) => this.importExportService.formatDate(date)
         },
         {
           header: this.translateService.instant('common.manufacturer') || 'Manufacturer',
           key: 'manufacturer',
           width: 20,
-          format: (manufacturer) => getLocalizedName(manufacturer, getCurrentLang(this.translateService)) || '-'
+          format: (manufacturer: any) => getLocalizedName(manufacturer, getCurrentLang(this.translateService)) || '-'
         },
         {
           header: this.translateService.instant('common.country') || 'Country',
           key: 'country',
           width: 20,
-          format: (country) => getLocalizedName(country, getCurrentLang(this.translateService)) || '-'
+          format: (country: any) => getLocalizedName(country, getCurrentLang(this.translateService)) || '-'
         }
       ];
 

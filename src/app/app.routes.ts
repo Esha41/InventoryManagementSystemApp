@@ -73,6 +73,12 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permissions: ['analytics.page', 'analytics.view'] }
       },
+      // {
+      //   path: 'advanced-analytics-dashboard',
+      //   loadComponent: () => import('@admin/pages/advanced-analytics/advanced-analytics-dashboard.component').then(m => m.AdvancedAnalyticsDashboardComponent),
+      //   canActivate: [permissionGuard],
+      //   data: { permissions: ['analytics.page', 'analytics.view', 'advancedAnalytics.page', 'advancedAnalytics.view'] }
+      // },
       {
         path: 'supply-request-management',
         loadComponent: () => import('@requests/pages/supply-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
@@ -261,13 +267,13 @@ export const routes: Routes = [
       },
       {
         path: 'asset-list/:id',
-        loadComponent: () => import('@shared/components/item-details/item-details.component').then(m => m.ItemDetailsComponent),
+        loadComponent: () => import('@shared/components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
       {
         path: 'item-detail/:id',
-        loadComponent: () => import('@inventory/pages/detail/item-detail.component').then(m => m.ItemDetailComponent),
+        loadComponent: () => import('@components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
@@ -282,6 +288,12 @@ export const routes: Routes = [
         loadComponent: () => import('@admin/pages/manage-users/manage-admins.component').then(m => m.ManageAdminsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['systemusers.page', 'systemusers.view'] }
+      },
+      {
+        path: 'lookup-tables',
+        loadComponent: () => import('@admin/pages/lookup-tables/lookup-tables.component').then(m => m.LookupTablesComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Permissions.LookupTables.Page'] }
       },
       {
         path: 'admin-roles',
@@ -317,8 +329,9 @@ export const routes: Routes = [
         path: 'stock-notification-settings',
         loadComponent: () => import('@settings/pages/stock-notifications/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['inventory.edit', 'inventory.view'] }
+        data: { permissions: ['stockNotificationSettingsPage'] }
       },
+
       {
         path: 'report-designer',
         loadComponent: () => import('@app/features/reports/designer-list/report-designer.component').then(m => m.ReportDesignerComponent),

@@ -501,7 +501,319 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isCartridge) {
       return (this.item as Cartridge).totalWeightLabel || '';
     }
+    if ((this.isAsset || this.isDirectDto) && this.isExplosive) {
+      return this.propertyAccessor.getTotalWeight(this.item as Asset | ExplosiveDto) || '';
+    }
     return '';
+  }
+
+  // Additional getter methods for all fields
+  getArmNumber(): string {
+    if (this.isCartridge) {
+      return (this.item as Cartridge).armNumber || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getArmNumber(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    return '';
+  }
+
+  getBulletDiameter(): string {
+    if (this.isCartridge) {
+      return (this.item as Cartridge).bulletDiameterLabel || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getBulletDiameter(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    return '';
+  }
+
+  getPartNo(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      return (this.item as InventoryDetailDto).item?.partNo || '';
+    }
+    // Cartridge doesn't have partNo property
+    if (this.isCartridge) {
+      return '';
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return (this.item as any).partNo || '';
+    }
+    return '';
+  }
+
+  getBatchNo(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      return (this.item as InventoryDetailDto).batchNo || '';
+    }
+    // Cartridge doesn't have batchNo property
+    if (this.isCartridge) {
+      return '';
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return this.propertyAccessor.getBatchNo(this.item as Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  getPrice(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      return (this.item as InventoryDetailDto).item?.price?.toString() || '';
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return this.propertyAccessor.getPrice(this.item as Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  getMinimumQuantity(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      return (this.item as InventoryDetailDto).item?.minimumQuantity?.toString() || '';
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return this.propertyAccessor.getMinimumQuantity(this.item as Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  getExpiryDate(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      const expiryDate = (this.item as InventoryDetailDto).expiryDate;
+      if (!expiryDate) return '';
+      try {
+        const date = typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate;
+        return date.toLocaleDateString();
+      } catch {
+        return '';
+      }
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return this.propertyAccessor.getExpiryDate(this.item as Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  getReadyForIssue(): string {
+    if (!this.item) return '';
+    if (this.isInventoryDetail) {
+      return (this.item as InventoryDetailDto).readyForIssue ? 'Yes' : 'No';
+    }
+    if (this.isAsset || this.isDirectDto) {
+      return this.propertyAccessor.getReadyForIssue(this.item as Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  // Ammunition specific additional fields
+  getDistribution(): string {
+    // Cartridge doesn't have distribution property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
+      return this.propertyAccessor.getDistribution(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';
+    }
+    return '';
+  }
+
+  getReferenceNo(): string {
+    // Cartridge doesn't have referenceNo property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
+      return this.propertyAccessor.getReferenceNo(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getReferenceNoForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getClassification(): string {
+    if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
+      return this.propertyAccessor.getClassification(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getClassificationForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getType(): string {
+    if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
+      return this.propertyAccessor.getType(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getTypeForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getNotes(): string {
+    // Cartridge doesn't have notes property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
+      return this.propertyAccessor.getNotes(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getNotesForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getUnNumberForAmmunition(): string {
+    if (this.isCartridge) {
+      return (this.item as Cartridge).unNumber || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getUnNumberForAmmunition(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    return '';
+  }
+
+  getNature(): string {
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getNature(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    return '';
+  }
+
+  getLinked(): string {
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getLinked(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    return '';
+  }
+
+  // Weapon specific additional fields
+  getModel(): string {
+    // Cartridge doesn't have model property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getModel(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getYearOfManufacture(): string {
+    // Cartridge doesn't have yearOfManufacture property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getYearOfManufacture(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getCountryOfManufacture(): string {
+    // Cartridge doesn't have countryOfManufacture property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getCountryOfManufacture(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getCaliberUnit(): string {
+    // Cartridge doesn't have caliberUnit property
+    if (this.isCartridge) {
+      return '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getCaliberUnit(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getDistributionForWeapon(): string {
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getDistributionForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  getUnNumberForWeapon(): string {
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getUnNumberForWeapon(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
+  // Helper method to get lookup name
+  private getLookupDisplayName(lookup: any): string {
+    if (!lookup) return '';
+    if (typeof lookup === 'string') return lookup;
+    if (typeof lookup === 'object' && 'nameAr' in lookup && 'nameEn' in lookup) {
+      return this.translationService?.isRTL() ? lookup.nameAr : lookup.nameEn;
+    }
+    return '';
+  }
+
+  // Helper methods to get weapon dimensions with units
+  getBarrelLengthWithUnit(): string {
+    if (this.isCartridge) {
+      return this.getBarrelLengthLabel();
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      const weapon = this.item as Asset | WeaponDto;
+      if (weapon && 'barrelLength' in weapon && weapon.barrelLength != null) {
+        const unit = this.getLookupDisplayName(weapon.barrelLengthUnit);
+        return `${weapon.barrelLength}${unit ? ' ' + unit : ''}`.trim();
+      }
+    }
+    return '';
+  }
+
+  getOverallLengthWithUnit(): string {
+    if (this.isCartridge) {
+      return this.getOverallLengthLabel();
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      const weapon = this.item as Asset | WeaponDto;
+      if (weapon && 'overallLength' in weapon && weapon.overallLength != null) {
+        const unit = this.getLookupDisplayName(weapon.overallLengthUnit);
+        return `${weapon.overallLength}${unit ? ' ' + unit : ''}`.trim();
+      }
+    }
+    return '';
+  }
+
+  getWeightWithUnit(): string {
+    if (this.isCartridge) {
+      return this.getWeightLabel();
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      const weapon = this.item as Asset | WeaponDto;
+      if (weapon && 'weight' in weapon && weapon.weight != null) {
+        const unit = this.getLookupDisplayName(weapon.weightUnit);
+        return `${weapon.weight}${unit ? ' ' + unit : ''}`.trim();
+      }
+    }
+    return '';
+  }
+
+  getCapacityForWeapon(): number | undefined {
+    if (this.isCartridge) {
+      return this.getCapacity();
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      const weapon = this.item as Asset | WeaponDto;
+      return weapon && 'capacity' in weapon ? weapon.capacity : undefined;
+    }
+    return undefined;
   }
 
   private loadImage(itemId: number): void {

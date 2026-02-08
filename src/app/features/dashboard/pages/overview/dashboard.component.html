@@ -13,19 +13,21 @@
           </p>
         </div>
 
-        <div *ngIf="allCards.length > 0"
+        <div *ngIf="totalItems > 0 || searchQuery || selectedStatusFilter !== 'all'"
           class="flex flex-col md:flex-row items-stretch md:items-center gap-5 animate-slide-in-right">
 
-          <!-- Shared Filter Bar Component -->
-          <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
-            [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
-            [searchQuery]="searchQuery" [resultCount]="filteredCardsCount"
-            (statusFilterChange)="onStatusFilterChange($event)" (searchQueryChange)="onSearchChange($event)">
-          </app-request-filter-bar>
+          <!-- Shared Filter Bar Component - Moved to left -->
+          <div class="w-full md:flex-1 md:min-w-0">
+            <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
+              [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
+              [searchQuery]="searchQuery" [resultCount]="filteredCardsCount" [useSearchButton]="true"
+              (statusFilterChange)="onStatusFilterChange($event)" (searchTriggered)="onSearchChange($event)">
+            </app-request-filter-bar>
+          </div>
 
-          <!-- Refined View Toggle -->
+          <!-- Refined View Toggle - Fixed width on right -->
           <div
-            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)]">
+            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] flex-shrink-0">
             <button (click)="toggleViewMode('grid')" [class.bg-[var(--color-brand)]]="viewMode === 'grid'"
               [class.text-white]="viewMode === 'grid'" [class.text-[var(--color-text-muted)]]="viewMode !== 'grid'"
               class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-soft"
@@ -47,10 +49,20 @@
   </div>
 
   <!-- Main Content -->
-  <div class="page-container">
+  <div class="page-container relative min-h-[400px]">
+    <!-- Loading Overlay -->
+    <div *ngIf="isLoading"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-[var(--color-background)]/60 backdrop-blur-[2px]">
+      <div class="flex flex-col items-center gap-3">
+        <div
+          class="w-12 h-12 border-4 border-[var(--color-brand)]/20 border-t-[var(--color-brand)] rounded-full animate-spin">
+        </div>
+        <p class="text-sm font-medium text-[var(--color-text)] animate-pulse">{{ 'common.loading' | translate }}...</p>
+      </div>
+    </div>
     <!-- Status Cards Grid -->
     <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
       <app-status-card *ngFor="let card of paginatedCards" [title]="card.title" [status]="card.status"
         [orders]="card.orders" [orderRequestId]="card.orderRequestId || null"
         [returnRequestId]="card.returnRequestId || null" [discardRequestId]="card.discardRequestId || null"
@@ -61,7 +73,57 @@
     <!-- Table View -->
     <div *ngIf="viewMode === 'table' && visibleCards.length > 0"
       class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
-      <div class="overflow-x-auto">
+
+      <!-- Mobile Table (Card) View -->
+      <div class="md:hidden grid grid-cols-1 gap-4 p-4">
+        <div *ngFor="let card of paginatedCards"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
+          [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
+
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="font-bold text-[var(--color-text)] text-sm">{{ card.orders[0].orderId || card.title }}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">{{ formatApprovalDateTime(card.orders[0].requestDate)
+                || 'N/A' }}</span>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+              [ngClass]="getStatusBadgeClass(card.status)">
+              {{ getStatusTranslationKey(card.status) | translate }}
+            </span>
+          </div>
+
+          <!-- Details -->
+          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].departmentName || 'N/A' }}</p>
+            </div>
+            <div>
+              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].requesterName || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <!-- Footer / Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
+            <span *ngIf="card.isMyTurn"
+              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
+              {{ 'requestsManagement.actionRequired' | translate }}
+            </span>
+            <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
+
+            <button (click)="onTableAction(card)"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
+              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
+              <span>{{ 'common.view' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full divide-y divide-[var(--color-border)]">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
@@ -174,23 +236,23 @@
     </div>
 
     <!-- Pagination Footer -->
-    <div *ngIf="visibleCards.length > 0"
-      class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8">
-      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="visibleCards.length"
-        [visibleItems]="paginatedCards.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+    <div *ngIf="visibleCards.length > 0 || totalItems > 0"
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8 text-start">
+      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="visibleCards.length"
+        (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
 
-      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
         </app-pagination>
-        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
           {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
         </span>
       </div>
     </div>
 
     <!-- No Cards Message -->
-    <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
+    <div *ngIf="visibleCards.length === 0 && !isLoading" class="flex items-center justify-center min-h-[60vh]">
       <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
         <div
           class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">

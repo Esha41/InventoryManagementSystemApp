@@ -56,38 +56,53 @@
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productName' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getItemName() }}</p>
+            <p class="text-[var(--color-text)]">{{ getItemName() || '-' }}</p>
           </div>
 
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productId' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getProductId() }}</p>
+            <p class="text-[var(--color-text)]">{{ getProductId() || '-' }}</p>
+          </div>
+
+          <div *ngIf="getPartNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.partNo' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPartNo() }}</p>
           </div>
 
           <div>
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getNSN() }}</p>
+            <p class="text-[var(--color-text)]">{{ getNSN() || '-' }}</p>
+          </div>
+
+          <div *ngIf="getBatchNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.batchNo' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getBatchNo() }}</p>
           </div>
 
           <!-- Ammunition specific fields -->
-          <div *ngIf="isAmmunition">
+          <div *ngIf="isAmmunition && getArmNumber()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
+          </div>
+
+          <div *ngIf="isAmmunition && getPrimaryPurpose()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primaryPurpose' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getPrimaryPurpose() }}</p>
           </div>
 
           <!-- Weapon specific fields -->
-          <div *ngIf="isWeapon">
+          <div *ngIf="isWeapon && getWeaponType()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weaponType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getWeaponType() }}</p>
           </div>
 
           <!-- Explosive specific fields -->
-          <div *ngIf="isExplosive">
+          <div *ngIf="isExplosive && getExplosiveType()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.explosiveType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getExplosiveType() }}</p>
           </div>
 
-          <div class="col-span-2" *ngIf="isAmmunition">
+          <div class="col-span-2" *ngIf="isAmmunition && getProjectileColor()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileColor' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getProjectileColor() }}</p>
           </div>
@@ -99,10 +114,15 @@
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate
           }}</h4>
 
-        <div class="space-y-3 text-sm">
-          <div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getTotalWeight()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
+          </div>
+
+          <div *ngIf="getBulletDiameter()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getBulletDiameter() }}</p>
           </div>
 
           <div *ngIf="getProjectileMaterial()">
@@ -110,19 +130,29 @@
             <p class="text-[var(--color-text)]">{{ getProjectileMaterial() }}</p>
           </div>
 
-          <div>
+          <div *ngIf="getCaseType()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.caseType' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getCaseType() }}</p>
           </div>
 
-          <div>
+          <div *ngIf="getPrimer()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primer' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getPrimer() }}</p>
           </div>
 
-          <div>
+          <div *ngIf="getPropellant()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.propellant' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getPropellant() }}</p>
+          </div>
+
+          <div *ngIf="getNature()">
+            <p class="text-[var(--color-text-muted)] mb-1">Nature</p>
+            <p class="text-[var(--color-text)]">{{ getNature() }}</p>
+          </div>
+
+          <div *ngIf="getLinked()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getLinked() }}</p>
           </div>
         </div>
       </div>
@@ -132,9 +162,14 @@
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'weapon.specifications' | translate }}</h4>
 
         <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
+          <div *ngIf="getCaliber()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliber' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getCaliber() }}</p>
+          </div>
+
+          <div *ngIf="getCaliberUnit()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliberUnit' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberUnit() }}</p>
           </div>
 
           <div *ngIf="getActionType()">
@@ -142,24 +177,39 @@
             <p class="text-[var(--color-text)]">{{ getActionType() }}</p>
           </div>
 
-          <div *ngIf="getBarrelLengthLabel()">
+          <div *ngIf="getModel()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.model' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getModel() }}</p>
+          </div>
+
+          <div *ngIf="getBarrelLengthWithUnit()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.barrelLength' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getBarrelLengthLabel() }}</p>
+            <p class="text-[var(--color-text)]">{{ getBarrelLengthWithUnit() }}</p>
           </div>
 
-          <div *ngIf="getOverallLengthLabel()">
+          <div *ngIf="getOverallLengthWithUnit()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.overallLength' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getOverallLengthLabel() }}</p>
+            <p class="text-[var(--color-text)]">{{ getOverallLengthWithUnit() }}</p>
           </div>
 
-          <div *ngIf="getWeightLabel()">
+          <div *ngIf="getWeightWithUnit()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weight' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getWeightLabel() }}</p>
+            <p class="text-[var(--color-text)]">{{ getWeightWithUnit() }}</p>
           </div>
 
-          <div *ngIf="getCapacity() !== undefined">
+          <div *ngIf="getCapacityForWeapon() !== undefined">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.capacity' | translate }}</p>
-            <p class="text-[var(--color-text)]">{{ getCapacity() }}</p>
+            <p class="text-[var(--color-text)]">{{ getCapacityForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getYearOfManufacture()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.yearOfManufacture' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getYearOfManufacture() }}</p>
+          </div>
+
+          <div *ngIf="getCountryOfManufacture()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.countryOfManufacture' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCountryOfManufacture() }}</p>
           </div>
         </div>
       </div>
@@ -168,8 +218,8 @@
       <div class="space-y-4" *ngIf="isExplosive">
         <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'explosive.specifications' | translate }}</h4>
 
-        <div class="space-y-3 text-sm">
-          <div>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getUnNumber()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getUnNumber() }}</p>
           </div>
@@ -192,14 +242,115 @@
         </h4>
 
         <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
+          <div *ngIf="getHazardDivision()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.hazardDivision' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getHazardDivision() }}</p>
           </div>
 
-          <div>
+          <div *ngIf="getCapabilityGroup()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.capabilityGroup' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getCapabilityGroup() }}</p>
+          </div>
+
+          <div *ngIf="getClassification()">
+            <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+            <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+          </div>
+
+          <div *ngIf="getType()">
+            <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+            <p class="text-[var(--color-text)]">{{ getType() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information (Ammunition and Explosive) -->
+      <div class="space-y-4" *ngIf="isAmmunition || isExplosive">
+        <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getDistribution()">
+            <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
+            <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
+          </div>
+
+          <div *ngIf="getReferenceNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+            <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+          </div>
+
+          <div *ngIf="isAmmunition && getUnNumberForAmmunition()">
+            <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
+          </div>
+
+          <div *ngIf="getNotes()" class="col-span-2">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNotes() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information (Weapon) -->
+      <div class="space-y-4" *ngIf="isWeapon">
+        <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getDistributionForWeapon()">
+            <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
+            <p class="text-[var(--color-text)]">{{ getDistributionForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getReferenceNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+            <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+          </div>
+
+          <div *ngIf="getUnNumberForWeapon()">
+            <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumberForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getClassification()">
+            <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+            <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+          </div>
+
+          <div *ngIf="getType()">
+            <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+            <p class="text-[var(--color-text)]">{{ getType() }}</p>
+          </div>
+
+          <div *ngIf="getNotes()" class="col-span-2">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNotes() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Fields (All Asset Types) -->
+      <div class="space-y-4">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'assetList.viewModal.commonFields' | translate }}</h4>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getPrice()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.price' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPrice() }}</p>
+          </div>
+
+          <div *ngIf="getMinimumQuantity()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.minimumQuantity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+          </div>
+
+          <div *ngIf="getExpiryDate()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.expiryDate' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getExpiryDate() }}</p>
+          </div>
+
+          <div *ngIf="getReadyForIssue()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.readyForIssue' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getReadyForIssue() }}</p>
           </div>
         </div>
       </div>

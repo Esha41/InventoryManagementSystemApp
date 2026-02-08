@@ -62,6 +62,31 @@ app-status-card {
   /* Ensure cards fill their grid cells */
   max-height: 750px;
   /* Increased card height for better scrolling */
+  /* Prevent cards from stretching too wide - set reasonable max width */
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Prevent cards from stretching too much on large screens */
+@media (min-width: 1280px) {
+  app-status-card {
+    max-width: 400px;
+    /* Reasonable max width for cards on large screens */
+    margin-left: auto;
+    margin-right: auto;
+    /* Center cards when they hit max-width constraint */
+  }
+}
+
+/* On 2xl screens, allow slightly wider cards but still constrain */
+@media (min-width: 1536px) {
+  app-status-card {
+    max-width: 450px;
+    /* Slightly wider for 2xl screens but still constrained */
+    margin-left: auto;
+    margin-right: auto;
+    /* Center cards when they hit max-width constraint */
+  }
 }
 
 app-status-card:hover {
@@ -78,7 +103,8 @@ app-status-card:hover {
 .grid.grid-cols-1>app-status-card,
 .grid.md\\:grid-cols-2>app-status-card,
 .grid.lg\\:grid-cols-3>app-status-card,
-.grid.xl\\:grid-cols-4>app-status-card {
+.grid.xl\\:grid-cols-4>app-status-card,
+.grid.\\32xl\\:grid-cols-5>app-status-card {
   max-height: 750px;
   /* Increased card height for better scrolling */
 }
@@ -95,6 +121,9 @@ app-status-card:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Cards grid inherits page-container max-width constraints */
+/* Grid items will naturally respect card max-width constraints */
 
 /* Custom scrollbar for modal */
 .overflow-y-auto::-webkit-scrollbar {
@@ -213,4 +242,94 @@ app-status-card:hover {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Dashboard-specific filter bar sizing - Make search and status filter bigger */
+::ng-deep app-request-filter-bar[layout="unified"] {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Mobile: Full width, smaller sizes */
+@media (max-width: 640px) {
+  /* Make search bar container responsive on mobile */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown responsive on mobile */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Tablet: Medium sizes */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Make search bar container medium size on tablet */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 250px !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown medium size on tablet */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 220px !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Desktop/Large screens: Bigger sizes */
+@media (min-width: 1025px) {
+  /* Make search bar container bigger in dashboard */
+  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+    min-width: 350px !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Make status filter dropdown bigger in dashboard - Target the dropdown element */
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+    min-width: 300px !important;
+    width: 300px !important;
+    max-width: 300px !important;
+    flex-shrink: 0 !important;
+  }
+
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
+  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+    width: 100% !important;
+    min-width: 300px !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Make search input bigger in dashboard */
+::ng-deep app-request-filter-bar[layout="unified"] .dashboard-search-input {
+  min-width: 100% !important;
+  font-size: 0.875rem;
+}
+
+/* Ensure filters container has enough space and doesn't shrink */
+::ng-deep app-request-filter-bar[layout="unified"] > div > div:last-child {
+  flex-shrink: 0 !important;
+  min-width: fit-content !important;
 }

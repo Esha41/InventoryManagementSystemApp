@@ -181,9 +181,29 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (error) => {
+        // Extract error message from various possible locations
+        let errorMessage = 'Failed to save depot';
+        
+        // Check userMessage from error interceptor first
+        if (error?.userMessage) {
+          errorMessage = error.userMessage;
+        } 
+        // Check error.error.message (backend response body)
+        else if (error?.error?.message) {
+          errorMessage = error.error.message;
+        } 
+        // Check error.message (standard error message)
+        else if (error?.message) {
+          errorMessage = error.message;
+        }
+        // Check if error.error is a string
+        else if (typeof error?.error === 'string') {
+          errorMessage = error.error;
+        }
+        
         this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
           this.toastService.error(
-            error.message || translations['toast.failedToSaveDepot'],
+            errorMessage || translations['toast.failedToSaveDepot'],
             translations['toast.error']
           );
         });
@@ -204,13 +224,26 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.showDeleteDialog = false;
 
+   
+    const deleteDto = {
+      Code: this.depotToDelete.code || this.depotToDelete.Code || '',
+      NameAr: this.depotToDelete.nameAr || '',
+      NameEn: this.depotToDelete.nameEn || '',
+      Location: this.depotToDelete.location || '',
+      Latitude: this.depotToDelete.latitude || 0,
+      Longitude: this.depotToDelete.longitude || 0,
+      IsDeleted: this.depotToDelete.isDeleted || false
+    };
+
+  
     this.apiService
-      .deleteWithAuth<APIOperationResponse<DepotDto>>(
-        `${API_ENDPOINTS.DEPOT.BASE}/${this.depotToDelete.id}`
+      .deleteRaw<DepotDto>(
+        `${API_ENDPOINTS.DEPOT.BASE}/${this.depotToDelete.id}`,
+        deleteDto
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: APIOperationResponse<DepotDto>) => {
           if (response.succeeded) {
             this.translateService.get(['toast.depotDeleted', 'toast.success']).subscribe(translations => {
               this.toastService.success(translations['toast.depotDeleted'], translations['toast.success']);

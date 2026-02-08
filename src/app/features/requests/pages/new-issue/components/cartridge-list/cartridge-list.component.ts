@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderService } from '@services/order.service';
@@ -145,7 +145,8 @@ export class CartridgeListComponent {
   constructor(
     private orderService: OrderService,
     private config: ConfigService,
-    private itemTypeValidationService: ItemTypeValidationService
+    private itemTypeValidationService: ItemTypeValidationService,
+    private translate: TranslateService
   ) { }
 
   onCartridgeClick(cartridge: Cartridge): void {
@@ -213,9 +214,11 @@ export class CartridgeListComponent {
           this.verifyingAllowance = false;
 
           if (!result.isValid) {
-            // Quantity exceeds available allowance
-            const errorMsg = result.message ||
-              `Requested quantity (${quantity}) exceeds available allowance. Available: ${result.availableQuantity}`;
+            // Quantity exceeds available allowance - use translated message
+            const errorMsg = this.translate.instant('newIssueRequest.errors.allowanceExceeded', {
+              requestedQuantity: quantity,
+              availableQuantity: result.availableQuantity
+            });
             this.allowanceErrorMessage = errorMsg;
             this.allowanceError.emit(errorMsg);
             return; // Don't confirm, show error
@@ -226,7 +229,7 @@ export class CartridgeListComponent {
         },
         error: (error) => {
           this.verifyingAllowance = false;
-          const errorMsg = error?.message || 'Failed to verify allowance. Please try again.';
+          const errorMsg = error?.message || this.translate.instant('newIssueRequest.errors.failedToVerifyAllowance');
           this.allowanceErrorMessage = errorMsg;
           this.allowanceError.emit(errorMsg);
         }

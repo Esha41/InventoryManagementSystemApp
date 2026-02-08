@@ -41,15 +41,16 @@
                 <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
                     (click)="fileInput.click()"
                     class="border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer" [ngClass]="{
-                        'border-[var(--color-brand)] bg-[var(--color-brand)]/5': dragOver,
-                        'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !dragOver && !error,
-                        'border-[var(--color-error)] bg-[var(--color-error)]/10': error
+                        'border-[var(--color-brand)] bg-[var(--color-brand)]/5': dragOver(),
+                        'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !dragOver() && !error(),
+                        'border-[var(--color-error)] bg-[var(--color-error)]/10': error()
                     }">
                     <input #fileInput type="file" class="hidden" accept=".xlsx" (change)="onFileSelected($event)"
                         [attr.aria-label]="'common.selectFile' | translate">
 
                     <!-- No File Selected State -->
-                    <div *ngIf="!selectedFile" class="flex flex-col items-center gap-3">
+                    @if (!selectedFile()) {
+                    <div class="flex flex-col items-center gap-3">
                         <div class="p-3 bg-[var(--color-background)] rounded-full text-[var(--color-text-muted)]">
                             <lucide-angular [img]="Upload" class="h-6 w-6"></lucide-angular>
                         </div>
@@ -62,18 +63,20 @@
                             </p>
                         </div>
                     </div>
+                    }
 
                     <!-- File Selected State -->
-                    <div *ngIf="selectedFile" class="flex flex-col items-center gap-3">
+                    @if (selectedFile(); as file) {
+                    <div class="flex flex-col items-center gap-3">
                         <div class="p-3 bg-[var(--color-success)]/10 rounded-full text-[var(--color-success)]">
                             <lucide-angular [img]="Check" class="h-6 w-6"></lucide-angular>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-[var(--color-text)] break-all px-4">
-                                {{ selectedFile.name }}
+                                {{ file.name }}
                             </p>
                             <p class="text-xs text-[var(--color-text-muted)] mt-1">
-                                {{ (selectedFile.size / 1024).toFixed(1) }} KB
+                                {{ (file.size / 1024).toFixed(1) }} KB
                             </p>
                         </div>
                         <button (click)="$event.stopPropagation(); reset()" type="button"
@@ -81,14 +84,17 @@
                             {{ 'common.remove' | translate }}
                         </button>
                     </div>
+                    }
                 </div>
 
                 <!-- Error Message -->
-                <div *ngIf="error"
+                @if (error(); as errorMsg) {
+                <div
                     class="flex items-start gap-2 text-sm text-[var(--color-error)] bg-[var(--color-error)]/10 p-3 rounded-md border-2 border-[var(--color-error)]/20">
                     <lucide-angular [img]="AlertCircle" class="h-4 w-4 flex-shrink-0 mt-0.5"></lucide-angular>
-                    <span>{{ error }}</span>
+                    <span>{{ errorMsg }}</span>
                 </div>
+                }
             </div>
 
             <!-- Footer -->
@@ -97,21 +103,13 @@
                     class="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]">
                     {{ 'common.cancel' | translate }}
                 </button>
-                <button (click)="onPreview()" type="button" [disabled]="!selectedFile || !!error"
+                <button (click)="onPreview()" type="button" [disabled]="!selectedFile() || !!error()"
                     class="px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                     [ngClass]="{
-                        'text-white bg-purple-600 hover:bg-purple-700': selectedFile && !error,
-                        'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] cursor-not-allowed': !selectedFile || !!error
+                        'text-white bg-blue-600 hover:bg-blue-700 shadow-lg': selectedFile() && !error(),
+                        'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] cursor-not-allowed': !selectedFile() || !!error()
                     }">
                     {{ 'common.preview' | translate }}
-                </button>
-                <button (click)="confirmImport()" type="button" [disabled]="!selectedFile || !!error"
-                    class="px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                    [ngClass]="{
-                        'text-white bg-blue-600 hover:bg-blue-700': selectedFile && !error,
-                        'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] cursor-not-allowed': !selectedFile || !!error
-                    }">
-                    {{ 'common.import' | translate }}
                 </button>
             </div>
         </div>

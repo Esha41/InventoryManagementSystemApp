@@ -1,8 +1,8 @@
 <div class="page-wrapper flex flex-col">
   <div class="page-container flex-1 flex flex-col w-full">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'addAsset.title' | translate }}</h1>
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'addAsset.title' | translate }}</h1>
     </div>
 
     <!-- Loading State -->
@@ -18,12 +18,12 @@
     <app-card [shadow]="true" class="overflow-hidden mb-6">
       <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]"
         [ngClass]="{'flex justify-end': isRTL}">
-        <nav class="flex gap-1 p-2" aria-label="Tabs" [ngClass]="{'flex-row-reverse': isRTL}">
+        <nav class="flex gap-1 p-2 overflow-x-auto" aria-label="Tabs" [ngClass]="{'flex-row-reverse': isRTL}">
           <button (click)="setActiveTab('ammunition')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
             <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -37,7 +37,7 @@
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
             <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -51,7 +51,7 @@
             'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
           }"
-            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
             <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
               <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
@@ -65,10 +65,10 @@
       </div>
     </app-card>
 
-    <!-- Centered Form Container -->
-    <div class="flex-1 flex items-center justify-center">
+    <!-- Form Container -->
+    <div class="flex-1">
       <div
-        class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] p-6 w-full max-w-5xl">
+        class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] p-4 sm:p-6 w-full max-w-5xl mx-auto">
         <h2 class="text-xl font-bold text-[var(--color-text)] mb-6">
           <span *ngIf="activeTab === 'ammunition'">{{ 'addAsset.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'addAsset.addWeapon' | translate }}</span>
@@ -106,7 +106,7 @@
           </div>
 
           <!-- Form Fields -->
-          <div class="grid grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- LEFT COLUMN - Text/Number Inputs -->
             <div class="space-y-6">
               <!-- Name (Required) -->
@@ -239,12 +239,12 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Unit (ExplosiveUnit) -->
+                <!-- Unit -->
                 <div>
                   <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.unit' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.unit" name="unit" [options]="explosiveUnitOptions"
-                    optionValue="value" [optionLabelFn]="explosiveUnitOptionLabel" [placeholderSelectable]="false"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.unitId" name="unitId" [options]="units"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
                   </app-dropdown>
                 </div>
@@ -635,7 +635,7 @@
 
             <!-- Reference No and Notes - Side by Side -->
             <ng-container *ngIf="activeTab === 'ammunition'">
-              <div class="col-span-2 grid grid-cols-2 gap-6">
+              <div class="col-span-1 lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Reference No -->
                 <div>
                   <label class="block text-sm font-medium text-[#6B7280] mb-2">{{ 'addAsset.referenceNo' | translate
@@ -658,7 +658,7 @@
           </div>
 
           <!-- Form Actions -->
-          <div class="flex justify-end gap-3 pt-6">
+          <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6">
             <button type="button" (click)="onCancel()"
               class="px-6 py-2.5 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
               {{ 'addAsset.discard' | translate }}

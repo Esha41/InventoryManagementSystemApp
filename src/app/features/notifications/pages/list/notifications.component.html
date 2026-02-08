@@ -1,10 +1,10 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
-    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <lucide-angular [img]="Bell" class="h-8 w-8 text-[var(--color-brand)]"></lucide-angular>
-          <h1 class="text-3xl font-bold text-[var(--color-text)]">
+          <lucide-angular [img]="Bell" class="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-brand)]"></lucide-angular>
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
             {{ 'notifications.title' | translate }}
           </h1>
         </div>
@@ -15,7 +15,7 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <app-button variant="primary" size="sm" class="action-button" (click)="markAllAsRead()"
+        <app-button variant="primary" size="sm" class="action-button w-full sm:w-auto" (click)="markAllAsRead()"
           [disabled]="markingAll || (unreadCount$ | async) === 0">
           <span class="action-button__content">
             <div class="action-button__spinner" [class.spinner]="markingAll"></div>
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[380px_1fr]">
+    <div class="grid gap-6 lg:grid-cols-[380px_1fr] items-start">
       <!-- List -->
       <div
         class="flex h-full min-h-[480px] flex-col rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm">
@@ -37,13 +37,13 @@
               [formControl]="searchControl" />
           </label>
 
-          <div class="flex items-center gap-2">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <button type="button" class="filter-pill" [class.filter-pill--active]="isFilterActive('all')"
               (click)="setFilter('all')">
               {{ 'notifications.filters.all' | translate }}
             </button>
-            <button type="button" class="filter-pill" [class.filter-pill--active]="isFilterActive('unread')"
-              (click)="setFilter('unread')">
+            <button type="button" class="filter-pill flex-1 sm:flex-initial"
+              [class.filter-pill--active]="isFilterActive('unread')" (click)="setFilter('unread')">
               {{ 'notifications.filters.unread' | translate }}
             </button>
           </div>
@@ -125,7 +125,7 @@
       </div>
 
       <!-- Detail -->
-      <div class="rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm">
+      <div class="rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm self-start">
         <ng-container *ngIf="selectedNotification as notification; else noSelection">
           <div class="flex flex-col gap-6 p-6">
             <div class="flex flex-col gap-4 pb-6">
@@ -151,7 +151,7 @@
                 </div>
               </div>
 
-              <div class="grid gap-4 sm:grid-cols-2">
+              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <div class="info-pill">
                   <div class="info-pill__icon">
                     <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
@@ -380,7 +380,7 @@
                   {{ 'notifications.additionalInfo' | translate }}
                 </h3>
 
-                <div class="grid gap-3 md:grid-cols-2">
+                <div class="grid gap-3 sm:grid-cols-2">
                   <div *ngFor="let item of metadata; trackBy: trackMetadata"
                     class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
                     <p class="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -393,7 +393,7 @@
             </ng-container>
 
             <div *ngIf="hasNotificationActions(notification)"
-              class="flex flex-wrap items-center gap-3 border-t border-[var(--color-border)] pt-4">
+              class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 border-t border-[var(--color-border)] pt-4">
               <app-button *ngIf="canConfirmPickup(notification)" variant="primary" (click)="confirmPickup(notification)"
                 [disabled]="isPending(notification)">
                 <span class="flex items-center gap-2">
@@ -459,7 +459,7 @@
         <p class="text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.militaryTimeFormat' | translate }}</p>
       </div>
 
-      <div class="flex justify-end gap-3 pt-4">
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
         <app-button variant="ghost" type="button" (click)="closeProposeModal()">
           {{ 'common.cancel' | translate }}
         </app-button>

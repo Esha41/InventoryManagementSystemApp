@@ -1,10 +1,34 @@
-<div class="mb-6">
-  <label class="group flex items-center gap-3 border-2 border-[var(--color-border)] rounded-xl bg-[var(--color-background)] py-3 px-4 md:py-3.5 md:px-[1.125rem] transition-all duration-200 ease-in-out shadow-sm w-full max-w-[600px] relative hover:border-[var(--color-brand)] hover:shadow-md focus-within:border-[var(--color-brand)] focus-within:shadow-[0_0_0_4px_var(--color-brand-soft),0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] focus-within:outline-none">
-    <lucide-angular [img]="Search" class="w-[1.125rem] h-[1.125rem] md:w-5 md:h-5 text-[var(--color-text-muted)] flex-shrink-0 transition-colors duration-200 group-focus-within:text-[var(--color-brand)]"></lucide-angular>
-    <input type="search" 
-      class="flex-1 border-none bg-transparent text-sm md:text-[0.9375rem] font-normal text-[var(--color-text)] p-0 min-w-0 leading-6 placeholder:text-[var(--color-text-muted)] placeholder:opacity-70 placeholder:font-normal focus:outline-none [&::-webkit-search-cancel-button]:hidden"
-      [placeholder]="'warehouseInventory.searchPlaceholder' | translate" 
-      [formControl]="searchControl" />
-  </label>
-</div>
+<div class="mb-6 flex flex-col md:flex-row gap-4">
+  <!-- Search Input -->
+  <div
+    class="relative flex items-center flex-1 max-w-[600px] group border border-[var(--color-border)] rounded-xl bg-[var(--color-background)] transition-all duration-200 ease-in-out shadow-sm hover:border-[var(--color-brand)] hover:shadow-md focus-within:border-[var(--color-brand)] focus-within:shadow-[0_0_0_4px_var(--color-brand-soft),0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] overflow-hidden">
 
+    <!-- Search Icon -->
+    <div
+      class="absolute start-3 pointer-events-none transition-colors duration-200 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)]">
+      <lucide-angular [img]="Search" class="w-5 h-5"></lucide-angular>
+    </div>
+
+    <!-- Input -->
+    <input type="search"
+      class="flex-1 w-full bg-transparent border-none py-2.5 ps-10 pe-28 text-sm font-normal text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+      [placeholder]="'warehouseInventory.searchPlaceholder' | translate" [formControl]="searchControl"
+      (keydown.enter)="onSearchClick()" />
+
+    <!-- Actions -->
+    <div class="absolute end-2 flex items-center gap-2">
+      <button *ngIf="searchControl.value" (click)="clearSearch()"
+        class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+        [title]="'common.clear' | translate">
+        <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+      </button>
+
+      <button (click)="onSearchClick()"
+        class="px-4 py-1.5 bg-[var(--color-brand)] text-white text-sm font-medium rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
+        {{ 'common.search' | translate }}
+      </button>
+    </div>
+
+  </div>
+
+</div>

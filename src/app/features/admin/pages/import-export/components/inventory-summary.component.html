@@ -62,8 +62,70 @@
       <p>{{ 'adminImportExport.noItemsFound' | translate }}</p>
     </div>
 
+    <!-- Mobile/Tablet Card View -->
+    <div *ngIf="filteredInventoryItems.length > 0" class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div *ngFor="let item of filteredInventoryItems"
+        class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-4 hover:shadow-md transition-all">
+
+        <!-- Header: Name & ItemNo -->
+        <div class="flex justify-between items-start gap-4">
+          <div>
+            <h4 class="font-bold text-[var(--color-text)] text-base mb-1">{{ item.itemName }}</h4>
+            <span
+              class="inline-flex px-2 py-1 rounded text-xs font-mono bg-gray-100 text-gray-700 border border-gray-200">
+              {{ item.itemNo }}
+            </span>
+          </div>
+          <div
+            class="text-xs text-[var(--color-text-muted)] bg-[var(--color-background-muted)] px-2 py-1 rounded border border-[var(--color-border)] whitespace-nowrap">
+            {{ 'inventorySummary.totalLots' | translate }}: <span class="font-bold">{{ item.totalLots }}</span>
+          </div>
+        </div>
+
+        <!-- Quantity Grid -->
+        <div
+          class="grid grid-cols-2 gap-3 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border-muted)]">
+          <div>
+            <span class="text-xs text-[var(--color-text-muted)] block mb-0.5">{{ 'inventorySummary.totalQty' | translate
+              }}</span>
+            <span class="font-bold text-[var(--color-text)]">{{ item.totalQuantity | number }}</span>
+          </div>
+          <div>
+            <span class="text-xs text-[var(--color-text-muted)] block mb-0.5">{{ 'inventorySummary.remainingQty' |
+              translate }}</span>
+            <span class="font-bold text-[var(--color-success)]">{{ item.remainingQuantity | number }}</span>
+          </div>
+          <div>
+            <span class="text-xs text-[var(--color-text-muted)] block mb-0.5">{{ 'inventorySummary.usedQty' | translate
+              }}</span>
+            <span class="font-medium text-[var(--color-text-secondary)]">{{ item.usedQuantity | number }}</span>
+          </div>
+          <div>
+            <span class="text-xs text-[var(--color-text-muted)] block mb-0.5">{{ 'inventorySummary.reservedQty' |
+              translate }}</span>
+            <span class="font-medium text-[var(--color-text-secondary)]">{{ item.reservedQuantityByOrdersOnProcessing |
+              number }}</span>
+          </div>
+        </div>
+
+        <!-- Details Footer -->
+        <div
+          class="grid grid-cols-2 gap-4 text-xs border-t border-[var(--color-border-muted)] pt-3 text-[var(--color-text-muted)]">
+          <div>
+            <span class="block font-medium mb-0.5">{{ 'inventorySummary.partNo' | translate }}</span>
+            <span class="font-mono text-[var(--color-text)]">{{ item.partNo || '-' }}</span>
+          </div>
+          <div>
+            <span class="block font-medium mb-0.5">{{ 'inventorySummary.nsn' | translate }}</span>
+            <span class="font-mono text-[var(--color-text)]">{{ item.nsn || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table View -->
     <div *ngIf="filteredInventoryItems.length > 0"
-      class="overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
+      class="hidden lg:block overflow-x-auto border-2 border-[var(--color-border)] rounded-lg">
       <table class="min-w-full divide-y-2 divide-[var(--color-border)]">
         <thead class="bg-[var(--color-background-muted)]">
           <tr>

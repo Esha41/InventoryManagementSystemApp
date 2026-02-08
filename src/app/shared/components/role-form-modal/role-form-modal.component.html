@@ -38,6 +38,15 @@
       </label>
     </div>
 
+    <!-- Admin (Limited) -->
+    <div class="flex items-center gap-2">
+      <input type="checkbox" id="isAdmin" formControlName="isAdmin"
+        class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
+      <label for="isAdmin" class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'roleFormModal.admin' | translate }}
+      </label>
+    </div>
+
 
     <!-- Error Message -->
     <div *ngIf="errorMessage"

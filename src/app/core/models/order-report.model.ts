@@ -10,8 +10,8 @@ export interface OrderSummary {
   orderId: string;
   status: string;
   priority: string;
-  submittedOn: string;
-  requestDate: string;
+  submittedOn: string | Date | null; // Raw date for pipe formatting
+  requestDate: string | Date | null; // Raw date for pipe formatting
   department: string;
   requester: string;
   usagePurpose: string;
@@ -19,7 +19,7 @@ export interface OrderSummary {
   requestPurposeNameAr?: string;
   totalItems: number;
   totalQuantity: number;
-  lastUpdated: string;
+  lastUpdated: string | Date | null; // Raw date for pipe formatting
   isFromAllowance?: boolean;
   requestType?: string;
 }
@@ -42,7 +42,7 @@ export interface OrderReportApprovalStep {
   role: string;
   approver: string;
   status: 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview';
-  date: string;
+  date: string | Date | null; // Raw date for pipe formatting
   notes: string;
 }
 

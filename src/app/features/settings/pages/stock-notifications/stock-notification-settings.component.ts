@@ -10,7 +10,8 @@ import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from '@components/button/button.component';
-import { LowStockNotificationSettingsDto, LowStockNotificationScheduleDto, StockNotificationService } from '@settings/services/stock-notification.service';
+import { PaginatedList } from '@models/api-response.model';
+import { StockNotificationService, LowStockNotificationScheduleDto, LowStockNotificationSettingsDto } from '@settings/services/stock-notification.service';
 
 @Component({
   selector: 'app-stock-notification-settings',
@@ -81,9 +82,9 @@ export class StockNotificationSettingsComponent {
 
   private loadUsers(): void {
     this.isLoadingUsers = true;
-    this.backendUserService.getUsers().subscribe({
-      next: (users) => {
-        this.users = users;
+    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
+      next: (response: PaginatedList<BackendUserDto>) => {
+        this.users = response.items || [];
         this.isLoadingUsers = false;
       },
       error: (error) => {
@@ -211,11 +212,11 @@ export class StockNotificationSettingsComponent {
     const offsetMinutes = (Math.abs(timezoneOffset) % 60).toString().padStart(2, '0');
     const offsetSign = timezoneOffset >= 0 ? '+' : '-';
     const offsetString = `${offsetSign}${offsetHours}:${offsetMinutes}`;
-    
+
     // Create ISO string with timezone: "2026-01-20T15:47:00+03:00"
     // Send as string so backend parses it correctly with timezone info
     const dateTimeWithOffset = `${formValue.dateTime}:00${offsetString}`;
-    
+
     const dto: LowStockNotificationScheduleDto = {
       scheduleTime: dateTimeWithOffset as any // Send as string, backend will parse to DateTime
     }

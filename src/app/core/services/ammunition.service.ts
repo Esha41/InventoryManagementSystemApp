@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ApiService } from './api.service';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models/import-result.model';
 
 @Injectable({ providedIn: 'root' })
-export class AmmunitionService {
+export class AmmunitionService implements IImportableService {
   private readonly endpoint = '/Ammunition';
 
   constructor(
@@ -22,6 +24,29 @@ export class AmmunitionService {
     if (query?.search) params = params.set('search', query.search);
 
     return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  // Get paginated ammunitions
+  // Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+  // Backend returns AmmunitionDto, but we use AmmunitionReadDto type for compatibility
+  getAllPaginated(request: PagedRequest): Observable<PaginatedList<AmmunitionReadDto>> {
+    return this.apiService.post<PaginatedList<AmmunitionReadDto>>(
+      `${this.endpoint}/Paginated`,
+      request
+    ).pipe(
+      map(response => {
+        // Response is already unwrapped PaginatedList from apiService
+        if (!response || !response.items) {
+          throw new Error('Invalid response structure');
+        }
+        // Cast to expected type - backend AmmunitionDto should be compatible with AmmunitionReadDto
+        return response as PaginatedList<AmmunitionReadDto>;
+      }),
+      catchError(error => {
+        console.error('Error fetching paginated ammunitions:', error);
+        throw error;
+      })
+    );
   }
 
   // Get ammunition by ID
@@ -146,24 +171,23 @@ export class AmmunitionService {
   }
 
   // Import ammunition data
-  importData(file: File, language: string = 'en'): Observable<any> {
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    // Use postRaw because import might return a different structure or we might want full control
-    return this.apiService.post<any>(`${this.endpoint}/Import`, formData);
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/Import`, formData, params);
   }
 
   // Preview import data without saving
-  importPreview(file: File, language: string = 'en'): Observable<any> {
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    return this.apiService.post<any>(`${this.endpoint}/ImportPreview`, formData);
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/ImportPreview`, formData, params);
   }
 
   // Download import template
-  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+  generateImportTemplate(language: string = 'en'): Observable<Blob> {
     const params = new HttpParams().set('language', language);
     return this.http.get(`${this.apiService['baseUrl']}${this.endpoint}/template`, { params, responseType: 'blob' });
   }

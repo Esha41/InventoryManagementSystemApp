@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -63,7 +63,8 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private translateService: TranslateService,
     private toastService: ToastService,
-    private supplyOrderDataService: SupplyOrderDataService
+    private supplyOrderDataService: SupplyOrderDataService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -201,6 +202,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           });
           this.manualLotNumber = '';
           this.loadingManualLot = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           const errorMessage = error instanceof Error ? error.message : 'Lot not found or error loading details';
@@ -208,6 +210,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingManualLot = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -233,6 +236,8 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
               this.toastService.warning(translations['supplyOrder.toast.noAvailableLotsFoundForQuantity'], translations['toast.warning']);
             });
           }
+          this.loadingAllLots = false;
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load available lots';
@@ -240,6 +245,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingAllLots = false;
+          this.cdr.markForCheck();
         }
       });
   }

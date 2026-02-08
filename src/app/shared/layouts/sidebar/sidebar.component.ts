@@ -1,9 +1,9 @@
-import { Component, Output, EventEmitter, OnInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3 } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -23,7 +23,9 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
+export class SidebarComponent implements OnInit, OnDestroy {
+  @Input() mobileOpen = false;
+  @Output() closeMobile = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<boolean>();
   @Input() forceCollapsed: boolean = false;
 
@@ -35,6 +37,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   readonly Package = Package;
   readonly Building2 = Building2;
   readonly GitBranch = GitBranch;
+  readonly Database = Database;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -71,18 +74,19 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       route: '/inventory-dashboard',
       permissions: ['inventoryDashboard']
     },
-    {
-      label: 'nav.adminDashboard',
-      icon: Badge,
-      route: '/admin-dashboard',
-      permissions: ['systemusers.page']
-    },
+
     {
       label: 'nav.analytics',
       icon: TrendingUp,
       route: '/analytics-dashboard',
       permissions: ['analytics.page']
     },
+    // {
+    //   label: 'nav.advancedAnalytics',
+    //   icon: BarChart3,
+    //   route: '/advanced-analytics-dashboard',
+    //   permissions: ['advancedAnalytics.page', 'advancedAnalytics.view']
+    // },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
     //   label: 'nav.supplyManagement',
@@ -236,13 +240,25 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.admin',
       isHeader: true,
-      permissions: ['systemusers.page']
+      permissions: ['systemusers.page', 'admindashboard.page']
+    },
+    {
+      label: 'nav.adminDashboard',
+      icon: Badge,
+      route: '/admin-dashboard',
+      permissions: ['admindashboard.page', 'admindashboard.view']
     },
     {
       label: 'nav.manageAdmins',
       icon: Users,
       route: '/manage-admins',
       permissions: ['systemusers.page']
+    },
+    {
+      label: 'nav.lookupTables',
+      icon: Database,
+      route: '/lookup-tables',
+      permissions: ['Permissions.LookupTables.Page']
     },
     {
       label: 'nav.adminRoles',
@@ -534,6 +550,10 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     this.toggleSidebar.emit(this.isCollapsed);
+  }
+
+  onCloseMobile(): void {
+    this.closeMobile.emit();
   }
 
   toggleSubmenu(label: string): void {

@@ -85,25 +85,6 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       const formValue: any = { ...this.selectedAsset };
       
-      // Format expiryDate for HTML date input (YYYY-MM-DD)
-      if (formValue.expiryDate) {
-        try {
-          const date = typeof formValue.expiryDate === 'string' 
-            ? new Date(formValue.expiryDate) 
-            : formValue.expiryDate;
-          if (date && !isNaN(date.getTime())) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            formValue.expiryDate = `${year}-${month}-${day}`;
-          } else {
-            formValue.expiryDate = null;
-          }
-        } catch {
-          formValue.expiryDate = null;
-        }
-      }
-      
       this.editForm.patchValue(formValue);
       this.cdr.markForCheck();
     }
@@ -130,20 +111,6 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
     const formData = { ...this.editForm.value };
     
-    // Convert date string to ISO format if present
-    if (formData.expiryDate) {
-      try {
-        const date = new Date(formData.expiryDate);
-        if (!isNaN(date.getTime())) {
-          formData.expiryDate = date.toISOString();
-        } else {
-          formData.expiryDate = null;
-        }
-      } catch {
-        formData.expiryDate = null;
-      }
-    }
-    
     let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
     
     if (this.activeTab === 'ammunition') {
@@ -151,11 +118,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     } else if (this.activeTab === 'weapon') {
       dto = formData as CreateUpdateWeaponDto;
     } else {
-      // For explosives, ensure unit field is set (default to 1 = Gram)
-      dto = {
-        ...formData,
-        unit: formData.unit || 1
-      } as CreateUpdateExplosiveDto;
+      // For explosives
+      dto = formData as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

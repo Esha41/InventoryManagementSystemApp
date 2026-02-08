@@ -370,6 +370,9 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       title: warehouse.name
     }).addTo(this.map);
 
+    // Get translated button text
+    const viewInventoryText = this.translate.instant('warehouse.viewInventory') || 'View Inventory';
+
     // Add popup with warehouse information
     const popupContent = `
       <div class="warehouse-popup">
@@ -396,6 +399,13 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
             <span class="popup-value coordinates">${warehouse.latitude.toFixed(4)}°N, ${warehouse.longitude.toFixed(4)}°E</span>
           </div>
         </div>
+        <div class="popup-footer" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+          <button class="view-inventory-btn" data-warehouse-id="${warehouse.id}" 
+            style="width: 100%; padding: 8px 16px; background: linear-gradient(135deg, ${markerColor} 0%, ${markerColorDark} 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: opacity 0.2s;"
+            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            ${viewInventoryText}
+          </button>
+        </div>
       </div>
     `;
 
@@ -407,6 +417,23 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     // Handle marker click
     marker.on('click', () => {
       this.selectWarehouse(warehouse.id);
+    });
+
+    // Handle popup open to attach event listener for View Inventory button
+    marker.on('popupopen', () => {
+      const popupElement = marker.getPopup()?.getElement();
+      if (popupElement) {
+        const viewInventoryBtn = popupElement.querySelector('.view-inventory-btn') as HTMLButtonElement;
+        if (viewInventoryBtn) {
+          viewInventoryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const warehouseId = viewInventoryBtn.getAttribute('data-warehouse-id');
+            if (warehouseId) {
+              this.navigateToWarehouseInventory(warehouseId);
+            }
+          });
+        }
+      }
     });
 
     return marker;
@@ -567,6 +594,13 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   getSelectedWarehouse(): WarehouseLocationDto | undefined {
     if (!this.selectedWarehouse) return undefined;
     return this.warehouses.find(w => w.id === this.selectedWarehouse);
+  }
+
+  /**
+   * Navigate to warehouse inventory page
+   */
+  navigateToWarehouseInventory(warehouseId: string): void {
+    this.router.navigate(['/warehouse', warehouseId, 'inventory']);
   }
 
   ngOnDestroy(): void {

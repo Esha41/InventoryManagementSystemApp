@@ -1,19 +1,30 @@
+<!-- Mobile Overlay -->
+<div *ngIf="mobileOpen" class="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm transition-opacity"
+  (click)="onCloseMobile()"></div>
+
 <aside
-  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full"
-  [class.w-64]="!isCollapsed"
-  [class.w-20]="isCollapsed"
->
+  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-auto md:translate-x-0 w-64"
+  [class.left-0]="!isRTL" [class.right-0]="isRTL" [class.translate-x-0]="mobileOpen"
+  [class.-translate-x-full]="!mobileOpen && !isRTL" [class.translate-x-full]="!mobileOpen && isRTL"
+  [class.md:w-64]="!isCollapsed" [class.md:w-20]="isCollapsed">
   <!-- Toggle Button Section -->
   <div class="h-16 flex items-center justify-end px-4 border-b border-[var(--color-border)]">
-    <button
-      (click)="toggleCollapse()"
-      class="p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors duration-200"
-      [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-    >
-      <lucide-angular
-        [img]="isCollapsed ? (isRTL ? ChevronLeft : ChevronRight) : (isRTL ? ChevronRight : ChevronLeft)"
-        class="h-5 w-5 text-[var(--color-text-muted)]"
-      ></lucide-angular>
+    <!-- Show Logo on Mobile Drawer -->
+    <div class="md:hidden flex-1 flex items-center">
+      <span class="font-bold text-xl text-[var(--color-brand)] tracking-wider">EMDAD</span>
+    </div>
+
+    <button (click)="toggleCollapse()"
+      class="hidden md:block p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors duration-200"
+      [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+      <lucide-angular [img]="isCollapsed ? (isRTL ? ChevronLeft : ChevronRight) : (isRTL ? ChevronRight : ChevronLeft)"
+        class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+    </button>
+
+    <!-- Close Button (Mobile Only) -->
+    <button (click)="onCloseMobile()"
+      class="md:hidden p-2 rounded-lg hover:bg-[var(--color-error)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+      <lucide-angular [img]="isRTL ? ChevronRight : ChevronLeft" class="h-5 w-5"></lucide-angular>
     </button>
   </div>
 
@@ -23,107 +34,72 @@
       <li *ngFor="let item of menuItems; let i = index">
         <!-- Separator before Reports section -->
         <div *ngIf="item.label === 'nav.reports'" class="my-2 border-t border-[var(--color-border)]"></div>
-        
+
         <!-- Header/Section Label -->
         <div *ngIf="item.isHeader" class="px-3 py-2 mt-4 first:mt-0">
           <span
             class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider transition-opacity duration-300"
-            [class.opacity-0]="isCollapsed"
-            [class.opacity-100]="!isCollapsed"
-            [class.hidden]="isCollapsed"
-          >
+            [class.opacity-0]="isCollapsed" [class.opacity-100]="!isCollapsed" [class.hidden]="isCollapsed">
             {{ item.label | translate }}
           </span>
         </div>
 
         <!-- Menu Item with Children (Submenu) -->
-        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
-          <button
-            (click)="toggleSubmenu(item.label)"
-            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
-          >
-            <lucide-angular
-              [img]="item.icon"
-              class="h-5 w-5 flex-shrink-0"
-              [class.mr-3]="!isRTL"
-              [class.ml-3]="isRTL"
-            ></lucide-angular>
-            <span
-              class="font-medium flex-1 transition-opacity duration-300"
-              [class.text-left]="!isRTL"
-              [class.text-right]="isRTL"
-              [class.opacity-0]="isCollapsed"
-              [class.opacity-100]="!isCollapsed"
-              [class.hidden]="isCollapsed"
-            >
+        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem
+          (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
+          <button (click)="toggleSubmenu(item.label)"
+            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]">
+            <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0" [class.mr-3]="!isRTL"
+              [class.ml-3]="isRTL"></lucide-angular>
+            <span class="font-medium flex-1 transition-opacity duration-300" [class.text-left]="!isRTL"
+              [class.text-right]="isRTL" [class.opacity-0]="isCollapsed" [class.opacity-100]="!isCollapsed"
+              [class.hidden]="isCollapsed">
               {{ item.label | translate }}
             </span>
-            <lucide-angular
-              *ngIf="!isCollapsed"
-              [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
-              class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"
-            ></lucide-angular>
+            <lucide-angular *ngIf="!isCollapsed" [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
+              class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"></lucide-angular>
           </button>
           <!-- Tooltip for collapsed state -->
           <div *ngIf="isCollapsed" class="menu-tooltip">
             {{ item.label | translate }}
           </div>
           <!-- Submenu Items -->
-          <ul
-            *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children"
-            class="mt-1 space-y-1"
-            [class.ml-8]="!isRTL"
-            [class.mr-8]="isRTL"
-          >
+          <ul *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children" class="mt-1 space-y-1"
+            [class.ml-8]="!isRTL" [class.mr-8]="isRTL">
             <li *ngFor="let child of item.children">
               <!-- Header within submenu -->
               <div *ngIf="child.isHeader" class="px-3 py-2 mt-2 first:mt-0">
-                <span
-                  class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
-                >
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ child.label | translate }}
                 </span>
               </div>
               <!-- Nested submenu (child with children) -->
               <div *ngIf="!child.isHeader && hasChildren(child)" class="mb-1">
-                <button
-                  (click)="toggleSubmenu(child.label)"
-                  class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm"
-                >
-                  <span class="font-medium flex-1" [class.text-left]="!isRTL" [class.text-right]="isRTL">{{ child.label | translate }}</span>
-                  <lucide-angular
-                    [img]="isSubmenuExpanded(child.label) ? ChevronUp : ChevronDown"
-                    class="h-3 w-3 flex-shrink-0 transition-transform duration-200"
-                  ></lucide-angular>
+                <button (click)="toggleSubmenu(child.label)"
+                  class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
+                  <span class="font-medium flex-1" [class.text-left]="!isRTL" [class.text-right]="isRTL">{{ child.label
+                    | translate }}</span>
+                  <lucide-angular [img]="isSubmenuExpanded(child.label) ? ChevronUp : ChevronDown"
+                    class="h-3 w-3 flex-shrink-0 transition-transform duration-200"></lucide-angular>
                 </button>
                 <!-- Nested submenu items -->
-                <ul
-                  *ngIf="isSubmenuExpanded(child.label) && child.children"
-                  class="mt-1 space-y-1"
-                  [class.ml-4]="!isRTL"
-                  [class.mr-4]="isRTL"
-                >
+                <ul *ngIf="isSubmenuExpanded(child.label) && child.children" class="mt-1 space-y-1"
+                  [class.ml-4]="!isRTL" [class.mr-4]="isRTL">
                   <li *ngFor="let nestedChild of child.children">
-                    <a
-                      *ngIf="nestedChild.route"
-                      [routerLink]="nestedChild.route"
+                    <a *ngIf="nestedChild.route" [routerLink]="nestedChild.route"
                       routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
                       [routerLinkActiveOptions]="{ exact: true }"
-                      class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm"
-                    >
+                      class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
                       <span class="font-medium">{{ nestedChild.label | translate }}</span>
                     </a>
                   </li>
                 </ul>
               </div>
               <!-- Regular submenu item (no nested children) -->
-              <a
-                *ngIf="!child.isHeader && !hasChildren(child) && child.route"
-                [routerLink]="child.route"
+              <a *ngIf="!child.isHeader && !hasChildren(child) && child.route" [routerLink]="child.route"
                 routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
                 [routerLinkActiveOptions]="{ exact: true }"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm"
-              >
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
                 <span class="font-medium">{{ child.label | translate }}</span>
               </a>
             </li>
@@ -131,36 +107,27 @@
         </div>
 
         <!-- Regular Menu Item (No Children) -->
-        <div *ngIf="!item.isHeader && !hasChildren(item)" class="relative group" #menuItem (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
-          <a
-            [routerLink]="item.route"
-            routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
+        <div *ngIf="!item.isHeader && !hasChildren(item)" class="relative group" #menuItem
+          (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
+          <a [routerLink]="item.route" routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
             [routerLinkActiveOptions]="{ exact: false }"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]"
-          >
-          <lucide-angular
-            [img]="item.icon"
-            class="h-5 w-5 flex-shrink-0"
-          ></lucide-angular>
-          <span
-            class="font-medium flex-1 transition-opacity duration-300"
-            [class.opacity-0]="isCollapsed"
-            [class.opacity-100]="!isCollapsed"
-            [class.hidden]="isCollapsed"
-          >
-            {{ item.label | translate }}
-          </span>
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]">
+            <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0"></lucide-angular>
+            <span class="font-medium flex-1 transition-opacity duration-300" [class.opacity-0]="isCollapsed"
+              [class.opacity-100]="!isCollapsed" [class.hidden]="isCollapsed">
+              {{ item.label | translate }}
+            </span>
           </a>
           <!-- Tooltip for collapsed state -->
           <div *ngIf="isCollapsed" class="menu-tooltip">
             {{ item.label | translate }}
           </div>
         </div>
-        
+
         <!-- Separator after Reports section -->
-        <div *ngIf="item.label === 'nav.reports' && i < menuItems.length - 1 && menuItems[i + 1]?.label === 'nav.admin'" class="my-2 border-t border-[var(--color-border)]"></div>
+        <div *ngIf="item.label === 'nav.reports' && i < menuItems.length - 1 && menuItems[i + 1]?.label === 'nav.admin'"
+          class="my-2 border-t border-[var(--color-border)]"></div>
       </li>
     </ul>
   </nav>
 </aside>
-

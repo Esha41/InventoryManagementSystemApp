@@ -110,6 +110,18 @@ export class LookupService {
     return this.getLookupItems('Unit');
   }
 
+  /**
+   * Get Units filtered by ItemType
+   */
+  getUnitsByItemType(itemType?: number): Observable<LookupItem[]> {
+    const endpoint = `${this.baseUrl}/Unit/byItemType`;
+    const params = itemType !== undefined ? new HttpParams().set('itemType', itemType.toString()) : undefined;
+    // ApiService automatically unwraps APIOperationResponse, so we get the data directly
+    return this.apiService.get<LookupItem[]>(endpoint, params).pipe(
+      map(response => Array.isArray(response) ? response : [])
+    );
+  }
+
   getNsns(): Observable<LookupItem[]> {
     return this.getLookupItems('Nsn');
   }

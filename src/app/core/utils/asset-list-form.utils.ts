@@ -51,6 +51,7 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     unNumber: [''],
     netExplosiveQuantity: [null as number | null],
     netExplosiveQuantityUnitId: [null as number | null],
+    unitId: [null as number | null], // Unit lookup ID for explosive
   });
 }
 

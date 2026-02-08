@@ -38,10 +38,8 @@ import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supp
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    DropdownComponent,
     ModalComponent,
     ConfirmDialogComponent,
-    HasPermissionDirective,
     LoadingStateComponent,
     AddLotModalComponent,
     AddOrderItemModalComponent,
@@ -49,7 +47,6 @@ import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supp
     SupplyOrderHeaderComponent,
     SupplyOrderInfoComponent,
     OrderItemsManagementComponent,
-    ApprovalWorkflowComponent,
     SupplyItemsListComponent
   ],
   templateUrl: './supply-order.component.html',

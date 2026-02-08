@@ -339,7 +339,13 @@ export class AssetPropertyAccessor {
   }
 
   getUnit(asset: AssetUnion): string {
-    return isAmmunition(asset) ? this.getUnitName(asset.bulletDiameterUnit) : '-';
+    if (isAmmunition(asset)) {
+      return this.getUnitName(asset.bulletDiameterUnit);
+    }
+    if (isExplosive(asset)) {
+      return this.getUnitName(asset.unit);
+    }
+    return '-';
   }
 
   getLinked(asset: AssetUnion): string {

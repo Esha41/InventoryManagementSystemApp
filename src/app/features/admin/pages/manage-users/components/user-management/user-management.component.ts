@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { LucideAngularModule, UserPlus, UserIcon, Power, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, UserPlus, UserIcon, Power, Edit, Trash2, RotateCcw } from 'lucide-angular';
 import { BackendUserDto, RoleDto } from '@models/backend-user.model';
 import { LookupItem } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -47,6 +47,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   readonly Power = Power;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly RotateCcw = RotateCcw;
 
   users: BackendUserDto[] = [];
   roles: RoleDto[] = [];
@@ -55,7 +56,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   searchTerm = '';
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
 
   // Super admin check
   isSuperAdmin = false;
@@ -89,6 +90,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.isSuperAdmin = profileData?.isSuperAdmin || this.authService.isSuperAdmin();
 
     this.loadUsers();
+    this.loadUserSummary();
     this.loadRoles();
     this.loadRanks();
     this.loadDepartments();
@@ -108,14 +110,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     this.isLoading = true;
-    this.userManagementService.loadUsers()
+    this.userManagementService.loadUsers(this.currentPage, this.rowsPerPage, this.searchTerm || '', this.statusFilter)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (users) => {
           this.users = users;
-          this.currentPage = 1;
           this.isLoading = false;
-          this.validateCurrentPage();
           this.cdr.markForCheck();
         },
         error: (error) => {
@@ -126,6 +126,15 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadUserSummary(): void {
+    this.userManagementService.loadUserSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.cdr.markForCheck(),
+        error: () => { }
+      });
+  }
+
   loadRoles(): void {
     this.userManagementService.loadRoles()
       .pipe(takeUntil(this.destroy$))
@@ -133,7 +142,6 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         next: (roles) => {
           this.roles = roles;
           this.userManagementService.updateRolesCache(this.users, roles);
-          // Trigger change detection to re-evaluate filteredUsers
           this.cdr.markForCheck();
         },
         error: (error) => {
@@ -173,25 +181,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       });
   }
 
+  // With server-side pagination, 'filteredUsers' is just the current page of users loaded from backend
   get filteredUsers(): BackendUserDto[] {
-    let users = this.userManagementService.filterUsers(this.users, this.searchTerm);
-
-    // Filter out superadmin users if current user is not a superadmin
-    if (!this.isSuperAdmin) {
-      users = users.filter(user => {
-        const isSuperAdmin = this.isUserSuperAdmin(user);
-        return !isSuperAdmin;
-      });
-    }
-
-    // Apply status filter
-    if (this.statusFilter === 'active') {
-      users = users.filter(user => user.isActive);
-    } else if (this.statusFilter === 'inactive') {
-      users = users.filter(user => !user.isActive);
-    }
-
-    return users;
+    return this.users;
   }
 
   /**
@@ -236,27 +228,16 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   get totalPages(): number {
-    const totalItems = this.filteredUsers.length;
-    if (totalItems === 0) {
-      return 1;
-    }
-    return Math.ceil(totalItems / this.rowsPerPage);
+    return this.userManagementService.paginationState.totalPages;
   }
 
   get paginatedUsers(): BackendUserDto[] {
-    this.validateCurrentPage();
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.filteredUsers.slice(startIndex, startIndex + this.rowsPerPage);
+    return this.users;
   }
 
+  // Not strictly needed with server-side pagination but kept for safety
   private validateCurrentPage(): void {
-    const maxPages = this.totalPages;
-    if (this.currentPage > maxPages && maxPages > 0) {
-      this.currentPage = maxPages;
-    }
-    if (this.currentPage < 1) {
-      this.currentPage = 1;
-    }
+    // Validation handled by backend/service
   }
 
   getUserName(user: BackendUserDto): string {
@@ -293,27 +274,25 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       return;
     }
     this.currentPage = page;
-    this.cdr.markForCheck();
+    this.loadUsers();
   }
 
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
     this.currentPage = 1;
-    this.validateCurrentPage();
-    this.cdr.markForCheck();
+    this.loadUsers();
   }
 
   onSearchChange(searchTerm: string): void {
     this.searchTerm = searchTerm;
     this.currentPage = 1;
-    this.validateCurrentPage();
-    this.cdr.markForCheck();
+    this.loadUsers();
   }
 
-  onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive'): void {
+  onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = statusFilter;
     this.currentPage = 1;
-    this.validateCurrentPage();
+    this.loadUsers();
     this.cdr.markForCheck();
   }
 
@@ -377,6 +356,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
               this.translateService.instant('common.success')
             );
             this.loadUsers();
+            this.loadUserSummary();
           }
         },
         error: (error) => {
@@ -400,6 +380,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
               this.selectedUser = undefined;
               this.cdr.markForCheck();
               this.loadUsers();
+              this.loadUserSummary();
               this.toastService.success(
                 this.translateService.instant('manageAdmins.userDeletedSuccess', { userName }),
                 this.translateService.instant('manageAdmins.deleteUserTitle')
@@ -420,6 +401,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   onUserSaved(): void {
     this.loadUsers();
+    this.loadUserSummary();
     this.userManagementService.clearRolesCache();
     this.userSaved.emit();
   }
@@ -434,6 +416,29 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   getTotalInactiveUsers(): number {
     return this.userManagementService.getTotalInactiveUsers(this.users);
+  }
+
+  onRestore(user: BackendUserDto): void {
+    this.userManagementService.restoreUser(user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          if (success) {
+            this.toastService.success(
+              this.translateService.instant('manageAdmins.userRestoredSuccess', { userName: user.userName || this.translateService.instant('manageAdmins.user') }),
+              this.translateService.instant('common.success')
+            );
+            this.loadUsers();
+            this.loadUserSummary();
+          }
+        },
+        error: (error) => {
+          this.toastService.error(
+            error.message || this.translateService.instant('manageAdmins.userRestoredError'),
+            this.translateService.instant('common.error')
+          );
+        }
+      });
   }
 }
 

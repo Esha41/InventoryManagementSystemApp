@@ -1,0 +1,167 @@
+<!-- Request Information -->
+<div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+      <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+    </div>
+    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+      {{ 'workflowApprovalDetail.requestInformation' | translate }}
+    </h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div *ngIf="requestDetail?.requestType === 'Order'" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'newIssueRequest.allowanceSelection' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+        {{ (requestDetail?.isFromAllowance ? 'workflowApprovalDetail.fromAllowance' :
+        'workflowApprovalDetail.outOfAllowance') | translate }}
+      </p>
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.requestType' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+        {{ ('common.requestTypes.' + requestDetail?.requestType) | translate }}
+      </p>
+    </div>
+
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.priority' | translate }}
+      </label>
+      <p class="text-sm mt-1 font-semibold" [ngClass]="getPriorityTextColor(requestDetail?.priority)">
+        {{ ('common.priorityLevels.' + requestDetail?.priority) | translate }}
+      </p>
+    </div>
+
+
+
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.requestDate' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+        {{ requestDetail?.requestDate | appDateTime }}
+      </p>
+    </div>
+
+    <div *ngIf="requestDetail?.departmentName || requestDetail?.departmentNameAr" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.department' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{
+        getLocalizedValue(requestDetail?.departmentNameEn || requestDetail?.departmentName,
+        requestDetail?.departmentNameAr) }}</p>
+    </div>
+
+    <div *ngIf="requestDetail?.requestPurposeName || requestDetail?.requestPurposeNameAr" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.requestPurpose' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{
+        getLocalizedValue(requestDetail?.requestPurposeNameEn || requestDetail?.requestPurposeName,
+        requestDetail?.requestPurposeNameAr) }}</p>
+    </div>
+
+    <!-- Usage Location -->
+    <div *ngIf="requestDetail?.usageLocation" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.usageLocation' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.usageLocation }}</p>
+    </div>
+
+    <!-- Number of Officers -->
+    <div *ngIf="requestDetail?.numberOfOfficer !== null && requestDetail?.numberOfOfficer !== undefined"
+      class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.numberOfOfficers' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.numberOfOfficer }}</p>
+    </div>
+
+    <!-- Number of Other Ranks -->
+    <div *ngIf="requestDetail?.numberOfOtherRank !== null && requestDetail?.numberOfOtherRank !== undefined"
+      class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.numberOfOtherRanks' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.numberOfOtherRank }}</p>
+    </div>
+
+    <!-- Usage Date From -->
+    <div *ngIf="requestDetail?.usageDateFrom" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.usageDateFrom' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+        {{ requestDetail?.usageDateFrom | appDateTime }}
+      </p>
+    </div>
+
+    <!-- Usage Date To -->
+    <div *ngIf="requestDetail?.usageDateTo" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.usageDateTo' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
+        {{ requestDetail?.usageDateTo | appDateTime }}
+      </p>
+    </div>
+
+    <!-- Usage Purpose removed here to avoid duplication with other pages -->
+
+    <div *ngIf="requestDetail?.requesterName" class="md:col-span-2 space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.requester' | translate }}
+      </label>
+      <div class="flex items-center gap-2 mt-1">
+        <div class="w-8 h-8 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center">
+          <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+        </div>
+        <p class="text-sm text-[var(--color-text)] font-medium">
+          {{ getLocalizedValue(requestDetail?.requesterNameEn || requestDetail?.requesterName,
+          requestDetail?.requesterNameAr) }}
+        </p>
+      </div>
+    </div>
+
+
+
+    <div *ngIf="requestDetail?.notes" class="md:col-span-2 space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.comments' | translate }}
+      </label>
+      <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+        <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ requestDetail?.notes }}</p>
+      </div>
+    </div>
+
+    <!-- Request Attachments (Order, Return, Discard) -->
+    <div
+      *ngIf="(requestDetail?.requestType === 'Order' || requestDetail?.requestType === 'Return' || requestDetail?.requestType === 'Discard') && orderFiles && orderFiles.length > 0"
+      class="md:col-span-2 space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'newIssueRequest.attachments' | translate }}
+      </label>
+      <div class="mt-1 space-y-2">
+        <div *ngFor="let file of orderFiles"
+          class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
+          <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+          <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
+            class="text-sm text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded flex-1 text-start">
+            {{ file.originalName || file.fileName }}
+          </button>
+          <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
+            class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1">
+            <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

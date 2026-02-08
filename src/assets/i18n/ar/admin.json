@@ -38,7 +38,13 @@
     "cannotToggleSuperAdmin": "لا يمكن تعطيل مستخدمي المدير الفائق.",
     "cannotDeleteSuperAdmin": "لا يمكن حذف مستخدمي المدير الفائق.",
     "userEnabledSuccess": "تم تفعيل المستخدم بنجاح",
-    "userDisabledSuccess": "تم تعطيل المستخدم بنجاح"
+    "userDisabledSuccess": "تم تعطيل المستخدم بنجاح",
+    "activeUsers": "المستخدمين النشطين",
+    "inactiveUsers": "المستخدمين غير النشطين",
+    "deleted": "محذوف",
+    "restoreUser": "استعادة المستخدم",
+    "userRestoredSuccess": "تم استعادة المستخدم {{userName}} بنجاح",
+    "userRestoredError": "فشل استعادة المستخدم"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
@@ -122,7 +128,9 @@
     "createSuccess": "تم إنشاء المستخدم بنجاح",
     "updateSuccess": "تم تحديث المستخدم بنجاح",
     "createError": "فشل إنشاء المستخدم",
-    "updateError": "فشل تحديث المستخدم"
+    "updateError": "فشل تحديث المستخدم",
+    "invalidDomain": "النطاق غير صحيح. يرجى استخدام النطاق الصحيح: {{domain}}",
+    "ldapSettingsUnavailable": "تعذر استرداد إعدادات LDAP"
   },
   "roleFormModal": {
     "roleName": "اسم الدور",
@@ -132,6 +140,7 @@
     "nameEnPlaceholder": "أدخل الاسم بالإنجليزية",
     "nameArPlaceholder": "أدخل الاسم بالعربية",
     "superAdmin": "مدير فائق (وصول كامل)",
+    "admin": "مدير",
     "defaultRole": "دور افتراضي (يُعيَّن تلقائياً للمستخدمين الجدد)",
     "applicationEntity": "كيان التطبيق",
     "selectEntity": "اختر كيان التطبيق",
@@ -145,6 +154,7 @@
   },
   "lookupManagement": {
     "title": "جداول البحث",
+    "subtitle": "إدارة جداول البحث والبيانات المرجعية",
     "selectTable": "اختر جدول البحث",
     "selectTablePlaceholder": "اختر جدولاً للإدارة...",
     "searchPlaceholder": "البحث بالاسم أو الرمز...",
@@ -469,7 +479,21 @@
       "daily": "يومي",
       "weekly": "أسبوعي",
       "monthly": "شهري",
-      "yearly": "سنوي"
+      "yearly": "سنوي",
+      "userLoginAnalytics": "تحليلات تسجيل دخول المستخدمين",
+      "loginActivity": "نشاط تسجيل الدخول ومدة الجلسة",
+      "loginTrend": "اتجاه تسجيل الدخول",
+      "uniqueUsers": "المستخدمون الفريدون",
+      "loginCount": "عدد تسجيلات الدخول",
+      "date": "التاريخ",
+      "topUsers": "أفضل المستخدمين",
+      "loginDuration": "مدة تسجيل الدخول",
+      "hours": "ساعات",
+      "totalLogins": "إجمالي تسجيلات الدخول",
+      "averageDuration": "المدة المتوسطة",
+      "activeUsersToday": "المستخدمون النشطون اليوم",
+      "topUsersByDuration": "أفضل المستخدمين حسب مدة تسجيل الدخول",
+      "loading": "جاري التحميل..."
     }
   },
   "DELEGATION": {
@@ -483,6 +507,7 @@
     "REASON": "السبب",
     "STATUS": "الحالة",
     "REVOKE": "إلغاء",
+    "REVOKED": "ملغي",
     "REVOKE_CONFIRM": "هل أنت متأكد من أنك تريد إلغاء هذا التفويض؟",
     "REVOKE_CONFIRM_TITLE": "إلغاء التفويض",
     "CREATE_TITLE": "إنشاء تفويض",
@@ -511,6 +536,21 @@
     "ALL_DELEGATIONS": "جميع التفويضات",
     "HISTORY": "سجل التفويضات",
     "TIME_STATUS": "حالة الوقت",
-    "NO_DELEGATIONS_FOUND": "لم يتم العثور على تفويضات تطابق معاييرك"
+    "NO_DELEGATIONS_FOUND": "لم يتم العثور على تفويضات تطابق معاييرك",
+    "SETTINGS": {
+      "TITLE": "إعدادات التفويض",
+      "DESCRIPTION": "تكوين قواعد التفويض على مستوى النظام.",
+      "CROSS_DEPARTMENT_TITLE": "التفويض عبر الأقسام",
+      "CROSS_DEPARTMENT_DESC": "السماح للمستخدمين بتفويض الصلاحيات لمستخدمين في أقسام أخرى. إذا تم تعطيله، يقتصر التفويض على نفس القسم.",
+      "DELEGATOR_ACTION_TITLE": "صلاحيات المفوض أثناء التفويض",
+      "DELEGATOR_ACTION_DESC": "السماح للمفوضين بالاحتفاظ بصلاحياتهم للقيام بالإجراءات أثناء وجود تفويض نشط.",
+      "UPDATE_SUCCESS": "تم تحديث إعدادات التفويض بنجاح",
+      "RESTRICTED_ACCESS_TITLE": "تم تفويض الصلاحيات",
+      "RESTRICTED_ACCESS_MSG": "لقد قمت بتفويض صلاحياتك لمستخدم آخر. لا يمكنك القيام بإجراءات أثناء وجود تفويض نشط. لاستعادة صلاحياتك، يرجى إلغاء التفويض النشط من ملفك الشخصي."
+    },
+    "ACTIONS": "الإجراءات",
+    "SCOPES": "نطاقات التفويض",
+    "SCOPES_REQUIRED": "يجب اختيار نطاق واحد على الأقل",
+    "SCOPE_WORKFLOWAPPROVAL": "الموافقة على الطلبات أو رفضها"
   }
 }

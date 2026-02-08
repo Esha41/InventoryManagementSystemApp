@@ -20,6 +20,9 @@ import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent } from '@components/index';
 import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
+import { ImportResult } from '@models/import-result.model';
+import { APIOperationResponse } from '@models/api-response.model';
 
 @Component({
   selector: 'app-assets-import-export',
@@ -29,7 +32,6 @@ import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/
     TranslateModule,
     LucideAngularModule,
     CardComponent,
-    ButtonComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
     LoadingStateComponent
@@ -101,7 +103,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
     const service = this.getService(this._activeTab);
 
-    service.getAll()
+    (service as any).getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data: any) => {
@@ -154,49 +156,25 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.pendingImportFile = file; // Store file for later import
     this.cdr.markForCheck();
 
-    const service = this.getService(this._activeTab) as any;
+    const service = this.getService(this._activeTab);
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
     service.importPreview(file, currentLang)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res: any) => {
+        next: (res: APIOperationResponse<ImportResult>) => {
           this.isPreviewInProgress = false;
           this.loadingAssets = false;
-          
-          // Check if response is valid
-          if (!res) {
+
+          if (!res || !res.succeeded || !res.data) {
             this.previewData = null;
-            this.toastService.error('Invalid response from server');
+            const errorMsg = res?.message || 'Preview failed';
+            this.toastService.error(errorMsg);
             this.cdr.markForCheck();
             return;
           }
 
-          // Handle both wrapped (APIOperationResponse) and unwrapped responses
-          // If response has 'succeeded' property, it's wrapped; otherwise it's the data directly
-          let result: any;
-          if (res.succeeded !== undefined) {
-            // Wrapped response: {succeeded: true, data: {...}}
-            if (!res.succeeded || !res.data) {
-              this.previewData = null;
-              const errorMsg = res.message || res.Message || 'Preview failed';
-              this.toastService.error(errorMsg);
-              this.cdr.markForCheck();
-              return;
-            }
-            result = res.data;
-          } else {
-            // Unwrapped response: the data is directly in res
-            // Check if it looks like ImportResult structure
-            if (res.successfulRecords !== undefined || res.errors !== undefined || res.successCount !== undefined) {
-              result = res;
-            } else {
-              this.previewData = null;
-              this.toastService.error('Unexpected response format from server');
-              this.cdr.markForCheck();
-              return;
-            }
-          }
+          const result = res.data;
 
           if (result) {
             // Ensure arrays exist
@@ -205,12 +183,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
             // Create a map to track which rows have errors (by row number)
             const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
-            errors.forEach((error: any) => {
-              const rowNum = error.rowNumber || error.RowNumber || 0;
+            errors.forEach((error) => {
+              const rowNum = error.rowNumber || 0;
               if (!errorsByRow.has(rowNum)) {
-                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || error.RowData || {} });
+                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
               }
-              const errorMsg = error.errorMessage || error.ErrorMessage || 'Unknown error';
+              const errorMsg = error.errorMessage || 'Unknown error';
               errorsByRow.get(rowNum)!.errors.push(errorMsg);
             });
 
@@ -221,7 +199,8 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
             successfulRecords.forEach((record: any, index: number) => {
               // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2
               // But if backend provides rowNumber, use that instead
-              const rowNum = record.rowNumber || record.RowNumber || (index + 2);
+              // Note: Backend ImportResult logic might need observation, assuming standard behavior
+              const rowNum = (record as any).rowNumber || (index + 2);
               const errorInfo = errorsByRow.get(rowNum);
 
               previewRows.push({
@@ -261,7 +240,10 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
               totalRows: previewRows.length,
               validRows: validRows,
               invalidRows: invalidRows,
-              columns: previewRows.length > 0 && previewRows[0].data ? this.getOrderedColumns(previewRows[0].data) : []
+              // Use headers directly from backend response for the Single Source of Truth
+              columns: result.importHeaders && result.importHeaders.length > 0
+                ? result.importHeaders
+                : (previewRows.length > 0 && previewRows[0].data ? Object.keys(previewRows[0].data) : [])
             };
             this.showPreviewModal = true;
           }
@@ -291,20 +273,22 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.closeImportModal();
     this.cdr.markForCheck();
 
-    const service = this.getService(this._activeTab) as any;
+    const service = this.getService(this._activeTab);
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
     service.importData(file, currentLang)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res: any) => {
+        next: (res: APIOperationResponse<ImportResult>) => {
           this.isImportInProgress = false;
           this.loadingAssets = false;
-          if (res.succeeded) {
+          if (res.succeeded && res.data) {
             const result = res.data;
             this.importExportService.handleImportResult({
               successCount: result.successCount || 0,
-              failureCount: result.failureCount || 0,
+              failureCount: (result.errors?.length) || 0, // Approx failure count if not explicitly provided, but ImportResult usually has it?
+              // The interface I created has totalProcessed, successCount, errors. Failure count is implicit or errors length.
+              // Let's use errors length for failure count if not explicit.
               errors: result.errors || []
             });
             this.loadAssets();
@@ -324,7 +308,28 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   }
 
   downloadTemplate(): void {
-    this.templateGenerationService.generateAssetTemplate(this._activeTab);
+    const service = this.getService(this._activeTab);
+    const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+    // Use the service method for template generation
+    service.generateImportTemplate(currentLang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          // Format filename: Asset_Import_Template_{Type}_{Lang}.xlsx
+          const date = new Date().toISOString().split('T')[0];
+          link.download = `Import_Template_${this._activeTab}_${currentLang}_${date}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          this.toastService.error('Failed to download template');
+          console.error(err);
+        }
+      });
   }
 
   onPreviewConfirmed(validRows: any[]): void {
@@ -349,7 +354,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.loadingAssets = true;
     this.cdr.markForCheck();
 
-    const service = this.getService(this._activeTab) as any;
+    const service = this.getService(this._activeTab);
     const file = this.pendingImportFile;
     const currentLang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
 
@@ -359,42 +364,24 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       importObservable
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (res: any) => {
+          next: (res: APIOperationResponse<ImportResult>) => {
             this.isImportInProgress = false;
             this.loadingAssets = false;
             this.pendingImportFile = null; // Clear the stored file
 
-            // Handle both wrapped and unwrapped responses
-            let result: any;
-            if (res?.succeeded !== undefined) {
-              // Wrapped response
-              if (!res.succeeded) {
-                this.toastService.error(res.message || 'Import failed');
-                this.cdr.markForCheck();
-                return;
-              }
-              result = res.data;
-            } else {
-              // Unwrapped response - check if it's ImportResult structure
-              if (res?.successCount !== undefined || res?.successfulRecords !== undefined || res?.errors !== undefined) {
-                result = res;
-              } else {
-                this.toastService.error('Unexpected response format from server');
-                this.cdr.markForCheck();
-                return;
-              }
-            }
-
-            if (result) {
+            if (res.succeeded && res.data) {
+              const result = res.data;
               // Show import results using the import-export service
               this.importExportService.handleImportResult({
                 successCount: result.successCount || 0,
-                failureCount: result.failureCount || 0,
+                failureCount: result.errors?.length || 0,
                 errors: result.errors || []
               });
 
               // Reload the assets list to show newly imported items
               this.loadAssets();
+            } else {
+              this.toastService.error(res.message || 'Import failed');
             }
             this.cdr.markForCheck();
           },
@@ -446,7 +433,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     });
   }
 
-  private getService(tab: 'ammunition' | 'weapon' | 'explosive'): any {
+  private getService(tab: 'ammunition' | 'weapon' | 'explosive'): IImportableService {
     switch (tab) {
       case 'ammunition':
         return this.ammunitionService;
@@ -458,54 +445,6 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         return this.ammunitionService;
     }
   }
-
-  /**
-   * Get ordered columns for preview dialog
-   * Matches the exact column order from backend template generation (GenerateImportTemplateAsync)
-   * This ensures consistency between downloaded templates and import preview
-   */
-  private getOrderedColumns(record: any): string[] {
-    if (!record) return [];
-
-    const allKeys = Object.keys(record);
-
-    // Define column order based on backend template headers
-    // These orders match exactly with the backend GenerateImportTemplateAsync methods
-    let priorityOrder: string[] = [];
-
-    if (this._activeTab === 'ammunition') {
-      // From AmmunitionService.GenerateImportTemplateAsync (line 882-889)
-      priorityOrder = [
-        'name', 'itemNo', 'partNo', 'armNumber', 'nsn', 'price', 'minimumQuantity',
-        'bulletDiameter', 'bulletDiameterUnit', 'totalWeight', 'isLinked', 'primer',
-        'caseType', 'propellant', 'compatibility', 'hazardDivision', 'natureOption',
-        'primaryPurpos', 'projectileColor', 'projectailMaterial',
-        'unNumber', 'distribution', 'referenceNo', 'classification', 'type', 'notes'
-      ];
-    } else if (this._activeTab === 'explosive') {
-      // From ExplosiveService.GenerateImportTemplateAsync (line 598-603)
-      priorityOrder = [
-        'name', 'itemNo', 'partNo', 'nsn', 'price', 'minimumQuantity',
-        'explosiveType', 'unNumber', 'netExplosiveQuantity', 'netExplosiveQuantityUnit',
-        'distribution', 'referenceNo', 'hazardDivision', 'classification', 'type', 'notes'
-      ];
-    } else if (this._activeTab === 'weapon') {
-      // From WeaponService.GenerateImportTemplateAsync (matches backend template order)
-      priorityOrder = [
-        'name', 'itemNo', 'partNo', 'nsn', 'price', 'minimumQuantity',
-        'caliber', 'caliberUnit', 'yearOfManufacture', 'countryOfManufacture', 'model',
-        'unNumber', 'distribution', 'referenceNo', 'classification', 'type', 'notes'
-      ];
-    }
-
-    // Separate keys into priority (matching template) and remaining
-    const priorityKeys = priorityOrder.filter(key => allKeys.includes(key));
-    const remainingKeys = allKeys.filter(key => !priorityOrder.includes(key));
-
-    // Return priority keys first (matching template order), then remaining keys
-    return [...priorityKeys, ...remainingKeys];
-  }
-
   private buildExportColumns(): ExcelColumn[] {
     const columns: ExcelColumn[] = [
       {
@@ -532,7 +471,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL ammunition fields to match template
       columns.push(
         {
-          header: 'Arm Number',
+          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
           key: 'armNumber',
           width: 15,
           format: (value: string) => value || '-'
@@ -556,31 +495,31 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: 'Bullet Diameter',
+          header: this.translateService.instant('warehouseInventory.bulletDiameter') || 'Bullet Diameter',
           key: 'bulletDiameter',
           width: 15,
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: 'Bullet Diameter Unit',
+          header: this.translateService.instant('warehouseInventory.caliberUnit') || 'Bullet Diameter Unit',
           key: 'bulletDiameterUnit',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Total Weight',
+          header: this.translateService.instant('warehouseInventory.totalWeight') || 'Total Weight',
           key: 'totalWeight',
           width: 15,
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: 'Is Linked',
+          header: this.translateService.instant('warehouseInventory.isLinked') || 'Is Linked',
           key: 'isLinked',
           width: 12,
           format: (value: boolean) => value ? 'Yes' : 'No'
         },
         {
-          header: 'Primer',
+          header: this.translateService.instant('warehouseInventory.primer') || 'Primer',
           key: 'primer',
           width: 15,
           format: (value: string) => value || '-'
@@ -592,13 +531,13 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Propellant',
+          header: this.translateService.instant('warehouseInventory.propellant') || 'Propellant',
           key: 'propellant',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Compatibility',
+          header: this.translateService.instant('warehouseInventory.compatibility') || 'Compatibility',
           key: 'compatibility',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
@@ -610,61 +549,61 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Nature Option',
+          header: this.translateService.instant('addAsset.nature') || 'Nature Option',
           key: 'natureOption',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Primary Purpose',
+          header: this.translateService.instant('addAsset.primaryPurpose') || 'Primary Purpose',
           key: 'primaryPurpos',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Projectile Color',
+          header: this.translateService.instant('addAsset.projectileColor') || 'Projectile Color',
           key: 'projectileColor',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Projectile Material',
+          header: this.translateService.instant('addAsset.projectileMaterial') || 'Projectile Material',
           key: 'projectailMaterial',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'UN Number',
+          header: this.translateService.instant('weapon.unNumber') || 'UN Number',
           key: 'unNumber',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Distribution',
+          header: this.translateService.instant('weapon.distribution') || 'Distribution',
           key: 'distribution',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Reference No',
+          header: this.translateService.instant('weapon.referenceNo') || 'Reference No',
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Classification',
+          header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Type',
+          header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Notes',
+          header: this.translateService.instant('weapon.notes') || 'Notes',
           key: 'notes',
           width: 30,
           format: (value: string) => value || '-'
@@ -698,25 +637,25 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: 'Caliber Unit',
+          header: this.translateService.instant('weapon.caliberUnit') || 'Caliber Unit',
           key: 'caliberUnit',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Year Of Manufacture',
+          header: this.translateService.instant('weapon.yearOfManufacture') || 'Year Of Manufacture',
           key: 'yearOfManufacture',
           width: 20,
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: 'Country Of Manufacture',
+          header: this.translateService.instant('weapon.countryOfManufacture') || 'Country Of Manufacture',
           key: 'countryOfManufacture',
           width: 25,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Model',
+          header: this.translateService.instant('weapon.model') || 'Model',
           key: 'model',
           width: 20,
           format: (value: string) => value || '-'
@@ -728,31 +667,31 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: 'Distribution',
+          header: this.translateService.instant('weapon.distribution') || 'Distribution',
           key: 'distribution',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Reference No',
+          header: this.translateService.instant('weapon.referenceNo') || 'Reference No',
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Classification',
+          header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Type',
+          header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Notes',
+          header: this.translateService.instant('weapon.notes') || 'Notes',
           key: 'notes',
           width: 30,
           format: (value: string) => value || '-'
@@ -780,55 +719,49 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: number) => value ? value.toString() : '-'
         },
         {
-          header: this.translateService.instant('addAsset.explosiveType'),
-          key: 'explosiveType',
-          width: 20,
-          format: (value: string) => value || '-'
-        },
-        {
           header: this.translateService.instant('addAsset.unNumber'),
           key: 'unNumber',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Net Explosive Quantity',
-          key: 'netExplosiveQuantity',
-          width: 20,
-          format: (value: number) => value ? value.toString() : '-'
-        },
-        {
-          header: 'NEQ Unit',
-          key: 'netExplosiveQuantityUnit',
+          header: this.translateService.instant('addAsset.unit') || 'Unit',
+          key: 'unit',
           width: 15,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Distribution',
+          header: this.translateService.instant('weapon.distribution') || 'Distribution',
           key: 'distribution',
           width: 20,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Reference No',
+          header: this.translateService.instant('weapon.referenceNo') || 'Reference No',
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
         },
         {
-          header: 'Classification',
+          header: this.translateService.instant('assetList.table.hazardDivision') || 'Hazard Division',
+          key: 'hazardDivision',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+        },
+        {
+          header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Type',
+          header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
           format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: 'Notes',
+          header: this.translateService.instant('weapon.notes') || 'Notes',
           key: 'notes',
           width: 30,
           format: (value: string) => value || '-'

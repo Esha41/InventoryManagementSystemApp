@@ -23,6 +23,7 @@ import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface LoadRequestDetailResult {
   orderData: OrderDto;
@@ -58,7 +59,7 @@ export class SupplyRequestDetailService {
       map((order: OrderDto) => {
         // Ensure nested objects and flat properties are populated
         this.populateOrderData(order);
-        
+
         const issueNo = order.requestNo || order.orderNo || `#${order.id}`;
         const requestDetail = mapOrderToRequestDetail(order);
         return { orderData: order, requestDetail, issueNo };
@@ -83,9 +84,9 @@ export class SupplyRequestDetailService {
     // Populate requester flat properties from nested object if missing
     if (order.requester) {
       if (!order.requesterName) {
-        order.requesterName = order.requester.fullNameEN || 
-                             order.requester.fullNameAR || 
-                             order.requester.userName;
+        order.requesterName = order.requester.fullNameEN ||
+          order.requester.fullNameAR ||
+          order.requester.userName;
       }
       if (!order.requesterNameEn && order.requester.fullNameEN) {
         order.requesterNameEn = order.requester.fullNameEN;
@@ -247,10 +248,14 @@ export class SupplyRequestDetailService {
 
   /**
    * Load lots for items with existing selections but no suggestions
+   * @param requestDetail Request detail
+   * @param supplyDetails Existing supply details
+   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (when replacing supply)
    */
   loadLotsForExistingSelections(
     requestDetail: SupplyRequestDetail,
-    supplyDetails: any[]
+    supplyDetails: any[],
+    excludeSupplyId?: number
   ): Observable<void> {
     if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
       return of(undefined);
@@ -272,7 +277,7 @@ export class SupplyRequestDetailService {
       const item = requestDetail.items.find(i => i.itemId === itemId);
       if (item) {
         loadPromises.push(
-          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity).pipe(
+          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity, undefined, excludeSupplyId).pipe(
             map((lots) => ({ item, lots, details }))
           )
         );
@@ -322,9 +327,12 @@ export class SupplyRequestDetailService {
 
   /**
    * Load available lots for an item and quantity
+   * @param itemId Item ID
+   * @param quantity Required quantity
+   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (when replacing supply)
    */
-  loadAvailableLotsForQuantity(itemId: number, quantity: number): Observable<LotDetailDto[]> {
-    return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity);
+  loadAvailableLotsForQuantity(itemId: number, quantity: number, excludeSupplyId?: number): Observable<LotDetailDto[]> {
+    return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity, undefined, excludeSupplyId);
   }
 
   /**
@@ -344,21 +352,14 @@ export class SupplyRequestDetailService {
     return this.supplyService.checkDraftSupplyExists(orderId).pipe(
       switchMap((existingSupply) => {
         if (existingSupply) {
+          // If a draft exists, we use the update/replace logic explicitly
           return this.supplyService.getById(existingSupply.id).pipe(
             switchMap((supply) => this.updateExistingSupply(supply, requestDetail))
           );
         } else {
+          // No draft exists, call create
           return this.createNewSupply(orderId, requestDetail);
         }
-      }),
-      catchError((error) => {
-        const errorMessage = error?.error?.message || error?.message || '';
-        if (errorMessage.includes('Draft supply already exists') || errorMessage.includes('already exists for this order')) {
-          return this.supplyService.getByOrderId(orderId).pipe(
-            switchMap((supply) => this.updateExistingSupply(supply, requestDetail))
-          );
-        }
-        return this.createNewSupply(orderId, requestDetail);
       })
     );
   }
@@ -424,7 +425,7 @@ export class SupplyRequestDetailService {
       map(() => supply.id),
       catchError((error) => {
         this.config.logError('Failed to update existing supply', error);
-        const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToUpdateDraft');
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('supplyRequestDetail.failedToUpdateDraft'), this.translate);
         const title = this.translate.instant('toast.error');
         this.toastService.error(errorMessage, title);
         throw error;
@@ -482,6 +483,93 @@ export class SupplyRequestDetailService {
    */
   getSupplySuggestion(orderId: number): Observable<OrderSupplySuggestionDto> {
     return this.supplyService.getSupplySuggestion(orderId);
+  }
+
+  /**
+   * Determine allowed item types based on existing items in the supply request
+   * Rules:
+   * - If request has only ammunition items, only allow ammunition (type 1)
+   * - If request has only explosives, only allow explosives (type 3)
+   * - If request has both ammunition and explosives, allow both (types 1 and 3)
+   * - If request is empty, default to both (types 1 and 3)
+   * Item types: 1=Ammunition, 2=Weapon, 3=Explosive
+   */
+  getAllowedItemTypes(orderData: OrderDto | null, requestDetail: SupplyRequestDetail | null): number[] {
+    // Helper function to convert itemType (string or number) to numeric type
+    const normalizeItemType = (itemType: number | string | undefined): number | null => {
+      if (!itemType) return null;
+
+      if (typeof itemType === 'number') {
+        return itemType;
+      }
+
+      // Convert string to number (case-insensitive)
+      const itemTypeMap: { [key: string]: number } = {
+        'Ammunition': 1,
+        'ammunition': 1,
+        'Weapon': 2,
+        'weapon': 2,
+        'Explosive': 3,
+        'explosive': 3
+      };
+
+      return itemTypeMap[itemType] || null;
+    };
+
+    const existingTypes = new Set<number>();
+
+    // First, try to get item types from orderData.requestItems
+    if (orderData?.requestItems && orderData.requestItems.length > 0) {
+      orderData.requestItems.forEach(item => {
+        const numericType = normalizeItemType(item.itemType);
+        if (numericType) {
+          existingTypes.add(numericType);
+        }
+      });
+    }
+
+    // Also check requestDetail.items (has string itemType) - don't skip if orderData has items
+    // because requestDetail might have more accurate data
+    if (requestDetail?.items && requestDetail.items.length > 0) {
+      requestDetail.items.forEach(item => {
+        const numericType = normalizeItemType(item.itemType);
+        if (numericType) {
+          existingTypes.add(numericType);
+        }
+      });
+    }
+
+    // Determine allowed types based on what exists
+    if (existingTypes.size === 0) {
+      // Empty request - default to both ammunition and explosives
+      return [1, 3];
+    }
+
+    // If only ammunition exists, return only ammunition
+    if (existingTypes.size === 1 && existingTypes.has(1)) {
+      return [1];
+    }
+
+    // If only explosives exists, return only explosives
+    if (existingTypes.size === 1 && existingTypes.has(3)) {
+      return [3];
+    }
+
+    // If both ammunition and explosives exist, return both
+    if (existingTypes.has(1) && existingTypes.has(3)) {
+      return [1, 3];
+    }
+
+    // If only ammunition or explosives (but not both), return what exists
+    if (existingTypes.has(1)) {
+      return [1];
+    }
+    if (existingTypes.has(3)) {
+      return [3];
+    }
+
+    // Default fallback
+    return [1, 3];
   }
 }
 

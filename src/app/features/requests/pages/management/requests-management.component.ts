@@ -2,37 +2,32 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronDown, Search, X, Filter } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
+import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@components/index';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
-import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
 import { RequestsManagementService } from './services/requests-management.service';
 import { getRequestStatusClass } from './utils/ui-helpers.utils';
 import { Request } from './models/requests-management.model';
 import { Subject, takeUntil } from 'rxjs';
-import { debounceTime, filter } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
-import { CardStatus } from '@utils/status.utils';
 
 
 @Component({
   selector: 'app-requests-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, OrderDetailsModalComponent, RequestFilterBarComponent, AppDatePipe],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, AppDatePipe],
   templateUrl: './requests-management.component.html',
   styleUrls: ['./requests-management.component.css']
 })
 export class RequestsManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  readonly Math = Math;
 
   readonly ChevronDown = ChevronDown;
-  readonly Search = Search;
-  readonly X = X;
-  readonly Filter = Filter;
 
   requests: Request[] = [];
-  filteredRequests: Request[] = [];
   loading = false;
 
   // Filter state (managed by shared component)
@@ -44,14 +39,10 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   rowsPerPage: number = 10;
   totalItems: number = 0;
 
-  isModalOpen = false;
-  selectedOrder: Request | null = null;
-
   constructor(
     private requestsManagementService: RequestsManagementService,
     private router: Router,
-    private requestStatusUpdateService: RequestStatusUpdateService,
-    private translate: TranslateService
+    private requestStatusUpdateService: RequestStatusUpdateService
   ) { }
 
   ngOnInit(): void {
@@ -60,7 +51,6 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
     this.requestStatusUpdateService.onRequestStatusUpdated$
       .pipe(
-        debounceTime(300),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
@@ -85,94 +75,33 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   loadRequests(): void {
     this.loading = true;
-    this.requestsManagementService.loadRequests()
+
+    this.requestsManagementService.getRequests(
+      this.currentPage,
+      this.rowsPerPage,
+      this.searchQuery,
+      this.selectedStatusFilter,
+      this.selectedPriorityFilter
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (requests) => {
-          this.requests = requests;
-          this.applyFilters();
+        next: (response) => {
+          this.requests = response.items;
+          this.totalItems = response.totalCount;
           this.loading = false;
         },
         error: () => {
           this.loading = false;
           this.requests = [];
-          this.filteredRequests = [];
+          this.totalItems = 0;
         }
       });
   }
 
-  /**
-   * Map Request status string to CardStatus
-   * Request model uses: 'New' | 'Pending' | 'Confirmed' | 'Rejected'
-   * CardStatus uses: 'new' | 'on-progress' | 'completed' | 'declined'
-   */
-  private mapRequestStatusToCardStatus(status: string): CardStatus {
-    const statusLower = status.toLowerCase().trim();
-    switch (statusLower) {
-      case 'new':
-        return 'new';
-      case 'pending':
-        return 'on-progress';
-      case 'confirmed':
-        return 'completed';
-      case 'rejected':
-        return 'declined';
-      case 'returned':
-      case 'returnedforreview':
-        return 'returned';
-      default:
-        return 'new';
-    }
-  }
-
   applyFilters(): void {
-    let filtered = [...this.requests];
-
-    // Apply status filter
-    if (this.selectedStatusFilter !== 'all') {
-      if (this.selectedStatusFilter === 'action-required') {
-        filtered = filtered.filter(request => request.isMyTurn);
-      } else {
-        filtered = filtered.filter(request => {
-          const cardStatus = this.mapRequestStatusToCardStatus(request.status);
-          return cardStatus === this.selectedStatusFilter;
-        });
-      }
-    }
-
-    // Apply priority filter
-    if (this.selectedPriorityFilter !== 'all') {
-      filtered = filtered.filter(request => {
-        // Normalize both values by removing spaces for comparison
-        const normalizedRequestPriority = request.priority.toLowerCase().replace(/\s+/g, '');
-        const normalizedFilterPriority = this.selectedPriorityFilter.toLowerCase().replace(/\s+/g, '');
-        return normalizedRequestPriority === normalizedFilterPriority;
-      });
-    }
-
-    // Apply search filter
-    if (this.searchQuery && this.searchQuery.trim().length > 0) {
-      const query = this.searchQuery.trim().toLowerCase();
-      filtered = filtered.filter(request => {
-        return (
-          (request.orderId && request.orderId.toLowerCase().includes(query)) ||
-          (request.requestDate && request.requestDate.toLowerCase().includes(query)) ||
-          (request.creationDate && request.creationDate.toLowerCase().includes(query)) ||
-          (request.priority && request.priority.toLowerCase().includes(query)) ||
-          (request.requestType && request.requestType.toLowerCase().includes(query)) ||
-          (request.status && request.status.toLowerCase().includes(query))
-        );
-      });
-    }
-
-    // Sort by priority (Critical > High > Medium > Low)
-    filtered.sort((a, b) => {
-      return this.getPriorityOrder(a.priority) - this.getPriorityOrder(b.priority);
-    });
-
-    this.filteredRequests = filtered;
-    this.totalItems = filtered.length;
-    this.currentPage = 1; // Reset to first page when filtering
+    // With server-side pagination, applyFilters just reloads
+    this.currentPage = 1;
+    this.loadRequests();
   }
 
   onStatusFilterChange(status: StatusFilter): void {
@@ -190,46 +119,31 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  /**
-   * Get priority order for sorting (lower number = higher priority)
-   */
-  private getPriorityOrder(priority: string): number {
-    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
-    switch (priorityLower) {
-      case 'normal':
-        return 2;
-      case 'urgent':
-        return 1;
-      case 'veryurgent':
-        return 0;
-      default:
-        return 3;
-    }
-  }
-
   get paginatedRequests(): Request[] {
-    const start = (this.currentPage - 1) * this.rowsPerPage;
-    const end = start + this.rowsPerPage;
-    return this.filteredRequests.slice(start, end);
+    return this.requests;
   }
 
   get filteredRequestsCount(): number {
-    return this.filteredRequests.length;
+    return this.totalItems;
   }
-
-
 
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.rowsPerPage);
   }
 
   onPageChange(page: number): void {
-    this.currentPage = page;
+    if (this.currentPage !== page) {
+      this.currentPage = page;
+      this.loadRequests();
+    }
   }
 
   onRowsPerPageChange(rows: number): void {
-    this.rowsPerPage = rows;
-    this.currentPage = 1; // Reset to first page when changing rows per page
+    if (this.rowsPerPage !== rows) {
+      this.rowsPerPage = rows;
+      this.currentPage = 1;
+      this.loadRequests();
+    }
   }
 
   getStatusClass(status: string): string {
@@ -308,10 +222,5 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   openOrderDetails(order: Request): void {
     this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
-  }
-
-  closeOrderDetails(): void {
-    this.isModalOpen = false;
-    this.selectedOrder = null;
   }
 }

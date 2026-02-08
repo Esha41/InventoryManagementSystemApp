@@ -1,9 +1,14 @@
 <div class="filter-container mb-6">
   <!-- Search -->
-  <div class="search-wrapper">
+  <div class="search-wrapper relative">
     <lucide-angular [img]="Search" class="search-icon"></lucide-angular>
-    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
-      [placeholder]="'manageAdmins.searchPlaceholder' | translate" class="search-input" />
+    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchClick()"
+      [placeholder]="'manageAdmins.searchPlaceholder' | translate" class="search-input"
+      [class.pr-24]="useSearchButton" />
+    <button *ngIf="useSearchButton" (click)="onSearchClick()"
+      class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+      {{ 'common.search' | translate }}
+    </button>
   </div>
 
   <!-- Status Filter Group -->
@@ -23,8 +28,14 @@
 
       <button (click)="onStatusFilterChange('inactive')" [class.active]="statusFilter === 'inactive'"
         class="filter-btn inactive">
-        <div class="status-dot bg-[var(--color-error)]"></div>
+        <div class="status-dot bg-[var(--color-warning)]"></div>
         {{ 'manageAdmins.inactive' | translate }}
+      </button>
+
+      <button (click)="onStatusFilterChange('deleted')" [class.active]="statusFilter === 'deleted'"
+        class="filter-btn deleted">
+        <div class="status-dot bg-[var(--color-error)]"></div>
+        {{ 'manageAdmins.deleted' | translate }}
       </button>
     </div>
   </div>

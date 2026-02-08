@@ -9,10 +9,6 @@
                 <h3 class="text-lg font-bold text-[var(--color-text)]">
                     {{ 'DELEGATION.TITLE' | translate }}
                 </h3>
-                <p class="text-sm text-[var(--color-text-muted)]">
-                    {{ activeTab === 'my-delegations' ? ('DELEGATION.MY_DELEGATIONS' | translate) :
-                    ('DELEGATION.PENDING_REQUESTS' | translate) }}
-                </p>
             </div>
         </div>
         <button (click)="openAddModal()"
@@ -65,6 +61,10 @@
                         <th
                             class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
                             {{ 'DELEGATION.STATUS' | translate }}
+                        </th>
+                        <th
+                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                            {{ 'DELEGATION.SCOPES' | translate }}
                         </th>
                         <th
                             class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider text-end">
@@ -132,16 +132,25 @@
                                 </span>
                             </div>
                         </td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-1">
+                                <span *ngFor="let scope of element.delegationScopes"
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                </span>
+                            </div>
+                        </td>
                         <td class="px-4 py-3 text-end">
                             <button *ngIf="element.isActive && !element.isIncoming" (click)="revoke(element)"
-                                class="p-2 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 rounded-lg transition-colors"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
                                 [title]="'DELEGATION.REVOKE' | translate">
-                                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                                <lucide-angular [img]="Ban" class="h-3.5 w-3.5"></lucide-angular>
+                                <span class="hidden xl:inline">{{ 'DELEGATION.REVOKE' | translate }}</span>
                             </button>
                         </td>
                     </tr>
                     <tr *ngIf="delegations.length === 0">
-                        <td colspan="5" class="px-4 py-8 text-center text-[var(--color-text-muted)]">
+                        <td colspan="6" class="px-4 py-8 text-center text-[var(--color-text-muted)]">
                             <div class="flex flex-col items-center gap-2">
                                 <lucide-angular [img]="AlertCircle" class="h-8 w-8 opacity-50"></lucide-angular>
                                 <p>{{ 'common.noData' | translate }}</p>
@@ -176,6 +185,10 @@
                             {{ 'DELEGATION.REASON' | translate }}
                         </th>
                         <th
+                            class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                            {{ 'DELEGATION.SCOPES' | translate }}
+                        </th>
+                        <th
                             class="px-4 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider text-center">
                             <span class="block w-full text-center">
                                 {{ 'common.actions' | translate }}
@@ -208,6 +221,14 @@
                         <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
                             {{ element.reason }}
                         </td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-1">
+                                <span *ngFor="let scope of element.delegationScopes"
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                </span>
+                            </div>
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex gap-2 justify-center">
                                 <button (click)="approve(element)"
@@ -224,7 +245,7 @@
                         </td>
                     </tr>
                     <tr *ngIf="pendingDelegations.length === 0">
-                        <td colspan="5" class="px-4 py-8 text-center text-[var(--color-text-muted)]">
+                        <td colspan="6" class="px-4 py-8 text-center text-[var(--color-text-muted)]">
                             <div class="flex flex-col items-center gap-2">
                                 <lucide-angular [img]="AlertCircle" class="h-8 w-8 opacity-50"></lucide-angular>
                                 <p>{{ 'DELEGATION.NO_PENDING_REQUESTS' | translate }}</p>

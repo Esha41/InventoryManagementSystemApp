@@ -24,7 +24,7 @@ import { ProfileDataService } from '@services/profile-data.service';
 @Component({
   selector: 'app-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './workflow.component.html',
   styleUrls: ['./workflow.component.css']
 })

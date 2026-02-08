@@ -3,15 +3,21 @@
     <div class="dashboard-header">
         <div class="header-content">
             <div class="title-section">
-                <h1 class="dashboard-title">{{ 'adminDashboard.title' | translate }}</h1>
+                <h1 class="dashboard-title text-2xl sm:text-3xl">{{ 'adminDashboard.title' | translate }}</h1>
             </div>
 
             <div class="header-actions">
-                <button class="refresh-button" (click)="onRefresh()" [disabled]="isRefreshing"
-                    [attr.aria-label]="'adminDashboard.refresh' | translate">
-                    <lucide-angular [img]="RefreshCw" [class.spinning]="isRefreshing" class="refresh-icon">
+                <button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 
+                           bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] 
+                           text-white font-semibold text-sm rounded-lg
+                           transition-all duration-200 ease-in-out
+                           disabled:opacity-60 disabled:cursor-not-allowed
+                           hover:shadow-md hover:-translate-y-0.5
+                           focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50" (click)="onRefresh()"
+                    [disabled]="isRefreshing" [attr.aria-label]="'adminDashboard.refresh' | translate">
+                    <lucide-angular [img]="RefreshCw" class="w-4 h-4 flex-shrink-0" [class.animate-spin]="isRefreshing">
                     </lucide-angular>
-                    <span>{{ 'adminDashboard.refresh' | translate }}</span>
+                    <span class="whitespace-nowrap">{{ 'adminDashboard.refresh' | translate }}</span>
                 </button>
             </div>
         </div>
@@ -31,14 +37,15 @@
                 <h2 class="section-title">{{ 'adminDashboard.quickActions' | translate }}</h2>
                 <p class="section-subtitle">{{ 'adminDashboard.quickActionsDescription' | translate }}</p>
             </div>
-            <div class="quick-actions-grid">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <a [routerLink]="['/manage-admins']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Users" class="icon"></lucide-angular>
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.manageAdmins' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.manageAdminsDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.manageAdminsDescription' | translate }}
+                        </p>
                     </div>
                 </a>
 
@@ -58,7 +65,8 @@
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.rolePermissions' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.rolePermissionsDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.rolePermissionsDescription' | translate
+                            }}</p>
                     </div>
                 </a>
 
@@ -68,7 +76,8 @@
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.ldapSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.ldapSettingsDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.ldapSettingsDescription' | translate }}
+                        </p>
                     </div>
                 </a>
 
@@ -78,7 +87,8 @@
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.emailSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.emailSettingsDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.emailSettingsDescription' | translate }}
+                        </p>
                     </div>
                 </a>
 
@@ -88,7 +98,8 @@
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.adminImportExport' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.importExportDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.importExportDescription' | translate }}
+                        </p>
                     </div>
                 </a>
 
@@ -108,30 +119,32 @@
                     </div>
                     <div class="quick-action-content">
                         <h3 class="quick-action-title">{{ 'nav.stockNotificationSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.stockNotificationDescription' | translate }}</p>
+                        <p class="quick-action-description">{{ 'adminDashboard.stockNotificationDescription' | translate
+                            }}</p>
                     </div>
                 </a>
+
+
             </div>
         </div>
 
         <!-- User Activity Section -->
         <div class="space-y-6">
-            <div class="kpi-grid">
+            <div class="grid grid-cols-1 gap-4">
                 <!-- User Activity Card (Made full width or just part of grid) -->
                 <app-user-activity-card *ngIf="userActivityMetrics" [metrics]="userActivityMetrics" class="kpi-card">
                 </app-user-activity-card>
             </div>
         </div>
 
-        <!-- Delegations Section (Commented out for this version)
-        <div class="delegations-section">
+        <!-- Delegations Section -->
+        <!-- <div class="delegations-section">
             <div class="section-header">
                 <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>
             </div>
             <div class="delegations-view">
                 <app-admin-delegations></app-admin-delegations>
             </div>
-        </div>
-        -->
+        </div> -->
     </div>
 </div>

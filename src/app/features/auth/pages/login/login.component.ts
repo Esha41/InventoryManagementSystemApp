@@ -64,12 +64,25 @@ export class LoginComponent implements OnInit {
     } else {
       this.isLdapMode = true; // LDAP first in production/staging
     }
-    
+
     this.applyPasswordValidators();
 
     // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
+      if (this.backendAuth.hasPermission('dashboard_view')) {
+        this.router.navigate(['/dashboard']);
+      } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
+                 this.backendAuth.hasPermission('admindashboard.page') ||
+                 this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+        // User with admin dashboard permissions - redirect to admin dashboard
+        this.router.navigate(['/admin-dashboard']);
+      } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
+                 this.backendAuth.hasPermission('systemusers.page')) {
+        // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
+        this.router.navigate(['/manage-admins']);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
       return;
     }
 
@@ -377,9 +390,22 @@ export class LoginComponent implements OnInit {
         this.captchaId = '';
         this.loginForm.get('captcha')?.setValue('');
 
-        // Navigate to dashboard
+        // Navigate to appropriate dashboard based on permissions
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          if (this.backendAuth.hasPermission('dashboard_view')) {
+            this.router.navigate(['/dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
+                     this.backendAuth.hasPermission('admindashboard.page') ||
+                     this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+            // User with admin dashboard permissions - redirect to admin dashboard
+            this.router.navigate(['/admin-dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
+                     this.backendAuth.hasPermission('systemusers.page')) {
+            // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
+            this.router.navigate(['/manage-admins']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }, 400);
       },
       error: (error) => {
@@ -409,9 +435,6 @@ export class LoginComponent implements OnInit {
 
   getFieldError(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
-    if (fieldName === 'password' && this.isLdapMode) {
-      return '';
-    }
 
     if (field?.errors && field.touched) {
       if (field.errors['required']) {
@@ -449,10 +472,6 @@ export class LoginComponent implements OnInit {
       return;
     }
     this.isLdapMode = shouldUseLdap;
-    if (shouldUseLdap) {
-      this.showPassword = false;
-    }
-    this.applyPasswordValidators();
 
     // Reset captcha when switching modes
     if (this.showCaptcha) {
@@ -471,13 +490,8 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    if (this.isLdapMode) {
-      passwordControl.setValidators([]);
-      passwordControl.setValue('');
-    } else {
-      passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
-    }
-
+    // Password is always required for both regular login and LDAP login
+    passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
     passwordControl.updateValueAndValidity({ emitEvent: false });
   }
 
@@ -495,12 +509,40 @@ export class LoginComponent implements OnInit {
       error?.error?.data ||
       '';
 
-    // Extract error code from various possible locations
-    const errorCode = error?.error?.errorCode ||
+    // Extract error code from various possible locations (including 'value' and 'code' fields)
+    // Backend returns CommonErrorCodes which has both Value (string) and Code (int)
+    let errorCode = error?.error?.code?.value ||
+      error?.error?.code?.Value ||
+      error?.error?.value ||
+      error?.error?.errorCode ||
       error?.errorCode ||
-      error?.error?.code ||
+      error?.error?.code?.value ||
       error?.error?.data?.errorCode ||
       '';
+    
+    // Also check numeric code and map to string value if needed
+    if (!errorCode) {
+      const numericCode = error?.error?.code?.code ||
+        error?.error?.code?.Code ||
+        (typeof error?.error?.code === 'number' ? error?.error?.code : null) ||
+        error?.errorCode;
+      
+      // Map numeric codes to string values
+      if (numericCode !== undefined && numericCode !== null) {
+        const codeMap: { [key: number]: string } = {
+          8: 'INVALID_EMAIL_OR_PASSWORD',
+          14: 'INVALID_LDAP_SETTINGS',
+          15: 'ACCOUNT_DELETED',
+          16: 'ACCOUNT_LOCKED',
+          17: 'ACCOUNT_DISABLED',
+          18: 'CAPTCHA_REQUIRED',
+          19: 'CAPTCHA_INVALID',
+          20: 'INVALID_DOMAIN',
+          21: 'INVALID_USERNAME_FORMAT'
+        };
+        errorCode = codeMap[numericCode] || '';
+      }
+    }
 
     // Extract status code
     const statusCode = error?.status || error?.error?.status || 0;
@@ -512,7 +554,13 @@ export class LoginComponent implements OnInit {
 
     // First priority: If backend provides a user-friendly error message, use it directly
     // This handles cases like "Account is temporarily locked due to too many failed login attempts. Please try again in 15 minutes."
+    // or "Invalid domain. Please use the correct domain: sddev.local"
     if (errorMessage && errorMessage.trim()) {
+      // Check for domain-related messages first - these are always important to show
+      if (lowerMessage.includes('domain') || lowerMessage.includes('invalid domain')) {
+        return errorMessage;
+      }
+      
       // Check if message looks user-friendly (not technical)
       const isUserFriendly = !errorMessage.includes('server.') &&
         !errorMessage.includes('Error') &&
@@ -532,53 +580,113 @@ export class LoginComponent implements OnInit {
         if (translatedMessage) {
           return translatedMessage;
         }
+        // If translation returns null but message is user-friendly, use it directly
+        // This ensures backend-specific messages like "Invalid domain. Please use the correct domain: sddev.local" are shown
+        return errorMessage;
       }
     }
 
-    // Check for specific error codes from backend
-    // If username looks valid, assume it's a password issue
-    if (errorCode === 'INVALID_EMAIL_OR_PASSWORD' ||
-      errorCode === '0008' ||
-      errorCode === 'INVALID_CREDENTIALS' ||
-      errorCode === 'AUTH_FAILED') {
-      if (hasValidUsername) {
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      }
-      return this.translate.instant('auth.login.errors.invalidCredentials');
-    }
-
-    if (errorCode === 'INVALID_LDAP_SETTINGS' ||
-      errorCode === '0014' ||
-      errorCode === 'LDAP_NOT_AVAILABLE' ||
-      errorCode === 'LDAP_ERROR') {
-      return this.translate.instant('auth.login.errors.invalidLdapSettings');
-    }
-
-    // Check for account locked/disabled
-    // If backend provides a specific message, translate it; otherwise use translated message
-    if (errorCode === 'ACCOUNT_LOCKED' ||
-      errorCode === 'ACCOUNT_DISABLED' ||
-      errorCode === 'USER_DISABLED' ||
-      lowerMessage.includes('account locked') ||
-      lowerMessage.includes('account disabled') ||
-      lowerMessage.includes('user is disabled') ||
-      lowerMessage.includes('temporarily locked') ||
-      lowerMessage.includes('too many failed')) {
-      // Try to translate the backend message
-      if (errorMessage && errorMessage.trim() &&
-        !errorMessage.includes('Error') &&
-        !errorMessage.includes('Exception') &&
-        errorMessage.length < 200) {
+    // Check for specific error codes from backend - prioritize specific codes first
+    // Account locked
+    if (errorCode === 'ACCOUNT_LOCKED' || errorCode === '0016') {
+      if (errorMessage && errorMessage.trim() && !errorMessage.includes('Error') && !errorMessage.includes('Exception')) {
         const translated = this.translateBackendErrorMessage(errorMessage, lowerMessage);
         if (translated) {
           return translated;
         }
-      }
-
-      if (errorCode === 'ACCOUNT_DISABLED' || errorCode === 'USER_DISABLED' || lowerMessage.includes('disabled') || lowerMessage.includes('inactive')) {
-        return this.translate.instant('auth.login.errors.accountDisabled');
+        return errorMessage;
       }
       return this.translate.instant('auth.login.errors.accountLocked');
+    }
+
+    // Account disabled
+    if (errorCode === 'ACCOUNT_DISABLED' || errorCode === '0017') {
+      if (errorMessage && errorMessage.trim() && !errorMessage.includes('Error') && !errorMessage.includes('Exception')) {
+        return errorMessage;
+      }
+      return this.translate.instant('auth.login.errors.accountDisabled');
+    }
+
+    // Account deleted
+    if (errorCode === 'ACCOUNT_DELETED' || errorCode === '0015') {
+      return this.translate.instant('auth.login.errors.accountDeleted');
+    }
+
+    // Invalid domain
+    if (errorCode === 'INVALID_DOMAIN' || errorCode === '0020') {
+      if (errorMessage && errorMessage.includes('server.invalidDomain')) {
+        return this.translate.instant('auth.login.errors.invalidDomain');
+      }
+      return this.translate.instant('auth.login.errors.invalidDomain') || 
+             'Invalid domain. Please check your username format.';
+    }
+
+    // Invalid username format
+    if (errorCode === 'INVALID_USERNAME_FORMAT' || errorCode === '0021') {
+      if (errorMessage && errorMessage.trim()) {
+        return errorMessage;
+      }
+      return this.translate.instant('auth.login.errors.invalidUsernameFormat') || 
+             'Invalid username format. Please use username or username@domain.com';
+    }
+
+    // CAPTCHA required
+    if (errorCode === 'CAPTCHA_REQUIRED' || errorCode === '0018') {
+      if (errorMessage && errorMessage.trim()) {
+        return errorMessage;
+      }
+      return this.translate.instant('auth.login.errors.captchaRequired') || 
+             'CAPTCHA verification is required. Please complete the CAPTCHA and try again.';
+    }
+
+    // CAPTCHA invalid
+    if (errorCode === 'CAPTCHA_INVALID' || errorCode === '0019') {
+      if (errorMessage && errorMessage.trim()) {
+        return errorMessage;
+      }
+      return this.translate.instant('auth.login.errors.captchaInvalid') || 
+             'CAPTCHA verification failed. Please try again.';
+    }
+
+    // Invalid LDAP settings
+    if (errorCode === 'INVALID_LDAP_SETTINGS' || errorCode === '0014') {
+      return this.translate.instant('auth.login.errors.invalidLdapSettings');
+    }
+
+    // Invalid credentials - handle last as it's the most generic
+    if (errorCode === 'INVALID_EMAIL_OR_PASSWORD' ||
+      errorCode === '0008' ||
+      errorCode === 'INVALID_CREDENTIALS' ||
+      errorCode === 'AUTH_FAILED') {
+      // If backend provides a specific message, use it
+      if (errorMessage && errorMessage.trim() && 
+          !errorMessage.includes('Exception') &&
+          !errorMessage.includes('APIOperationResponse') &&
+          !errorMessage.includes('HttpErrorResponse') &&
+          !errorMessage.startsWith('Http failure') &&
+          !errorMessage.includes('at ') &&
+          !errorMessage.includes('Stack') &&
+          !errorMessage.includes('server.invalidLogin') &&
+          errorMessage.length < 300) {
+        return errorMessage;
+      }
+      
+      // Fallback to generic messages based on context
+      if (this.isLdapMode) {
+        // For LDAP, provide more specific guidance
+        if (!hasValidUsername || (username && !username.includes('@'))) {
+          return this.translate.instant('auth.login.errors.invalidLdapCredentials') || 
+                 this.translate.instant('auth.login.errors.invalidCredentials');
+        }
+        // Username looks valid (has @), likely password issue
+        return this.translate.instant('auth.login.errors.wrongPassword');
+      } else {
+        // Standard login
+        if (hasValidUsername) {
+          return this.translate.instant('auth.login.errors.wrongPassword');
+        }
+        return this.translate.instant('auth.login.errors.invalidCredentials');
+      }
     }
 
     // Check for session conflicts

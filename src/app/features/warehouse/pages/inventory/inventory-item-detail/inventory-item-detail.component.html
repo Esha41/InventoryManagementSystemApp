@@ -51,106 +51,14 @@
 
     <!-- Overview Tab -->
     <div *ngIf="activeTab === 'overview'">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <!-- Left Column: Details -->
-        <div class="space-y-8">
-          <!-- Primary Details -->
-          <div>
-            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.primaryDetails' |
-              translate }}
-            </h2>
-            <div class="space-y-4">
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemName' | translate }}
-                </p>
-                <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemName() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.itemNumberCaliber' |
-                  translate }}</p>
-                <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.hcc' | translate }}</p>
-                <p class="text-sm text-[var(--color-text)]">{{ getHccName() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.batchNumber' | translate
-                  }}</p>
-                <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.batchNo || '-' }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.partNumber' | translate
-                  }}</p>
-                <p class="text-sm text-[var(--color-text)]">{{ inventoryDetail.item?.partNo || '-' }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.readyForIssue' |
-                  translate }}</p>
-                <p class="text-sm text-[var(--color-text)]">
-                  <span
-                    [ngClass]="inventoryDetail.item?.readyForIssue ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'">
-                    {{ inventoryDetail.item?.readyForIssue ? ('warehouseInventory.yes' | translate) :
-                    ('warehouseInventory.no' | translate) }}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Inventory Information -->
-          <div>
-            <h2 class="text-sm font-semibold text-[var(--color-text)] mb-6">{{ 'warehouseInventory.inventoryInformation'
-              |
-              translate }}</h2>
-            <div class="space-y-4">
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.supplier' | translate }}
-                </p>
-                <p class="text-sm text-[var(--color-text)]">{{ getSupplierName() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.manufacturer' |
-                  translate }}</p>
-                <p class="text-sm text-[var(--color-text)]">{{ getManufacturerName() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.country' | translate }}
-                </p>
-                <p class="text-sm text-[var(--color-text)]">{{ getCountryName() }}</p>
-              </div>
-
-              <div>
-                <p class="text-xs text-[var(--color-text-muted)] mb-1.5">{{ 'warehouseInventory.expiryDate' | translate
-                  }}</p>
-                <p class="text-sm text-[var(--color-text)]">{{ formatDate(inventoryDetail.item?.expiryDate) }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: Image and Stock Info -->
-        <div class="space-y-8">
-          <div class="flex items-center justify-center">
-            <img src="/assets/image 5.png" alt="Ammunition" class="h-48 object-contain">
-          </div>
-        </div>
-      </div>
+      <!-- Use Asset Details Component -->
+      <app-asset-details *ngIf="getItemIdForAssetDetails() && getAssetType()" [assetId]="getItemIdForAssetDetails()!"
+        [assetType]="getAssetType()!" [isPage]="false" [showBackButton]="false" (close)="onBack()">
+      </app-asset-details>
     </div>
 
     <!-- Stock Tab -->
     <div *ngIf="activeTab === 'stock'">
-      <div class="flex items-center justify-center mb-10">
-        <img src="/assets/image 5.png" alt="Ammunition" class="h-40 object-contain">
-      </div>
-
       <!-- Item Summary Table -->
       <div
         class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
@@ -200,9 +108,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 <span
                   class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
-                  {{ (inventoryDetail?.item)?.itemType === 1 ? ('warehouseInventory.tabs.ammunition' | translate) :
-                  (inventoryDetail?.item)?.itemType === 2 ? ('warehouseInventory.tabs.weapon' | translate) :
-                  ('warehouseInventory.tabs.explosive' | translate) }}
+                  {{ getItemTypeDisplay() }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
@@ -232,6 +138,71 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Invoice Information Section -->
+      <div
+        *ngIf="inventoryDetail?.invoiceNumber || inventoryDetail?.invoiceDate || inventoryDetail?.recievedDate || inventoryDetail?.contractNumber || inventoryDetail?.notes"
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
+        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+            {{ 'editInventoryDetail.invoiceInformation' | translate }}
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Invoice Number -->
+            <div *ngIf="inventoryDetail?.invoiceNumber">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceNumber' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ inventoryDetail.invoiceNumber }}
+              </p>
+            </div>
+
+            <!-- Invoice Date -->
+            <div *ngIf="inventoryDetail?.invoiceDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.invoiceDate) }}
+              </p>
+            </div>
+
+            <!-- Received Date -->
+            <div *ngIf="inventoryDetail?.recievedDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.receivedDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.recievedDate) }}
+              </p>
+            </div>
+
+
+            <!-- Contract Number -->
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.contractNumber' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ inventoryDetail.contractNumber || '-' }}
+              </p>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.notes' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
+                {{ inventoryDetail.notes }}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Lot Details Section -->

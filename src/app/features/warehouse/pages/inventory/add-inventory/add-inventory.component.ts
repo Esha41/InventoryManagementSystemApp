@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
-import { LookupService, SupplierDto, ManufacturerDto, CountryDto } from '@services/lookup.service';
+import { LookupService, SupplierDto, ManufacturerDto, CountryDto, LookupItem } from '@services/lookup.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
@@ -58,6 +58,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   warehouseId!: number;
   warehouseName: string = '';
+  currentDepot: LookupItem | null = null; // Store depot object for dynamic localization
 
   // Active tab for item type
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
@@ -135,6 +136,28 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
 
+    // Get tab from query params (default to 'ammunition' if not provided)
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(queryParams => {
+      const tabParam = queryParams['tab'];
+      if (tabParam && (tabParam === 'ammunition' || tabParam === 'explosive')) {
+        this.activeTab = tabParam;
+        // Clear existing items when tab is set
+        this.itemsFormArray.clear();
+        this.addItem();
+        this.cdr.markForCheck();
+      }
+    });
+
+    // Subscribe to language changes to update warehouse name
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.currentDepot) {
+          this.warehouseName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
+          this.cdr.markForCheck();
+        }
+      });
+
     // Add initial item
     this.addItem();
   }
@@ -144,6 +167,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       invoiceNumber: [''],
       invoiceDate: [''],
       receivedDate: [''],
+      contractNumber: [''],
       notes: [''],
       items: this.fb.array([])
     });
@@ -188,8 +212,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ depot, ammunition, weapons, explosives, suppliers, manufacturers, countries }) => {
-          const currentDepot = depot.find(d => d.id === this.warehouseId);
-          this.warehouseName = getLocalizedName(currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
+          this.currentDepot = depot.find(d => d.id === this.warehouseId) || null;
+          this.warehouseName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Warehouse ${this.warehouseId}`;
 
           this.availableAmmunition = ammunition;
           this.availableWeapons = weapons;
@@ -406,6 +430,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       invoiceNumber: formValue.invoiceNumber?.trim() || undefined,
       invoiceDate: formValue.invoiceDate && formValue.invoiceDate.trim() ? formValue.invoiceDate : undefined,
       recievedDate: formValue.receivedDate && formValue.receivedDate.trim() ? formValue.receivedDate : undefined,
+      contractNumber: formValue.contractNumber?.trim() || undefined,
       notes: formValue.notes?.trim() || undefined,
       inventoryDetails: formValue.items.map((item: {
         itemId: number;
@@ -447,9 +472,12 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
             this.toastService.success(message, title);
           });
 
-          // Redirect after a short delay
+          // Redirect after a short delay, preserving the tab
           setTimeout(() => {
-            this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+            this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+              queryParams: { tab: this.activeTab },
+              queryParamsHandling: 'merge'
+            });
           }, 800);
         },
         error: (error: unknown) => {
@@ -473,7 +501,11 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.addItem();
     this.errorMessage = null;
     this.cdr.markForCheck();
-    this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+    // Navigate back preserving the tab
+    this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+      queryParams: { tab: this.activeTab },
+      queryParamsHandling: 'merge'
+    });
   }
 
   /**

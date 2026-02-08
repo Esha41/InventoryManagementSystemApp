@@ -3,14 +3,13 @@
     <div class="dashboard-header">
         <div class="header-content">
             <div class="title-section">
-                <!-- Use a new translation key or reuse adminDashboard.analytics -->
                 <h1 class="dashboard-title">{{ 'nav.analytics' | translate }}</h1>
             </div>
 
             <div class="header-actions">
-                <button class="refresh-button" (click)="onRefresh()" [disabled]="isRefreshing"
-                    [attr.aria-label]="'adminDashboard.refresh' | translate">
-                    <lucide-icon [img]="RefreshCw" [class.spinning]="isRefreshing" class="refresh-icon">
+                <button class="refresh-button w-full sm:w-auto justify-center" (click)="onRefresh()"
+                    [disabled]="isRefreshing()" [attr.aria-label]="'adminDashboard.refresh' | translate">
+                    <lucide-icon [img]="RefreshCw" [class.spinning]="isRefreshing()" class="refresh-icon">
                     </lucide-icon>
                     <span>{{ 'adminDashboard.refresh' | translate }}</span>
                 </button>
@@ -19,24 +18,28 @@
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
+    @if (isLoading()) {
+    <div class="loading-container">
         <div class="loading-spinner"></div>
         <p class="loading-text">{{ 'adminDashboard.loading' | translate }}</p>
     </div>
+    }
 
     <!-- Dashboard Content -->
-    <div *ngIf="!isLoading" class="dashboard-content">
+    @if (!isLoading()) {
+    <div class="dashboard-content">
 
         <!-- Overview Section -->
         <div class="space-y-6">
             <!-- KPI Cards Grid -->
             <div class="kpi-grid">
                 <!-- Inventory Overview Card -->
-                <app-inventory-overview-card *ngIf="inventoryMetrics" [metrics]="inventoryMetrics" class="kpi-card">
+                <app-inventory-overview-card *ngIf="inventoryMetrics()" [metrics]="inventoryMetrics()!"
+                    class="kpi-card">
                 </app-inventory-overview-card>
 
                 <!-- Request Metrics Card -->
-                <app-request-metrics-card *ngIf="requestMetrics" [metrics]="requestMetrics" class="kpi-card">
+                <app-request-metrics-card *ngIf="requestMetrics()" [metrics]="requestMetrics()!" class="kpi-card">
                 </app-request-metrics-card>
             </div>
 
@@ -52,15 +55,16 @@
                         <app-request-trends-chart period="weekly"></app-request-trends-chart>
                     </div>
                     <div class="chart-item">
-                        <app-inventory-distribution-chart></app-inventory-distribution-chart>
+                        <app-inventory-distribution-chart
+                            [distribution]="inventoryMetrics()?.inventoryDistribution"></app-inventory-distribution-chart>
                     </div>
                     <div class="chart-item">
                         <app-top-requested-items-chart></app-top-requested-items-chart>
                     </div>
                 </div>
             </div>
-
-
         </div>
+
     </div>
+    }
 </div>

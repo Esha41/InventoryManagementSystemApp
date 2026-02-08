@@ -117,8 +117,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
       code: ['', this.tableConfig?.hasCode ? [Validators.required, Validators.maxLength(50)] : [Validators.maxLength(50)]]
     };
 
-    // Add ItemType field for ItemType lookup table
-    if (this.tableConfig?.name === 'ItemType') {
+    // Add ItemType field for ItemType and Unit lookup tables
+    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') {
       formConfig['itemType'] = [null, [Validators.required]];
     }
 
@@ -137,8 +137,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
         code: this.lookupItem.code || ''
       };
 
-      // Add ItemType if it exists in the lookup item
-      if (this.tableConfig?.name === 'ItemType' && (this.lookupItem as any).itemType !== undefined) {
+      // Add ItemType if it exists in the lookup item (for ItemType and Unit tables)
+      if ((this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') && (this.lookupItem as any).itemType !== undefined) {
         let itemTypeValue = (this.lookupItem as any).itemType;
 
         // Convert string enum to number if needed
@@ -181,8 +181,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
       code: this.tableConfig?.hasCode ? formValue.code?.trim() : undefined
     };
 
-    // Add ItemType if this is an ItemType lookup
-    if (this.tableConfig?.name === 'ItemType') {
+    // Add ItemType if this is an ItemType or Unit lookup
+    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') {
       dto.itemType = formValue.itemType;
     }
 

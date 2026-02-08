@@ -51,6 +51,30 @@
                             class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]"></textarea>
                     </div>
 
+                    <!-- Delegation Scopes -->
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-[var(--color-text)]">
+                            {{ 'DELEGATION.SCOPES' | translate }}
+                        </label>
+                        <div class="space-y-2 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                            <label *ngFor="let scope of availableScopes"
+                                class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-[var(--color-background)] transition-colors">
+                                <input type="checkbox"
+                                    [value]="scope"
+                                    [checked]="isScopeSelected(scope)"
+                                    (change)="toggleScope(scope, $event)"
+                                    class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer" />
+                                <span class="text-sm text-[var(--color-text)]">
+                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                </span>
+                            </label>
+                        </div>
+                        <p *ngIf="form.value.delegationScopes?.length === 0"
+                            class="text-xs text-red-600">
+                            {{ 'DELEGATION.SCOPES_REQUIRED' | translate }}
+                        </p>
+                    </div>
+
                 </form>
             </div>
             <!--footer-->

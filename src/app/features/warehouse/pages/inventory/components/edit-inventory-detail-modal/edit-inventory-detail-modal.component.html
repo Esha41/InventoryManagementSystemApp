@@ -7,7 +7,8 @@
 
     <!-- Item Info (Read-only) -->
     <div class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
-      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'editInventoryDetail.itemInformation' | translate }}</h3>
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'editInventoryDetail.itemInformation' |
+        translate }}</h3>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <p class="text-xs text-[var(--color-text-muted)]">{{ 'editInventoryDetail.itemName' | translate }}</p>
@@ -25,10 +26,7 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.lotNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input
-        type="number"
-        formControlName="lot"
-        min="1"
+      <input type="number" formControlName="lot" min="1"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="detailForm.get('lot')?.invalid && detailForm.get('lot')?.touched"
         [placeholder]="'editInventoryDetail.enterLotNumber' | translate" />
@@ -42,10 +40,7 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.itemQuantity' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input
-        type="number"
-        formControlName="originalQuantity"
-        min="1"
+      <input type="number" formControlName="originalQuantity" min="1"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="detailForm.get('originalQuantity')?.invalid && detailForm.get('originalQuantity')?.touched"
         [placeholder]="'editInventoryDetail.totalQuantity' | translate" />
@@ -59,9 +54,7 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.batchNo' | translate }}
       </label>
-      <input
-        type="text"
-        formControlName="batchNo"
+      <input type="text" formControlName="batchNo"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [placeholder]="'editInventoryDetail.enterBatchNo' | translate" />
     </div>
@@ -71,20 +64,17 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.expiryDate' | translate }}
       </label>
-      <input
-        type="date"
-        formControlName="expiryDate"
+      <input type="text" formControlName="expiryDate" placeholder="DD/MM/YYYY"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
     </div>
 
     <!-- Ready For Issue -->
     <div class="flex items-center h-full">
       <label class="flex items-center space-x-2 cursor-pointer">
-        <input 
-          type="checkbox" 
-          formControlName="readyForIssue"
+        <input type="checkbox" formControlName="readyForIssue"
           class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)]">
-        <span class="text-sm font-medium text-[var(--color-text)]">{{ 'editInventoryDetail.readyForIssue' | translate }}</span>
+        <span class="text-sm font-medium text-[var(--color-text)]">{{ 'editInventoryDetail.readyForIssue' | translate
+          }}</span>
       </label>
     </div>
 
@@ -93,14 +83,8 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.supplier' | translate }}
       </label>
-      <app-dropdown
-        class="w-full"
-        formControlName="supplierId"
-        [options]="suppliers"
-        optionValue="id"
-        [optionLabelFn]="lookupOptionLabel"
-        [placeholderSelectable]="false"
-        [placeholderValue]="null"
+      <app-dropdown class="w-full" formControlName="supplierId" [options]="suppliers" optionValue="id"
+        [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectSupplier' | translate }}">
       </app-dropdown>
     </div>
@@ -110,14 +94,8 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.manufacturer' | translate }}
       </label>
-      <app-dropdown
-        class="w-full"
-        formControlName="manufacturerId"
-        [options]="manufacturers"
-        optionValue="id"
-        [optionLabelFn]="lookupOptionLabel"
-        [placeholderSelectable]="false"
-        [placeholderValue]="null"
+      <app-dropdown class="w-full" formControlName="manufacturerId" [options]="manufacturers" optionValue="id"
+        [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectManufacturer' | translate }}">
       </app-dropdown>
     </div>
@@ -127,31 +105,83 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.country' | translate }}
       </label>
-      <app-dropdown
-        class="w-full"
-        formControlName="countryId"
-        [options]="countries"
-        optionValue="id"
-        [optionLabelFn]="lookupOptionLabel"
-        [placeholderSelectable]="false"
-        [placeholderValue]="null"
+      <app-dropdown class="w-full" formControlName="countryId" [options]="countries" optionValue="id"
+        [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectCountry' | translate }}">
       </app-dropdown>
+    </div>
+
+    <!-- Invoice Information Section -->
+    <div class="pt-4 border-t-2 border-[var(--color-border)]">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4">{{ 'editInventoryDetail.invoiceInformation' |
+        translate }}</h3>
+
+      <!-- Invoice Number -->
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'editInventoryDetail.invoiceNumber' | translate }}
+        </label>
+        <input type="text" formControlName="invoiceNumber"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [placeholder]="'editInventoryDetail.enterInvoiceNumber' | translate" />
+      </div>
+
+      <!-- Invoice Date -->
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'editInventoryDetail.invoiceDate' | translate }}
+        </label>
+        <input type="text" formControlName="invoiceDate" placeholder="DD/MM/YYYY"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+      </div>
+
+      <!-- Received Date -->
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'editInventoryDetail.receivedDate' | translate }}
+        </label>
+        <input type="text" formControlName="recievedDate" placeholder="DD/MM/YYYY"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+      </div>
+
+      <!-- Contract Number -->
+      <div class="mb-4">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'editInventoryDetail.contractNumber' | translate }}
+        </label>
+        <input type="text" formControlName="contractNumber"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [placeholder]="'editInventoryDetail.enterContractNumber' | translate" />
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'editInventoryDetail.notes' | translate }}
+        </label>
+        <textarea formControlName="notes" rows="3"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"
+          [placeholder]="'editInventoryDetail.enterNotes' | translate"></textarea>
+      </div>
     </div>
   </form>
 
   <!-- Footer -->
   <div modal-footer class="flex gap-3 justify-end">
-    <app-button
-      variant="outline"
-      (clicked)="close()">
+    <app-button variant="outline" (clicked)="close()">
       {{ 'editInventoryDetail.cancel' | translate }}
     </app-button>
-    <app-button
-      variant="primary"
-      (clicked)="onSubmit()"
-      [disabled]="isLoading">
+    <app-button variant="primary" (clicked)="onSubmit()" [disabled]="isLoading">
       {{ isLoading ? ('editInventoryDetail.saving' | translate) : ('editInventoryDetail.saveChanges' | translate) }}
     </app-button>
   </div>
 </app-modal>
+
+<!-- Invoice Change Confirmation Dialog -->
+<app-confirm-dialog [isOpen]="showInvoiceChangeConfirmation"
+  [title]="'editInventoryDetail.invoiceChangeWarning' | translate"
+  [message]="'editInventoryDetail.invoiceChangeMessage' | translate"
+  [description]="('editInventoryDetail.invoiceChangeDescription' | translate) + ': ' + itemsInSameInvoice"
+  [confirmText]="'editInventoryDetail.confirmUpdate' | translate" [cancelText]="'common.cancel' | translate"
+  confirmVariant="primary" (confirmed)="onInvoiceChangeConfirmed()" (cancelled)="onInvoiceChangeCancelled()">
+</app-confirm-dialog>

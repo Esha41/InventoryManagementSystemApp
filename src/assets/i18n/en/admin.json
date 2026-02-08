@@ -38,7 +38,13 @@
     "cannotToggleSuperAdmin": "Super admin users cannot be deactivated.",
     "cannotDeleteSuperAdmin": "Super admin users cannot be deleted.",
     "userEnabledSuccess": "User enabled successfully",
-    "userDisabledSuccess": "User disabled successfully"
+    "userDisabledSuccess": "User disabled successfully",
+    "activeUsers": "Active Users",
+    "inactiveUsers": "Inactive Users",
+    "deleted": "Deleted",
+    "restoreUser": "Restore User",
+    "userRestoredSuccess": "User {{userName}} has been restored successfully",
+    "userRestoredError": "Failed to restore user"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -122,7 +128,9 @@
     "createSuccess": "User created successfully",
     "updateSuccess": "User updated successfully",
     "createError": "Failed to create user",
-    "updateError": "Failed to update user"
+    "updateError": "Failed to update user",
+    "invalidDomain": "Invalid domain. Please use the correct domain: {{domain}}",
+    "ldapSettingsUnavailable": "Unable to retrieve LDAP settings"
   },
   "roleFormModal": {
     "roleName": "Role Name",
@@ -132,6 +140,7 @@
     "nameEnPlaceholder": "Enter English name",
     "nameArPlaceholder": "Enter Arabic name",
     "superAdmin": "Super Administrator (Full Access)",
+    "admin": "Admin",
     "defaultRole": "Default Role (Auto-assigned to new users)",
     "applicationEntity": "Application Entity",
     "selectEntity": "Select Application Entity",
@@ -145,6 +154,7 @@
   },
   "lookupManagement": {
     "title": "Lookup Tables",
+    "subtitle": "Manage system lookup tables and reference data",
     "selectTable": "Select Lookup Table",
     "selectTablePlaceholder": "Select a table to manage...",
     "searchPlaceholder": "Search by name or code...",
@@ -458,7 +468,7 @@
       "analyzingTrends": "Analyzing trends...",
       "analyzingItems": "Analyzing items...",
       "categorizingInventory": "Categorizing inventory...",
-      "failedToLoad": "Failed to load data",
+      "failedToLoad": "Failed to load chart data",
       "retry": "Retry",
       "orders": "Orders",
       "returns": "Returns",
@@ -469,7 +479,22 @@
       "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly",
-      "yearly": "Yearly"
+      "yearly": "Yearly",
+      "userLoginAnalytics": "User Login Analytics",
+      "loginActivity": "User login activity and session duration",
+      "loginTrend": "Login Trend",
+      "uniqueUsers": "Unique Users",
+      "loginCount": "Login Count",
+      "date": "Date",
+      "topUsers": "Top Users",
+      "loginDuration": "Login Duration",
+      "hours": "hours",
+      "totalLogins": "Total Logins",
+      "averageDuration": "Average Duration",
+      "activeUsersToday": "Active Users Today",
+      "topUsersByDuration": "Top Users by Login Duration",
+      "loading": "Loading...",
+      "noData": "No data available"
     }
   },
   "DELEGATION": {
@@ -512,6 +537,21 @@
     "ALL_DELEGATIONS": "All Delegations",
     "HISTORY": "Delegation History",
     "TIME_STATUS": "Time Status",
-    "NO_DELEGATIONS_FOUND": "No delegations found matching your criteria"
+    "NO_DELEGATIONS_FOUND": "No delegations found matching your criteria",
+    "SETTINGS": {
+      "TITLE": "Delegation Settings",
+      "DESCRIPTION": "Configure system-wide delegation rules.",
+      "CROSS_DEPARTMENT_TITLE": "Cross-Department Delegation",
+      "CROSS_DEPARTMENT_DESC": "Allow users to delegate permissions to users in other departments. If disabled, delegation is restricted to the same department.",
+      "DELEGATOR_ACTION_TITLE": "Delegator Authority",
+      "DELEGATOR_ACTION_DESC": "Allow delegators to retain their authority to perform actions while a delegation is active.",
+      "UPDATE_SUCCESS": "Delegation settings updated successfully",
+      "RESTRICTED_ACCESS_TITLE": "Authority Delegated",
+      "RESTRICTED_ACCESS_MSG": "Your authority is currently delegated to another user. You cannot perform actions while delegation is active. To regain your authority, please revoke the active delegation from your profile."
+    },
+    "ACTIONS": "Actions",
+    "SCOPES": "Delegation Scopes",
+    "SCOPES_REQUIRED": "At least one scope must be selected",
+    "SCOPE_WORKFLOWAPPROVAL": "Approve or Reject Requests"
   }
 }

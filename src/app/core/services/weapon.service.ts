@@ -3,12 +3,14 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
-import { APIOperationResponse } from '@models/api-response.model';
+import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
+import { IImportableService } from '../interfaces/importable-service.interface';
+import { ImportResult } from '../models/import-result.model';
 
 @Injectable({ providedIn: 'root' })
-export class WeaponService {
+export class WeaponService implements IImportableService {
   private readonly endpoint = '/Weapon';
 
   constructor(
@@ -24,6 +26,27 @@ export class WeaponService {
     if (query?.search) params = params.set('search', query.search);
 
     return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  // Get paginated weapons
+  // Note: apiService.post automatically unwraps APIOperationResponse, so response is already PaginatedList
+  getAllPaginated(request: PagedRequest): Observable<PaginatedList<WeaponDto>> {
+    return this.apiService.post<PaginatedList<WeaponDto>>(
+      `${this.endpoint}/Paginated`,
+      request
+    ).pipe(
+      map(response => {
+        // Response is already unwrapped PaginatedList from apiService
+        if (!response || !response.items) {
+          throw new Error('Invalid response structure');
+        }
+        return response;
+      }),
+      catchError(error => {
+        console.error('Error fetching paginated weapons:', error);
+        throw error;
+      })
+    );
   }
 
   // Get weapon by ID
@@ -165,24 +188,24 @@ export class WeaponService {
   }
 
   // Import weapons from Excel file
-  importData(file: File, language: string = 'en'): Observable<any> {
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
     // Use postRaw to get the full response if needed, or post for data only
-    return this.apiService.post<any>(`${this.endpoint}/Import`, formData, { params });
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/Import`, formData, params);
   }
 
   // Preview import data without saving
-  importPreview(file: File, language: string = 'en'): Observable<any> {
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
     const formData = new FormData();
     formData.append('file', file);
     const params = new HttpParams().set('language', language);
-    return this.apiService.post<any>(`${this.endpoint}/ImportPreview`, formData, { params });
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/ImportPreview`, formData, params);
   }
 
   // Download import template with all fields and data validation
-  downloadImportTemplate(language: string = 'en'): Observable<Blob> {
+  generateImportTemplate(language: string = 'en'): Observable<Blob> {
     const params = new HttpParams().set('language', language);
     // Use http directly for blob response as ApiService doesn't support it yet
     return this.http.get(`${this.config.apiUrl}${this.endpoint}/template`, { params, responseType: 'blob' });

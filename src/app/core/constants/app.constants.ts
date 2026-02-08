@@ -40,6 +40,7 @@ export const API_ENDPOINTS = {
     ROLES: (id: string) => `/Users/${id}/roles`,
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
     TOGGLE_STATUS: (id: string) => `/Users/${id}/toggle-status`,
+    RESTORE: (id: string) => `/Users/${id}/restore`,
     CHANGE_PASSWORD: '/Users/change-password',
   },
 
@@ -93,8 +94,10 @@ export const API_ENDPOINTS = {
     BASE: '/Request',
     BY_ID: (id: number) => `/Request/${id}`,
     ALL: '/Request',
+    PAGINATED: '/Request/Paginated',
     BY_DEPARTMENT: (departmentId: number) => `/Request/department/${departmentId}`,
     USER_ACTIONS: '/Request/user-actions',
+    USER_ACTIONS_PAGINATED: '/Request/UserActionsPaginated',
   },
 
   // Return Requests

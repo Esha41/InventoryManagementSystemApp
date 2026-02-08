@@ -50,9 +50,6 @@
         </button>
       </ng-container>
     </div>
-    <div *ngIf="isLdapMode" class="text-center text-xs font-medium text-[var(--color-text-muted)]">
-      {{ 'auth.login.ldapPasswordNotRequired' | translate }}
-    </div>
 
     <!-- Username Field -->
     <div class="space-y-2">
@@ -84,7 +81,7 @@
     </div>
 
     <!-- Password Field -->
-    <div class="space-y-2" *ngIf="!isLdapMode">
+    <div class="space-y-2">
       <label for="password" class="block text-sm font-semibold text-[var(--color-text)]">
         {{ 'auth.login.password' | translate }}
       </label>
