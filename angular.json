@@ -55,7 +55,22 @@
               "leaflet",
               "core-js",
               "rgbcolor",
-              "raf"]
+              "raf",
+
+              "file-saver",
+              "jquery",
+              "knockout",
+              "jszip",
+              "ace-builds",
+
+              "@devexpress/utils",
+              "devexpress-richedit",
+              "devexpress-reporting",
+              "devexpress-reporting-angular",
+              "@devexpress/analytics-core",
+              "devexpress-diagram",
+              "devexpress-gantt",
+              "devextreme-quill"]
 
           },
           "configurations": {

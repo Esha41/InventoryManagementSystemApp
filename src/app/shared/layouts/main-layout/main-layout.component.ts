@@ -17,6 +17,28 @@ import { filter } from 'rxjs/operators';
 export class MainLayoutComponent {
   isSidebarCollapsed = false;
   mobileSidebarOpen = false;
+  shouldCollapseSidebar = false;
+  shouldHideSidebar = false;
+
+  constructor(private router: Router) {
+    // Check current route
+    this.checkRoute();
+    
+    // Listen for route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.checkRoute();
+      });
+  }
+
+  private checkRoute(): void {
+    const url = this.router.url;
+    // Collapse sidebar when on report designer create screen
+    this.shouldCollapseSidebar = url.includes('/report-designer/designer');
+    // Hide sidebar completely when on report viewer
+    this.shouldHideSidebar = url.includes('/report-viewer');
+  }
 
   onSidebarToggle(collapsed: boolean): void {
     this.isSidebarCollapsed = collapsed;
