@@ -121,8 +121,20 @@
       "seventh": "السابع",
       "eighth": "الثامن",
       "ninth": "التاسع",
-      "tenth": "العاشر"
-    }
+      "tenth": "العاشر",
+      "eleventh": "الحادي عشر",
+      "twelfth": "الثاني عشر",
+      "thirteenth": "الثالث عشر",
+      "fourteenth": "الرابع عشر",
+      "fifteenth": "الخامس عشر",
+      "sixteenth": "السادس عشر",
+      "seventeenth": "السابع عشر",
+      "eighteenth": "الثامن عشر",
+      "nineteenth": "التاسع عشر",
+      "twentieth": "العشرون"
+    },
+    "requiredSuffix": "*",
+    "saving": "جاري الحفظ..."
   },
   "importDialog": {
     "description": "قم بتحميل ملف Excel لاستيراد بيانات {{entityName}}. يرجى التأكد من أن ملفك يتبع التنسيق المطلوب.",

@@ -577,7 +577,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onEditSaved(event: { dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null }): void {
+  onEditSaved(event: { dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }): void {
     if (!this.modalState.selectedAsset || !('id' in this.modalState.selectedAsset)) {
       return;
     }
@@ -589,13 +589,17 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.markForCheck();
 
+    console.log('onEditSaved - removeImageRequested:', event.removeImageRequested, 'imageFileId:', event.imageFileId);
+
     service.update(id, event.dto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: APIOperationResponse<any>) => {
           if (res.succeeded) {
-            // Handle Image Update
+            // Handle Image Update or Deletion
             if (event.imageFile) {
+              // User selected a new image
+              console.log('Uploading new image');
               service.updateImage(id, event.imageFile, event.imageFileId)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
@@ -610,7 +614,28 @@ export class AssetListComponent implements OnInit, OnDestroy {
                     this.loadAssets();
                   }
                 });
+            } else if (event.removeImageRequested && event.imageFileId) {
+              // User wants to delete the existing image
+              console.log('Deleting image with ID:', event.imageFileId);
+              this.fileUploadService.deleteFile(event.imageFileId)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: (result) => {
+                    console.log('Image deleted successfully:', result);
+                    this.closeEditModal();
+                    this.toastService.success('Asset updated successfully');
+                    this.loadAssets();
+                  },
+                  error: (err) => {
+                    console.error('Image deletion failed:', err);
+                    this.closeEditModal();
+                    this.toastService.warning('Asset updated but image deletion failed');
+                    this.loadAssets();
+                  }
+                });
             } else {
+              // No image changes
+              console.log('No image changes');
               this.closeEditModal();
               this.toastService.success('Asset updated successfully');
               this.loadAssets();
