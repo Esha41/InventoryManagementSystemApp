@@ -292,7 +292,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = statusFilter;
     this.currentPage = 1;
-    this.loadUsers();
+    // Don't call loadUsers here - let the child component trigger search
     this.cdr.markForCheck();
   }
 

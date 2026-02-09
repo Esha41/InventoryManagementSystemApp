@@ -356,9 +356,25 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
                 this.isProcessingAction = false;
                 this.approved.emit();
                 this.actionCompleted.emit();
+                // Show success message
+                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.approved']).subscribe(translations => {
+                  this.toastService.success(
+                    translations['workflowApprovalDetail.success.approved'] || 'Request approved successfully',
+                    translations['toast.success'] || 'Success'
+                  );
+                });
               },
-              error: () => {
+              error: (error) => {
                 this.isProcessingAction = false;
+                // Don't reset form on error - preserve user's data (files, comments)
+                // Extract and show error message
+                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
+                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.approveFailed']).subscribe(translations => {
+                  this.toastService.error(
+                    errorMessage || translations['workflowApprovalDetail.errors.approveFailed'] || 'Failed to approve request. Please try again.',
+                    translations['toast.error'] || 'Error'
+                  );
+                });
                 this.actionCompleted.emit();
               }
             });
@@ -402,9 +418,25 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
                 this.isProcessingAction = false;
                 this.rejected.emit();
                 this.actionCompleted.emit();
+                // Show success message
+                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.rejected']).subscribe(translations => {
+                  this.toastService.success(
+                    translations['workflowApprovalDetail.success.rejected'] || 'Request rejected successfully',
+                    translations['toast.success'] || 'Success'
+                  );
+                });
               },
-              error: () => {
+              error: (error) => {
                 this.isProcessingAction = false;
+                // Don't reset form on error - preserve user's data (files, comments)
+                // Extract and show error message
+                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
+                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.rejectFailed']).subscribe(translations => {
+                  this.toastService.error(
+                    errorMessage || translations['workflowApprovalDetail.errors.rejectFailed'] || 'Failed to reject request. Please try again.',
+                    translations['toast.error'] || 'Error'
+                  );
+                });
                 this.actionCompleted.emit();
               }
             });
@@ -465,9 +497,25 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
                 this.isProcessingAction = false;
                 this.returnedForReview.emit();
                 this.actionCompleted.emit();
+                // Show success message
+                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.returnedForReview']).subscribe(translations => {
+                  this.toastService.success(
+                    translations['workflowApprovalDetail.success.returnedForReview'] || 'Request returned for review successfully',
+                    translations['toast.success'] || 'Success'
+                  );
+                });
               },
-              error: () => {
+              error: (error) => {
                 this.isProcessingAction = false;
+                // Don't reset form on error - preserve user's data (files, comments)
+                // Extract and show error message
+                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to return request for review');
+                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnForReviewFailed']).subscribe(translations => {
+                  this.toastService.error(
+                    errorMessage || translations['workflowApprovalDetail.errors.returnForReviewFailed'] || 'Failed to return request for review. Please try again.',
+                    translations['toast.error'] || 'Error'
+                  );
+                });
                 this.actionCompleted.emit();
               }
             });

@@ -809,19 +809,48 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       return '';
     }
 
-    // Try to get translation key for ordinal number
+    // Try to get translation key for predefined ordinals (1-20)
     const key = this.getOrdinalKey(n);
-    if (!key) {
-      // Fallback to simple number
+    if (key) {
+      return this.translate.instant(key);
+    }
+
+    // For numbers beyond 20, generate ordinal dynamically
+    return this.generateOrdinal(n);
+  }
+
+  private generateOrdinal(n: number): string {
+    const currentLang = this.translate.currentLang || this.translate.defaultLang;
+
+    // For Arabic, just return the number as-is (Arabic doesn't use ordinal suffixes like English)
+    if (currentLang === 'ar') {
       return String(n);
     }
 
-    return this.translate.instant(key);
+    // For English, generate ordinal suffix dynamically
+    const lastDigit = n % 10;
+    const lastTwoDigits = n % 100;
+
+    // Special cases for 11th, 12th, 13th
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+      return `${n}th`;
+    }
+
+    // Regular cases
+    switch (lastDigit) {
+      case 1:
+        return `${n}st`;
+      case 2:
+        return `${n}nd`;
+      case 3:
+        return `${n}rd`;
+      default:
+        return `${n}th`;
+    }
   }
 
   private getOrdinalKey(n: number): string | null {
-    // Basic mapping for common ordinals (1st to 10th)
-    // You can expand this as needed or use a library
+    // Mapping for ordinals (1st to 20th)
     const predefined: { [key: number]: string } = {
       1: 'common.ordinals.first',
       2: 'common.ordinals.second',
@@ -832,7 +861,17 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       7: 'common.ordinals.seventh',
       8: 'common.ordinals.eighth',
       9: 'common.ordinals.ninth',
-      10: 'common.ordinals.tenth'
+      10: 'common.ordinals.tenth',
+      11: 'common.ordinals.eleventh',
+      12: 'common.ordinals.twelfth',
+      13: 'common.ordinals.thirteenth',
+      14: 'common.ordinals.fourteenth',
+      15: 'common.ordinals.fifteenth',
+      16: 'common.ordinals.sixteenth',
+      17: 'common.ordinals.seventeenth',
+      18: 'common.ordinals.eighteenth',
+      19: 'common.ordinals.nineteenth',
+      20: 'common.ordinals.twentieth'
     };
 
     if (predefined[n]) {

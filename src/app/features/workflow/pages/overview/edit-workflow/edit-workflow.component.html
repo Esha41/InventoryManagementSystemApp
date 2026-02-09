@@ -84,7 +84,8 @@
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.applicationEntity' | translate }}</th>
-                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                  <!-- Higher Approval columns - commented out as not in use -->
+                  <!-- <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 150px;">{{
                     'workflow.higherApproval' | translate }}</th>
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
@@ -92,7 +93,7 @@
                     'workflow.higherApprovalRole' | translate }}</th>
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
-                    'workflow.higherApprovalEntity' | translate }}</th>
+                    'workflow.higherApprovalEntity' | translate }}</th> -->
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 120px;">
                     {{ 'workflow.canReturn' | translate }}
@@ -132,7 +133,8 @@
                       [placeholder]="'workflow.selectEntity' | translate">
                     </app-dropdown>
                   </td>
-                  <td class="px-4 py-3">
+                  <!-- Higher Approval columns - commented out as not in use -->
+                  <!-- <td class="px-4 py-3">
                     <label class="inline-flex items-center gap-2 text-sm">
                       <input type="checkbox" [(ngModel)]="s.requireHigherApproval" name="erequire-{{i}}"
                         class="h-4 w-4" />
@@ -150,7 +152,7 @@
                       [disabled]="!s.requireHigherApproval" [options]="allApplicationEntities" optionLabel="name"
                       optionValue="id" placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
                     </app-dropdown>
-                  </td>
+                  </td> -->
                   <td class="px-4 py-3">
                     <label class="inline-flex items-center gap-2 text-sm">
                       <input type="checkbox" [(ngModel)]="s.canReturn" name="ecanReturn-{{i}}" class="h-4 w-4" />

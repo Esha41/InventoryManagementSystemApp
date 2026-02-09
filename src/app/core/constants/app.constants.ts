@@ -217,6 +217,7 @@ export const API_ENDPOINTS = {
     SERVE: (id: number) => `/FileUpload/serve/${id}`,
     SERVE_BY_PATH: '/FileUpload/serve',
     SET_MAIN: (id: number) => `/FileUpload/${id}/set-main`,
+    DELETE: (id: number) => `/FileUpload/${id}`,
   },
 } as const;
 

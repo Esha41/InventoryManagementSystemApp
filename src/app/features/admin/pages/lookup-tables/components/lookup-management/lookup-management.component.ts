@@ -8,6 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { LookupManagementService } from '@services/lookup-management.service';
+import { ErrorHandlingService } from '@services/error-handling.service';
 import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.component';
 import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -64,10 +65,11 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private lookupManagementService: LookupManagementService,
+    private errorHandlingService: ErrorHandlingService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.lookupTables = this.lookupManagementService.getLookupTables();
@@ -106,7 +108,8 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoadingLookups = false;
-          this.lookupErrorMessage = 'Failed to load lookup items: ' + (error.message || 'Unknown error');
+          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
         }
       });
@@ -208,11 +211,12 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this.lookupErrorMessage = error.message || 'Failed to delete lookup item';
+          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(
-              error.message || 'Failed to delete lookup item',
+              errorMessage,
               translations['toast.error']
             );
           });
@@ -264,12 +268,13 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.lookupModalLoading = false;
           this.isLoadingLookups = false;
-          this.lookupErrorMessage = error.message || `Failed to ${this.lookupModalMode} lookup item`;
+          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
 
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(
-              error.message || `Failed to ${this.lookupModalMode} lookup item`,
+              errorMessage,
               translations['toast.error']
             );
           });

@@ -74,7 +74,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // Statistics
   statistics: StatisticsData = {
     totalItems: 0,
-    totalQuantity: 0,
     lowStock: 0,
     expiringSoon: 0,
     monthlyActivity: Array(12).fill(0),
@@ -257,7 +256,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private calculateStatistics(summary: ItemInventorySummaryDto[], expiringLotsCount: number = 0, lowStockCount: number = 0): void {
     const stats: StatisticsData = {
       totalItems: 0,
-      totalQuantity: 0,
       lowStock: lowStockCount,
       expiringSoon: expiringLotsCount,
       monthlyActivity: Array(12).fill(0),
@@ -266,7 +264,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     if (summary && summary.length > 0) {
       stats.totalItems = summary.filter(x => x.remainingQuantity > 0).length;
-      stats.totalQuantity = summary.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
     }
 
     this.statistics = stats;

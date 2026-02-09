@@ -131,8 +131,19 @@
       "seventh": "7th",
       "eighth": "8th",
       "ninth": "9th",
-      "tenth": "10th"
-    }
+      "tenth": "10th",
+      "eleventh": "11th",
+      "twelfth": "12th",
+      "thirteenth": "13th",
+      "fourteenth": "14th",
+      "fifteenth": "15th",
+      "sixteenth": "16th",
+      "seventeenth": "17th",
+      "eighteenth": "18th",
+      "nineteenth": "19th",
+      "twentieth": "20th"
+    },
+    "requiredSuffix": "*"
   },
   "importDialog": {
     "description": "Upload an Excel file to import {{entityName}} data. Please ensure your file follows the required format.",

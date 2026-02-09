@@ -51,7 +51,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null }>();
+  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }>();
   @Output() imageFileSelected = new EventEmitter<File>();
   @Output() imageDropped = new EventEmitter<File>();
 
@@ -60,6 +60,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
   editForm!: FormGroup;
   imageStateLocal: AssetImageState = createInitialImageState();
+  removeImageRequested = false;
 
   @ViewChild('editFileInput') editFileInputRef!: ElementRef<HTMLInputElement>;
 
@@ -75,7 +76,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     private fb: FormBuilder,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.editForm = createAssetEditForm(this.fb);
@@ -84,18 +85,20 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       const formValue: any = { ...this.selectedAsset };
-      
+
       this.editForm.patchValue(formValue);
       this.cdr.markForCheck();
     }
     if (changes['imageState'] && this.imageState) {
       // Deep copy to ensure change detection triggers
-      this.imageStateLocal = { 
+      this.imageStateLocal = {
         editImageUrl: this.imageState.editImageUrl,
         editImageFile: this.imageState.editImageFile,
         editImagePreview: this.imageState.editImagePreview,
         editImageFileId: this.imageState.editImageFileId
       };
+      // Reset the remove flag when new image state comes in
+      this.removeImageRequested = false;
       this.cdr.markForCheck();
     }
   }
@@ -103,6 +106,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   close(): void {
     this.editForm.reset();
     this.imageStateLocal = createInitialImageState();
+    this.removeImageRequested = false;
     this.closed.emit();
   }
 
@@ -110,9 +114,9 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     if (this.editForm.invalid) return;
 
     const formData = { ...this.editForm.value };
-    
+
     let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
-    
+
     if (this.activeTab === 'ammunition') {
       dto = formData as AmmunitionCreateDto;
     } else if (this.activeTab === 'weapon') {
@@ -125,7 +129,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     this.saved.emit({
       dto,
       imageFile: this.imageStateLocal.editImageFile,
-      imageFileId: this.imageStateLocal.editImageFileId
+      imageFileId: this.imageStateLocal.editImageFileId,
+      removeImageRequested: this.removeImageRequested
     });
   }
 
@@ -159,6 +164,16 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       this.imageDropped.emit(file);
       this.cdr.markForCheck();
     }
+  }
+
+  removeImage(): void {
+    // Clear all image state
+    this.imageStateLocal.editImageUrl = null;
+    this.imageStateLocal.editImageFile = null;
+    this.imageStateLocal.editImagePreview = null;
+    // Set flag to indicate user wants to remove the image
+    this.removeImageRequested = true;
+    this.cdr.markForCheck();
   }
 
   get editImagePreview(): string | null {

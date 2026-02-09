@@ -65,5 +65,9 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
   onStatusFilterChange(status: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = status;
     this.statusFilterChange.emit(this.statusFilter);
+    // Also trigger search with current search term when status changes
+    if (this.useSearchButton) {
+      this.searchTriggered.emit(this.searchTerm);
+    }
   }
 }
