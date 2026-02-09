@@ -96,10 +96,11 @@ export class ReportDesignerComponent implements OnInit {
   }
 
   checkPermissions(): void {
-    // Check permissions using BackendAuthService (same pattern as other components)
-    this.canCreateReport = this.authService.hasAnyPermission(['Permissions.Report.Create', 'Permissions.Report.Edit']);
-    this.canEditReport = this.authService.hasPermission('Permissions.Report.Edit');
-    this.canDeleteReport = this.authService.hasPermission('Permissions.Report.Delete');
+    // Check permissions using BackendAuthService - ReportDesigner is a plain permission
+    const hasReportDesignerPermission = this.authService.hasPermission('ReportDesigner');
+    this.canCreateReport = hasReportDesignerPermission;
+    this.canEditReport = hasReportDesignerPermission;
+    this.canDeleteReport = hasReportDesignerPermission;
   }
 
   get isRTL(): boolean {

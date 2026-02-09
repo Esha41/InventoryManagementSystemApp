@@ -224,16 +224,17 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.biTool',
       icon: FileText,
-      permissions: ['Permissions.Report.View', 'Permissions.Report.Page'],
+      permissions: ['ReportDesigner', 'ReportDashboard'],
       children: [
         {
           label: 'nav.reportDesigner',
           route: '/report-designer',
-          permissions: ['Permissions.Report.View', 'Permissions.Report.Page']
+          permissions: ['ReportDesigner']
         },
         {
           label: 'nav.reportDashboard',
-          route: '/report-dashboard'
+          route: '/report-dashboard',
+          permissions: ['ReportDashboard']
         }
       ]
     },

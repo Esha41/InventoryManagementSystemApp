@@ -336,17 +336,19 @@ export const routes: Routes = [
         path: 'report-designer',
         loadComponent: () => import('@app/features/reports/designer-list/report-designer.component').then(m => m.ReportDesignerComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['Permissions.Report.View', 'Permissions.Report.Page'] }
+        data: { permissions: ['ReportDesigner'] }
       },
       {
         path: 'report-designer/designer',
         loadComponent: () => import('@app/features/reports/designer/devexpress-designer.component').then(m => m.DevExpressReportDesignerComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['Permissions.Report.Create', 'Permissions.Report.Edit'] }
+        data: { permissions: ['ReportDesigner'] }
       },
       {
         path: 'report-dashboard',
-        loadComponent: () => import('@app/features/reports/dashboard/report-dashboard.component').then(m => m.ReportDashboardComponent)
+        loadComponent: () => import('@app/features/reports/dashboard/report-dashboard.component').then(m => m.ReportDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDashboard'] }
       },
       {
         path: 'report-viewer',
