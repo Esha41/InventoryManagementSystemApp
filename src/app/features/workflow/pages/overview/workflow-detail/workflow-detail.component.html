@@ -27,16 +27,17 @@
           <th
             class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
             {{ 'workflow.role' | translate }}</th>
-          <th
-            class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
-            {{ 'workflow.applicationEntity' | translate }}</th>
-          <th
-            class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
-            {{ 'workflow.higherApprovalRole' | translate }}</th>
-          <th
-            class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
-            {{ 'workflow.higherApprovalEntity' | translate }}</th>
-        </tr>
+            <th
+              class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
+              {{ 'workflow.applicationEntity' | translate }}</th>
+            <!-- Higher Approval columns - commented out as not in use -->
+            <!-- <th
+              class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
+              {{ 'workflow.higherApprovalRole' | translate }}</th>
+            <th
+              class="px-4 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] border-b-2 border-[var(--color-border)]">
+              {{ 'workflow.higherApprovalEntity' | translate }}</th> -->
+          </tr>
       </thead>
       <tbody class="bg-[var(--color-background)]">
         <tr *ngFor="let s of (workflow.workflowSteps || []); let i = index"
@@ -44,10 +45,11 @@
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.stepOrder || (i+1) }}</td>
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.applicationRoleName || s.applicationRoleId }}</td>
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.applicationEntityName || s.applicationEntityId }}</td>
-          <td class="px-4 py-2 text-[var(--color-text)]">{{ s.higherApprovalRoleName || s.higherApprovalRoleId || '-' }}
+          <!-- Higher Approval columns - commented out as not in use -->
+          <!-- <td class="px-4 py-2 text-[var(--color-text)]">{{ s.higherApprovalRoleName || s.higherApprovalRoleId || '-' }}
           </td>
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.higherApplicationEntityName || s.higherApplicationEntityId
-            || '-' }}</td>
+            || '-' }}</td> -->
         </tr>
       </tbody>
     </table>

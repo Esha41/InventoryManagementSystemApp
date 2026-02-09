@@ -21,14 +21,10 @@ import { Router } from '@angular/router';
         <h3 class="text-lg font-semibold text-[var(--color-text)] m-0">{{ 'adminDashboard.inventory.title' | translate }}</h3>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="mb-6">
         <div class="p-4 rounded-lg text-center bg-blue-500/10 border border-blue-500/20 overflow-hidden">
           <div class="text-3xl font-bold text-[var(--color-text)] leading-none truncate">{{ (metrics?.totalItems || 0) | number }}</div>
           <div class="text-xs text-[var(--color-text-muted)] mt-2 truncate">{{ 'adminDashboard.inventory.totalItems' | translate }}</div>
-        </div>
-        <div class="p-4 rounded-lg text-center bg-purple-500/10 border border-purple-500/20 overflow-hidden">
-          <div class="text-3xl font-bold text-[var(--color-text)] leading-none truncate">{{ (metrics?.totalQuantity || 0) | number }}</div>
-          <div class="text-xs text-[var(--color-text-muted)] mt-2 truncate">{{ 'adminDashboard.inventory.totalQuantity' | translate }}</div>
         </div>
       </div>
 
