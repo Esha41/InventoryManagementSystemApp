@@ -89,12 +89,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.department',
       icon: Building2,
-      permissions: ['allowanceitem.page'],
+      permissions: ['allowanceitem.page', 'Permissions.ItemDepartmentAssignment.Page'],
       children: [
         {
           label: 'nav.allowance',
           route: '/allowance',
           permissions: ['allowanceitem.page']
+        },
+        {
+          label: 'nav.itemDepartmentAssignment',
+          route: '/item-department-assignment',
+          permissions: ['Permissions.ItemDepartmentAssignment.Page']
         }
       ]
     },

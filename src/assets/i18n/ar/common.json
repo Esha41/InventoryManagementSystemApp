@@ -181,6 +181,7 @@
     "workflow": "سير العمل",
     "department": "القسم",
     "allowance": "مقرر",
+    "itemDepartmentAssignment": "تعيين المواد",
     "requestManagement": "إدارة الطلبات",
     "newIssueRequest": "طلب صرف",
     "newReturnRequest": "طلب إرجاع",
