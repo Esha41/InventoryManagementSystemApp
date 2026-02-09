@@ -24,7 +24,6 @@ export interface SystemHealthMetrics {
  */
 export interface InventoryMetrics {
     totalItems: number;
-    totalQuantity: number;
     lowStockItems: number;
     expiringItems: number;
     inventoryDistribution?: InventoryDistribution;
@@ -265,7 +264,6 @@ export class AdminAnalyticsService implements OnDestroy {
                 const activeItems = items.filter(x => (x.remainingQuantity || 0) > 0);
 
                 const totalItems = activeItems.length;
-                const totalQuantity = activeItems.reduce((sum, item) => sum + (item.remainingQuantity || 0), 0);
 
                 // Calculate Distribution from Active Items
                 const categoriesMap = new Map<string, number>();
@@ -295,7 +293,6 @@ export class AdminAnalyticsService implements OnDestroy {
 
                 return {
                     totalItems,
-                    totalQuantity,
                     lowStockItems: lowStock,
                     expiringItems: expiring,
                     inventoryDistribution: { categories },
