@@ -3,6 +3,13 @@ import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 
+export interface ReportRole {
+  roleId: string;
+  roleName: string;
+  roleNameEn?: string;
+  roleNameAr?: string;
+}
+
 export interface Report {
   id: string;
   reportName: string;
@@ -19,6 +26,7 @@ export interface Report {
   isDeleted: boolean;
   deletionDate?: Date;
   deletedBy?: string;
+  roles?: ReportRole[];
 }
 
 @Injectable({
@@ -78,11 +86,22 @@ export class ReportService {
    * Set report public (Published) or private (Draft).
    * Returns the updated report.
    */
-  setReportPublic(id: string, isPublic: boolean): Observable<Report> {
+  setReportPublic(id: string, isPublic: boolean, roleIds?: string[]): Observable<Report> {
+    const body = {
+      isPublic,
+      roleIds: roleIds || []
+    };
     return this.apiService.patch<Report>(
-    `${this.endpoint}/${id}/public?isPublic=${isPublic}`,
-    null
-  );
+      `${this.endpoint}/${id}/public`,
+      body
+    );
+  }
+
+  /**
+   * Get role IDs associated with a report
+   */
+  getReportRoles(id: string): Observable<string[]> {
+    return this.apiService.get<string[]>(`${this.endpoint}/${id}/roles`);
   }
 
   /**

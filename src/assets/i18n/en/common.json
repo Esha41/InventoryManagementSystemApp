@@ -12,6 +12,7 @@
     "search": "Search",
     "filter": "Filter",
     "clear": "Clear",
+    "clearSearch": "Clear search",
     "back": "Back",
     "goBack": "Go Back",
     "next": "Next",
@@ -294,6 +295,18 @@
     "deleteReportDescription": "This will permanently delete \"{{name}}\". This action cannot be undone.",
     "makePublic": "Make Public",
     "makePrivate": "Make Private",
+    "reportSetToPublic": "Report has been set to public and is accessible to all users.",
+    "reportSetToPublicWithRoles": "Report has been set to public and is accessible to {{count}} selected role(s).",
+    "reportSetToPrivate": "Report has been set to private (draft).",
+    "rolesUpdated": "Report roles updated. Report is now accessible to {{count}} selected role(s).",
+    "rolesCleared": "Report roles cleared. Report is now accessible to all users.",
+    "selectRolesOnlyForPublished": "You can only select roles for published reports. Please publish the report first.",
+    "selectRoles": "Select Roles",
+    "noRoles": "No roles available",
+    "noRolesFound": "No roles found matching your search",
+    "roleSelectionInfo": "Select which roles can access this report when it's published. If no roles are selected, the report will be accessible to all authenticated users.",
+    "selectTemplate": "Select Template",
+    "noTemplates": "No templates available",
     "import": {
       "invalidFileType": "Invalid file type. Only {{extensions}} files are allowed.",
       "fileTooLarge": "File size exceeds maximum allowed size of {{maxSize}}."
@@ -304,9 +317,11 @@
     "table": {
       "reportName": "Report Name",
       "status": "Status",
+      "roles": "Roles",
       "createdDate": "Created Date",
       "actions": "Actions"
     },
+    "allUsers": "All Users",
     "status": {
       "published": "Published",
       "draft": "Draft",

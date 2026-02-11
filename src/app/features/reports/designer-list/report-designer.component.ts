@@ -3,16 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload, Users } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ReportService, Report, ReportTemplate } from '@services/report.service';
+import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TemplateSelectDialogComponent } from '../template-select-dialog/template-select-dialog.component';
+import { RoleSelectDialogComponent } from '../role-select-dialog/role-select-dialog.component';
 
 @Component({
   selector: 'app-report-designer',
@@ -28,7 +30,8 @@ import { TemplateSelectDialogComponent } from '../template-select-dialog/templat
     LoadingStateComponent,
     ErrorStateComponent,
     ConfirmDialogComponent,
-    TemplateSelectDialogComponent
+    TemplateSelectDialogComponent,
+    RoleSelectDialogComponent
   ],
   templateUrl: './report-designer.component.html',
   styleUrls: ['./report-designer.component.css']
@@ -40,6 +43,7 @@ export class ReportDesignerComponent implements OnInit {
   readonly Globe = Globe;
   readonly Eye = Eye;
   readonly Upload = Upload;
+  readonly Users = Users;
 
   reports: Report[] = [];
   filteredReports: Report[] = [];
@@ -58,6 +62,11 @@ export class ReportDesignerComponent implements OnInit {
 
   // Template selection dialog
   showTemplateDialog = false;
+
+  // Role selection dialog
+  showRoleDialog = false;
+  reportToMakePublic: Report | null = null;
+  selectedRoleIds: string[] = [];
 
   // File input reference
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
@@ -83,7 +92,8 @@ export class ReportDesignerComponent implements OnInit {
     private translateService: TranslateService,
     private router: Router,
     private authService: BackendAuthService,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -297,23 +307,122 @@ export class ReportDesignerComponent implements OnInit {
 
   onTogglePublicPrivate(report: Report): void {
     const isPublic = !this.isPublished(report);
-    this.reportService.setReportPublic(report.id, isPublic)
+    
+    // Preserve existing roles when toggling status
+    // When making public, use existing roles if any
+    // When making private, preserve roles so they can be restored later
+    const roleIdsToPreserve = report.roles && report.roles.length > 0
+      ? report.roles.map(r => r.roleId)
+      : [];
+    
+    // Directly toggle status without showing role dialog
+    this.loading = true;
+    this.reportService.setReportPublic(report.id, isPublic, roleIdsToPreserve)
       .pipe(
         catchError((err) => {
           console.error('Error setting report public/private:', err);
           this.error = this.translateService.instant('common.errorUpdatingData');
           return of(null);
+        }),
+        finalize(() => {
+          this.loading = false;
         })
       )
       .subscribe((updated) => {
         if (updated) {
           const index = this.reports.findIndex(r => r.id === report.id);
           if (index !== -1) {
+            // The backend now preserves roles, so updated should already have them
+            // But ensure we preserve them in the UI if backend doesn't return them for draft
+            if (!updated.roles && report.roles) {
+              updated.roles = report.roles;
+            }
             this.reports[index] = updated;
             this.filteredReports = [...this.reports];
+            // Show success message
+            const message = isPublic
+              ? this.translateService.instant('reportDesigner.reportSetToPublic')
+              : this.translateService.instant('reportDesigner.reportSetToPrivate');
+            this.toastService.success(
+              message,
+              this.translateService.instant('common.success')
+            );
           }
         }
       });
+  }
+
+  onSelectRoles(report: Report): void {
+    // Only allow role selection for published reports
+    if (!this.isPublished(report)) {
+      this.toastService.warning(
+        this.translateService.instant('reportDesigner.selectRolesOnlyForPublished'),
+        this.translateService.instant('common.warning')
+      );
+      return;
+    }
+
+    this.reportToMakePublic = report;
+    this.selectedRoleIds = [];
+    
+    // Load existing role associations if any
+    this.reportService.getReportRoles(report.id)
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading report roles:', err);
+          // Continue with empty array if error
+          return of([]);
+        })
+      )
+      .subscribe((roleIds) => {
+        this.selectedRoleIds = roleIds;
+        this.showRoleDialog = true;
+      });
+  }
+
+  onRolesSelected(roleIds: string[]): void {
+    if (this.reportToMakePublic) {
+      this.loading = true;
+      // Update roles for the published report (keep it published, just update roles)
+      this.reportService.setReportPublic(this.reportToMakePublic.id, true, roleIds)
+        .pipe(
+          catchError((err) => {
+            console.error('Error updating report roles:', err);
+            this.error = this.translateService.instant('common.errorUpdatingData');
+            return of(null);
+          }),
+          finalize(() => {
+            this.loading = false;
+          })
+        )
+        .subscribe((updated) => {
+          if (updated) {
+            const index = this.reports.findIndex(r => r.id === this.reportToMakePublic!.id);
+            if (index !== -1) {
+              this.reports[index] = updated;
+              this.filteredReports = [...this.reports];
+              // Show success message
+              const roleCount = roleIds.length;
+              const message = roleCount > 0
+                ? this.translateService.instant('reportDesigner.rolesUpdated', { count: roleCount })
+                : this.translateService.instant('reportDesigner.rolesCleared');
+              this.toastService.success(
+                message,
+                this.translateService.instant('common.success')
+              );
+            }
+          }
+          this.showRoleDialog = false;
+          this.reportToMakePublic = null;
+          this.selectedRoleIds = [];
+        });
+    }
+  }
+
+  onRoleDialogCancel(): void {
+    this.showRoleDialog = false;
+    this.reportToMakePublic = null;
+    this.selectedRoleIds = [];
   }
 
   getStatusClass(status: string): string {
@@ -335,6 +444,11 @@ export class ReportDesignerComponent implements OnInit {
     // Use the appropriate status name based on current language
     const isRTL = this.translationService.isRTL();
     return isRTL && report.reportStatusNameAr ? report.reportStatusNameAr : report.reportStatusNameEn;
+  }
+
+  getRoleDisplayName(role: { roleNameEn?: string; roleNameAr?: string; roleName: string }): string {
+    const isRTL = this.translationService.isRTL();
+    return isRTL && role.roleNameAr ? role.roleNameAr : (role.roleNameEn || role.roleName);
   }
 
   formatDate(date: Date | string): string {

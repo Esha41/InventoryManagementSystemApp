@@ -71,6 +71,10 @@
                 </th>
                 <th
                   class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'reportDesigner.table.roles' | translate }}
+                </th>
+                <th
+                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDesigner.table.createdDate' | translate }}
                 </th>
                 <th
@@ -94,6 +98,22 @@
                     {{ getStatusDisplayName(report) }}
                   </span>
                 </td>
+                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">
+                  <div *ngIf="isPublished(report) && report.roles && report.roles.length > 0" class="flex flex-wrap gap-1">
+                    <span *ngFor="let role of report.roles" 
+                      class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+                      {{ getRoleDisplayName(role) }}
+                    </span>
+                  </div>
+                  <span *ngIf="isPublished(report) && (!report.roles || report.roles.length === 0)" 
+                    class="text-xs text-[var(--color-text-muted)] italic">
+                    {{ 'reportDesigner.allUsers' | translate }}
+                  </span>
+                  <span *ngIf="!isPublished(report)" 
+                    class="text-xs text-[var(--color-text-muted)]">
+                    —
+                  </span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
                   {{ formatDate(report.creationDate) }}
                 </td>
@@ -111,6 +131,13 @@
                       class="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                       [title]="'common.delete' | translate">
                       <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    </button>
+
+                    <!-- Select Roles Button (only for published reports) -->
+                    <button type="button" *ngIf="canEditReport && isPublished(report)" (click)="onSelectRoles(report)"
+                      class="p-2 text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors"
+                      [title]="'reportDesigner.selectRoles' | translate">
+                      <lucide-angular [img]="Users" class="h-4 w-4"></lucide-angular>
                     </button>
 
                     <!-- Public/Private Toggle (always visible when can edit) -->
@@ -175,5 +202,13 @@
       (templateSelected)="onTemplateSelected($event)"
       (cancelled)="onTemplateDialogCancel()">
     </app-template-select-dialog>
+
+    <!-- Role Selection Dialog -->
+    <app-role-select-dialog
+      [isOpen]="showRoleDialog"
+      [selectedRoleIds]="selectedRoleIds"
+      (rolesSelected)="onRolesSelected($event)"
+      (cancelled)="onRoleDialogCancel()">
+    </app-role-select-dialog>
   </div>
 </div>
