@@ -7,7 +7,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X, Search, ChevronDown, ChevronRight } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { ItemDepartmentAssignmentService } from '@services/item-department-assignment.service';
-import { ItemDepartmentAssignmentDto, CreateUpdateItemDepartmentAssignmentDto } from '@models/item-department-assignment.model';
+import { ItemDepartmentAssignmentDto, CreateUpdateItemDepartmentAssignmentDto, DepartmentAssignmentSummaryDto } from '@models/item-department-assignment.model';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
@@ -52,7 +52,8 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   assignments: ItemDepartmentAssignmentDto[] = [];
   filteredAssignments: ItemDepartmentAssignmentDto[] = [];
   departments: any[] = [];
-  filteredDepartments: any[] = []; // Departments filtered by search
+  departmentSummaries: DepartmentAssignmentSummaryDto[] = []; // From summary API
+  filteredSummaries: DepartmentAssignmentSummaryDto[] = []; // Summaries filtered by search
   items: BaseItemDto[] = [];
   allItems: BaseItemDto[] = []; // Store all items
   availableItems: BaseItemDto[] = []; // Items available for selection (filtered by department)
@@ -69,7 +70,10 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   isEditMode = false;
   currentAssignmentId: number = 0;
   currentAssignment: CreateUpdateItemDepartmentAssignmentDto = this.getEmptyAssignment();
-  selectedItemIds: number[] = []; // For multiple item selection
+  selectedItemIds: number[] = []; // For multiple item selection (edit mode)
+  selectedAmmunitionIds: number[] = [];
+  selectedWeaponIds: number[] = [];
+  selectedExplosiveIds: number[] = [];
 
   // Delete confirmation dialog state
   showDeleteDialog = false;
@@ -122,7 +126,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     forkJoin({
-      assignments: this.assignmentService.getAll(),
+      summaries: this.assignmentService.getDepartmentSummaries(),
       departments: this.lookupService.getDepartments(),
       ammunition: this.ammunitionService.getAll<BaseItemDto>(),
       weapons: this.weaponService.getAll<BaseItemDto>(),
@@ -131,33 +135,37 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (results) => {
-          // Load departments first
           if (results.departments) {
             this.departments = results.departments.filter((d: any) => !d.isDeleted);
           }
 
-          // Load assignments and group by department
-          if (results.assignments.succeeded && results.assignments.data) {
-            this.assignments = results.assignments.data;
-            this.groupAssignmentsByDepartment();
-            this.applyFilters();
+          if (results.summaries.succeeded && results.summaries.data) {
+            this.departmentSummaries = results.summaries.data;
           } else {
-            // If no assignments, still filter departments
-            this.filterDepartmentsBySearch();
+            this.departmentSummaries = [];
           }
 
-          // Combine all items
-          this.allItems = [
-            ...(results.ammunition || []),
-            ...(results.weapons || []),
-            ...(results.explosives || [])
-          ].filter((item: any) => !item.isDeleted);
-          
-          // Format items for dropdown (with display label)
-          this.allItems = this.allItems.map((item: any) => ({
+          this.assignments = [];
+          this.assignmentsByDepartment.clear();
+          this.applyFilters();
+
+          // Combine all items and tag with itemType (1=Ammunition, 2=Weapon, 3=Explosive)
+          const ammo = (results.ammunition || []).filter((item: any) => !item.isDeleted).map((item: any) => ({
             ...item,
+            itemType: 1,
             displayLabel: `${item.name} (${item.itemNo})`
           }));
+          const weapons = (results.weapons || []).filter((item: any) => !item.isDeleted).map((item: any) => ({
+            ...item,
+            itemType: 2,
+            displayLabel: `${item.name} (${item.itemNo})`
+          }));
+          const explosives = (results.explosives || []).filter((item: any) => !item.isDeleted).map((item: any) => ({
+            ...item,
+            itemType: 3,
+            displayLabel: `${item.name} (${item.itemNo})`
+          }));
+          this.allItems = [...ammo, ...weapons, ...explosives];
 
           // Initialize available items (will be filtered when department is selected)
           this.items = this.allItems;
@@ -185,45 +193,47 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    let filtered = [...this.assignments];
-
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(a => {
-        const itemName = (a.itemName || '').toLowerCase();
-        const itemNo = (a.itemNo || '').toLowerCase();
-        const deptNameAr = (a.departmentNameAr || '').toLowerCase();
-        const deptNameEn = (a.departmentNameEn || '').toLowerCase();
-        const deptCode = (a.departmentCode || '').toLowerCase();
-        return itemName.includes(term) || itemNo.includes(term) ||
-               deptNameAr.includes(term) || deptNameEn.includes(term) ||
-               deptCode.includes(term);
-      });
-    }
-
-    this.filteredAssignments = filtered;
-    this.groupAssignmentsByDepartment();
-    this.filterDepartmentsBySearch();
-    this.currentPage = 1; // Reset to first page when filters change
+    this.filterSummariesBySearch();
+    this.currentPage = 1;
   }
 
-  filterDepartmentsBySearch(): void {
+  filterSummariesBySearch(): void {
     if (!this.searchTerm) {
-      // Show all departments that have assignments
-      this.filteredDepartments = this.departments.filter(dept => 
-        this.assignmentsByDepartment.has(dept.id) && 
-        this.getDepartmentAssignmentCount(dept.id) > 0
-      );
+      this.filteredSummaries = [...this.departmentSummaries];
     } else {
-      // Filter departments that have matching assignments
-      const matchingDeptIds = new Set<number>();
-      this.filteredAssignments.forEach(assignment => {
-        matchingDeptIds.add(assignment.departmentId);
+      const term = this.searchTerm.toLowerCase();
+      this.filteredSummaries = this.departmentSummaries.filter(s => {
+        const nameAr = (s.departmentNameAr || '').toLowerCase();
+        const nameEn = (s.departmentNameEn || '').toLowerCase();
+        const code = (s.departmentCode || '').toLowerCase();
+        return nameAr.includes(term) || nameEn.includes(term) || code.includes(term);
       });
-      this.filteredDepartments = this.departments.filter(dept => 
-        matchingDeptIds.has(dept.id)
-      );
     }
+  }
+
+  /** Load assignments for one department (on expand or when opening modal). Merges into cache. */
+  private loadAssignmentsForDepartment(departmentId: number, onLoaded?: () => void): void {
+    if (this.assignmentsByDepartment.has(departmentId)) {
+      onLoaded?.();
+      return;
+    }
+    this.assignmentService.getByDepartmentId(departmentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          const list = res.succeeded && res.data ? res.data : [];
+          this.assignments = this.assignments.filter(a => Number(a.departmentId) !== departmentId);
+          list.forEach(a => this.assignments.push(a));
+          this.assignmentsByDepartment.set(departmentId, list);
+          this.cdr.detectChanges();
+          onLoaded?.();
+        },
+        error: () => {
+          this.assignmentsByDepartment.set(departmentId, []);
+          this.cdr.detectChanges();
+          onLoaded?.();
+        }
+      });
   }
 
   toggleDepartmentItems(departmentId: number): void {
@@ -231,6 +241,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       this.expandedDepartments.delete(departmentId);
     } else {
       this.expandedDepartments.add(departmentId);
+      if (!this.assignmentsByDepartment.has(departmentId)) {
+        this.loadAssignmentsForDepartment(departmentId);
+      }
     }
   }
 
@@ -242,15 +255,15 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     return this.assignmentsByDepartment.get(departmentId) || [];
   }
 
-  /** Departments to show on the current page (for pagination). */
-  get paginatedDepartments(): any[] {
+  /** Summaries to show on the current page (for pagination). */
+  get paginatedSummaries(): DepartmentAssignmentSummaryDto[] {
     const start = (this.currentPage - 1) * this.rowsPerPage;
     const end = start + this.rowsPerPage;
-    return this.filteredDepartments.slice(start, end);
+    return this.filteredSummaries.slice(start, end);
   }
 
   get totalPages(): number {
-    const total = this.filteredDepartments.length;
+    const total = this.filteredSummaries.length;
     return total === 0 ? 1 : Math.ceil(total / this.rowsPerPage);
   }
 
@@ -303,6 +316,19 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     return itemType === 3;
   }
 
+  /** Items filtered by type for separate dropdowns in Add Assignment modal. */
+  get availableAmmunition(): BaseItemDto[] {
+    return (this.availableItems || []).filter((i: any) => (i.itemType === 1 || i.itemType === 'Ammunition'));
+  }
+
+  get availableWeapons(): BaseItemDto[] {
+    return (this.availableItems || []).filter((i: any) => (i.itemType === 2 || i.itemType === 'Weapon'));
+  }
+
+  get availableExplosives(): BaseItemDto[] {
+    return (this.availableItems || []).filter((i: any) => (i.itemType === 3 || i.itemType === 'Explosive'));
+  }
+
   onSearch(): void {
     this.applyFilters();
   }
@@ -311,6 +337,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     this.isEditMode = false;
     this.currentAssignment = this.getEmptyAssignment();
     this.selectedItemIds = [];
+    this.selectedAmmunitionIds = [];
+    this.selectedWeaponIds = [];
+    this.selectedExplosiveIds = [];
     this.showModal = true;
     // Ensure all items are available when modal opens
     this.availableItems = this.allItems;
@@ -325,6 +354,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       notes: ''
     };
     this.selectedItemIds = [];
+    this.selectedAmmunitionIds = [];
+    this.selectedWeaponIds = [];
+    this.selectedExplosiveIds = [];
     this.showModal = true;
     // Use setTimeout to ensure modal is rendered before setting department
     setTimeout(() => {
@@ -351,6 +383,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     this.currentAssignmentId = 0;
     this.currentAssignment = this.getEmptyAssignment();
     this.selectedItemIds = [];
+    this.selectedAmmunitionIds = [];
+    this.selectedWeaponIds = [];
+    this.selectedExplosiveIds = [];
     // Reset available items to all items
     this.availableItems = this.allItems;
     this.items = this.allItems;
@@ -411,9 +446,14 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
           }
         });
     } else {
-      // Add mode: create multiple assignments for selected items
-      const assignmentsToCreate: CreateUpdateItemDepartmentAssignmentDto[] = this.selectedItemIds
-        .filter(itemId => itemId > 0)
+      // Add mode: combine selections from ammunition, explosives, and weapons dropdowns
+      const combinedItemIds = [
+        ...this.selectedAmmunitionIds,
+        ...this.selectedWeaponIds,
+        ...this.selectedExplosiveIds
+      ].filter(id => id > 0);
+
+      const assignmentsToCreate: CreateUpdateItemDepartmentAssignmentDto[] = combinedItemIds
         .map(itemId => ({
           itemId: itemId,
           departmentId: this.currentAssignment.departmentId,
@@ -576,9 +616,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   validateAssignment(): boolean {
     if (this.isEditMode) {
       return !!(this.currentAssignment.itemId && this.currentAssignment.departmentId);
-    } else {
-      return !!(this.selectedItemIds.length > 0 && this.currentAssignment.departmentId);
     }
+    const totalSelected = this.selectedAmmunitionIds.length + this.selectedWeaponIds.length + this.selectedExplosiveIds.length;
+    return !!(totalSelected > 0 && this.currentAssignment.departmentId);
   }
 
   onItemSelectChange(itemId: number): void {
@@ -590,62 +630,71 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   }
 
   onMultipleItemsChange(itemIds: number[]): void {
-    // Handle multiple selection change from dropdown
-    // Ensure all IDs are numbers for proper comparison
     this.selectedItemIds = (itemIds || []).map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id));
     this.cdr.detectChanges();
   }
 
+  onAmmunitionChange(ids: number[]): void {
+    this.selectedAmmunitionIds = (ids || []).map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id));
+    this.cdr.detectChanges();
+  }
+
+  onWeaponsChange(ids: number[]): void {
+    this.selectedWeaponIds = (ids || []).map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id));
+    this.cdr.detectChanges();
+  }
+
+  onExplosivesChange(ids: number[]): void {
+    this.selectedExplosiveIds = (ids || []).map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id));
+    this.cdr.detectChanges();
+  }
+
   onDepartmentChange(departmentId: number | string): void {
-    // Convert to number if string (from select element)
     const deptId = typeof departmentId === 'string' ? parseInt(departmentId, 10) : Number(departmentId);
-    
-    // When department changes, show all items and pre-check items already assigned to that department
-    if (deptId > 0 && !isNaN(deptId)) {
-      // Show all items
-      this.availableItems = [...this.allItems]; // Create new array reference
-      this.items = [...this.allItems];
-      
-      // Get all items already assigned to this department and pre-select them
-      const departmentAssignments = this.assignments.filter(a => {
-        // Both are numbers, ensure they match
-        return Number(a.departmentId) === deptId;
-      });
-      
-      const assignedItemIds = departmentAssignments.map(a => Number(a.itemId));
-      
-      // Pre-select items that are already assigned to the selected department
-      // Ensure all IDs are numbers for proper comparison and create new array reference
-      const newSelectedIds = assignedItemIds
-        .filter(id => {
-          // Check if item exists in allItems
-          const exists = this.allItems.some(item => {
-            const itemId = Number(item.id);
-            return itemId === id && !isNaN(itemId);
-          });
-          return exists && !isNaN(id) && id > 0;
-        });
-      
-      // Create new array reference to trigger change detection
-      // Sort to ensure consistent order
-      this.selectedItemIds = [...newSelectedIds].sort((a, b) => a - b);
-      
-      // Force change detection immediately and after a brief delay
+
+    this.availableItems = [...this.allItems];
+    this.items = [...this.allItems];
+
+    if (deptId <= 0 || isNaN(deptId)) {
+      this.selectedItemIds = [];
+      this.selectedAmmunitionIds = [];
+      this.selectedWeaponIds = [];
+      this.selectedExplosiveIds = [];
       this.cdr.markForCheck();
       this.cdr.detectChanges();
-      
-      // Also trigger after a delay to ensure dropdown component receives the update
+      return;
+    }
+
+    const runSelections = () => {
+      const departmentAssignments = this.assignmentsByDepartment.get(deptId) || [];
+      const assignedItemIds = departmentAssignments.map(a => Number(a.itemId));
+      const newSelectedIds = assignedItemIds
+        .filter(id => this.allItems.some(item => Number(item.id) === id && !isNaN(id) && id > 0));
+      this.selectedItemIds = [...newSelectedIds].sort((a, b) => a - b);
+      this.selectedAmmunitionIds = departmentAssignments
+        .filter(a => this.isAmmunitionType(a.itemType))
+        .map(a => Number(a.itemId))
+        .filter(id => this.allItems.some((item: any) => Number(item.id) === id));
+      this.selectedWeaponIds = departmentAssignments
+        .filter(a => this.isWeaponType(a.itemType))
+        .map(a => Number(a.itemId))
+        .filter(id => this.allItems.some((item: any) => Number(item.id) === id));
+      this.selectedExplosiveIds = departmentAssignments
+        .filter(a => this.isExplosiveType(a.itemType))
+        .map(a => Number(a.itemId))
+        .filter(id => this.allItems.some((item: any) => Number(item.id) === id));
+      this.cdr.markForCheck();
+      this.cdr.detectChanges();
       setTimeout(() => {
         this.cdr.markForCheck();
         this.cdr.detectChanges();
       }, 50);
+    };
+
+    if (this.assignmentsByDepartment.has(deptId)) {
+      runSelections();
     } else {
-      // If no department selected, show all items and clear selection
-      this.availableItems = [...this.allItems];
-      this.items = [...this.allItems];
-      this.selectedItemIds = [];
-      this.cdr.markForCheck();
-      this.cdr.detectChanges();
+      this.loadAssignmentsForDepartment(deptId, runSelections);
     }
   }
 
@@ -711,6 +760,16 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   // Helper methods for template
   getLocalizedName(dept: any): string {
     return getLocalizedName(dept, getCurrentLang(this.translateService)) || '';
+  }
+
+  /** Label for department option in app-dropdown (bound to preserve this). */
+  getDepartmentOptionLabel = (option: any): string => this.getLocalizedName(option);
+
+  /** Display name for a department summary row (from summary API). */
+  getSummaryDepartmentName(summary: DepartmentAssignmentSummaryDto): string {
+    const lang = getCurrentLang(this.translateService);
+    if (lang === 'ar' && summary.departmentNameAr) return summary.departmentNameAr;
+    return summary.departmentNameEn || summary.departmentNameAr || '';
   }
 
   getCurrentLang(): string {

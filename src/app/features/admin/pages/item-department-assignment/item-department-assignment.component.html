@@ -41,64 +41,58 @@
             <thead>
               <tr class="border-b-2 border-[var(--color-border)] bg-[var(--color-background-muted)]">
                 <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.department' | translate }}</th>
-                <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemsAssigned' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</th>
                 <th class="px-6 py-4 text-end text-sm font-semibold text-[var(--color-text)]">{{ 'common.actions' | translate }}</th>
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let dept of paginatedDepartments">
-                <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <ng-container *ngFor="let summary of paginatedSummaries">
+                <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
+                  (click)="toggleDepartmentItems(summary.departmentId)">
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
-                      <button (click)="toggleDepartmentItems(dept.id)"
+                      <button type="button" (click)="toggleDepartmentItems(summary.departmentId); $event.stopPropagation()"
                         class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
                         <lucide-icon 
-                          [img]="isDepartmentExpanded(dept.id) ? ChevronDown : ChevronRight" 
+                          [img]="isDepartmentExpanded(summary.departmentId) ? ChevronDown : ChevronRight" 
                           [size]="20"
                           class="text-[var(--color-text-muted)]">
                         </lucide-icon>
                       </button>
                       <span class="text-base font-semibold text-[var(--color-text)]">
-                        {{ getLocalizedName(dept) }}
+                        {{ getSummaryDepartmentName(summary) }}
                       </span>
                     </div>
                   </td>
-                  <td class="px-6 py-4">
-                    <span class="text-sm text-[var(--color-text-muted)]">
-                      <ng-container *ngIf="getDepartmentAssignmentCount(dept.id) === 0">
-                        0 {{ 'itemDepartmentAssignment.itemsAssigned' | translate }}
-                      </ng-container>
-                      <ng-container *ngIf="getDepartmentAssignmentCount(dept.id) > 0">
-                        <ng-container *ngIf="getDepartmentAmmunitionCount(dept.id) > 0">
-                          {{ getDepartmentAmmunitionCount(dept.id) }} {{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}
-                        </ng-container>
-                        <ng-container *ngIf="getDepartmentWeaponsCount(dept.id) > 0">
-                          <span *ngIf="getDepartmentAmmunitionCount(dept.id) > 0">, </span>{{ getDepartmentWeaponsCount(dept.id) }} {{ 'itemDepartmentAssignment.weaponsLabel' | translate }}
-                        </ng-container>
-                        <ng-container *ngIf="getDepartmentExplosivesCount(dept.id) > 0">
-                          <span *ngIf="getDepartmentAmmunitionCount(dept.id) + getDepartmentWeaponsCount(dept.id) > 0">, </span>{{ getDepartmentExplosivesCount(dept.id) }} {{ 'itemDepartmentAssignment.explosivesLabel' | translate }}
-                        </ng-container>
-                      </ng-container>
-                    </span>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">
+                    {{ summary.ammunitionCount }}
+                  </td>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">
+                    {{ summary.explosivesCount }}
+                  </td>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">
+                    {{ summary.weaponsCount }}
                   </td>
                   <td class="px-6 py-4 text-end">
-                    <button 
-                      (click)="toggleDepartmentItems(dept.id)"
+                    <button type="button"
+                      (click)="toggleDepartmentItems(summary.departmentId); $event.stopPropagation()"
                       class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
-                      {{ isDepartmentExpanded(dept.id) ? ('itemDepartmentAssignment.hideItems' | translate) : ('itemDepartmentAssignment.showItems' | translate) }}
+                      {{ isDepartmentExpanded(summary.departmentId) ? ('itemDepartmentAssignment.hideItems' | translate) : ('itemDepartmentAssignment.showItems' | translate) }}
                     </button>
                   </td>
                 </tr>
                 <!-- Items List (Expanded) -->
-                <tr *ngIf="isDepartmentExpanded(dept.id)">
-                  <td colspan="3" class="p-0 bg-[var(--color-background-muted)]">
+                <tr *ngIf="isDepartmentExpanded(summary.departmentId)">
+                  <td colspan="5" class="p-0 bg-[var(--color-background-muted)]">
                     <div class="p-6">
                       <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
                           {{ 'itemDepartmentAssignment.assignmentDetails' | translate }}
                         </h3>
                         <button *ngIf="isSuperAdmin" 
-                          (click)="openAddModalForDepartment(dept.id)"
+                          (click)="openAddModalForDepartment(summary.departmentId)"
                           class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
                           <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
                           {{ 'itemDepartmentAssignment.addItems' | translate }}
@@ -119,7 +113,7 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr *ngFor="let assignment of getDepartmentAssignments(dept.id)"
+                              <tr *ngFor="let assignment of getDepartmentAssignments(summary.departmentId)"
                                 class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
                                 <td class="px-4 py-3 text-sm text-start">
                                   <button type="button" (click)="navigateToAssetDetails(assignment)"
@@ -146,7 +140,7 @@
                                   </button>
                                 </td>
                               </tr>
-                              <tr *ngIf="getDepartmentAssignments(dept.id).length === 0">
+                              <tr *ngIf="getDepartmentAssignments(summary.departmentId).length === 0">
                                 <td colspan="7" class="px-4 py-8 text-center">
                                   <p class="text-[var(--color-text-secondary)]">
                                     {{ 'itemDepartmentAssignment.noItemsForDepartment' | translate }}
@@ -161,8 +155,8 @@
                   </td>
                 </tr>
               </ng-container>
-              <tr *ngIf="filteredDepartments.length === 0">
-                <td colspan="3" class="px-6 py-12 text-center">
+              <tr *ngIf="filteredSummaries.length === 0">
+                <td colspan="5" class="px-6 py-12 text-center">
                   <p class="text-[var(--color-text-secondary)]">
                     {{ searchTerm ? ('itemDepartmentAssignment.noDepartmentsFound' | translate) : ('itemDepartmentAssignment.noDepartments' | translate) }}
                   </p>
@@ -173,10 +167,10 @@
         </div>
       </div>
       <!-- Pagination Footer -->
-      <div *ngIf="filteredDepartments.length > 0 && !loading"
+      <div *ngIf="filteredSummaries.length > 0 && !loading"
         class="border-t-2 border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredDepartments.length"
-          [visibleItems]="paginatedDepartments.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredSummaries.length"
+          [visibleItems]="paginatedSummaries.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
         <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
@@ -212,27 +206,25 @@
           <!-- Department Selection (First) -->
           <div>
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.department' | translate }} *</label>
-            <select [(ngModel)]="currentAssignment.departmentId" name="departmentId" required
+            <app-dropdown
+              class="w-full"
+              [(ngModel)]="currentAssignment.departmentId"
+              name="departmentId"
+              required
               (ngModelChange)="onDepartmentChange($event)"
-              class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
-              <option [value]="0">{{ 'itemDepartmentAssignment.selectDepartment' | translate }}</option>
-              <option *ngFor="let dept of departments" [value]="dept.id">
-                {{ getLocalizedName(dept) }}
-              </option>
-            </select>
+              [options]="departments"
+              [optionLabelFn]="getDepartmentOptionLabel"
+              optionValue="id"
+              [placeholder]="'itemDepartmentAssignment.selectDepartment' | translate"
+              [placeholderSelectable]="true"
+              [placeholderValue]="0">
+            </app-dropdown>
           </div>
 
-          <!-- Item Selection (Second) -->
-          <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-              {{ 'itemDepartmentAssignment.item' | translate }} *
-              <span *ngIf="!isEditMode" class="text-xs text-[var(--color-text-muted)] ml-2">
-                ({{ 'itemDepartmentAssignment.selectMultiple' | translate }})
-              </span>
-            </label>
-            
-            <!-- Single select dropdown for edit mode -->
-            <app-dropdown *ngIf="isEditMode" 
+          <!-- Item Selection: single dropdown in edit mode -->
+          <div *ngIf="isEditMode">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.item' | translate }} *</label>
+            <app-dropdown 
               class="w-full" 
               [(ngModel)]="currentAssignment.itemId" 
               name="itemId" 
@@ -243,28 +235,59 @@
               optionValue="id"
               [placeholder]="'itemDepartmentAssignment.selectItem' | translate">
             </app-dropdown>
+          </div>
 
-            <!-- Multi-select dropdown for add mode -->
-            <app-dropdown *ngIf="!isEditMode" 
-              class="w-full" 
-              [(ngModel)]="selectedItemIds" 
-              name="selectedItemIds" 
-              required
-              (ngModelChange)="onMultipleItemsChange($event)"
-              [options]="availableItems" 
-              optionLabel="displayLabel" 
-              optionValue="id"
-              [multiple]="true"
-              [disabled]="currentAssignment.departmentId === 0 || availableItems.length === 0"
-              [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectItems' | translate)">
-            </app-dropdown>
-            <p *ngIf="currentAssignment.departmentId > 0 && availableItems.length > 0" class="mt-1 text-xs text-[var(--color-text-muted)]">
+          <!-- Separate item dropdowns for add mode: Ammunition, Explosives, Weapons -->
+          <ng-container *ngIf="!isEditMode">
+            <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</label>
+              <app-dropdown 
+                class="w-full" 
+                [(ngModel)]="selectedAmmunitionIds" 
+                name="selectedAmmunitionIds" 
+                (ngModelChange)="onAmmunitionChange($event)"
+                [options]="availableAmmunition" 
+                optionLabel="displayLabel" 
+                optionValue="id"
+                [multiple]="true"
+                [disabled]="currentAssignment.departmentId === 0 || availableAmmunition.length === 0"
+                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectAmmunition' | translate)">
+              </app-dropdown>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</label>
+              <app-dropdown 
+                class="w-full" 
+                [(ngModel)]="selectedExplosiveIds" 
+                name="selectedExplosiveIds" 
+                (ngModelChange)="onExplosivesChange($event)"
+                [options]="availableExplosives" 
+                optionLabel="displayLabel" 
+                optionValue="id"
+                [multiple]="true"
+                [disabled]="currentAssignment.departmentId === 0 || availableExplosives.length === 0"
+                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectExplosives' | translate)">
+              </app-dropdown>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</label>
+              <app-dropdown 
+                class="w-full" 
+                [(ngModel)]="selectedWeaponIds" 
+                name="selectedWeaponIds" 
+                (ngModelChange)="onWeaponsChange($event)"
+                [options]="availableWeapons" 
+                optionLabel="displayLabel" 
+                optionValue="id"
+                [multiple]="true"
+                [disabled]="currentAssignment.departmentId === 0 || availableWeapons.length === 0"
+                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectWeapons' | translate)">
+              </app-dropdown>
+            </div>
+            <p *ngIf="currentAssignment.departmentId > 0" class="mt-1 text-xs text-[var(--color-text-muted)]">
               {{ 'itemDepartmentAssignment.allItemsShown' | translate }}. {{ 'itemDepartmentAssignment.checkboxesIndicateAssigned' | translate }}
             </p>
-            <p *ngIf="currentAssignment.departmentId > 0 && selectedItemIds.length > 0" class="mt-1 text-xs text-[var(--color-brand)]">
-              {{ selectedItemIds.length }} {{ 'itemDepartmentAssignment.itemsAlreadyAssigned' | translate }}
-            </p>
-          </div>
+          </ng-container>
 
           <!-- Notes -->
           <div>

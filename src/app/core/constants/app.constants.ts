@@ -178,6 +178,7 @@ export const API_ENDPOINTS = {
   // Item Assignment Management
   ITEM_DEPARTMENT_ASSIGNMENT: {
     BASE: '/ItemDepartmentAssignment',
+    SUMMARY: '/ItemDepartmentAssignment/summary',
     BY_DEPARTMENT: (departmentId: number) => `/ItemDepartmentAssignment/department/${departmentId}`,
     BY_ITEM: (itemId: number) => `/ItemDepartmentAssignment/item/${itemId}`,
     BULK: '/ItemDepartmentAssignment/bulk',

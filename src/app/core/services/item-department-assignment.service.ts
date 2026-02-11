@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { ItemDepartmentAssignmentDto, CreateUpdateItemDepartmentAssignmentDto } from '@models/item-department-assignment.model';
+import { ItemDepartmentAssignmentDto, CreateUpdateItemDepartmentAssignmentDto, DepartmentAssignmentSummaryDto } from '@models/item-department-assignment.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 
 @Injectable({
@@ -14,6 +14,12 @@ export class ItemDepartmentAssignmentService {
   getAll(): Observable<APIOperationResponse<ItemDepartmentAssignmentDto[]>> {
     return this.apiService.getWithAuth<APIOperationResponse<ItemDepartmentAssignmentDto[]>>(
       API_ENDPOINTS.ITEM_DEPARTMENT_ASSIGNMENT.BASE
+    );
+  }
+
+  getDepartmentSummaries(): Observable<APIOperationResponse<DepartmentAssignmentSummaryDto[]>> {
+    return this.apiService.getWithAuth<APIOperationResponse<DepartmentAssignmentSummaryDto[]>>(
+      API_ENDPOINTS.ITEM_DEPARTMENT_ASSIGNMENT.SUMMARY
     );
   }
 
