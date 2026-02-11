@@ -1,3 +1,4 @@
+
 # ETTAD Frontend Application
 
 **Integrated Inventory Management System - Frontend**
@@ -384,3 +385,5 @@ Developed by the Flora development team.
 **Last Updated:** Sprint 1 Delivery  
 **Version:** 1.0.0
 
+=======
+# EttadFrontEnd
