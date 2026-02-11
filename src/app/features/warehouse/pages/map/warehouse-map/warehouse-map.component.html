@@ -1,0 +1,205 @@
+<div class="min-h-screen bg-[var(--color-background-muted)]">
+  <!-- Header Section -->
+  <div class="bg-[var(--color-background)] border-b border-[var(--color-border)] shadow-custom-sm">
+    <div class="px-6 py-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <button 
+            (click)="onBack()"
+            class="flex items-center justify-center w-10 h-10 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-all duration-200">
+            <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+          </button>
+          <div>
+            <h1 class="text-2xl font-bold text-[var(--color-text)]">
+              {{ 'warehouseMap.title' | translate }}
+            </h1>
+            <p class="text-sm text-[var(--color-text-muted)] mt-1">
+              {{ 'warehouseMap.subtitle' | translate }}
+            </p>
+          </div>
+        </div>
+        
+        <!-- Statistics Badge -->
+        <div class="flex items-center space-x-2 px-4 py-2 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+          <span class="text-sm text-[var(--color-text-muted)]">{{ 'warehouseMap.totalWarehouses' | translate }}:</span>
+          <span class="text-sm font-semibold text-[var(--color-text)]">{{ warehouses.length }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="p-6">
+    <!-- Loading State -->
+    <app-loading-state 
+      *ngIf="loading"
+      message="warehouseMap.loadingLocations"
+      size="lg"
+      containerClass="flex flex-col justify-center items-center py-32">
+    </app-loading-state>
+
+    <!-- Content Grid -->
+    <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <!-- Left Sidebar: Warehouse List -->
+      <div class="lg:col-span-1">
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border-2 border-[var(--color-border)] overflow-hidden">
+          <!-- Sidebar Header -->
+          <div class="bg-[var(--color-background-muted)] px-6 py-4 border-b border-[var(--color-border)]">
+            <h2 class="text-base font-semibold text-[var(--color-text)]">{{ 'warehouseMap.warehouses' | translate }}</h2>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ warehouses.length }} {{ 'warehouseMap.locationsAvailable' | translate }}</p>
+          </div>
+
+          <!-- Warehouse List -->
+          <div class="p-4 max-h-[calc(100vh-300px)] overflow-y-auto">
+            <div class="space-y-2">
+              <!-- Empty State -->
+              <div *ngIf="warehouses.length === 0" class="text-center py-12">
+                <div class="w-16 h-16 mx-auto mb-4 bg-[var(--color-background-active)] rounded-full flex items-center justify-center">
+                  <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </div>
+                <p class="text-sm text-[var(--color-text-muted)]">{{ 'warehouseMap.noWarehouses' | translate }}</p>
+              </div>
+
+              <!-- Warehouse Items -->
+              <div 
+                *ngFor="let warehouse of warehouses; let i = index"
+                (click)="selectWarehouse(warehouse.id)"
+                [ngClass]="{
+                  'bg-[var(--color-brand)]/10': selectedWarehouse === warehouse.id,
+                  'border-[var(--color-brand)]': selectedWarehouse === warehouse.id,
+                  'shadow-custom-md': selectedWarehouse === warehouse.id
+                }"
+                class="relative px-4 py-4 rounded-lg border-2 border-transparent hover:border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-all duration-200 cursor-pointer group bg-[var(--color-background-active)]">
+                
+                <!-- Selected Indicator -->
+                <div 
+                  *ngIf="selectedWarehouse === warehouse.id"
+                  class="absolute start-0 top-0 bottom-0 w-1 bg-[var(--color-brand)] rounded-s-lg"></div>
+
+                <!-- Warehouse Content -->
+                <div class="flex items-start justify-between">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2 mb-1">
+                      <div 
+                        [class.bg-green-500]="warehouse.color === 'green'"
+                        [class.bg-orange-500]="warehouse.color === 'orange'"
+                        [class.bg-red-500]="warehouse.color === 'red'"
+                        class="w-3 h-3 rounded-full flex-shrink-0"></div>
+                      <p class="text-sm font-semibold text-[var(--color-text)] truncate">
+                        {{ warehouse.code }}
+                      </p>
+                    </div>
+                    <p class="text-xs text-[var(--color-text-muted)] truncate">{{ warehouse.location }}</p>
+                    <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ warehouse.name }}</p>
+                    <p class="text-xs text-[var(--color-text-muted)]/70 mt-1 font-mono">
+                      {{ warehouse.latitude.toFixed(4) }}°N, {{ warehouse.longitude.toFixed(4) }}°E
+                    </p>
+                  </div>
+                  
+                  <!-- Status Badge -->
+                  <div 
+                    [ngClass]="{
+                      'bg-[var(--color-success)]/20': warehouse.isActive,
+                      'text-[var(--color-success)]': warehouse.isActive,
+                      'bg-[var(--color-background-muted)]': !warehouse.isActive,
+                      'text-[var(--color-text-muted)]': !warehouse.isActive
+                    }"
+                    class="px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ms-2 border border-[var(--color-border)]/30">
+                    {{ warehouse.isActive ? ('warehouseMap.active' | translate) : ('warehouseMap.inactive' | translate) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Map Container -->
+      <div class="lg:col-span-2">
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+          <!-- Map Header -->
+          <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+            <h2 class="text-base font-semibold text-[var(--color-text)]">{{ 'warehouseMap.qatarMap' | translate }}</h2>
+            <p class="text-xs text-[var(--color-text-muted)] mt-1">
+              Interactive map of Qatar • Click markers for details • Fixed warehouse locations
+            </p>
+          </div>
+
+          <!-- Leaflet Map Container -->
+          <div 
+            #mapContainer 
+            class="leaflet-map-container" 
+            style="height: 700px; width: 100%;">
+          </div>
+        </div>
+
+        <!-- Selected Warehouse Info Card -->
+        <div *ngIf="selectedWarehouse" class="mt-6 bg-[var(--color-background)] rounded-xl shadow-custom-sm border-2 border-[var(--color-border)] p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'warehouseMap.warehouseDetails' | translate }}</h3>
+            <button
+              (click)="selectedWarehouse = null"
+              class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div *ngIf="getSelectedWarehouse()" class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.code' | translate }}</p>
+              <p class="text-sm font-medium text-[var(--color-text)]">{{ getSelectedWarehouse()?.code }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.location' | translate }}</p>
+              <p class="text-sm font-medium text-[var(--color-text)]">{{ getSelectedWarehouse()?.location }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.name' | translate }}</p>
+              <p class="text-sm font-medium text-[var(--color-text)]">{{ getSelectedWarehouse()?.name }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.status' | translate }}</p>
+              <span 
+                [ngClass]="{
+                  'bg-[var(--color-success)]/20': getSelectedWarehouse()?.isActive,
+                  'text-[var(--color-success)]': getSelectedWarehouse()?.isActive,
+                  'bg-[var(--color-background-muted)]': !getSelectedWarehouse()?.isActive,
+                  'text-[var(--color-text-muted)]': !getSelectedWarehouse()?.isActive
+                }"
+                class="inline-flex px-2 py-1 rounded-full text-xs font-medium border border-[var(--color-border)]/30">
+                {{ getSelectedWarehouse()?.isActive ? ('warehouseMap.active' | translate) : ('warehouseMap.inactive' | translate) }}
+              </span>
+            </div>
+            <div *ngIf="getSelectedWarehouse() as warehouse">
+              <div *ngIf="warehouse.latitude">
+                <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.latitude' | translate }}</p>
+                <p class="text-sm font-mono font-medium text-[var(--color-text)]">{{ warehouse.latitude.toFixed(6) }}°</p>
+              </div>
+            </div>
+            <div *ngIf="getSelectedWarehouse() as warehouse">
+              <div *ngIf="warehouse.longitude">
+                <p class="text-xs text-[var(--color-text-muted)] mb-1">{{ 'warehouseMap.longitude' | translate }}</p>
+                <p class="text-sm font-mono font-medium text-[var(--color-text)]">{{ warehouse.longitude.toFixed(6) }}°</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- View Inventory Button -->
+          <div *ngIf="getSelectedWarehouse()" class="mt-6 pt-4 border-t border-[var(--color-border)]">
+            <button 
+              (click)="navigateToWarehouseInventory(getSelectedWarehouse()!.id)"
+              class="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200">
+              <span>{{ 'warehouse.viewInventory' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

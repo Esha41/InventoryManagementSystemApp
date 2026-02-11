@@ -1,0 +1,68 @@
+<app-modal [isOpen]="isOpen" [title]="title" (closed)="close()" [scrollable]="false">
+  <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Role Names (Localized) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Role Name (EN) -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'roleFormModal.nameEn' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" formControlName="nameEn" [placeholder]="'roleFormModal.nameEnPlaceholder' | translate"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [class.border-[var(--color-error)]]="roleForm.get('nameEn')?.invalid && roleForm.get('nameEn')?.touched" />
+        <p *ngIf="getFieldError('nameEn')" class="mt-2 text-sm text-[var(--color-error)]">
+          {{ getFieldError('nameEn') }}
+        </p>
+      </div>
+
+      <!-- Role Name (AR) -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'roleFormModal.nameAr' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" formControlName="nameAr" [placeholder]="'roleFormModal.nameArPlaceholder' | translate"
+          class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+          [class.border-[var(--color-error)]]="roleForm.get('nameAr')?.invalid && roleForm.get('nameAr')?.touched" />
+        <p *ngIf="getFieldError('nameAr')" class="mt-2 text-sm text-[var(--color-error)]">
+          {{ getFieldError('nameAr') }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Super Admin -->
+    <div *ngIf="isSuperAdmin" class="flex items-center gap-2">
+      <input type="checkbox" id="isSuperAdmin" formControlName="isSuperAdmin"
+        class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
+      <label for="isSuperAdmin" class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'roleFormModal.superAdmin' | translate }}
+      </label>
+    </div>
+
+    <!-- Admin (Limited) -->
+    <div class="flex items-center gap-2">
+      <input type="checkbox" id="isAdmin" formControlName="isAdmin"
+        class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20" />
+      <label for="isAdmin" class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'roleFormModal.admin' | translate }}
+      </label>
+    </div>
+
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage"
+      class="bg-[var(--color-error)]/10 border border-[var(--color-error)] text-[var(--color-error)] px-4 py-3 rounded-lg">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 pt-4">
+      <app-button type="button" variant="secondary" (click)="close()" [disabled]="isLoading">
+        {{ 'common.cancel' | translate }}
+      </app-button>
+      <app-button type="submit" variant="primary" [disabled]="isLoading || roleForm.invalid">
+        {{ isLoading ? ('common.saving' | translate) : (mode === 'create' ? ('roleFormModal.create' | translate) :
+        ('roleFormModal.update' | translate)) }}
+      </app-button>
+    </div>
+  </form>
+</app-modal>

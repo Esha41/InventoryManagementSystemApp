@@ -1,0 +1,57 @@
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-modal-in {
+    animation: modal-in 0.2s ease-out;
+}
+
+/* Ensure modal is above other content */
+:host {
+    display: contents;
+}
+
+/* Icon background colors that adapt to theme using CSS variables with opacity */
+.icon-bg-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.icon-bg-danger {
+    background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.icon-bg-info {
+    background-color: color-mix(in srgb, var(--color-info) 10%, transparent);
+}
+
+.icon-bg-success {
+    background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+[data-theme="dark"] .icon-bg-warning,
+.dark .icon-bg-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+}
+
+[data-theme="dark"] .icon-bg-danger,
+.dark .icon-bg-danger {
+    background-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+}
+
+[data-theme="dark"] .icon-bg-info,
+.dark .icon-bg-info {
+    background-color: color-mix(in srgb, var(--color-info) 20%, transparent);
+}
+
+[data-theme="dark"] .icon-bg-success,
+.dark .icon-bg-success {
+    background-color: color-mix(in srgb, var(--color-success) 20%, transparent);
+}

@@ -1,0 +1,85 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+    </app-loading-state>
+
+    <!-- Content -->
+    <div *ngIf="!loading && orderData && supplyData">
+      <!-- Header with Back Button -->
+      <app-supply-order-header [orderData]="orderData" [supplyData]="supplyData" (backClick)="goBack()">
+      </app-supply-order-header>
+
+      <!-- Main Content -->
+      <div class="space-y-6">
+        <!-- Request Information -->
+        <app-supply-order-info [orderData]="orderData"></app-supply-order-info>
+
+        <!-- Order Items Management Table -->
+        <app-order-items-management [orderItems]="orderItems" (addItemClick)="openAddOrderItemModal()"
+          (editItemClick)="openEditOrderItemModal($event)" (removeItemClick)="openRemoveOrderItemModal($event)">
+        </app-order-items-management>
+
+        <!-- Approval Workflow -->
+        <!-- Commented out - using workflow approval in workflow-approval-detail page instead -->
+        <!-- <app-approval-workflow
+          [approvalHistory]="displayApprovalHistory"
+          [isExpanded]="isApprovalWorkflowExpanded">
+        </app-approval-workflow> -->
+
+        <!-- Order Items (Pre-filled from Supply Details) -->
+        <app-supply-items-list [supplyItems]="supplyItems" [supplyId]="supplyId" [updatingItem]="updatingItem"
+          [deletingItem]="deletingItem" (addLotClick)="openAddLotModal()" (editItem)="onEditItem($event)"
+          (updateItem)="onUpdateItem($event)" (cancelEdit)="onCancelEdit($event)" (deleteItem)="onDeleteItem($event)">
+        </app-supply-items-list>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Lot Modal -->
+  <app-add-lot-modal [isOpen]="isAddLotModalOpen" [supplyId]="supplyId" [orderItems]="orderItems"
+    (closed)="closeAddLotModal()" (lotAdded)="onLotAdded()">
+  </app-add-lot-modal>
+
+  <!-- Confirmation Modal -->
+  <app-modal [isOpen]="isConfirmModalOpen" [title]="confirmModalTitle" size="sm" (closed)="onCancelConfirmation()">
+
+    <div class="py-4">
+      <div class="flex items-start gap-3 mb-4">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--color-warning)]/20 flex items-center justify-center">
+          <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-[var(--color-warning)]"></lucide-angular>
+        </div>
+        <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ confirmModalMessage }}</p>
+      </div>
+    </div>
+
+    <div modal-footer class="flex gap-3">
+      <button (click)="onCancelConfirmation()"
+        class="flex-1 px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button (click)="onConfirmAction()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-error)] hover:bg-[var(--color-error)]/90 transition-colors">
+        {{ 'common.confirm' | translate }}
+      </button>
+    </div>
+  </app-modal>
+
+  <!-- Add Order Item Modal -->
+  <app-add-order-item-modal [isOpen]="isAddItemModalOpen" [orderId]="orderId" [orderItems]="orderItems"
+    (closed)="closeAddOrderItemModal()" (itemAdded)="onOrderItemAdded()">
+  </app-add-order-item-modal>
+
+  <!-- Edit Order Item Quantity Modal -->
+  <app-edit-order-item-modal [isOpen]="isEditItemModalOpen" [orderId]="orderId" [selectedItem]="selectedItemForEdit"
+    [totalSupplied]="getTotalSupplied(selectedItemForEdit)" (closed)="closeEditOrderItemModal()"
+    (itemUpdated)="onOrderItemUpdated()">
+  </app-edit-order-item-modal>
+
+  <!-- Remove Order Item Confirmation Modal -->
+  <app-confirm-dialog [isOpen]="isRemoveItemModalOpen" [title]="'supplyOrder.removeItem' | translate"
+    [message]="('supplyOrder.removeItemConfirm' | translate) + ' ' + (selectedItemForRemove?.itemName || '') + '?'"
+    [confirmText]="'common.remove' | translate" [cancelText]="'common.cancel' | translate" confirmVariant="danger"
+    (confirmed)="onConfirmRemoveOrderItem()" (cancelled)="closeRemoveOrderItemModal()">
+  </app-confirm-dialog>

@@ -1,0 +1,19 @@
+/* Custom styles for inventory detail page */
+
+/* Smooth scrolling for the entire page */
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* Custom hover effects for table rows */
+table tbody tr:hover {
+  background-color: rgba(243, 244, 246, 0.5);
+}
+
+/* Ensure consistent text rendering */
+p, span, div {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+

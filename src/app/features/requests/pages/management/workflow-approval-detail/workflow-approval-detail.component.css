@@ -1,0 +1,206 @@
+/* Workflow Approval Detail Component Styles */
+
+/* Enhanced card hover effects */
+.bg-\[var\(--color-background\)\] {
+  transition: all var(--transition-base);
+}
+
+.bg-\[var\(--color-background\)\]:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Smooth transitions for interactive elements */
+button,
+input,
+textarea {
+  transition: all var(--transition-base);
+}
+
+/* Enhanced focus states */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Table row hover enhancement */
+tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+/* Badge animations */
+span[class*="rounded"] {
+  transition: all var(--transition-fast);
+}
+
+/* Loading spinner enhancement */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Approval workflow timeline enhancement */
+.approval-workflow-container {
+  position: relative;
+}
+
+/* Circle styling for approval status */
+.approval-circle {
+  position: relative;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+.approval-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Approved status circle */
+.approval-circle.approved {
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.approved .lucide-angular {
+  color: var(--color-success);
+}
+
+/* Pending status circle */
+.approval-circle.pending {
+  border-color: var(--color-warning) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.pending .lucide-angular {
+  color: var(--color-warning);
+}
+
+/* Rejected status circle */
+.approval-circle.rejected {
+  border-color: var(--color-error) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.rejected .lucide-angular {
+  color: var(--color-error);
+}
+
+/* Submitted status circle */
+.approval-circle.submitted {
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.submitted .lucide-angular {
+  color: var(--color-success);
+}
+
+/* Connection line styling */
+.approval-connector-line {
+  position: absolute;
+  left: 1.5rem;
+  /* 24px - aligns with circle center (w-12 = 48px, center = 24px) */
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-border) 0%, var(--color-border-muted) 50%, var(--color-border) 100%);
+  z-index: 1;
+  border-radius: 1px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* Refined Action Buttons Sizing and Styles */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  width: 100%;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Approve Button - Subtle Success */
+.btn-approve {
+  background-color: var(--color-success);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-approve:hover {
+  background-color: #059669;
+  /* Slightly darker success */
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Reject Button - Subtle Danger */
+.btn-reject {
+  background-color: transparent;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-reject:hover {
+  background-color: var(--color-error);
+  color: white;
+}
+
+/* Return Button - Subtle Info */
+.btn-return {
+  background-color: transparent;
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.btn-return:hover {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* Dropdown Panel Enhancement */
+.return-dropdown-panel {
+  transform-origin: bottom;
+  animation: dropdownAppear 0.2s ease-out;
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

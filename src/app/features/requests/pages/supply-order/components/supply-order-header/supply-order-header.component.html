@@ -1,0 +1,17 @@
+<div class="mb-6 flex items-center justify-between">
+  <div class="flex items-center gap-4">
+    <button (click)="onBackClick()"
+      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border-2 border-[var(--color-border)]">
+      <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+    </button>
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">
+        {{ 'supplyOrder.title' | translate }} - {{ orderData?.requestNo || orderData?.orderNo }}
+      </h1>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">
+        {{ 'supplyOrder.supplyId' | translate }}: #{{ supplyData?.id }}
+      </p>
+    </div>
+  </div>
+</div>
+

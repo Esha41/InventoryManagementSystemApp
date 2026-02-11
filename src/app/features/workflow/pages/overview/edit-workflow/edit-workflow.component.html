@@ -1,0 +1,212 @@
+<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+  <!-- Header -->
+  <div class="mb-6 relative flex items-center justify-center">
+    <button (click)="onCancel()"
+      class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors absolute start-0"
+      title="{{ 'common.back' | translate }}">
+      <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+    </button>
+    <h1 class="text-2xl font-bold text-[var(--color-text)] text-center w-full">{{ 'workflow.editWorkflow' | translate }}
+    </h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading"
+    class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-12 text-center">
+    <p>{{ 'common.loading' | translate }}...</p>
+  </div>
+
+  <!-- Form Card -->
+  <div *ngIf="!loading && editForm"
+    class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-6 w-full max-w-full overflow-x-hidden">
+    <!-- Error Message -->
+    <div *ngIf="errorMessage"
+      class="mb-4 p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 rounded-lg flex items-center justify-between">
+      <span class="text-[var(--color-error)] text-sm">{{ errorMessage }}</span>
+      <button (click)="errorMessage = null" class="text-[var(--color-error)] hover:text-[var(--color-error)]/80">
+        <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+      </button>
+    </div>
+
+    <form (ngSubmit)="saveEdit()" class="space-y-6">
+      <!-- Name Field -->
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" style="text-transform: none !important;">
+          {{ 'workflow.name' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <input type="text" [(ngModel)]="editForm.name" name="name" required
+          placeholder="{{ 'workflow.namePlaceholder' | translate }}"
+          class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-[var(--color-background)] text-[var(--color-text)]" />
+      </div>
+
+      <!-- Workflow Type Dropdown -->
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" style="text-transform: none !important;">
+          {{ 'workflow.workflowType' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="editWorkflowType" name="workflowType" required
+          [options]="workflowTypes" optionLabel="name" optionValue="id"
+          placeholder="{{ 'workflow.workflowType' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Status Dropdown -->
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" style="text-transform: none !important;">
+          {{ 'workflow.status' | translate }} <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="editForm.status" name="status" required
+          [options]="workflowStatusOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+          placeholder="{{ 'workflow.status' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Steps Section -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between mb-3">
+          <label class="block text-sm font-medium text-[var(--color-text)]">{{ 'workflow.steps' | translate }}</label>
+          <button type="button" (click)="addEditStep()"
+            class="px-3 py-1.5 text-sm rounded-lg bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)]">
+            {{ 'workflow.addStep' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="editSteps.length > 0" class="edit-steps-table-wrapper" [class.has-open-dropdown]="hasOpenDropdown">
+          <div class="edit-steps-table-scroll-container" [class.dropdown-open]="hasOpenDropdown">
+            <table class="edit-steps-table min-w-full border text-sm">
+              <thead class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
+                <tr>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 60px;">#</th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 200px;">{{
+                    'workflow.role' | translate }}</th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 200px;">{{
+                    'workflow.applicationEntity' | translate }}</th>
+                  <!-- Higher Approval columns - commented out as not in use -->
+                  <!-- <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 150px;">{{
+                    'workflow.higherApproval' | translate }}</th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 200px;">{{
+                    'workflow.higherApprovalRole' | translate }}</th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 200px;">{{
+                    'workflow.higherApprovalEntity' | translate }}</th> -->
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 120px;">
+                    {{ 'workflow.canReturn' | translate }}
+                  </th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 180px;">
+                    {{ 'workflow.skipTo' | translate }}
+                  </th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 220px;">
+                    {{ 'workflow.rolesToBeNotified' | translate }}
+                    <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
+                      'workflow.whenApproveRejectReturn' |
+                      translate }}</span>
+                  </th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 220px;">
+                    {{ 'workflow.usersToBeNotified' | translate }}
+                    <span class="block text-xs font-normal text-[var(--color-text-muted)]">{{
+                      'workflow.whenApproveRejectReturn' | translate }}</span>
+                  </th>
+                  <th class="px-4 py-3 text-end" style="min-width: 100px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of editSteps; let i = index"
+                  class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+                  <td class="px-4 py-3 text-sm">{{ orderLabel(i + 1) }}</td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.roleId" name="erole-{{i}}" [options]="roles"
+                      optionLabel="name" optionValue="id" [placeholder]="'workflow.selectRole' | translate">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}"
+                      [options]="allApplicationEntities" optionLabel="name" optionValue="id"
+                      [placeholder]="'workflow.selectEntity' | translate">
+                    </app-dropdown>
+                  </td>
+                  <!-- Higher Approval columns - commented out as not in use -->
+                  <!-- <td class="px-4 py-3">
+                    <label class="inline-flex items-center gap-2 text-sm">
+                      <input type="checkbox" [(ngModel)]="s.requireHigherApproval" name="erequire-{{i}}"
+                        class="h-4 w-4" />
+                      <span>{{ 'workflow.required' | translate }}</span>
+                    </label>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.higherApprovalRoleId" name="ehigher-{{i}}"
+                      [disabled]="!s.requireHigherApproval" [options]="roles" optionLabel="name" optionValue="id"
+                      placeholder="{{ 'workflow.selectHigherApprovalRole' | translate }}">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.higherApplicationEntityId" name="ehigherEntity-{{i}}"
+                      [disabled]="!s.requireHigherApproval" [options]="allApplicationEntities" optionLabel="name"
+                      optionValue="id" placeholder="{{ 'workflow.applicationEntityPlaceholder' | translate }}">
+                    </app-dropdown>
+                  </td> -->
+                  <td class="px-4 py-3">
+                    <label class="inline-flex items-center gap-2 text-sm">
+                      <input type="checkbox" [(ngModel)]="s.canReturn" name="ecanReturn-{{i}}" class="h-4 w-4" />
+                      <span>{{ 'workflow.canReturn' | translate }}</span>
+                    </label>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.skipToStepIds" (ngModelChange)="onSkipToStepChange(i)"
+                      name="eskipTo-{{i}}" [options]="s.availableNextSteps || []" optionLabel="displayName"
+                      optionValue="id" [multiple]="true"
+                      [disabled]="!s.workflowStepId || !s.availableNextSteps || s.availableNextSteps.length === 0"
+                      placeholder="{{ (s.workflowStepId && s.availableNextSteps && s.availableNextSteps.length > 0) ? ('workflow.selectSkipToSteps' | translate) : (s.workflowStepId ? ('common.loading' | translate) : ('workflow.saveWorkflowFirst' | translate)) }}">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.notifyingRoleIds"
+                      (ngModelChange)="onNotifyingRolesChange(i)" name="enotifyingRoles-{{i}}" [options]="roles"
+                      optionLabel="name" optionValue="id" [multiple]="true"
+                      placeholder="{{ 'workflow.selectNotifyingRoles' | translate }}">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.notifyingUserIds" name="enotifyingUsers-{{i}}"
+                      [options]="s.availableUsers || []" optionLabel="userName" optionValue="id" [multiple]="true"
+                      [disabled]="!s.availableUsers || s.availableUsers.length === 0"
+                      placeholder="{{ (s.availableUsers && s.availableUsers.length > 0) ? ('workflow.selectUsers' | translate) : ('common.loadingUsers' | translate) }}">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3 text-end">
+                    <button type="button"
+                      class="px-3 py-2 border-2 border-[var(--color-border)] rounded text-sm hover:bg-[var(--color-background-hover)] text-[var(--color-text)] transition-colors"
+                      (click)="removeEditStep(i)">{{ 'workflow.delete' | translate }}</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center gap-4 pt-4 border-t-2 border-[var(--color-border)] justify-end">
+        <button type="button" (click)="onCancel()" [disabled]="submitting"
+          class="flex items-center gap-2 px-6 py-2 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg font-medium hover:bg-[var(--color-background-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+          <span>{{ 'common.cancel' | translate }}</span>
+        </button>
+        <button *appHasPermission="'workflow.edit'" type="submit" [disabled]="submitting || !editForm.name"
+          class="flex items-center gap-2 px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <lucide-angular [img]="Save" class="h-4 w-4" *ngIf="!submitting"></lucide-angular>
+          <span *ngIf="submitting">{{ 'common.saving' | translate }}...</span>
+          <span *ngIf="!submitting">{{ 'common.save' | translate }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

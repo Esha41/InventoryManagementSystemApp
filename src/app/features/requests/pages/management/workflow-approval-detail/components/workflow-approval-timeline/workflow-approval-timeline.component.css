@@ -1,0 +1,70 @@
+/* Approval Workflow Timeline Component Styles */
+
+/* Approval workflow timeline enhancement */
+.approval-workflow-container {
+  position: relative;
+}
+
+/* Circle styling for approval status */
+.approval-circle {
+  position: relative;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+.approval-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Approved status circle */
+.approval-circle.approved {
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.approved .lucide-angular {
+  color: var(--color-success);
+}
+
+/* Pending status circle */
+.approval-circle.pending {
+  border-color: var(--color-warning) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.pending .lucide-angular {
+  color: var(--color-warning);
+}
+
+/* Rejected status circle */
+.approval-circle.rejected {
+  border-color: var(--color-error) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.rejected .lucide-angular {
+  color: var(--color-error);
+}
+
+/* Submitted status circle */
+.approval-circle.submitted {
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.submitted .lucide-angular {
+  color: var(--color-success);
+}
+
+/* Connection line styling */
+.approval-connector-line {
+  position: absolute;
+  left: 1.5rem;
+  /* 24px - aligns with circle center (w-12 = 48px, center = 24px) */
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-border) 0%, var(--color-border-muted) 50%, var(--color-border) 100%);
+  z-index: 1;
+  border-radius: 1px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+}

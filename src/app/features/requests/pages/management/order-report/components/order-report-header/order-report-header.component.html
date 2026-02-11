@@ -1,0 +1,15 @@
+<!-- Print Header with Logo and QR Code -->
+<div class="print-header">
+  <div class="print-header-content">
+    <div class="print-logo-center">
+      <img [src]="logoUrl" alt="Organization Logo" class="print-logo" (error)="onLogoError()" />
+    </div>
+    <div class="print-qr-container">
+      <ng-container *ngIf="qrCodeDataUrl">
+        <img [src]="qrCodeDataUrl" alt="Order QR Code" class="print-qr-code" />
+      </ng-container>
+      <p class="print-qr-label">{{ orderId }}</p>
+    </div>
+  </div>
+  <div class="print-divider"></div>
+</div>

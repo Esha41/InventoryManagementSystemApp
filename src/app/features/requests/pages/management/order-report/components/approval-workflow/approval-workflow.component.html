@@ -1,0 +1,35 @@
+<!-- Approval Workflow Section -->
+<section class="print-section" *ngIf="workflow.length > 0">
+  <h2 class="print-section-title">{{ 'requestsManagement.orderReport.section.approvalWorkflow' | translate
+    }}</h2>
+
+  <div class="approval-workflow-cards">
+    <div *ngFor="let step of workflow; let i = index" class="approval-card">
+      <div class="approval-card-header">
+        <span class="approval-step-number">{{ step.step }}</span>
+        <span class="approval-status" [ngClass]="'status-' + step.status">
+          <ng-container [ngSwitch]="step.status">
+            <span *ngSwitchCase="'approved'">{{ 'common.statuses.Approved' | translate }}</span>
+            <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
+            <span *ngSwitchCase="'pending'">{{ 'common.statuses.Pending' | translate }}</span>
+            <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>
+            <span *ngSwitchCase="'returned'">{{ 'common.statuses.Returned' | translate }}</span>
+            <span *ngSwitchCase="'returnedforreview'">{{ 'common.statuses.ReturnedForReview' | translate
+              }}</span>
+            <span *ngSwitchDefault>{{ step.status }}</span>
+          </ng-container>
+        </span>
+      </div>
+      <div class="approval-card-body">
+        <div class="approval-role">{{ step.role }}</div>
+        <div class="approval-approver">{{ step.approver }}</div>
+        <div class="approval-date" *ngIf="step.date">{{ step.date | appDateTime }}</div>
+        <div class="approval-notes"
+          *ngIf="step.notes && step.notes.trim() !== '' && step.notes !== 'Request submitted'">
+          <span class="notes-label">{{ 'requestsManagement.orderReport.table.notes' | translate }}:</span>
+          {{ step.notes }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

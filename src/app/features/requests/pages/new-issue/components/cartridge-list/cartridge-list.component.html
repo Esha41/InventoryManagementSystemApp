@@ -1,0 +1,348 @@
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Left Side - Cartridge List -->
+  <div class="bg-[var(--color-background)] rounded-lg p-6 shadow-sm flex flex-col" style="max-height: 740px;">
+    <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4 flex-shrink-0">
+      <ng-container *ngIf="selectedItemType === 'Ammunition'">{{ 'newIssueRequest.cartridgeList' | translate
+        }}</ng-container>
+      <ng-container *ngIf="selectedItemType === 'Weapon'">{{ 'newIssueRequest.weaponList' | translate }}</ng-container>
+      <ng-container *ngIf="selectedItemType === 'Explosive'">{{ 'newIssueRequest.explosiveList' | translate
+        }}</ng-container>
+    </h2>
+
+    <!-- Search Bar -->
+    <div class="mb-4 flex-shrink-0">
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)" [placeholder]="selectedItemType === 'Ammunition' ? ('newIssueRequest.searchCartridges' | translate) : 
+                       selectedItemType === 'Weapon' ? ('newIssueRequest.searchWeapons' | translate) : 
+                       ('newIssueRequest.searchExplosives' | translate)"
+        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+    </div>
+
+    <div class="space-y-2 overflow-y-auto pe-2 flex-1 min-h-0">
+      <div *ngFor="let cartridge of cartridges" class="p-4 border rounded-lg transition-colors text-sm" [ngClass]="{
+          'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
+          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !(cartridge.selected || pendingCartridgeId === cartridge.id)
+        }">
+        <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p class="text-[var(--color-text)] font-medium">{{ cartridge.name }}</p>
+
+            <!-- Conditional Details based on type (inferred or explicit) -->
+            <div class="mt-1 space-y-1">
+              <!-- Common NSN -->
+              <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
+                {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}
+              </p>
+
+              <!-- Weapon Specific -->
+              <p class="text-xs text-[var(--color-text-muted)]"
+                *ngIf="selectedItemType === 'Weapon' && cartridge.weaponType">
+                {{ 'addAsset.weaponType' | translate }}: {{ cartridge.weaponType }}
+              </p>
+              <p class="text-xs text-[var(--color-text-muted)]"
+                *ngIf="selectedItemType === 'Weapon' && cartridge.caliber">
+                {{ 'addAsset.caliber' | translate }}: {{ cartridge.caliber }}
+              </p>
+
+              <!-- Explosive Specific -->
+              <p class="text-xs text-[var(--color-text-muted)]"
+                *ngIf="selectedItemType === 'Explosive' && cartridge.explosiveType">
+                {{ 'addAsset.explosiveType' | translate }}: {{ cartridge.explosiveType }}
+              </p>
+              <p class="text-xs text-[var(--color-text-muted)]"
+                *ngIf="selectedItemType === 'Explosive' && cartridge.unNumber">
+                {{ 'addAsset.unNumber' | translate }}: {{ cartridge.unNumber }}
+              </p>
+            </div>
+
+            <div *ngIf="cartridge.added"
+              class="mt-4 inline-flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-background-muted)] rounded-full">
+                <span class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
+                {{ 'newIssueRequest.quantity' | translate }}: {{ cartridge.quantity || 0 }}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-2 flex-wrap justify-end" *ngIf="pendingCartridgeId !== cartridge.id">
+            <app-button variant="outline" (clicked)="beginSelection(cartridge, $event)"
+              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
+              {{ cartridge.added ? ('newIssueRequest.updateQuantity' | translate) : ('newIssueRequest.selectCartridge' |
+              translate) }}
+            </app-button>
+            <app-button variant="outline" (clicked)="onCartridgeClick(cartridge)"
+              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
+              {{ 'newIssueRequest.viewDetails' | translate }}
+            </app-button>
+          </div>
+          <div *ngIf="pendingCartridgeId === cartridge.id" class="flex flex-wrap gap-3 justify-end"
+            (click)="$event.stopPropagation()">
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'newIssueRequest.quantity' | translate }}
+              </label>
+              <input type="number" min="1" [value]="pendingQuantity" (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()" (input)="updatePendingQuantity($event)"
+                class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
+            </div>
+            <app-button variant="primary" (clicked)="confirmAdd(cartridge, $event)" [disabled]="verifyingAllowance"
+              class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ verifyingAllowance ? ('common.loading' | translate) : ('common.confirm' | translate) }}
+            </app-button>
+            <app-button *ngIf="cartridge.added" variant="outline" (clicked)="removePending(cartridge, $event)"
+              class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30">
+              {{ 'common.remove' | translate }}
+            </app-button>
+            <app-button variant="ghost" (clicked)="cancelSelection($event)" class="text-[var(--color-text-muted)]">
+              {{ 'common.cancel' | translate }}
+            </app-button>
+          </div>
+          <!-- Item Type Validation Error Message -->
+          <div *ngIf="itemTypeValidationErrorMessage && pendingCartridgeId === cartridge.id"
+            class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
+            {{ itemTypeValidationErrorMessage }}
+          </div>
+          <!-- Allowance Error Message -->
+          <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id"
+            class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
+            {{ allowanceErrorMessage }}
+          </div>
+          <!-- Loading indicator for allowance verification -->
+          <div *ngIf="verifyingAllowance && pendingCartridgeId === cartridge.id"
+            class="mt-3 text-sm text-[var(--color-text-muted)]">
+            {{ 'common.loading' | translate }}...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Filters -->
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-6 shadow-sm space-y-6">
+    <!-- Filters Header -->
+    <div class="flex items-center justify-between -mt-2">
+      <h3 class="text-sm font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.filters' | translate }}</h3>
+      <app-button variant="outline" (clicked)="onClear()"
+        class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)]">
+        {{ 'newIssueRequest.clearFilters' | translate }}
+      </app-button>
+    </div>
+    <!-- Select Type Tabs -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">
+        {{ 'newIssueRequest.selectType' | translate }}
+      </label>
+      <div class="bg-[var(--color-background)] rounded-lg p-1 shadow-sm border border-[var(--color-border)]">
+        <nav class="flex gap-1" aria-label="Item Type Tabs">
+          <button *ngFor="let option of itemTypeOptions" (click)="onItemTypeChange(option)" [ngClass]="{
+              'bg-[var(--color-brand)] text-white shadow-md': selectedItemType === option,
+              'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== option
+            }"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out relative overflow-hidden group">
+            <div class="flex items-center gap-2 relative z-10">
+              <div class="w-1.5 h-1.5 rounded-full transition-all duration-200" [ngClass]="{
+                'bg-white': selectedItemType === option,
+                'bg-[var(--color-brand)]': selectedItemType !== option
+              }"></div>
+              <span>{{ (option === 'Ammunition' ? 'warehouseInventory.tabs.ammunition' :
+                option === 'Weapon' ? 'warehouseInventory.tabs.weapon' :
+                'warehouseInventory.tabs.explosive') | translate }}</span>
+            </div>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Ammunition Filters -->
+    <ng-container *ngIf="selectedItemType === 'Ammunition'">
+      <!-- Select Ammunition Type -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.selectAmmunitionType' | translate }}</span>
+          <button *ngIf="selectedAmmunitionType" (click)="onAmmunitionTypeChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedAmmunitionType" (ngModelChange)="onAmmunitionTypeChange($event)"
+          [options]="ammunitionTypeOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'newIssueRequest.selectAmmunitionType' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Select Bullet Diameter -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.selectBulletDiameter' | translate }}</span>
+          <button *ngIf="selectedBulletDiameter" (click)="onBulletDiameterChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedBulletDiameter" (ngModelChange)="onBulletDiameterChange($event)"
+          [options]="bulletDiameters" [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'newIssueRequest.selectBulletDiameter' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Linked/Not Linked -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.linkedNotLinked' | translate }}</span>
+          <button *ngIf="selectedLinked" (click)="onLinkedChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
+          [options]="linkedOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Nature Options -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.natureOptions' | translate }}</span>
+          <button *ngIf="selectedNature" (click)="onNatureChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedNature" (ngModelChange)="onNatureChange($event)"
+          [options]="natureOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'newIssueRequest.natureOptions' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- NSN Number -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.nsn' | translate }}</span>
+          <button *ngIf="selectedNSN" (click)="onNSNChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <input type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+          placeholder="{{ 'newIssueRequest.enterNSN' | translate }}"
+          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+      </div>
+    </ng-container>
+
+    <!-- Weapon Filters -->
+    <ng-container *ngIf="selectedItemType === 'Weapon'">
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'addAsset.weaponType' | translate }}</span>
+          <button *ngIf="selectedWeaponType" (click)="onWeaponTypeChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedWeaponType" (ngModelChange)="onWeaponTypeChange($event)"
+          [options]="weaponTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
+          [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'addAsset.selectWeaponType' | translate }}">
+        </app-dropdown>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'addAsset.caliber' | translate }}</span>
+          <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <!-- Assuming caliber matches text input or dropdown, keeping simplified as input/dropdown driven by options -->
+        <input type="text" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
+          placeholder="{{ 'addAsset.enterCaliber' | translate }}"
+          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+      </div>
+
+      <!-- NSN for Weapon too -->
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'newIssueRequest.nsn' | translate }}</span>
+          <button *ngIf="selectedNSN" (click)="onNSNChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <input type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+          placeholder="{{ 'newIssueRequest.enterNSN' | translate }}"
+          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+      </div>
+    </ng-container>
+
+    <!-- Explosive Filters -->
+    <ng-container *ngIf="selectedItemType === 'Explosive'">
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'addAsset.explosiveType' | translate }}</span>
+          <button *ngIf="selectedExplosiveType" (click)="onExplosiveTypeChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <app-dropdown class="w-full" [ngModel]="selectedExplosiveType" (ngModelChange)="onExplosiveTypeChange($event)"
+          [options]="explosiveTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
+          [placeholderSelectable]="false" [placeholderValue]="''"
+          placeholder="{{ 'addAsset.selectExplosiveType' | translate }}">
+        </app-dropdown>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+          <span>{{ 'addAsset.unNumber' | translate }}</span>
+          <button *ngIf="selectedUNNumber" (click)="onUnNumberChange('')" type="button"
+            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>{{ 'common.clear' | translate }}</span>
+          </button>
+        </label>
+        <input type="text" [ngModel]="selectedUNNumber" (ngModelChange)="onUnNumberChange($event)"
+          placeholder="{{ 'addAsset.enterUnNumber' | translate }}"
+          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex justify-between items-center mt-6">
+  <app-button variant="outline" (clicked)="onPrevious()">
+    {{ 'newIssueRequest.previous' | translate }}
+  </app-button>
+  <app-button variant="primary" (clicked)="onNext()" [disabled]="!canProceed"
+    class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed">
+    {{ 'newIssueRequest.next' | translate }}
+  </app-button>
+</div>

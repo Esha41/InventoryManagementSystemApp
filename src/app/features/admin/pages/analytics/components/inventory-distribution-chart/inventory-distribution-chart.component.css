@@ -1,0 +1,147 @@
+.chart-container {
+    background: var(--color-background);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden; /* Prevent expansion */
+}
+
+.chart-container:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0.25rem 0 0 0;
+}
+
+.action-btn {
+    background: var(--color-background-active);
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: var(--color-background-hover);
+    color: var(--color-primary);
+}
+
+.action-btn.spinning i-lucide {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.chart-body {
+    flex: 1 1 auto;
+    min-height: 300px;
+    max-height: 400px;
+    position: relative;
+    overflow: hidden; /* Prevent expansion */
+}
+
+.donut-wrapper {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.echarts-graph {
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent expansion */
+}
+
+.center-content {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+.total-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.total-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chart-loader,
+.chart-error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--color-text-muted);
+    background: color-mix(in srgb, var(--color-background) 80%, transparent);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    border-radius: 1rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-background-active);
+    border-top: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.error-icon {
+    width: 48px;
+    height: 48px;
+    color: #ef4444;
+}
+
+.icon-sm {
+    width: 18px;
+    height: 18px;
+}

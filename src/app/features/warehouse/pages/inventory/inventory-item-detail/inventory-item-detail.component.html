@@ -1,0 +1,311 @@
+<div class="bg-[var(--color-background)] min-h-full p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <button (click)="onBack()"
+        class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+        <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+      </button>
+      <h1 class="text-2xl font-semibold text-[var(--color-text)]">
+        {{ getItemName() }}
+      </h1>
+    </div>
+    <button (click)="onMapView()"
+      class="px-4 py-2 bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white rounded-lg transition-colors">
+      {{ 'warehouseInventory.viewOnMap' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+  </app-loading-state>
+
+  <!-- Error State -->
+  <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+    containerClass="mb-8" [actionText]="'warehouseInventory.backToInventory' | translate" (action)="onBack()">
+  </app-error-state>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error && inventoryDetail">
+    <!-- Tabs -->
+    <div class="border-b border-[var(--color-border)] mb-8">
+      <nav class="flex gap-8">
+        <button (click)="setActiveTab('overview')" [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'overview',
+            'text-[var(--color-text)]': activeTab === 'overview',
+            'border-transparent': activeTab !== 'overview',
+            'text-[var(--color-text-muted)]': activeTab !== 'overview'
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          {{ 'warehouseInventory.overview' | translate }}
+        </button>
+        <button (click)="setActiveTab('stock')" [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'stock',
+            'text-[var(--color-text)]': activeTab === 'stock',
+            'border-transparent': activeTab !== 'stock',
+            'text-[var(--color-text-muted)]': activeTab !== 'stock'
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          {{ 'warehouseInventory.stock' | translate }}
+        </button>
+      </nav>
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'">
+      <!-- Use Asset Details Component -->
+      <app-asset-details *ngIf="getItemIdForAssetDetails() && getAssetType()" [assetId]="getItemIdForAssetDetails()!"
+        [assetType]="getAssetType()!" [isPage]="false" [showBackButton]="false" (close)="onBack()">
+      </app-asset-details>
+    </div>
+
+    <!-- Stock Tab -->
+    <div *ngIf="activeTab === 'stock'">
+      <!-- Item Summary Table -->
+      <div
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
+        <table class="min-w-full">
+          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+            <tr>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.itemName' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.itemNo' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.type' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.nsn' | translate }}
+              </th>
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.partNo' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.totalQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.usedQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.reservedQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.remainingQty' | translate }}
+              </th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                {{ 'inventorySummary.totalLots' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+            <tr class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+                {{ getItemName() }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ getItemNo() }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                <span
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
+                  {{ getItemTypeDisplay() }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ (inventoryDetail?.item)?.nsn || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                {{ (inventoryDetail?.item)?.partNo || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                {{ formatNumber(getTotalQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                {{ formatNumber(getTotalUsedQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                {{ formatNumber(getTotalReservedQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
+                {{ formatNumber(getTotalRemainingQuantity()) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
+                <span
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
+                  {{ lots.length }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Invoice Information Section -->
+      <div
+        *ngIf="inventoryDetail?.invoiceNumber || inventoryDetail?.invoiceDate || inventoryDetail?.recievedDate || inventoryDetail?.contractNumber || inventoryDetail?.notes"
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
+        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+            {{ 'editInventoryDetail.invoiceInformation' | translate }}
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Invoice Number -->
+            <div *ngIf="inventoryDetail?.invoiceNumber">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceNumber' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ inventoryDetail.invoiceNumber }}
+              </p>
+            </div>
+
+            <!-- Invoice Date -->
+            <div *ngIf="inventoryDetail?.invoiceDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.invoiceDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.invoiceDate) }}
+              </p>
+            </div>
+
+            <!-- Received Date -->
+            <div *ngIf="inventoryDetail?.recievedDate">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.receivedDate' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ formatDate(inventoryDetail.recievedDate) }}
+              </p>
+            </div>
+
+
+            <!-- Contract Number -->
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.contractNumber' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ inventoryDetail.contractNumber || '-' }}
+              </p>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'editInventoryDetail.notes' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
+                {{ inventoryDetail.notes }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lot Details Section -->
+      <div
+        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
+        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+            {{ 'inventorySummary.lotDetails' | translate }}
+          </h3>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loadingLots" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-brand)]"></div>
+          <span class="ms-3 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
+        </div>
+
+        <!-- Lot Details Table -->
+        <div *ngIf="!loadingLots">
+          <div *ngIf="lots.length === 0" class="text-center py-12">
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'inventorySummary.noLots' | translate }}</p>
+          </div>
+
+          <div *ngIf="lots.length > 0" class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+                <tr>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.lotNumber' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.depot' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.supplier' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.manufacturer' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.country' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.batchNo' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.expiryDate' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.originalQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.usedQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.reservedQty' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.remainingQty' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+                <tr *ngFor="let lot of lots" class="hover:bg-[var(--color-background-hover)]">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
+                    {{ lot.lot }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getDepotName(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getSupplierNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getManufacturerNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getCountryNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ lot.batchNo || '-' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ formatDate(lot.expiryDate) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                    {{ formatNumber(lot.originalQuantity) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                    {{ formatNumber(lot.usedQuantity) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                    {{ formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                    {{ formatNumber(lot.remainingQuantity) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

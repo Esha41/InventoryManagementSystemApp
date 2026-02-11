@@ -1,0 +1,82 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true"
+    [attr.aria-labelledby]="'dialog-title'" [attr.aria-describedby]="'dialog-description'">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" (click)="onBackdropClick()" aria-hidden="true">
+    </div>
+
+    <!-- Modal Container -->
+    <div class="relative flex min-h-full items-center justify-center p-4 pointer-events-none">
+        <!-- Modal Content -->
+        <div
+            class="relative bg-[var(--color-background)] rounded-lg shadow-custom-xl w-full max-w-md transition-all pointer-events-auto animate-modal-in">
+            <!-- Header with Icon -->
+            <div class="flex items-start gap-4 p-6">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" [ngClass]="{
+            'icon-bg-warning': type === 'warning',
+            'icon-bg-danger': type === 'danger',
+            'icon-bg-info': type === 'info',
+            'icon-bg-success': type === 'success'
+          }" aria-hidden="true">
+                    <lucide-angular [img]="getIcon()" class="h-6 w-6" [ngClass]="{
+              'text-[var(--color-warning)]': type === 'warning',
+              'text-[var(--color-error)]': type === 'danger',
+              'text-[var(--color-info)]': type === 'info',
+              'text-[var(--color-success)]': type === 'success'
+            }"></lucide-angular>
+                </div>
+
+                <div class="flex-1">
+                    <h3 id="dialog-title" class="text-lg font-semibold text-[var(--color-text)] mb-2">
+                        {{ title }}
+                    </h3>
+                    <p id="dialog-description" class="text-sm text-[var(--color-text-muted)]">
+                        {{ message }}
+                    </p>
+                </div>
+
+                <button *ngIf="showCloseButton" (click)="onCancel()" type="button"
+                    class="flex-shrink-0 p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-brand)]"
+                    [attr.aria-label]="'common.close' | translate">
+                    <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+                </button>
+            </div>
+
+            <!-- Comment Field (Optional) -->
+            <div *ngIf="requireComment" class="px-6 pb-4">
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                    {{ commentLabel || ('workflowApprovalDetail.returnComment' | translate) }}
+                    <span class="text-[var(--color-error)]">*</span>
+                </label>
+                <textarea [(ngModel)]="comment" [rows]="commentRows"
+                    [placeholder]="commentPlaceholder || ('workflowApprovalDetail.enterReturnComment' | translate)"
+                    class="w-full px-4 py-3 border rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:border-transparent resize-none transition-all"
+                    [ngClass]="{
+                        'border-[var(--color-border)] focus:ring-[var(--color-brand)]': !comment || comment.trim(),
+                        'border-[var(--color-error)] focus:ring-[var(--color-error)]': comment !== '' && !comment.trim()
+                    }" [attr.aria-label]="commentLabel || ('workflowApprovalDetail.returnComment' | translate)"
+                    [attr.aria-required]="true" [attr.aria-invalid]="comment !== '' && !comment.trim()"></textarea>
+                <p *ngIf="comment !== '' && !comment.trim()" class="mt-1 text-xs text-[var(--color-error)]">
+                    {{ 'workflowApprovalDetail.commentRequired' | translate }}
+                </p>
+            </div>
+
+            <!-- Footer with Actions -->
+            <div class="flex items-center justify-end gap-3 px-6 pb-6">
+                <button (click)="onCancel()" type="button"
+                    class="px-4 py-2 text-sm font-medium text-white bg-[var(--color-error)] border border-[var(--color-error)] rounded-lg hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-error)] focus:ring-offset-[var(--color-background)]">
+                    {{ cancelText || ('common.cancel' | translate) }}
+                </button>
+                <button (click)="onConfirm()" type="button" [disabled]="isConfirmDisabled()"
+                    class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-background)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="{
+            'bg-[var(--color-warning)] hover:opacity-90 focus:ring-[var(--color-warning)]': type === 'warning',
+            'bg-[var(--color-error)] hover:opacity-90 focus:ring-[var(--color-error)]': type === 'danger',
+            'bg-[var(--color-info)] hover:opacity-90 focus:ring-[var(--color-info)]': type === 'info',
+            'bg-[var(--color-success)] hover:opacity-90 focus:ring-[var(--color-success)]': type === 'success'
+          }">
+                    {{ confirmText || ('common.confirm' | translate) }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

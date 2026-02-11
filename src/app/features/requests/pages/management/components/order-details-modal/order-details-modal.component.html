@@ -1,0 +1,74 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" (click)="onBackdropClick($event)">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
+  <!-- Modal -->
+  <div class="flex min-h-full items-center justify-center p-4">
+    <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full p-6" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-[var(--color-text)]">Order Details</h2>
+        <button
+          (click)="onClose()"
+          class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
+          <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div *ngIf="order" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] mb-1">Order ID</p>
+            <p class="text-base font-semibold text-[var(--color-text)]">{{ order.orderId }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] mb-1">Request Date</p>
+            <p class="text-base font-semibold text-[var(--color-text)]">{{ order.requestDate }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] mb-1">Priority</p>
+            <p class="text-base font-semibold text-[var(--color-text)]">{{ order.priority }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] mb-1">Request Type</p>
+            <p class="text-base font-semibold text-[var(--color-text)]">{{ order.requestType }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-[var(--color-text-muted)] mb-1">Status</p>
+            <p class="text-base font-semibold text-[var(--color-text)]">{{ order.status }}</p>
+          </div>
+        </div>
+
+        <!-- Additional Details -->
+        <div class="border-t border-[var(--color-border)] pt-4 mt-6">
+          <h3 class="text-lg font-semibold text-[var(--color-text)] mb-3">Additional Information</h3>
+          <div class="space-y-2">
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)]">Description</p>
+              <p class="text-sm text-[var(--color-text)]">This is a sample order description. </p>
+            </div>
+            <div>
+              <p class="text-sm text-[var(--color-text-muted)]">Requested By</p>
+              <p class="text-sm text-[var(--color-text)]">John Doe</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-[var(--color-border)]">
+        <button
+          (click)="onClose()"
+          class="px-4 py-2 bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-active)] transition-colors">
+          Close
+        </button>
+        <button
+          class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:opacity-90 transition-opacity">
+          Edit Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
