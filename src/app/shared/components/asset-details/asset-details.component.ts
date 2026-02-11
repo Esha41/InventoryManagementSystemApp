@@ -114,6 +114,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private loadingImageFor: { assetId: number; assetType: string } | null = null;
   private imageLoadedFor: { assetId: number; assetType: string } | null = null;
   private requestId: number | null = null; // For back navigation to workflow approval
+  private returnToUrl: string | null = null; // For back navigation (e.g. item assignment)
 
   constructor() {
     // Effect to handle asset type detection from asset data
@@ -215,6 +216,10 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
               this.requestId = null;
             }
           }
+
+          // Get returnTo from query params for back navigation (e.g. from item assignment)
+          const returnToParam = queryParams['returnTo'];
+          this.returnToUrl = returnToParam && typeof returnToParam === 'string' ? returnToParam : null;
 
           if (itemId) {
             // Optimization: Start loading image immediately if type is known from query params
@@ -353,7 +358,12 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   onBack(): void {
     if (!this.router) return;
-    
+
+    // If returnTo URL was passed (e.g. from item assignment), go back there
+    if (this.returnToUrl) {
+      this.router.navigateByUrl(this.returnToUrl);
+      return;
+    }
     // If requestId is available, navigate back to workflow approval page
     if (this.requestId) {
       this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);

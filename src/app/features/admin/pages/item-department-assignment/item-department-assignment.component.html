@@ -33,105 +33,158 @@
     </app-loading-state>
 
     <!-- Departments List -->
-    <div *ngIf="!loading || showModal" class="space-y-4">
-      <!-- Filtered Departments -->
-      <div *ngFor="let dept of filteredDepartments" 
-        class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
-        <!-- Department Header -->
-        <div class="px-6 py-4 flex items-center justify-between hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
-             (click)="toggleDepartmentItems(dept.id)">
-          <div class="flex items-center gap-4 flex-1">
-            <button (click)="toggleDepartmentItems(dept.id); $event.stopPropagation()"
-              class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
-              <lucide-icon 
-                [img]="isDepartmentExpanded(dept.id) ? ChevronDown : ChevronRight" 
-                [size]="20"
-                class="text-[var(--color-text-muted)]">
-              </lucide-icon>
-            </button>
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-[var(--color-text)]">
-                {{ getLocalizedName(dept) }}
-              </h3>
-              <p class="text-sm text-[var(--color-text-muted)]">
-                {{ getDepartmentAssignmentCount(dept.id) }} {{ 'itemDepartmentAssignment.itemsAssigned' | translate }}
-              </p>
-            </div>
-          </div>
-          <button 
-            (click)="toggleDepartmentItems(dept.id); $event.stopPropagation()"
-            class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
-            {{ isDepartmentExpanded(dept.id) ? ('itemDepartmentAssignment.hideItems' | translate) : ('itemDepartmentAssignment.showItems' | translate) }}
-          </button>
-        </div>
-
-        <!-- Items List (Expanded) -->
-        <div *ngIf="isDepartmentExpanded(dept.id)" 
-          class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)]">
-          <div class="p-6">
-            <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4 uppercase tracking-wider">
-              {{ 'itemDepartmentAssignment.assignmentDetails' | translate }}
-            </h3>
-            <div class="bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full lot-details-table">
-                  <thead>
-                    <tr>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.item' | translate }}</th>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemNo' | translate }}</th>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemType' | translate }}</th>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">NSN</th>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">Part No</th>
-                      <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.notes' | translate }}</th>
-                      <th class="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text)]">{{ 'common.actions' | translate }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let assignment of getDepartmentAssignments(dept.id)"
-                      class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.itemName }}</td>
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.itemNo }}</td>
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
-                        <span class="text-[var(--color-brand)] hover:underline cursor-pointer">
-                          {{ getItemTypeName(assignment.itemType) }}
-                        </span>
-                      </td>
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
-                        {{ getItemNSN(assignment.itemId) }}
-                      </td>
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
-                        {{ getItemPartNo(assignment.itemId) }}
-                      </td>
-                      <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.notes || '-' }}</td>
-                      <td class="px-4 py-3 text-center">
-                        <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Delete'" (click)="deleteAssignment(assignment)"
-                          class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
-                          [title]="'common.delete' | translate">
-                          <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
+    <div *ngIf="!loading || showModal">
+      <!-- Departments Table -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b-2 border-[var(--color-border)] bg-[var(--color-background-muted)]">
+                <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.department' | translate }}</th>
+                <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemsAssigned' | translate }}</th>
+                <th class="px-6 py-4 text-end text-sm font-semibold text-[var(--color-text)]">{{ 'common.actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let dept of paginatedDepartments">
+                <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <button (click)="toggleDepartmentItems(dept.id)"
+                        class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
+                        <lucide-icon 
+                          [img]="isDepartmentExpanded(dept.id) ? ChevronDown : ChevronRight" 
+                          [size]="20"
+                          class="text-[var(--color-text-muted)]">
+                        </lucide-icon>
+                      </button>
+                      <span class="text-base font-semibold text-[var(--color-text)]">
+                        {{ getLocalizedName(dept) }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="text-sm text-[var(--color-text-muted)]">
+                      <ng-container *ngIf="getDepartmentAssignmentCount(dept.id) === 0">
+                        0 {{ 'itemDepartmentAssignment.itemsAssigned' | translate }}
+                      </ng-container>
+                      <ng-container *ngIf="getDepartmentAssignmentCount(dept.id) > 0">
+                        <ng-container *ngIf="getDepartmentAmmunitionCount(dept.id) > 0">
+                          {{ getDepartmentAmmunitionCount(dept.id) }} {{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}
+                        </ng-container>
+                        <ng-container *ngIf="getDepartmentWeaponsCount(dept.id) > 0">
+                          <span *ngIf="getDepartmentAmmunitionCount(dept.id) > 0">, </span>{{ getDepartmentWeaponsCount(dept.id) }} {{ 'itemDepartmentAssignment.weaponsLabel' | translate }}
+                        </ng-container>
+                        <ng-container *ngIf="getDepartmentExplosivesCount(dept.id) > 0">
+                          <span *ngIf="getDepartmentAmmunitionCount(dept.id) + getDepartmentWeaponsCount(dept.id) > 0">, </span>{{ getDepartmentExplosivesCount(dept.id) }} {{ 'itemDepartmentAssignment.explosivesLabel' | translate }}
+                        </ng-container>
+                      </ng-container>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-end">
+                    <button 
+                      (click)="toggleDepartmentItems(dept.id)"
+                      class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
+                      {{ isDepartmentExpanded(dept.id) ? ('itemDepartmentAssignment.hideItems' | translate) : ('itemDepartmentAssignment.showItems' | translate) }}
+                    </button>
+                  </td>
+                </tr>
+                <!-- Items List (Expanded) -->
+                <tr *ngIf="isDepartmentExpanded(dept.id)">
+                  <td colspan="3" class="p-0 bg-[var(--color-background-muted)]">
+                    <div class="p-6">
+                      <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                          {{ 'itemDepartmentAssignment.assignmentDetails' | translate }}
+                        </h3>
+                        <button *ngIf="isSuperAdmin" 
+                          (click)="openAddModalForDepartment(dept.id)"
+                          class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
+                          <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
+                          {{ 'itemDepartmentAssignment.addItems' | translate }}
                         </button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="getDepartmentAssignments(dept.id).length === 0">
-                      <td colspan="7" class="px-4 py-8 text-center">
-                        <p class="text-[var(--color-text-secondary)]">
-                          {{ 'itemDepartmentAssignment.noItemsForDepartment' | translate }}
-                        </p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                      </div>
+                      <div class="bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] overflow-hidden">
+                        <div class="overflow-x-auto">
+                          <table class="w-full lot-details-table">
+                            <thead>
+                              <tr>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.item' | translate }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemNo' | translate }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.itemType' | translate }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">NSN</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">Part No</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.notes' | translate }}</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text)]">{{ 'common.actions' | translate }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let assignment of getDepartmentAssignments(dept.id)"
+                                class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+                                <td class="px-4 py-3 text-sm text-start">
+                                  <button type="button" (click)="navigateToAssetDetails(assignment)"
+                                    class="text-[var(--color-brand)] hover:underline cursor-pointer font-medium text-left">
+                                    {{ assignment.itemName }}
+                                  </button>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.itemNo }}</td>
+                                <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
+                                  {{ getItemTypeName(assignment.itemType) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
+                                  {{ getItemNSN(assignment.itemId) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">
+                                  {{ getItemPartNo(assignment.itemId) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.notes || '-' }}</td>
+                                <td class="px-4 py-3 text-center">
+                                  <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Delete'" (click)="deleteAssignment(assignment)"
+                                    class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                                    [title]="'common.delete' | translate">
+                                    <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr *ngIf="getDepartmentAssignments(dept.id).length === 0">
+                                <td colspan="7" class="px-4 py-8 text-center">
+                                  <p class="text-[var(--color-text-secondary)]">
+                                    {{ 'itemDepartmentAssignment.noItemsForDepartment' | translate }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="filteredDepartments.length === 0">
+                <td colspan="3" class="px-6 py-12 text-center">
+                  <p class="text-[var(--color-text-secondary)]">
+                    {{ searchTerm ? ('itemDepartmentAssignment.noDepartmentsFound' | translate) : ('itemDepartmentAssignment.noDepartments' | translate) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <!-- No Departments Message -->
-      <div *ngIf="filteredDepartments.length === 0"
-        class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] p-12 text-center">
-        <p class="text-[var(--color-text-secondary)]">
-          {{ searchTerm ? ('itemDepartmentAssignment.noDepartmentsFound' | translate) : ('itemDepartmentAssignment.noDepartments' | translate) }}
-        </p>
+      <!-- Pagination Footer -->
+      <div *ngIf="filteredDepartments.length > 0 && !loading"
+        class="border-t-2 border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredDepartments.length"
+          [visibleItems]="paginatedDepartments.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+        </app-rows-per-page>
+        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
       </div>
     </div>
 

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X, Search, ChevronDown, ChevronRight } from 'lucide-angular';
@@ -12,7 +13,7 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-import { LoadingStateComponent } from '@components/index';
+import { LoadingStateComponent, PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { DropdownComponent } from '@shared/components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@services/profile-data.service';
@@ -32,7 +33,9 @@ import { BaseItemDto } from '@models/inventory.model';
     ConfirmDialogComponent,
     HasPermissionDirective,
     LoadingStateComponent,
-    DropdownComponent
+    DropdownComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './item-department-assignment.component.html',
   styleUrls: ['./item-department-assignment.component.css']
@@ -75,6 +78,10 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   // Super admin check
   isSuperAdmin = false;
 
+  // Pagination
+  currentPage = 1;
+  rowsPerPage = 10;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -87,7 +94,8 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -196,6 +204,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     this.filteredAssignments = filtered;
     this.groupAssignmentsByDepartment();
     this.filterDepartmentsBySearch();
+    this.currentPage = 1; // Reset to first page when filters change
   }
 
   filterDepartmentsBySearch(): void {
@@ -233,8 +242,65 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     return this.assignmentsByDepartment.get(departmentId) || [];
   }
 
+  /** Departments to show on the current page (for pagination). */
+  get paginatedDepartments(): any[] {
+    const start = (this.currentPage - 1) * this.rowsPerPage;
+    const end = start + this.rowsPerPage;
+    return this.filteredDepartments.slice(start, end);
+  }
+
+  get totalPages(): number {
+    const total = this.filteredDepartments.length;
+    return total === 0 ? 1 : Math.ceil(total / this.rowsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    const max = this.totalPages;
+    if (page >= 1 && page <= max) {
+      this.currentPage = page;
+    }
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+  }
+
   getDepartmentAssignmentCount(departmentId: number): number {
     return this.getDepartmentAssignments(departmentId).length;
+  }
+
+  /** Count assignments that are ammunition (itemType 1 or "Ammunition"). */
+  getDepartmentAmmunitionCount(departmentId: number): number {
+    return this.getDepartmentAssignments(departmentId).filter(a => this.isAmmunitionType(a.itemType)).length;
+  }
+
+  /** Count assignments that are weapons (itemType 2 or "Weapon"). */
+  getDepartmentWeaponsCount(departmentId: number): number {
+    return this.getDepartmentAssignments(departmentId).filter(a => this.isWeaponType(a.itemType)).length;
+  }
+
+  /** Count assignments that are explosives (itemType 3 or "Explosive"). */
+  getDepartmentExplosivesCount(departmentId: number): number {
+    return this.getDepartmentAssignments(departmentId).filter(a => this.isExplosiveType(a.itemType)).length;
+  }
+
+  private isAmmunitionType(itemType: number | string | undefined): boolean {
+    if (itemType === undefined || itemType === null) return false;
+    if (typeof itemType === 'string') return (itemType as string).trim().toLowerCase() === 'ammunition';
+    return itemType === 1;
+  }
+
+  private isWeaponType(itemType: number | string | undefined): boolean {
+    if (itemType === undefined || itemType === null) return false;
+    if (typeof itemType === 'string') return (itemType as string).trim().toLowerCase() === 'weapon';
+    return itemType === 2;
+  }
+
+  private isExplosiveType(itemType: number | string | undefined): boolean {
+    if (itemType === undefined || itemType === null) return false;
+    if (typeof itemType === 'string') return (itemType as string).trim().toLowerCase() === 'explosive';
+    return itemType === 3;
   }
 
   onSearch(): void {
@@ -659,5 +725,32 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   getItemPartNo(itemId: number): string {
     const item = this.allItems.find(i => i.id === itemId);
     return item?.partNo || '-';
+  }
+
+  /** Map assignment itemType to asset-list tab query param (ammunition | weapon | explosive). */
+  getAssetDetailsTab(itemType: number | string | undefined): 'ammunition' | 'weapon' | 'explosive' | null {
+    if (itemType === undefined || itemType === null) return null;
+    if (typeof itemType === 'string') {
+      const n = (itemType as string).trim().toLowerCase();
+      if (n === 'ammunition') return 'ammunition';
+      if (n === 'weapon') return 'weapon';
+      if (n === 'explosive') return 'explosive';
+      return null;
+    }
+    switch (itemType as number) {
+      case 1: return 'ammunition';
+      case 2: return 'weapon';
+      case 3: return 'explosive';
+      default: return null;
+    }
+  }
+
+  navigateToAssetDetails(assignment: ItemDepartmentAssignmentDto): void {
+    const tab = this.getAssetDetailsTab(assignment.itemType);
+    const queryParams: { tab?: string; returnTo: string } = { returnTo: '/item-department-assignment' };
+    if (tab) {
+      queryParams.tab = tab;
+    }
+    this.router.navigate(['/asset-list', assignment.itemId], { queryParams });
   }
 }
