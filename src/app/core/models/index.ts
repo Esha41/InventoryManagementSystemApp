@@ -3,6 +3,7 @@
  */
 
 export * from './allowance.model';
+export * from './announcement.model';
 export * from './ammunition.model';
 export * from './api-response-types.model';
 export * from './api-response.model';

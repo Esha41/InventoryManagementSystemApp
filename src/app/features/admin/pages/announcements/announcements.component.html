@@ -1,0 +1,127 @@
+<div class="announcements-container p-6">
+  <!-- Header -->
+  <div class="announcements-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="title-icon">
+          <lucide-angular [img]="Megaphone" class="h-6 w-6"></lucide-angular>
+        </div>
+        <h1 class="page-title">{{ 'announcements.title' | translate }}</h1>
+      </div>
+      <button class="create-btn" (click)="createAnnouncement()">
+        <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+        <span>{{ 'announcements.create' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <button class="filter-btn" [class.filter-btn--active]="filter() === 'all'" (click)="setFilter('all')">
+      {{ 'common.all' | translate }}
+    </button>
+    <button class="filter-btn" [class.filter-btn--active]="filter() === 'active'" (click)="setFilter('active')">
+      {{ 'announcements.active' | translate }}
+    </button>
+    <button class="filter-btn" [class.filter-btn--active]="filter() === 'inactive'" (click)="setFilter('inactive')">
+      {{ 'announcements.inactive' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading()" class="content-wrapper">
+    <!-- Empty State (single, when no announcements) -->
+    <div *ngIf="filteredAnnouncements().length === 0" class="empty-state">
+      <div class="empty-icon">
+        <lucide-angular [img]="AlertCircle" class="h-12 w-12"></lucide-angular>
+      </div>
+      <p class="empty-title">{{ 'common.noData' | translate }}</p>
+      <p class="empty-subtitle">{{ 'announcements.create' | translate }}</p>
+    </div>
+
+    <!-- Table View (only when there's data) -->
+    <div *ngIf="filteredAnnouncements().length > 0" class="table-wrapper">
+      <table class="announcements-table">
+        <thead>
+          <tr>
+            <th>{{ 'announcements.message' | translate }}</th>
+            <th>{{ 'announcements.priority' | translate }}</th>
+            <th>{{ 'announcements.startDate' | translate }}</th>
+            <th>{{ 'announcements.endDate' | translate }}</th>
+            <th>{{ 'announcements.targetRoles' | translate }}</th>
+            <th>{{ 'announcements.dismissable' | translate }}</th>
+            <th>{{ 'announcements.status' | translate }}</th>
+            <th class="text-right">{{ 'announcements.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let announcement of filteredAnnouncements()" class="table-row">
+            <td>
+              <div class="message-cell" [title]="announcement.message">{{ announcement.message }}</div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getPriorityBadgeClass(announcement.priority)">
+                {{ ('common.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+              </span>
+            </td>
+            <td>
+              <div class="date-cell">
+                <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
+                {{ formatDate(announcement.startDate) }}
+              </div>
+            </td>
+            <td>
+              <div class="date-cell">
+                <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
+                {{ announcement.endDate ? formatDate(announcement.endDate) : '-' }}
+              </div>
+            </td>
+            <td>
+              <div class="roles-cell" [title]="getRolesText(announcement.targetRoles)">
+                {{ getRolesText(announcement.targetRoles) }}
+              </div>
+            </td>
+            <td>
+              <span class="dismissable-badge" [class.dismissable-yes]="announcement.isDismissable">
+                {{ announcement.isDismissable ? '✓' : '✗' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(announcement)">
+                {{ getStatusText(announcement) }}
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="action-buttons">
+                <button class="action-btn action-btn--edit" (click)="editAnnouncement(announcement.id)" [title]="'common.edit' | translate">
+                  <lucide-angular [img]="Pencil" class="h-4 w-4"></lucide-angular>
+                </button>
+                <button class="action-btn action-btn--delete" (click)="deleteAnnouncement(announcement)" [title]="'common.delete' | translate">
+                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<app-confirm-dialog
+  [isOpen]="showDeleteDialog"
+  [title]="'common.delete' | translate"
+  [message]="'announcements.deleteConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onDeleteConfirm()"
+  (cancelled)="onDeleteCancel()">
+</app-confirm-dialog>

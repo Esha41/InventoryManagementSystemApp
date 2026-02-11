@@ -1,0 +1,16 @@
+<div class="announcement-banners" *ngIf="announcements().length > 0">
+    <div *ngFor="let announcement of announcements()"
+        class="announcement-banner"
+        [ngClass]="getBannerClass(announcement.priority)">
+        <div class="flex-1 flex items-center gap-3 min-w-0">
+            <lucide-angular [img]="Megaphone" class="h-5 w-5 flex-shrink-0 banner-icon"></lucide-angular>
+            <p class="text-sm font-semibold banner-text leading-snug">
+                {{ announcement.message }}
+            </p>
+        </div>
+        <button *ngIf="announcement.isDismissable" (click)="dismiss(announcement)"
+            class="banner-dismiss banner-dismiss-btn transition-colors" [attr.aria-label]="'announcements.dismiss' | translate">
+            <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
+        </button>
+    </div>
+</div>
