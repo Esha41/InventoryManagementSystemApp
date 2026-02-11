@@ -1,0 +1,169 @@
+<app-modal [isOpen]="isOpen" [title]="'supplyOrder.addLot' | translate" size="lg" (closed)="closeModal()">
+  <form [formGroup]="addLotForm" class="space-y-4">
+    <!-- Item Selection Dropdown -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.itemId' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <app-dropdown class="w-full" formControlName="itemId" (selectionChange)="onItemSelected($event)"
+        [options]="orderItems" optionValue="id" [optionLabelFn]="itemOptionLabel" [placeholderSelectable]="false"
+        [placeholderValue]="null" [error]="!!(addLotForm.get('itemId')?.invalid && addLotForm.get('itemId')?.touched)"
+        placeholder="{{ 'supplyOrder.selectItem' | translate }}">
+      </app-dropdown>
+      <p *ngIf="addLotForm.get('itemId')?.invalid && addLotForm.get('itemId')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.itemIdRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Item Info Header (when item is selected) -->
+    <div *ngIf="selectedItemForLot"
+      class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-[var(--color-info)]/10 rounded-lg flex items-center justify-center">
+          <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-info)]"></lucide-angular>
+        </div>
+        <div>
+          <h3 class="font-semibold text-[var(--color-text)]">{{ getSelectedItemDisplayName() }}</h3>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyOrder.requestedQuantity' | translate }}: {{
+            formatNumber(selectedItemForLot.quantity) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lot Loading Options (only when item is selected) -->
+    <div *ngIf="selectedItemForLot" class="space-y-3">
+      <!-- Two Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" (click)="onShowAvailableLots()" [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/30 hover:bg-[var(--color-success)]/20">
+          <span *ngIf="!loadingAllLots">{{ 'supplyOrder.showAvailableLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button type="button" (click)="onAddLotManually()" [disabled]="loadingAllLots || loadingManualLot"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          [ngClass]="{
+            'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border-[var(--color-accent)]/50': showManualLotEntry,
+            'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)]/20': !showManualLotEntry
+          }">
+          {{ 'supplyOrder.addLotManually' | translate }}
+        </button>
+      </div>
+
+      <!-- Manual Lot Entry (Only shows when button is clicked) -->
+      <div *ngIf="showManualLotEntry"
+        class="flex items-center gap-2 p-3 bg-[var(--color-accent)]/10 rounded-lg border-2 border-[var(--color-accent)]/30">
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-[var(--color-accent)] mb-1 block">
+            {{ 'supplyOrder.enterLotNumber' | translate }}
+          </label>
+          <input type="text" [(ngModel)]="manualLotNumber" [ngModelOptions]="{standalone: true}"
+            [disabled]="loadingManualLot" (keyup.enter)="onGetManualLotDetails()"
+            placeholder="{{ 'supplyOrder.lotNumberPlaceholder' | translate }}"
+            class="w-full px-3 py-2 border-2 border-[var(--color-accent)]/30 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] disabled:opacity-50" />
+        </div>
+        <button type="button" (click)="onGetManualLotDetails()"
+          [disabled]="!manualLotNumber || !manualLotNumber.trim() || loadingManualLot"
+          class="mt-6 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+          <span *ngIf="!loadingManualLot">{{ 'supplyOrder.getDetails' | translate }}</span>
+          <span *ngIf="loadingManualLot">{{ 'common.loading' | translate }}...</span>
+        </button>
+      </div>
+
+      <!-- Info Message -->
+      <div
+        class="flex items-center gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
+        <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
+        <span>{{ 'supplyOrder.lotSelectionInfo' | translate }}</span>
+      </div>
+
+      <!-- Lots List -->
+      <div *ngIf="availableLots.length > 0" class="space-y-3 max-h-[40vh] overflow-y-auto pe-2">
+        <div *ngFor="let lot of availableLots" class="border-2 rounded-lg p-4 transition-all cursor-pointer"
+          [ngClass]="{
+            'border-[var(--color-error)]/50 bg-[var(--color-error)]/10': lot.condition === 'Near Expiry',
+            'border-[var(--color-brand)]/50 bg-[var(--color-brand)]/10': selectedLotNumber === lot.lotNumber,
+            'border-[var(--color-border)] bg-[var(--color-background-active)]': lot.condition !== 'Near Expiry' && selectedLotNumber !== lot.lotNumber
+          }" (click)="onSelectLot(lot.lotNumber)">
+
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-semibold text-[var(--color-text)]">LOT-{{ lot.lotNumber }}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border-2" [ngClass]="{
+                  'bg-[var(--color-error)]/20 text-[var(--color-error)] border-[var(--color-error)]/30': lot.condition === 'Near Expiry',
+                  'bg-[var(--color-warning)]/20 text-[var(--color-warning)] border-[var(--color-warning)]/30': lot.condition === 'Fair',
+                  'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30': lot.condition === 'Good'
+                }">
+                  {{ lot.condition }}
+                </span>
+              </div>
+              <p class="text-sm text-[var(--color-text-muted)]">{{ lot.location }}</p>
+              <p *ngIf="lot.expiryDate" class="text-xs text-[var(--color-text-muted)] mt-1">
+                {{ 'supplyOrder.expiryDate' | translate }}: {{ formatDate(lot.expiryDate) }}
+              </p>
+            </div>
+
+            <div class="text-end">
+              <p class="text-sm font-semibold text-[var(--color-text)]">
+                {{ formatNumber(lot.quantity) }} {{ 'supplyOrder.available' | translate }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="selectedItemForLot && availableLots.length === 0 && !loadingAllLots && !showManualLotEntry"
+        class="text-sm text-[var(--color-text-muted)] text-center py-4">
+        {{ 'supplyOrder.selectLotOption' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
+      </label>
+      <input type="number" formControlName="quantity" min="1"
+        placeholder="{{ 'supplyOrder.quantityPlaceholder' | translate }}"
+        class="w-full px-4 py-2.5 border-2 rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+        [ngClass]="{
+          'border-[var(--color-error)]': addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched,
+          'border-[var(--color-border)]': !(addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched)
+        }" />
+      <p *ngIf="addLotForm.get('quantity')?.invalid && addLotForm.get('quantity')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyOrder.notes' | translate }}
+      </label>
+      <textarea formControlName="notes" rows="3" placeholder="{{ 'supplyOrder.notesPlaceholder' | translate }}"
+        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="closeModal()"
+      class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onAddLot()"
+      [disabled]="addLotForm.invalid || loadingLotDetails || !selectedItemForLot || !selectedLotNumber"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+      <span *ngIf="!loadingLotDetails">{{ 'common.add' | translate }}</span>
+      <span *ngIf="loadingLotDetails">{{ 'common.loading' | translate }}...</span>
+    </button>
+    <p *ngIf="(!selectedItemForLot || !selectedLotNumber) && !loadingLotDetails"
+      class="text-xs text-[var(--color-text-muted)] text-center mt-2">
+      {{ 'supplyOrder.selectItemAndLot' | translate }}
+    </p>
+  </div>
+</app-modal>
+
+

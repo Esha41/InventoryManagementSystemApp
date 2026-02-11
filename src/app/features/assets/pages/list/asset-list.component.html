@@ -1,0 +1,111 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
+        <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
+      </div>
+      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
+        class="w-full sm:w-auto">
+        <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
+          <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+          <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
+          <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
+          <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
+        </span>
+      </app-button>
+    </div>
+
+    <!-- Enhanced Tabs -->
+    <app-card [shadow]="true" class="overflow-hidden">
+      <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
+        <nav class="flex gap-1 p-2 overflow-x-auto" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
+          <button (click)="switchTab('ammunition')" [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            [class.flex-row-reverse]="isRTL">
+            <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                   'bg-white': activeTab === 'ammunition',
+                   'bg-[var(--color-brand)]': activeTab !== 'ammunition'
+                 }"></div>
+              <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
+            </div>
+          </button>
+          <button (click)="switchTab('explosive')" [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            [class.flex-row-reverse]="isRTL">
+            <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                   'bg-white': activeTab === 'explosive',
+                   'bg-[var(--color-brand)]': activeTab !== 'explosive'
+                 }"></div>
+              <span>{{ 'assetList.tabs.explosive' | translate }}</span>
+            </div>
+          </button>
+          <button (click)="switchTab('weapon')" [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+          }"
+            class="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 relative overflow-hidden group"
+            [class.flex-row-reverse]="isRTL">
+            <div class="flex items-center gap-2 relative z-10" [class.flex-row-reverse]="isRTL">
+              <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
+                   'bg-white': activeTab === 'weapon',
+                   'bg-[var(--color-brand)]': activeTab !== 'weapon'
+                 }"></div>
+              <span>{{ 'assetList.tabs.weapon' | translate }}</span>
+            </div>
+          </button>
+        </nav>
+      </div>
+    </app-card>
+
+    <!-- Filters Card -->
+    <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
+      [caseTypeFilterOptions]="caseTypeFilterOptions"
+      [hazardDivisionFilterOptions]="hazardDivisionFilterOptions"
+      [compatibilityFilterOptions]="compatibilityFilterOptions"
+      [weaponTypeFilterOptions]="weaponTypeFilterOptions"
+      [weaponClassificationFilterOptions]="weaponClassificationFilterOptions"
+      [countryFilterOptions]="countryFilterOptions"
+      [explosiveTypeFilterOptions]="explosiveTypeFilterOptions"
+      [explosiveClassificationFilterOptions]="explosiveClassificationFilterOptions"
+      [explosiveHazardDivisionFilterOptions]="explosiveHazardDivisionFilterOptions"
+      [explosiveCompatibilityFilterOptions]="explosiveCompatibilityFilterOptions"
+      (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (clearFilters)="clearFilters()">
+    </app-asset-filter-bar>
+
+    <!-- Assets Table Card -->
+    <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+      [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"
+      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (sort)="sortByColumn($event)"
+      (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
+      (imageError)="onImageError($event)" (showImagePreview)="showImagePreview($event.event, $event.asset)"
+      (hideImagePreview)="hideImagePreview()">
+    </app-asset-table>
+
+
+    <!-- Edit Modal -->
+    <app-asset-edit-modal [isOpen]="modalState.showEditModal" [activeTab]="activeTab"
+      [selectedAsset]="modalState.selectedAsset" [loading]="loading" [units]="units" [caseTypeList]="caseTypeList"
+      [propellantList]="propellantList" [compatibilityList]="compatibilityList"
+      [hazardDivisionList]="hazardDivisionList" [natureOptions]="natureOptions" [primaryPurposes]="primaryPurposes"
+      [projectileColors]="projectileColors" [projectailMaterials]="projectailMaterials"
+      [classifications]="classifications" [itemTypes]="itemTypes" [countries]="countries" [imageState]="imageState"
+      (closed)="closeEditModal()" (saved)="onEditSaved($event)">
+    </app-asset-edit-modal>
+
+    <!-- Delete Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showDeleteModal" [title]="'assetList.deleteModal.title' | translate"
+      [message]="('assetList.deleteModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.deleteModal.warning' | translate" confirmText="{{ 'common.delete' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmDelete()"
+      (cancelled)="closeDeleteModal()">
+    </app-confirm-dialog>

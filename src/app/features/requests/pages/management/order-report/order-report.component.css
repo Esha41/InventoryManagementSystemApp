@@ -1,0 +1,1110 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* Smooth transitions for layout changes */
+.order-report-container {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Grid container with smooth transitions */
+.grid {
+  transition: grid-template-columns 0.3s ease-in-out;
+}
+
+/* Sidebar smooth transitions */
+aside {
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Main content area smooth transitions */
+main {
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out;
+}
+
+/* Priority Color Classes */
+.priority-normal {
+  color: #22c55e !important;
+  /* Green */
+}
+
+.priority-urgent {
+  color: #f97316 !important;
+  /* Orange */
+}
+
+.priority-veryurgent {
+  color: #ef4444 !important;
+  /* Red */
+}
+
+.priority-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* Allowance Badge */
+.order-info-section {
+  position: relative;
+}
+
+.print-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.allowance-badge {
+  background: var(--color-background-muted);
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Search Bar Enhancements */
+input[type="text"]:focus {
+  outline: none;
+}
+
+input[type="text"]::placeholder {
+  transition: opacity 0.2s ease;
+}
+
+input[type="text"]:focus::placeholder {
+  opacity: 0.6;
+}
+
+/* Smooth Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+section {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* QR Code Enhancement */
+img[alt="Order QR Code"] {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* ============================================
+   PROFESSIONAL PRINT STYLES
+   ============================================ */
+
+@media print {
+
+  /* Page Setup */
+  @page {
+    size: A4 portrait;
+    margin: 8mm 15mm 15mm 15mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  /* Hide Screen-Only Elements */
+  .screen-only,
+  aside,
+  button,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Report Container */
+  .print-report-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ============================================
+     PRINT HEADER WITH LOGO AND QR CODE
+     ============================================ */
+  .print-header {
+    margin-bottom: 20px;
+    page-break-after: avoid;
+  }
+
+  .print-header-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    position: relative;
+    min-height: 120px;
+  }
+
+  .print-logo-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .print-logo {
+    display: block !important;
+    visibility: visible !important;
+    max-width: 300px;
+    max-height: 150px;
+    height: auto;
+    object-fit: contain;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-qr-container {
+    position: absolute;
+    right: 0;
+    top: -10px;
+    text-align: center;
+    border: none;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .print-qr-code {
+    width: 100px !important;
+    height: 100px !important;
+    display: block;
+    margin: 0 auto 5px auto;
+    border: none;
+    padding: 5px;
+    background: #ffffff;
+  }
+
+  .print-qr-label {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    text-align: center;
+  }
+
+  .print-divider {
+    border-bottom: none;
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
+  /* ============================================
+     SECTIONS
+     ============================================ */
+  .print-section {
+    margin-bottom: 15px;
+    page-break-inside: avoid;
+    border: 2px solid #000;
+    padding: 12px;
+    background: #ffffff;
+  }
+
+  .order-info-section {
+    position: relative;
+  }
+
+  .allowance-badge {
+    background: #f5f5f5;
+    padding: 4px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 10pt;
+    font-weight: bold;
+    color: #000;
+    white-space: nowrap;
+    line-height: 1.4;
+    margin: 0 !important;
+  }
+
+  .priority-value.priority-normal {
+    color: #22c55e !important;
+  }
+
+  .priority-value.priority-urgent {
+    color: #f97316 !important;
+  }
+
+  .priority-value.priority-veryurgent {
+    color: #ef4444 !important;
+  }
+
+  .print-section-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 6px !important;
+    border-bottom: 2px solid #000 !important;
+  }
+
+  .print-section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .print-item-count {
+    font-size: 11pt;
+    font-weight: normal;
+    color: #666;
+  }
+
+  /* ============================================
+     INFORMATION GRID
+     ============================================ */
+  .print-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 15px;
+    margin-bottom: 0;
+    margin-top: 0;
+  }
+
+  .print-info-item {
+    display: flex;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+    margin: 0;
+  }
+
+  .print-info-label {
+    font-weight: bold;
+    color: #333;
+    min-width: 120px;
+    font-size: 9pt;
+  }
+
+  .print-info-value {
+    color: #000;
+    font-size: 9pt;
+    flex: 1;
+  }
+
+  /* ============================================
+     PROFESSIONAL TABLES
+     ============================================ */
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    page-break-inside: avoid;
+    border: 2px solid #000;
+  }
+
+  .print-table-header {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    font-size: 10pt;
+    padding: 6px 12px;
+    text-align: left;
+    border: 1px solid #000;
+  }
+
+  .print-table-header-right {
+    text-align: right;
+  }
+
+  .print-table-row {
+    page-break-inside: avoid;
+  }
+
+  .print-table-row:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+
+  .print-table-cell {
+    padding: 6px 12px;
+    border: 1px solid #333;
+    font-size: 10pt;
+    color: #000;
+  }
+
+  .print-table-cell-right {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .print-table-empty {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+    border: 1px solid #333;
+  }
+
+  .print-table-footer {
+    background-color: #e8e8e8 !important;
+    font-weight: bold;
+  }
+
+  .print-table-footer-cell {
+    padding: 6px 12px;
+    border: 1px solid #000;
+    font-size: 10pt;
+    font-weight: bold;
+    color: #000;
+  }
+
+  /* ============================================
+     APPROVAL WORKFLOW CARDS
+     ============================================ */
+  .approval-workflow-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .approval-card {
+    border: 1px solid #333;
+    border-radius: 0;
+    background: #ffffff;
+    page-break-inside: avoid;
+    overflow: hidden;
+    font-size: 7pt;
+  }
+
+  .approval-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #333;
+  }
+
+  .approval-step-number {
+    font-weight: bold;
+    font-size: 7pt;
+    color: #000;
+    background: #fff;
+    border: 1px solid #333;
+    padding: 1px 5px;
+    border-radius: 0;
+  }
+
+  .approval-status {
+    font-size: 6.5pt;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+  }
+
+  .approval-status.status-approved {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #155724;
+  }
+
+  .approval-status.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #721c24;
+  }
+
+  .approval-status.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #856404;
+  }
+
+  .approval-status.status-in-progress {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #0c5460;
+  }
+
+  .approval-status.status-returned,
+  .approval-status.status-returnedforreview {
+    background: #fff4e6 !important;
+    color: #d9480f !important;
+    border: 1px solid #d9480f !important;
+  }
+
+  .approval-card-body {
+    padding: 5px 6px;
+  }
+
+  .approval-role {
+    font-weight: bold;
+    font-size: 7pt;
+    color: #000;
+    margin-bottom: 2px;
+  }
+
+  .approval-approver {
+    font-size: 6.5pt;
+    color: #333;
+    margin-bottom: 2px;
+  }
+
+  .approval-date {
+    font-size: 6pt;
+    color: #666;
+    margin-bottom: 2px;
+  }
+
+  .approval-notes {
+    font-size: 6pt;
+    color: #444;
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px dashed #ccc;
+    line-height: 1.2;
+  }
+
+  .approval-notes .notes-label {
+    font-weight: bold;
+    color: #000;
+    font-size: 6pt;
+  }
+
+  /* ============================================
+     PRINT FOOTER
+     ============================================ */
+  .print-footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+    page-break-inside: avoid;
+  }
+
+  .print-footer-text {
+    font-size: 8pt;
+    color: #666;
+    margin: 0;
+  }
+
+  /* ============================================
+     PAGE BREAKS
+     ============================================ */
+  .print-section:last-of-type {
+    page-break-before: auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+  }
+
+  table,
+  figure {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Ensure all images in print report are visible */
+  .print-report-content img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ============================================
+     REMOVE SCREEN STYLING
+     ============================================ */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br,
+  .shadow-custom-sm,
+  .shadow-custom-md,
+  .shadow-custom-lg,
+  .shadow-custom-xl,
+  .rounded-xl,
+  .rounded-2xl,
+  .border-2 {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+
+  /* Hide Lucide Icons */
+  lucide-angular {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   SCREEN-ONLY STYLES (Non-Print)
+   ============================================ */
+@media screen {
+
+  .print-header,
+  .print-section,
+  .print-table,
+  .print-footer {
+    background: var(--color-background);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    border: 2px solid var(--color-border);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .print-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .print-logo-center {
+    display: flex;
+    align-items: center;
+  }
+
+  .print-logo {
+    max-width: 300px;
+    height: auto;
+  }
+
+  .print-qr-container {
+    text-align: center;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--color-background-muted);
+  }
+
+  .print-qr-code {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 8px auto;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    background: white;
+  }
+
+  .print-qr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .print-divider {
+    border-bottom: none;
+    margin: 16px 0;
+  }
+
+  .print-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-primary);
+  }
+
+  .print-section-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--color-text);
+    margin: 0;
+    padding-bottom: 0;
+  }
+
+  .order-info-section {
+    position: relative;
+  }
+
+  .allowance-badge {
+    background: var(--color-background-muted);
+    padding: 4px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .priority-value.priority-normal {
+    color: #22c55e !important;
+  }
+
+  .priority-value.priority-urgent {
+    color: #f97316 !important;
+  }
+
+  .priority-value.priority-veryurgent {
+    color: #ef4444 !important;
+  }
+
+  .print-item-count {
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--color-text-muted);
+  }
+
+  .print-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .print-info-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: var(--color-background-muted);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  .print-info-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .print-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+  }
+
+  .print-table-header {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 12px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .print-table-header-right {
+    text-align: right;
+  }
+
+  .print-table-row:nth-child(even) {
+    background-color: var(--color-background-muted);
+  }
+
+  .print-table-row:hover {
+    background-color: var(--color-background-hover);
+  }
+
+  .print-table-cell {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-text);
+  }
+
+  .print-table-cell-right {
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .print-table-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .print-table-footer {
+    background-color: var(--color-background-active);
+    font-weight: bold;
+  }
+
+  .print-table-footer-cell {
+    padding: 12px;
+    border-top: 2px solid var(--color-border);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--color-text);
+  }
+
+  /* Approval Workflow Cards - Screen */
+  .approval-workflow-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .approval-card {
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-background);
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .approval-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+  }
+
+  .approval-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--color-background-muted);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .approval-step-number {
+    font-weight: bold;
+    font-size: 11px;
+    color: var(--color-text);
+    background: var(--color-background);
+    border: 2px solid var(--color-primary);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .approval-status {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .approval-status.status-approved {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .approval-status.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+
+  .approval-status.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  .approval-status.status-in-progress {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+  }
+
+  .approval-status.status-returned,
+  .approval-status.status-returnedforreview {
+    background: #fff4e6;
+    color: #d9480f;
+    border: 1px solid #ffd8a8;
+  }
+
+  .approval-card-body {
+    padding: 12px 14px;
+  }
+
+  .approval-role {
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--color-text);
+    margin-bottom: 6px;
+  }
+
+  .approval-approver {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+  }
+
+  .approval-date {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+  }
+
+  .approval-notes {
+    font-size: 11px;
+    color: var(--color-text);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-border);
+    line-height: 1.4;
+  }
+
+  .approval-notes .notes-label {
+    font-weight: bold;
+    color: var(--color-text);
+  }
+
+  .print-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .print-footer-text {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN IMPROVEMENTS
+   ============================================ */
+
+/* Mobile First - Base Styles */
+@media (max-width: 640px) {
+
+  /* Main Layout */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Order List Sidebar */
+  aside {
+    position: relative !important;
+    top: auto !important;
+    max-height: none !important;
+  }
+
+  /* Info Grid - Stack on mobile */
+  .print-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Approval Workflow Cards - Single column on mobile */
+  .approval-workflow-cards {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Tables - Horizontal scroll on mobile (standard responsive pattern) */
+  .print-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    min-width: 500px;
+    /* Ensure minimum width for readability */
+  }
+
+  .print-table thead,
+  .print-table tbody,
+  .print-table tfoot,
+  .print-table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .print-table-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 100px;
+  }
+
+  /* Table wrapper for better mobile UX */
+  .print-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet - Medium Screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+
+  /* Grid Layout - Side by side on tablet with wider sidebar */
+  .grid {
+    grid-template-columns: minmax(320px, 380px) 1fr !important;
+  }
+
+  /* Info Grid - 2 columns on tablet */
+  .print-info-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Approval Workflow Cards - 2 columns on tablet */
+  .approval-workflow-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  /* Tables - Better spacing on tablet */
+  .print-table-cell {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Desktop - Large Screens */
+@media (min-width: 1025px) {
+
+  /* Ensure proper spacing on large screens */
+  .print-info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  }
+
+  .approval-workflow-cards {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+  /* Larger touch targets */
+  button,
+  .print-table-cell {
+    min-height: 44px;
+    padding: 12px !important;
+  }
+
+  /* Better spacing for touch */
+  .approval-card {
+    padding: 16px !important;
+  }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
+  .print-logo,
+  .print-qr-code {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+
+  /* Reduce vertical spacing in landscape */
+  .space-y-6>*+* {
+    margin-top: 1rem !important;
+  }
+
+  /* Compact header in landscape */
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+}
+
+/* Print Media Query - Ensure tables are properly formatted */
+@media print {
+  .print-table {
+    display: table !important;
+  }
+
+  .print-table thead {
+    display: table-header-group !important;
+  }
+
+  .print-table tbody {
+    display: table-row-group !important;
+  }
+
+  .print-table tr {
+    display: table-row !important;
+  }
+
+  .print-table td {
+    display: table-cell !important;
+  }
+
+  .print-table td::before {
+    display: none !important;
+  }
+}

@@ -1,0 +1,99 @@
+<table class="w-full">
+  <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+    <tr>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.itemName' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.supplier' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.lot' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.quantity' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.readyForIssue' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.expiryDate' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.invoiceNumber' | translate }}
+      </th>
+      <th class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.actions' | translate }}
+      </th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
+    <!-- Empty State -->
+    <tr *ngIf="items.length === 0">
+      <td colspan="8" class="px-6 py-12 text-center bg-[var(--color-background)]">
+        <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noItems' | translate }}</p>
+      </td>
+    </tr>
+    <!-- Inventory Items -->
+    <tr *ngFor="let detail of items"
+      class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
+        {{ getItemName(detail) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        {{ getSupplierName(detail) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        {{ detail.lot }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        {{ formatNumber(detail.originalQuantity) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+          [ngClass]="detail.readyForIssue ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]' : 'bg-[var(--color-error)]/20 text-[var(--color-error)]'">
+          {{ detail.readyForIssue ? ('common.yes' | translate) : ('common.no' | translate) }}
+        </span>
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        {{ formatDate(detail.expiryDate) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        <button *ngIf="detail.invoiceNumber" 
+          (click)="filterByInvoice.emit(detail.invoiceNumber)"
+          class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline font-medium transition-colors">
+          {{ detail.invoiceNumber }}
+        </button>
+        <span *ngIf="!detail.invoiceNumber" class="text-[var(--color-text-muted)]">-</span>
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+        <div class="flex items-center justify-center gap-2">
+          <!-- Edit Button - Only for inventory items (not static) -->
+          <ng-container *ngIf="!isStaticItem(detail)">
+            <button *appHasPermission="'Inventory.Edit'" (click)="editItem.emit(detail)"
+              class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+              [title]="'warehouseInventory.edit' | translate">
+              <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
+
+          <!-- Delete Button - Only for inventory items (not static) -->
+          <ng-container *ngIf="!isStaticItem(detail)">
+            <button *appHasPermission="'Inventory.Delete'" (click)="deleteItem.emit(detail)"
+              class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+              [title]="'warehouseInventory.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
+
+          <!-- View Details Button - For all items -->
+          <button (click)="viewItem.emit(detail)"
+            class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] rounded-lg transition-colors"
+            [title]="'warehouseInventory.viewDetails' | translate">
+            <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+          </button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

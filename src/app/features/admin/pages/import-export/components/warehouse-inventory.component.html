@@ -1,0 +1,104 @@
+<!-- Depot Selection -->
+<app-card [shadow]="true" class="mb-6 overflow-hidden">
+  <div class="p-6">
+    <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      {{ 'adminImportExport.selectDepot' | translate }}
+    </label>
+    <app-dropdown [options]="getDepotOptions()" [(ngModel)]="selectedDepotId" (selectionChange)="onDepotChange($event)"
+      placeholder="{{ 'adminImportExport.selectDepotPlaceholder' | translate }}" class="w-full max-w-md">
+    </app-dropdown>
+  </div>
+</app-card>
+
+<!-- Warehouse Type Tabs -->
+<app-card *ngIf="selectedDepotId" [shadow]="true" class="mb-6 overflow-hidden">
+  <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)] p-2">
+    <nav class="flex gap-1">
+      <button (click)="switchTab('ammunition')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'ammunition',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'ammunition'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        {{ 'warehouseInventory.tabs.ammunition' | translate }}
+      </button>
+      <button (click)="switchTab('weapon')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'weapon',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'weapon'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        {{ 'warehouseInventory.tabs.weapon' | translate }}
+      </button>
+      <button (click)="switchTab('explosive')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white shadow-lg scale-105': activeTab === 'explosive',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': activeTab !== 'explosive'
+      }"
+        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        {{ 'warehouseInventory.tabs.explosive' | translate }}
+      </button>
+    </nav>
+  </div>
+</app-card>
+
+<!-- Actions -->
+<app-card *ngIf="selectedDepotId" [shadow]="true" class="mb-6">
+  <div class="p-6">
+    <div class="flex items-center gap-4 flex-wrap">
+      <button (click)="onImportClick()"
+        class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Upload" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'common.import' | translate }}</span>
+      </button>
+      <button (click)="downloadTemplate()"
+        class="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="FileText" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'adminImportExport.downloadTemplate' | translate }}</span>
+      </button>
+      <button (click)="exportToExcel()"
+        [disabled]="(activeTab === 'weapon' ? filteredWarehouseAssets.length === 0 : filteredWarehouseInventory.length === 0) || loadingWarehouseInventory"
+        class="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Download" class="w-4 h-4"></lucide-angular>
+        <span>{{ 'common.exportToExcel' | translate }}</span>
+      </button>
+    </div>
+    <p class="mt-4 text-sm text-[var(--color-text-muted)]">
+      {{ 'adminImportExport.warehouseInventoryDescription' | translate }}
+    </p>
+  </div>
+</app-card>
+
+<!-- Loading State -->
+<app-loading-state *ngIf="loadingWarehouseInventory && selectedDepotId" size="lg" [fullPage]="false"
+  containerClass="text-center py-12">
+</app-loading-state>
+
+<!-- Warehouse Inventory Info -->
+<app-card *ngIf="!loadingWarehouseInventory && selectedDepotId" [shadow]="true">
+  <div class="p-6">
+    <p class="text-sm text-[var(--color-text-muted)]">
+      {{ 'adminImportExport.totalItems' | translate }}: <strong class="text-[var(--color-text)]">{{
+        activeTab === 'weapon' ? filteredWarehouseAssets.length : filteredWarehouseInventory.length }}</strong>
+    </p>
+  </div>
+</app-card>
+
+<!-- No Depot Selected Message -->
+<app-card *ngIf="!selectedDepotId" [shadow]="true">
+  <div class="p-6 text-center">
+    <p class="text-[var(--color-text-muted)]">
+      {{ 'adminImportExport.selectDepotMessage' | translate }}
+    </p>
+  </div>
+</app-card>
+
+<!-- Import Dialog -->
+<app-import-dialog [isOpen]="showImportModal" [entityName]="'warehouse-inventory'" (close)="closeImportModal()"
+  (preview)="onImportPreview($event)" (import)="onImportConfirmed($event)" (downloadTemplate)="downloadTemplate()">
+</app-import-dialog>
+
+<!-- Import Preview Dialog -->
+<app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData" [assetType]="activeTab"
+  (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+</app-import-preview-dialog>

@@ -1,0 +1,11 @@
+.page-wrapper {
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+

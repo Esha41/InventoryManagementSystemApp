@@ -1,0 +1,70 @@
+<div class="app-dropdown" [class.app-dropdown-disabled]="disabled" [class.app-dropdown-error]="error">
+  <button
+    type="button"
+    class="app-dropdown-trigger"
+    [class.app-dropdown-open]="isOpen"
+    [disabled]="disabled"
+    (click)="toggleDropdown()"
+    (blur)="onTriggerBlur()"
+  >
+    <span class="app-dropdown-label" [class.app-dropdown-placeholder]="!hasSelection">
+      {{ displayLabel }}
+    </span>
+    <lucide-angular
+      [img]="ChevronDown"
+      class="app-dropdown-icon"
+      [class.app-dropdown-icon-rotated]="isOpen"
+    ></lucide-angular>
+  </button>
+
+  <div class="app-dropdown-panel" *ngIf="isOpen">
+    <!-- Search Input -->
+    <div class="app-dropdown-search" *ngIf="options && options.length > 0" (click)="onSearchClick($event)">
+      <div class="relative">
+        <lucide-angular
+          [img]="Search"
+          class="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"
+          [ngClass]="{'start-3': !isRTL, 'end-3': isRTL}"
+        ></lucide-angular>
+        <input
+          type="text"
+          class="app-dropdown-search-input"
+          [value]="searchTerm"
+          (input)="onSearchChange($event)"
+          (click)="onSearchClick($event)"
+          [placeholder]="'common.search' | translate"
+          style="text-align: start;"
+          [ngStyle]="{'padding-left': isRTL ? '0.75rem' : '2.5rem', 'padding-right': isRTL ? '2.5rem' : '0.75rem'}"
+        />
+      </div>
+    </div>
+
+    <ul class="app-dropdown-list" [ngClass]="panelClass">
+      <li
+        class="app-dropdown-option"
+        *ngFor="let option of computedOptions; let idx = index; trackBy: trackOption"
+        [class.app-dropdown-option-selected]="isSelected(option)"
+        [class.app-dropdown-option-disabled]="isOptionDisabled(option)"
+        (click)="selectOption(option)"
+      >
+        <span *ngIf="multiple" class="flex items-center gap-2 w-full">
+          <input
+            type="checkbox"
+            [checked]="isSelected(option)"
+            (click)="$event.stopPropagation()"
+            (change)="selectOption(option)"
+            class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
+            [disabled]="isOptionDisabled(option)"
+          />
+          <span class="flex-1">{{ getOptionLabel(option) }}</span>
+        </span>
+        <span *ngIf="!multiple">{{ getOptionLabel(option) }}</span>
+      </li>
+      <li class="app-dropdown-empty" *ngIf="computedOptions.length === 0">
+        {{ searchTerm ? ('common.noResultsFound' | translate) : noDataText }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+

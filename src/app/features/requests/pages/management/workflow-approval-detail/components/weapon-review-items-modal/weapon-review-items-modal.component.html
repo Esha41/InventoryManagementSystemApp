@@ -1,0 +1,231 @@
+<!-- Weapon Review Items Modal -->
+<app-modal [isOpen]="isOpen" [title]="'workflowApprovalDetail.reviewItems' | translate" size="lg" (closed)="onClose()">
+  
+  <!-- Items Table -->
+  <div class="mb-4">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-sm font-semibold text-[var(--color-text)]">
+        {{ 'workflowApprovalDetail.items' | translate }} ({{ requestItems.length }})
+      </h3>
+      <button (click)="openAddItemModal()"
+        class="px-3 py-1.5 bg-[var(--color-brand)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-brand-dark)] transition-colors flex items-center gap-2">
+        <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+        {{ 'workflowApprovalDetail.addItem' | translate }}
+      </button>
+    </div>
+
+    <div *ngIf="requestItems.length > 0" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+      <table class="w-full">
+        <thead class="bg-[var(--color-background-muted)]">
+          <tr>
+            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowApprovalDetail.itemName' | translate }}
+            </th>
+            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowApprovalDetail.itemCode' | translate }}
+            </th>
+            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowApprovalDetail.nsn' | translate }}
+            </th>
+            <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowApprovalDetail.quantity' | translate }}
+            </th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-border)]">
+          <tr *ngFor="let item of requestItems" class="hover:bg-[var(--color-background-hover)]">
+            <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
+            <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
+            <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ getItemNSN(item) }}</td>
+            <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}</td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <button (click)="openEditItemModal(item)"
+                  class="px-2 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded text-sm font-medium transition-colors flex items-center gap-1">
+                  <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+                  {{ 'common.edit' | translate }}
+                </button>
+                <button (click)="openRemoveItemModal(item)"
+                  class="px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded text-sm font-medium transition-colors flex items-center gap-1">
+                  <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                  {{ 'common.remove' | translate }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="requestItems.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
+      <p>{{ 'workflowApprovalDetail.noItemsFound' | translate }}</p>
+    </div>
+  </div>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="onClose()"
+      class="px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.close' | translate }}
+    </button>
+  </div>
+</app-modal>
+
+<!-- Add Weapon Modal -->
+<app-modal [isOpen]="isAddItemModalOpen" [title]="'workflowApprovalDetail.addItem' | translate" size="md"
+  (closed)="closeAddItemModal()">
+  <form [formGroup]="addItemForm" class="space-y-4">
+    <!-- Weapon Selection -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'supplyRequestDetail.selectItem' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <app-dropdown 
+        class="w-full" 
+        formControlName="itemId" 
+        [options]="availableWeapons" 
+        optionValue="id"
+        [optionLabelFn]="getWeaponOptionLabel.bind(this)" 
+        [disabled]="loadingWeapons" 
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        [error]="!!(addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty))"
+        placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">
+      </app-dropdown>
+      <p *ngIf="addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'workflowApprovalDetail.itemRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input 
+        type="number" 
+        formControlName="quantity" 
+        min="1"
+        class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)" />
+      <p *ngIf="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'workflowApprovalDetail.quantityRequired' | translate }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.notes' | translate }}
+      </label>
+      <textarea 
+        formControlName="notes" 
+        rows="3"
+        class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'workflowApprovalDetail.notesPlaceholder' | translate }}"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="closeAddItemModal()"
+      class="px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onSaveAddItem()" [disabled]="addItemForm.invalid || savingItem || loadingWeapons"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingWeapons,
+        'bg-gray-400': addItemForm.invalid || savingItem || loadingWeapons
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Edit Weapon Quantity Modal -->
+<app-modal [isOpen]="isEditItemModalOpen" [title]="'workflowApprovalDetail.editItemQuantity' | translate" size="md"
+  (closed)="closeEditItemModal()">
+  <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+    <p class="text-sm font-semibold text-[var(--color-text)] mb-1">{{ 'workflowApprovalDetail.item' | translate }}:</p>
+    <p class="text-base text-[var(--color-text)]">{{ selectedItemForEdit.itemName }}</p>
+    <p class="text-xs text-[var(--color-text-muted)] mt-1">
+      {{ 'workflowApprovalDetail.itemCode' | translate }}: {{ getItemProductId(selectedItemForEdit) }}
+    </p>
+  </div>
+
+  <form [formGroup]="editItemForm" class="space-y-4">
+    <!-- Quantity -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-red-600">*</span>
+      </label>
+      <input 
+        type="number" 
+        formControlName="quantity" 
+        min="1"
+        class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        [class.border-red-500]="editItemForm.get('quantity')?.invalid && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)" />
+      <p *ngIf="editItemForm.get('quantity')?.hasError('required') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'workflowApprovalDetail.quantityRequired' | translate }}
+      </p>
+      <p *ngIf="editItemForm.get('quantity')?.hasError('min') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'workflowApprovalDetail.quantityMinError' | translate: { min: 1 } }}
+      </p>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'workflowApprovalDetail.notes' | translate }}
+      </label>
+      <textarea 
+        formControlName="notes" 
+        rows="3"
+        class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
+        placeholder="{{ 'workflowApprovalDetail.notesPlaceholder' | translate }}"></textarea>
+    </div>
+  </form>
+
+  <div modal-footer class="flex gap-3">
+    <button (click)="closeEditItemModal()"
+      class="px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onSaveEditItem()" [disabled]="editItemForm.invalid || savingItem"
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      [ngClass]="{
+        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
+        'bg-gray-400': editItemForm.invalid || savingItem
+      }">
+      <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
+      <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
+    </button>
+  </div>
+</app-modal>
+
+<!-- Remove Weapon Confirmation Modal -->
+<app-modal [isOpen]="isRemoveItemModalOpen" [title]="'workflowApprovalDetail.removeItem' | translate" size="sm"
+  (closed)="closeRemoveItemModal()">
+  <div class="py-4">
+    <p class="text-sm text-[var(--color-text)] mb-4">
+      {{ 'workflowApprovalDetail.removeItemConfirm' | translate }} "{{ selectedItemForRemove?.itemName }}"?
+    </p>
+  </div>
+  <div modal-footer class="flex gap-3">
+    <button (click)="closeRemoveItemModal()"
+      class="px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button (click)="onConfirmRemoveItem()"
+      class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+      {{ 'common.remove' | translate }}
+    </button>
+  </div>
+</app-modal>

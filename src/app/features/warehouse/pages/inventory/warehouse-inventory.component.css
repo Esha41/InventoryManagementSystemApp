@@ -1,0 +1,230 @@
+/* Warehouse Inventory Component Styles */
+
+/* Search field styles moved to inventory-filters component */
+
+.inventory-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.inventory-table th {
+  background-color: var(--color-background-muted);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+.inventory-table td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inventory-table tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* NEQ Gauge Styling */
+.neq-gauge {
+  background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.neq-indicator {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-background);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: left 0.5s ease-in-out;
+}
+
+/* Pagination Styling */
+.pagination-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+}
+
+.pagination-button.active {
+  background-color: var(--color-info);
+  border-color: var(--color-info);
+  color: var(--color-text-inverse);
+  opacity: 0.2;
+}
+
+/* Loading Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Table Responsive */
+@media (max-width: 768px) {
+  .inventory-table {
+    font-size: 0.875rem;
+  }
+  
+  .inventory-table th,
+  .inventory-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* Warning Message Styling */
+.warning-message {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1px solid #fecaca;
+}
+
+/* Back Button Styling */
+.back-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.back-button:hover {
+  transform: translateX(-2px);
+}
+
+/* Action Button Styling */
+.action-button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 50%;
+  padding: 0.5rem;
+}
+
+.action-button:hover {
+  background-color: #fef2f2;
+  transform: scale(1.1);
+}
+
+/* Status Colors */
+.status-low {
+  color: #059669;
+}
+
+.status-medium {
+  color: #d97706;
+}
+
+.status-high {
+  color: #dc2626;
+}
+
+.status-critical {
+  color: #991b1b;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Enhanced Tab Animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.scale-102 {
+  transform: scale(1.02);
+}
+
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+}
+
+/* Tab transition improvements */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pagination footer improvements */
+:host ::ng-deep app-pagination {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+:host ::ng-deep app-rows-per-page {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* Ensure pagination footer items stay on same row */
+:host ::ng-deep app-pagination .pagination-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Fix rows-per-page layout */
+:host ::ng-deep app-rows-per-page > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  white-space: nowrap !important;
+}
+
+/* Prevent any stacking in rows-per-page component */
+:host ::ng-deep app-rows-per-page span {
+  display: inline-block !important;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Fix dropdown to not take full width in pagination context */
+:host ::ng-deep app-rows-per-page app-dropdown {
+  display: inline-block !important;
+  width: auto !important;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep app-rows-per-page app-dropdown .app-dropdown {
+  width: auto !important;
+  min-width: 80px;
+}

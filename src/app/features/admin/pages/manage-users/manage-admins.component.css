@@ -1,0 +1,149 @@
+/* Manage Admins Component Styles */
+
+/* Table improvements */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* Better spacing for action buttons */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.action-button {
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-button:hover {
+  background-color: var(--color-background-hover);
+  transform: scale(1.05);
+}
+
+/* Improved permission badges */
+.permission-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--color-background-hover);
+  font-size: 0.75rem;
+  border-radius: var(--radius-md);
+  transition: background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.permission-badge:hover {
+  background-color: var(--color-background-active);
+}
+
+/* Status badge animations */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Avatar styling */
+.user-avatar {
+  flex-shrink: 0;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom right, var(--color-accent), var(--color-accent-dark));
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+}
+
+/* Table row hover effect */
+.table-row {
+  border-bottom: 1px solid var(--color-border-muted);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-row:hover {
+  background-color: var(--color-background-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Selected table option styling */
+.selected-table-option {
+  background-color: color-mix(in srgb, var(--color-brand) 10%, transparent) !important;
+}
+
+/* Pagination footer improvements */
+:host ::ng-deep app-pagination {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+:host ::ng-deep app-rows-per-page {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* Ensure pagination footer items stay on same row */
+:host ::ng-deep app-pagination .pagination-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Fix rows-per-page layout */
+:host ::ng-deep app-rows-per-page > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+  white-space: nowrap !important;
+}
+
+/* Prevent any stacking in rows-per-page component */
+:host ::ng-deep app-rows-per-page span {
+  display: inline-block !important;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Fix dropdown to not take full width in pagination context */
+:host ::ng-deep app-rows-per-page app-dropdown {
+  display: inline-block !important;
+  width: auto !important;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep app-rows-per-page app-dropdown .app-dropdown {
+  width: auto !important;
+  min-width: 80px;
+}

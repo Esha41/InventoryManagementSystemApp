@@ -1,0 +1,58 @@
+<div
+    class="flex flex-col h-full bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] shadow-sm transition-all duration-300 hover:shadow-md">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 pb-0 gap-4 sm:gap-0">
+        <div>
+            <h3 class="text-lg font-semibold text-[var(--color-text)] m-0 leading-tight">{{
+                'adminDashboard.charts.requestTrends' | translate }}</h3>
+            <p class="text-sm text-[var(--color-text-muted)] mt-1">{{ 'adminDashboard.charts.' + period + 'Activity' |
+                translate }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex bg-[var(--color-background-muted)] p-1 rounded-lg">
+                <button *ngFor="let p of ['weekly', 'monthly', 'yearly']" (click)="setPeriod(p)"
+                    [class.bg-[var(--color-background)]]="period === p" [class.text-[var(--color-text)]]="period === p"
+                    [class.shadow-sm]="period === p" [class.text-[var(--color-text-muted)]]="period !== p"
+                    class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 hover:text-[var(--color-text)] focus:outline-none">
+                    {{ 'adminDashboard.charts.' + p | translate }}
+                </button>
+            </div>
+            <button (click)="loadData()" [disabled]="loading"
+                class="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+                [title]="'adminDashboard.refresh' | translate">
+                <lucide-icon [img]="RefreshCw"
+                    class="w-5 h-5 transition-transform duration-700 ease-in-out group-hover:rotate-180"
+                    [class.animate-spin]="loading"></lucide-icon>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-1 relative min-h-[300px] p-4">
+        <!-- Loading State -->
+        <div *ngIf="loading"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/80 backdrop-blur-sm z-10 rounded-b-xl gap-3">
+            <div
+                class="w-10 h-10 border-4 border-[var(--color-brand)]/30 border-t-[var(--color-brand)] rounded-full animate-spin">
+            </div>
+            <span class="text-[var(--color-text-muted)] text-sm font-medium">{{ 'adminDashboard.charts.analyzingTrends'
+                | translate }}</span>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-[var(--color-background)]/90 z-10 rounded-b-xl gap-4 p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <lucide-icon [img]="AlertCircle" class="w-6 h-6 text-red-500"></lucide-icon>
+            </div>
+            <div>
+                <p class="text-[var(--color-text)] font-medium mb-1">{{ 'adminDashboard.charts.failedToLoad' | translate
+                    }}</p>
+                <button (click)="loadData()" class="text-sm text-[var(--color-brand)] hover:underline font-medium">
+                    {{ 'adminDashboard.charts.retry' | translate }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div echarts [options]="chartOptions" class="w-full h-full" *ngIf="!loading && !error"></div>
+    </div>
+</div>

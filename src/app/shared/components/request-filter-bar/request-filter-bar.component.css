@@ -1,0 +1,44 @@
+/* Request Filter Bar Component Styles */
+
+/* Search input styling */
+.dashboard-search-input {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-search-input:focus {
+    outline: none;
+    background-color: var(--color-background);
+    box-shadow: inset 0 0 0 2px var(--color-brand-light, rgba(208, 184, 136, 0.2));
+}
+
+.dashboard-search-input::placeholder {
+    font-size: 0.875rem;
+}
+
+/* Dropdown base styling - allows Tailwind classes to control width */
+::ng-deep app-dropdown.w-44,
+::ng-deep app-dropdown.w-40,
+::ng-deep app-dropdown.w-48,
+::ng-deep app-dropdown.w-52 {
+    display: block;
+}
+
+::ng-deep app-dropdown .app-dropdown,
+::ng-deep app-dropdown .app-dropdown-trigger {
+    width: 100%;
+    height: 2.5rem;
+    border-radius: var(--radius-lg);
+    border-color: var(--color-border);
+}
+
+::ng-deep app-dropdown .app-dropdown-panel {
+    width: 100%;
+    margin-top: 0.5rem;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Soft shadow utility */
+.shadow-soft {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

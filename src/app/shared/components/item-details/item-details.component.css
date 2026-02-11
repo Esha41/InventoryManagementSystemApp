@@ -1,0 +1,11 @@
+/* Item Details Component Styles */
+.page-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}

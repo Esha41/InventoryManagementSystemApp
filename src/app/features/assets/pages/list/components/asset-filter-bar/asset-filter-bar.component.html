@@ -1,0 +1,151 @@
+<app-card [shadow]="true">
+  <div class="p-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+      <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ 'assetList.filters.title' | translate }}</h3>
+      <button type="button" (click)="onClearFilters()"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
+        <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
+        <span>{{ 'assetList.filters.clear' | translate }}</span>
+      </button>
+    </div>
+    <div class="flex flex-wrap items-end gap-4">
+      <!-- Search -->
+      <div class="relative flex-1 min-w-[250px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.search' | translate }}
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+            <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+          </div>
+          <input type="text" [(ngModel)]="filterState.searchTerm"
+            (keyup.enter)="onSearchClick()"
+            [placeholder]="'assetList.searchPlaceholder' | translate"
+            class="w-full ps-10 pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all" />
+          <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">
+            <button *ngIf="filterState.searchTerm" (click)="clearSearch()"
+              class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+              <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+            </button>
+            <button (click)="onSearchClick()"
+              class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+              {{ 'common.search' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ammunition Filters -->
+      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.caseType' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCaseType" (selectionChange)="onFilterChange()"
+          [options]="caseTypeFilterOptions" optionLabel="label" optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.hazardDivision' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedHazardDivision"
+          (selectionChange)="onFilterChange()" [options]="hazardDivisionFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.compatibility' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCompatibility"
+          (selectionChange)="onFilterChange()" [options]="compatibilityFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Weapon Filters -->
+      <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.weaponType' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponType"
+          (selectionChange)="onFilterChange()" [options]="weaponTypeFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allWeaponTypes' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.classification' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponClassification"
+          (selectionChange)="onFilterChange()" [options]="weaponClassificationFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.country' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCountryOfManufacture"
+          (selectionChange)="onFilterChange()" [options]="countryFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allCountries' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <!-- Explosive Filters -->
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.explosiveType' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveType"
+          (selectionChange)="onFilterChange()" [options]="explosiveTypeFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allExplosiveTypes' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.classification' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveClassification"
+          (selectionChange)="onFilterChange()" [options]="explosiveClassificationFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.hazardDivision' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveHazardDivision"
+          (selectionChange)="onFilterChange()" [options]="explosiveHazardDivisionFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.compatibility' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveCompatibility"
+          (selectionChange)="onFilterChange()" [options]="explosiveCompatibilityFilterOptions" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+        </app-dropdown>
+      </div>
+    </div>
+  </div>
+</app-card>

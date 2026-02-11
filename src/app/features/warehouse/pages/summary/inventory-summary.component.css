@@ -1,0 +1,171 @@
+/* Inventory Summary - Dark Mode Compatible */
+
+.inventory-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+}
+
+.inventory-table th {
+    background-color: var(--color-background-muted);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.inventory-table td {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.inventory-table tr:hover {
+    background-color: var(--color-background-hover);
+}
+
+/* Accordion row styles */
+.accordion-row {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.accordion-row:hover {
+    background-color: var(--color-background-hover);
+}
+
+.accordion-row.expanded {
+    background-color: var(--color-background-active);
+}
+
+.expand-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.expand-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Detail row animation */
+.detail-row {
+    animation: slideDown 0.3s ease;
+}
+
+/* Lot details container - independent scrolling */
+.detail-row td {
+    padding: 0 !important;
+}
+
+.detail-row .lot-details-container {
+    width: 100%;
+    padding: 1.5rem;
+    background-color: var(--color-background-muted);
+}
+
+/* Lot details table - flexible width to fit container */
+.lot-details-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
+}
+
+/* Lot details table headers - better spacing */
+.lot-details-table thead th {
+    padding: 0.75rem 0.5rem !important;
+    background-color: var(--color-background-muted);
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Lot details table cells - better spacing */
+.lot-details-table tbody td {
+    padding: 0.75rem 0.5rem !important;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Make quantity columns right-aligned and use percentage width */
+.lot-details-table th:nth-child(8),
+.lot-details-table td:nth-child(8),
+.lot-details-table th:nth-child(9),
+.lot-details-table td:nth-child(9),
+.lot-details-table th:nth-child(10),
+.lot-details-table td:nth-child(10),
+.lot-details-table th:nth-child(11),
+.lot-details-table td:nth-child(11) {
+    text-align: right;
+    width: 8%;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-brand);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Status badges - using CSS variables for theming */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-ready {
+    background-color: color-mix(in srgb, var(--color-success) 20%, transparent);
+    color: var(--color-success);
+}
+
+.status-expired {
+    background-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+    color: var(--color-error);
+}
+
+.status-empty {
+    background-color: var(--color-background-active);
+    color: var(--color-text-muted);
+}
+
+.status-not-ready {
+    background-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+    color: var(--color-warning);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .inventory-table {
+        font-size: 0.875rem;
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}

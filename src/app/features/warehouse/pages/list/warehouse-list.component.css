@@ -1,0 +1,179 @@
+/* Warehouse Component Styles */
+
+.warehouse-card {
+  transition: all 0.3s ease-in-out;
+  border: 1px solid #e5e7eb;
+}
+
+.warehouse-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Vertical Layout Specific Styles */
+.warehouse-vertical-layout {
+  max-width: 56rem; /* max-w-4xl */
+  margin: 0 auto;
+}
+
+.warehouse-card-vertical {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+/* Progress Bar Styling */
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+/* Military Emblem Styling */
+.military-emblem {
+  background: linear-gradient(135deg, #991b1b, #7f1d1d);
+  border: 4px solid #fbbf24;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.military-emblem:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Logo Image Styling */
+.warehouse-logo {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  filter: brightness(1.1) contrast(1.1);
+}
+
+.warehouse-logo:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Enhanced Progress Bars */
+.progress-container {
+  background-color: #f3f4f6;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-fill-orange {
+  background: linear-gradient(90deg, #fb923c, #f97316);
+  transition: width 0.5s ease-in-out;
+  box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+  position: relative;
+}
+
+.progress-fill-orange::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: inherit;
+}
+
+.progress-fill-green {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  transition: width 0.5s ease-in-out;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+  position: relative;
+}
+
+.progress-fill-green::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: inherit;
+}
+
+/* View Button Styling */
+.view-button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease-in-out;
+}
+
+.view-button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Card hover effects */
+.card-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .warehouse-card {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .warehouse-card {
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .military-emblem {
+    width: 4rem;
+    height: 4rem;
+  }
+}
+
+/* Typography enhancements */
+.warehouse-title {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.percentage-text {
+  font-weight: 700;
+  font-size: 1.125rem;
+}

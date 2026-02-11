@@ -1,0 +1,306 @@
+<div class="min-h-screen bg-[var(--color-background)] p-6">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button (click)="onBack()"
+                    class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors">
+                    <lucide-angular [img]="ArrowLeft" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+                </button>
+                <div>
+                    <h1 class="text-3xl font-bold text-[var(--color-text)]">
+                        {{ 'assetDetails.title' | translate }}
+                    </h1>
+                    <p class="text-sm text-[var(--color-text-muted)] mt-1">
+                        {{ 'assetDetails.subtitle' | translate }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div *ngIf="asset && !loading" class="flex items-center gap-2">
+                <button (click)="onEdit()" *appHasPermission="'Asset.Edit'"
+                    class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] transition-colors flex items-center gap-2">
+                    <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                    {{ 'common.edit' | translate }}
+                </button>
+                <button (click)="onDelete()" *appHasPermission="'Asset.Delete'"
+                    class="px-4 py-2 bg-[var(--color-error)] text-white rounded-lg hover:bg-[var(--color-error)]/90 transition-colors flex items-center gap-2">
+                    <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    {{ 'common.delete' | translate }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center py-12">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-brand)] mx-auto mb-4">
+                </div>
+                <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <app-card *ngIf="error && !loading" [shadow]="true">
+            <div class="text-center py-12">
+                <p class="text-[var(--color-error)] mb-4">{{ error }}</p>
+                <button (click)="onBack()"
+                    class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-hover)] transition-colors">
+                    {{ 'common.back' | translate }}
+                </button>
+            </div>
+        </app-card>
+
+        <!-- Asset Details -->
+        <div *ngIf="asset && !loading" class="space-y-6">
+            <!-- Basic Information -->
+            <app-card [shadow]="true">
+                <h2
+                    class="text-xl font-semibold text-[var(--color-text)] mb-4 pb-3 border-b border-[var(--color-border)]">
+                    {{ 'assetDetails.basicInformation' | translate }}
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left side - Information fields -->
+                    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                                {{ 'assetDetails.weaponName' | translate }}
+                            </label>
+                            <p class="text-[var(--color-text)] font-medium">{{ getItemName() }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                                {{ 'assetDetails.serialNumber' | translate }}
+                            </label>
+                            <p class="text-[var(--color-text)]">{{ asset.serialNumber || '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                                {{ 'assetDetails.rfidTag' | translate }}
+                            </label>
+                            <p class="text-[var(--color-text)]">{{ asset.rfid || '-' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                                {{ 'assetDetails.assetTag' | translate }}
+                            </label>
+                            <p class="text-[var(--color-text)]">{{ asset.assetTag || '-' }}</p>
+                        </div>
+                        <div *ngIf="!isWeapon">
+                            <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                                {{ 'assetDetails.status' | translate }}
+                            </label>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" [ngClass]="{
+                    'bg-[var(--color-success)]/20 text-[var(--color-success)]': asset.status === 1,
+                    'bg-[var(--color-info)]/20 text-[var(--color-info)]': asset.status === 2,
+                    'bg-[var(--color-warning)]/20 text-[var(--color-warning)]': asset.status === 3,
+                    'bg-[var(--color-error)]/20 text-[var(--color-error)]': asset.status === 4
+                  }">
+                                {{ getStatusLabel() }}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Right side - Image -->
+                    <div class="flex items-center justify-center lg:justify-end">
+                        <div *ngIf="imageUrl; else noImagePlaceholder" class="flex justify-center">
+                            <img [src]="imageUrl" [alt]="getItemName()" 
+                                class="max-w-xs max-h-64 w-auto h-auto object-contain rounded-lg">
+                        </div>
+                        <ng-template #noImagePlaceholder>
+                            <div class="flex items-center justify-center w-full h-48 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 text-[var(--color-text-muted)] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.noImage' | translate }}</p>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </app-card>
+
+
+            <!-- Additional Details -->
+            <app-card [shadow]="true">
+                <h2
+                    class="text-xl font-semibold text-[var(--color-text)] mb-4 pb-3 border-b border-[var(--color-border)]">
+                    {{ 'assetDetails.additionalDetails' | translate }}
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetDetails.condition' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ asset.condition || '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetDetails.purchaseDate' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ formatDate(asset.purchaseDate) }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetDetails.warrantyExpiryDate' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ formatDate(asset.warrantyExpiryDate) }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetDetails.purchasePrice' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ asset.purchasePrice || '-' }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetDetails.notes' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)] whitespace-pre-wrap">{{ asset.notes || '-' }}</p>
+                    </div>
+                </div>
+            </app-card>
+
+            <!-- Weapon Specifications (when asset is a weapon) -->
+            <app-card *ngIf="isWeapon && asset?.item" [shadow]="true">
+                <h2
+                    class="text-xl font-semibold text-[var(--color-text)] mb-4 pb-3 border-b border-[var(--color-border)]">
+                    {{ 'weapon.specifications' | translate }}
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div *ngIf="getItemNo() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'newIssueRequest.productId' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getItemNo() }}</p>
+                    </div>
+                    <div *ngIf="getPartNo() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetList.table.partNo' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getPartNo() }}</p>
+                    </div>
+                    <div *ngIf="getNSN() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'newIssueRequest.nsn' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getNSN() }}</p>
+                    </div>
+                    <div *ngIf="getWeaponType() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.weaponType' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getWeaponType() }}</p>
+                    </div>
+                    <div *ngIf="getCaliber() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.caliber' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getCaliber() }}</p>
+                    </div>
+                    <div *ngIf="getCaliberUnit() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.caliberUnit' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getCaliberUnit() }}</p>
+                    </div>
+                    <div *ngIf="getModel() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.model' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getModel() }}</p>
+                    </div>
+                    <div *ngIf="getYearOfManufacture() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.yearOfManufacture' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getYearOfManufacture() }}</p>
+                    </div>
+                    <div *ngIf="getCountryOfManufacture() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'weapon.countryOfManufacture' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getCountryOfManufacture() }}</p>
+                    </div>
+                    <div *ngIf="getDistribution() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            Distribution
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
+                    </div>
+                    <div *ngIf="getReferenceNo() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            Reference No
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+                    </div>
+                    <div *ngIf="getUnNumber() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            UN Number
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getUnNumber() }}</p>
+                    </div>
+                    <div *ngIf="getClassification() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            Classification
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+                    </div>
+                    <div *ngIf="getPrice() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetList.table.price' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getPrice() }}</p>
+                    </div>
+                    <div *ngIf="getMinimumQuantity() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetList.table.minimumQuantity' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+                    </div>
+                    <div *ngIf="getExpiryDate() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetList.table.expiryDate' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getExpiryDate() }}</p>
+                    </div>
+                    <div *ngIf="getReadyForIssue() !== '-'">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'assetList.viewModal.readyForIssue' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)]">{{ getReadyForIssue() }}</p>
+                    </div>
+                    <div *ngIf="getWeaponNotes() !== '-'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                            {{ 'common.comments' | translate }}
+                        </label>
+                        <p class="text-[var(--color-text)] whitespace-pre-wrap">{{ getWeaponNotes() }}</p>
+                    </div>
+                </div>
+            </app-card>
+        </div>
+
+        <!-- Edit Asset Modal -->
+        <app-edit-asset-modal 
+            [isOpen]="showEditModal" 
+            [asset]="asset" 
+            [loading]="loadingAsset"
+            (closed)="onEditModalClosed()"
+            (saved)="onEditModalSaved()">
+        </app-edit-asset-modal>
+
+        <!-- Delete Confirmation Dialog -->
+        <app-confirm-dialog 
+            [isOpen]="showDeleteDialog" 
+            [title]="'assetDetails.deleteConfirm' | translate"
+            [message]="('assetDetails.deleteConfirm' | translate) + ': ' + getDeleteMessage()"
+            [description]="'assetDetails.deleteWarning' | translate"
+            [confirmText]="'common.delete' | translate"
+            [cancelText]="'common.cancel' | translate"
+            confirmVariant="danger"
+            (confirmed)="onDeleteConfirm()"
+            (cancelled)="onDeleteCancel()">
+        </app-confirm-dialog>
+    </div>
+</div>

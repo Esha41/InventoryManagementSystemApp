@@ -1,0 +1,87 @@
+/* Screen-only styles for order items table */
+.print-section {
+  background: var(--color-background);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border: 2px solid var(--color-border);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.print-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--color-text);
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.print-item-count {
+  font-size: 14px;
+  font-weight: normal;
+  color: var(--color-text-muted);
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.print-table-header {
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 12px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.print-table-header-right {
+  text-align: right;
+}
+
+.print-table-row:nth-child(even) {
+  background-color: var(--color-background-muted);
+}
+
+.print-table-row:hover {
+  background-color: var(--color-background-hover);
+}
+
+.print-table-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.print-table-cell-right {
+  text-align: right;
+  font-weight: 600;
+}
+
+.print-table-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.print-table-footer {
+  background-color: var(--color-background-active);
+  font-weight: bold;
+}
+
+.print-table-footer-cell {
+  padding: 12px;
+  border-top: 2px solid var(--color-border);
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--color-text);
+}

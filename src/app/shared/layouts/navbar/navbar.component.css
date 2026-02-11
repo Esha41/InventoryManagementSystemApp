@@ -1,0 +1,41 @@
+/* Navbar specific styles - uses CSS variable that changes with theme */
+.navbar-theme {
+  background-color: var(--color-navbar-bg) !important;
+  transition: background-color var(--transition-base);
+}
+
+/* Navbar button hover states */
+.navbar-button-hover {
+  background-color: transparent;
+}
+
+.navbar-button-hover:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark mode navbar button hover */
+[data-theme="dark"] .navbar-theme .navbar-button-hover:hover,
+.dark .navbar-theme .navbar-button-hover:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure navbar text is visible in dark mode */
+[data-theme="dark"] .navbar-theme .text-white,
+.dark .navbar-theme .text-white,
+[data-theme="dark"] .navbar-theme .text-white\/80,
+.dark .navbar-theme .text-white\/80 {
+  color: var(--color-text) !important;
+}
+
+/* Logo styling */
+.navbar-logo {
+  transition: filter var(--transition-base);
+}
+
+/* Dark mode logo - make it white */
+[data-theme="dark"] .navbar-theme .navbar-logo,
+.dark .navbar-theme .navbar-logo,
+[data-theme="dark"] .navbar-logo,
+.dark .navbar-logo {
+  filter: brightness(0) invert(1) !important;
+}

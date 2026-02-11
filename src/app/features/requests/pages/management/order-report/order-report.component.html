@@ -1,0 +1,136 @@
+<div class="min-h-screen bg-[var(--color-background-muted)] pb-12">
+  <!-- Modern Header -->
+  <div class="bg-[var(--color-background)] border-b border-[var(--color-border)] shadow-custom-sm mb-4 sm:mb-6 md:mb-8">
+    <div class="w-full mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-5 lg:py-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <button (click)="goBack()"
+            class="group self-start sm:self-auto inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)] rounded-lg transition-all duration-200">
+            <lucide-angular [img]="backIcon" class="h-4 w-4 group-hover:-translate-x-0.5 transition-transform"
+              [class.group-hover:translate-x-0.5]="isRTL"></lucide-angular>
+            <span class="hidden sm:inline">{{ 'common.back' | translate }}</span>
+          </button>
+          <div class="hidden sm:block h-8 w-px bg-[var(--color-border)]"></div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
+              {{ 'requestsManagement.orderReport.title' | translate }}
+            </h1>
+            <p class="text-xs sm:text-sm text-[var(--color-text-muted)] mt-0.5">
+              {{ 'requestsManagement.orderReport.subtitle' | translate:{ department: 'All Departments' } }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="w-full mx-auto px-4 md:px-6 lg:px-8">
+    <div class="grid gap-4 md:gap-6 lg:gap-8 transition-all duration-300 ease-in-out lg:grid-cols-[minmax(380px,420px)_1fr] xl:grid-cols-[minmax(420px,480px)_1fr]">
+      <!-- Orders List Sidebar -->
+      <app-order-list
+        [orders]="orders"
+        [filteredOrders]="filteredOrders"
+        [selectedOrderId]="selectedOrderId"
+        [loading]="ordersLoading"
+        [error]="ordersError"
+        [searchTerm]="searchTerm"
+        (orderSelected)="selectOrder($event)"
+        (refreshRequested)="loadOrders()"
+        (searchChanged)="onSearchChange($event)">
+      </app-order-list>
+
+      <!-- Order Details Main Content -->
+      <main class="space-y-4 md:space-y-6 transition-all duration-300 ease-in-out min-w-0 flex-1">
+        <!-- Loading State -->
+        <app-loading-state *ngIf="detailsLoading" message="common.loading" size="md"
+          containerClass="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-border)] px-8 py-16">
+        </app-loading-state>
+
+        <!-- Error State -->
+        <app-error-state *ngIf="!detailsLoading && errorMessage" [error]="errorMessage || ''" variant="inline"
+          containerClass="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-[var(--color-error)] px-6 py-4"
+          messageClass="text-sm text-[var(--color-error)]">
+        </app-error-state>
+
+        <!-- Order Report Content -->
+        <div
+          *ngIf="!detailsLoading && !errorMessage && orderSummary && orderSummary.orderId && orderSummary.orderId.trim() !== ''; else selectOrderPlaceholder">
+          <!-- Action Bar (Screen Only) -->
+          <div
+            class="screen-only bg-blue-600 rounded-xl sm:rounded-2xl shadow-custom-xl border-2 border-[var(--color-primary-dark)] p-4 sm:p-6 text-white">
+            <div class="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0 flex-1">
+                <h2 class="text-lg sm:text-xl lg:text-2xl font-bold mb-1 sm:mb-1.5 truncate">{{ orderSummary.orderId }}</h2>
+                <p class="text-xs sm:text-sm text-white/80 line-clamp-2 sm:line-clamp-none">
+                  {{ resolveUsagePurpose() || ('requestsManagement.orderReport.subtitle' | translate:{ department:
+                  orderSummary.department }) }}
+                </p>
+              </div>
+              <div class="flex-shrink-0">
+                <button type="button" (click)="printReport()"
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                  <lucide-angular [img]="Printer" class="h-4 w-4"></lucide-angular>
+                  <span class="hidden sm:inline">{{ 'requestsManagement.orderReport.print' | translate }}</span>
+                  <span class="sm:hidden">{{ 'common.print' | translate }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Print Content -->
+          <div #reportContent class="print-report-content">
+            <!-- Print Header with Logo and QR Code -->
+            <app-order-report-header
+              [logoUrl]="logoDataUrl"
+              [qrCodeDataUrl]="qrCodeDataUrl"
+              [orderId]="orderSummary.orderId">
+            </app-order-report-header>
+
+            <!-- Order Information Section -->
+            <app-order-info-section
+              [orderSummary]="orderSummary"
+              [isRTL]="isRTL">
+            </app-order-info-section>
+
+            <!-- Items Table Section -->
+            <app-order-items-table
+              [items]="orderItems"
+              [totalQuantity]="orderSummary.totalQuantity">
+            </app-order-items-table>
+
+            <!-- Approval Workflow Section -->
+            <app-approval-workflow
+              [workflow]="approvalWorkflow"
+              [isRTL]="isRTL">
+            </app-approval-workflow>
+
+            <!-- Print Footer -->
+            <div class="print-footer">
+              <p class="print-footer-text">{{ 'requestsManagement.orderReport.labels.generatedOn' | translate }}: {{
+                currentDate }}</p>
+              <p class="print-footer-text">{{ 'requestsManagement.orderReport.labels.printedBy' | translate }}: {{
+                currentUser }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <ng-template #selectOrderPlaceholder>
+          <div
+            class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border-2 border-dashed border-[var(--color-border)] px-8 py-20 text-center">
+            <div class="flex flex-col items-center gap-5">
+              <div
+                class="w-20 h-20 rounded-2xl bg-[var(--color-background-muted)] flex items-center justify-center shadow-inner">
+                <lucide-angular [img]="FileDown" class="w-10 h-10 text-[var(--color-text-muted)]"></lucide-angular>
+              </div>
+              <p class="text-lg font-bold text-[var(--color-text)]">
+                {{ 'requestsManagement.orderReport.detailPlaceholder' | translate }}
+              </p>
+            </div>
+          </div>
+        </ng-template>
+      </main>
+    </div>
+  </div>
+</div>

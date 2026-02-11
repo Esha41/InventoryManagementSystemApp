@@ -1,0 +1,57 @@
+<div class="status-card-container">
+  <!-- Empty State -->
+  <div *ngIf="!orders || orders.length === 0" class="status-card-empty">
+    <p>{{ 'common.noData' | translate }}</p>
+  </div>
+
+  <!-- Individual Order Cards -->
+  <div *ngFor="let order of orders" class="status-card" [class.action-required-highlight]="isMyTurn">
+    <!-- Header -->
+    <div class="status-card__header">
+      <div class="status-card__headline flex items-center gap-2">
+        <span class="status-card__dot {{ getDotColor() }}"></span>
+        <span *ngIf="isMyTurn" class="action-required-badge animate-action-glow">
+          {{ 'requestsManagement.actionRequired' | translate }}
+        </span>
+      </div>
+      <span class="status-card__badge">{{ getStatusTranslationKey() | translate }}</span>
+    </div>
+
+    <!-- Accent Divider -->
+    <div class="status-card__divider" [ngClass]="getDividerClass()"></div>
+
+    <!-- Content -->
+    <div class="status-card__content">
+      <!-- Order Details Grid -->
+      <div class="status-card__info-grid">
+        <div class="status-card__info">
+          <span class="status-card__label">{{ getNumberLabelKey() | translate }}</span>
+          <span class="status-card__value status-card__value--strong">{{ order.orderId }}</span>
+        </div>
+        <div class="status-card__info" *ngIf="order.requestDate">
+          <span class="status-card__label">{{ 'dashboard.requestDate' | translate }}</span>
+          <span class="status-card__value">{{ formatApprovalDateTime(order.requestDate) || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <!-- Department and Requester -->
+      <div class="status-card__info-grid status-card__info-grid--bordered">
+        <div class="status-card__info">
+          <span class="status-card__label">{{ 'dashboard.department' | translate }}</span>
+          <span class="status-card__value">{{ order.departmentName || 'N/A' }}</span>
+        </div>
+        <div class="status-card__info">
+          <span class="status-card__label">{{ 'dashboard.requester' | translate }}</span>
+          <span class="status-card__value">{{ order.requesterName || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <!-- View Details Button -->
+      <div class="status-card__action" *ngIf="hasDetailsButton()">
+        <button (click)="emitOrderDetails(order.requestId); $event.stopPropagation()" class="status-card__button">
+          {{ 'dashboard.viewDetails' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
