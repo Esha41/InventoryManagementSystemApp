@@ -6,7 +6,9 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
 import { DxReportViewerModule } from 'devexpress-reporting-angular';
 import { TranslationService } from '@services/translation.service';
 import { ReportService } from '@services/report.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { environment } from '@environments/environment';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-report-viewer',
@@ -34,7 +36,8 @@ export class ReportViewerComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private authService: BackendAuthService
   ) {
     // Extract base URL from environment
     const apiUrl = environment.apiUrl;
@@ -43,14 +46,34 @@ export class ReportViewerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.reportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
+    let baseReportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
     this.reportName = this.route.snapshot.queryParamMap.get('reportName') || 'Report';
+    
+    // Get departmentId(s) from user claims/token
+    // User can have single department, multiple departments, or null
+    const currentUser = this.authService.getCurrentUser();
+    const departmentId = currentUser?.departmentId;
+    
+    // Append departmentId to reportUrl if available
+    // Support multiple departments by comma-separating them
+    if (departmentId && baseReportUrl) {
+      const separator = baseReportUrl.includes('?') ? '&' : '?';
+      // If departmentId is an array, join with commas; otherwise use as-is
+      const deptIdValue = Array.isArray(departmentId) 
+        ? departmentId.join(',') 
+        : departmentId.toString();
+      this.reportUrl = `${baseReportUrl}${separator}departmentId=${deptIdValue}`;
+    } else {
+      this.reportUrl = baseReportUrl;
+    }
     
     console.log('Report Viewer Configuration:', {
       reportUrl: this.reportUrl,
+      baseReportUrl: baseReportUrl,
       reportName: this.reportName,
       host: this.host,
-      invokeAction: this.invokeAction
+      invokeAction: this.invokeAction,
+      departmentId: departmentId
     });
   }
 
