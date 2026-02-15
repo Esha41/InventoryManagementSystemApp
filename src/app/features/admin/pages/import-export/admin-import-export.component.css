@@ -6,6 +6,34 @@
 .page-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    padding: 1.5rem;
+  }
+}
+
+/* Section tabs - scrollable on small screens */
+.section-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.section-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.section-tabs-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
 }
 

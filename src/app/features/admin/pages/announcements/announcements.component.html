@@ -1,4 +1,5 @@
-<div class="announcements-container p-6">
+<div class="announcements-container page-wrapper">
+  <div class="page-container py-4 sm:py-6">
   <!-- Header -->
   <div class="announcements-header">
     <div class="header-content">
@@ -45,8 +46,49 @@
       <p class="empty-subtitle">{{ 'announcements.create' | translate }}</p>
     </div>
 
-    <!-- Table View (only when there's data) -->
-    <div *ngIf="filteredAnnouncements().length > 0" class="table-wrapper">
+    <!-- Mobile Card View (only when there's data) -->
+    <div *ngIf="filteredAnnouncements().length > 0" class="mobile-cards announcements-mobile-view">
+      <div *ngFor="let announcement of filteredAnnouncements()" class="announcement-card">
+        <div class="card-header">
+          <p class="card-message" [title]="announcement.message">{{ announcement.message }}</p>
+          <div class="card-badges">
+            <span class="badge" [ngClass]="getPriorityBadgeClass(announcement.priority)">
+              {{ ('common.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+            </span>
+            <span class="badge" [ngClass]="getStatusClass(announcement)">
+              {{ getStatusText(announcement) }}
+            </span>
+            <span class="dismissable-badge" [class.dismissable-yes]="announcement.isDismissable" [title]="'announcements.dismissable' | translate">
+              {{ announcement.isDismissable ? '✓' : '✗' }}
+            </span>
+          </div>
+        </div>
+        <div class="card-dates">
+          <div class="date-item">
+            <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'announcements.startDate' | translate }}: {{ formatDate(announcement.startDate) }}</span>
+          </div>
+          <div class="date-item">
+            <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'announcements.endDate' | translate }}: {{ announcement.endDate ? formatDate(announcement.endDate) : '-' }}</span>
+          </div>
+        </div>
+        <div class="card-meta">
+          <div class="meta-item">{{ 'announcements.targetRoles' | translate }}: {{ getRolesText(announcement.targetRoles) }}</div>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="action-btn action-btn--edit" (click)="editAnnouncement(announcement.id)" [title]="'common.edit' | translate">
+            <lucide-angular [img]="Pencil" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+          </button>
+          <button type="button" class="action-btn action-btn--delete" (click)="deleteAnnouncement(announcement)" [title]="'common.delete' | translate">
+            <lucide-angular [img]="Trash2" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table View - Desktop only (only when there's data) -->
+    <div *ngIf="filteredAnnouncements().length > 0" class="table-wrapper announcements-table-view">
       <table class="announcements-table">
         <thead>
           <tr>
@@ -111,6 +153,7 @@
         </tbody>
       </table>
     </div>
+  </div>
   </div>
 </div>
 

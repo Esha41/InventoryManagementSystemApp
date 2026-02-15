@@ -1,9 +1,10 @@
-<div class="flex flex-col h-screen overflow-hidden bg-[var(--color-background-muted)]">
+<div class="flex flex-col min-h-dvh h-dvh overflow-hidden bg-[var(--color-background-muted)]"
+  [class.mobile-sidebar-open]="mobileSidebarOpen">
   <!-- Navbar - Full Width at Top -->
   <app-navbar (menuClick)="onMobileMenuToggle()"></app-navbar>
 
   <!-- Content Area with Sidebar -->
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex flex-1 min-h-0 overflow-hidden">
     <!-- Sidebar -->
     <app-sidebar (toggleSidebar)="onSidebarToggle($event)" [mobileOpen]="mobileSidebarOpen"
       (closeMobile)="mobileSidebarOpen = false"></app-sidebar>

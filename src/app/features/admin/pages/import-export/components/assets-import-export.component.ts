@@ -36,7 +36,8 @@ import { APIOperationResponse } from '@models/api-response.model';
     ImportPreviewDialogComponent,
     LoadingStateComponent
   ],
-  templateUrl: './assets-import-export.component.html'
+  templateUrl: './assets-import-export.component.html',
+  styleUrls: ['./assets-import-export.component.css']
 })
 export class AssetsImportExportComponent implements OnInit, OnDestroy {
   @Input() activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';

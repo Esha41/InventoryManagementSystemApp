@@ -1,70 +1,78 @@
-<div class="admin-dashboard-container">
+<div class="page-wrapper">
     <!-- Header -->
-    <div class="dashboard-header">
-        <div class="header-content">
-            <div class="title-section">
-                <h1 class="dashboard-title">{{ 'nav.analytics' | translate }}</h1>
-            </div>
+    <div
+        class="bg-gradient-to-br from-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-8">
+        <div class="page-container py-6 md:py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] tracking-tight">
+                        {{ 'nav.analytics' | translate }}
+                    </h1>
+                </div>
 
-            <div class="header-actions">
-                <button class="refresh-button w-full sm:w-auto justify-center" (click)="onRefresh()"
-                    [disabled]="isRefreshing()" [attr.aria-label]="'adminDashboard.refresh' | translate">
-                    <lucide-icon [img]="RefreshCw" [class.spinning]="isRefreshing()" class="refresh-icon">
-                    </lucide-icon>
-                    <span>{{ 'adminDashboard.refresh' | translate }}</span>
-                </button>
+                <div class="flex items-center">
+                    <button (click)="onRefresh()" [disabled]="isRefreshing()"
+                        [attr.aria-label]="'adminDashboard.refresh' | translate"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] w-full sm:w-auto
+                               bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white font-semibold text-sm rounded-lg
+                               transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed
+                               hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50">
+                        <lucide-angular [img]="RefreshCw" class="w-4 h-4 flex-shrink-0" [class.animate-spin]="isRefreshing()">
+                        </lucide-angular>
+                        <span class="whitespace-nowrap">{{ 'adminDashboard.refresh' | translate }}</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Loading State -->
     @if (isLoading()) {
-    <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p class="loading-text">{{ 'adminDashboard.loading' | translate }}</p>
+    <div class="page-container">
+        <div class="flex flex-col items-center justify-center min-h-[400px] gap-4">
+            <div class="w-12 h-12 border-4 border-[var(--color-brand)]/20 border-t-[var(--color-brand)] rounded-full animate-spin">
+            </div>
+            <p class="text-sm font-medium text-[var(--color-text-muted)]">{{ 'adminDashboard.loading' | translate }}</p>
+        </div>
     </div>
     }
 
     <!-- Dashboard Content -->
     @if (!isLoading()) {
-    <div class="dashboard-content">
+    <div class="page-container space-y-6 md:space-y-8">
+        <!-- KPI Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-6">
+            <app-inventory-overview-card *ngIf="inventoryMetrics()" [metrics]="inventoryMetrics()!"
+                class="analytics-kpi-card">
+            </app-inventory-overview-card>
 
-        <!-- Overview Section -->
-        <div class="space-y-6">
-            <!-- KPI Cards Grid -->
-            <div class="kpi-grid">
-                <!-- Inventory Overview Card -->
-                <app-inventory-overview-card *ngIf="inventoryMetrics()" [metrics]="inventoryMetrics()!"
-                    class="kpi-card">
-                </app-inventory-overview-card>
+            <app-request-metrics-card *ngIf="requestMetrics()" [metrics]="requestMetrics()!" class="analytics-kpi-card">
+            </app-request-metrics-card>
+        </div>
 
-                <!-- Request Metrics Card -->
-                <app-request-metrics-card *ngIf="requestMetrics()" [metrics]="requestMetrics()!" class="kpi-card">
-                </app-request-metrics-card>
+        <!-- Charts Section -->
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] p-4 sm:p-6">
+            <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 pb-4 border-b border-[var(--color-border)]">
+                <lucide-angular [img]="TrendingUp" class="w-5 h-5 sm:w-6 sm:h-6 text-[var(--color-brand)] flex-shrink-0">
+                </lucide-angular>
+                <h2 class="text-lg sm:text-xl font-semibold text-[var(--color-text)] m-0">
+                    {{ 'nav.analytics' | translate }}
+                </h2>
             </div>
 
-            <!-- Charts Section -->
-            <div class="charts-section">
-                <div class="section-header">
-                    <lucide-icon [img]="TrendingUp" class="section-icon"></lucide-icon>
-                    <h2 class="section-title">{{ 'nav.analytics' | translate }}</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                <div class="analytics-chart-item analytics-chart-wide">
+                    <app-request-trends-chart period="weekly"></app-request-trends-chart>
                 </div>
-
-                <div class="charts-grid">
-                    <div class="chart-item chart-wide">
-                        <app-request-trends-chart period="weekly"></app-request-trends-chart>
-                    </div>
-                    <div class="chart-item">
-                        <app-inventory-distribution-chart
-                            [distribution]="inventoryMetrics()?.inventoryDistribution"></app-inventory-distribution-chart>
-                    </div>
-                    <div class="chart-item">
-                        <app-top-requested-items-chart></app-top-requested-items-chart>
-                    </div>
+                <div class="analytics-chart-item">
+                    <app-inventory-distribution-chart
+                        [distribution]="inventoryMetrics()?.inventoryDistribution"></app-inventory-distribution-chart>
+                </div>
+                <div class="analytics-chart-item">
+                    <app-top-requested-items-chart></app-top-requested-items-chart>
                 </div>
             </div>
         </div>
-
     </div>
     }
 </div>

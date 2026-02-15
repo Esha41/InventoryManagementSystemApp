@@ -11,6 +11,20 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
+
+/** Build OR filter for search across Name, ItemNo, PartNo, NSN */
+function buildSearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  return {
+    logic: 'or',
+    filters: [
+      { field: 'Name', operator: 'contains', value: term },
+      { field: 'ItemNo', operator: 'contains', value: term },
+      { field: 'PartNo', operator: 'contains', value: term },
+      { field: 'Nsn', operator: 'contains', value: term }
+    ]
+  };
+}
 import { Asset, AssetType, AssetFilterState, AssetSortState } from '@models/asset-list.model';
 import { AssetDto } from '@models/asset.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -87,13 +101,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     // Weapon Type filter
@@ -172,13 +182,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     // Case Type filter
@@ -256,13 +262,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     // Explosive Type filter
@@ -348,11 +350,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Item.Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedWeaponType) {
@@ -384,12 +382,12 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Item.Name',
-        'itemNo': 'Item.ItemNo',
-        'partNo': 'Item.PartNo',
-        'nsn': 'Item.NSN',
-        'price': 'Item.Price',
-        'minimumQuantity': 'Item.MinimumQuantity'
+        'name': 'Name',
+        'itemNo': 'ItemNo',
+        'partNo': 'PartNo',
+        'nsn': 'Nsn',
+        'price': 'Price',
+        'minimumQuantity': 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -423,11 +421,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedCaseType) {
@@ -498,11 +492,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedExplosiveType) {

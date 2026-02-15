@@ -1,12 +1,12 @@
 <div class="page-wrapper">
   <!-- Enhanced Header Section -->
   <div
-    class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-8">
-    <div class="page-container py-8">
+    class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-8">
+    <div class="page-container py-6 md:py-8">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div class="animate-fade-in">
-          <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
-          <p class="text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
+        <div class="animate-fade-in min-w-0">
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'dashboard.title' | translate }}</h1>
+          <p class="text-sm sm:text-base text-[var(--color-text-muted)]">{{ 'dashboard.subtitle' | translate }}</p>
         </div>
 
         <!-- Shared Filter Bar Component -->
@@ -23,14 +23,14 @@
   <!-- Main Content -->
   <div class="page-container">
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
       <!-- Total Items Card -->
-      <div class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm">
+      <div class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border border-[var(--color-border)] shadow-custom-sm">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
               'inventoryDashboard.statistics.totalItems' | translate }}</p>
-            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.totalItems | number }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ statistics.totalItems | number }}</p>
           </div>
           <div class="w-12 h-12 rounded-lg bg-[var(--color-info)]/10 flex items-center justify-center">
             <svg class="w-6 h-6 text-[var(--color-info)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,12 +43,12 @@
 
       <!-- Low Stock Card -->
       <div (click)="onLowStockClick()"
-        class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
+        class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
               'inventoryDashboard.statistics.lowStock' | translate }}</p>
-            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.lowStock | number }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ statistics.lowStock | number }}</p>
             <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.belowThreshold' |
               translate }}</p>
           </div>
@@ -64,12 +64,12 @@
 
       <!-- Expiring Soon Card -->
       <div (click)="onExpiringSoonClick()"
-        class="bg-[var(--color-background)] rounded-xl p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow">
+        class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
               'inventoryDashboard.statistics.expiringSoon' | translate }}</p>
-            <p class="text-3xl font-bold text-[var(--color-text)]">{{ statistics.expiringSoon | number }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ statistics.expiringSoon | number }}</p>
             <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.next30Days' |
               translate }}</p>
           </div>
@@ -86,9 +86,9 @@
 
     <!-- Table View -->
     <div *ngIf="visibleCards.length > 0"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-6 md:mb-8">
       <!-- Mobile Card View -->
-      <div class="lg:hidden grid grid-cols-1 gap-4">
+      <div class="lg:hidden grid grid-cols-1 gap-4 p-4 overflow-x-hidden">
         <div *ngFor="let card of paginatedCards"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
           [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
@@ -127,7 +127,7 @@
             <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
 
             <button (click)="onTableAction(card)"
-              class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
+              class="flex items-center gap-1.5 px-3 py-2 min-h-[2.75rem] bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
               <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
               <span>{{ 'common.view' | translate }}</span>
             </button>
@@ -200,7 +200,7 @@
 
     <!-- Pagination Footer -->
     <div *ngIf="visibleCards.length > 0"
-      class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8 text-start">
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-6 md:mb-8 text-start">
       <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedCards.length"
         (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
@@ -218,7 +218,7 @@
     <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
       <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
         <div
-          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-6 sm:p-8 md:p-12">
           <div class="flex flex-col items-center gap-6 text-center">
             <div
               class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
@@ -236,8 +236,8 @@
       </div>
       <ng-template #noOrdersMessage>
         <div class="text-center">
-          <div
-            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
+            <div
+            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-6 sm:p-8 md:p-12 inline-block">
             <div class="flex flex-col items-center gap-4">
               <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
                 <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
