@@ -447,6 +447,14 @@ export class DropdownComponent<T = Primitive>
       }
     }
 
+    // Check DropdownOption shape first (e.g. placeholder option with explicit label)
+    if (option && typeof option === 'object' && 'label' in option) {
+      const label = (option as any).label;
+      if (label !== undefined && label !== null) {
+        return this.formatLabel(label);
+      }
+    }
+
     if (
       this.optionLabel &&
       option &&

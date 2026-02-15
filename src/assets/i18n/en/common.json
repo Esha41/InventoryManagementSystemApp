@@ -210,7 +210,8 @@
     "notifications": "Notifications",
     "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order",
-    "stockNotificationSettings": "Stock Notification Settings"
+    "stockNotificationSettings": "Stock Notification Settings",
+    "announcements": "Announcements"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
