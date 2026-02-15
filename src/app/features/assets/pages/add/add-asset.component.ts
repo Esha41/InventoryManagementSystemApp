@@ -418,6 +418,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
     if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
     if (this.assetForm.unitId) dto.unitId = parseInt(this.assetForm.unitId);
+    if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
+    if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
 
     const formData = new FormData();
     Object.keys(dto).forEach(key => {

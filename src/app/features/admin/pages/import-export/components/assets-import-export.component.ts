@@ -700,6 +700,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL explosive fields to match template
       columns.push(
         {
+          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          key: 'armNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
           header: this.translateService.instant('assetList.table.nsn'),
           key: 'nsn',
           width: 15,
@@ -740,6 +746,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.compatibility') || 'Compatibility',
+          key: 'compatibility',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('assetList.table.hazardDivision') || 'Hazard Division',

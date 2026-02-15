@@ -83,9 +83,12 @@ export class AssetPropertyAccessor {
     return this.getLookupName(unit);
   }
 
-  // Ammunition properties
+  // Ammunition and Explosive properties
   getArmNumber(asset: AssetUnion): string {
-    return isAmmunition(asset) ? (asset.armNumber || '-') : '-';
+    if (isAmmunition(asset) || isExplosive(asset)) {
+      return ((asset as any).armNumber || '-');
+    }
+    return '-';
   }
 
   getCaseType(asset: AssetUnion): string {

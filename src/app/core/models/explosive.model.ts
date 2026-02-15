@@ -9,6 +9,7 @@ import { LookupDto } from './ammunition.model';
  * Explosive DTO (extends BaseItem)
  */
 export interface ExplosiveDto extends BaseItemDto {
+  armNumber?: string;
   explosiveType?: number;
   unNumber?: string;
   netExplosiveQuantity?: number;
@@ -52,6 +53,7 @@ export interface CreateUpdateExplosiveDto {
   name: string;
   itemNo: string;
   partNo?: string;
+  armNumber?: string;
   batchNo?: string;
   hccId?: number;
   nsn?: string;

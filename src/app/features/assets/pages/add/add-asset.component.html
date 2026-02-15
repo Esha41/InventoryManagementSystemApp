@@ -194,6 +194,26 @@
 
               <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
               <ng-container *ngIf="activeTab === 'explosive'">
+                <!-- Arm Number -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.armNumber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.armNumber" name="armNumber"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterArmNumber' | translate" />
+                </div>
+
+                <!-- Compatibility -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.compatibility' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
+                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCompatibility' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- UN Number -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.unNumber' | translate

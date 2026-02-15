@@ -11,8 +11,19 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
+import { Asset, AssetType, AssetFilterState, AssetSortState } from '@models/asset-list.model';
+import { AssetDto } from '@models/asset.model';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
+import {
+  mapAmmunitionArrayToAssets,
+  mapWeaponArrayToAssets,
+  mapExplosiveArrayToAssets
+} from '@utils/asset-list.mapper';
+import { TranslateService } from '@ngx-translate/core';
 
-/** Build OR filter for search across Name, ItemNo, PartNo, NSN */
+/** Build OR filter for search across Name, ItemNo, PartNo, NSN (ammunition, weapons) */
 function buildSearchFilters(searchTerm: string): FilterData {
   const term = searchTerm.trim();
   return {
@@ -25,17 +36,24 @@ function buildSearchFilters(searchTerm: string): FilterData {
     ]
   };
 }
-import { Asset, AssetType, AssetFilterState, AssetSortState } from '@models/asset-list.model';
-import { AssetDto } from '@models/asset.model';
-import { AmmunitionReadDto } from '@models/ammunition.model';
-import { WeaponDto } from '@models/weapon.model';
-import { ExplosiveDto } from '@models/explosive.model';
-import {
-  mapAmmunitionArrayToAssets,
-  mapWeaponArrayToAssets,
-  mapExplosiveArrayToAssets
-} from '@utils/asset-list.mapper';
-import { TranslateService } from '@ngx-translate/core';
+
+/** Build OR filter for explosive search: Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, ExplosiveType, Compatibility */
+function buildExplosiveSearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  return {
+    logic: 'or',
+    filters: [
+      { field: 'Name', operator: 'contains', value: term },
+      { field: 'ItemNo', operator: 'contains', value: term },
+      { field: 'PartNo', operator: 'contains', value: term },
+      { field: 'Nsn', operator: 'contains', value: term },
+      { field: 'ArmNumber', operator: 'contains', value: term },
+      { field: 'UNNumber', operator: 'contains', value: term },
+      { field: 'Type.Name', operator: 'contains', value: term },
+      { field: 'Compatibility.Name', operator: 'contains', value: term }
+    ]
+  };
+}
 
 @Injectable({
   providedIn: 'root'
@@ -262,9 +280,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter (Name, ItemNo, PartNo, NSN)
+    // Search filter (Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, Type, Compatibility)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildSearchFilters(filterState.searchTerm));
+      filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
     }
 
     // Explosive Type filter
@@ -492,7 +510,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildSearchFilters(filterState.searchTerm));
+      filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedExplosiveType) {

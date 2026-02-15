@@ -38,6 +38,7 @@ export interface Asset {
   propellant?: string;
 
   // Shared (Ammunition & Explosive)
+  armNumber?: string;
   // For ammunition: string (localized name), for explosives: LookupDto
   hazardDivision?: string | LookupDto;
   compatibility?: string | LookupDto;

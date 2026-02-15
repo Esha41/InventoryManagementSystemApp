@@ -159,11 +159,19 @@
               <!-- Explosive Specific Columns -->
               <th *ngIf="activeTab === 'explosive'"
                 class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                {{ 'addAsset.armNumber' | translate }}
+              </th>
+              <th *ngIf="activeTab === 'explosive'"
+                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
                 {{ 'addAsset.explosiveType' | translate }}
               </th>
               <th *ngIf="activeTab === 'explosive'"
                 class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
                 {{ 'addAsset.unNumber' | translate }}
+              </th>
+              <th *ngIf="activeTab === 'explosive'"
+                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
+                {{ 'addAsset.compatibility' | translate }}
               </th>
 
               <!-- Common Columns -->
@@ -213,9 +221,13 @@
 
               <!-- Explosive Columns -->
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.armNumber || '-' }}</td>
+              <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.explosiveType }}</td>
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.unNumber }}</td>
+              <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.compatibility || '-' }}</td>
 
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.price ? asset.price : '-' }}</td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.minimumQuantity ?

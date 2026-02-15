@@ -72,6 +72,8 @@
     "noCardsDescription": "ليس لديك الصلاحيات أو الأدوار اللازمة لعرض أي بطاقات لوحة التحكم."
   },
   "inventoryDashboard": {
+    "title": "لوحة تحكم المخزون",
+    "subtitle": "نظرة عامة على المخزون وحالة الطلبات",
     "statistics": {
       "totalItems": "إجمالي المواد",
       "totalQuantity": "إجمالي الكمية",
