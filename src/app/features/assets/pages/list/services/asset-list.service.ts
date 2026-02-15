@@ -23,6 +23,38 @@ import {
 } from '@utils/asset-list.mapper';
 import { TranslateService } from '@ngx-translate/core';
 
+/** Build OR filter for search across Name, ItemNo, PartNo, NSN (ammunition, weapons) */
+function buildSearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  return {
+    logic: 'or',
+    filters: [
+      { field: 'Name', operator: 'contains', value: term },
+      { field: 'ItemNo', operator: 'contains', value: term },
+      { field: 'PartNo', operator: 'contains', value: term },
+      { field: 'Nsn', operator: 'contains', value: term }
+    ]
+  };
+}
+
+/** Build OR filter for explosive search: Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, ExplosiveType, Compatibility */
+function buildExplosiveSearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  return {
+    logic: 'or',
+    filters: [
+      { field: 'Name', operator: 'contains', value: term },
+      { field: 'ItemNo', operator: 'contains', value: term },
+      { field: 'PartNo', operator: 'contains', value: term },
+      { field: 'Nsn', operator: 'contains', value: term },
+      { field: 'ArmNumber', operator: 'contains', value: term },
+      { field: 'UNNumber', operator: 'contains', value: term },
+      { field: 'Type.Name', operator: 'contains', value: term },
+      { field: 'Compatibility.Name', operator: 'contains', value: term }
+    ]
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -87,13 +119,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     // Weapon Type filter
@@ -172,13 +200,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     // Case Type filter
@@ -256,13 +280,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter
+    // Search filter (Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, Type, Compatibility)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
     }
 
     // Explosive Type filter
@@ -348,11 +368,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Item.Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedWeaponType) {
@@ -384,12 +400,12 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Item.Name',
-        'itemNo': 'Item.ItemNo',
-        'partNo': 'Item.PartNo',
-        'nsn': 'Item.NSN',
-        'price': 'Item.Price',
-        'minimumQuantity': 'Item.MinimumQuantity'
+        'name': 'Name',
+        'itemNo': 'ItemNo',
+        'partNo': 'PartNo',
+        'nsn': 'Nsn',
+        'price': 'Price',
+        'minimumQuantity': 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -423,11 +439,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedCaseType) {
@@ -498,11 +510,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push({
-        field: 'Name',
-        operator: 'contains',
-        value: filterState.searchTerm.trim()
-      });
+      filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedExplosiveType) {

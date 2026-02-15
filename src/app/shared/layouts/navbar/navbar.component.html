@@ -1,23 +1,23 @@
-<nav class="navbar-theme shadow-custom-md h-16 flex items-center pl-0 pr-6 z-40 border-b border-[var(--color-border)]">
-  <div class="flex items-center justify-between w-full">
+<nav class="navbar-theme shadow-custom-md h-14 min-h-[3.5rem] md:h-16 flex items-center px-4 md:px-6 z-40 border-b border-[var(--color-border)]">
+  <div class="flex items-center justify-between w-full min-w-0 gap-2">
     <!-- Left side - Logo -->
-    <div class="flex items-center gap-0">
+    <div class="flex items-center gap-1 md:gap-2 min-w-0 flex-shrink-0">
       <button (click)="onMenuClick()"
-        class="md:hidden navbar-button-hover p-0.5 md:p-1.5 rounded-lg transition-colors duration-200"
+        class="md:hidden navbar-button-hover min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg transition-colors duration-200 flex items-center justify-center -ml-1"
         aria-label="Toggle menu">
         <lucide-angular [img]="Menu" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
       </button>
 
-      <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo" class="h-32 md:h-36 navbar-logo object-contain -ml-2 md:-ml-4"
+      <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo" class="h-20 md:h-24 max-w-[160px] md:max-w-[200px] navbar-logo object-contain object-left flex-shrink-0 -ml-2 md:-ml-4"
         [style.filter]="isDarkMode ? 'brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%)' : 'none'"
         style="direction: ltr;" />
     </div>
 
     <!-- Right side - Actions -->
-    <div class="flex items-center gap-1 md:gap-4">
-      <!-- Theme Toggle - Visible on all screens -->
+    <div class="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
+      <!-- Theme Toggle - Visible on all screens, min 44px touch target -->
       <button (click)="toggleTheme()"
-        class="flex navbar-button-hover p-1.5 md:p-2 rounded-lg transition-colors duration-200"
+        class="flex navbar-button-hover min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg transition-colors duration-200 items-center justify-center"
         [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
         [attr.title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
         <lucide-angular [img]="isDarkMode ? Sun : Moon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
@@ -25,7 +25,7 @@
 
       <!-- Language Toggle -->
       <button (click)="toggleLanguage()"
-        class="flex items-center gap-2 p-1.5 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+        class="flex items-center gap-2 min-w-[2.75rem] min-h-[2.75rem] p-2 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200 justify-center"
         aria-label="Change language">
         <lucide-angular [img]="Globe" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
         <span class="hidden md:inline text-sm font-medium text-[var(--color-text)]">{{ getCurrentLanguage() }}</span>
@@ -33,7 +33,7 @@
 
       <!-- Notifications -->
       <button (click)="navigateToNotifications()"
-        class="relative p-1.5 md:p-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+        class="relative min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg hover:bg-white/20 transition-colors duration-200 flex items-center justify-center"
         aria-label="Notifications">
         <lucide-angular [img]="Bell" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
         <span *ngIf="notificationCount > 0"
@@ -46,8 +46,9 @@
       <!-- User Profile Dropdown -->
       <div class="relative">
         <button (click)="toggleUserMenu()"
-          class="flex items-center gap-2 md:gap-3 p-1 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
-          aria-label="User profile">
+          class="flex items-center gap-2 md:gap-3 min-w-[2.75rem] min-h-[2.75rem] p-2 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
+          aria-label="User profile"
+          [attr.aria-expanded]="showUserMenu">
           <!-- User Avatar with Initials -->
           <div
             class="h-8 w-8 md:h-9 md:w-9 rounded-full bg-[var(--color-background)] flex items-center justify-center shadow-sm border border-[var(--color-border)]">
@@ -65,9 +66,9 @@
             [class.rotate-180]="showUserMenu"></lucide-angular>
         </button>
 
-        <!-- Dropdown Menu -->
+        <!-- Dropdown Menu - responsive width, doesn't overflow viewport -->
         <div *ngIf="showUserMenu"
-          class="absolute mt-2 w-64 bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
+          class="absolute mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
           [class.right-0]="!isRTL" [class.left-0]="isRTL" (click)="$event.stopPropagation()">
           <!-- User Info in Dropdown -->
           <div class="px-4 py-3 border-b border-[var(--color-border)]">

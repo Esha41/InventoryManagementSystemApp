@@ -196,12 +196,21 @@ export class ImportPreviewDialogComponent implements OnInit {
             }
         }
 
-        // Handle specific common overrides
+        // Handle specific common overrides (match add-asset and Excel template labels)
         const commonMap: { [key: string]: string } = {
             'itemName': 'warehouseInventory.itemName',
             'itemNo': 'warehouseInventory.itemNo',
             'itemType': 'addAsset.type',
-            'status': 'common.status'
+            'status': 'common.status',
+            'neqUnit': 'addAsset.unit',
+            'hazardDivision': 'assetList.table.hazardDivision',
+            'armNumber': 'warehouseInventory.armNumber',
+            'compatibility': 'warehouseInventory.compatibility',
+            'bulletDiameter': 'warehouseInventory.bulletDiameter',
+            'bulletDiameterUnit': 'warehouseInventory.caliberUnit',
+            'caliberUnit': 'warehouseInventory.caliberUnit',
+            'primaryPurpos': 'addAsset.primaryPurpose',
+            'projectailMaterial': 'addAsset.projectileMaterial'
         };
 
         if (commonMap[column]) {

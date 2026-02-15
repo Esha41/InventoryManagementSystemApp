@@ -25,7 +25,8 @@ import { LoadingStateComponent } from '@components/index';
     LoadingStateComponent
   ],
   providers: [InventorySummaryDataService],
-  templateUrl: './inventory-summary.component.html'
+  templateUrl: './inventory-summary.component.html',
+  styleUrls: ['./inventory-summary.component.css']
 })
 export class InventorySummaryComponent implements OnInit, OnDestroy {
   inventorySummaryItems: ItemInventorySummaryDto[] = [];

@@ -36,7 +36,8 @@ import { APIOperationResponse } from '@models/api-response.model';
     ImportPreviewDialogComponent,
     LoadingStateComponent
   ],
-  templateUrl: './assets-import-export.component.html'
+  templateUrl: './assets-import-export.component.html',
+  styleUrls: ['./assets-import-export.component.css']
 })
 export class AssetsImportExportComponent implements OnInit, OnDestroy {
   @Input() activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
@@ -285,10 +286,8 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           if (res.succeeded && res.data) {
             const result = res.data;
             this.importExportService.handleImportResult({
-              successCount: result.successCount || 0,
-              failureCount: (result.errors?.length) || 0, // Approx failure count if not explicitly provided, but ImportResult usually has it?
-              // The interface I created has totalProcessed, successCount, errors. Failure count is implicit or errors length.
-              // Let's use errors length for failure count if not explicit.
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
               errors: result.errors || []
             });
             this.loadAssets();
@@ -373,8 +372,8 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
               const result = res.data;
               // Show import results using the import-export service
               this.importExportService.handleImportResult({
-                successCount: result.successCount || 0,
-                failureCount: result.errors?.length || 0,
+                successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+                failureCount: result.errors?.length ?? 0,
                 errors: result.errors || []
               });
 
@@ -701,6 +700,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL explosive fields to match template
       columns.push(
         {
+          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          key: 'armNumber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
           header: this.translateService.instant('assetList.table.nsn'),
           key: 'nsn',
           width: 15,
@@ -741,6 +746,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'referenceNo',
           width: 15,
           format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('warehouseInventory.compatibility') || 'Compatibility',
+          key: 'compatibility',
+          width: 20,
+          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('assetList.table.hazardDivision') || 'Hazard Division',

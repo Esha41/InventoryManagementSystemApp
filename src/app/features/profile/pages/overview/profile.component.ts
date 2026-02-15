@@ -17,7 +17,7 @@ import { mapApiResponseToAuthenticatedUser } from '@utils/profile.mapper';
 import { getUserName, getRolesString, getRankName, getUserInitials } from '@utils/profile.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ChangePasswordModalComponent } from '@components/change-password-modal/change-password-modal.component';
-// import { DelegationListComponent } from './delegation-list/delegation-list.component';
+import { DelegationListComponent } from './delegation-list/delegation-list.component';
 import { ToastService } from '@services/toast.service';
 
 @Component({
@@ -30,7 +30,7 @@ import { ToastService } from '@services/toast.service';
     LoadingStateComponent,
     ErrorStateComponent,
     ChangePasswordModalComponent,
-    // DelegationListComponent
+    DelegationListComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css'],

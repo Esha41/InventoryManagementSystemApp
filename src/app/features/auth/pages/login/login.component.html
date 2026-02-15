@@ -1,20 +1,20 @@
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
   <!-- Header -->
-  <div class="text-center space-y-2">
-    <h2 class="text-2xl font-bold text-[var(--color-text)] tracking-tight">{{ 'auth.login.title' | translate }}</h2>
-    <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+  <div class="text-center space-y-1.5 sm:space-y-2">
+    <h2 class="text-xl sm:text-2xl font-bold text-[var(--color-text)] tracking-tight">{{ 'auth.login.title' | translate }}</h2>
+    <p class="text-xs sm:text-sm text-[var(--color-text-muted)] leading-relaxed">
       {{ 'auth.login.subtitle' | translate }}
     </p>
   </div>
 
   <!-- Login Form -->
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4 sm:space-y-5" novalidate>
     <!-- Mode Tabs -->
     <div class="flex items-center justify-center rounded-2xl bg-[var(--color-background-muted)] p-1">
       <!-- Development: Password first, LDAP second -->
       <ng-container *ngIf="isDevelopment">
         <button type="button" (click)="setLoginMode('password')" [class]="
-            'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+            'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
               : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
@@ -22,7 +22,7 @@
           {{ 'auth.login.passwordLogin' | translate }}
         </button>
         <button type="button" (click)="setLoginMode('ldap')" [class]="
-            'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+            'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (!isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
               : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
@@ -33,7 +33,7 @@
       <!-- Production/Staging: LDAP first, Password second -->
       <ng-container *ngIf="!isDevelopment">
         <button type="button" (click)="setLoginMode('ldap')" [class]="
-            'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+            'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (!isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
               : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
@@ -41,7 +41,7 @@
           {{ 'auth.login.ldapLogin' | translate }}
         </button>
         <button type="button" (click)="setLoginMode('password')" [class]="
-            'flex-1 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ' +
+            'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
               : 'bg-[var(--color-background)] text-[var(--color-brand)] shadow-sm border-2 border-[var(--color-brand)]/20')
@@ -62,7 +62,7 @@
           <lucide-angular [img]="User"
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" />
         </div>
-        <input id="username" type="text" formControlName="username" autocomplete="username" class="block w-full py-3.5 text-base
+        <input id="username" type="text" formControlName="username" autocomplete="username" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
                  border-2 border-[var(--color-border)] rounded-xl
                  bg-[var(--color-background)] text-[var(--color-text)]
                  outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
@@ -92,7 +92,7 @@
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" />
         </div>
         <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-          autocomplete="current-password" class="block w-full py-3.5 text-base
+          autocomplete="current-password" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
                  border-2 border-[var(--color-border)] rounded-xl
                  bg-[var(--color-background)] text-[var(--color-text)]
                  outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
@@ -129,9 +129,9 @@
       <label for="captcha" class="block text-sm font-semibold text-[var(--color-text)]">
         {{ 'auth.login.captcha' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <div class="flex items-center gap-3">
-        <div class="flex-1 relative">
-          <input id="captcha" type="text" formControlName="captcha" autocomplete="off" class="block w-full py-3.5 text-base
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div class="flex-1 min-w-0 relative">
+          <input id="captcha" type="text" formControlName="captcha" autocomplete="off" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
                    border-2 border-[var(--color-border)] rounded-xl
                    bg-[var(--color-background)] text-[var(--color-text)]
                    outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
@@ -141,9 +141,9 @@
                    ps-4 pe-4" [placeholder]="'auth.login.captchaPlaceholder' | translate"
             [class.border-red-500]="captcha?.invalid && captcha?.touched" style="text-align: start;" />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-shrink-0 justify-center sm:justify-start">
           <div
-            class="border-2 border-[var(--color-border)] rounded-xl bg-[var(--color-background-muted)] p-2 min-w-[120px] h-[52px] flex items-center justify-center">
+            class="border-2 border-[var(--color-border)] rounded-xl bg-[var(--color-background-muted)] p-2 min-w-[100px] sm:min-w-[120px] h-[44px] sm:h-[52px] flex items-center justify-center">
             <img *ngIf="captchaImage && !isLoadingCaptcha" [src]="captchaImage" alt="Captcha"
               class="max-h-full max-w-full object-contain cursor-pointer" (error)="onCaptchaImageError()"
               (click)="refreshCaptcha()" title="Click to refresh captcha" />
@@ -155,7 +155,7 @@
               </path>
             </svg>
           </div>
-          <button type="button" (click)="refreshCaptcha()" class="p-2.5 rounded-xl border-2 border-[var(--color-border)] 
+          <button type="button" (click)="refreshCaptcha()" class="min-w-[2.75rem] min-h-[2.75rem] p-2.5 rounded-xl border-2 border-[var(--color-border)] 
                    bg-[var(--color-background)] text-[var(--color-text-muted)]
                    hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)]
                    hover:border-[var(--color-brand)]/50
@@ -190,7 +190,7 @@
     <!-- Submit Button -->
     <div>
       <button type="submit" [disabled]="isLoginDisabled" class="w-full bg-[var(--color-brand)] text-white font-semibold
-               py-3.5 px-6 rounded-xl
+               py-3 sm:py-3.5 px-6 min-h-[2.75rem] rounded-xl
                hover:bg-[var(--color-brand-dark)] 
                focus:outline-none focus:ring-4 focus:ring-[var(--color-brand)]/20
                active:scale-[0.98]

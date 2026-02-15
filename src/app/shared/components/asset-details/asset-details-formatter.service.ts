@@ -38,10 +38,10 @@ export class AssetDetailsFormatterService {
       expiryDate: computed(() => this.propertyAccessor.getExpiryDate(asset()) || '-'),
       readyForIssue: computed(() => this.propertyAccessor.getReadyForIssue(asset()) || '-'),
 
-      // Ammunition specific
+      // Ammunition and Explosive
       armNumber: computed(() =>
-        isAmmunition()
-          ? this.propertyAccessor.getArmNumber(asset() as AmmunitionReadDto) || '-'
+        (isAmmunition() || isExplosive())
+          ? this.propertyAccessor.getArmNumber(asset() as AmmunitionReadDto | ExplosiveDto) || '-'
           : '-'
       ),
       primaryPurpose: computed(() =>

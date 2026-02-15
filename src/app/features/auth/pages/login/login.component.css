@@ -1,10 +1,8 @@
 /* Login component specific styles */
 
 /* Ensure password input has proper padding to avoid placeholder overlap with icons */
-/* Both LTR and RTL need 3rem (48px) padding on both sides for the lock and eye icons */
-.relative.group input#password {
-  padding-left: 3rem !important;
-  /* 48px - space for left icon */
-  padding-right: 3rem !important;
-  /* 48px - space for right icon */
+/* Use logical properties for RTL support - 3rem (48px) on both sides for lock and eye icons */
+input#password {
+  padding-inline-start: 3rem !important;
+  padding-inline-end: 3rem !important;
 }

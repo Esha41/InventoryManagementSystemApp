@@ -1,23 +1,25 @@
 <div class="page-wrapper">
   <!-- Balanced Header Section -->
   <div
-    class="bg-gradient-to-br from-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-10 relative">
-    <div class="page-container py-8 relative z-10">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div class="animate-fade-in">
-          <h1 class="text-4xl font-bold text-[var(--color-text)] mb-2 tracking-tight">
+    class="bg-gradient-to-br from-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-10 relative">
+    <div class="page-container py-6 md:py-8 relative z-10">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-8">
+        <!-- Title & Subtitle - left on lg -->
+        <div class="animate-fade-in min-w-0">
+          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-2 tracking-tight">
             {{ 'dashboard.title' | translate }}
           </h1>
-          <p class="text-base text-[var(--color-text-muted)] font-medium max-w-xl">
+          <p class="text-sm sm:text-base text-[var(--color-text-muted)] font-medium max-w-xl">
             {{ 'dashboard.subtitle' | translate }}
           </p>
         </div>
 
+        <!-- Filters & View Toggle - right on lg -->
         <div *ngIf="totalItems > 0 || searchQuery || selectedStatusFilter !== 'all'"
-          class="flex flex-col md:flex-row items-stretch md:items-center gap-5 animate-slide-in-right">
+          class="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-5 animate-slide-in-right w-full lg:w-auto">
 
-          <!-- Shared Filter Bar Component - Moved to left -->
-          <div class="w-full md:flex-1 md:min-w-0">
+          <!-- Shared Filter Bar Component -->
+          <div class="w-full md:flex-1 md:min-w-0 min-w-0">
             <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
               [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
               [searchQuery]="searchQuery" [resultCount]="filteredCardsCount" [useSearchButton]="true"
@@ -25,22 +27,22 @@
             </app-request-filter-bar>
           </div>
 
-          <!-- Refined View Toggle - Fixed width on right -->
+          <!-- Refined View Toggle -->
           <div
-            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] flex-shrink-0">
+            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] flex-shrink-0 w-full md:w-auto justify-center md:justify-start">
             <button (click)="toggleViewMode('grid')" [class.bg-[var(--color-brand)]]="viewMode === 'grid'"
               [class.text-white]="viewMode === 'grid'" [class.text-[var(--color-text-muted)]]="viewMode !== 'grid'"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-soft"
+              class="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 min-h-[2.75rem] rounded-lg transition-all duration-300 shadow-soft flex-1 md:flex-initial"
               [class.hover:bg-[var(--color-background-hover)]]="viewMode !== 'grid'">
               <lucide-angular [img]="Grid" class="w-4 h-4"></lucide-angular>
-              <span class="text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.gridView' | translate }}</span>
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.gridView' | translate }}</span>
             </button>
             <button (click)="toggleViewMode('table')" [class.bg-[var(--color-brand)]]="viewMode === 'table'"
               [class.text-white]="viewMode === 'table'" [class.text-[var(--color-text-muted)]]="viewMode !== 'table'"
-              class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300"
+              class="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 min-h-[2.75rem] rounded-lg transition-all duration-300 flex-1 md:flex-initial"
               [class.hover:bg-[var(--color-background-hover)]]="viewMode !== 'table'">
               <lucide-angular [img]="List" class="w-4 h-4"></lucide-angular>
-              <span class="text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.listView' | translate }}</span>
+              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.listView' | translate }}</span>
             </button>
           </div>
         </div>
@@ -62,7 +64,7 @@
     </div>
     <!-- Status Cards Grid -->
     <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
       <app-status-card *ngFor="let card of paginatedCards" [title]="card.title" [status]="card.status"
         [orders]="card.orders" [orderRequestId]="card.orderRequestId || null"
         [returnRequestId]="card.returnRequestId || null" [discardRequestId]="card.discardRequestId || null"
@@ -75,7 +77,7 @@
       class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
 
       <!-- Mobile Table (Card) View -->
-      <div class="md:hidden grid grid-cols-1 gap-4 p-4">
+      <div class="md:hidden grid grid-cols-1 gap-4 p-4 overflow-x-hidden">
         <div *ngFor="let card of paginatedCards"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
           [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
@@ -114,7 +116,7 @@
             <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
 
             <button (click)="onTableAction(card)"
-              class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
+              class="flex items-center gap-1.5 px-3 py-2 min-h-[2.75rem] bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
               <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
               <span>{{ 'common.view' | translate }}</span>
             </button>
@@ -237,7 +239,7 @@
 
     <!-- Pagination Footer -->
     <div *ngIf="visibleCards.length > 0 || totalItems > 0"
-      class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8 text-start">
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-6 md:mb-8 text-start">
       <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="visibleCards.length"
         (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
@@ -255,7 +257,7 @@
     <div *ngIf="visibleCards.length === 0 && !isLoading" class="flex items-center justify-center min-h-[60vh]">
       <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
         <div
-          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-8 md:p-12">
+          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-6 sm:p-8 md:p-12">
           <div class="flex flex-col items-center gap-6 text-center">
             <div
               class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
@@ -273,8 +275,8 @@
       </div>
       <ng-template #noOrdersMessage>
         <div class="text-center">
-          <div
-            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-12 inline-block">
+            <div
+            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-6 sm:p-8 md:p-12 inline-block">
             <div class="flex flex-col items-center gap-4">
               <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
                 <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
