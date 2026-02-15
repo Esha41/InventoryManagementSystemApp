@@ -202,9 +202,10 @@ export class ImportPreviewDialogComponent implements OnInit {
             'itemNo': 'warehouseInventory.itemNo',
             'itemType': 'addAsset.type',
             'status': 'common.status',
-            'neqUnit': 'addAsset.unit',           // Explosive: "Unit" (not "NEQ Unit")
+            'neqUnit': 'addAsset.unit',
             'hazardDivision': 'assetList.table.hazardDivision',
             'armNumber': 'warehouseInventory.armNumber',
+            'compatibility': 'warehouseInventory.compatibility',
             'bulletDiameter': 'warehouseInventory.bulletDiameter',
             'bulletDiameterUnit': 'warehouseInventory.caliberUnit',
             'caliberUnit': 'warehouseInventory.caliberUnit',
