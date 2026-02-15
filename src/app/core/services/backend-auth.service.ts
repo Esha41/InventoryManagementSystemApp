@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
-import { map, tap, catchError, switchMap } from 'rxjs/operators';
+import { map, tap, catchError, switchMap, finalize, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
@@ -38,6 +38,7 @@ export class BackendAuthService {
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   private isClearingAuthData = false; // Flag to prevent recursive calls
+  private refreshInProgress: Observable<LoginResponse> | null = null;
 
   constructor(
     private apiService: ApiService,
@@ -65,30 +66,29 @@ export class BackendAuthService {
       isAuthenticated: !!token && !!user,
       user: user,
       token: token,
-      refreshToken: this.storageService.get<string>('refresh_token'),
+      refreshToken: null,
       expiresAt: this.storageService.get<Date>('token_expires_at')
     };
   }
 
   /**
    * Check authentication status on service initialization
+   * When token is expired, we keep the session - the next API call will get 401,
+   * trigger the refresh flow (using HttpOnly cookie), and either succeed or redirect to login.
    */
   private checkAuthStatus(): void {
     try {
       const state = this.getInitialState();
 
-
-      if (state.isAuthenticated && state.user && !this.isTokenExpired()) {
+      if (state.isAuthenticated && state.user) {
         this.currentUserSubject.next(state.user);
         this.isAuthenticatedSubject.next(true);
         this.authStateSubject.next(state);
 
-        this.configService.log('User session restored', { userId: state.user.id });
-      } else {
-
-        if (state.isAuthenticated && this.isTokenExpired()) {
-          this.configService.log('Token expired, clearing session');
-          this.clearAuthData();
+        if (this.isTokenExpired()) {
+          this.configService.log('Token expired - session kept; refresh will run on next API call');
+        } else {
+          this.configService.log('User session restored', { userId: state.user.id });
         }
       }
     } catch (error) {
@@ -201,9 +201,6 @@ export class BackendAuthService {
     const expiresAt = new Date(response.expiresAt);
 
     this.storageService.set('auth_token', response.accessToken);
-    if (response.refreshToken) {
-      this.storageService.set('refresh_token', response.refreshToken);
-    }
     this.storageService.set('token_expires_at', expiresAt);
 
     return this.fetchCompleteUserData().pipe(
@@ -545,13 +542,47 @@ export class BackendAuthService {
       isAuthenticated: true,
       user: user,
       token: token,
-      refreshToken: this.storageService.get<string>('refresh_token'),
+      refreshToken: null,
       expiresAt: expiresAt
     };
 
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
     this.authStateSubject.next(state);
+  }
+
+  /**
+   * Refresh access token using HttpOnly cookie.
+   * Serializes concurrent calls - only one refresh at a time.
+   */
+  refreshToken(): Observable<LoginResponse> {
+    if (!this.refreshInProgress) {
+      this.refreshInProgress = this.apiService.postRaw<LoginResponse>(
+        API_ENDPOINTS.AUTH.REFRESH,
+        {},
+        { withCredentials: true }
+      ).pipe(
+        map(res => {
+          if (!res.succeeded || !res.data) {
+            throw new Error(res.message || 'Refresh failed');
+          }
+          return res.data;
+        }),
+        tap(data => {
+          this.storageService.set('auth_token', data.accessToken);
+          this.storageService.set('token_expires_at', new Date(data.expiresAt));
+          const user = this.getCurrentUser();
+          if (user) {
+            this.updateAuthState(user, data.accessToken, new Date(data.expiresAt));
+          }
+        }),
+        finalize(() => {
+          this.refreshInProgress = null;
+        }),
+        shareReplay(1)
+      );
+    }
+    return this.refreshInProgress;
   }
 
   /**
@@ -663,15 +694,10 @@ export class BackendAuthService {
 
   /**
    * Check if user is authenticated
+   * Returns true if we have a session (even when token is expired - refresh will run on next API call)
    */
   isAuthenticated(): boolean {
-    // Prevent recursive calls - if we're already clearing auth data, just return false
     if (this.isClearingAuthData) {
-      return false;
-    }
-
-    if (this.isAuthenticatedSubject.value && this.isTokenExpired()) {
-      this.clearAuthData();
       return false;
     }
     return this.isAuthenticatedSubject.value;
@@ -824,6 +850,13 @@ export class BackendAuthService {
   }
 
   /**
+   * Clear session without calling backend. Use when refresh fails.
+   */
+  clearSession(): void {
+    this.clearAuthData();
+  }
+
+  /**
    * Clear authentication data
    */
   private clearAuthData(): void {
@@ -837,7 +870,6 @@ export class BackendAuthService {
     try {
       // Clear specific auth-related storage items
       this.storageService.remove('auth_token');
-      this.storageService.remove('refresh_token');
       this.storageService.remove('current_user');
       this.storageService.remove('token_expires_at');
 
