@@ -1,2 +1,17 @@
 /* Assets Import Export Component Styles */
 
+.asset-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.asset-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.asset-tabs-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+

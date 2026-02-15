@@ -1,8 +1,20 @@
 /* Admin Dashboard Container */
 .admin-dashboard-container {
-    padding: 2rem;
+    padding: 1rem;
     min-height: 100vh;
     background-color: var(--color-background-soft);
+}
+
+@media (min-width: 640px) {
+    .admin-dashboard-container {
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .admin-dashboard-container {
+        padding: 2rem;
+    }
 }
 
 /* Dashboard Tabs */
@@ -42,11 +54,18 @@
 
 /* Header */
 .dashboard-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     background: var(--color-surface);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+    .dashboard-header {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
 }
 
 .header-content {
@@ -189,8 +208,14 @@
 .quick-actions-section {
     background: var(--color-surface);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+    .quick-actions-section {
+        padding: 1.5rem;
+    }
 }
 
 .quick-actions-section .section-header {
@@ -221,7 +246,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 0.875rem;
     background: var(--color-background);
     border: 2px solid var(--color-border);
     border-radius: 10px;
@@ -302,17 +327,18 @@
 }
 
 @media (max-width: 768px) {
-    .admin-dashboard-container {
-        padding: 1rem;
-    }
-
     .dashboard-title {
         font-size: 1.5rem;
     }
 
     .header-content {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .header-actions button {
+        width: 100%;
+        min-height: 2.75rem;
     }
 
     .kpi-grid {
@@ -320,11 +346,11 @@
     }
 
     .quick-actions-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
 
     .actions-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
 }
 

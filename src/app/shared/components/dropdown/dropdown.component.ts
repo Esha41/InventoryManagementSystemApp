@@ -119,6 +119,11 @@ export class DropdownComponent<T = Primitive>
   @Input() translateLabels = false;
 
   /**
+   * When false, hides the search input in the dropdown panel (e.g. for small lists like rows-per-page).
+   */
+  @Input() showSearch = true;
+
+  /**
    * Marks the control as required for template-driven forms.
    */
   @Input()

@@ -1,16 +1,24 @@
 .announcements-container {
   max-width: 1400px;
   margin: 0 auto;
+  min-height: 100%;
 }
 
 /* Header */
 .announcements-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   background: var(--color-background);
   border-radius: 0.75rem;
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 640px) {
+  .announcements-header {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.5rem;
+  }
 }
 
 .header-content {
@@ -49,6 +57,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
+  min-height: 2.75rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.875rem;
@@ -308,11 +317,36 @@
   background: #fee2e2;
 }
 
+/* Responsive: Table on desktop, Cards on mobile - never both */
+.announcements-table-view {
+  display: none;
+}
+
+.announcements-mobile-view {
+  display: grid;
+}
+
+@media (min-width: 768px) {
+  .announcements-table-view {
+    display: block;
+  }
+
+  .announcements-mobile-view {
+    display: none;
+  }
+}
+
 /* Mobile Cards */
 .mobile-cards {
-  display: grid;
   gap: 1rem;
   padding: 1rem;
+}
+
+@media (max-width: 640px) {
+  .mobile-cards {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
 }
 
 .announcement-card {
@@ -353,10 +387,17 @@
 
 .card-dates {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 400px) {
+  .card-dates {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
 }
 
 .date-item {
@@ -386,12 +427,33 @@
   white-space: nowrap;
 }
 
+@media (max-width: 400px) {
+  .meta-item {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
 .card-actions {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
+}
+
+.card-actions .action-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
 }
 
 /* Empty State */

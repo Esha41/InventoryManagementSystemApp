@@ -1,0 +1,18 @@
+/* Rows-per-page - match search bar / filter bar styling */
+:host {
+  display: inline-flex;
+}
+
+:host ::ng-deep .app-dropdown-trigger {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  height: 2.5rem;
+  min-height: 2.5rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+}
+
+:host ::ng-deep .app-dropdown-icon {
+  width: 1rem;
+  height: 1rem;
+}

@@ -1,10 +1,11 @@
 <div
-  class="h-screen bg-gradient-to-br from-[var(--color-background-muted)] to-[var(--color-background-hover)] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 relative">
+  class="min-h-dvh min-h-screen bg-gradient-to-br from-[var(--color-background-muted)] to-[var(--color-background-hover)] flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 px-4 sm:px-6 lg:px-8 relative overflow-y-auto
+       pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
   <!-- Language Switcher & Theme Toggle - Fixed Top Right -->
-  <div class="fixed top-6 end-6 z-50 flex items-center gap-3" [style.direction]="isRTL ? 'rtl' : 'ltr'">
+  <div class="fixed top-4 end-4 sm:top-6 sm:end-6 z-50 flex items-center gap-2 sm:gap-3 pt-[env(safe-area-inset-top)] pe-[env(safe-area-inset-right)]" [style.direction]="isRTL ? 'rtl' : 'ltr'">
     <!-- Theme Toggle Button -->
     <button type="button" (click)="themeService.toggleTheme()"
-      class="group flex items-center justify-center p-2.5 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
+      class="group flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
       [attr.aria-label]="(themeService.isDarkMode() ? 'common.switchToLightMode' : 'common.switchToDarkMode') | translate">
       <lucide-angular [img]="themeService.isDarkMode() ? Sun : Moon"
         class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200"></lucide-angular>
@@ -12,23 +13,23 @@
 
     <!-- Language Switcher Button -->
     <button (click)="toggleLanguage()"
-      class="group flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
+      class="group flex items-center gap-2 min-w-[2.75rem] min-h-[2.75rem] px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-[var(--color-background)] shadow-custom-md border border-[var(--color-border)] hover:shadow-custom-lg hover:border-[var(--color-brand)]/30 hover:bg-[var(--color-background-hover)] transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2"
       aria-label="Change language">
       <lucide-angular [img]="Globe"
         class="h-5 w-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)] transition-colors duration-200 flex-shrink-0"></lucide-angular>
       <span
-        class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200 min-w-[2rem] text-center">
+        class="text-sm font-semibold text-[var(--color-text)] group-hover:text-[var(--color-brand)] transition-colors duration-200 min-w-[2rem] text-center hidden sm:inline">
         {{ getCurrentLanguage() }}
       </span>
     </button>
   </div>
 
-  <div class="w-full max-w-[480px]">
+  <div class="w-full max-w-[480px] flex-1 flex flex-col justify-center">
     <!-- Logo and Header Section -->
-    <div class="text-center mb-1">
-      <div class="inline-block mb-0">
+    <div class="text-center mb-2 sm:mb-4">
+      <div class="inline-block">
         <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo"
-          class="h-48 md:h-52 w-auto drop-shadow-sm transition-all duration-200"
+          class="h-28 sm:h-36 md:h-44 lg:h-52 w-auto max-w-[85vw] object-contain drop-shadow-sm transition-all duration-200"
           [style.filter]="themeService.isDarkMode() ? 'brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%)' : 'none'"
           style="transform: scaleX(1); direction: ltr;" />
       </div>
@@ -37,17 +38,17 @@
     <!-- Auth Content Card -->
     <div
       class="bg-[var(--color-background)] rounded-2xl shadow-custom-xl border border-[var(--color-border)] overflow-hidden">
-      <div class="px-8 py-6 sm:px-10 sm:py-8">
+      <div class="px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">
         <router-outlet />
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="text-center mt-8">
-      <p class="text-sm text-[var(--color-text-light)] font-medium">
+    <div class="text-center mt-6 sm:mt-8">
+      <p class="text-xs sm:text-sm text-[var(--color-text-muted)] font-medium max-w-[90vw] mx-auto">
         {{ 'footer.copyright' | translate:{ year: currentYear } }}
-        <span class="mx-2 opacity-50">|</span>
-        <span class="font-mono text-xs opacity-75">{{ version }}</span>
+        <span class="mx-1.5 sm:mx-2 opacity-50">|</span>
+        <span class="font-mono text-[10px] sm:text-xs opacity-75">{{ version }}</span>
       </p>
     </div>
   </div>

@@ -40,6 +40,12 @@
   }
 }
 
+/* Lock body scroll when mobile sidebar is open */
+body:has(.mobile-sidebar-open) {
+  overflow: hidden;
+  touch-action: none;
+}
+
 @layer base {
   :root {
     /* Brand Colors */

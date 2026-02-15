@@ -1,6 +1,6 @@
 <div
   class="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-muted)] transition-all duration-300 hover:shadow-custom-xl"
-  [class.shadow-custom-lg]="shadow" [class.shadow-none]="!shadow" [class.p-6]="padding">
+  [class.shadow-custom-lg]="shadow" [class.shadow-none]="!shadow" [class.p-4]="padding" [class.sm:p-6]="padding">
   <h3 *ngIf="title" class="text-lg font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2">
     <span class="w-1 h-6 rounded-full bg-[var(--color-brand)] inline-block"></span>
     {{ title }}
