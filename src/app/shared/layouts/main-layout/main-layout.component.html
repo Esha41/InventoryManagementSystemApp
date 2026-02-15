@@ -8,8 +8,11 @@
     <app-sidebar (toggleSidebar)="onSidebarToggle($event)" [mobileOpen]="mobileSidebarOpen"
       (closeMobile)="mobileSidebarOpen = false"></app-sidebar>
 
-    <!-- Main Content Area -->
-    <div class="flex flex-col flex-1 overflow-hidden">
+    <!-- Main Content Area (banner + page content) -->
+    <div class="flex flex-col flex-1 overflow-hidden min-w-0">
+      <!-- Announcement Banners (beside sidebar, above page content) -->
+      <app-announcement-banner></app-announcement-banner>
+
       <!-- Page Content -->
       <main class="flex-1 overflow-y-auto">
         <router-outlet />
