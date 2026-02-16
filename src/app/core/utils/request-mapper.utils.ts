@@ -393,7 +393,8 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     numberOfOfficer: data['numberOfOfficer'],
     numberOfOtherRank: data['numberOfOtherRank'],
     isFromAllowance: data['isFromAllowance'],
-    creationDate: data.creationDate
+    creationDate: data.creationDate,
+    supplyDate: data['supplyDate'] ?? undefined
   };
 }
 

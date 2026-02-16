@@ -127,6 +127,7 @@ export interface RequestDetail {
   numberOfOtherRank?: number;
   isFromAllowance?: boolean;
   creationDate?: string | Date;
+  supplyDate?: string | Date | null;
 }
 
 /**
