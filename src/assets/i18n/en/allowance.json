@@ -30,8 +30,8 @@
     "noItemsFound": "No items found",
     "quantity": "Quantity",
     "quantityPlaceholder": "Enter quantity",
-    "send": "Send",
-    "sending": "Sending...",
+    "send": "Save",
+    "sending": "Saving...",
     "noAllowances": "No allowances found",
     "noAllowancesDescription": "Get started by creating a new allowance request",
     "searchPlaceholder": "Search by department...",
@@ -66,12 +66,12 @@
       "itemIdInvalid": "Please select a valid item from the list",
       "quantityRequired": "Quantity is required",
       "quantityInvalid": "Quantity must be a valid number",
-      "failedToSend": "Failed to send allowance request",
+      "failedToSend": "Failed to save allowance request",
       "failedToLoad": "Failed to load allowances",
       "unauthorizedAccess": "You do not have permission to access this allowance. You can only view allowances for your own department."
     },
     "success": {
-      "sentSuccessfully": "Allowance request sent successfully!"
+      "sentSuccessfully": "Allowance request saved successfully!"
     }
   }
 }
