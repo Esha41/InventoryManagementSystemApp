@@ -351,6 +351,24 @@ export const routes: Routes = [
         data: { permissions: ['ReportDashboard'] }
       },
       {
+        path: 'scheduled-reports',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-reports-list.component').then(m => m.ScheduledReportsListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'scheduled-reports/create',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'scheduled-reports/:id/edit',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
         path: 'report-viewer',
         loadComponent: () => import('@app/features/reports/viewer/report-viewer.component').then(m => m.ReportViewerComponent)
       },

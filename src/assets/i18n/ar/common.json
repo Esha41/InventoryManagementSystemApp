@@ -217,7 +217,8 @@
     "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون",
     "biTool": "أداة BI",
     "reportDesigner": "مصمم التقارير",
-    "reportDashboard": "لوحة التقارير"
+    "reportDashboard": "لوحة التقارير",
+    "scheduledReports": "التقارير المجدولة"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"

@@ -1,0 +1,192 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div>
+      <div class="flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'scheduledReports.title' | translate }}</h1>
+          <p class="text-[var(--color-text-muted)] mt-2">{{ 'scheduledReports.subtitle' | translate }}</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Search -->
+          <div class="w-full max-w-sm">
+            <div
+              class="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)]/40">
+              <lucide-angular [img]="Search" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              <input
+                type="search"
+                class="w-full bg-transparent text-sm text-[var(--color-text)] outline-none placeholder-[var(--color-text-muted)]"
+                [placeholder]="'common.search' | translate"
+                (input)="onSearchChange($any($event.target).value)" />
+            </div>
+          </div>
+
+          <!-- Create Button -->
+          <app-button variant="primary" (click)="onCreateSchedule()" class="whitespace-nowrap">
+            <span class="flex items-center gap-2 whitespace-nowrap" [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+              <span class="whitespace-nowrap">{{ 'scheduledReports.createSchedule' | translate }}</span>
+            </span>
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+    </app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+      containerClass="mb-0">
+    </app-error-state>
+
+    <!-- Scheduled Reports Table -->
+    <div *ngIf="!loading && !error"
+      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
+      <div class="overflow-hidden rounded-t-lg">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-[var(--color-border)]">
+            <thead class="bg-[var(--color-background-muted)]">
+              <tr>
+                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'scheduledReports.table.reportName' | translate }}
+                </th>
+                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'scheduledReports.table.frequency' | translate }}
+                </th>
+                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'scheduledReports.table.nextRun' | translate }}
+                </th>
+                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'scheduledReports.table.recipients' | translate }}
+                </th>
+                <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'scheduledReports.table.status' | translate }}
+                </th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider" style="text-align: center;">
+                  {{ 'scheduledReports.table.actions' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+              <tr *ngFor="let report of paginatedReports"
+                class="hover:bg-[var(--color-background-hover)] transition-colors">
+                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">
+                  <div class="flex items-center gap-2">
+                    <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
+                    <div>
+                      <div class="font-medium">{{ report.scheduleName }}</div>
+                      <div class="text-xs text-[var(--color-text-muted)]">{{ report.reportName }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  <div class="flex items-center gap-2">
+                    <lucide-angular [img]="Calendar" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <span>{{ getFrequencyDisplay(report.frequency, report.dayOfWeek, report.dayOfMonth) }}</span>
+                  </div>
+                  <div class="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-1">
+                    <lucide-angular [img]="Clock" class="h-3 w-3"></lucide-angular>
+                    <span>{{ report.timeOfDay }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  {{ formatDate(report.nextRunDate) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  <div class="flex items-center gap-2">
+                    <lucide-angular [img]="Mail" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <span>{{ getRecipientCount(report) }} {{ 'scheduledReports.recipients' | translate }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-start">
+                  <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border"
+                    [ngClass]="report.isActive 
+                      ? 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30'
+                      : 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]'">
+                    {{ report.isActive ? ('scheduledReports.active' | translate) : ('scheduledReports.inactive' | translate) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center" style="text-align: center;">
+                  <div class="flex items-center justify-center gap-2 mx-auto w-fit">
+                    <!-- History Button -->
+                    <button type="button" (click)="onViewHistory(report)"
+                      class="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)] rounded-lg transition-colors"
+                      [title]="'scheduledReports.viewHistory' | translate">
+                      <lucide-angular [img]="History" class="h-4 w-4"></lucide-angular>
+                    </button>
+                    <!-- Execute Now Button -->
+                    <button type="button" (click)="onExecuteNow(report)"
+                      class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
+                      [title]="'scheduledReports.executeNow' | translate">
+                      <lucide-angular [img]="Play" class="h-4 w-4"></lucide-angular>
+                    </button>
+                    <!-- Edit Button -->
+                    <button type="button" (click)="onEdit(report)"
+                      class="p-2 text-[var(--color-warning)] hover:text-[var(--color-warning)]/80 hover:bg-[var(--color-warning)]/10 rounded-lg transition-colors"
+                      [title]="'common.edit' | translate">
+                      <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+                    </button>
+                    <!-- Toggle Active Button -->
+                    <button type="button" (click)="onToggleActive(report)"
+                      class="p-2 text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors"
+                      [title]="report.isActive ? ('scheduledReports.disable' | translate) : ('scheduledReports.enable' | translate)">
+                      <lucide-angular [img]="report.isActive ? PowerOff : Power" class="h-4 w-4"></lucide-angular>
+                    </button>
+                    <!-- Delete Button -->
+                    <button type="button" (click)="onDelete(report)"
+                      class="p-2 text-[var(--color-danger)] hover:text-[var(--color-danger)]/80 hover:bg-[var(--color-danger)]/10 rounded-lg transition-colors"
+                      [title]="'common.delete' | translate">
+                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredReports.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'scheduledReports.noSchedules' | translate }}</h3>
+        <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'scheduledReports.noSchedulesDescription' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="filteredReports.length > 0 && !loading"
+      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
+      <div class="flex items-center justify-between w-full flex-nowrap">
+        <!-- Rows Per Page Selector -->
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedReports.length"
+          (rowsPerPageChange)="onRowsPerPageChange($event)">
+        </app-rows-per-page>
+
+        <!-- Pagination Controls -->
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
+          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution History Dialog -->
+    <app-execution-history-dialog
+      *ngIf="selectedReportId"
+      [isOpen]="showHistoryDialog"
+      [scheduledReportId]="selectedReportId"
+      (closed)="onHistoryDialogClose()">
+    </app-execution-history-dialog>
+  </div>
+</div>

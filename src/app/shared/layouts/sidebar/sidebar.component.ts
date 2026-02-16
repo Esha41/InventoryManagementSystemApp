@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Calendar } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -38,6 +38,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   readonly Building2 = Building2;
   readonly GitBranch = GitBranch;
   readonly Database = Database;
+  readonly Calendar = Calendar;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -235,6 +236,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           label: 'nav.reportDashboard',
           route: '/report-dashboard',
           permissions: ['ReportDashboard']
+        },
+        {
+          label: 'nav.scheduledReports',
+          route: '/scheduled-reports',
+          permissions: ['ReportDesigner']
         }
       ]
     },
@@ -366,8 +372,8 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.expandedMenus.add('nav.requestManagement');
     }
 
-    // Auto-expand BI Tool menu if on report designer route
-    if (url.startsWith('/report-designer')) {
+    // Auto-expand BI Tool menu if on report designer or scheduled reports route
+    if (url.startsWith('/report-designer') || url.startsWith('/scheduled-reports')) {
       this.expandedMenus.add('nav.biTool');
     }
   }

@@ -1,0 +1,63 @@
+{
+  "scheduledReports": {
+    "title": "Scheduled Reports",
+    "subtitle": "Manage automated report generation and distribution",
+    "createSchedule": "Create Schedule",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enable": "Enable",
+    "disable": "Disable",
+    "executeNow": "Execute Now",
+    "recipients": "recipients",
+    "executionStarted": "Report execution has been started",
+    "table": {
+      "reportName": "Report Name",
+      "frequency": "Frequency",
+      "nextRun": "Next Run",
+      "recipients": "Recipients",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "noSchedules": "No scheduled reports",
+    "noSchedulesDescription": "Get started by creating your first scheduled report",
+    "editSchedule": "Edit Schedule",
+    "formSubtitle": "Configure automated report generation and email distribution",
+    "section": {
+      "selectReport": "Select Report",
+      "schedule": "Schedule Configuration",
+      "recipients": "Recipients",
+      "emailConfig": "Email Configuration"
+    },
+    "scheduleName": "Schedule Name",
+    "scheduleNamePlaceholder": "Enter a name for this schedule",
+    "report": "Report",
+    "outputFormat": "Output Format",
+    "frequency": "Frequency",
+    "dayOfWeek": "Day of Week",
+    "dayOfMonth": "Day of Month",
+    "timeOfDay": "Time of Day",
+    "selectUser": "Select User",
+    "orEnterEmail": "Or enter email address",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "Enter email address",
+    "recipientType": "Recipient Type",
+    "addRecipient": "Add Recipient",
+    "emailSubject": "Email Subject",
+    "emailSubjectPlaceholder": "Enter email subject (optional)",
+    "emailBody": "Email Body",
+    "emailBodyPlaceholder": "Enter email body text (optional)",
+    "viewHistory": "View Execution History",
+    "executionHistory": "Execution History",
+    "noExecutionHistory": "No execution history available",
+    "history": {
+      "executionDate": "Execution Date",
+      "status": "Status",
+      "recipients": "Recipients",
+      "fileSize": "File Size",
+      "error": "Error"
+    }
+  }
+}

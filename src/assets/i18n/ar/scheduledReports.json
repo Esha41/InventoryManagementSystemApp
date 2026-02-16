@@ -1,0 +1,63 @@
+{
+  "scheduledReports": {
+    "title": "التقارير المجدولة",
+    "subtitle": "إدارة إنشاء التقارير التلقائي والتوزيع",
+    "createSchedule": "إنشاء جدولة",
+    "daily": "يومي",
+    "weekly": "أسبوعي",
+    "monthly": "شهري",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "enable": "تفعيل",
+    "disable": "تعطيل",
+    "executeNow": "تنفيذ الآن",
+    "recipients": "مستلمين",
+    "executionStarted": "تم بدء تنفيذ التقرير",
+    "table": {
+      "reportName": "اسم التقرير",
+      "frequency": "التكرار",
+      "nextRun": "التنفيذ القادم",
+      "recipients": "المستلمون",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "noSchedules": "لا توجد تقارير مجدولة",
+    "noSchedulesDescription": "ابدأ بإنشاء أول تقرير مجدول",
+    "editSchedule": "تعديل الجدولة",
+    "formSubtitle": "تكوين إنشاء التقارير التلقائي والتوزيع عبر البريد الإلكتروني",
+    "section": {
+      "selectReport": "اختر التقرير",
+      "schedule": "تكوين الجدولة",
+      "recipients": "المستلمون",
+      "emailConfig": "تكوين البريد الإلكتروني"
+    },
+    "scheduleName": "اسم الجدولة",
+    "scheduleNamePlaceholder": "أدخل اسماً لهذه الجدولة",
+    "report": "التقرير",
+    "outputFormat": "تنسيق الإخراج",
+    "frequency": "التكرار",
+    "dayOfWeek": "يوم الأسبوع",
+    "dayOfMonth": "يوم الشهر",
+    "timeOfDay": "وقت اليوم",
+    "selectUser": "اختر المستخدم",
+    "orEnterEmail": "أو أدخل عنوان البريد الإلكتروني",
+    "emailAddress": "عنوان البريد الإلكتروني",
+    "emailPlaceholder": "أدخل عنوان البريد الإلكتروني",
+    "recipientType": "نوع المستلم",
+    "addRecipient": "إضافة مستلم",
+    "emailSubject": "موضوع البريد الإلكتروني",
+    "emailSubjectPlaceholder": "أدخل موضوع البريد الإلكتروني (اختياري)",
+    "emailBody": "نص البريد الإلكتروني",
+    "emailBodyPlaceholder": "أدخل نص البريد الإلكتروني (اختياري)",
+    "viewHistory": "عرض سجل التنفيذ",
+    "executionHistory": "سجل التنفيذ",
+    "noExecutionHistory": "لا يوجد سجل تنفيذ متاح",
+    "history": {
+      "executionDate": "تاريخ التنفيذ",
+      "status": "الحالة",
+      "recipients": "المستلمون",
+      "fileSize": "حجم الملف",
+      "error": "خطأ"
+    }
+  }
+}
