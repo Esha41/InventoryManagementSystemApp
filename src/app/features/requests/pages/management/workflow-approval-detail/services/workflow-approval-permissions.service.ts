@@ -16,6 +16,7 @@ export class WorkflowApprovalPermissionsService {
   private readonly CANNOT_REJECT_PERMISSION = 'CannotRejectRequest';
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
+  private readonly VIEW_SUPPLY_DATE_PERMISSION = 'ViewSupplyDate';
   private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
   private readonly UPDATE_REQUEST_ITEMS_PERMISSION = 'UpdateRequestItems';
@@ -355,6 +356,17 @@ export class WorkflowApprovalPermissionsService {
       // Check if items are weapons and user has permission
       return this.authService.hasPermission(this.REVIEW_WEAPON_SUPPLY_PERMISSION) && isWeaponOrder;
     } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if user can view supply date (pickup date)
+   */
+  canViewSupplyDate(): boolean {
+    try {
+      return this.authService.hasPermission(this.VIEW_SUPPLY_DATE_PERMISSION);
+    } catch {
       return false;
     }
   }

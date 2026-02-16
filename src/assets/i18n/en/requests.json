@@ -332,7 +332,9 @@
         "fromAllowance": "(From Allowance)",
         "outsideOfAllowance": "(Outside of Allowance)",
         "requestType": "Request Type",
-        "usagePurpose": "Usage Purpose"
+        "usagePurpose": "Usage Purpose",
+        "supplyDate": "Supply Date",
+        "supplyDetails": "Supply Details"
       },
       "table": {
         "phase": "Phase",
@@ -414,6 +416,8 @@
     "outOfAllowance": "Out of Allowance",
     "setSupplyPickupDate": "Set Supply Pickup Date",
     "pickupDate": "Pickup Date",
+    "supplyDate": "Supply Date",
+    "supplyDetails": "Supply Details",
     "dateSetLocked": "✓ Date Set (Locked)",
     "dateSetLockedMessage": "This date has been set and is locked. It can now only be confirmed by authorized personnel.",
     "setPickupDate": "Set Pickup Date",
