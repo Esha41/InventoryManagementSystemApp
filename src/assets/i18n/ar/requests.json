@@ -257,7 +257,7 @@
   },
   "requestsManagement": {
     "title": "إدارة الطلبات",
-    "actionRequired": "مطلوب إجراء",
+    "actionRequired": "إجراء مطلوب",
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",
     "priority": "الأولوية",
@@ -503,12 +503,18 @@
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
       "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX.",
       "pickupDateRequired": "يرجى تحديد تاريخ استلام التوريد قبل الموافقة.",
-      "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة."
+      "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة.",
+      "approveFailed": "فشل الموافقة على الطلب. يرجى المحاولة مرة أخرى.",
+      "rejectFailed": "فشل رفض الطلب. يرجى المحاولة مرة أخرى.",
+      "returnForReviewFailed": "فشل إرجاع الطلب للمراجعة. يرجى المحاولة مرة أخرى."
     },
     "success": {
       "pickupDateConfirmed": "تم تأكيد موعد الاستلام بنجاح",
       "pickupDateSet": "تم تحديد موعد الاستلام بنجاح",
-      "supplySubmitted": "تم تقديم التوريد بنجاح"
+      "supplySubmitted": "تم تقديم التوريد بنجاح",
+      "approved": "تمت الموافقة على الطلب بنجاح",
+      "rejected": "تم رفض الطلب بنجاح",
+      "returnedForReview": "تم إرجاع الطلب للمراجعة بنجاح"
     }
   },
   "supplyRequestDetail": {
