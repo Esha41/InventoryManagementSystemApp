@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,6 +7,8 @@ import { Cartridge } from '../cartridge-list/cartridge-list.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
+import { TranslationService } from '@services/translation.service';
+import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
 
 // Export MAX_FILE_SIZE_MB for template use
 export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
@@ -21,11 +23,63 @@ export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
 export class UsageFormComponent {
   constructor(
     public translateService: TranslateService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private translationService: TranslationService
   ) { }
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
 
   get currentLang(): string {
     return this.translateService.currentLang || 'en';
+  }
+
+  /** Format date for input type="date" (YYYY-MM-DD) - for native picker */
+  get usageDateFromForInput(): string {
+    return formatDateForInput(this.usageDateFrom) || this.usageDateFrom || '';
+  }
+
+  /** Format date for input type="date" (YYYY-MM-DD) - for native picker */
+  get usageDateToForInput(): string {
+    return formatDateForInput(this.usageDateTo) || this.usageDateTo || '';
+  }
+
+  /** Display date in DD/MM/YYYY format (app standard) */
+  get usageDateFromDisplay(): string {
+    const val = formatDateForInput(this.usageDateFrom) || this.usageDateFrom;
+    if (!val || !val.trim()) return '';
+    const formatted = formatDateShort(val);
+    return formatted === 'N/A' ? '' : formatted;
+  }
+
+  /** Display date in DD/MM/YYYY format (app standard) */
+  get usageDateToDisplay(): string {
+    const val = formatDateForInput(this.usageDateTo) || this.usageDateTo;
+    if (!val || !val.trim()) return '';
+    const formatted = formatDateShort(val);
+    return formatted === 'N/A' ? '' : formatted;
+  }
+
+  @ViewChild('dateFromPicker') dateFromPickerRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('dateToPicker') dateToPickerRef?: ElementRef<HTMLInputElement>;
+
+  openDateFromPicker(): void {
+    const el = this.dateFromPickerRef?.nativeElement;
+    if (el?.showPicker) {
+      el.showPicker();
+    } else {
+      el?.focus();
+    }
+  }
+
+  openDateToPicker(): void {
+    const el = this.dateToPickerRef?.nativeElement;
+    if (el?.showPicker) {
+      el.showPicker();
+    } else {
+      el?.focus();
+    }
   }
 
   get isArabic(): boolean {

@@ -13,7 +13,7 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'supplyOrder.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input type="number" formControlName="quantity" min="1"
+      <input type="number" formControlName="quantity" [min]="editQuantityMin" [max]="editQuantityMax"
         class="w-full px-3 py-2 border-2 rounded-lg text-sm bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
         [ngClass]="{
           'border-[var(--color-error)]': editItemForm.get('quantity')?.invalid && editItemForm.get('quantity')?.touched,
@@ -26,6 +26,10 @@
       <p *ngIf="editItemForm.get('quantity')?.errors?.['min'] && editItemForm.get('quantity')?.touched"
         class="mt-1 text-sm text-[var(--color-error)]">
         {{ 'supplyOrder.quantityMinError' | translate:{min: totalSupplied} }}
+      </p>
+      <p *ngIf="editItemForm.get('quantity')?.errors?.['max'] && editItemForm.get('quantity')?.touched"
+        class="mt-1 text-sm text-[var(--color-error)]">
+        {{ 'supplyOrder.quantityMaxError' | translate:{max: editQuantityMax} }}
       </p>
     </div>
 

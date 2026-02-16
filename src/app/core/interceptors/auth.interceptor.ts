@@ -9,6 +9,9 @@ import { BackendAuthService } from '@services/backend-auth.service';
 const isRefreshRequest = (url: string): boolean =>
   url.includes('/account/refresh') || url.endsWith('account/refresh');
 
+const isLoginRequest = (url: string): boolean =>
+  url.includes('/account/login') || url.endsWith('account/login');
+
 /**
  * HTTP Interceptor for handling authentication
  * - Adds JWT token to requests (except refresh)
@@ -24,6 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = storageService.get<string>('auth_token');
   const skipAuth = isRefreshRequest(req.url);
+  const isLogin = isLoginRequest(req.url);
 
   let authReq = req.clone({
     withCredentials: true,
@@ -48,6 +52,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           configService.logWarning('Refresh failed - redirecting to login');
           backendAuth.clearSession();
           router.navigate(['/auth/login']);
+          return throwError(() => error);
+        }
+
+        // Don't try refresh when login failed - pass through the original 401 so user sees proper message (wrong password, etc.)
+        if (isLogin) {
           return throwError(() => error);
         }
 

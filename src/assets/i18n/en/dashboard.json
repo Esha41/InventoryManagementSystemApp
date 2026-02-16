@@ -100,7 +100,7 @@
       "noLots": "No lots expiring in the next 30 days"
     },
     "lowStock": {
-      "title": "Low Stock Items",
+      "title": "Low Stock",
       "subtitle": "Items below minimum stock threshold",
       "itemName": "Item Name",
       "itemNo": "Item No",

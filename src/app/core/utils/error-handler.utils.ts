@@ -14,6 +14,16 @@ const TRANSLATABLE_ERROR_PATTERNS: { pattern: RegExp; translationKey: string; ex
     pattern: /Requested quantity \((\d+)\) exceeds available allowance\.?\s*Available:\s*(\d+)/i,
     translationKey: 'newIssueRequest.errors.allowanceExceeded',
     extractParams: (match) => ({ requestedQuantity: match[1], availableQuantity: match[2] })
+  },
+  {
+    pattern: /(?:IX_BaseItems_ItemNo|BaseItems|ItemNo)[\s\S]*?duplicate key value is \(([^)]+)\)|duplicate key value is \(([^)]+)\)[\s\S]*?(?:IX_BaseItems_ItemNo|BaseItems|ItemNo)/i,
+    translationKey: 'addAsset.errors.itemNoAlreadyExistsWithValue',
+    extractParams: (match) => ({ itemNo: (match[1] || match[2] || '').trim() })
+  },
+  {
+    pattern: /IX_BaseItems_ItemNo|(?:Cannot insert )?duplicate key.*?(?:BaseItems|ItemNo)/i,
+    translationKey: 'addAsset.errors.itemNoAlreadyExists',
+    extractParams: () => ({})
   }
 ];
 

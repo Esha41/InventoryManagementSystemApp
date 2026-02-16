@@ -188,9 +188,8 @@ export class BackendAuthService {
       catchError(error => {
         this.configService.logError('Login failed', error);
         this.clearAuthData();
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Login failed. Please check your credentials.'
-        ));
+        // Pass through original error so login component can extract status, errorCode, message for proper user feedback
+        return throwError(() => error);
       })
     );
   }
