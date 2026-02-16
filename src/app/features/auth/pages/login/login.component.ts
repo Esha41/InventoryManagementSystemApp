@@ -778,18 +778,15 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.invalidLdapSettings');
     }
 
-    // Network/connection errors
-    if (statusCode === 0 ||
-      error?.name === 'HttpErrorResponse' && statusCode === 0 ||
-      lowerMessage.includes('network') ||
-      lowerMessage.includes('connection') ||
+    const isLikelyNetworkError = statusCode === 0 ||
       lowerMessage.includes('failed to fetch') ||
-      lowerMessage.includes('cannot connect') ||
-      lowerMessage.includes('connection refused') ||
-      lowerMessage.includes('timeout') ||
       lowerMessage.includes('networkerror') ||
+      lowerMessage.includes('connection refused') ||
+      lowerMessage.includes('cannot connect') ||
+      lowerMessage.includes('net::err_') ||
       error?.message?.includes('ERR_INTERNET_DISCONNECTED') ||
-      error?.message?.includes('ERR_CONNECTION_REFUSED')) {
+      error?.message?.includes('ERR_CONNECTION_REFUSED');
+    if (isLikelyNetworkError) {
       return this.translate.instant('auth.login.errors.networkError');
     }
 

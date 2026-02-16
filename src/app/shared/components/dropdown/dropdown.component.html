@@ -18,8 +18,8 @@
   </button>
 
   <div class="app-dropdown-panel" *ngIf="isOpen">
-    <!-- Search Input -->
-    <div class="app-dropdown-search" *ngIf="options && options.length > 0" (click)="onSearchClick($event)">
+    <!-- Search Input (hidden when showSearch=false, e.g. rows-per-page with few options) -->
+    <div class="app-dropdown-search" *ngIf="showSearch && options && options.length > 0" (click)="onSearchClick($event)">
       <div class="relative">
         <lucide-angular
           [img]="Search"

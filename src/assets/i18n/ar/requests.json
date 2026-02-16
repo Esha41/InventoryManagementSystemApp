@@ -68,6 +68,8 @@
     "nsn": "NSN",
     "enterNSN": "أدخل رقم NSN",
     "militaryTimeFormat": "التنسيق: HHMM",
+    "dateFormat": "التنسيق: DD/MM/YYYY",
+    "selectDatePlaceholder": "اختر التاريخ",
     "selectTimePlaceholder": "اختر الوقت (HHMM)",
     "enterQuantity": "أدخل الكمية",
     "enterQuantityPlaceholder": "أدخل الكمية",
@@ -256,8 +258,8 @@
     }
   },
   "requestsManagement": {
-    "title": "إدارة الطلبات",
-    "actionRequired": "مطلوب إجراء",
+    "title": "إدارة الموافقات",
+    "actionRequired": "إجراء مطلوب",
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",
     "priority": "الأولوية",
@@ -325,10 +327,12 @@
         "generatedOn": "تم الإنشاء في",
         "printedBy": "طبع بواسطة",
         "isFromAllowance": "ضمن المقرر",
-        "fromAllowance": "(من المقرر)",
+        "fromAllowance": " (ضمن المقرر)",
         "outsideOfAllowance": "(خارج المقرر)",
         "requestType": "نوع الطلب",
-        "usagePurpose": "الغرض من الاستخدام"
+        "usagePurpose": "الغرض من الاستخدام",
+        "supplyDate": "تاريخ الصرف",
+        "supplyDetails": "تفاصيل الصرف"
       },
       "table": {
         "phase": "المرحلة",
@@ -395,6 +399,7 @@
     "itemRequired": "المادة مطلوبة.",
     "quantityRequired": "الكمية مطلوبة.",
     "quantityMinError": "يجب أن تكون الكمية على الأقل {{min}}.",
+    "quantityMaxError": "لا يمكن أن تتجاوز الكمية {{max}} (يمكنك التقليل فقط).",
     "notesPlaceholder": "أضف أي ملاحظات (اختياري)",
     "itemName": "اسم مادة",
     "itemCode": "رمز مادة",
@@ -410,6 +415,8 @@
     "outOfAllowance": "خارج المقرر",
     "setSupplyPickupDate": "تعين تاريخ الإستلام",
     "pickupDate": "تاريخ الاستلام",
+    "supplyDate": "تاريخ الصرف",
+    "supplyDetails": "تفاصيل الصرف",
     "dateSetLocked": "تم تعيين التاريخ",
     "dateSetLockedMessage": "تم تعيين تاريخ الاستلام ولا يمكن تغييره.",
     "setPickupDate": "تعيين تاريخ الاستلام",
@@ -503,12 +510,18 @@
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
       "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX.",
       "pickupDateRequired": "يرجى تحديد تاريخ استلام التوريد قبل الموافقة.",
-      "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة."
+      "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة.",
+      "approveFailed": "فشل الموافقة على الطلب. يرجى المحاولة مرة أخرى.",
+      "rejectFailed": "فشل رفض الطلب. يرجى المحاولة مرة أخرى.",
+      "returnForReviewFailed": "فشل إرجاع الطلب للمراجعة. يرجى المحاولة مرة أخرى."
     },
     "success": {
       "pickupDateConfirmed": "تم تأكيد موعد الاستلام بنجاح",
       "pickupDateSet": "تم تحديد موعد الاستلام بنجاح",
-      "supplySubmitted": "تم تقديم التوريد بنجاح"
+      "supplySubmitted": "تم تقديم التوريد بنجاح",
+      "approved": "تمت الموافقة على الطلب بنجاح",
+      "rejected": "تم رفض الطلب بنجاح",
+      "returnedForReview": "تم إرجاع الطلب للمراجعة بنجاح"
     }
   },
   "supplyRequestDetail": {

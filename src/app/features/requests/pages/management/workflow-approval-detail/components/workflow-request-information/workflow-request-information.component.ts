@@ -2,9 +2,10 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { LucideAngularModule, FileText, Eye, User, Download } from 'lucide-angular';
+import { LucideAngularModule, FileText, Eye, User, Download, Package } from 'lucide-angular';
 import { RequestDetail, FileUploadDto } from '@models/workflow-approval.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
+import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { getLocalizedValue as getLocalizedValueHelper } from '../../utils/workflow-approval-helpers';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
@@ -25,6 +26,7 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
   readonly Eye = Eye;
   readonly User = User;
   readonly Download = Download;
+  readonly Package = Package;
 
   @Input() requestDetail: RequestDetail | null = null;
   @Input() orderFiles: FileUploadDto[] = [];
@@ -32,8 +34,13 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
 
   constructor(
     private translateService: TranslateService,
-    private supplyServiceHelper: WorkflowApprovalSupplyService
+    private supplyServiceHelper: WorkflowApprovalSupplyService,
+    private permissionsService: WorkflowApprovalPermissionsService
   ) { }
+
+  get canViewSupplyDate(): boolean {
+    return this.permissionsService.canViewSupplyDate();
+  }
 
   ngOnDestroy(): void {
     // Component cleanup if needed

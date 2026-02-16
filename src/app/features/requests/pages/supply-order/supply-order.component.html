@@ -16,7 +16,8 @@
         <app-supply-order-info [orderData]="orderData"></app-supply-order-info>
 
         <!-- Order Items Management Table -->
-        <app-order-items-management [orderItems]="orderItems" (addItemClick)="openAddOrderItemModal()"
+        <app-order-items-management [orderItems]="orderItems" [canIncreaseQuantity]="canIncreaseQuantity"
+          [canDecreaseQuantity]="canDecreaseQuantity" (addItemClick)="openAddOrderItemModal()"
           (editItemClick)="openEditOrderItemModal($event)" (removeItemClick)="openRemoveOrderItemModal($event)">
         </app-order-items-management>
 
@@ -73,7 +74,8 @@
 
   <!-- Edit Order Item Quantity Modal -->
   <app-edit-order-item-modal [isOpen]="isEditItemModalOpen" [orderId]="orderId" [selectedItem]="selectedItemForEdit"
-    [totalSupplied]="getTotalSupplied(selectedItemForEdit)" (closed)="closeEditOrderItemModal()"
+    [totalSupplied]="getTotalSupplied(selectedItemForEdit)" [canIncreaseQuantity]="canIncreaseQuantity"
+    [canDecreaseQuantity]="canDecreaseQuantity" (closed)="closeEditOrderItemModal()"
     (itemUpdated)="onOrderItemUpdated()">
   </app-edit-order-item-modal>
 

@@ -352,19 +352,20 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onBack(): void {
-    if (!this.router) return;
+    if (!this.router || !this.route) return;
     
     // If requestId is available, navigate back to workflow approval page
     if (this.requestId) {
       this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
-    } else if (this._assetType()) {
-      // Otherwise, navigate back to asset-list with tab query param
-      this.router.navigate(['/asset-list'], {
-        queryParams: { tab: this._assetType() }
-      });
     } else {
-      // Fallback: navigate to requests management
-      this.router.navigate(['/requests-management']);
+      // Navigate back to asset-list, preserving tab and page from query params
+      const tab = this._assetType();
+      const pageParam = this.route.snapshot.queryParams['page'];
+      const page = pageParam ? parseInt(pageParam, 10) : NaN;
+      const queryParams: Record<string, string | number> = {};
+      if (tab) queryParams['tab'] = tab;
+      if (!isNaN(page) && page >= 1) queryParams['page'] = page;
+      this.router.navigate(['/asset-list'], { queryParams });
     }
   }
 

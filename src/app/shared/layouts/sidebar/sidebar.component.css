@@ -1,4 +1,8 @@
-/* Sidebar specific styles if needed */
+/* Sidebar specific styles */
+/* Smooth momentum scrolling on iOS */
+aside nav {
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Custom tooltip for collapsed sidebar - matches website design */
 .menu-tooltip {

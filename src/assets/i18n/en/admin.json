@@ -188,7 +188,7 @@
     "update": "Update"
   },
   "workflow": {
-    "title": "Workflows",
+    "title": "Work Flows",
     "search": "Search workflows...",
     "addWorkFlow": "Add Workflow",
     "editWorkflow": "Edit Workflow",
@@ -319,7 +319,7 @@
     }
   },
   "emailSettings": {
-    "title": "System Settings",
+    "title": "Email Settings",
     "subtitle": "Configure email notification settings",
     "emailSettings": "E-mail Settings",
     "saveChanges": "Save Changes",

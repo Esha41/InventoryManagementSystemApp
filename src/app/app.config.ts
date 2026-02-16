@@ -24,7 +24,8 @@ export class JsonTranslationLoader implements TranslateLoader {
       'allowance',
       'notifications',
       'add-weapon-asset',
-      'scheduledReports'
+      'scheduledReports',
+      'announcements'
     ];
 
     // Load all modular translation files

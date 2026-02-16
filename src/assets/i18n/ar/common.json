@@ -218,7 +218,8 @@
     "biTool": "أداة BI",
     "reportDesigner": "مصمم التقارير",
     "reportDashboard": "لوحة التقارير",
-    "scheduledReports": "التقارير المجدولة"
+    "scheduledReports": "التقارير المجدولة",
+    "announcements": "الإعلانات"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"
@@ -340,9 +341,7 @@
       "description": "الوصف",
       "descriptionPlaceholder": "أدخل وصف التقرير (اختياري)",
       "invalidUrl": "تنسيق الرابط غير صالح. يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات."
-    },
-    "selectTemplate": "اختر قالب التقرير",
-    "noTemplates": "لا توجد قوالب متاحة"
+    }
   },
   "reports": {
     "designer": {

@@ -217,7 +217,8 @@
     "biTool": "BI Tool",
     "reportDesigner": "Report Designer",
     "reportDashboard": "Report Dashboard",
-    "scheduledReports": "Scheduled Reports"
+    "scheduledReports": "Scheduled Reports",
+    "announcements": "Announcements"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"

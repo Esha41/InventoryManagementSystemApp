@@ -1,35 +1,38 @@
-<!-- Mobile Overlay -->
-<div *ngIf="mobileOpen" class="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm transition-opacity"
-  (click)="onCloseMobile()"></div>
+<!-- Mobile Overlay - touch-none prevents scroll-through on iOS -->
+<div *ngIf="mobileOpen"
+  class="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm transition-opacity touch-none overscroll-contain"
+  (click)="onCloseMobile()"
+  aria-hidden="true"></div>
 
 <aside
-  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-auto md:translate-x-0 w-64"
+  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-auto md:translate-x-0 w-[85vw] max-w-64 md:w-64 will-change-transform"
   [class.left-0]="!isRTL" [class.right-0]="isRTL" [class.translate-x-0]="mobileOpen"
   [class.-translate-x-full]="!mobileOpen && !isRTL" [class.translate-x-full]="!mobileOpen && isRTL"
   [class.md:w-64]="!isCollapsed" [class.md:w-20]="isCollapsed">
-  <!-- Toggle Button Section -->
-  <div class="h-16 flex items-center justify-end px-4 border-b border-[var(--color-border)]">
+  <!-- Toggle Button Section - min-h for touch targets -->
+  <div class="h-14 min-h-[3.5rem] md:h-16 flex items-center justify-end px-3 md:px-4 border-b border-[var(--color-border)] shrink-0">
     <!-- Show Logo on Mobile Drawer -->
     <div class="md:hidden flex-1 flex items-center">
       <span class="font-bold text-xl text-[var(--color-brand)] tracking-wider">EMDAD</span>
     </div>
 
     <button (click)="toggleCollapse()"
-      class="hidden md:block p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors duration-200"
+      class="hidden md:flex min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors duration-200 items-center justify-center"
       [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
       <lucide-angular [img]="isCollapsed ? (isRTL ? ChevronLeft : ChevronRight) : (isRTL ? ChevronRight : ChevronLeft)"
         class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
     </button>
 
-    <!-- Close Button (Mobile Only) -->
+    <!-- Close Button (Mobile Only) - min 44px touch target -->
     <button (click)="onCloseMobile()"
-      class="md:hidden p-2 rounded-lg hover:bg-[var(--color-error)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+      class="md:hidden min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg hover:bg-[var(--color-error)]/10 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center justify-center"
+      aria-label="Close menu">
       <lucide-angular [img]="isRTL ? ChevronRight : ChevronLeft" class="h-5 w-5"></lucide-angular>
     </button>
   </div>
 
-  <!-- Navigation Menu -->
-  <nav class="flex-1 overflow-y-auto py-4">
+  <!-- Navigation Menu - smooth scroll on iOS -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 overscroll-contain">
     <ul class="space-y-1 px-3">
       <li *ngFor="let item of menuItems; let i = index">
         <!-- Separator before Reports section -->

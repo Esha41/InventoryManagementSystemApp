@@ -49,8 +49,8 @@
     "noItemsFound": "لم يتم العثور على مواد",
     "quantity": "الكمية",
     "quantityPlaceholder": "أدخل الكمية",
-    "send": "إرسال",
-    "sending": "جاري الإرسال...",
+    "send": "حفظ",
+    "sending": "جاري الحفظ...",
     "noAllowances": "لم يتم العثور على مقررات",
     "noAllowancesDescription": "ابدأ بإنشاء طلب مقرر جديد",
     "searchPlaceholder": "البحث حسب القسم...",
@@ -85,12 +85,12 @@
       "itemIdInvalid": "يرجى اختيار عنصر صحيح من القائمة",
       "quantityRequired": "الكمية مطلوبة",
       "quantityInvalid": "يجب أن تكون الكمية رقماً صحيحاً",
-      "failedToSend": "فشل إرسال طلب المقرر",
+      "failedToSend": "فشل حفظ طلب المقرر",
       "failedToLoad": "فشل تحميل المقررات",
       "unauthorizedAccess": "ليس لديك صلاحية للوصول إلى هذا المقرر. يمكنك فقط عرض المقررات الخاصة بقسمك."
     },
     "success": {
-      "sentSuccessfully": "تم إرسال طلب المقرر بنجاح!"
+      "sentSuccessfully": "تم حفظ طلب المقرر بنجاح!"
     }
   }
 }

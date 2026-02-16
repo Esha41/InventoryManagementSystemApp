@@ -1,2 +1,17 @@
 /* Warehouse Inventory Component Styles */
 
+.warehouse-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.warehouse-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.warehouse-tabs-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+

@@ -210,35 +210,59 @@
 
       <!-- Right Column -->
       <div class="space-y-6">
-        <!-- Usage Date From -->
+        <!-- Usage Date From - Display in DD/MM/YYYY (app format), picker opens on click -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateFrom' |
             translate }} <span class="text-red-500">*</span></label>
-          <input name="usageDateFrom" type="date" [ngModel]="usageDateFrom"
-            (ngModelChange)="onUsageDateFromChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
+          <div class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
+            (click)="openDateFromPicker()"
+            [attr.dir]="isRTL ? 'rtl' : 'ltr'"
             [ngClass]="{
-              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageDateFrom'),
-              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateFrom')
+              'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !hasError('usageDateFrom'),
+              'border-red-500': hasError('usageDateFrom')
             }">
+            <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+              <span class="text-sm text-start flex-1 min-w-0" [class.text-[var(--color-text-muted)]]="!usageDateFromDisplay">{{ usageDateFromDisplay || ('newIssueRequest.selectDatePlaceholder' | translate) }}</span>
+              <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <input #dateFromPicker type="date" [ngModel]="usageDateFromForInput"
+              (ngModelChange)="onUsageDateFromChange($event)"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
+              [attr.aria-label]="'newIssueRequest.usageDateFrom' | translate">
+          </div>
           <p *ngIf="hasError('usageDateFrom')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageDateFrom | translate }}
           </p>
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.dateFormat' | translate }}</p>
         </div>
 
-        <!-- Usage Date To -->
+        <!-- Usage Date To - Display in DD/MM/YYYY (app format), picker opens on click -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateTo' |
             translate }} <span class="text-red-500">*</span></label>
-          <input name="usageDateTo" type="date" [ngModel]="usageDateTo" (ngModelChange)="onUsageDateToChange($event)"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
+          <div class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
+            (click)="openDateToPicker()"
+            [attr.dir]="isRTL ? 'rtl' : 'ltr'"
             [ngClass]="{
-              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('usageDateTo'),
-              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('usageDateTo')
+              'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !hasError('usageDateTo'),
+              'border-red-500': hasError('usageDateTo')
             }">
+            <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+              <span class="text-sm text-start flex-1 min-w-0" [class.text-[var(--color-text-muted)]]="!usageDateToDisplay">{{ usageDateToDisplay || ('newIssueRequest.selectDatePlaceholder' | translate) }}</span>
+              <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <input #dateToPicker type="date" [ngModel]="usageDateToForInput" (ngModelChange)="onUsageDateToChange($event)"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
+              [attr.aria-label]="'newIssueRequest.usageDateTo' | translate">
+          </div>
           <p *ngIf="hasError('usageDateTo')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageDateTo | translate }}
           </p>
+          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.dateFormat' | translate }}</p>
         </div>
 
         <!-- Usage Time From -->

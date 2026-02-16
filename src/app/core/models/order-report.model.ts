@@ -22,6 +22,7 @@ export interface OrderSummary {
   lastUpdated: string | Date | null; // Raw date for pipe formatting
   isFromAllowance?: boolean;
   requestType?: string;
+  supplyDate?: string | Date | null; // Supply/pickup date (permission-gated)
 }
 
 /**
