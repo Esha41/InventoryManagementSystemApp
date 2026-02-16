@@ -1,7 +1,7 @@
 {
   "newIssueRequest": {
     "title": "New Issue Request",
-    "newOrderIssue": "New Order Issue",
+    "newOrderIssue": "New Issue Request",
     "allowanceSelection": "Order Source",
     "selection": "Selection",
     "usage": "Usage",
@@ -92,6 +92,8 @@
     "nsn": "NSN",
     "enterNSN": "Enter NSN number",
     "militaryTimeFormat": "Format: HHMM",
+    "dateFormat": "Format: DD/MM/YYYY",
+    "selectDatePlaceholder": "Select date",
     "selectTimePlaceholder": "Select time (HHMM)",
     "enterQuantityPlaceholder": "Enter quantity",
     "selectCartridge": "Select",
@@ -260,7 +262,7 @@
     }
   },
   "requestsManagement": {
-    "title": "Requests Management",
+    "title": "Approval Management",
     "actionRequired": "Action Required",
     "orderId": "Order ID",
     "requestDate": "Request Date",

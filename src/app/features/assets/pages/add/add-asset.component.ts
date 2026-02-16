@@ -445,16 +445,19 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
           setTimeout(() => {
-            this.router.navigate(['/asset-list']);
+            this.router.navigate(['/asset-list'], {
+              queryParams: { tab: this.activeTab }
+            });
           }, 800);
         } else {
-          this.errorMessage = response.message || 'Failed to create asset';
+          const rawMsg = response.message || 'Failed to create asset';
+          this.errorMessage = ErrorHandler.translateErrorMessage(rawMsg, this.translateService);
           this.toastService.error(this.errorMessage || '', this.translationService.getTranslation('toast.error'));
         }
         this.submitting = false;
       },
       error: (error: unknown) => {
-        let errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create asset. Please try again.');
+        let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
         this.submitting = false;

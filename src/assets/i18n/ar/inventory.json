@@ -212,6 +212,10 @@
     "notes": "ملاحظات",
     "enterNotes": "أدخل الملاحظات",
     "itemNoMustBeUnique": "يجب أن يكون رقم المادة فريداً عبر جميع سجلات المواد",
+    "errors": {
+      "itemNoAlreadyExists": "رقم المادة موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
+      "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد."
+    },
     "name": "الاسم",
     "itemNo": "رقم المادة",
     "partNo": "رقم القطعة",
@@ -329,7 +333,7 @@
     "countryOfManufacture": "بلد الصنع"
   },
   "assetList": {
-    "title": "مخزون المواد",
+    "title": "قائمة المواد",
     "subtitle": "إدارة وتتبع جميع مواد المخزون في النظام",
     "addAmmunition": "إضافة ذخيرة",
     "addWeapon": "إضافة سلاح",
