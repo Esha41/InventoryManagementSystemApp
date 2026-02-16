@@ -69,7 +69,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   showModal = false;
   isEditMode = false;
   currentAssignmentId: number = 0;
-  currentAssignment: CreateUpdateItemDepartmentAssignmentDto = this.getEmptyAssignment();
+  currentAssignment: Omit<CreateUpdateItemDepartmentAssignmentDto, 'departmentId'> & { departmentId: number | null } = this.getEmptyAssignment();
   selectedItemIds: number[] = []; // For multiple item selection (edit mode)
   selectedAmmunitionIds: number[] = [];
   selectedWeaponIds: number[] = [];
@@ -405,7 +405,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
 
     if (this.isEditMode) {
       // Edit mode: single item update
-      this.assignmentService.update(this.currentAssignmentId, this.currentAssignment)
+      this.assignmentService.update(this.currentAssignmentId, this.currentAssignment as CreateUpdateItemDepartmentAssignmentDto)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response: APIOperationResponse<boolean>) => {
@@ -456,7 +456,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       const assignmentsToCreate: CreateUpdateItemDepartmentAssignmentDto[] = combinedItemIds
         .map(itemId => ({
           itemId: itemId,
-          departmentId: this.currentAssignment.departmentId,
+          departmentId: this.currentAssignment.departmentId!,
           notes: this.currentAssignment.notes
         }));
 
@@ -649,13 +649,14 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  onDepartmentChange(departmentId: number | string): void {
-    const deptId = typeof departmentId === 'string' ? parseInt(departmentId, 10) : Number(departmentId);
+  onDepartmentChange(departmentId: number | string | null): void {
+    const deptId = departmentId == null ? 0 : (typeof departmentId === 'string' ? parseInt(departmentId, 10) : Number(departmentId));
 
     this.availableItems = [...this.allItems];
     this.items = [...this.allItems];
 
     if (deptId <= 0 || isNaN(deptId)) {
+      this.currentAssignment.departmentId = null;
       this.selectedItemIds = [];
       this.selectedAmmunitionIds = [];
       this.selectedWeaponIds = [];
@@ -698,10 +699,10 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getEmptyAssignment(): CreateUpdateItemDepartmentAssignmentDto {
+  private getEmptyAssignment(): Omit<CreateUpdateItemDepartmentAssignmentDto, 'departmentId'> & { departmentId: number | null } {
     return {
       itemId: 0,
-      departmentId: 0,
+      departmentId: null,
       notes: ''
     };
   }

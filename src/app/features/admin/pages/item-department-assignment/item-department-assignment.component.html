@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.title' | translate }}</h1>
-      <button *ngIf="isSuperAdmin" (click)="openAddModal()"
+      <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Create'" (click)="openAddModal()"
         class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto justify-center">
         <lucide-icon [img]="Plus" [size]="20"></lucide-icon>
         {{ 'itemDepartmentAssignment.addAssignment' | translate }}
@@ -44,7 +44,6 @@
                 <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</th>
                 <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</th>
                 <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</th>
-                <th class="px-6 py-4 text-end text-sm font-semibold text-[var(--color-text)]">{{ 'common.actions' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -75,23 +74,16 @@
                   <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">
                     {{ summary.weaponsCount }}
                   </td>
-                  <td class="px-6 py-4 text-end">
-                    <button type="button"
-                      (click)="toggleDepartmentItems(summary.departmentId); $event.stopPropagation()"
-                      class="px-4 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
-                      {{ isDepartmentExpanded(summary.departmentId) ? ('itemDepartmentAssignment.hideItems' | translate) : ('itemDepartmentAssignment.showItems' | translate) }}
-                    </button>
-                  </td>
                 </tr>
                 <!-- Items List (Expanded) -->
                 <tr *ngIf="isDepartmentExpanded(summary.departmentId)">
-                  <td colspan="5" class="p-0 bg-[var(--color-background-muted)]">
+                  <td colspan="4" class="p-0 bg-[var(--color-background-muted)]">
                     <div class="p-6">
                       <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
                           {{ 'itemDepartmentAssignment.assignmentDetails' | translate }}
                         </h3>
-                        <button *ngIf="isSuperAdmin" 
+                        <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Create'" 
                           (click)="openAddModalForDepartment(summary.departmentId)"
                           class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
                           <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
@@ -156,7 +148,7 @@
                 </tr>
               </ng-container>
               <tr *ngIf="filteredSummaries.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center">
+                <td colspan="4" class="px-6 py-12 text-center">
                   <p class="text-[var(--color-text-secondary)]">
                     {{ searchTerm ? ('itemDepartmentAssignment.noDepartmentsFound' | translate) : ('itemDepartmentAssignment.noDepartments' | translate) }}
                   </p>
@@ -215,9 +207,7 @@
               [options]="departments"
               [optionLabelFn]="getDepartmentOptionLabel"
               optionValue="id"
-              [placeholder]="'itemDepartmentAssignment.selectDepartment' | translate"
-              [placeholderSelectable]="true"
-              [placeholderValue]="0">
+              [placeholder]="'itemDepartmentAssignment.selectDepartment' | translate">
             </app-dropdown>
           </div>
 
@@ -250,8 +240,8 @@
                 optionLabel="displayLabel" 
                 optionValue="id"
                 [multiple]="true"
-                [disabled]="currentAssignment.departmentId === 0 || availableAmmunition.length === 0"
-                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectAmmunition' | translate)">
+                [disabled]="!currentAssignment.departmentId || availableAmmunition.length === 0"
+                [placeholder]="!currentAssignment.departmentId ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectAmmunition' | translate)">
               </app-dropdown>
             </div>
             <div>
@@ -265,8 +255,8 @@
                 optionLabel="displayLabel" 
                 optionValue="id"
                 [multiple]="true"
-                [disabled]="currentAssignment.departmentId === 0 || availableExplosives.length === 0"
-                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectExplosives' | translate)">
+                [disabled]="!currentAssignment.departmentId || availableExplosives.length === 0"
+                [placeholder]="!currentAssignment.departmentId ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectExplosives' | translate)">
               </app-dropdown>
             </div>
             <div>
@@ -280,11 +270,11 @@
                 optionLabel="displayLabel" 
                 optionValue="id"
                 [multiple]="true"
-                [disabled]="currentAssignment.departmentId === 0 || availableWeapons.length === 0"
-                [placeholder]="currentAssignment.departmentId === 0 ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectWeapons' | translate)">
+                [disabled]="!currentAssignment.departmentId || availableWeapons.length === 0"
+                [placeholder]="!currentAssignment.departmentId ? ('itemDepartmentAssignment.selectDepartmentFirst' | translate) : ('itemDepartmentAssignment.selectWeapons' | translate)">
               </app-dropdown>
             </div>
-            <p *ngIf="currentAssignment.departmentId > 0" class="mt-1 text-xs text-[var(--color-text-muted)]">
+            <p *ngIf="currentAssignment.departmentId" class="mt-1 text-xs text-[var(--color-text-muted)]">
               {{ 'itemDepartmentAssignment.allItemsShown' | translate }}. {{ 'itemDepartmentAssignment.checkboxesIndicateAssigned' | translate }}
             </p>
           </ng-container>
