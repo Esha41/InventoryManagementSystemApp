@@ -36,6 +36,8 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   @Input() orderId: number = 0;
   @Input() selectedItem: OrderRequestItemDto | null = null;
   @Input() totalSupplied: number = 0;
+  @Input() canIncreaseQuantity: boolean = true;
+  @Input() canDecreaseQuantity: boolean = true;
 
   @Output() closed = new EventEmitter<void>();
   @Output() itemUpdated = new EventEmitter<void>();
@@ -60,13 +62,10 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedItem'] && this.selectedItem) {
+    if ((changes['selectedItem'] || changes['totalSupplied'] || changes['canIncreaseQuantity'] || changes['canDecreaseQuantity']) && this.selectedItem) {
       this.initializeForm();
     }
     if (changes['isOpen'] && this.isOpen && this.selectedItem) {
-      this.initializeForm();
-    }
-    if (changes['totalSupplied'] && this.isOpen) {
       this.initializeForm();
     }
   }
@@ -77,11 +76,29 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   }
 
   private initializeForm(): void {
+    const currentQty = this.selectedItem?.quantity || 1;
     const minAllowed = Math.max(1, this.totalSupplied || 0);
+    const min = this.canDecreaseQuantity ? minAllowed : currentQty;
+    const max = this.canIncreaseQuantity ? undefined : currentQty;
+    const validators = [Validators.required, Validators.min(min)];
+    if (max !== undefined) {
+      validators.push(Validators.max(max));
+    }
     this.editItemForm = this.fb.group({
-      quantity: [this.selectedItem?.quantity || 1, [Validators.required, Validators.min(minAllowed)]],
+      quantity: [currentQty, validators],
       notes: ['']
     });
+  }
+
+  get editQuantityMin(): number {
+    if (!this.selectedItem) return 1;
+    const minFromSupplied = Math.max(1, this.totalSupplied || 0);
+    return this.canDecreaseQuantity ? minFromSupplied : (this.selectedItem.quantity || 1);
+  }
+
+  get editQuantityMax(): number | null {
+    if (!this.selectedItem || this.canIncreaseQuantity) return null;
+    return this.selectedItem.quantity || 1;
   }
 
 

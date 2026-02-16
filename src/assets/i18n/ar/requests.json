@@ -397,6 +397,7 @@
     "itemRequired": "المادة مطلوبة.",
     "quantityRequired": "الكمية مطلوبة.",
     "quantityMinError": "يجب أن تكون الكمية على الأقل {{min}}.",
+    "quantityMaxError": "لا يمكن أن تتجاوز الكمية {{max}} (يمكنك التقليل فقط).",
     "notesPlaceholder": "أضف أي ملاحظات (اختياري)",
     "itemName": "اسم مادة",
     "itemCode": "رمز مادة",

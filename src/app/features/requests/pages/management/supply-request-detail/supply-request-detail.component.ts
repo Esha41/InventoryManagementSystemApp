@@ -15,6 +15,7 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
@@ -132,8 +133,17 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translate: TranslateService,
     private config: ConfigService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: BackendAuthService
   ) { }
+
+  get canIncreaseQuantity(): boolean {
+    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+  }
+
+  get canDecreaseQuantity(): boolean {
+    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.params['id'];

@@ -401,6 +401,7 @@
     "itemRequired": "Item is required.",
     "quantityRequired": "Quantity is required.",
     "quantityMinError": "Quantity must be at least {{min}}.",
+    "quantityMaxError": "Quantity cannot exceed {{max}} (you can only decrease).",
     "notesPlaceholder": "Add any notes (optional)",
     "itemName": "Item Name",
     "itemCode": "Item Code",

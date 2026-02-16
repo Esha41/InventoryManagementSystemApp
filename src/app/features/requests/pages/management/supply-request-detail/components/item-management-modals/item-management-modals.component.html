@@ -88,7 +88,7 @@
       <label class="block text-sm font-semibold text-gray-700 mb-2">
         {{ 'supplyRequestDetail.quantity' | translate }} <span class="text-red-600">*</span>
       </label>
-      <input type="number" formControlName="quantity" min="1"
+      <input type="number" formControlName="quantity" [min]="editQuantityMin" [max]="editQuantityMax"
         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
         [class.border-red-500]="editItemForm.get('quantity')?.invalid && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)" />
       <p *ngIf="editItemForm.get('quantity')?.hasError('required') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
@@ -99,6 +99,10 @@
         class="mt-1 text-sm text-red-600">
         {{ 'supplyRequestDetail.quantityMinError' | translate: { min: selectedItemForEdit?.totalSelectedForDischarge ||
         1 } }}
+      </p>
+      <p *ngIf="editItemForm.get('quantity')?.hasError('max') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
+        class="mt-1 text-sm text-red-600">
+        {{ 'supplyRequestDetail.quantityMaxError' | translate: { max: editQuantityMax } }}
       </p>
     </div>
 
