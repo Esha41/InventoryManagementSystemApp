@@ -29,6 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
   selector: 'app-supply-order',
@@ -94,8 +95,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private supplyOrderDataService: SupplyOrderDataService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: BackendAuthService
   ) { }
+
+  get canIncreaseQuantity(): boolean {
+    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+  }
+
+  get canDecreaseQuantity(): boolean {
+    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.params['supplyId'];

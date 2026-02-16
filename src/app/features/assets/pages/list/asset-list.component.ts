@@ -305,7 +305,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     try {
-      // Restore tab and page from query params when navigating back from asset details
       const tabParam = this.route.snapshot.queryParams['tab'] || this.route.snapshot.queryParams['itemType'];
       if (this.isValidAssetType(tabParam)) {
         this.activeTab = tabParam;
@@ -315,7 +314,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
       if (!isNaN(page) && page >= 1) {
         this.paginationState.currentPage = page;
       }
-      // loadUnitsForTab is called by loadDropdowns when it completes
+  
 
       this.loadAssets();
       this.loadDropdowns();
@@ -335,7 +334,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         });
 
 
-      // React to query param changes (browser back/forward, direct links)
+
       this.route.queryParams
         .pipe(takeUntil(this.destroy$))
         .subscribe(params => {
@@ -347,7 +346,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
             this.clearFilters();
             this.cdr.markForCheck();
           } else {
-            // Restore page when navigating back (tab unchanged, page in params)
             const pageParam = params['page'];
             const page = pageParam ? parseInt(pageParam, 10) : NaN;
             if (!isNaN(page) && page >= 1 && page !== this.paginationState.currentPage) {
@@ -385,7 +383,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.initializePropertyAccessor();
     this.paginationState.currentPage = 1;
     this.clearFilters(); // clearFilters() already calls onFilterChange() which calls loadAssets()
-    // Keep URL in sync for shareable links and browser back/forward
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab, page: 1 },
@@ -501,7 +499,6 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const numericId = parseInt(assetId);
     if (isNaN(numericId)) return;
 
-    // Navigate to detail page with tab and page query params (preserve position for back navigation)
     this.router.navigate(['/asset-list', numericId], {
       queryParams: { tab: this.activeTab, page: this.paginationState.currentPage }
     });
@@ -881,7 +878,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.paginationState.currentPage = page;
     this.loadAssets();
-    // Keep URL in sync for back navigation
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab: this.activeTab, page },

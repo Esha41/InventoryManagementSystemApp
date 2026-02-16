@@ -43,6 +43,8 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   @Input() savingItem: boolean = false;
   @Input() allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives
   @Input() getItemProductIdFn?: (item: OrderItem) => string;
+  @Input() canIncreaseQuantity: boolean = true;
+  @Input() canDecreaseQuantity: boolean = true;
   @Output() addItemClosed = new EventEmitter<void>();
   @Output() editItemClosed = new EventEmitter<void>();
   @Output() removeItemClosed = new EventEmitter<void>();
@@ -66,7 +68,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedItemForEdit'] && this.selectedItemForEdit) {
+    if ((changes['selectedItemForEdit'] || changes['canIncreaseQuantity'] || changes['canDecreaseQuantity']) && this.selectedItemForEdit) {
       this.initializeEditItemForm(this.selectedItemForEdit);
     }
     
@@ -97,9 +99,16 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   }
 
   private initializeEditItemForm(item?: OrderItem): void {
+    const currentQty = item?.approvedQuantity || 1;
     const minAllowed = Math.max(1, item?.totalSelectedForDischarge || 0);
+    const min = this.canDecreaseQuantity ? minAllowed : currentQty;
+    const max = this.canIncreaseQuantity ? undefined : currentQty;
+    const validators = [Validators.required, Validators.min(min)];
+    if (max !== undefined) {
+      validators.push(Validators.max(max));
+    }
     this.editItemForm = this.fb.group({
-      quantity: [item?.approvedQuantity || 1, [Validators.required, Validators.min(minAllowed)]],
+      quantity: [currentQty, validators],
       notes: ['']
     });
   }
@@ -173,6 +182,17 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
 
   getItemProductId(item: OrderItem): string {
     return '-';
+  }
+
+  get editQuantityMin(): number {
+    if (!this.selectedItemForEdit) return 1;
+    const minFromDischarge = Math.max(1, this.selectedItemForEdit.totalSelectedForDischarge || 0);
+    return this.canDecreaseQuantity ? minFromDischarge : (this.selectedItemForEdit.approvedQuantity || 1);
+  }
+
+  get editQuantityMax(): number | null {
+    if (!this.selectedItemForEdit || this.canIncreaseQuantity) return null;
+    return this.selectedItemForEdit.approvedQuantity || 1;
   }
 
   getItemTypeRestrictionMessage(): string {
