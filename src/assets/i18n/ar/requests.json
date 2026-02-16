@@ -328,7 +328,9 @@
         "fromAllowance": "(من المقرر)",
         "outsideOfAllowance": "(خارج المقرر)",
         "requestType": "نوع الطلب",
-        "usagePurpose": "الغرض من الاستخدام"
+        "usagePurpose": "الغرض من الاستخدام",
+        "supplyDate": "تاريخ الصرف",
+        "supplyDetails": "تفاصيل الصرف"
       },
       "table": {
         "phase": "المرحلة",
@@ -410,6 +412,8 @@
     "outOfAllowance": "خارج المقرر",
     "setSupplyPickupDate": "تعين تاريخ الإستلام",
     "pickupDate": "تاريخ الاستلام",
+    "supplyDate": "تاريخ الصرف",
+    "supplyDetails": "تفاصيل الصرف",
     "dateSetLocked": "تم تعيين التاريخ",
     "dateSetLockedMessage": "تم تعيين تاريخ الاستلام ولا يمكن تغييره.",
     "setPickupDate": "تعيين تاريخ الاستلام",

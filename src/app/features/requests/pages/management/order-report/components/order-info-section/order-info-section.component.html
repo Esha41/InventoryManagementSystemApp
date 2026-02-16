@@ -57,3 +57,20 @@
     </div>
   </div>
 </section>
+
+<!-- Supply Details Section -->
+<section *ngIf="canViewSupplyDate && orderSummary.supplyDate" class="print-section order-supply-details-section">
+  <div class="print-section-header">
+    <h2 class="print-section-title">{{ 'requestsManagement.orderReport.labels.supplyDetails' | translate }}
+    </h2>
+  </div>
+
+  <div class="print-info-grid">
+    <div class="print-info-item">
+      <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.supplyDate' | translate
+        }}:</span>
+      <span class="print-info-value">{{ orderSummary.supplyDate | appDateTime }}</span>
+    </div>
+    <!-- Receiver info can be added here later -->
+  </div>
+</section>

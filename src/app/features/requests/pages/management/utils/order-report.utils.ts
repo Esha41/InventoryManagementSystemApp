@@ -170,7 +170,8 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     totalQuantity: order.requestItems?.reduce((sum, item) => sum + item.quantity, 0) || 0,
     lastUpdated: lastUpdated, // Raw date for pipe formatting
     isFromAllowance: order.isFromAllowance || false,
-    requestType: requestType
+    requestType: requestType,
+    supplyDate: order.supplyDate ?? null
   };
 }
 
