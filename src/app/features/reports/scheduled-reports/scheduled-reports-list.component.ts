@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Plus, Search, Edit, Trash2, Play, Calendar, Mail, Clock, FileText, Power, PowerOff, History } from 'lucide-angular';
+import { LucideAngularModule, Plus, Search, Edit, Trash2, Play, Calendar, Mail, Clock, FileText, Power, PowerOff, History, Loader2, CheckCircle2, XCircle } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
@@ -41,6 +41,9 @@ export class ScheduledReportsListComponent implements OnInit {
   readonly Power = Power;
   readonly PowerOff = PowerOff;
   readonly History = History;
+  readonly Loader2 = Loader2;
+  readonly CheckCircle2 = CheckCircle2;
+  readonly XCircle = XCircle;
 
   scheduledReports: ScheduledReport[] = [];
   filteredReports: ScheduledReport[] = [];
@@ -49,6 +52,9 @@ export class ScheduledReportsListComponent implements OnInit {
   error: string | null = null;
   showHistoryDialog = false;
   selectedReportId: string | null = null;
+  
+  // Track execution state for each report: 'idle' | 'executing' | 'success' | 'failed'
+  executingReports: Map<string, 'executing' | 'success' | 'failed'> = new Map();
 
   // Pagination
   currentPage = 1;
@@ -152,20 +158,117 @@ export class ScheduledReportsListComponent implements OnInit {
   }
 
   onExecuteNow(report: ScheduledReport): void {
+    // Prevent execution if report is disabled
+    if (!report.isActive) {
+      alert(this.translateService.instant('scheduledReports.cannotExecuteDisabled'));
+      return;
+    }
+
+    // Prevent execution if already executing
+    if (this.executingReports.get(report.id) === 'executing') {
+      return;
+    }
+
+    // Set executing state
+    this.executingReports.set(report.id, 'executing');
+
     this.reportService.executeScheduledReportNow(report.id)
       .pipe(
         catchError((err) => {
           console.error('Error executing scheduled report:', err);
-          alert(this.translateService.instant('common.errorExecuting'));
+          // Set failed state
+          this.executingReports.set(report.id, 'failed');
+          
+          // Check if the error is because the report is disabled
+          const errorMessage = err?.error?.message || err?.message || '';
+          if (errorMessage.includes('disabled') || errorMessage.includes('Cannot execute')) {
+            // Show alert but don't reset state immediately - let user see the error icon
+            setTimeout(() => {
+              this.executingReports.delete(report.id);
+            }, 3000);
+            alert(this.translateService.instant('scheduledReports.cannotExecuteDisabled'));
+          } else {
+            // Show alert but don't reset state immediately - let user see the error icon
+            setTimeout(() => {
+              this.executingReports.delete(report.id);
+            }, 3000);
+            alert(this.translateService.instant('common.errorExecuting'));
+          }
           return of(false);
+        }),
+        finalize(() => {
+          // This will run after success or error
         })
       )
       .subscribe((success: boolean) => {
         if (success) {
-          alert(this.translateService.instant('scheduledReports.executionStarted'));
-          this.loadScheduledReports();
+          // Set success state
+          this.executingReports.set(report.id, 'success');
+          
+          // Reset to idle state after 3 seconds
+          setTimeout(() => {
+            this.executingReports.delete(report.id);
+            // Refresh the list to get updated execution history
+            this.loadScheduledReports();
+          }, 3000);
+        } else {
+          // If success is false (but no error was thrown), set failed state
+          this.executingReports.set(report.id, 'failed');
+          setTimeout(() => {
+            this.executingReports.delete(report.id);
+          }, 3000);
         }
       });
+  }
+
+  getExecutionState(reportId: string): 'executing' | 'success' | 'failed' | null {
+    return this.executingReports.get(reportId) || null;
+  }
+
+  getExecutionIcon(reportId: string): any {
+    const state = this.getExecutionState(reportId);
+    switch (state) {
+      case 'executing':
+        return this.Loader2;
+      case 'success':
+        return this.CheckCircle2;
+      case 'failed':
+        return this.XCircle;
+      default:
+        return this.Play;
+    }
+  }
+
+  getExecutionColor(reportId: string): string {
+    const state = this.getExecutionState(reportId);
+    switch (state) {
+      case 'executing':
+        return 'text-[var(--color-info)]';
+      case 'success':
+        return 'text-[var(--color-success)]';
+      case 'failed':
+        return 'text-[var(--color-error)]';
+      default:
+        return 'text-[var(--color-info)]';
+    }
+  }
+
+  getExecutionTitle(reportId: string): string {
+    const state = this.getExecutionState(reportId);
+    const report = this.scheduledReports.find(r => r.id === reportId);
+    if (!report?.isActive) {
+      return this.translateService.instant('scheduledReports.cannotExecuteDisabled');
+    }
+    switch (state) {
+      case 'executing':
+        return this.translateService.instant('scheduledReports.executing');
+      case 'success':
+        return this.translateService.instant('scheduledReports.executionSuccess');
+      case 'failed':
+        return this.translateService.instant('scheduledReports.executionFailed');
+      default:
+        return this.translateService.instant('scheduledReports.executeNow');
+    }
   }
 
   getFrequencyDisplay(frequency: string, dayOfWeek?: number, dayOfMonth?: number): string {

@@ -119,9 +119,17 @@
                     </button>
                     <!-- Execute Now Button -->
                     <button type="button" (click)="onExecuteNow(report)"
-                      class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
-                      [title]="'scheduledReports.executeNow' | translate">
-                      <lucide-angular [img]="Play" class="h-4 w-4"></lucide-angular>
+                      [disabled]="!report.isActive || getExecutionState(report.id) === 'executing'"
+                      [class.opacity-50]="!report.isActive"
+                      [class.cursor-not-allowed]="!report.isActive || getExecutionState(report.id) === 'executing'"
+                      [ngClass]="getExecutionColor(report.id)"
+                      class="p-2 rounded-lg transition-colors disabled:hover:bg-transparent hover:bg-opacity-10"
+                      [title]="getExecutionTitle(report.id)">
+                      <lucide-angular 
+                        [img]="getExecutionIcon(report.id)" 
+                        [class.animate-spin]="getExecutionState(report.id) === 'executing'"
+                        class="h-4 w-4">
+                      </lucide-angular>
                     </button>
                     <!-- Edit Button -->
                     <button type="button" (click)="onEdit(report)"

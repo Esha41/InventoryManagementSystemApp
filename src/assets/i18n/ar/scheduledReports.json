@@ -11,6 +11,10 @@
     "enable": "تفعيل",
     "disable": "تعطيل",
     "executeNow": "تنفيذ الآن",
+    "cannotExecuteDisabled": "لا يمكن تنفيذ تقرير مجدول معطل. يرجى تفعيله أولاً.",
+    "executing": "جاري تنفيذ التقرير...",
+    "executionSuccess": "تم تنفيذ التقرير بنجاح",
+    "executionFailed": "فشل تنفيذ التقرير",
     "recipients": "مستلمين",
     "executionStarted": "تم بدء تنفيذ التقرير",
     "table": {

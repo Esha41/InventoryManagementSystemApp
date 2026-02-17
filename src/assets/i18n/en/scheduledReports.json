@@ -11,6 +11,10 @@
     "enable": "Enable",
     "disable": "Disable",
     "executeNow": "Execute Now",
+    "cannotExecuteDisabled": "Cannot execute a disabled scheduled report. Please enable it first.",
+    "executing": "Executing report...",
+    "executionSuccess": "Report executed successfully",
+    "executionFailed": "Report execution failed",
     "recipients": "recipients",
     "executionStarted": "Report execution has been started",
     "table": {
