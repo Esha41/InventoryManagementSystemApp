@@ -184,6 +184,7 @@
     "workflow": "سير العمل",
     "department": "القسم",
     "allowance": "مقرر",
+    "itemDepartmentAssignment": "تعيين المواد",
     "requestManagement": "إدارة الطلبات",
     "newIssueRequest": "طلب صرف",
     "newReturnRequest": "طلب إرجاع",
@@ -275,6 +276,58 @@
   "depotManagement": {
     "errors": {
       "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة"
+    }
+  },
+  "itemDepartmentAssignment": {
+    "title": "تعيين المواد",
+    "addAssignment": "إضافة تعيين",
+    "editAssignment": "تعديل التعيين",
+    "search": "البحث في التعيينات...",
+    "item": "المادة",
+    "itemNo": "رقم المادة",
+    "itemType": "نوع المادة",
+    "department": "القسم",
+    "notes": "ملاحظات",
+    "noAssignments": "لم يتم العثور على تعيينات",
+    "selectItem": "اختر المادة",
+    "selectItems": "اختر المواد",
+    "selectAmmunition": "اختر الذخيرة",
+    "selectExplosives": "اختر المتفجرات",
+    "selectWeapons": "اختر الأسلحة",
+    "selectDepartmentFirst": "يرجى اختيار قسم أولاً",
+    "selectMultiple": "اختر مواد متعددة",
+    "selectDepartment": "اختر القسم",
+    "itemsAvailableForDepartment": "مواد متاحة لهذا القسم",
+    "noItemsAssignedToDepartment": "لا توجد مواد معينة لهذا القسم حالياً",
+    "itemsSelected": "مواد محددة",
+    "allItemsShown": "جميع المواد معروضة",
+    "checkboxesIndicateAssigned": "المربعات تشير إلى المواد المعينة مسبقاً لهذا القسم",
+    "itemsAlreadyAssigned": "مواد معينة مسبقاً لهذا القسم",
+    "noItemsAvailable": "لا توجد مواد متاحة",
+    "showItems": "عرض المواد",
+    "hideItems": "إخفاء المواد",
+    "addItems": "إضافة مواد",
+    "itemsAssigned": "مواد معينة",
+    "ammunitionLabel": "الذخيرة",
+    "weaponsLabel": "الأسلحة",
+    "explosivesLabel": "المتفجرات",
+    "noItemsForDepartment": "لا توجد مواد معينة لهذا القسم",
+    "noDepartments": "لا توجد أقسام متاحة",
+    "noDepartmentsFound": "لم يتم العثور على أقسام تطابق البحث",
+    "notesPlaceholder": "ملاحظات اختيارية حول هذا التعيين",
+    "totalAssignments": "إجمالي التعيينات",
+    "assignmentDetails": "تفاصيل التعيين",
+    "noItemsFound": "لم يتم العثور على مواد تطابق البحث",
+    "errors": {
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+      "selectAtLeastOneItem": "يرجى اختيار مادة واحدة على الأقل"
+    },
+    "deleteConfirmation": {
+      "title": "حذف التعيين",
+      "message": "هل أنت متأكد من حذف هذا التعيين؟",
+      "assignment": "التعيين",
+      "confirmDelete": "حذف",
+      "cancel": "إلغاء"
     }
   },
   "accessDenied": {

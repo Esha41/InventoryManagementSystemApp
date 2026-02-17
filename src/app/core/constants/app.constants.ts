@@ -175,6 +175,15 @@ export const API_ENDPOINTS = {
     RESERVE_DETAILS: (departmentId: number, year: number) => `/AllowanceItem/reserve-details/${departmentId}/${year}`,
   },
 
+  // Item Assignment Management
+  ITEM_DEPARTMENT_ASSIGNMENT: {
+    BASE: '/ItemDepartmentAssignment',
+    SUMMARY: '/ItemDepartmentAssignment/summary',
+    BY_DEPARTMENT: (departmentId: number) => `/ItemDepartmentAssignment/department/${departmentId}`,
+    BY_ITEM: (itemId: number) => `/ItemDepartmentAssignment/item/${itemId}`,
+    BULK: '/ItemDepartmentAssignment/bulk',
+  },
+
   // Email Configuration
   EMAIL_CONFIGURATION: {
     BASE: '/EmailSettings',

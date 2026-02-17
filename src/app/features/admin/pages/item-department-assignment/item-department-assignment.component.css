@@ -1,0 +1,94 @@
+/* Item Assignment Component Styles */
+.page-wrapper {
+  min-height: 100vh;
+  background-color: var(--color-background-muted);
+  padding: 1.5rem;
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Inventory Summary Style Table */
+.inventory-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.inventory-table th {
+  background-color: var(--color-background-muted);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+.inventory-table td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inventory-table tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* Accordion row styles */
+.accordion-row {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.accordion-row:hover {
+  background-color: var(--color-background-hover);
+}
+
+.accordion-row.expanded {
+  background-color: var(--color-background-active);
+}
+
+/* Detail row animation */
+.detail-row {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+/* Detail row container */
+.detail-row td {
+  padding: 0 !important;
+}
+
+/* Assignment details table */
+.lot-details-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+.lot-details-table thead th {
+  padding: 0.75rem 1rem !important;
+  background-color: var(--color-background-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.lot-details-table tbody td {
+  padding: 0.75rem 1rem !important;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  white-space: normal;
+  word-wrap: break-word;
+}

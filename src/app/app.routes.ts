@@ -326,6 +326,12 @@ export const routes: Routes = [
         data: { permissions: ['AdminImportExport'] }
       },
       {
+        path: 'item-department-assignment',
+        loadComponent: () => import('@admin/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Permissions.ItemDepartmentAssignment.Page'] }
+      },
+      {
         path: 'stock-notification-settings',
         loadComponent: () => import('@settings/pages/stock-notifications/stock-notification-settings.component').then(m => m.StockNotificationSettingsComponent),
         canActivate: [permissionGuard],

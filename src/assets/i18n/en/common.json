@@ -218,6 +218,7 @@
     "reportDesigner": "Report Designer",
     "reportDashboard": "Report Dashboard",
     "scheduledReports": "Scheduled Reports",
+    "itemDepartmentAssignment": "Item Assignment",
     "announcements": "Announcements"
   },
   "footer": {
@@ -269,11 +270,70 @@
     "failedToAddItem": "Failed to add item",
     "failedToUpdateItemQuantity": "Failed to update item quantity",
     "failedToRemoveItem": "Failed to remove item",
-    "failedToConfirmPickupDate": "Failed to confirm pickup date"
+    "failedToConfirmPickupDate": "Failed to confirm pickup date",
+    "assignmentCreated": "Assignment created successfully",
+    "assignmentsCreated": "Assignments created successfully",
+    "assignmentUpdated": "Assignment updated successfully",
+    "assignmentDeleted": "Assignment deleted successfully",
+    "failedToSaveAssignment": "Failed to save assignment",
+    "failedToDeleteAssignment": "Failed to delete assignment"
   },
   "depotManagement": {
     "errors": {
       "fillRequiredFields": "Please fill in all required fields"
+    }
+  },
+  "itemDepartmentAssignment": {
+    "title": "Item Assignment",
+    "addAssignment": "Add Assignment",
+    "editAssignment": "Edit Assignment",
+    "search": "Search assignments...",
+    "item": "Item",
+    "itemNo": "Item No",
+    "itemType": "Item Type",
+    "department": "Department",
+    "notes": "Notes",
+    "noAssignments": "No assignments found",
+    "selectItem": "Select Item",
+    "selectItems": "Select Items",
+    "selectAmmunition": "Select ammunition",
+    "selectExplosives": "Select explosives",
+    "selectWeapons": "Select weapons",
+    "selectDepartmentFirst": "Please select a department first",
+    "selectMultiple": "Select multiple items",
+    "selectDepartment": "Select Department",
+    "itemsAvailableForDepartment": "items available for this department",
+    "noItemsAssignedToDepartment": "No items are currently assigned to this department",
+    "itemsSelected": "items selected",
+    "allItemsShown": "All items are shown",
+    "checkboxesIndicateAssigned": "Checkboxes indicate items already assigned to this department",
+    "itemsAlreadyAssigned": "items already assigned to this department",
+    "noItemsAvailable": "No items available",
+    "showItems": "Show Items",
+    "hideItems": "Hide Items",
+    "addItems": "Add Items",
+    "itemsAssigned": "Item Assigned",
+    "ammunitionLabel": "Ammunition",
+    "weaponsLabel": "Weapons",
+    "explosivesLabel": "Explosives",
+    "noItemsForDepartment": "No items assigned to this department",
+    "noDepartments": "No departments available",
+    "noDepartmentsFound": "No departments found matching your search",
+    "notesPlaceholder": "Optional notes about this assignment",
+    "totalAssignments": "Total Assignments",
+    "assignmentDetails": "Assignment Details",
+    "noAssignments": "No assignments found",
+    "noItemsFound": "No items found matching your search",
+    "errors": {
+      "fillRequiredFields": "Please fill in all required fields",
+      "selectAtLeastOneItem": "Please select at least one item"
+    },
+    "deleteConfirmation": {
+      "title": "Delete Assignment",
+      "message": "Are you sure you want to delete this assignment?",
+      "assignment": "Assignment",
+      "confirmDelete": "Delete",
+      "cancel": "Cancel"
     }
   },
   "accessDenied": {
