@@ -1,4 +1,18 @@
 <div class="page-wrapper">
+  <!-- Access Denied -->
+  <div *ngIf="error === 'accessDenied'" class="page-container py-16">
+    <div class="max-w-md mx-auto text-center">
+      <h2 class="text-2xl font-bold text-[var(--color-text)] mb-4">{{ 'warehouseInventory.accessDenied' | translate }}</h2>
+      <p class="text-[var(--color-text-muted)] mb-6">{{ 'warehouseInventory.accessDeniedMessage' | translate }}</p>
+      <button (click)="onBackToWarehouses()"
+        class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
+        {{ 'warehouseInventory.backToWarehouses' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden when access denied) -->
+  <ng-container *ngIf="error !== 'accessDenied'">
   <!-- Header -->
   <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <div class="page-container py-4">
@@ -273,3 +287,4 @@
     [cancelText]="'common.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteAssetConfirm()"
     (cancelled)="onDeleteAssetCancel()">
   </app-confirm-dialog>
+  </ng-container>

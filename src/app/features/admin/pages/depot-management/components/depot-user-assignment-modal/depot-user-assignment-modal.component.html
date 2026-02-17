@@ -1,0 +1,89 @@
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="depot-modal bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="flex-shrink-0 flex justify-between items-center p-6 pb-4 border-b border-[var(--color-border)]">
+      <h2 class="text-xl font-bold text-[var(--color-text)]">
+        {{ 'depot.assignUsers' | translate }}: {{ depotName }}
+      </h2>
+      <button (click)="close()" class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors" aria-label="Close">
+        <lucide-icon [img]="X" [size]="24"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="flex-shrink-0 mx-6 mt-4 p-4 bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)] rounded-lg text-sm">
+      {{ error }}
+    </div>
+
+    <!-- Search & Actions -->
+    <div class="flex-shrink-0 px-6 pt-4 pb-3 space-y-3">
+      <!-- Search bar -->
+      <div class="depot-modal__search flex items-center gap-3 h-11 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg px-3">
+        <lucide-icon [img]="Search" [size]="18" class="flex-shrink-0 text-[var(--color-text-muted)]"></lucide-icon>
+        <input type="text" [formControl]="searchControl"
+          class="depot-modal__search-input flex-1 min-w-0 bg-transparent border-none outline-none text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] text-sm"
+          [placeholder]="'depot.searchUsers' | translate">
+      </div>
+
+      <!-- Select All / Clear All -->
+      <div class="flex flex-wrap gap-2 items-center">
+        <button type="button" (click)="selectAll()"
+          class="px-4 py-2 text-sm font-medium border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] hover:border-[var(--color-brand)]/50 transition-colors">
+          {{ 'depot.selectAll' | translate }}
+        </button>
+        <button type="button" (click)="clearAll()"
+          class="px-4 py-2 text-sm font-medium border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] hover:border-[var(--color-error)]/30 transition-colors">
+          {{ 'depot.clearAll' | translate }}
+        </button>
+        <span *ngIf="searchControl.value" class="flex-1 text-right text-sm text-[var(--color-text-muted)]">
+          {{ filteredUsers.length }} {{ 'depot.of' | translate }} {{ allUsers.length }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <app-loading-state *ngIf="loading" message="common.loading" size="sm" containerClass="flex justify-center py-16">
+    </app-loading-state>
+
+    <!-- User list (scrollable) -->
+    <div *ngIf="!loading" class="depot-modal__list flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 min-h-0">
+      <div class="space-y-2">
+        <div *ngFor="let user of filteredUsers"
+          (click)="toggleUser(user.id)"
+          class="user-item flex items-center gap-4 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200"
+          [class.user-item--selected]="isSelected(user.id)">
+          <div class="user-item__avatar flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+            [class.user-item__avatar--selected]="isSelected(user.id)">
+            <lucide-icon [img]="User" [size]="20" class="user-item__icon" [class.user-item__icon--selected]="isSelected(user.id)"></lucide-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-[var(--color-text)] truncate">{{ getUserDisplayName(user) }}</p>
+            <p class="text-sm text-[var(--color-text-muted)] truncate">{{ user.userName }}</p>
+          </div>
+          <div class="flex-shrink-0">
+            <div class="user-item__check w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
+              [class.user-item__check--selected]="isSelected(user.id)">
+              <span *ngIf="isSelected(user.id)" class="text-white text-xs font-bold">✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="filteredUsers.length === 0" class="py-12 text-center text-[var(--color-text-muted)]">
+        <lucide-icon [img]="User" [size]="48" class="mx-auto mb-3 opacity-40"></lucide-icon>
+        <p>{{ searchControl.value ? ('depot.noUsersMatchSearch' | translate) : ('depot.noUsersAvailable' | translate) }}</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex-shrink-0 flex justify-end gap-3 p-6 pt-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)]/30">
+      <button type="button" (click)="close()"
+        class="px-6 py-2.5 border-2 border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+        {{ 'common.cancel' | translate }}
+      </button>
+      <button type="button" (click)="save()" [disabled]="saving"
+        class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        {{ saving ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </button>
+    </div>
+  </div>
+</div>

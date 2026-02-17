@@ -316,7 +316,14 @@
       "depot": "المستودع",
       "confirmDelete": "حذف",
       "cancel": "إلغاء"
-    }
+    },
+    "assignUsers": "تعيين المستخدمين",
+    "selectAll": "تحديد الكل",
+    "clearAll": "إلغاء التحديد",
+    "noUsersAvailable": "لا يوجد مستخدمون متاحون",
+    "searchUsers": "البحث بالاسم أو اسم المستخدم...",
+    "noUsersMatchSearch": "لا يوجد مستخدمون يطابقون البحث",
+    "of": "من"
   },
   "emailSettings": {
     "title": "إعدادات البريد الإلكتروني",
