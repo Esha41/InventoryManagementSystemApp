@@ -86,6 +86,21 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    // Always reset captcha state on component initialization
+    // Backend handles failed attempts count reset after successful login
+    // Backend only counts failed attempts after the most recent successful login
+    this.showCaptcha = false;
+    this.captchaImage = '';
+    this.captchaId = '';
+    this.captcha?.setValue('');
+    this.captcha?.clearValidators();
+    this.captcha?.updateValueAndValidity();
+
+    // Reset failed attempts counter - backend will determine if captcha is needed
+    // Backend checks failed attempts after most recent successful login
+    this.failedLoginAttempts = 0;
+    sessionStorage.removeItem('loginFailedAttempts');
+
     // Check for session conflict query parameter
     const sessionConflict = this.route.snapshot.queryParams['sessionConflict'];
     if (sessionConflict === 'true') {
@@ -385,6 +400,7 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
         // Reset failed attempts on successful login
         this.failedLoginAttempts = 0;
+        sessionStorage.removeItem('loginFailedAttempts');
         this.showCaptcha = false;
         this.captchaImage = '';
         this.captchaId = '';
@@ -412,11 +428,34 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
         this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
 
+        // Check if error indicates CAPTCHA is required
+        const errorCode = error?.error?.code?.value ||
+          error?.error?.code?.Value ||
+          error?.error?.value ||
+          error?.error?.errorCode ||
+          error?.errorCode ||
+          error?.error?.code?.value ||
+          error?.error?.data?.errorCode ||
+          '';
+        
+        const numericCode = error?.error?.code?.code ||
+          error?.error?.code?.Code ||
+          (typeof error?.error?.code === 'number' ? error?.error?.code : null) ||
+          error?.errorCode;
+        
+        const isCaptchaRequired = errorCode === 'CAPTCHA_REQUIRED' || 
+          errorCode === '0018' || 
+          numericCode === 18 ||
+          this.loginError.toLowerCase().includes('captcha verification is required') ||
+          this.loginError.toLowerCase().includes('captcha required');
+
         // Increment failed attempts
         this.failedLoginAttempts++;
+        // Persist failed attempts to sessionStorage
+        sessionStorage.setItem('loginFailedAttempts', this.failedLoginAttempts.toString());
 
-        // Show captcha after 3 failed attempts
-        if (this.failedLoginAttempts >= 3 && !this.showCaptcha) {
+        // Show captcha after 3 failed attempts or if backend explicitly requires it
+        if ((this.failedLoginAttempts >= 3 || isCaptchaRequired) && !this.showCaptcha) {
           this.loadCaptcha();
         } else if (this.showCaptcha) {
           // Reload captcha on failed attempt when captcha is already shown
@@ -739,18 +778,15 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.invalidLdapSettings');
     }
 
-    // Network/connection errors
-    if (statusCode === 0 ||
-      error?.name === 'HttpErrorResponse' && statusCode === 0 ||
-      lowerMessage.includes('network') ||
-      lowerMessage.includes('connection') ||
+    const isLikelyNetworkError = statusCode === 0 ||
       lowerMessage.includes('failed to fetch') ||
-      lowerMessage.includes('cannot connect') ||
-      lowerMessage.includes('connection refused') ||
-      lowerMessage.includes('timeout') ||
       lowerMessage.includes('networkerror') ||
+      lowerMessage.includes('connection refused') ||
+      lowerMessage.includes('cannot connect') ||
+      lowerMessage.includes('net::err_') ||
       error?.message?.includes('ERR_INTERNET_DISCONNECTED') ||
-      error?.message?.includes('ERR_CONNECTION_REFUSED')) {
+      error?.message?.includes('ERR_CONNECTION_REFUSED');
+    if (isLikelyNetworkError) {
       return this.translate.instant('auth.login.errors.networkError');
     }
 

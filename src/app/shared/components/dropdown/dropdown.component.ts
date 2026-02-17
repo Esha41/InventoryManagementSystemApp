@@ -119,6 +119,11 @@ export class DropdownComponent<T = Primitive>
   @Input() translateLabels = false;
 
   /**
+   * When false, hides the search input in the dropdown panel (e.g. for small lists like rows-per-page).
+   */
+  @Input() showSearch = true;
+
+  /**
    * Marks the control as required for template-driven forms.
    */
   @Input()
@@ -472,6 +477,14 @@ export class DropdownComponent<T = Primitive>
       const computed = this.optionLabelFn(option);
       if (computed !== undefined && computed !== null && String(computed).trim() !== '') {
         return this.formatLabel(computed);
+      }
+    }
+
+    // Check DropdownOption shape first (e.g. placeholder option with explicit label)
+    if (option && typeof option === 'object' && 'label' in option) {
+      const label = (option as any).label;
+      if (label !== undefined && label !== null) {
+        return this.formatLabel(label);
       }
     }
 

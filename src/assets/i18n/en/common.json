@@ -211,7 +211,8 @@
     "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
-    "itemDepartmentAssignment": "Item Assignment"
+    "itemDepartmentAssignment": "Item Assignment",
+    "announcements": "Announcements"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"

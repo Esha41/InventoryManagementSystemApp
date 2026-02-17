@@ -2,13 +2,13 @@
 <div *ngIf="isPage" class="page-wrapper">
   <div class="page-container space-y-6">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
         <button *ngIf="showBackButton" (click)="onBack()"
-          class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          class="min-w-[2.75rem] min-h-[2.75rem] p-2 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg hover:bg-[var(--color-background-hover)] flex-shrink-0">
           <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
         </button>
-        <h1 class="text-3xl font-bold text-[var(--color-text)]">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--color-text)] truncate">
           <span *ngIf="assetType === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' |
             translate }}</span>
           <span *ngIf="assetType === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} {{ 'common.details' |
@@ -29,7 +29,7 @@
     </app-error-state>
 
     <!-- Asset Details Content -->
-    <div *ngIf="asset && !loading() && !error()" class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
+    <div *ngIf="asset && !loading() && !error()" class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
       <ng-container *ngTemplateOutlet="assetDetailsContent"></ng-container>
     </div>
   </div>
@@ -47,12 +47,12 @@
   </app-error-state>
 
   <!-- Asset Details Content -->
-  <div *ngIf="asset && !loading() && !error()" class="bg-[var(--color-background)] rounded-lg p-8 shadow-sm">
-    <div *ngIf="showInlineHeader" class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reviewYourSelection' | translate }}
+  <div *ngIf="asset && !loading() && !error()" class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
+    <div *ngIf="showInlineHeader" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reviewYourSelection' | translate }}
       </h2>
       <button (click)="onClose()"
-        class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+        class="min-w-[2.75rem] min-h-[2.75rem] p-2 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg hover:bg-[var(--color-background-hover)] self-start">
         <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
       </button>
     </div>
@@ -63,7 +63,7 @@
 <!-- Shared Content Template -->
 <ng-template #assetDetailsContent>
   <div *ngIf="asset && !loading() && !error()">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
       <!-- Left Side - Details -->
       <div class="space-y-6">
         <h3 class="text-xl font-bold text-[var(--color-text)] mb-4">{{ getAssetName() }}</h3>
@@ -73,7 +73,7 @@
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.primaryDetails' | translate }}
           </h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productName' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getAssetName() }}</p>
@@ -99,9 +99,9 @@
               <p class="text-[var(--color-text)]">{{ getBatchNo() }}</p>
             </div>
 
-            <!-- Ammunition specific fields -->
-            <div *ngIf="isAmmunition() && getArmNumber() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">ARM Number</p>
+            <!-- Ammunition and Explosive: Arm Number -->
+            <div *ngIf="(isAmmunition() || isExplosive()) && getArmNumber() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.armNumber' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
             </div>
 
@@ -135,7 +135,7 @@
             translate
             }}</h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div *ngIf="getTotalWeight() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
@@ -182,7 +182,7 @@
         <div class="space-y-4" *ngIf="isWeapon()">
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'weapon.specifications' | translate }}</h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div *ngIf="getCaliber() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliber' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getCaliber() }}</p>
@@ -234,7 +234,7 @@
         <div class="space-y-4" *ngIf="isExplosive()">
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'explosive.specifications' | translate }}</h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div *ngIf="getUnNumber() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getUnNumber() }}</p>
@@ -257,7 +257,7 @@
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}
           </h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div *ngIf="getHazardDivision() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.hazardDivision' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getHazardDivision() }}</p>
@@ -284,28 +284,33 @@
         <div class="space-y-4" *ngIf="isAmmunition() || isExplosive()">
           <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div *ngIf="isAmmunition">
-              <p class="text-[var(--color-text-muted)] mb-1">ARM Number</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div *ngIf="(isAmmunition() || isExplosive()) && getArmNumber() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.armNumber' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition">
+            <div *ngIf="(isAmmunition() || isExplosive()) && getCompatibility() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.compatibility' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getCompatibility() }}</p>
+            </div>
+
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getBulletDiameter() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition">
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">Unit</p>
               <p class="text-[var(--color-text)]">{{ getUnit() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition">
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">Compatibility</p>
               <p class="text-[var(--color-text)]">{{ getCompatibility() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition">
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
             </div>
@@ -315,7 +320,7 @@
               <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition">
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
               <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
             </div>
@@ -341,7 +346,7 @@
         <div class="space-y-4" *ngIf="isWeapon()">
           <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information weapon</h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
               <p class="text-[var(--color-text)]">{{ getDistributionForWeapon() }}</p>
@@ -394,7 +399,7 @@
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'assetList.viewModal.commonFields' | translate }}
           </h4>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div *ngIf="getPrice() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.price' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getPrice() }}</p>
@@ -452,7 +457,7 @@
     </div>
 
     <!-- Go Back Button -->
-    <div class="flex justify-end mt-8">
+    <div class="flex justify-center sm:justify-end mt-6 md:mt-8">
       <button (click)="isPage ? onBack() : onClose()"
         class="px-8 py-3 border-2 border-[var(--color-border)] text-[var(--color-text)] text-sm font-medium rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
         {{ 'common.goBack' | translate }}

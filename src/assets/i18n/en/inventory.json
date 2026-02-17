@@ -210,6 +210,10 @@
     "notes": "Notes",
     "enterNotes": "Enter notes",
     "itemNoMustBeUnique": "Item No must be unique across all ammunition records",
+    "errors": {
+      "itemNoAlreadyExists": "Item number already exists. Please use a unique item number.",
+      "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number."
+    },
     "name": "Name",
     "itemNo": "Item No",
     "partNo": "Part No",
@@ -327,7 +331,7 @@
     "countryOfManufacture": "Country of Manufacture"
   },
   "assetList": {
-    "title": "Asset Inventory",
+    "title": "Asset List",
     "subtitle": "Manage and track all inventory items in the system",
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",

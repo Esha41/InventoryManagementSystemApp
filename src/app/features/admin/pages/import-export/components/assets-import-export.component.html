@@ -1,26 +1,26 @@
-<!-- Asset Type Tabs -->
-<app-card [shadow]="true" class="mb-6 overflow-hidden">
-  <div class="bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)] p-2">
-    <nav class="flex gap-1">
+<!-- Asset Type Tabs (Ammunition, Explosive, Weapon) -->
+<app-card [shadow]="true" class="mb-6 overflow-hidden min-w-0">
+  <div class="asset-tabs-scroll bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
+    <nav class="flex gap-1 p-2 w-max min-w-full" aria-label="Asset type tabs">
       <button (click)="switchTab('ammunition')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-lg scale-105': currentTab === 'ammunition',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': currentTab !== 'ammunition'
       }"
-        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        class="asset-tab flex-shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.ammunition' | translate }}
       </button>
       <button (click)="switchTab('explosive')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-lg scale-105': currentTab === 'explosive',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': currentTab !== 'explosive'
       }"
-        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        class="asset-tab flex-shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.explosive' | translate }}
       </button>
       <button (click)="switchTab('weapon')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-lg scale-105': currentTab === 'weapon',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': currentTab !== 'weapon'
       }"
-        class="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
+        class="asset-tab flex-shrink-0 whitespace-nowrap px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102">
         {{ 'warehouseInventory.tabs.weapon' | translate }}
       </button>
     </nav>
@@ -29,8 +29,8 @@
 
 <!-- Actions -->
 <app-card [shadow]="true" class="mb-6">
-  <div class="p-6">
-    <div class="flex items-center gap-4 flex-wrap">
+  <div class="p-4 sm:p-6">
+    <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
       <button (click)="onImportClick()"
         class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         [class.flex-row-reverse]="isRTL">
@@ -62,7 +62,7 @@
 
 <!-- Assets Info -->
 <app-card *ngIf="!loadingAssets" [shadow]="true">
-  <div class="p-6">
+  <div class="p-4 sm:p-6">
     <p class="text-sm text-[var(--color-text-muted)]">
       {{ 'adminImportExport.totalItems' | translate }}: <strong class="text-[var(--color-text)]">{{
         filteredAssets.length }}</strong>

@@ -274,6 +274,21 @@
           <!-- Explosive Specific -->
           <ng-container *ngIf="activeTab === 'explosive'">
             <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.armNumber' |
+                translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getArmNumber() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.compatibility' |
+                translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getCompatibility() }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'assetList.viewModal.hazardDivision' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getHazardDivision() }}</p>
+            </div>
+            <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' |
                 translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>

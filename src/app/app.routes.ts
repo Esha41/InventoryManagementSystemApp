@@ -337,6 +337,24 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permissions: ['stockNotificationSettingsPage'] }
       },
+      {
+        path: 'admin/announcements',
+        loadComponent: () => import('@admin/pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['announcements.page', 'announcements.view'] }
+      },
+      {
+        path: 'admin/announcements/create',
+        loadComponent: () => import('@admin/pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['announcements.create'] }
+      },
+      {
+        path: 'admin/announcements/edit/:id',
+        loadComponent: () => import('@admin/pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['announcements.edit'] }
+      },
 
       {
         path: 'notifications',

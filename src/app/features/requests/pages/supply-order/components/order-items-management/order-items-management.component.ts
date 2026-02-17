@@ -29,6 +29,8 @@ export class OrderItemsManagementComponent {
   readonly Plus = Plus;
 
   @Input() orderItems: OrderRequestItemDto[] = [];
+  @Input() canIncreaseQuantity: boolean = false;
+  @Input() canDecreaseQuantity: boolean = false;
   @Output() addItemClick = new EventEmitter<void>();
   @Output() editItemClick = new EventEmitter<OrderRequestItemDto>();
   @Output() removeItemClick = new EventEmitter<OrderRequestItemDto>();

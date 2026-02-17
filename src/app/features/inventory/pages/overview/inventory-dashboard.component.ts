@@ -4,14 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, merge, interval, forkJoin, Observable } from 'rxjs';
-import { catchError, debounceTime, filter, map, startWith, switchMap, finalize, distinctUntilChanged } from 'rxjs/operators';
+import { catchError, filter, map, startWith, switchMap, finalize, distinctUntilChanged } from 'rxjs/operators';
 import { LucideAngularModule, ShieldAlert, RefreshCw, Grid, List, Eye } from 'lucide-angular';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from '@dashboard/pages/overview/components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { OrderService } from '@services/order.service';
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { NotificationService } from '@services/notification.service';
-import { InventoryService } from '@services/inventory.service';
 import { UserContextService } from '@services/user-context.service';
 import { UnifiedRequestService } from '@services/unified-request.service';
 import { ReturnService } from '@services/return.service';
@@ -26,7 +25,6 @@ import { RequestFilterBarComponent, StatusFilter } from '@components/request-fil
 import { DashboardDataService } from '@services/dashboard-data.service';
 import { DashboardCard } from '@models/dashboard.model';
 import { StatisticsData } from '@models/inventory-dashboard.model';
-import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { MonitoringService } from '@services/monitoring.service';
 import {
   getRequestStatusTranslationKey
@@ -100,7 +98,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
     private readonly notificationService: NotificationService,
-    private readonly inventoryService: InventoryService,
     private readonly userContext: UserContextService,
     private readonly translate: TranslateService,
     private readonly errorHandlingService: ErrorHandlingService,
@@ -143,7 +140,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       this.manualRefresh$
     ).pipe(
       startWith('initial-load'),
-      debounceTime(500),
       takeUntil(this.destroy$)
     );
 
@@ -174,7 +170,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         if (result) {
           const { statistics, paginatedRequests } = result;
           if (statistics) {
-            this.calculateStatistics(statistics.summary, statistics.expiringLotsCount, statistics.lowStockCount);
+            this.calculateStatistics(statistics.expiringLotsCount, statistics.lowStockCount);
           }
           if (paginatedRequests) {
             this.visibleCards = paginatedRequests.items;
@@ -200,12 +196,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private fetchStatisticsData(): Observable<any> {
-    const summary$ = this.inventoryService.getAllItemsSummary().pipe(catchError(() => of([])));
     const expiringLotsCount$ = this.monitoringService.getExpiringLotsCount().pipe(catchError(() => of(0)));
     const lowStockCount$ = this.monitoringService.getLowStockItemsCount().pipe(catchError(() => of(0)));
 
     return forkJoin({
-      summary: summary$,
       expiringLotsCount: expiringLotsCount$,
       lowStockCount: lowStockCount$
     });
@@ -253,20 +247,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.manualRefresh$.next();
   }
 
-  private calculateStatistics(summary: ItemInventorySummaryDto[], expiringLotsCount: number = 0, lowStockCount: number = 0): void {
-    const stats: StatisticsData = {
+  private calculateStatistics(expiringLotsCount: number = 0, lowStockCount: number = 0): void {
+    this.statistics = {
       totalItems: 0,
       lowStock: lowStockCount,
       expiringSoon: expiringLotsCount,
       monthlyActivity: Array(12).fill(0),
       monthlyActivityPercentages: Array(12).fill(0)
     };
-
-    if (summary && summary.length > 0) {
-      stats.totalItems = summary.filter(x => x.remainingQuantity > 0).length;
-    }
-
-    this.statistics = stats;
   }
 
   onViewOrderDetails(orderRequestId: number): void {

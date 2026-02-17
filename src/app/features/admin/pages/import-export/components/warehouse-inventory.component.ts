@@ -42,7 +42,8 @@ import { ImportResult } from '@models/import-result.model';
     DropdownComponent,
     LoadingStateComponent
   ],
-  templateUrl: './warehouse-inventory.component.html'
+  templateUrl: './warehouse-inventory.component.html',
+  styleUrls: ['./warehouse-inventory.component.css']
 })
 export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depots: LookupItem[] = [];

@@ -1,1 +1,17 @@
-/* Add Asset specific styles if needed */
+/* Add Asset - responsive tabs and form */
+
+.asset-tab {
+  touch-action: manipulation;
+}
+
+/* Tabs scroll container - smooth scroll on iOS */
+.asset-tabs-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .asset-tabs {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+}

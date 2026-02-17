@@ -1,7 +1,7 @@
 {
   "newIssueRequest": {
     "title": "New Issue Request",
-    "newOrderIssue": "New Order Issue",
+    "newOrderIssue": "New Issue Request",
     "allowanceSelection": "Order Source",
     "selection": "Selection",
     "usage": "Usage",
@@ -92,6 +92,8 @@
     "nsn": "NSN",
     "enterNSN": "Enter NSN number",
     "militaryTimeFormat": "Format: HHMM",
+    "dateFormat": "Format: DD/MM/YYYY",
+    "selectDatePlaceholder": "Select date",
     "selectTimePlaceholder": "Select time (HHMM)",
     "enterQuantityPlaceholder": "Enter quantity",
     "selectCartridge": "Select",
@@ -260,7 +262,7 @@
     }
   },
   "requestsManagement": {
-    "title": "Requests Management",
+    "title": "Approval Management",
     "actionRequired": "Action Required",
     "orderId": "Order ID",
     "requestDate": "Request Date",
@@ -332,7 +334,9 @@
         "fromAllowance": "(From Allowance)",
         "outsideOfAllowance": "(Outside of Allowance)",
         "requestType": "Request Type",
-        "usagePurpose": "Usage Purpose"
+        "usagePurpose": "Usage Purpose",
+        "supplyDate": "Supply Date",
+        "supplyDetails": "Supply Details"
       },
       "table": {
         "phase": "Phase",
@@ -399,6 +403,7 @@
     "itemRequired": "Item is required.",
     "quantityRequired": "Quantity is required.",
     "quantityMinError": "Quantity must be at least {{min}}.",
+    "quantityMaxError": "Quantity cannot exceed {{max}} (you can only decrease).",
     "notesPlaceholder": "Add any notes (optional)",
     "itemName": "Item Name",
     "itemCode": "Item Code",
@@ -414,6 +419,8 @@
     "outOfAllowance": "Out of Allowance",
     "setSupplyPickupDate": "Set Supply Pickup Date",
     "pickupDate": "Pickup Date",
+    "supplyDate": "Supply Date",
+    "supplyDetails": "Supply Details",
     "dateSetLocked": "✓ Date Set (Locked)",
     "dateSetLockedMessage": "This date has been set and is locked. It can now only be confirmed by authorized personnel.",
     "setPickupDate": "Set Pickup Date",
@@ -488,7 +495,10 @@
     "success": {
       "pickupDateSet": "Pickup date set successfully and locked for confirmation",
       "pickupDateConfirmed": "Pickup date confirmed successfully",
-      "supplySubmitted": "Supply submitted successfully"
+      "supplySubmitted": "Supply submitted successfully",
+      "approved": "Request approved successfully",
+      "rejected": "Request rejected successfully",
+      "returnedForReview": "Request returned for review successfully"
     },
     "selectSkipToStepRequired": "Please select a step to go to from the \"Go To Step\" dropdown before approving this request.",
     "errors": {
@@ -510,7 +520,11 @@
       "fileSizeExceeded": "File size exceeds the maximum allowed size of",
       "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX.",
       "pickupDateRequired": "Please set the supply pickup date before approving.",
-      "supplySubmissionRequired": "Please submit the supply information before approving."
+      "supplySubmissionRequired": "Please submit the supply information before approving.",
+      "approveFailed": "Failed to approve request. Please try again.",
+      "rejectFailed": "Failed to reject request. Please try again.",
+      "returnForReviewFailed": "Failed to return request for review. Please try again.",
+      "requestNotFound": "Request not found"
     }
   },
   "supplyRequestDetail": {

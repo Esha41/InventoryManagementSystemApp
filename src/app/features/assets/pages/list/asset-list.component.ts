@@ -305,6 +305,17 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     try {
+      const tabParam = this.route.snapshot.queryParams['tab'] || this.route.snapshot.queryParams['itemType'];
+      if (this.isValidAssetType(tabParam)) {
+        this.activeTab = tabParam;
+      }
+      const pageParam = this.route.snapshot.queryParams['page'];
+      const page = pageParam ? parseInt(pageParam, 10) : NaN;
+      if (!isNaN(page) && page >= 1) {
+        this.paginationState.currentPage = page;
+      }
+  
+
       this.loadAssets();
       this.loadDropdowns();
 
@@ -323,10 +334,27 @@ export class AssetListComponent implements OnInit, OnDestroy {
         });
 
 
-      // Check for viewItemId query parameter to auto-open view modal
+
       this.route.queryParams
         .pipe(takeUntil(this.destroy$))
         .subscribe(params => {
+          const tabParam = params['tab'] || params['itemType'];
+          if (this.isValidAssetType(tabParam) && tabParam !== this.activeTab) {
+            this.activeTab = tabParam;
+            this.loadUnitsForTab(this.activeTab);
+            this.paginationState.currentPage = 1;
+            this.clearFilters();
+            this.cdr.markForCheck();
+          } else {
+            const pageParam = params['page'];
+            const page = pageParam ? parseInt(pageParam, 10) : NaN;
+            if (!isNaN(page) && page >= 1 && page !== this.paginationState.currentPage) {
+              this.paginationState.currentPage = page;
+              this.loadAssets();
+              this.cdr.markForCheck();
+            }
+          }
+
           const viewItemId = params['viewItemId'];
           if (viewItemId) {
             // Use RxJS timer instead of setTimeout for better RxJS integration
@@ -355,6 +383,13 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.initializePropertyAccessor();
     this.paginationState.currentPage = 1;
     this.clearFilters(); // clearFilters() already calls onFilterChange() which calls loadAssets()
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab, page: 1 },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
     this.cdr.markForCheck();
   }
 
@@ -382,6 +417,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
           console.error('Error loading units:', error);
         }
       });
+  }
+
+  private isValidAssetType(value: unknown): value is AssetType {
+    return value === 'ammunition' || value === 'weapon' || value === 'explosive';
   }
 
   private initializePropertyAccessor(): void {
@@ -460,9 +499,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const numericId = parseInt(assetId);
     if (isNaN(numericId)) return;
 
-    // Navigate to detail page with tab query param
     this.router.navigate(['/asset-list', numericId], {
-      queryParams: { tab: this.activeTab }
+      queryParams: { tab: this.activeTab, page: this.paginationState.currentPage }
     });
   }
 
@@ -840,6 +878,14 @@ export class AssetListComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     this.paginationState.currentPage = page;
     this.loadAssets();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: this.activeTab, page },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+    this.cdr.markForCheck();
   }
 
   // Error handling
