@@ -370,7 +370,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       // Navigate back to asset-list, preserving tab and page from query params
       const tab = this._assetType();
-      const pageParam = this.route.snapshot.queryParams['page'];
+      const pageParam = this.route?.snapshot.queryParams['page'];
       const page = pageParam ? parseInt(pageParam, 10) : NaN;
       const queryParams: Record<string, string | number> = {};
       if (tab) queryParams['tab'] = tab;
