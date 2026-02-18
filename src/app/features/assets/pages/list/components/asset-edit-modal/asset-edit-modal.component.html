@@ -220,7 +220,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="ammunitionItemTypes" optionValue="id"
                     [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
@@ -360,7 +360,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="weaponItemTypes" optionValue="id"
                     [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
@@ -484,7 +484,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" formControlName="typeId" [options]="itemTypes" optionValue="id"
+                  <app-dropdown class="w-full" formControlName="typeId" [options]="explosiveItemTypes" optionValue="id"
                     [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>

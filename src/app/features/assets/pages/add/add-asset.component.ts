@@ -575,4 +575,38 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   shouldShowError(isInvalid: boolean | null | undefined, isDirty: boolean | null | undefined, isTouched: boolean | null | undefined): boolean {
     return !!isInvalid && (!!isDirty || !!isTouched || this.formSubmitted);
   }
+
+  /**
+   * Helper method to filter item types by category
+   */
+  private getFilteredItemTypes(itemType: ItemType): LookupItem[] {
+    if (!this.itemTypes?.length) return [];
+    const typeName = ItemType[itemType];
+    const filtered = this.itemTypes.filter(item => {
+      const value = item.itemType as string | number | undefined;
+      return value != null && (typeof value === 'string' ? value : ItemType[Number(value)]) === typeName;
+    });
+    return filtered.length > 0 ? filtered : this.itemTypes;
+  }
+
+  /**
+   * Get filtered item types for ammunition (itemType === ItemType.Ammunition)
+   */
+  get ammunitionItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Ammunition);
+  }
+
+  /**
+   * Get filtered item types for weapons (itemType === ItemType.Weapon)
+   */
+  get weaponItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Weapon);
+  }
+
+  /**
+   * Get filtered item types for explosives (itemType === ItemType.Explosive)
+   */
+  get explosiveItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Explosive);
+  }
 }
