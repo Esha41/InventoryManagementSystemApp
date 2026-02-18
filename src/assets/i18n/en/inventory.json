@@ -24,6 +24,8 @@
     },
     "inventory": "Inventory",
     "backToWarehouses": "Back to Warehouses",
+    "accessDenied": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access this depot.",
     "totalItems": "Total Items",
     "addInventory": "Add Inventory",
     "addWeaponAsset": "Add Weapon Asset",

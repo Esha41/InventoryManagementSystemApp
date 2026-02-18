@@ -316,7 +316,14 @@
       "depot": "Depot",
       "confirmDelete": "Delete",
       "cancel": "Cancel"
-    }
+    },
+    "assignUsers": "Assign Users",
+    "selectAll": "Select All",
+    "clearAll": "Clear All",
+    "noUsersAvailable": "No users available",
+    "searchUsers": "Search by name or username...",
+    "noUsersMatchSearch": "No users match your search",
+    "of": "of"
   },
   "emailSettings": {
     "title": "Email Settings",

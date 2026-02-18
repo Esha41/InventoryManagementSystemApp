@@ -426,7 +426,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="itemTypes"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="weaponItemTypes"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
@@ -483,7 +483,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="itemTypes"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="explosiveItemTypes"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>
@@ -638,7 +638,7 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="itemTypes"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="ammunitionItemTypes"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
                   </app-dropdown>

@@ -57,6 +57,11 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-2 pt-2 border-t border-[var(--color-border-muted)]">
+          <button *appHasPermission="'Depots.Edit'" (click)="openAssignUsersModal(depot)"
+            class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+            [title]="'depot.assignUsers' | translate">
+            <lucide-icon [img]="Users" [size]="18"></lucide-icon>
+          </button>
           <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
             class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
             [title]="'depot.edit' | translate">
@@ -108,6 +113,11 @@
               }}</td>
             <td class="px-6 py-4 text-start">
               <div class="flex gap-2">
+                <button *appHasPermission="'Depots.Edit'" (click)="openAssignUsersModal(depot)"
+                  class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+                  [title]="'depot.assignUsers' | translate">
+                  <lucide-icon [img]="Users" [size]="18"></lucide-icon>
+                </button>
                 <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
                   class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                   [title]="'depot.edit' | translate">
@@ -220,6 +230,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Assign Users Modal -->
+  <app-depot-user-assignment-modal *ngIf="showAssignUsersModal && assignUsersDepot"
+    [depotId]="assignUsersDepot.id"
+    [depotName]="getDepotDisplayName(assignUsersDepot)"
+    (closed)="onAssignUsersModalClosed()"
+    (saved)="onAssignUsersSaved()">
+  </app-depot-user-assignment-modal>
 
   <!-- Delete Confirmation Dialog -->
   <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="'depot.deleteConfirmation.title' | translate"

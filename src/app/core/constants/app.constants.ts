@@ -164,6 +164,8 @@ export const API_ENDPOINTS = {
   // Depot Management (Warehouses)
   DEPOT: {
     BASE: '/Lookup/Depot',
+    USERS: (depotId: number) => `/Lookup/Depot/${depotId}/users`,
+    USERS_UPDATE: (depotId: number) => `/Lookup/Depot/${depotId}/users`,
   },
 
   // Allowance Management
