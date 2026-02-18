@@ -54,15 +54,31 @@ export class ReportViewerComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     const departmentId = currentUser?.departmentId;
     
+    // Get superadmin status from claims
+    const isSuperAdmin = this.authService.isSuperAdmin();
+    
+    // Build query parameters
+    const queryParams: string[] = [];
+    
     // Append departmentId to reportUrl if available
     // Support multiple departments by comma-separating them
     if (departmentId && baseReportUrl) {
-      const separator = baseReportUrl.includes('?') ? '&' : '?';
       // If departmentId is an array, join with commas; otherwise use as-is
       const deptIdValue = Array.isArray(departmentId) 
         ? departmentId.join(',') 
         : departmentId.toString();
-      this.reportUrl = `${baseReportUrl}${separator}departmentId=${deptIdValue}`;
+      queryParams.push(`departmentId=${deptIdValue}`);
+    }
+    
+    // Append superadmin parameter
+    if (isSuperAdmin) {
+      queryParams.push(`superadmin=${isSuperAdmin}`);
+    }
+    
+    // Construct final report URL with parameters
+    if (queryParams.length > 0 && baseReportUrl) {
+      const separator = baseReportUrl.includes('?') ? '&' : '?';
+      this.reportUrl = `${baseReportUrl}${separator}${queryParams.join('&')}`;
     } else {
       this.reportUrl = baseReportUrl;
     }
@@ -73,7 +89,8 @@ export class ReportViewerComponent implements OnInit {
       reportName: this.reportName,
       host: this.host,
       invokeAction: this.invokeAction,
-      departmentId: departmentId
+      departmentId: departmentId,
+      isSuperAdmin: isSuperAdmin
     });
   }
 
