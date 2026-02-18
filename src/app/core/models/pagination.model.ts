@@ -12,6 +12,8 @@ export interface PagedListRequest {
     page: number;
     pageSize: number;
     filter?: FilterData;
+    /** When true, returns only soft-deleted items (IsDeleted = true). Used for ammunition "deleted ammunition" view. */
+    deletedOnly?: boolean;
 }
 
 export interface PaginatedList<T> {

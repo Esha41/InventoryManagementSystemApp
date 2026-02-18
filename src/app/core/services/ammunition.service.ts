@@ -50,8 +50,10 @@ export class AmmunitionService implements IImportableService {
   }
 
   // Get ammunition by ID
-  getById<T = AmmunitionReadDto>(id: number): Observable<T> {
-    return this.apiService.get<T>(`${this.endpoint}/${id}`);
+  // includeDeleted: when true, returns soft-deleted items (for viewing from deleted ammunition list)
+  getById<T = AmmunitionReadDto>(id: number, includeDeleted = false): Observable<T> {
+    const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
+    return this.apiService.get<T>(`${this.endpoint}/${id}`, params);
   }
 
   // Update ammunition
@@ -62,6 +64,16 @@ export class AmmunitionService implements IImportableService {
   // Delete ammunition
   delete(id: number): Observable<APIOperationResponse<boolean>> {
     return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  }
+
+  // Restore soft-deleted ammunition
+  restore(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  }
+
+  // Permanently delete soft-deleted ammunition (irreversible)
+  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   // Create ammunition

@@ -111,6 +111,12 @@ export class AssetListComponent implements OnInit, OnDestroy {
   loading = false;
   activeTab: AssetType = 'ammunition';
   totalItems: number = 0;
+  /** When on ammunition tab: 'available' (IsDeleted=false) or 'deleted' (IsDeleted=true) */
+  ammunitionViewMode: 'available' | 'deleted' = 'available';
+  /** When on explosive tab: 'available' (IsDeleted=false) or 'deleted' (IsDeleted=true) */
+  explosivesViewMode: 'available' | 'deleted' = 'available';
+  /** When on weapon tab: 'available' (IsDeleted=false) or 'deleted' (IsDeleted=true) */
+  weaponsViewMode: 'available' | 'deleted' = 'available';
 
   // Filter state
   filterState: AssetFilterState = createInitialFilterState();
@@ -314,7 +320,16 @@ export class AssetListComponent implements OnInit, OnDestroy {
       if (!isNaN(page) && page >= 1) {
         this.paginationState.currentPage = page;
       }
-  
+      // Restore ammunition/explosives view mode from query params (e.g. when returning from details)
+      if (this.route.snapshot.queryParams['ammunitionView'] === 'deleted') {
+        this.ammunitionViewMode = 'deleted';
+      }
+      if (this.route.snapshot.queryParams['explosivesView'] === 'deleted') {
+        this.explosivesViewMode = 'deleted';
+      }
+      if (this.route.snapshot.queryParams['weaponsView'] === 'deleted') {
+        this.weaponsViewMode = 'deleted';
+      }
 
       this.loadAssets();
       this.loadDropdowns();
@@ -355,6 +370,23 @@ export class AssetListComponent implements OnInit, OnDestroy {
             }
           }
 
+          // Restore ammunition/explosives view mode when returning from details
+          if (params['ammunitionView'] === 'deleted' && this.ammunitionViewMode !== 'deleted') {
+            this.ammunitionViewMode = 'deleted';
+            this.loadAssets();
+            this.cdr.markForCheck();
+          }
+          if (params['explosivesView'] === 'deleted' && this.explosivesViewMode !== 'deleted') {
+            this.explosivesViewMode = 'deleted';
+            this.loadAssets();
+            this.cdr.markForCheck();
+          }
+          if (params['weaponsView'] === 'deleted' && this.weaponsViewMode !== 'deleted') {
+            this.weaponsViewMode = 'deleted';
+            this.loadAssets();
+            this.cdr.markForCheck();
+          }
+
           const viewItemId = params['viewItemId'];
           if (viewItemId) {
             // Use RxJS timer instead of setTimeout for better RxJS integration
@@ -379,6 +411,9 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   switchTab(tab: AssetType): void {
     this.activeTab = tab;
+    this.ammunitionViewMode = 'available'; // Reset when switching tabs
+    this.explosivesViewMode = 'available';
+    this.weaponsViewMode = 'available';
     this.loadUnitsForTab(tab);
     this.initializePropertyAccessor();
     this.paginationState.currentPage = 1;
@@ -390,6 +425,30 @@ export class AssetListComponent implements OnInit, OnDestroy {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+    this.cdr.markForCheck();
+  }
+
+  switchAmmunitionViewMode(mode: 'available' | 'deleted'): void {
+    if (this.ammunitionViewMode === mode) return;
+    this.ammunitionViewMode = mode;
+    this.paginationState.currentPage = 1;
+    this.loadAssets();
+    this.cdr.markForCheck();
+  }
+
+  switchExplosivesViewMode(mode: 'available' | 'deleted'): void {
+    if (this.explosivesViewMode === mode) return;
+    this.explosivesViewMode = mode;
+    this.paginationState.currentPage = 1;
+    this.loadAssets();
+    this.cdr.markForCheck();
+  }
+
+  switchWeaponsViewMode(mode: 'available' | 'deleted'): void {
+    if (this.weaponsViewMode === mode) return;
+    this.weaponsViewMode = mode;
+    this.paginationState.currentPage = 1;
+    this.loadAssets();
     this.cdr.markForCheck();
   }
 
@@ -431,12 +490,18 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.markForCheck();
 
+    const ammunitionDeletedOnly = this.activeTab === 'ammunition' && this.ammunitionViewMode === 'deleted';
+    const explosivesDeletedOnly = this.activeTab === 'explosive' && this.explosivesViewMode === 'deleted';
+    const weaponsDeletedOnly = this.activeTab === 'weapon' && this.weaponsViewMode === 'deleted';
     this.assetListService.getAssets(
       this.activeTab,
       this.paginationState.currentPage,
       this.paginationState.rowsPerPage,
       this.filterState,
-      this.sortState
+      this.sortState,
+      ammunitionDeletedOnly,
+      explosivesDeletedOnly,
+      weaponsDeletedOnly
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -499,9 +564,23 @@ export class AssetListComponent implements OnInit, OnDestroy {
     const numericId = parseInt(assetId);
     if (isNaN(numericId)) return;
 
-    this.router.navigate(['/asset-list', numericId], {
-      queryParams: { tab: this.activeTab, page: this.paginationState.currentPage }
-    });
+    const queryParams: Record<string, string | number> = {
+      tab: this.activeTab,
+      page: this.paginationState.currentPage
+    };
+    if (this.activeTab === 'ammunition' && this.ammunitionViewMode === 'deleted') {
+      queryParams['includeDeleted'] = 'true';
+      queryParams['ammunitionView'] = 'deleted';
+    }
+    if (this.activeTab === 'explosive' && this.explosivesViewMode === 'deleted') {
+      queryParams['includeDeleted'] = 'true';
+      queryParams['explosivesView'] = 'deleted';
+    }
+    if (this.activeTab === 'weapon' && this.weaponsViewMode === 'deleted') {
+      queryParams['includeDeleted'] = 'true';
+      queryParams['weaponsView'] = 'deleted';
+    }
+    this.router.navigate(['/asset-list', numericId], { queryParams });
   }
 
 
@@ -700,8 +779,58 @@ export class AssetListComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPermanentDelete(assetId: string): void {
+    const asset = this.assets.find(a => a.id === assetId);
+    if (asset) {
+      this.assetModalService.openPermanentDeleteModal(asset, this.modalState);
+      this.cdr.markForCheck();
+    }
+  }
+
+  onRestore(assetId: string): void {
+    if (this.activeTab !== 'ammunition' && this.activeTab !== 'explosive' && this.activeTab !== 'weapon') return;
+    const id = parseInt(assetId, 10);
+    if (isNaN(id)) return;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const service = this.activeTab === 'ammunition' ? this.ammunitionService
+      : this.activeTab === 'explosive' ? this.explosiveService
+      : this.weaponService;
+    const successKey = this.activeTab === 'ammunition' ? 'assetList.ammunition.restoreSuccess'
+      : this.activeTab === 'explosive' ? 'assetList.explosives.restoreSuccess'
+      : 'assetList.weapons.restoreSuccess';
+    const errorKey = 'assetList.errors.failedToRestore';
+
+    service.restore(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<boolean>) => {
+          if (res.succeeded) {
+            this.toastService.success(this.translateService.instant(successKey));
+            this.loadAssets();
+          } else {
+            this.toastService.error(res.message || this.translateService.instant(errorKey));
+            this.loading = false;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err: any) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, this.translateService.instant(errorKey)));
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
   closeDeleteModal(): void {
     this.assetModalService.closeDeleteModal(this.modalState);
+    this.cdr.markForCheck();
+  }
+
+  closePermanentDeleteModal(): void {
+    this.assetModalService.closePermanentDeleteModal(this.modalState);
     this.cdr.markForCheck();
   }
 
@@ -733,6 +862,48 @@ export class AssetListComponent implements OnInit, OnDestroy {
         },
         error: (err: any) => {
           this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Delete failed'));
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  confirmPermanentDelete(): void {
+    if (!this.modalState.selectedAsset || !('id' in this.modalState.selectedAsset)) {
+      return;
+    }
+
+    if (this.activeTab !== 'ammunition' && this.activeTab !== 'explosive' && this.activeTab !== 'weapon') return;
+
+    const id = parseInt(String(this.modalState.selectedAsset.id));
+    if (isNaN(id)) return;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const service = this.activeTab === 'ammunition' ? this.ammunitionService
+      : this.activeTab === 'explosive' ? this.explosiveService
+      : this.weaponService;
+    const successKey = this.activeTab === 'ammunition' ? 'assetList.ammunition.permanentDeleteSuccess'
+      : this.activeTab === 'explosive' ? 'assetList.explosives.permanentDeleteSuccess'
+      : 'assetList.weapons.permanentDeleteSuccess';
+
+    service.permanentDelete(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<boolean>) => {
+          if (res.succeeded) {
+            this.toastService.success(this.translateService.instant(successKey));
+            this.closePermanentDeleteModal();
+            this.loadAssets();
+          } else {
+            this.toastService.error(res.message || this.translateService.instant('assetList.errors.failedToPermanentDelete'));
+            this.loading = false;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err: any) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, this.translateService.instant('assetList.errors.failedToPermanentDelete')));
           this.loading = false;
           this.cdr.markForCheck();
         }
@@ -933,10 +1104,16 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     // Fetch all filtered items for export
+    const ammunitionDeletedOnly = this.activeTab === 'ammunition' && this.ammunitionViewMode === 'deleted';
+    const explosivesDeletedOnly = this.activeTab === 'explosive' && this.explosivesViewMode === 'deleted';
+    const weaponsDeletedOnly = this.activeTab === 'weapon' && this.weaponsViewMode === 'deleted';
     this.assetListService.getAllFilteredAssetsForExport(
       this.activeTab,
       this.filterState,
-      this.sortState
+      this.sortState,
+      ammunitionDeletedOnly,
+      explosivesDeletedOnly,
+      weaponsDeletedOnly
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({

@@ -346,7 +346,24 @@
       "weapon": "الأسلحة",
       "explosive": "المتفجرات"
     },
-    "ammunition": "الذخيرة",
+    "ammunition": {
+      "availableAmmunition": "الذخيرة المتاحة",
+      "deletedAmmunition": "الذخيرة المحذوفة",
+      "restoreSuccess": "تم استعادة الذخيرة بنجاح",
+      "permanentDeleteSuccess": "تم حذف الذخيرة نهائياً"
+    },
+    "explosives": {
+      "availableExplosives": "المتفجرات المتاحة",
+      "deletedExplosives": "المتفجرات المحذوفة",
+      "restoreSuccess": "تم استعادة المتفجر بنجاح",
+      "permanentDeleteSuccess": "تم حذف المتفجر نهائياً"
+    },
+    "weapons": {
+      "availableWeapons": "الأسلحة المتاحة",
+      "deletedWeapons": "الأسلحة المحذوفة",
+      "restoreSuccess": "تم استعادة السلاح بنجاح",
+      "permanentDeleteSuccess": "تم حذف السلاح نهائياً"
+    },
     "weapon": "الأسلحة",
     "explosive": "المتفجرات",
     "filters": {
@@ -404,7 +421,9 @@
       "actions": "الإجراءات"
     },
     "actions": {
-      "viewDetails": "عرض التفاصيل"
+      "viewDetails": "عرض التفاصيل",
+      "restore": "استعادة",
+      "permanentDelete": "حذف نهائي"
     },
     "noItems": "لم يتم العثور على مواد",
     "noItemsDescription": "حاول تعديل المرشحات أو إضافة عنصر جديد",
@@ -416,6 +435,8 @@
       "failedToLoadDetails": "فشل تحميل تفاصيل الذخيرة",
       "failedToDelete": "فشل حذف الذخيرة",
       "failedToUpdate": "فشل تحديث الذخيرة",
+      "failedToRestore": "فشل استعادة الذخيرة",
+      "failedToPermanentDelete": "فشل الحذف النهائي للذخيرة",
       "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
       "failedToExport": "فشل تصدير الأصول. يرجى المحاولة مرة أخرى."
     },
@@ -513,8 +534,13 @@
     "deleteModal": {
       "title": "حذف الذخيرة",
       "confirmMessage": "هل أنت متأكد من حذف",
-      "warning": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف عنصر الذخيرة نهائياً من النظام.",
+      "warning": "سيتم حذف الذخيرة مؤقتاً. يمكنك استعادتها لاحقاً من قائمة الذخيرة المحذوفة.",
       "deleting": "جاري الحذف..."
+    },
+    "permanentDeleteModal": {
+      "title": "حذف نهائي",
+      "confirmMessage": "هل أنت متأكد من الحذف النهائي لـ",
+      "warning": "لا يمكن التراجع عن هذا الإجراء. سيتم إزالة الذخيرة نهائياً من قاعدة البيانات."
     },
     "success": {
       "deleted": "تم حذف الذخيرة بنجاح",

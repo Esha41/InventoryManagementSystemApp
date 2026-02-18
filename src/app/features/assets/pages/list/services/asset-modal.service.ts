@@ -69,6 +69,22 @@ export class AssetModalService {
   }
 
   /**
+   * Open permanent delete modal
+   */
+  openPermanentDeleteModal(asset: Asset, modalState: AssetModalState): void {
+    modalState.selectedAsset = asset;
+    modalState.showPermanentDeleteModal = true;
+  }
+
+  /**
+   * Close permanent delete modal
+   */
+  closePermanentDeleteModal(modalState: AssetModalState): void {
+    modalState.showPermanentDeleteModal = false;
+    modalState.selectedAsset = null;
+  }
+
+  /**
    * Handle edit save
    */
   handleEditSave(
