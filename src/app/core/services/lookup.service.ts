@@ -86,6 +86,16 @@ export class LookupService {
     return this.getLookupItems('Depot');
   }
 
+  /**
+   * Get full depot list (same endpoint as getDepots, typed as DepotDto[]).
+   * Use this for depot management and any UI that needs full depot fields (code, location, etc.).
+   * Single contract: GET /Lookup/Depot with permission-based filtering applied on the server.
+   */
+  getDepotList(): Observable<DepotDto[]> {
+    const endpoint = `${this.baseUrl}/Depot`;
+    return this.apiService.get<DepotDto[]>(endpoint);
+  }
+
   getHccs(): Observable<LookupItem[]> {
     return this.getLookupItems('Hcc');
   }

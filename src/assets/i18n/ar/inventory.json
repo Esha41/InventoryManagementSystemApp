@@ -24,6 +24,8 @@
     },
     "inventory": "المخزون",
     "backToWarehouses": "العودة إلى المستودعات",
+    "accessDenied": "تم رفض الوصول",
+    "accessDeniedMessage": "ليس لديك إذن للوصول إلى هذا المستودع.",
     "totalItems": "إجمالي المواد",
     "addInventory": "إضافة مخزون",
     "addWeaponAsset": "إضافة أصل سلاح",

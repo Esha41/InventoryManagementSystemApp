@@ -10,3 +10,11 @@ export interface DepotDto {
   isDeleted: boolean;
 }
 
+/** User assigned to a depot (from GET /Depot/{id}/users) */
+export interface DepotUserDto {
+  id: string;
+  userName: string;
+  fullNameEn?: string;
+  fullNameAr?: string;
+}
+

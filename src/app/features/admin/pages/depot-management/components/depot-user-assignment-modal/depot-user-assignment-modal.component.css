@@ -1,0 +1,63 @@
+/* Depot user assignment modal */
+.depot-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.depot-modal__search {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.depot-modal__search:focus-within {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+
+.depot-modal__search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.depot-modal__list {
+  /* Ensure scroll is contained and doesn't overlap footer */
+  overscroll-behavior: contain;
+}
+
+/* User list items */
+.user-item {
+  border-color: var(--color-border);
+}
+
+.user-item:hover {
+  border-color: var(--color-border);
+  background-color: var(--color-background-hover);
+}
+
+.user-item--selected {
+  border-color: var(--color-brand);
+  background-color: color-mix(in srgb, var(--color-brand) 8%, transparent);
+}
+
+.user-item__avatar {
+  background-color: var(--color-background-muted);
+}
+
+.user-item__avatar--selected {
+  background-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+
+.user-item__icon {
+  color: var(--color-text-muted);
+}
+
+.user-item__icon--selected {
+  color: var(--color-brand);
+}
+
+.user-item__check {
+  border-color: var(--color-border);
+}
+
+.user-item__check--selected {
+  border-color: var(--color-brand);
+  background-color: var(--color-brand);
+}
