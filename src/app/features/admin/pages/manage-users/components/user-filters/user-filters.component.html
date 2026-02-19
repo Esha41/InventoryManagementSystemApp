@@ -1,12 +1,26 @@
 <div class="filter-container mb-6">
   <!-- Search -->
   <div class="search-wrapper relative">
-    <lucide-angular [img]="Search" class="search-icon"></lucide-angular>
+    <lucide-angular [img]="Search" 
+      class="search-icon"
+      [ngStyle]="{
+        'left': isRTL ? 'auto' : '1rem',
+        'right': isRTL ? '1rem' : 'auto',
+        'top': '50%',
+        'transform': 'translateY(-50%)'
+      }"></lucide-angular>
     <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchClick()"
-      [placeholder]="'manageAdmins.searchPlaceholder' | translate" class="search-input"
-      [class.pr-24]="useSearchButton" />
+      [placeholder]="'manageAdmins.searchPlaceholder' | translate" 
+      class="search-input"
+      [class.search-input-with-button]="useSearchButton"
+      [ngStyle]="{
+        'padding-left': isRTL ? (useSearchButton ? '6rem' : '1rem') : '2.75rem',
+        'padding-right': isRTL ? '2.75rem' : (useSearchButton ? '6rem' : '1rem')
+      }" />
     <button *ngIf="useSearchButton" (click)="onSearchClick()"
-      class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+      [class.right-2]="!isRTL"
+      [class.left-2]="isRTL"
+      class="absolute top-1/2 -translate-y-1/2 px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
       {{ 'common.search' | translate }}
     </button>
   </div>

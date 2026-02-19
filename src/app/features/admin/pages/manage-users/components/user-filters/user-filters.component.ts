@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Search } from 'lucide-angular';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { TranslationService } from '@core/services/translation.service';
 
 /**
  * User Filters Component
@@ -24,6 +25,9 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 })
 export class UserFiltersComponent implements OnInit, OnDestroy {
   readonly Search = Search;
+  private readonly translationService = inject(TranslationService, { optional: true });
+  private readonly translate = inject(TranslateService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() searchTerm: string = '';
   @Input() statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
@@ -35,6 +39,10 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
   ngOnInit(): void {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -45,6 +53,13 @@ export class UserFiltersComponent implements OnInit, OnDestroy {
         this.searchChange.emit(term);
       }
     });
+
+    // Subscribe to language changes to update RTL/LTR layout
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
