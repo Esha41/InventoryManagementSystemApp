@@ -69,53 +69,66 @@ export class AssetListService {
 
   /**
    * Get assets with server-side pagination, filtering, and sorting
+   * @param ammunitionDeletedOnly When activeTab is 'ammunition' and true, returns items where IsDeleted = true
+   * @param explosivesDeletedOnly When activeTab is 'explosive' and true, returns items where IsDeleted = true
+   * @param weaponsDeletedOnly When activeTab is 'weapon' and true, returns items where IsDeleted = true
    */
   getAssets(
     activeTab: AssetType,
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    ammunitionDeletedOnly?: boolean,
+    explosivesDeletedOnly?: boolean,
+    weaponsDeletedOnly?: boolean
   ): Observable<PaginatedList<Asset>> {
     if (activeTab === 'weapon') {
-      return this.getWeaponsPaginated(page, pageSize, filterState, sortState);
+      return this.getWeaponsPaginated(page, pageSize, filterState, sortState, weaponsDeletedOnly);
     } else if (activeTab === 'ammunition') {
-      return this.getAmmunitionPaginated(page, pageSize, filterState, sortState);
+      return this.getAmmunitionPaginated(page, pageSize, filterState, sortState, ammunitionDeletedOnly);
     } else if (activeTab === 'explosive') {
-      return this.getExplosivePaginated(page, pageSize, filterState, sortState);
+      return this.getExplosivePaginated(page, pageSize, filterState, sortState, explosivesDeletedOnly);
     }
     
-    // Fallback to ammunition
-    return this.getAmmunitionPaginated(page, pageSize, filterState, sortState);
+    return this.getAmmunitionPaginated(page, pageSize, filterState, sortState, ammunitionDeletedOnly);
   }
 
   /**
    * Get all filtered assets for export (without pagination)
+   * @param ammunitionDeletedOnly When activeTab is 'ammunition' and true, exports items where IsDeleted = true
+   * @param explosivesDeletedOnly When activeTab is 'explosive' and true, exports items where IsDeleted = true
+   * @param weaponsDeletedOnly When activeTab is 'weapon' and true, exports items where IsDeleted = true
    */
   getAllFilteredAssetsForExport(
     activeTab: AssetType,
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    ammunitionDeletedOnly?: boolean,
+    explosivesDeletedOnly?: boolean,
+    weaponsDeletedOnly?: boolean
   ): Observable<Asset[]> {
     if (activeTab === 'weapon') {
-      return this.getAllWeaponsForExport(filterState, sortState);
+      return this.getAllWeaponsForExport(filterState, sortState, weaponsDeletedOnly);
     } else if (activeTab === 'ammunition') {
-      return this.getAllAmmunitionForExport(filterState, sortState);
+      return this.getAllAmmunitionForExport(filterState, sortState, ammunitionDeletedOnly);
     } else if (activeTab === 'explosive') {
-      return this.getAllExplosiveForExport(filterState, sortState);
+      return this.getAllExplosiveForExport(filterState, sortState, explosivesDeletedOnly);
     }
     
-    return this.getAllAmmunitionForExport(filterState, sortState);
+    return this.getAllAmmunitionForExport(filterState, sortState, ammunitionDeletedOnly);
   }
 
   /**
    * Get weapons (assets) with server-side pagination
+   * @param deletedOnly When true, returns items where IsDeleted = true
    */
   private getWeaponsPaginated(
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
@@ -173,6 +186,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page,
       pageSize,
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),
@@ -191,12 +205,14 @@ export class AssetListService {
 
   /**
    * Get ammunition with server-side pagination
+   * @param deletedOnly When true, returns items where IsDeleted = true
    */
   private getAmmunitionPaginated(
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
@@ -253,6 +269,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page,
       pageSize,
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),
@@ -271,12 +288,14 @@ export class AssetListService {
 
   /**
    * Get explosives with server-side pagination
+   * @param deletedOnly When true, returns items where IsDeleted = true
    */
   private getExplosivePaginated(
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
@@ -342,6 +361,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page,
       pageSize,
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),
@@ -360,10 +380,12 @@ export class AssetListService {
 
   /**
    * Get all filtered weapons for export (without pagination)
+   * @param deletedOnly When true, exports items where IsDeleted = true
    */
   private getAllWeaponsForExport(
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<Asset[]> {
     const filters: FilterData[] = [];
 
@@ -416,6 +438,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page: 1,
       pageSize: 10000, // Large number to get all items
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),
@@ -431,10 +454,12 @@ export class AssetListService {
 
   /**
    * Get all filtered ammunition for export (without pagination)
+   * @param deletedOnly When true, exports items where IsDeleted = true
    */
   private getAllAmmunitionForExport(
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<Asset[]> {
     const filters: FilterData[] = [];
 
@@ -487,6 +512,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page: 1,
       pageSize: 10000,
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),
@@ -502,10 +528,12 @@ export class AssetListService {
 
   /**
    * Get all filtered explosives for export (without pagination)
+   * @param deletedOnly When true, exports items where IsDeleted = true
    */
   private getAllExplosiveForExport(
     filterState: AssetFilterState,
-    sortState: AssetSortState
+    sortState: AssetSortState,
+    deletedOnly?: boolean
   ): Observable<Asset[]> {
     const filters: FilterData[] = [];
 
@@ -566,6 +594,7 @@ export class AssetListService {
     const request: PagedRequest = {
       page: 1,
       pageSize: 10000,
+      ...(deletedOnly === true && { deletedOnly: true }),
       filter: filters.length > 0 || sortField
         ? {
             ...(filters.length > 0 && { logic: 'and', filters }),

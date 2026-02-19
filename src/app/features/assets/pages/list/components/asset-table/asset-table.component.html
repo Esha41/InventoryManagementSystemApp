@@ -1,12 +1,68 @@
 <app-card [shadow]="true">
   <div class="p-6">
-    <div class="flex items-center justify-between mb-6">
+    <!-- Heading + sub-tabs (Available / Deleted) inside card -->
+    <div class="flex flex-col gap-3 mb-6">
       <h2 class="text-xl font-semibold text-[var(--color-text)]">
         <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.ammunitionItems' | translate }}</span>
         <span *ngIf="activeTab === 'weapon'">{{ 'assetList.weaponItems' | translate }}</span>
         <span *ngIf="activeTab === 'explosive'">{{ 'assetList.explosiveItems' | translate }}</span>
-        ({{ filteredAssets.length }})
+        ({{ totalItems }})
       </h2>
+      <!-- Sub-tabs: Available / Deleted (inside card) -->
+      <div *ngIf="activeTab === 'ammunition'" class="view-tabs-container">
+        <nav class="view-tabs" role="tablist" aria-label="Ammunition view" [class.flex-row-reverse]="isRTL">
+          <button role="tab" (click)="onAmmunitionViewModeChange('available')"
+            [attr.aria-selected]="ammunitionViewMode === 'available'"
+            [class.view-tab-active]="ammunitionViewMode === 'available'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.ammunition.availableAmmunition' | translate }}</span>
+          </button>
+          <button role="tab" (click)="onAmmunitionViewModeChange('deleted')"
+            [attr.aria-selected]="ammunitionViewMode === 'deleted'"
+            [class.view-tab-active]="ammunitionViewMode === 'deleted'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.ammunition.deletedAmmunition' | translate }}</span>
+          </button>
+        </nav>
+      </div>
+      <div *ngIf="activeTab === 'explosive'" class="view-tabs-container">
+        <nav class="view-tabs" role="tablist" aria-label="Explosives view" [class.flex-row-reverse]="isRTL">
+          <button role="tab" (click)="onExplosivesViewModeChange('available')"
+            [attr.aria-selected]="explosivesViewMode === 'available'"
+            [class.view-tab-active]="explosivesViewMode === 'available'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.explosives.availableExplosives' | translate }}</span>
+          </button>
+          <button role="tab" (click)="onExplosivesViewModeChange('deleted')"
+            [attr.aria-selected]="explosivesViewMode === 'deleted'"
+            [class.view-tab-active]="explosivesViewMode === 'deleted'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.explosives.deletedExplosives' | translate }}</span>
+          </button>
+        </nav>
+      </div>
+      <div *ngIf="activeTab === 'weapon'" class="view-tabs-container">
+        <nav class="view-tabs" role="tablist" aria-label="Weapons view" [class.flex-row-reverse]="isRTL">
+          <button role="tab" (click)="onWeaponsViewModeChange('available')"
+            [attr.aria-selected]="weaponsViewMode === 'available'"
+            [class.view-tab-active]="weaponsViewMode === 'available'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.weapons.availableWeapons' | translate }}</span>
+          </button>
+          <button role="tab" (click)="onWeaponsViewModeChange('deleted')"
+            [attr.aria-selected]="weaponsViewMode === 'deleted'"
+            [class.view-tab-active]="weaponsViewMode === 'deleted'"
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
+            [class.flex-row-reverse]="isRTL">
+            <span>{{ 'assetList.weapons.deletedWeapons' | translate }}</span>
+          </button>
+        </nav>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -82,14 +138,30 @@
               class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] bg-[var(--color-background-hover)] rounded-lg transition-colors">
               <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
             </button>
-            <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
-              class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
-              <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
-            </button>
-            <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
-              class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors">
-              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-            </button>
+            <ng-container *ngIf="showEditDelete">
+              <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
+                class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
+                <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+              </button>
+              <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
+                class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors">
+                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="showRestore">
+              <button *appHasPermission="['Ammunition.Edit', 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
+                class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-success)] bg-[var(--color-success)]/10 rounded-lg transition-colors"
+                [title]="'assetList.actions.restore' | translate">
+                <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="showPermanentDelete">
+              <button *appHasPermission="['Ammunition.Delete', 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
+                class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                [title]="'assetList.actions.permanentDelete' | translate">
+                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </ng-container>
           </div>
 
         </div>
@@ -241,18 +313,36 @@
                       class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-brand)]"></lucide-angular>
                   </button>
 
-                  <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
-                    class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
-                    [title]="'common.edit' | translate">
-                    <lucide-angular [img]="Edit"
-                      class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
-                  </button>
-                  <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
-                    class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
-                    [title]="'common.delete' | translate">
-                    <lucide-angular [img]="Trash2"
-                      class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
-                  </button>
+                  <ng-container *ngIf="showEditDelete">
+                    <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
+                      class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
+                      [title]="'common.edit' | translate">
+                      <lucide-angular [img]="Edit"
+                        class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
+                    </button>
+                    <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
+                      class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
+                      [title]="'common.delete' | translate">
+                      <lucide-angular [img]="Trash2"
+                        class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="showRestore">
+                    <button *appHasPermission="['Ammunition.Edit', 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
+                      class="p-2 rounded-lg hover:bg-green-50 transition-colors group"
+                      [title]="'assetList.actions.restore' | translate">
+                      <lucide-angular [img]="RotateCcw"
+                        class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-green-600"></lucide-angular>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="showPermanentDelete">
+                    <button *appHasPermission="['Ammunition.Delete', 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
+                      class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
+                      [title]="'assetList.actions.permanentDelete' | translate">
+                      <lucide-angular [img]="Trash2"
+                        class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-red-600"></lucide-angular>
+                    </button>
+                  </ng-container>
                 </div>
               </td>
             </tr>

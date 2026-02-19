@@ -110,6 +110,8 @@ export interface AssetPaginationState {
 export interface AssetModalState {
   showEditModal: boolean;
   showDeleteModal: boolean;
+  showPermanentDeleteModal: boolean;
+  showRestoreModal: boolean;
   showViewModal: boolean;
   showImportModal: boolean;
   selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;

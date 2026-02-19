@@ -50,8 +50,9 @@ export class WeaponService implements IImportableService {
   }
 
   // Get weapon by ID
-  getById<T = WeaponDto>(id: number): Observable<T> {
-    return this.apiService.get<T>(`${this.endpoint}/${id}`);
+  getById<T = WeaponDto>(id: number, includeDeleted = false): Observable<T> {
+    const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
+    return this.apiService.get<T>(`${this.endpoint}/${id}`, params);
   }
 
   // Update weapon
@@ -62,6 +63,16 @@ export class WeaponService implements IImportableService {
   // Delete weapon
   delete(id: number): Observable<APIOperationResponse<boolean>> {
     return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  }
+
+  // Restore soft-deleted weapon
+  restore(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  }
+
+  // Permanently delete soft-deleted weapon (irreversible)
+  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   // Create weapon

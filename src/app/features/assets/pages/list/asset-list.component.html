@@ -6,15 +6,17 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
         <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
       </div>
-      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
-        class="w-full sm:w-auto">
+      <ng-container *ngIf="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')">
+        <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
+          class="w-full sm:w-auto">
         <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
           <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
           <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
           <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
         </span>
-      </app-button>
+        </app-button>
+      </ng-container>
     </div>
 
     <!-- Tabs - scroll inside container when space is limited -->
@@ -76,11 +78,16 @@
       (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (clearFilters)="clearFilters()">
     </app-asset-filter-bar>
 
-    <!-- Assets Table Card -->
+    <!-- Assets Table Card (heading + sub-tabs + table inside one card) -->
     <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+      [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
+      [totalItems]="totalItems" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
+      [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
+      [showPermanentDelete]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"
-      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (sort)="sortByColumn($event)"
+      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
       (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
+      (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"
       (imageError)="onImageError($event)" (showImagePreview)="showImagePreview($event.event, $event.asset)"
       (hideImagePreview)="hideImagePreview()">
     </app-asset-table>
@@ -102,4 +109,24 @@
       [description]="'assetList.deleteModal.warning' | translate" confirmText="{{ 'common.delete' | translate }}"
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmDelete()"
       (cancelled)="closeDeleteModal()">
+    </app-confirm-dialog>
+
+    <!-- Permanent Delete Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showPermanentDeleteModal"
+      [title]="'assetList.permanentDeleteModal.title' | translate"
+      [message]="('assetList.permanentDeleteModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.permanentDeleteModal.warning' | translate"
+      confirmText="{{ 'assetList.actions.permanentDelete' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmPermanentDelete()"
+      (cancelled)="closePermanentDeleteModal()">
+    </app-confirm-dialog>
+
+    <!-- Restore Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showRestoreModal"
+      [title]="'assetList.restoreModal.title' | translate"
+      [message]="('assetList.restoreModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.restoreModal.warning' | translate"
+      confirmText="{{ 'assetList.actions.restore' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="primary" (confirmed)="confirmRestore()"
+      (cancelled)="closeRestoreModal()">
     </app-confirm-dialog>

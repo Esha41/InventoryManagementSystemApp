@@ -6,7 +6,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Eye, Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Image } from 'lucide-angular';
+import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, Image } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -43,24 +43,40 @@ export class AssetTableComponent {
   @Input() sortState!: AssetSortState;
   @Input() paginationState!: AssetPaginationState;
   @Input() totalPages = 1;
+  @Input() totalItems = 0;
   @Input() isRTL = false;
+  @Input() ammunitionViewMode: 'available' | 'deleted' = 'available';
+  @Input() explosivesViewMode: 'available' | 'deleted' = 'available';
+  @Input() weaponsViewMode: 'available' | 'deleted' = 'available';
+  /** When false, hides Edit and Delete action buttons (e.g. when viewing deleted ammunition) */
+  @Input() showEditDelete = true;
+  /** When true, shows Restore action button (e.g. when viewing deleted ammunition) */
+  @Input() showRestore = false;
+  /** When true, shows Permanent Delete action button (e.g. when viewing deleted ammunition) */
+  @Input() showPermanentDelete = false;
   @Input() getAssetName!: (asset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => string;
 
   @Output() view = new EventEmitter<string>();
   @Output() edit = new EventEmitter<string>();
   @Output() delete = new EventEmitter<string>();
+  @Output() restore = new EventEmitter<string>();
+  @Output() permanentDelete = new EventEmitter<string>();
   @Output() sort = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() rowsPerPageChange = new EventEmitter<number>();
   @Output() imageError = new EventEmitter<Asset>();
   @Output() showImagePreview = new EventEmitter<{ event: MouseEvent; asset: Asset }>();
   @Output() hideImagePreview = new EventEmitter<void>();
+  @Output() ammunitionViewModeChange = new EventEmitter<'available' | 'deleted'>();
+  @Output() explosivesViewModeChange = new EventEmitter<'available' | 'deleted'>();
+  @Output() weaponsViewModeChange = new EventEmitter<'available' | 'deleted'>();
 
   @ViewChild(ImagePreviewTooltipComponent) imagePreviewTooltip!: ImagePreviewTooltipComponent;
 
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly RotateCcw = RotateCcw;
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
@@ -86,6 +102,14 @@ export class AssetTableComponent {
     this.delete.emit(assetId);
   }
 
+  onRestore(assetId: string): void {
+    this.restore.emit(assetId);
+  }
+
+  onPermanentDelete(assetId: string): void {
+    this.permanentDelete.emit(assetId);
+  }
+
   onSort(column: string): void {
     this.sort.emit(column);
   }
@@ -108,5 +132,17 @@ export class AssetTableComponent {
 
   onHideImagePreview(): void {
     this.hideImagePreview.emit();
+  }
+
+  onAmmunitionViewModeChange(mode: 'available' | 'deleted'): void {
+    this.ammunitionViewModeChange.emit(mode);
+  }
+
+  onExplosivesViewModeChange(mode: 'available' | 'deleted'): void {
+    this.explosivesViewModeChange.emit(mode);
+  }
+
+  onWeaponsViewModeChange(mode: 'available' | 'deleted'): void {
+    this.weaponsViewModeChange.emit(mode);
   }
 }
