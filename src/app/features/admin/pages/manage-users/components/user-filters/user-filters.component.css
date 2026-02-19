@@ -17,25 +17,24 @@
     min-width: 350px;
 }
 
+/* Icon base styles */
 .search-icon {
     position: absolute;
-    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    height: 1.1rem;
-    width: 1.1rem;
+    height: 1rem;
+    width: 1rem;
     color: var(--color-text-muted);
     pointer-events: none;
-}
-
-[dir="rtl"] .search-icon {
-    left: auto;
-    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .search-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
     background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 0.75rem;
@@ -44,10 +43,6 @@
     transition: all 0.2s ease;
     outline: none;
     box-shadow: var(--shadow-sm);
-}
-
-[dir="rtl"] .search-input {
-    padding: 0.75rem 2.75rem 0.75rem 1rem;
 }
 
 .search-input:focus {
