@@ -85,6 +85,22 @@ export class AssetModalService {
   }
 
   /**
+   * Open restore modal
+   */
+  openRestoreModal(asset: Asset, modalState: AssetModalState): void {
+    modalState.selectedAsset = asset;
+    modalState.showRestoreModal = true;
+  }
+
+  /**
+   * Close restore modal
+   */
+  closeRestoreModal(modalState: AssetModalState): void {
+    modalState.showRestoreModal = false;
+    modalState.selectedAsset = null;
+  }
+
+  /**
    * Handle edit save
    */
   handleEditSave(

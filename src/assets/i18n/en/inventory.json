@@ -540,6 +540,11 @@
       "confirmMessage": "Are you sure you want to permanently delete",
       "warning": "This action cannot be undone. The ammunition will be permanently removed from the database."
     },
+    "restoreModal": {
+      "title": "Restore",
+      "confirmMessage": "Are you sure you want to restore",
+      "warning": "This will make the item available again in the active inventory."
+    },
     "success": {
       "deleted": "Ammunition deleted successfully",
       "updated": "Ammunition updated successfully"

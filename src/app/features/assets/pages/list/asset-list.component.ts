@@ -789,7 +789,24 @@ export class AssetListComponent implements OnInit, OnDestroy {
 
   onRestore(assetId: string): void {
     if (this.activeTab !== 'ammunition' && this.activeTab !== 'explosive' && this.activeTab !== 'weapon') return;
-    const id = parseInt(assetId, 10);
+    const asset = this.assets.find(a => a.id === assetId);
+    if (asset) {
+      this.assetModalService.openRestoreModal(asset, this.modalState);
+      this.cdr.markForCheck();
+    }
+  }
+
+  closeRestoreModal(): void {
+    this.assetModalService.closeRestoreModal(this.modalState);
+    this.cdr.markForCheck();
+  }
+
+  confirmRestore(): void {
+    if (!this.modalState.selectedAsset || !('id' in this.modalState.selectedAsset)) {
+      return;
+    }
+
+    const id = parseInt(String(this.modalState.selectedAsset.id));
     if (isNaN(id)) return;
 
     this.loading = true;
@@ -809,6 +826,7 @@ export class AssetListComponent implements OnInit, OnDestroy {
         next: (res: APIOperationResponse<boolean>) => {
           if (res.succeeded) {
             this.toastService.success(this.translateService.instant(successKey));
+            this.closeRestoreModal();
             this.loadAssets();
           } else {
             this.toastService.error(res.message || this.translateService.instant(errorKey));

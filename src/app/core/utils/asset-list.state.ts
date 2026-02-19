@@ -51,6 +51,7 @@ export function createInitialModalState(): AssetModalState {
     showEditModal: false,
     showDeleteModal: false,
     showPermanentDeleteModal: false,
+    showRestoreModal: false,
     showViewModal: false,
     showImportModal: false,
     selectedAsset: null

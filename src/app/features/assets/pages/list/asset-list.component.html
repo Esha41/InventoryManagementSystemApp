@@ -120,3 +120,13 @@
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmPermanentDelete()"
       (cancelled)="closePermanentDeleteModal()">
     </app-confirm-dialog>
+
+    <!-- Restore Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showRestoreModal"
+      [title]="'assetList.restoreModal.title' | translate"
+      [message]="('assetList.restoreModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.restoreModal.warning' | translate"
+      confirmText="{{ 'assetList.actions.restore' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="primary" (confirmed)="confirmRestore()"
+      (cancelled)="closeRestoreModal()">
+    </app-confirm-dialog>
