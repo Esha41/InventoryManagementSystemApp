@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto, LOOKUP_TABLES } from '@models/lookup.model';
 import { LookupService } from './lookup.service';
+import { RequestPurposeService } from './request-purpose.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
@@ -15,6 +16,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 export class LookupManagementService {
   constructor(
     private lookupService: LookupService,
+    private requestPurposeService: RequestPurposeService,
     private translateService: TranslateService
   ) {}
 
@@ -28,8 +30,13 @@ export class LookupManagementService {
   /**
    * Load lookup items for a specific table
    */
-  loadLookupItems(tableEndpoint: string): Observable<LookupItem[]> {
-    return this.lookupService.getLookupItems(tableEndpoint).pipe(
+  loadLookupItems(table: LookupTableConfig): Observable<LookupItem[]> {
+    if (table.requestPurposeType) {
+      return this.requestPurposeService.getAll(table.requestPurposeType).pipe(
+        map(items => items.filter(item => !item.isDeleted))
+      );
+    }
+    return this.lookupService.getLookupItems(table.apiEndpoint).pipe(
       map(items => items.filter(item => !item.isDeleted))
     );
   }
@@ -37,22 +44,31 @@ export class LookupManagementService {
   /**
    * Create a lookup item
    */
-  createLookupItem(tableEndpoint: string, dto: CreateUpdateLookupDto): Observable<LookupItem> {
-    return this.lookupService.createLookupItem(tableEndpoint, dto);
+  createLookupItem(table: LookupTableConfig, dto: CreateUpdateLookupDto): Observable<LookupItem> {
+    if (table.requestPurposeType) {
+      return this.requestPurposeService.create(table.requestPurposeType, dto);
+    }
+    return this.lookupService.createLookupItem(table.apiEndpoint, dto);
   }
 
   /**
    * Update a lookup item
    */
-  updateLookupItem(tableEndpoint: string, itemId: number, dto: CreateUpdateLookupDto): Observable<LookupItem> {
-    return this.lookupService.updateLookupItem(tableEndpoint, itemId, dto);
+  updateLookupItem(table: LookupTableConfig, itemId: number, dto: CreateUpdateLookupDto): Observable<LookupItem> {
+    if (table.requestPurposeType) {
+      return this.requestPurposeService.update(itemId, dto);
+    }
+    return this.lookupService.updateLookupItem(table.apiEndpoint, itemId, dto);
   }
 
   /**
    * Delete a lookup item
    */
-  deleteLookupItem(tableEndpoint: string, itemId: number, dto: CreateUpdateLookupDto): Observable<boolean> {
-    return this.lookupService.deleteLookupItem(tableEndpoint, itemId, dto);
+  deleteLookupItem(table: LookupTableConfig, itemId: number, dto: CreateUpdateLookupDto): Observable<boolean> {
+    if (table.requestPurposeType) {
+      return this.requestPurposeService.delete(itemId);
+    }
+    return this.lookupService.deleteLookupItem(table.apiEndpoint, itemId, dto);
   }
 
   /**
