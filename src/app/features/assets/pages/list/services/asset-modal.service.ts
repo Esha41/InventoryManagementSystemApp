@@ -69,6 +69,38 @@ export class AssetModalService {
   }
 
   /**
+   * Open permanent delete modal
+   */
+  openPermanentDeleteModal(asset: Asset, modalState: AssetModalState): void {
+    modalState.selectedAsset = asset;
+    modalState.showPermanentDeleteModal = true;
+  }
+
+  /**
+   * Close permanent delete modal
+   */
+  closePermanentDeleteModal(modalState: AssetModalState): void {
+    modalState.showPermanentDeleteModal = false;
+    modalState.selectedAsset = null;
+  }
+
+  /**
+   * Open restore modal
+   */
+  openRestoreModal(asset: Asset, modalState: AssetModalState): void {
+    modalState.selectedAsset = asset;
+    modalState.showRestoreModal = true;
+  }
+
+  /**
+   * Close restore modal
+   */
+  closeRestoreModal(modalState: AssetModalState): void {
+    modalState.showRestoreModal = false;
+    modalState.selectedAsset = null;
+  }
+
+  /**
    * Handle edit save
    */
   handleEditSave(

@@ -1,19 +1,19 @@
 <!-- Table Selection -->
 <app-card>
-  <div class="p-6">
+  <div>
     <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">
       {{ 'lookupManagement.selectTable' | translate }}
     </label>
     <!-- Shared Dropdown Component -->
-    <app-dropdown [options]="lookupTables" optionLabel="displayName"
+    <app-dropdown [options]="lookupTables" optionLabel="displayNameKey"
       [placeholder]="'lookupManagement.selectTablePlaceholder' | translate" [(ngModel)]="selectedTable"
-      (selectionChange)="onTableSelect($event)" [disabled]="isLoading">
+      (selectionChange)="onTableSelect($event)" [disabled]="isLoading" [translateLabels]="true">
     </app-dropdown>
   </div>
 </app-card>
 
 <!-- Search -->
-<div *ngIf="selectedTable" class="flex gap-4 mb-6">
+<div *ngIf="selectedTable" class="flex gap-4 mt-4 sm:mt-6">
   <div class="relative flex-1">
     <lucide-angular [img]="Search"
       class="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>

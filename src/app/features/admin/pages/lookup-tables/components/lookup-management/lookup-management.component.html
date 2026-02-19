@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-4 md:space-y-5">
   <!-- Header with Add Button -->
   <div class="flex items-center justify-end">
     <button *ngIf="selectedTable" (click)="onAddLookup()"
@@ -9,14 +9,16 @@
   </div>
 
   <!-- Filters -->
-  <app-lookup-filters [lookupTables]="lookupTables" [selectedTable]="selectedTable" [searchTerm]="lookupSearchTerm"
-    [isLoading]="isLoadingLookups" (tableSelect)="onTableSelect($event)" (searchChange)="onSearchChange($event)">
-  </app-lookup-filters>
+  <div class="space-y-4">
+    <app-lookup-filters [lookupTables]="lookupTables" [selectedTable]="selectedTable" [searchTerm]="lookupSearchTerm"
+      [isLoading]="isLoadingLookups" (tableSelect)="onTableSelect($event)" (searchChange)="onSearchChange($event)">
+    </app-lookup-filters>
+  </div>
 
   <!-- Lookup Items Table -->
-  <app-card *ngIf="selectedTable">
+  <app-card *ngIf="selectedTable" class="overflow-hidden">
     <!-- Mobile & Tablet Card View -->
-    <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+    <div class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4 sm:p-6">
       <div *ngFor="let item of paginatedLookupItems"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
@@ -141,7 +143,7 @@
 
       <!-- Pagination Footer -->
       <div *ngIf="filteredLookupItems.length > 0 && !isLoadingLookups"
-        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4 mt-4">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
           <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredLookupItems.length"
             [visibleItems]="paginatedLookupItems.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
@@ -159,7 +161,7 @@
   </app-card>
 
   <!-- Error Message -->
-  <app-error-state *ngIf="lookupErrorMessage" [error]="lookupErrorMessage" variant="banner" containerClass="mb-4">
+  <app-error-state *ngIf="lookupErrorMessage" [error]="lookupErrorMessage" variant="banner" containerClass="mt-4">
   </app-error-state>
 </div>
 

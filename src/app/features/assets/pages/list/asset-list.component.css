@@ -4,6 +4,40 @@
   touch-action: manipulation;
 }
 
+/* View sub-tabs (Available / Deleted) - classic tab style */
+.view-tabs-container {
+  border-bottom: 2px solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 0;
+  min-width: fit-content;
+  padding: 0;
+}
+
+.view-tab {
+  touch-action: manipulation;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.view-tab:hover {
+  color: var(--color-text);
+}
+
+.view-tab-active {
+  color: var(--color-brand) !important;
+  border-bottom-color: var(--color-brand) !important;
+  font-weight: 600;
+}
+
 /* Tabs scroll container - smooth scroll on iOS */
 .asset-tabs-scroll {
   -webkit-overflow-scrolling: touch;

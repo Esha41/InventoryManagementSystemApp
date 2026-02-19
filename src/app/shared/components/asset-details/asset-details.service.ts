@@ -25,14 +25,16 @@ export class AssetDetailsService {
   /**
    * Load asset by ID and type
    * If type is not provided or the specified type fails, tries all three types in sequence
+   * includeDeleted: when true, includes soft-deleted ammunition (for viewing from deleted list)
    */
   loadAsset(
     assetId: number,
-    assetType?: 'ammunition' | 'weapon' | 'explosive'
+    assetType?: 'ammunition' | 'weapon' | 'explosive',
+    includeDeleted = false
   ): Observable<AssetDetailsData> {
     // If assetType is provided, try that specific type first
     if (assetType) {
-      return this.loadAssetByType(assetId, assetType);
+      return this.loadAssetByType(assetId, assetType, includeDeleted);
     } else {
       // If assetType is not provided, try all three types in sequence
       return this.tryLoadAssetFromAllTypes(assetId);
@@ -41,19 +43,21 @@ export class AssetDetailsService {
 
   /**
    * Load asset by specific type, with fallback to all types if it fails
+   * includeDeleted: when true, includes soft-deleted ammunition
    */
   private loadAssetByType(
     assetId: number,
-    assetType: 'ammunition' | 'weapon' | 'explosive'
+    assetType: 'ammunition' | 'weapon' | 'explosive',
+    includeDeleted = false
   ): Observable<AssetDetailsData> {
     let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto>;
 
     if (assetType === 'weapon') {
-      service$ = this.weaponService.getById<WeaponDto>(assetId);
+      service$ = this.weaponService.getById<WeaponDto>(assetId, includeDeleted);
     } else if (assetType === 'explosive') {
-      service$ = this.explosiveService.getById<ExplosiveDto>(assetId);
+      service$ = this.explosiveService.getById<ExplosiveDto>(assetId, includeDeleted);
     } else {
-      service$ = this.ammunitionService.getById<AmmunitionReadDto>(assetId);
+      service$ = this.ammunitionService.getById<AmmunitionReadDto>(assetId, includeDeleted);
     }
 
     return service$.pipe(

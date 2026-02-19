@@ -98,7 +98,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
     this.isLoadingLookups = true;
     this.lookupErrorMessage = '';
-    this.lookupManagementService.loadLookupItems(this.selectedTable.apiEndpoint)
+    this.lookupManagementService.loadLookupItems(this.selectedTable)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
@@ -189,7 +189,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     };
 
     this.lookupManagementService.deleteLookupItem(
-      this.selectedTable.apiEndpoint,
+      this.selectedTable,
       this.selectedLookupItem.id!,
       dto
     )
@@ -232,9 +232,9 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     this.lookupErrorMessage = '';
 
     const operation = this.lookupModalMode === 'create'
-      ? this.lookupManagementService.createLookupItem(this.selectedTable.apiEndpoint, dto)
+      ? this.lookupManagementService.createLookupItem(this.selectedTable, dto)
       : this.lookupManagementService.updateLookupItem(
-        this.selectedTable.apiEndpoint,
+        this.selectedTable,
         this.selectedLookupItem!.id!,
         dto
       );

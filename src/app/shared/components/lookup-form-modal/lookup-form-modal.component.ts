@@ -160,9 +160,13 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
 
   get title(): string {
     if (!this.tableConfig) return '';
+    const singularKey = this.tableConfig.displayNameKeySingular;
+    const itemName = singularKey
+      ? this.translateService.instant(singularKey)
+      : this.tableConfig.displayName.slice(0, -1);
     return this.mode === 'create'
-      ? `Add New ${this.tableConfig.displayName.slice(0, -1)}`
-      : `Edit ${this.tableConfig.displayName.slice(0, -1)}`;
+      ? this.translateService.instant('lookupFormModal.addNewItem', { item: itemName })
+      : this.translateService.instant('lookupFormModal.editItem', { item: itemName });
   }
 
   onSubmit(): void {
