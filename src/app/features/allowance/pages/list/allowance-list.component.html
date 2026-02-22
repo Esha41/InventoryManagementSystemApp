@@ -253,11 +253,6 @@
         </svg>
         <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'allowance.noAllowances' | translate }}</h3>
         <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'allowance.noAllowancesDescription' | translate }}</p>
-        <div class="mt-6">
-          <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()">
-            {{ 'allowance.addAllowance' | translate }}
-          </app-button>
-        </div>
       </div>
 
     </div>

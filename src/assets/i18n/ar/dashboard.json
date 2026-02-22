@@ -49,7 +49,7 @@
     },
     "statusLabels": {
       "new": "جديد",
-      "underProcess": "قيد الإجراء",
+      "underProcess": "قيد التنفيذ",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
       "cancelled": "ملغي",

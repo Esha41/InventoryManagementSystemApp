@@ -411,14 +411,14 @@ export function generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail
       owner: 'Approval System',
       description: 'Review and approve order request.',
       sla: '1 business day',
-      status: orderStatusNum === 1 ? 'Completed' : orderStatusNum === 2 ? 'Rejected' : 'In progress'
+      status: orderStatusNum === 1 ? 'Completed' : orderStatusNum === 2 ? 'Rejected' : 'In Progress'
     },
     {
       phase: 'Issuance & Tracking',
       owner: 'Depot',
       description: 'Issue order and register tracking information.',
       sla: 'Pending',
-      status: orderStatusNum === 1 ? 'In progress' : 'Pending'
+      status: orderStatusNum === 1 ? 'In Progress' : 'Pending'
     }
   ];
 }
@@ -438,7 +438,7 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
   const statusText = orderSummary.status.includes('new') ? 'NEW' :
     orderSummary.status.includes('approved') ? 'APPROVED' :
       orderSummary.status.includes('rejected') ? 'REJECTED' :
-        orderSummary.status.includes('underProcess') ? 'UNDER PROCESS' :
+        orderSummary.status.includes('underProcess') ? 'IN PROGRESS' :
           orderSummary.status.includes('cancelled') ? 'CANCELLED' :
             orderSummary.status.includes('Pending') ? 'PENDING' : 'NEW';
 

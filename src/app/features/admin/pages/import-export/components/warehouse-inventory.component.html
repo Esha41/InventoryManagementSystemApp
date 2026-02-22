@@ -11,7 +11,7 @@
 </app-card>
 
 <!-- Warehouse Type Tabs (Ammunition, Explosive, Weapon) -->
-<app-card *ngIf="selectedDepotId" [shadow]="true" class="mb-6 overflow-hidden min-w-0">
+<app-card *ngIf="selectedDepotId" [shadow]="true" class="overflow-hidden min-w-0">
   <div class="warehouse-tabs-scroll bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
     <nav class="flex gap-1 p-2 w-max min-w-full" aria-label="Warehouse type tabs">
       <button (click)="switchTab('ammunition')" [ngClass]="{
@@ -40,7 +40,7 @@
 </app-card>
 
 <!-- Actions -->
-<app-card *ngIf="selectedDepotId" [shadow]="true" class="mb-6">
+<app-card *ngIf="selectedDepotId" [shadow]="true">
   <div class="p-4 sm:p-6">
     <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
       <button (click)="onImportClick()"

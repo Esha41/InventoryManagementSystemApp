@@ -352,6 +352,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     this.discardItems.forEach((item, index) => {
       if (item.itemId && !item.quantity) this.errors[`discardItems.${index}.quantity`] = 'Quantity is required';
       if (!item.itemId && item.quantity) this.errors[`discardItems.${index}.itemId`] = 'Item is required';
+      if (item.quantity != null) {
+        const qty = Number(item.quantity);
+        if (!Number.isInteger(qty) || qty <= 0 || !Number.isFinite(qty)) {
+          this.errors[`discardItems.${index}.quantity`] = 'Quantity must be a positive whole number';
+        }
+      }
     });
   }
 
@@ -714,6 +720,18 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
   onQuantityChange(index: number): void {
     this.clearItemError(index, 'quantity');
     if (this.isSubmitted && this.discardItems[index]?.quantity) this.clearItemError(index, 'quantity');
+  }
+
+  /**
+   * Block invalid characters in quantity field (e, E, +, -, .) to allow only positive integers.
+   */
+  onQuantityKeydown(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Home', 'End'];
+    if (allowedKeys.includes(event.key)) return;
+    if (/[0-9]/.test(event.key)) return;
+    if (['e', 'E', '+', '-', '.'].includes(event.key)) {
+      event.preventDefault();
+    }
   }
 
   private toNumber(value: any): number | null {
