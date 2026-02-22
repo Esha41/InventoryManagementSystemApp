@@ -28,7 +28,7 @@
 </app-card>
 
 <!-- Actions -->
-<app-card [shadow]="true" class="mb-6">
+<app-card [shadow]="true">
   <div class="p-4 sm:p-6">
     <div class="flex items-center gap-4 flex-wrap">
       <button (click)="exportToExcel()" [disabled]="filteredInventoryItems.length === 0 || loadingInventorySummary"
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Mobile/Tablet Card View -->
-    <div *ngIf="filteredInventoryItems.length > 0" class="inventory-cards-view grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div *ngIf="filteredInventoryItems.length > 0" class="inventory-cards-view grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div *ngFor="let item of filteredInventoryItems"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-4 hover:shadow-md transition-all">
 

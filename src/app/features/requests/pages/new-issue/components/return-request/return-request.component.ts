@@ -483,8 +483,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
       if (!item.itemId) {
         this.errors[`returnItem_${index}_itemId`] = 'Item is required';
       }
-      if (!item.quantity || item.quantity <= 0) {
-        this.errors[`returnItem_${index}_quantity`] = 'Quantity must be greater than 0';
+      const qty = Number(item.quantity);
+      if (!item.quantity || !Number.isInteger(qty) || qty <= 0 || !Number.isFinite(qty)) {
+        this.errors[`returnItem_${index}_quantity`] = 'Quantity must be a positive whole number';
       }
     });
 
@@ -612,6 +613,18 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     this.clearItemError(index, 'quantity');
     if (this.isSubmitted && this.returnItems[index]?.quantity && this.returnItems[index].quantity! > 0) {
       this.clearItemError(index, 'quantity');
+    }
+  }
+
+  /**
+   * Block invalid characters in quantity field (e, E, +, -, .) to allow only positive integers.
+   */
+  onQuantityKeydown(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Home', 'End'];
+    if (allowedKeys.includes(event.key)) return;
+    if (/[0-9]/.test(event.key)) return;
+    if (['e', 'E', '+', '-', '.'].includes(event.key)) {
+      event.preventDefault();
     }
   }
 

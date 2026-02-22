@@ -19,8 +19,10 @@
                 <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
             </button>
             <button *ngIf="useSearchButton" (click)="onSearchClick()"
-                class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
-                {{ 'common.search' | translate }}
+                class="flex items-center justify-center gap-1.5 min-w-[2.5rem] min-h-[2rem] px-2 sm:px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft flex-shrink-0 whitespace-nowrap"
+                [attr.aria-label]="'common.search' | translate">
+                <lucide-angular [img]="Search" class="w-4 h-4 sm:hidden flex-shrink-0"></lucide-angular>
+                <span class="hidden sm:inline">{{ 'common.search' | translate }}</span>
             </button>
         </div>
     </div>
@@ -81,8 +83,10 @@
                     <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
                 </button>
                 <button *ngIf="useSearchButton" (click)="onSearchClick()"
-                    class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
-                    {{ 'common.search' | translate }}
+                    class="flex items-center justify-center gap-1.5 min-w-[2.5rem] min-h-[2rem] px-2 sm:px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft flex-shrink-0 whitespace-nowrap"
+                    [attr.aria-label]="'common.search' | translate">
+                    <lucide-angular [img]="Search" class="w-4 h-4 sm:hidden flex-shrink-0"></lucide-angular>
+                    <span class="hidden sm:inline">{{ 'common.search' | translate }}</span>
                 </button>
             </div>
         </div>

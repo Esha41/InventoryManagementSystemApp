@@ -231,7 +231,7 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
 export function mapOrderStatusToString(status: number): string {
   switch (status) {
     case 1: return 'New';
-    case 2: return 'Under Process';
+    case 2: return 'In Progress';
     case 3: return 'Approved';
     case 4: return 'Rejected';
     case 5: return 'Cancelled';
@@ -252,7 +252,7 @@ export function mapOrderStatusFromApi(status: string | number): string {
   if (typeof status === 'string') {
     const lowerStatus = status.toLowerCase();
     if (lowerStatus === 'new') return 'New';
-    if (lowerStatus === 'underprocess' || lowerStatus === 'under process') return 'Under Process';
+    if (lowerStatus === 'underprocess' || lowerStatus === 'under process') return 'In Progress';
     if (lowerStatus === 'approved') return 'Approved';
     if (lowerStatus === 'rejected') return 'Rejected';
     if (lowerStatus === 'cancelled') return 'Cancelled';

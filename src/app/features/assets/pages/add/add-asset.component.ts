@@ -119,6 +119,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   formSubmitted = false;
 
+  /** Field-specific validation errors (e.g. bulletDiameter, price, totalWeight) */
+  fieldErrors: Record<string, string> = {};
+
   constructor(
     private translationService: TranslationService,
     private lookupService: LookupService,
@@ -467,6 +470,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
   validateForm(): boolean {
     this.errorMessage = null;
+    this.fieldErrors = {};
 
     // Common validations
     if (!this.assetForm.name || !this.assetForm.name.trim()) {
@@ -476,6 +480,34 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (!this.assetForm.itemNo || !this.assetForm.itemNo.trim()) {
       this.errorMessage = 'Item number is required';
       return false;
+    }
+
+    // Ammunition-specific: numeric fields must be > 0 when provided
+    if (this.activeTab === 'ammunition') {
+      const bulletVal = parseFloat(this.assetForm.bulletDiameter);
+      if (this.assetForm.bulletDiameter !== '' && this.assetForm.bulletDiameter != null && !isNaN(bulletVal) && bulletVal <= 0) {
+        this.fieldErrors['bulletDiameter'] = this.translateService.instant('addAsset.errors.bulletDiameterMustBePositive');
+        return false;
+      }
+      const priceVal = parseFloat(this.assetForm.price);
+      if (this.assetForm.price !== '' && this.assetForm.price != null && !isNaN(priceVal) && priceVal <= 0) {
+        this.fieldErrors['price'] = this.translateService.instant('addAsset.errors.priceMustBePositive');
+        return false;
+      }
+      const weightVal = parseFloat(this.assetForm.totalWeight);
+      if (this.assetForm.totalWeight !== '' && this.assetForm.totalWeight != null && !isNaN(weightVal) && weightVal <= 0) {
+        this.fieldErrors['totalWeight'] = this.translateService.instant('addAsset.errors.totalWeightMustBePositive');
+        return false;
+      }
+    }
+
+    // Weapon and Explosive: price must be > 0 when provided
+    if ((this.activeTab === 'weapon' || this.activeTab === 'explosive') && this.assetForm.price) {
+      const priceVal = parseFloat(this.assetForm.price);
+      if (this.assetForm.price !== '' && this.assetForm.price != null && !isNaN(priceVal) && priceVal <= 0) {
+        this.fieldErrors['price'] = this.translateService.instant('addAsset.errors.priceMustBePositive');
+        return false;
+      }
     }
 
     return true;
@@ -490,6 +522,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     this.assetForm = this.getInitialForm();
     this.previewUrl = null;
     this.errorMessage = null;
+    this.fieldErrors = {};
     this.formSubmitted = false;
     this.activeTab = currentTab;
   }

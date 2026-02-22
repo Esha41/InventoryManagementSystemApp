@@ -166,6 +166,7 @@
     "edit": "تعديل",
     "delete": "حذف",
     "addItem": "إضافة عنصر",
+    "addLabel": "إضافة {{item}}",
     "noItemsFound": "لم يتم العثور على مواد",
     "loading": "جاري التحميل...",
     "deleteItem": "حذف مادة",
@@ -224,7 +225,7 @@
     "explosive": "متفجر",
     "create": "إنشاء",
     "update": "تحديث",
-    "addNewItem": "إضافة {{item}} جديد",
+    "addNewItem": "إضافة {{item}}",
     "editItem": "تعديل {{item}}"
   },
   "workflow": {
@@ -486,7 +487,7 @@
       "title": "مقاييس الطلبات",
       "totalPending": "إجمالي المعلقة",
       "new": "جديد",
-      "inProgress": "قيد المعالجة",
+      "inProgress": "قيد التنفيذ",
       "completed": "مكتمل",
       "rejected": "مرفوض",
       "orders": "الطلبات",

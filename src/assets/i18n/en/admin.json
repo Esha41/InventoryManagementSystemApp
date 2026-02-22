@@ -166,6 +166,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "addItem": "Add Item",
+    "addLabel": "Add {{item}}",
     "noItemsFound": "No items found",
     "loading": "Loading...",
     "deleteItem": "Delete Item",
@@ -224,7 +225,7 @@
     "explosive": "Explosive",
     "create": "Create",
     "update": "Update",
-    "addNewItem": "Add New {{item}}",
+    "addNewItem": "Add {{item}}",
     "editItem": "Edit {{item}}"
   },
   "workflow": {

@@ -840,7 +840,7 @@ export class NotificationService implements OnDestroy {
       case 1:
         return 'New';
       case 2:
-        return 'Under Process';
+        return 'In Progress';
       case 3:
         return 'Approved';
       case 4:

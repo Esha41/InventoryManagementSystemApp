@@ -248,11 +248,10 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
           this.translateService.get([
             'toast.success',
-            'lookupManagement.addItem',
             'lookupManagement.edit'
           ]).subscribe(translations => {
             const message = isCreate
-              ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
+              ? `"${itemName}" added successfully`
               : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
 
             this.toastService.success(message, translations['toast.success']);
@@ -280,6 +279,14 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           });
         }
       });
+  }
+
+  getAddButtonLabel(): string {
+    if (!this.selectedTable) return this.translateService.instant('lookupManagement.addItem');
+    const itemName = this.selectedTable.displayNameKeySingular
+      ? this.translateService.instant(this.selectedTable.displayNameKeySingular)
+      : this.selectedTable.displayName.slice(0, -1);
+    return this.translateService.instant('lookupManagement.addLabel', { item: itemName });
   }
 
   getLookupItemName(item: LookupItem | null | undefined): string {

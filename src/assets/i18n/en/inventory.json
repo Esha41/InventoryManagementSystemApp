@@ -214,7 +214,10 @@
     "itemNoMustBeUnique": "Item No must be unique across all ammunition records",
     "errors": {
       "itemNoAlreadyExists": "Item number already exists. Please use a unique item number.",
-      "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number."
+      "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number.",
+      "bulletDiameterMustBePositive": "Bullet diameter must be greater than 0",
+      "priceMustBePositive": "Price must be greater than 0",
+      "totalWeightMustBePositive": "Total weight must be greater than 0"
     },
     "name": "Name",
     "itemNo": "Item No",

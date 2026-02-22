@@ -7,7 +7,7 @@
     "newIssue": "New Issue",
     "newIssueOrders": "New Issue Orders",
     "newReturns": "New Returns",
-    "onProgress": "On Progress",
+    "onProgress": "In Progress",
     "completed": "Completed",
     "orderId": "Order Number",
     "orderNumber": "Order Number",
@@ -50,7 +50,7 @@
     },
     "statusLabels": {
       "new": "New",
-      "underProcess": "Under Process",
+      "underProcess": "In Progress",
       "approved": "Approved",
       "rejected": "Rejected",
       "cancelled": "Cancelled",
