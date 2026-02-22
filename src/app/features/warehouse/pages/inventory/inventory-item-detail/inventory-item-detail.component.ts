@@ -16,13 +16,14 @@ import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
+import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
 type TabType = 'overview' | 'stock';
 
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, AssetDetailsComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, AssetDetailsComponent, HasPermissionDirective],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css']
 })

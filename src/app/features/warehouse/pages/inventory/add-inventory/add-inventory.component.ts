@@ -158,8 +158,10 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Add initial item
-    this.addItem();
+    // Add initial item only if none added yet (e.g. by queryParams when tab=ammunition/explosive)
+    if (this.itemsFormArray.length === 0) {
+      this.addItem();
+    }
   }
 
   private initializeForm(): void {
