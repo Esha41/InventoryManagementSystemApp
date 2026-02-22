@@ -178,7 +178,7 @@
 
           <!-- Permissions by Category -->
           <form [formGroup]="permissionForm" *ngIf="!isLoading && selectedRole && filteredCategories.length > 0">
-            <div class="space-y-4">
+            <div class="flex flex-col gap-6">
               <app-card *ngFor="let category of filteredCategories" [shadow]="true">
                 <div class="overflow-hidden">
 

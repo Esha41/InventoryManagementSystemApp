@@ -275,7 +275,11 @@
   },
   "depotManagement": {
     "errors": {
-      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة"
+      "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+      "invalidLatitude": "يجب أن يكون خط العرض بين 90- و 90",
+      "invalidLongitude": "يجب أن يكون خط الطول بين 180- و 180",
+      "latitudeRange": "النطاق الصحيح: 90- إلى 90",
+      "longitudeRange": "النطاق الصحيح: 180- إلى 180"
     }
   },
   "itemDepartmentAssignment": {

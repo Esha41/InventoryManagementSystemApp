@@ -29,10 +29,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'ammunition',
-                 'bg-[var(--color-brand)]': activeTab !== 'ammunition'
-               }"></div>
             <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
           </button>
           <button (click)="switchTab('explosive')" [ngClass]="{
@@ -41,10 +37,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'explosive',
-                 'bg-[var(--color-brand)]': activeTab !== 'explosive'
-               }"></div>
             <span>{{ 'assetList.tabs.explosive' | translate }}</span>
           </button>
           <button (click)="switchTab('weapon')" [ngClass]="{
@@ -53,10 +45,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'weapon',
-                 'bg-[var(--color-brand)]': activeTab !== 'weapon'
-               }"></div>
             <span>{{ 'assetList.tabs.weapon' | translate }}</span>
           </button>
         </nav>

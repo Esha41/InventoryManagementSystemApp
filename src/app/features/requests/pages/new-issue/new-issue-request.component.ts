@@ -36,6 +36,7 @@ import {
   OrderSubmissionState,
   ReviewFormData
 } from './new-issue-request.state';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
@@ -235,7 +236,28 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   get displayedItemTypeOptions(): string[] {
-    return this.filterOptions.itemTypeOptions;
+    const options = this.filterOptions.itemTypeOptions;
+    if (this.fromReserve === 'No') {
+      return options.filter(t => t !== 'Weapon');
+    }
+    return options;
+  }
+
+  /** Training Order (ID 4) is not valid for weapon orders - hide from use purpose when weapons are selected */
+  private static readonly TRAINING_ORDER_ID = 4;
+
+  get displayedUsePurposeOptions(): DropdownOption<number>[] {
+    const options = this.requestPurposeState.requestPurposeOptions;
+    if (this.hasWeaponInSelection()) {
+      return options.filter(opt => opt.value !== NewIssueRequestComponent.TRAINING_ORDER_ID);
+    }
+    return options;
+  }
+
+  private hasWeaponInSelection(): boolean {
+    return this.selectedCartridges.some(c =>
+      c.itemType === 'Weapon' || !!(c.weaponType || c.caliber || c.actionType)
+    );
   }
 
   get canProceedFromSelection(): boolean {
@@ -391,6 +413,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.cartridgeState.selectedCartridgesCache.set(cartridge.id, { ...cartridge });
     this.cartridgeManagementService.addCartridge(cartridge, quantity, this.cartridgeState);
     this.cartridgeManagementService.persistSelections(this.cartridgeState.selectedEntries);
+    // If adding a weapon and Training Order is selected, clear it (Training Order is not valid for weapons)
+    const isWeapon = cartridge.itemType === 'Weapon' || !!(cartridge.weaponType || cartridge.caliber || cartridge.actionType);
+    if (isWeapon && this.requestPurposeState.selectedRequestPurposeId === NewIssueRequestComponent.TRAINING_ORDER_ID) {
+      this.requestPurposeState.selectedRequestPurposeId = null;
+      this.usageFormData.usePurpose = '';
+    }
     this.cdr.markForCheck();
   }
 
@@ -564,6 +592,9 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   onConfirmAllowanceSelection(): void {
+    if (this.fromReserve === 'No' && this.filterState.selectedItemType === 'Weapon') {
+      this.filterState.selectedItemType = 'Ammunition';
+    }
     this.steps[0].completed = true;
     this.currentStep = 1;
     this.updateQueryParams(1);

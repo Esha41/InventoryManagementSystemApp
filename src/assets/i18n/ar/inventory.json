@@ -216,7 +216,10 @@
     "itemNoMustBeUnique": "يجب أن يكون رقم المادة فريداً عبر جميع سجلات المواد",
     "errors": {
       "itemNoAlreadyExists": "رقم المادة موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
-      "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد."
+      "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
+      "bulletDiameterMustBePositive": "يجب أن يكون قطر الرصاصة أكبر من 0",
+      "priceMustBePositive": "يجب أن يكون السعر أكبر من 0",
+      "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0"
     },
     "name": "الاسم",
     "itemNo": "رقم المادة",

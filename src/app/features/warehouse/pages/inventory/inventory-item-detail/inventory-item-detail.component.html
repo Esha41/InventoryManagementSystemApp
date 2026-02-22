@@ -10,7 +10,7 @@
         {{ getItemName() }}
       </h1>
     </div>
-    <button (click)="onMapView()"
+    <button *appHasPermission="'WarehouseMapView'" (click)="onMapView()"
       class="px-4 py-2 bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white rounded-lg transition-colors">
       {{ 'warehouseInventory.viewOnMap' | translate }}
     </button>

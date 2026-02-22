@@ -39,6 +39,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   workflows: WorkflowDto[] = [];
   filteredWorkflows: WorkflowDto[] = [];
   searchTerm: string = '';
+  statusFilter: 'all' | 'Active' | 'Inactive' = 'all';
 
   loading = false;
   errorMessage: string | null = null;
@@ -181,7 +182,18 @@ export class WorkflowComponent implements OnInit, OnDestroy {
       });
     }
 
+    if (this.statusFilter !== 'all') {
+      filtered = filtered.filter(workflow => workflow.status === this.statusFilter);
+    }
+
     this.filteredWorkflows = filtered;
+  }
+
+  setStatusFilter(filter: 'all' | 'Active' | 'Inactive'): void {
+    this.statusFilter = filter;
+    this.currentPage = 1;
+    this.filterWorkflows();
+    this.validateCurrentPage();
   }
 
   onSearch(): void {

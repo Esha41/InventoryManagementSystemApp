@@ -134,10 +134,9 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   }
 
   saveDepot(): void {
-    if (!this.validateDepot()) {
-      this.translateService.get('depotManagement.errors.fillRequiredFields').subscribe(translation => {
-        this.errorMessage = translation || 'Please fill in all required fields';
-      });
+    const validationResult = this.validateDepot();
+    if (!validationResult.valid) {
+      this.errorMessage = validationResult.errorMessage || '';
       return;
     }
 
@@ -317,13 +316,37 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.lookupService.clearCacheFor('Depot');
   }
 
-  validateDepot(): boolean {
-    return !!(
-      this.currentDepot.nameEn &&
-      this.currentDepot.nameAr &&
-      (this.currentDepot.Code || this.currentDepot.code) &&
-      this.currentDepot.location
-    );
+  validateDepot(): { valid: boolean; errorMessage?: string } {
+    if (!this.currentDepot.nameEn || !this.currentDepot.nameAr ||
+        !(this.currentDepot.Code || this.currentDepot.code) || !this.currentDepot.location) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.fillRequiredFields') };
+    }
+
+    const lat = Number(this.currentDepot.latitude);
+    const lng = Number(this.currentDepot.longitude);
+
+    if (!Number.isNaN(lat) && (lat < -90 || lat > 90)) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.invalidLatitude') };
+    }
+    if (!Number.isNaN(lng) && (lng < -180 || lng > 180)) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.invalidLongitude') };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Prevent letters (e.g. 'e' for scientific notation) in latitude/longitude inputs.
+   * Only allows digits, decimal point, minus, and navigation keys.
+   */
+  onCoordinateKeydown(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Home', 'End'];
+    if (allowedKeys.includes(event.key)) return;
+    const input = event.target as HTMLInputElement;
+    if (event.key === '-' && (!input.value || input.selectionStart === 0)) return;
+    if (event.key === '.' && !input.value.includes('.')) return;
+    if (/[0-9]/.test(event.key)) return;
+    event.preventDefault();
   }
 
   private getEmptyDepot(): DepotDto {

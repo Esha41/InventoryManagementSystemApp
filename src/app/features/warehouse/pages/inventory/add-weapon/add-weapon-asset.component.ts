@@ -348,9 +348,12 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                         this.toastService.success(message, title);
                     });
 
-                    // Redirect after a short delay
+                    // Redirect after a short delay - return to weapons tab
                     setTimeout(() => {
-                        this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+                        this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+                            queryParams: { tab: 'weapon' },
+                            queryParamsHandling: 'merge'
+                        });
                     }, 500);
                 },
                 error: (error: unknown) => {
@@ -411,7 +414,10 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     }
 
     onCancel(): void {
-        this.router.navigate(['/warehouse', this.warehouseId, 'inventory']);
+        this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+            queryParams: { tab: 'weapon' },
+            queryParamsHandling: 'merge'
+        });
     }
 
     getMaxDate(): string {
