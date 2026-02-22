@@ -29,6 +29,10 @@ export interface SupplyItemDisplay {
   totalSuppliedQuantity: number;
   isFullyFulfilled: boolean;
   notes?: string;
+  depotName?: string;
+  depotNameAr?: string;
+  depotNameEn?: string;
+  expiryDate?: Date | string;
   isEditing: boolean; // Track if item is being edited
   originalQuantity?: number; // Track original quantity before editing for validation
   quantityError?: string; // Track validation error message

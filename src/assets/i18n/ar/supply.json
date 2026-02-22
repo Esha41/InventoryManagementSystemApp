@@ -222,6 +222,7 @@
     "lotSelectionInfo": "اختر طريقة تحميل اللوتات لهذه المادة",
     "selectLotOption": "يرجى اختيار خيار أعلاه لتحميل اللوتات",
     "requestedQuantity": "الكمية المحجوزة",
+    "depot": "المستودع",
     "expiryDate": "تاريخ الانتهاء",
     "available": "متاح",
     "noLotsFound": "لم يتم العثور على لوتات لهذه المادة",

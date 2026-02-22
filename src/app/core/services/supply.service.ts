@@ -98,6 +98,12 @@ export interface SupplyDetailDto {
   requestedQuantity: number;
   totalSuppliedQuantity: number;
   isFullyFulfilled: boolean;
+  expiryDate?: string;
+  depot?: {
+    id: number;
+    nameAr?: string;
+    nameEn?: string;
+  };
   item?: {
     id: number;
     name?: string; // BaseItemDto uses 'name' not 'nameEn/nameAr'
