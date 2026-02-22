@@ -75,7 +75,7 @@ export class SupplyOrderDataService {
         // Use fullOrder if supply.order is not available
         const finalOrder = supply.order || fullOrder;
         const orderItems = finalOrder?.requestItems || [];
-        const supplyItems = mapSupplyDetailsToDisplay(supply);
+        const supplyItems = mapSupplyDetailsToDisplay(supply, getCurrentLang(this.translateService));
 
         return {
           supply,
@@ -84,9 +84,44 @@ export class SupplyOrderDataService {
           supplyItems
         };
       }),
+      switchMap((result) => this.enrichSupplyItemsWithLotDetails(result.supplyItems).pipe(
+        map((enrichedItems) => ({ ...result, supplyItems: enrichedItems }))
+      )),
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply for this order');
         throw new Error(errorMessage);
+      })
+    );
+  }
+
+  /**
+   * Enrich supply items with depot name and expiry date from inventory when not provided by API
+   */
+  private enrichSupplyItemsWithLotDetails(supplyItems: SupplyItemDisplay[]): Observable<SupplyItemDisplay[]> {
+    const needsEnrichment = supplyItems.filter((si) => !si.depotName || !si.expiryDate);
+    if (needsEnrichment.length === 0) return of(supplyItems);
+
+    const currentLang = getCurrentLang(this.translateService);
+    const enrichmentCalls = needsEnrichment.map((si) =>
+      this.inventoryService.getLotByNumber(si.lot).pipe(
+        map((lot) => {
+          if (lot.itemId === si.itemId) {
+            const depot = lot.depot;
+            const depotName = si.depotName || (depot ? getLocalizedName(depot, currentLang) : undefined);
+            const depotNameAr = si.depotNameAr || (depot ? getLocalizedName(depot, 'ar') : undefined);
+            const depotNameEn = si.depotNameEn || (depot ? getLocalizedName(depot, 'en') : undefined);
+            return { ...si, depotName, depotNameAr, depotNameEn, expiryDate: si.expiryDate || lot.expiryDate };
+          }
+          return si;
+        }),
+        catchError(() => of(si))
+      )
+    );
+
+    return forkJoin(enrichmentCalls).pipe(
+      map((enriched) => {
+        const enrichedMap = new Map(needsEnrichment.map((si, i) => [si.supplyDetailId, enriched[i]]));
+        return supplyItems.map((si) => enrichedMap.get(si.supplyDetailId) || si);
       })
     );
   }
@@ -162,13 +197,15 @@ export class SupplyOrderDataService {
           // If no orderId, use supply.order as-is
           const order = supply.order;
           const orderItems = order?.requestItems || [];
-          const supplyItems = mapSupplyDetailsToDisplay(supply);
-          return of({
-            supply,
-            order: order!,
-            orderItems,
-            supplyItems
-          });
+          const supplyItems = mapSupplyDetailsToDisplay(supply, getCurrentLang(this.translateService));
+          return this.enrichSupplyItemsWithLotDetails(supplyItems).pipe(
+            map((enrichedItems) => ({
+              supply,
+              order: order!,
+              orderItems,
+              supplyItems: enrichedItems
+            }))
+          );
         }
 
         // Load both supply and full order details in parallel
@@ -201,7 +238,7 @@ export class SupplyOrderDataService {
 
             const finalOrder = supplyData.order || fullOrder;
             const orderItems = finalOrder?.requestItems || [];
-            const supplyItems = mapSupplyDetailsToDisplay(supplyData);
+            const supplyItems = mapSupplyDetailsToDisplay(supplyData, getCurrentLang(this.translateService));
 
             return {
               supply: supplyData,
@@ -212,6 +249,9 @@ export class SupplyOrderDataService {
           })
         );
       }),
+      switchMap((result) => this.enrichSupplyItemsWithLotDetails(result.supplyItems).pipe(
+        map((enrichedItems) => ({ ...result, supplyItems: enrichedItems }))
+      )),
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply order');
         throw new Error(errorMessage);
