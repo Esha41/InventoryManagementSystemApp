@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, Plus, CheckCircle, Clock } from 'lucide-angular';
 import { SupplyItemDisplay } from '@models/supply-order.model';
-import { formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
 import { getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
@@ -45,6 +45,7 @@ export class SupplyItemsListComponent {
   @Output() deleteItem = new EventEmitter<SupplyItemDisplay>();
 
   formatNumber = formatNumberUtil;
+  formatDate = formatDateUtil;
 
   constructor(
     private translateService: TranslateService,
@@ -102,6 +103,16 @@ export class SupplyItemsListComponent {
    */
   getSupplyItemDisplayName(item: SupplyItemDisplay): string {
     return getSupplyItemDisplayName(item, this.translateService);
+  }
+
+  /**
+   * Get depot display name - Arabic when RTL, English when LTR
+   */
+  getDepotDisplayName(item: SupplyItemDisplay): string {
+    if (!item.depotName && !item.depotNameAr && !item.depotNameEn) return '';
+    return this.isRTL
+      ? (item.depotNameAr || item.depotNameEn || item.depotName || '')
+      : (item.depotNameEn || item.depotNameAr || item.depotName || '');
   }
 
   onQuantityBlur(item: SupplyItemDisplay): void {

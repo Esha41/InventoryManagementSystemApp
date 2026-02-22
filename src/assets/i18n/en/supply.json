@@ -222,6 +222,7 @@
     "lotSelectionInfo": "Select how you want to load lots for this item",
     "selectLotOption": "Please select an option above to load lots",
     "requestedQuantity": "Requested Quantity",
+    "depot": "Depot",
     "expiryDate": "Expiry Date",
     "available": "Available",
     "noLotsFound": "No lots found for this item",
