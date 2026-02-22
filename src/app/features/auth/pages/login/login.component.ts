@@ -443,16 +443,26 @@ export class LoginComponent implements OnInit {
           (typeof error?.error?.code === 'number' ? error?.error?.code : null) ||
           error?.errorCode;
         
+        // Check if this is a session conflict (don't count as failed attempt)
+        const isSessionConflict = errorCode === 'SESSION_CONFLICT' || 
+          errorCode === '0022' || 
+          numericCode === 22 ||
+          this.loginError.toLowerCase().includes('session conflict') ||
+          this.loginError.toLowerCase().includes('already logged in');
+        
         const isCaptchaRequired = errorCode === 'CAPTCHA_REQUIRED' || 
           errorCode === '0018' || 
           numericCode === 18 ||
           this.loginError.toLowerCase().includes('captcha verification is required') ||
           this.loginError.toLowerCase().includes('captcha required');
 
-        // Increment failed attempts
-        this.failedLoginAttempts++;
-        // Persist failed attempts to sessionStorage
-        sessionStorage.setItem('loginFailedAttempts', this.failedLoginAttempts.toString());
+        // Only increment failed attempts if it's not a session conflict
+        // Session conflict is not a failed login attempt, it's a blocked attempt
+        if (!isSessionConflict) {
+          this.failedLoginAttempts++;
+          // Persist failed attempts to sessionStorage
+          sessionStorage.setItem('loginFailedAttempts', this.failedLoginAttempts.toString());
+        }
 
         // Show captcha after 3 failed attempts or if backend explicitly requires it
         if ((this.failedLoginAttempts >= 3 || isCaptchaRequired) && !this.showCaptcha) {
@@ -577,7 +587,8 @@ export class LoginComponent implements OnInit {
           18: 'CAPTCHA_REQUIRED',
           19: 'CAPTCHA_INVALID',
           20: 'INVALID_DOMAIN',
-          21: 'INVALID_USERNAME_FORMAT'
+          21: 'INVALID_USERNAME_FORMAT',
+          22: 'SESSION_CONFLICT'
         };
         errorCode = codeMap[numericCode] || '';
       }
