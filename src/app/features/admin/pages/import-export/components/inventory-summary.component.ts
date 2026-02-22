@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Download } from 'lucide-angular';
+import { LucideAngularModule, Upload } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
@@ -34,7 +34,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
   loadingInventorySummary = false;
 
-  readonly Download = Download;
+  readonly Upload = Upload;
 
   private destroy$ = new Subject<void>();
 

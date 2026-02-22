@@ -8,11 +8,12 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { WarehouseSummaryDto } from '@models/warehouse.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
 @Component({
   selector: 'app-warehouse-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, HasPermissionDirective],
   templateUrl: './warehouse-list.component.html',
   styleUrls: ['./warehouse-list.component.css']
 })

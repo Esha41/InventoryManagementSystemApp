@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -66,6 +66,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private ngZone: NgZone,
     private lookupService: LookupService,
     private offlineMapService: OfflineMapService,
     private translate: TranslateService,
@@ -597,10 +598,13 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Navigate to warehouse inventory page
+   * Navigate to warehouse inventory page.
+   * Run inside NgZone so navigation works when triggered from Leaflet popup (outside Angular zone).
    */
   navigateToWarehouseInventory(warehouseId: string): void {
-    this.router.navigate(['/warehouse', warehouseId, 'inventory']);
+    this.ngZone.run(() => {
+      this.router.navigate(['/warehouse', warehouseId, 'inventory']);
+    });
   }
 
   ngOnDestroy(): void {

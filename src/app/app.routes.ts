@@ -155,7 +155,7 @@ export const routes: Routes = [
         path: 'warehouse/:warehouseId/inventory/:itemId/map',
         loadComponent: () => import('@warehouse/pages/map/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['inventory.view'] }
+        data: { permissions: ['WarehouseMapView'] }
       },
       {
         path: 'warehouse/:warehouseId/assets/:id',

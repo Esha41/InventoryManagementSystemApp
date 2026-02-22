@@ -22,6 +22,19 @@
     </button>
   </div>
 
+  <!-- Status Filter -->
+  <div class="filters-row mb-4">
+    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+      {{ 'common.all' | translate }}
+    </button>
+    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'Active'" (click)="setStatusFilter('Active')">
+      {{ 'workflow.active' | translate }}
+    </button>
+    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'Inactive'" (click)="setStatusFilter('Inactive')">
+      {{ 'workflow.inactive' | translate }}
+    </button>
+  </div>
+
   <!-- Loading State -->
   <app-loading-state *ngIf="loading" message="common.loading" size="sm"
     containerClass="bg-[var(--color-background)] rounded-lg shadow-custom-md p-12">
