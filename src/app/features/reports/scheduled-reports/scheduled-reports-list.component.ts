@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Search, Edit, Trash2, Play, Calendar, Mail, Clock, FileText, Power, PowerOff, History, Loader2, CheckCircle2, XCircle } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { ToastService } from '@services/toast.service';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, ConfirmDialogComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { ExecutionHistoryDialogComponent } from './execution-history-dialog/execution-history-dialog.component';
 import { ReportService, ScheduledReport, ScheduledReportRecipient } from '@services/report.service';
@@ -23,7 +24,8 @@ import { of } from 'rxjs';
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    ConfirmDialogComponent
   ],
   templateUrl: './scheduled-reports-list.component.html',
   styleUrls: ['./scheduled-reports-list.component.css']
@@ -52,6 +54,8 @@ export class ScheduledReportsListComponent implements OnInit {
   error: string | null = null;
   showHistoryDialog = false;
   selectedReportId: string | null = null;
+  showDeleteConfirm = false;
+  reportToDelete: ScheduledReport | null = null;
   
   // Track execution state for each report: 'idle' | 'executing' | 'success' | 'failed'
   executingReports: Map<string, 'executing' | 'success' | 'failed'> = new Map();
@@ -65,7 +69,8 @@ export class ScheduledReportsListComponent implements OnInit {
     private translationService: TranslationService,
     private translateService: TranslateService,
     private router: Router,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -124,34 +129,65 @@ export class ScheduledReportsListComponent implements OnInit {
   }
 
   onDelete(report: ScheduledReport): void {
-    if (confirm(this.translateService.instant('common.confirmDelete'))) {
-      this.reportService.deleteScheduledReport(report.id)
+    this.reportToDelete = report;
+    this.showDeleteConfirm = true;
+  }
+
+  onDeleteConfirm(): void {
+    if (this.reportToDelete) {
+      this.reportService.deleteScheduledReport(this.reportToDelete.id)
         .pipe(
           catchError((err) => {
             console.error('Error deleting scheduled report:', err);
-            alert(this.translateService.instant('common.errorDeleting'));
+            this.toastService.error(
+              this.translateService.instant('common.errorDeleting'),
+              this.translateService.instant('common.error')
+            );
             return of(false);
           })
         )
         .subscribe((success: boolean) => {
           if (success) {
+            this.showDeleteConfirm = false;
+            const scheduleName = this.reportToDelete?.scheduleName || '';
+            this.reportToDelete = null;
+            this.toastService.success(
+              this.translateService.instant('scheduledReports.scheduleDeleted', { scheduleName }),
+              this.translateService.instant('common.success')
+            );
             this.loadScheduledReports();
           }
         });
     }
   }
 
+  onDeleteCancel(): void {
+    this.showDeleteConfirm = false;
+    this.reportToDelete = null;
+  }
+
   onToggleActive(report: ScheduledReport): void {
-    this.reportService.toggleScheduledReportActive(report.id, !report.isActive)
+    const newStatus = !report.isActive;
+    this.reportService.toggleScheduledReportActive(report.id, newStatus)
       .pipe(
         catchError((err) => {
           console.error('Error toggling scheduled report:', err);
-          alert(this.translateService.instant('common.errorUpdating'));
+          this.toastService.error(
+            this.translateService.instant('common.errorUpdating'),
+            this.translateService.instant('common.error')
+          );
           return of(false);
         })
       )
       .subscribe((success: boolean) => {
         if (success) {
+          const message = newStatus
+            ? this.translateService.instant('scheduledReports.scheduleEnabled', { scheduleName: report.scheduleName })
+            : this.translateService.instant('scheduledReports.scheduleDisabled', { scheduleName: report.scheduleName });
+          this.toastService.success(
+            message,
+            this.translateService.instant('common.success')
+          );
           this.loadScheduledReports();
         }
       });
@@ -160,7 +196,10 @@ export class ScheduledReportsListComponent implements OnInit {
   onExecuteNow(report: ScheduledReport): void {
     // Prevent execution if report is disabled
     if (!report.isActive) {
-      alert(this.translateService.instant('scheduledReports.cannotExecuteDisabled'));
+      this.toastService.error(
+        this.translateService.instant('scheduledReports.cannotExecuteDisabled'),
+        this.translateService.instant('common.error')
+      );
       return;
     }
 
@@ -172,6 +211,12 @@ export class ScheduledReportsListComponent implements OnInit {
     // Set executing state
     this.executingReports.set(report.id, 'executing');
 
+    // Show toast when execution starts
+    this.toastService.info(
+      this.translateService.instant('scheduledReports.executionStarted', { scheduleName: report.scheduleName }),
+      this.translateService.instant('scheduledReports.executing')
+    );
+
     this.reportService.executeScheduledReportNow(report.id)
       .pipe(
         catchError((err) => {
@@ -181,19 +226,23 @@ export class ScheduledReportsListComponent implements OnInit {
           
           // Check if the error is because the report is disabled
           const errorMessage = err?.error?.message || err?.message || '';
+          let errorToastMessage = '';
           if (errorMessage.includes('disabled') || errorMessage.includes('Cannot execute')) {
-            // Show alert but don't reset state immediately - let user see the error icon
-            setTimeout(() => {
-              this.executingReports.delete(report.id);
-            }, 3000);
-            alert(this.translateService.instant('scheduledReports.cannotExecuteDisabled'));
+            errorToastMessage = this.translateService.instant('scheduledReports.cannotExecuteDisabled');
           } else {
-            // Show alert but don't reset state immediately - let user see the error icon
-            setTimeout(() => {
-              this.executingReports.delete(report.id);
-            }, 3000);
-            alert(this.translateService.instant('common.errorExecuting'));
+            errorToastMessage = this.translateService.instant('scheduledReports.executionFailed', { scheduleName: report.scheduleName });
           }
+          
+          // Show error toast
+          this.toastService.error(
+            errorToastMessage,
+            this.translateService.instant('common.error')
+          );
+          
+          // Reset state after 3 seconds
+          setTimeout(() => {
+            this.executingReports.delete(report.id);
+          }, 3000);
           return of(false);
         }),
         finalize(() => {
@@ -205,6 +254,12 @@ export class ScheduledReportsListComponent implements OnInit {
           // Set success state
           this.executingReports.set(report.id, 'success');
           
+          // Show success toast
+          this.toastService.success(
+            this.translateService.instant('scheduledReports.executionSuccess', { scheduleName: report.scheduleName }),
+            this.translateService.instant('common.success')
+          );
+          
           // Reset to idle state after 3 seconds
           setTimeout(() => {
             this.executingReports.delete(report.id);
@@ -214,6 +269,10 @@ export class ScheduledReportsListComponent implements OnInit {
         } else {
           // If success is false (but no error was thrown), set failed state
           this.executingReports.set(report.id, 'failed');
+          this.toastService.error(
+            this.translateService.instant('scheduledReports.executionFailed', { scheduleName: report.scheduleName }),
+            this.translateService.instant('common.error')
+          );
           setTimeout(() => {
             this.executingReports.delete(report.id);
           }, 3000);

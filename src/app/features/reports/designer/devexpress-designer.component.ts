@@ -223,6 +223,23 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     return this.isRTL ? ArrowRight : ArrowLeft;
   }
 
+  getDesignerHeight(): string {
+    // Responsive height calculation
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640; // sm breakpoint
+      const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024; // md breakpoint
+      
+      if (isMobile) {
+        return 'calc(100vh - 140px)'; // Mobile: account for smaller header
+      } else if (isTablet) {
+        return 'calc(100vh - 180px)'; // Tablet: medium header
+      } else {
+        return 'calc(100vh - 200px)'; // Desktop: full header
+      }
+    }
+    return 'calc(100vh - 200px)'; // Default fallback
+  }
+
   goBack(): void {
     // Remove the popstate listener before navigating
  

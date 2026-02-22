@@ -9,9 +9,31 @@
 ::ng-deep dx-report-designer {
   width: 100%;
   height: 100%;
+  min-height: 400px;
 }
 
 /* Override DevExpress styles to match application theme if needed */
 ::ng-deep .dx-report-designer {
   background-color: var(--color-background);
+}
+
+/* Responsive adjustments for mobile/tablet */
+@media (max-width: 640px) {
+  ::ng-deep dx-report-designer {
+    min-height: 300px;
+  }
+  
+  ::ng-deep .dxrd-designer-wrapper {
+    overflow-x: auto;
+  }
+  
+  ::ng-deep .dxrd-toolbar-wrapper {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  ::ng-deep dx-report-designer {
+    min-height: 350px;
+  }
 }

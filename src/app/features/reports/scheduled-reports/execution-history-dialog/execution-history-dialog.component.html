@@ -19,7 +19,8 @@
         <p class="text-sm text-[var(--color-text-muted)]">{{ 'scheduledReports.noExecutionHistory' | translate }}</p>
       </div>
 
-      <div *ngIf="executions.length > 0" class="overflow-x-auto">
+      <!-- Desktop Table View -->
+      <div *ngIf="executions.length > 0" class="hidden md:block overflow-x-auto">
         <table class="min-w-full divide-y divide-[var(--color-border)]">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
@@ -76,6 +77,40 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div *ngIf="executions.length > 0" class="md:hidden grid grid-cols-1 gap-3">
+        <div *ngFor="let execution of executions"
+          class="bg-[var(--color-background)] rounded-lg p-4 shadow-sm border border-[var(--color-border)]">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-2">
+              <lucide-angular [img]="Clock" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              <span class="text-sm font-medium text-[var(--color-text)]">{{ formatDate(execution.executionDate) }}</span>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0"
+              [ngClass]="getStatusClass(execution.status)">
+              <lucide-angular [img]="getStatusIcon(execution.status)" class="h-3 w-3"></lucide-angular>
+              <span>{{ execution.status }}</span>
+            </span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-sm">
+              <lucide-angular [img]="Mail" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              <span class="text-[var(--color-text-muted)] text-xs">{{ 'scheduledReports.history.recipients' | translate }}:</span>
+              <span class="text-[var(--color-text)] font-medium">{{ execution.recipientCount }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <lucide-angular [img]="File" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+              <span class="text-[var(--color-text-muted)] text-xs">{{ 'scheduledReports.history.fileSize' | translate }}:</span>
+              <span class="text-[var(--color-text)] font-medium">{{ formatFileSize(execution.fileSizeBytes) }}</span>
+            </div>
+            <div *ngIf="execution.errorMessage" class="mt-2 p-2 bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 rounded text-xs text-[var(--color-error)]">
+              <span class="font-medium">{{ 'scheduledReports.history.error' | translate }}:</span>
+              <span class="block mt-1">{{ execution.errorMessage }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -5,7 +5,8 @@
       (click)="goBack()"
       class="back-button"
       [title]="'common.back' | translate">
-      <lucide-angular [img]="isRTL ? ArrowRight : ArrowLeft" class="h-5 w-5"></lucide-angular>
+      <lucide-angular [img]="isRTL ? ArrowRight : ArrowLeft" class="h-4 w-4 sm:h-5 sm:w-5"></lucide-angular>
+      <span class="hidden sm:inline ml-1 sm:ml-2 text-xs sm:text-sm">{{ 'common.back' | translate }}</span>
     </button>
     <h2 class="viewer-title">{{ reportName }}</h2>
     <button 
@@ -13,13 +14,13 @@
       (click)="closeViewer()"
       class="close-button"
       [title]="'common.close' | translate">
-      <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
+      <lucide-angular [img]="X" class="h-4 w-4 sm:h-5 sm:w-5"></lucide-angular>
     </button>
   </div>
   <div class="viewer-content" *ngIf="reportUrl">
     <dx-report-viewer 
       [reportUrl]="reportUrl"
-      [height]="'calc(100vh - 80px)'">
+      [height]="getViewerHeight()">
       <dxrv-request-options 
         [host]="host"
         [invokeAction]="invokeAction">

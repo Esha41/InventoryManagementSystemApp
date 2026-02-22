@@ -4,13 +4,13 @@
     <div>
       <div class="flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'nav.reportDesigner' | translate }}</h1>
-          <p class="text-[var(--color-text-muted)] mt-2">{{ 'reportDesigner.subtitle' | translate }}</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'nav.reportDesigner' | translate }}</h1>
+          <p class="text-[var(--color-text-muted)] mt-2 text-sm sm:text-base">{{ 'reportDesigner.subtitle' | translate }}</p>
         </div>
         
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <!-- Search -->
-          <div class="w-full max-w-sm">
+          <div class="w-full sm:max-w-sm">
             <div
               class="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)]/40">
               <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
@@ -56,29 +56,30 @@
     <!-- Reports Table -->
     <div *ngIf="!loading && !error"
       class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
-      <div class="overflow-hidden rounded-t-lg">
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-hidden rounded-t-lg">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-[var(--color-border)]">
             <thead class="bg-[var(--color-background-muted)]">
               <tr>
                 <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDesigner.table.reportName' | translate }}
                 </th>
                 <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDesigner.table.status' | translate }}
                 </th>
                 <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDesigner.table.roles' | translate }}
                 </th>
                 <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDesigner.table.createdDate' | translate }}
                 </th>
                 <th
-                  class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
+                  class="px-4 lg:px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
                   style="text-align: center;">
                   {{ 'reportDesigner.table.actions' | translate }}
                 </th>
@@ -87,18 +88,18 @@
             <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
               <tr *ngFor="let report of paginatedReports"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <div class="font-medium">
                     {{ report.reportName }}
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border"
                     [ngClass]="getStatusClass(report.reportStatusNameEn)">
                     {{ getStatusDisplayName(report) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">
+                <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start">
                   <div *ngIf="isPublished(report) && report.roles && report.roles.length > 0" class="flex flex-wrap gap-1">
                     <span *ngFor="let role of report.roles" 
                       class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
@@ -114,10 +115,10 @@
                     —
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
                   {{ formatDate(report.creationDate) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                     <!-- Edit Button -->
                     <button type="button" *ngIf="canEditReport" (click)="onEdit(report)"
@@ -155,6 +156,77 @@
         </div>
       </div>
 
+      <!-- Mobile Card View -->
+      <div class="md:hidden grid grid-cols-1 gap-4 p-4">
+        <div *ngFor="let report of paginatedReports"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] transition-all duration-200 hover:shadow-md">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm text-[var(--color-text)] truncate">
+                {{ report.reportName }}
+              </div>
+            </div>
+            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0 ml-2"
+              [ngClass]="getStatusClass(report.reportStatusNameEn)">
+              {{ getStatusDisplayName(report) }}
+            </span>
+          </div>
+
+          <!-- Details -->
+          <div class="space-y-2 mb-4">
+            <div class="flex items-start gap-2 text-sm">
+              <span class="text-[var(--color-text-muted)] text-xs flex-shrink-0">{{ 'reportDesigner.table.roles' | translate }}:</span>
+              <div class="flex flex-wrap gap-1 flex-1">
+                <div *ngIf="isPublished(report) && report.roles && report.roles.length > 0">
+                  <span *ngFor="let role of report.roles" 
+                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+                    {{ getRoleDisplayName(role) }}
+                  </span>
+                </div>
+                <span *ngIf="isPublished(report) && (!report.roles || report.roles.length === 0)" 
+                  class="text-xs text-[var(--color-text-muted)] italic">
+                  {{ 'reportDesigner.allUsers' | translate }}
+                </span>
+                <span *ngIf="!isPublished(report)" 
+                  class="text-xs text-[var(--color-text-muted)]">
+                  —
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-[var(--color-text-muted)] text-xs">{{ 'reportDesigner.table.createdDate' | translate }}:</span>
+              <span class="text-[var(--color-text)] font-medium">{{ formatDate(report.creationDate) }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-border)] flex-wrap">
+            <button type="button" *ngIf="canEditReport" (click)="onEdit(report)"
+              class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
+              [title]="'common.edit' | translate">
+              <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+            </button>
+            <button type="button" *ngIf="canDeleteReport" (click)="onDelete(report)"
+              class="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+              [title]="'common.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+            <button type="button" *ngIf="canEditReport && isPublished(report)" (click)="onSelectRoles(report)"
+              class="p-2 text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors"
+              [title]="'reportDesigner.selectRoles' | translate">
+              <lucide-angular [img]="Users" class="h-4 w-4"></lucide-angular>
+            </button>
+            <button type="button" *ngIf="canEditReport" (click)="onTogglePublicPrivate(report)"
+              class="p-2 rounded-lg transition-colors"
+              [ngClass]="isPublished(report) ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)]'"
+              [title]="(isPublished(report) ? 'reportDesigner.makePrivate' : 'reportDesigner.makePublic') | translate">
+              <lucide-angular [img]="Globe" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Empty State -->
       <div *ngIf="filteredReports.length === 0" class="text-center py-12">
         <svg class="mx-auto h-12 w-12 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24"
@@ -170,15 +242,15 @@
 
     <!-- Pagination Footer - Outside table overflow container -->
     <div *ngIf="filteredReports.length > 0 && !loading"
-      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
-      <div class="flex items-center justify-between w-full flex-nowrap">
+      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 w-full">
         <!-- Rows Per Page Selector -->
         <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedReports.length"
           (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 
         <!-- Pagination Controls -->
-        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 ms-4">
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 justify-center sm:justify-end">
           <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">

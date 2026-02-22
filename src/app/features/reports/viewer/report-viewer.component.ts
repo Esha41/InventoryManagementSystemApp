@@ -98,6 +98,23 @@ export class ReportViewerComponent implements OnInit {
     return this.translationService.isRTL();
   }
 
+  getViewerHeight(): string {
+    // Responsive height calculation
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640; // sm breakpoint
+      const isTablet = window.innerWidth >= 640 && window.innerWidth < 1024; // md breakpoint
+      
+      if (isMobile) {
+        return 'calc(100vh - 100px)'; // Mobile: account for smaller header
+      } else if (isTablet) {
+        return 'calc(100vh - 90px)'; // Tablet: medium header
+      } else {
+        return 'calc(100vh - 80px)'; // Desktop: full header
+      }
+    }
+    return 'calc(100vh - 80px)'; // Default fallback
+  }
+
   goBack(): void {
     this.router.navigate(['/report-dashboard']);
   }
