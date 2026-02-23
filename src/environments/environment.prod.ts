@@ -3,7 +3,7 @@ export const environment = {
   apiUrl: 'https://localhost:7148/api',
   appName: 'Ettad',
   enableLogging: false,
-  version: '1.1.1',
+  version: '1.1.2',
   notificationHubUrl: 'https://localhost:7148/hubs/notification'
 };
 

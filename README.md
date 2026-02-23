@@ -298,7 +298,7 @@ export const environment = {
   production: false,
   apiUrl: 'https://localhost:7060/api',
   appName: 'ETTAD',
-  version: '1.1.1',
+  version: '1.1.2',
   enableLogging: true
 };
 ```
