@@ -1,7 +1,7 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
         <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- Tabs - scroll inside container when space is limited -->
-    <app-card [shadow]="true" class="min-w-0">
+    <app-card [shadow]="true" class="min-w-0 mb-6">
       <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
         <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
           <button (click)="switchTab('ammunition')" [ngClass]="{
@@ -52,7 +52,8 @@
     </app-card>
 
     <!-- Filters Card -->
-    <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
+    <div class="mb-6">
+      <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
       [caseTypeFilterOptions]="caseTypeFilterOptions"
       [hazardDivisionFilterOptions]="hazardDivisionFilterOptions"
       [compatibilityFilterOptions]="compatibilityFilterOptions"
@@ -64,10 +65,12 @@
       [explosiveHazardDivisionFilterOptions]="explosiveHazardDivisionFilterOptions"
       [explosiveCompatibilityFilterOptions]="explosiveCompatibilityFilterOptions"
       (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (clearFilters)="clearFilters()">
-    </app-asset-filter-bar>
+      </app-asset-filter-bar>
+    </div>
 
     <!-- Assets Table Card (heading + sub-tabs + table inside one card) -->
-    <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+    <div class="mt-6">
+      <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
       [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
       [totalItems]="totalItems" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
       [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
@@ -78,7 +81,8 @@
       (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"
       (imageError)="onImageError($event)" (showImagePreview)="showImagePreview($event.event, $event.asset)"
       (hideImagePreview)="hideImagePreview()">
-    </app-asset-table>
+      </app-asset-table>
+    </div>
 
 
     <!-- Edit Modal -->
