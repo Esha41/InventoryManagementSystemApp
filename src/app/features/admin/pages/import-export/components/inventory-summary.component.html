@@ -28,8 +28,9 @@
 </app-card>
 
 <!-- Actions -->
-<app-card [shadow]="true">
-  <div class="p-4 sm:p-6">
+<div class="mt-6">
+  <app-card [shadow]="true">
+    <div class="p-4 sm:p-6">
     <div class="flex items-center gap-4 flex-wrap">
       <button (click)="exportToExcel()" [disabled]="filteredInventoryItems.length === 0 || loadingInventorySummary"
         class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -41,16 +42,18 @@
     <p class="mt-4 text-sm text-[var(--color-text-muted)]">
       {{ 'adminImportExport.inventorySummaryDescription' | translate }}
     </p>
-  </div>
-</app-card>
+    </div>
+  </app-card>
+</div>
 
 <!-- Loading State -->
 <app-loading-state *ngIf="loadingInventorySummary" size="lg" [fullPage]="false" containerClass="text-center py-12">
 </app-loading-state>
 
 <!-- Inventory Summary Table -->
-<app-card *ngIf="!loadingInventorySummary" [shadow]="true" class="bg-[var(--color-background)]">
-  <div class="p-4 sm:p-6 overflow-x-auto">
+<div class="mt-6">
+  <app-card *ngIf="!loadingInventorySummary" [shadow]="true" class="bg-[var(--color-background)]">
+    <div class="p-4 sm:p-6 overflow-x-auto">
     <div class="mb-4">
       <p class="text-sm text-[var(--color-text-muted)]">
         {{ 'adminImportExport.totalItems' | translate }}: <strong class="text-[var(--color-text)]">{{
@@ -205,4 +208,5 @@
       </table>
     </div>
   </div>
-</app-card>
+  </app-card>
+</div>

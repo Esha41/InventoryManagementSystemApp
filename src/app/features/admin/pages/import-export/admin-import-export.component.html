@@ -47,20 +47,26 @@
 
     <!-- Assets Section -->
     @if (activeSection() === 'assets') {
-    <app-assets-import-export [activeTab]="activeAssetTab()">
-    </app-assets-import-export>
+    <div class="mt-6">
+      <app-assets-import-export [activeTab]="activeAssetTab()">
+      </app-assets-import-export>
+    </div>
     }
 
     <!-- Inventory Summary Section -->
     @if (activeSection() === 'inventory-summary') {
-    <app-inventory-summary>
-    </app-inventory-summary>
+    <div class="mt-6">
+      <app-inventory-summary>
+      </app-inventory-summary>
+    </div>
     }
 
     <!-- Warehouse Inventory Section -->
     @if (activeSection() === 'warehouse-inventory') {
-    <app-warehouse-inventory>
-    </app-warehouse-inventory>
+    <div class="mt-6">
+      <app-warehouse-inventory>
+      </app-warehouse-inventory>
+    </div>
     }
   </div>
 </div>
