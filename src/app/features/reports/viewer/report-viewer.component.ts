@@ -60,20 +60,18 @@ export class ReportViewerComponent implements OnInit {
     // Build query parameters
     const queryParams: string[] = [];
     
-    // Append departmentId to reportUrl if available
+    // Append departmentId to reportUrl
     // Support multiple departments by comma-separating them
-    if (departmentId && baseReportUrl) {
+    if (baseReportUrl) {
       // If departmentId is an array, join with commas; otherwise use as-is
       const deptIdValue = Array.isArray(departmentId) 
         ? departmentId.join(',') 
-        : departmentId.toString();
+        : departmentId?.toString();
       queryParams.push(`departmentId=${deptIdValue}`);
     }
     
     // Append superadmin parameter
-    if (isSuperAdmin) {
-      queryParams.push(`superadmin=${isSuperAdmin}`);
-    }
+    queryParams.push(`superadmin=${isSuperAdmin}`);
     
     // Construct final report URL with parameters
     if (queryParams.length > 0 && baseReportUrl) {
