@@ -42,6 +42,8 @@ import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { ToastService } from '@services/toast.service';
+import { ErrorHandlingService } from '@services/error-handling.service';
 import {
   mapSelectedEntriesToCartridges,
   filterReserveDetailsBySelectedItems,
@@ -115,6 +117,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private cartridgeLoaderService: IssueRequestCartridgeLoaderService,
     private cartridgeManagementService: IssueRequestCartridgeManagementService,
     private submissionService: IssueRequestSubmissionService,
+    private toastService: ToastService,
+    private errorHandlingService: ErrorHandlingService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -753,17 +757,25 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
             this.currentStep = 4;
             this.updateQueryParams(4);
           } else {
-            this.orderSubmissionState.orderSubmitError = result.error || 'Failed to submit order. Please try again.';
+            const errorMsg = result.error || 'Failed to submit order. Please try again.';
+            this.orderSubmissionState.orderSubmitError = errorMsg;
             this.currentStep = 3;
             this.updateQueryParams(3);
+            this.translate.get('toast.error').subscribe(title => {
+              this.toastService.error(errorMsg, title);
+            });
           }
           this.cdr.markForCheck();
         },
         error: (error) => {
           this.orderSubmissionState.submittingOrder = false;
-          this.orderSubmissionState.orderSubmitError = error.error || 'Failed to submit order. Please try again.';
+          const errorMsg = this.errorHandlingService.resolveOrderSubmissionError(undefined, error);
+          this.orderSubmissionState.orderSubmitError = errorMsg;
           this.currentStep = 3;
           this.updateQueryParams(3);
+          this.translate.get('toast.error').subscribe(title => {
+            this.toastService.error(errorMsg, title);
+          });
           this.cdr.markForCheck();
         }
       });

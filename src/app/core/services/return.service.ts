@@ -66,9 +66,8 @@ export class ReturnService {
         }),
         catchError(error => {
           this.configService.logError('Failed to create return request', error);
-          return throwError(() => new Error(
-            error.message || 'Failed to create return request'
-          ));
+          const msg = error?.error?.message ?? error?.error?.Message ?? error?.message ?? 'Failed to create return request';
+          return throwError(() => new Error(msg));
         })
       );
     }
@@ -86,9 +85,8 @@ export class ReturnService {
       }),
       catchError(error => {
         this.configService.logError('Failed to create return request', error);
-        return throwError(() => new Error(
-          error.message || 'Failed to create return request'
-        ));
+        const msg = error?.error?.message ?? error?.error?.Message ?? error?.message ?? 'Failed to create return request';
+        return throwError(() => new Error(msg));
       })
     );
   }
