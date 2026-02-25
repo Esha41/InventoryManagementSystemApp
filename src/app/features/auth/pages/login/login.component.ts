@@ -40,6 +40,8 @@ export class LoginComponent implements OnInit {
   captchaImage = '';
   captchaId = '';
   isLoadingCaptcha = false;
+  showTakeOverDialog = false;
+  pendingLoginCredentials: { username: string; password: string; captchaId?: string; captchaCode?: string } | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -426,9 +428,8 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
 
-        // Check if error indicates CAPTCHA is required
+        // Check if error indicates ALREADY_LOGGED_IN (single-session: show take-over dialog)
         const errorCode = error?.error?.code?.value ||
           error?.error?.code?.Value ||
           error?.error?.value ||
@@ -437,32 +438,92 @@ export class LoginComponent implements OnInit {
           error?.error?.code?.value ||
           error?.error?.data?.errorCode ||
           '';
-        
         const numericCode = error?.error?.code?.code ||
           error?.error?.code?.Code ||
           (typeof error?.error?.code === 'number' ? error?.error?.code : null) ||
           error?.errorCode;
-        
-        const isCaptchaRequired = errorCode === 'CAPTCHA_REQUIRED' || 
-          errorCode === '0018' || 
+        const isAlreadyLoggedIn = errorCode === 'ALREADY_LOGGED_IN' || numericCode === 22;
+
+        if (isAlreadyLoggedIn) {
+          this.loginError = '';
+          this.showTakeOverDialog = true;
+          this.pendingLoginCredentials = {
+            username: formValue.username,
+            password: formValue.password,
+            captchaId: this.showCaptcha ? this.captchaId : undefined,
+            captchaCode: this.showCaptcha ? formValue.captcha : undefined
+          };
+          return;
+        }
+
+        this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
+
+        const isCaptchaRequired = errorCode === 'CAPTCHA_REQUIRED' ||
+          errorCode === '0018' ||
           numericCode === 18 ||
           this.loginError.toLowerCase().includes('captcha verification is required') ||
           this.loginError.toLowerCase().includes('captcha required');
 
         // Increment failed attempts
         this.failedLoginAttempts++;
-        // Persist failed attempts to sessionStorage
         sessionStorage.setItem('loginFailedAttempts', this.failedLoginAttempts.toString());
 
-        // Show captcha after 3 failed attempts or if backend explicitly requires it
         if ((this.failedLoginAttempts >= 3 || isCaptchaRequired) && !this.showCaptcha) {
           this.loadCaptcha();
         } else if (this.showCaptcha) {
-          // Reload captcha on failed attempt when captcha is already shown
           this.loadCaptcha();
         }
       }
     });
+  }
+
+  takeOverSession(): void {
+    if (!this.pendingLoginCredentials) return;
+    this.showTakeOverDialog = false;
+    this.isLoading = true;
+    this.loginError = '';
+
+    const loginRequest: any = {
+      ...this.pendingLoginCredentials,
+      isLdap: this.isLdapMode,
+      forceLogin: true
+    };
+    this.pendingLoginCredentials = null;
+
+    this.backendAuth.login(loginRequest).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.failedLoginAttempts = 0;
+        sessionStorage.removeItem('loginFailedAttempts');
+        this.showCaptcha = false;
+        this.captchaImage = '';
+        this.captchaId = '';
+        this.loginForm.get('captcha')?.setValue('');
+        setTimeout(() => {
+          if (this.backendAuth.hasPermission('dashboard_view')) {
+            this.router.navigate(['/dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') ||
+            this.backendAuth.hasPermission('admindashboard.page') ||
+            this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
+            this.router.navigate(['/admin-dashboard']);
+          } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') ||
+            this.backendAuth.hasPermission('systemusers.page')) {
+            this.router.navigate(['/manage-admins']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
+        }, 400);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.loginError = this.getUserFriendlyErrorMessage(error, loginRequest.username);
+      }
+    });
+  }
+
+  cancelTakeOver(): void {
+    this.showTakeOverDialog = false;
+    this.pendingLoginCredentials = null;
   }
 
   private markFormGroupTouched(): void {
@@ -577,7 +638,8 @@ export class LoginComponent implements OnInit {
           18: 'CAPTCHA_REQUIRED',
           19: 'CAPTCHA_INVALID',
           20: 'INVALID_DOMAIN',
-          21: 'INVALID_USERNAME_FORMAT'
+          21: 'INVALID_USERNAME_FORMAT',
+          22: 'ALREADY_LOGGED_IN'
         };
         errorCode = codeMap[numericCode] || '';
       }
