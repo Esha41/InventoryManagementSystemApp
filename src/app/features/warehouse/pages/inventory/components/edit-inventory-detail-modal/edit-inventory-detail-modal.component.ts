@@ -79,7 +79,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       manufacturerId: [this.inventoryDetail?.manufacturerId || null],
       countryId: [this.inventoryDetail?.countryId || null],
       // Invoice Information fields
-      invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || ''],
+      invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '', [Validators.pattern(/^\d*$/)]],
       invoiceDate: [this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate)],
       recievedDate: [this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate)],
       contractNumber: [this.inventoryDetail?.contractNumber || this.inventory?.contractNumber || ''],
@@ -255,6 +255,17 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
    */
   get itemsInSameInvoice(): number {
     return this.inventory?.inventoryDetails?.length || 0;
+  }
+
+  /**
+   * Handle invoice number input - restrict to numbers only
+   */
+  onInvoiceNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const numericValue = input.value.replace(/[^\d]/g, '');
+    // Update the form control value
+    this.detailForm.get('invoiceNumber')?.setValue(numericValue, { emitEvent: false });
   }
 
   close(): void {
