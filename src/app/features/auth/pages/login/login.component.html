@@ -1,3 +1,27 @@
+<!-- Take Over Session Dialog -->
+<div *ngIf="showTakeOverDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-labelledby="takeOverDialogTitle">
+  <div class="bg-[var(--color-background)] rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border-2 border-[var(--color-border)]">
+    <h3 id="takeOverDialogTitle" class="text-lg font-bold text-[var(--color-text)]">
+      {{ 'auth.login.alreadyLoggedInTitle' | translate }}
+    </h3>
+    <p class="text-sm text-[var(--color-text-muted)]">
+      {{ 'auth.login.alreadyLoggedInMessage' | translate }}
+    </p>
+    <div class="flex gap-3 pt-2" [class.flex-row-reverse]="isRTL">
+      <button type="button" (click)="cancelTakeOver()" class="flex-1 px-4 py-2.5 rounded-xl border-2 border-[var(--color-border)]
+               bg-[var(--color-background-muted)] text-[var(--color-text)] hover:bg-[var(--color-background)] transition-colors"
+               [style.order]="isRTL ? 2 : 1">
+        {{ 'auth.login.no' | translate }}
+      </button>
+      <button type="button" (click)="takeOverSession()" class="flex-1 px-4 py-2.5 rounded-xl bg-[var(--color-brand)] text-white
+               font-semibold hover:bg-[var(--color-brand-dark)] transition-colors"
+               [style.order]="isRTL ? 1 : 2">
+        {{ 'auth.login.yes' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="space-y-4 sm:space-y-6">
   <!-- Header -->
   <div class="text-center space-y-1.5 sm:space-y-2">
