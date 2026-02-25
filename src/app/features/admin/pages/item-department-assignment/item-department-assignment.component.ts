@@ -565,6 +565,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   onDeleteConfirm(): void {
     if (!this.assignmentToDelete) return;
 
+    const deletedId = this.assignmentToDelete.id;
+    const departmentId = this.assignmentToDelete.departmentId;
+
     this.loading = true;
     this.errorMessage = null;
     this.showDeleteDialog = false;
@@ -577,7 +580,10 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
             this.translateService.get(['toast.assignmentDeleted', 'toast.success']).subscribe(translations => {
               this.toastService.success(translations['toast.assignmentDeleted'], translations['toast.success']);
             });
-            this.loadData();
+            // Update local state: remove only the deleted assignment instead of clearing all
+            this.removeAssignmentFromCache(deletedId, departmentId);
+            // Refresh department summaries for accurate counts
+            this.refreshDepartmentSummaries();
           } else {
             this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).subscribe(translations => {
               this.toastService.error(
@@ -611,6 +617,31 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   onDeleteCancel(): void {
     this.showDeleteDialog = false;
     this.assignmentToDelete = undefined;
+  }
+
+  /** Remove a single assignment from local cache so the UI shows remaining items without full reload. */
+  private removeAssignmentFromCache(assignmentId: number, departmentId: number): void {
+    const deptAssignments = this.assignmentsByDepartment.get(departmentId);
+    if (deptAssignments) {
+      const updated = deptAssignments.filter(a => a.id !== assignmentId);
+      this.assignmentsByDepartment.set(departmentId, updated);
+    }
+    this.assignments = this.assignments.filter(a => a.id !== assignmentId);
+    this.cdr.detectChanges();
+  }
+
+  /** Refresh department summaries to keep counts (Ammunition, Explosives, Weapons) in sync. */
+  private refreshDepartmentSummaries(): void {
+    this.assignmentService.getDepartmentSummaries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.succeeded && res.data) {
+            this.departmentSummaries = res.data;
+            this.filterSummariesBySearch();
+          }
+        }
+      });
   }
 
   validateAssignment(): boolean {
