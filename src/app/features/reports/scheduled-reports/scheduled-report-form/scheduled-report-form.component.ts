@@ -221,13 +221,12 @@ export class ScheduledReportFormComponent implements OnInit {
   }
 
   addRecipient(): void {
-    if (!this.recipientForm.userId && !this.recipientForm.emailAddress) {
+    if (!this.recipientForm.userId) {
       return;
     }
 
     const recipient: CreateScheduledReportRecipientDto = {
       userId: this.recipientForm.userId,
-      emailAddress: this.recipientForm.emailAddress,
       recipientType: this.recipientForm.recipientType
     };
 
