@@ -12,6 +12,7 @@ export interface LoginRequest {
   isLdap?: boolean;
   captchaId?: string;
   captchaCode?: string;
+  forceLogin?: boolean;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, of, timer, Subscription } from 'rxjs';
 import { map, tap, catchError, switchMap, finalize, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
@@ -39,6 +39,8 @@ export class BackendAuthService {
 
   private isClearingAuthData = false; // Flag to prevent recursive calls
   private refreshInProgress: Observable<LoginResponse> | null = null;
+  private sessionHeartbeatSubscription: Subscription | null = null;
+  private readonly SESSION_HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds - detect session invalidation (e.g. Take over on another device)
 
   constructor(
     private apiService: ApiService,
@@ -84,6 +86,7 @@ export class BackendAuthService {
         this.currentUserSubject.next(state.user);
         this.isAuthenticatedSubject.next(true);
         this.authStateSubject.next(state);
+        this.startSessionHeartbeat();
 
         if (this.isTokenExpired()) {
           this.configService.log('Token expired - session kept; refresh will run on next API call');
@@ -300,7 +303,8 @@ export class BackendAuthService {
         this.configService.logError('Failed to fetch user data from /Users/me API', error);
         this.clearAuthData();
         return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
-      })
+      }),
+      tap(() => this.startSessionHeartbeat())
     );
   }
 
@@ -856,6 +860,30 @@ export class BackendAuthService {
   }
 
   /**
+   * Start session heartbeat - periodically validates session so we detect when
+   * user logs in elsewhere (Take over). Invalidated session gets 401, interceptor
+   * redirects to login.
+   */
+  private startSessionHeartbeat(): void {
+    this.stopSessionHeartbeat();
+    // timer(0, interval): first check immediately, then every 15s - detects Take over within 15 seconds
+    this.sessionHeartbeatSubscription = timer(0, this.SESSION_HEARTBEAT_INTERVAL_MS).pipe(
+      switchMap(() => this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS)),
+      catchError(() => of(null)) // Interceptor handles 401 (clearSession, redirect); we just avoid unhandled errors
+    ).subscribe();
+  }
+
+  /**
+   * Stop session heartbeat (e.g. on logout)
+   */
+  private stopSessionHeartbeat(): void {
+    if (this.sessionHeartbeatSubscription) {
+      this.sessionHeartbeatSubscription.unsubscribe();
+      this.sessionHeartbeatSubscription = null;
+    }
+  }
+
+  /**
    * Clear authentication data
    */
   private clearAuthData(): void {
@@ -865,6 +893,7 @@ export class BackendAuthService {
     }
 
     this.isClearingAuthData = true;
+    this.stopSessionHeartbeat();
 
     try {
       // Clear specific auth-related storage items
