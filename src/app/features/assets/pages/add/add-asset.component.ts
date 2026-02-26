@@ -572,6 +572,22 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Prevents + and - keys in numeric fields (bullet diameter, total weight). */
+  blockSignKeys(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === '+') {
+      event.preventDefault();
+    }
+  }
+
+  /** Sanitizes pasted text: removes + and - from numeric fields. */
+  onPasteNumber(event: ClipboardEvent, field: 'bulletDiameter' | 'totalWeight'): void {
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/[+-]/g, '');
+    if (pasted !== (event.clipboardData?.getData('text') ?? '')) {
+      event.preventDefault();
+      this.assetForm[field] = pasted;
+    }
+  }
+
   private isValidImageType(file: File): boolean {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     const validExtensions = ['.jpg', '.jpeg', '.png'];
