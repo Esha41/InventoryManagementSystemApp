@@ -33,11 +33,17 @@
 
     <!-- Lot Loading Options (only when item is selected) -->
     <div *ngIf="selectedItemForLot" class="space-y-3">
-      <!-- Two Buttons -->
-      <div class="grid grid-cols-2 gap-2">
+      <!-- Three Buttons -->
+      <div class="grid grid-cols-3 gap-2">
         <button type="button" (click)="onShowAvailableLots()" [disabled]="loadingAllLots"
           class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/30 hover:bg-[var(--color-success)]/20">
           <span *ngIf="!loadingAllLots">{{ 'supplyOrder.showAvailableLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button type="button" (click)="onShowAllLots()" [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--color-info)]/10 text-[var(--color-info)] border-[var(--color-info)]/30 hover:bg-[var(--color-info)]/20">
+          <span *ngIf="!loadingAllLots">{{ 'supplyOrder.showAllLots' | translate }}</span>
           <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
         </button>
 
@@ -154,7 +160,7 @@
       {{ 'common.cancel' | translate }}
     </button>
     <button (click)="onAddLot()"
-      [disabled]="addLotForm.invalid || loadingLotDetails || !selectedItemForLot || !selectedLotNumber"
+      [disabled]="addLotForm.invalid || loadingLotDetails || !selectedItemForLot || !selectedLotNumber || isSelectedLotEmpty"
       class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
       <span *ngIf="!loadingLotDetails">{{ 'common.add' | translate }}</span>
       <span *ngIf="loadingLotDetails">{{ 'common.loading' | translate }}...</span>
@@ -162,6 +168,10 @@
     <p *ngIf="(!selectedItemForLot || !selectedLotNumber) && !loadingLotDetails"
       class="text-xs text-[var(--color-text-muted)] text-center mt-2">
       {{ 'supplyOrder.selectItemAndLot' | translate }}
+    </p>
+    <p *ngIf="isSelectedLotEmpty && !loadingLotDetails"
+      class="text-xs text-[var(--color-warning)] text-center mt-2">
+      {{ 'supplyOrder.selectedLotEmpty' | translate }}
     </p>
   </div>
 </app-modal>

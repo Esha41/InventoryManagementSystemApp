@@ -20,10 +20,16 @@
 
     <!-- Lot Loading Options -->
     <div class="mb-4 space-y-3">
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-3 gap-2">
         <button (click)="onShowAvailableLots()" [disabled]="loadingAllLots"
           class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
           <span *ngIf="!loadingAllLots">{{ 'supplyRequestDetail.showAvailableLots' | translate }}</span>
+          <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
+        </button>
+
+        <button (click)="onShowAllLots()" [disabled]="loadingAllLots"
+          class="px-3 py-2 rounded-lg text-sm font-medium transition-colors border disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100">
+          <span *ngIf="!loadingAllLots">{{ 'supplyRequestDetail.showAllLots' | translate }}</span>
           <span *ngIf="loadingAllLots">{{ 'common.loading' | translate }}...</span>
         </button>
 

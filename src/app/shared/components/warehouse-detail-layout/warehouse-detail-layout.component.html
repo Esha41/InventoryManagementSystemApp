@@ -1,0 +1,57 @@
+<div class="bg-[var(--color-background)] min-h-full p-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <button (click)="onBack()"
+        class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+        <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+      </button>
+      <h1 class="text-2xl font-semibold text-[var(--color-text)]">
+        {{ title }}
+      </h1>
+    </div>
+    <ng-container *ngIf="showViewOnMap && hasData">
+      <button *appHasPermission="'WarehouseMapView'" (click)="onMapView()"
+        class="px-4 py-2 bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white rounded-lg transition-colors">
+        {{ 'warehouseInventory.viewOnMap' | translate }}
+      </button>
+    </ng-container>
+  </div>
+
+  <!-- Loading State -->
+  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+  </app-loading-state>
+
+  <!-- Error State -->
+  <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+    containerClass="mb-8" [actionText]="'warehouseInventory.backToInventory' | translate" (action)="onBack()">
+  </app-error-state>
+
+  <!-- Content with Tabs -->
+  <div *ngIf="!loading && !error && hasData">
+    <!-- Tabs -->
+    <div class="border-b border-[var(--color-border)] mb-8">
+      <nav class="flex gap-8">
+        <button (click)="setActiveTab('overview')" [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'overview',
+            'text-[var(--color-text)]': activeTab === 'overview',
+            'border-transparent': activeTab !== 'overview',
+            'text-[var(--color-text-muted)]': activeTab !== 'overview'
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          {{ 'warehouseInventory.overview' | translate }}
+        </button>
+        <button (click)="setActiveTab('stock')" [ngClass]="{
+            'border-[var(--color-brand)]': activeTab === 'stock',
+            'text-[var(--color-text)]': activeTab === 'stock',
+            'border-transparent': activeTab !== 'stock',
+            'text-[var(--color-text-muted)]': activeTab !== 'stock'
+          }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
+          {{ 'warehouseInventory.stock' | translate }}
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab Content (projected from parent) -->
+    <ng-content></ng-content>
+  </div>
+</div>

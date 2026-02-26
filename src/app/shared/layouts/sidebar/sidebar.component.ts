@@ -67,12 +67,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/analytics-dashboard',
       permissions: ['analytics.page']
     },
-    // {
-    //   label: 'nav.advancedAnalytics',
-    //   icon: BarChart3,
-    //   route: '/advanced-analytics-dashboard',
-    //   permissions: ['advancedAnalytics.page', 'advancedAnalytics.view']
-    // },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
     //   label: 'nav.supplyManagement',
@@ -551,25 +545,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const isRTL = this.translationService.isRTL();
 
     if (tooltip) {
+      // Sidebar has will-change-transform, so fixed tooltip is positioned relative to it.
+      // Convert viewport coordinates to sidebar-relative for correct alignment.
+      const sidebar = target.closest('aside');
+      const sidebarRect = sidebar?.getBoundingClientRect() ?? { left: 0, top: 0 };
+      const centerY = rect.top + rect.height / 2 - sidebarRect.top;
+
       // Position tooltip based on RTL/LTR
       if (isRTL) {
         // In RTL, position tooltip to the left of the sidebar
-        tooltip.style.left = `${rect.left}px`;
+        tooltip.style.left = `${rect.left - sidebarRect.left}px`;
         tooltip.style.right = 'auto';
-        tooltip.style.transform = 'translateX(-100%) translateY(-50%)';
+        tooltip.style.transform = 'translate(-100%, -50%)';
         // Add RTL class for arrow direction
         tooltip.classList.add('rtl-tooltip');
         tooltip.classList.remove('ltr-tooltip');
       } else {
         // In LTR, position tooltip to the right of the sidebar
-        tooltip.style.left = `${rect.right + 8}px`;
+        tooltip.style.left = `${rect.right - sidebarRect.left + 8}px`;
         tooltip.style.right = 'auto';
         tooltip.style.transform = 'translateY(-50%)';
         // Add LTR class for arrow direction
         tooltip.classList.add('ltr-tooltip');
         tooltip.classList.remove('rtl-tooltip');
       }
-      tooltip.style.top = `${rect.top + rect.height / 2}px`;
+      tooltip.style.top = `${centerY}px`;
     }
   }
 

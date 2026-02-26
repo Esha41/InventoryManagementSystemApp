@@ -311,13 +311,26 @@ export class SupplyOrderDataService {
   }
 
   /**
-   * Load available lots for a specific item and quantity
+   * Load available lots for a specific item and quantity (excludes expired/empty)
    */
   loadAvailableLotsForQuantity(itemId: number, quantity: number): Observable<LotItem[]> {
     return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity).pipe(
       map((lots: LotDetailDto[]) => mapLotDetailsToLotItems(lots)),
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load available lots');
+        throw new Error(errorMessage);
+      })
+    );
+  }
+
+  /**
+   * Load ALL lots for a specific item (including expired and empty lots)
+   */
+  loadAllLotsForItem(itemId: number): Observable<LotItem[]> {
+    return this.inventoryService.getLotsByItemId(itemId).pipe(
+      map((lots: LotDetailDto[]) => mapLotDetailsToLotItems(lots, undefined, true)),
+      catchError((error) => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lots');
         throw new Error(errorMessage);
       })
     );
