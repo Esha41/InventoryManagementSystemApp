@@ -50,13 +50,15 @@ export function calculateDaysUntilExpiry(expiryDate?: string): number {
 
 /**
  * Map LotDetailDto from inventory API to UI LotItem format
+ * @param includeEmptyLots When true, include lots with zero remaining quantity (for "all lots" view)
  */
 export function mapLotDetailsToLotItems(
   lotDetails: LotDetailDto[],
-  existingSelections?: Map<number, number>
+  existingSelections?: Map<number, number>,
+  includeEmptyLots?: boolean
 ): LotItem[] {
   const lots = lotDetails
-    .filter(lot => !lot.isEmptyLot) // Exclude empty lots
+    .filter(lot => includeEmptyLots || !lot.isEmptyLot)
     .map(lot => ({
       inventoryDetailId: lot.inventoryDetailId,
       lotNumber: lot.lot,

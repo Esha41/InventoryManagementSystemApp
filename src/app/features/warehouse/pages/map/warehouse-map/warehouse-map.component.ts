@@ -24,6 +24,7 @@ import { TranslationService } from '@services/translation.service';
 export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   warehouseId: string = '';
   itemId: string = '';
+  fromAssets = false; // true when navigated from assets (weapons) route
   loading = true;
 
   readonly ArrowLeft = ArrowLeft;
@@ -76,7 +77,9 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.warehouseId = params['warehouseId'];
-      this.itemId = params['itemId'];
+      // Support both inventory route (itemId) and assets route (id)
+      this.itemId = params['itemId'] ?? params['id'] ?? '';
+      this.fromAssets = this.route.snapshot.queryParams['from'] === 'assets';
       this.loadWarehouseLocations();
     });
 
@@ -556,9 +559,10 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onBack(): void {
-
     if (!this.itemId || this.itemId === '0' || this.itemId === '') {
       this.router.navigate(['/warehouse']);
+    } else if (this.fromAssets) {
+      this.router.navigate(['/warehouse', this.warehouseId, 'assets', this.itemId]);
     } else {
       this.router.navigate(['/warehouse', this.warehouseId, 'inventory', this.itemId]);
     }

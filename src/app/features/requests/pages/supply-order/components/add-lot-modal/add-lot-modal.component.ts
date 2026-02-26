@@ -143,6 +143,16 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     this.loadAvailableLotsForQuantity(this.selectedItemForLot);
   }
 
+  onShowAllLots(): void {
+    if (!this.selectedItemForLot) {
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).subscribe(translations => {
+        this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
+      });
+      return;
+    }
+    this.loadAllLotsForItem(this.selectedItemForLot);
+  }
+
   onAddLotManually(): void {
     this.showManualLotEntry = !this.showManualLotEntry;
     if (this.showManualLotEntry) {
@@ -250,6 +260,39 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
       });
   }
 
+  private loadAllLotsForItem(item: OrderRequestItemDto): void {
+    this.loadingAllLots = true;
+    this.supplyOrderDataService.loadAllLotsForItem(item.itemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots: LotItem[]) => {
+          this.availableLots = lots;
+          this.loadingAllLots = false;
+
+          if (this.availableLots.length > 0) {
+            this.translateService.get(['supplyOrder.toast.loadedAllLotsCount', 'toast.success']).subscribe(translations => {
+              const successMsg = translations['supplyOrder.toast.loadedAllLotsCount']
+                .replace('{{count}}', this.availableLots.length.toString());
+              this.toastService.success(successMsg, translations['toast.success']);
+            });
+          } else {
+            this.translateService.get(['supplyOrder.toast.noLotsFound', 'toast.warning']).subscribe(translations => {
+              this.toastService.warning(translations['supplyOrder.toast.noLotsFound'], translations['toast.warning']);
+            });
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: any) => {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load lots';
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
+          this.loadingAllLots = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
   onSelectLot(lotNumber: number): void {
     this.selectedLotNumber = lotNumber;
     this.addLotForm.patchValue({ lot: lotNumber });
@@ -258,6 +301,13 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
   getSelectedItemDisplayName(): string {
     if (!this.selectedItemForLot) return '';
     return getLocalizedOrderItemName(this.selectedItemForLot, this.translateService);
+  }
+
+  /** Selected lot has no available quantity (e.g. from "Show All Lots" including empty lots) */
+  get isSelectedLotEmpty(): boolean {
+    if (!this.selectedLotNumber) return false;
+    const lot = this.availableLots.find(l => l.lotNumber === this.selectedLotNumber);
+    return lot ? lot.quantity <= 0 : false;
   }
 
   itemOptionLabel = (option: OrderRequestItemDto | { value?: OrderRequestItemDto } | null): string => {
