@@ -146,7 +146,7 @@
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
                 (click)="sortByColumn('usageDate')">
                 <div class="flex items-center gap-2">
-                  {{ 'dashboard.usageDate' | translate }}
+                  {{ 'dashboard.requestDate' | translate }}
                   <lucide-angular *ngIf="sortState.column !== 'usageDate'" [img]="ArrowUpDown"
                     class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
                   <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'asc'"
