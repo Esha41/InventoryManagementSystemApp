@@ -230,7 +230,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.biTool',
       icon: FileText,
-      permissions: ['ReportDesigner', 'ReportDashboard'],
+      permissions: ['ReportDesigner', 'ReportDashboard', 'ScheduledReports'],
       children: [
         {
           label: 'nav.reportDesigner',
@@ -245,7 +245,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         {
           label: 'nav.scheduledReports',
           route: '/scheduled-reports',
-          permissions: ['ReportDesigner']
+          permissions: ['ScheduledReports']
         }
       ]
     },
