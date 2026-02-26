@@ -155,6 +155,23 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     event.stopPropagation();
   }
 
+  /** Prevents + and - keys in numeric fields (bullet diameter, total weight). */
+  blockSignKeys(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === '+') {
+      event.preventDefault();
+    }
+  }
+
+  /** Sanitizes pasted text: removes + and - from numeric fields. */
+  onPasteNumber(event: ClipboardEvent, field: 'bulletDiameter' | 'totalWeight'): void {
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/[+-]/g, '');
+    if (pasted !== (event.clipboardData?.getData('text') ?? '')) {
+      event.preventDefault();
+      this.editForm.get(field)?.setValue(pasted, { emitEvent: true });
+      this.cdr.markForCheck();
+    }
+  }
+
   onDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
