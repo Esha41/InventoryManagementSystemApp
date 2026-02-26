@@ -139,8 +139,8 @@
         <lucide-angular [img]="AlertCircle" class="h-4 w-4"></lucide-angular>
         {{ getFieldError('password') }}
       </p>
-      <!-- Forgot Password Link -->
-      <div class="mt-2 text-end">
+      <!-- Forgot Password Link (hidden for LDAP login) -->
+      <div class="mt-2 text-end" *ngIf="!isLdapMode">
         <a routerLink="/auth/forgot-password"
           class="text-sm font-semibold text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] transition-colors">
           {{ 'auth.login.forgotPassword' | translate }}
