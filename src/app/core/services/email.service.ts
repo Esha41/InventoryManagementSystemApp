@@ -154,7 +154,7 @@ export class EmailService {
           lines.push(`  Priority: ${priorityLabel}`);
         }
         if (entityDetails.status !== undefined) {
-          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
           lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
         }
         if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
@@ -180,7 +180,7 @@ export class EmailService {
           lines.push(`  Priority: ${priorityLabel}`);
         }
         if (entityDetails.status !== undefined) {
-          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
           lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
         }
         if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
@@ -206,7 +206,7 @@ export class EmailService {
           lines.push(`  Priority: ${priorityLabel}`);
         }
         if (entityDetails.status !== undefined) {
-          const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+          const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
           lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
         }
         if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
@@ -260,7 +260,7 @@ export class EmailService {
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
     if (order.status !== undefined) {
-      const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+      const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
       html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[order.status] || `Status ${order.status}`}</span></div>`;
     }
     if (order.requestPurposeNameEn || order.requestPurposeNameAr) {
@@ -315,7 +315,7 @@ export class EmailService {
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
     if (returnReq.status !== undefined) {
-      const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+      const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
       html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[returnReq.status] || `Status ${returnReq.status}`}</span></div>`;
     }
     if (returnReq.requestPurposeName) {
@@ -360,7 +360,7 @@ export class EmailService {
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
     if (discard.status !== undefined) {
-      const statusLabels = ['New', 'Under Process', 'Approved', 'Rejected', 'Cancelled'];
+      const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
       html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[discard.status] || `Status ${discard.status}`}</span></div>`;
     }
     if (discard.requestPurposeName) {

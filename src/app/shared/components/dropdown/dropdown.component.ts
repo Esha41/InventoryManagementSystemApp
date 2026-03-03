@@ -431,10 +431,38 @@ export class DropdownComponent<T = Primitive>
     const optionValue = this.getOptionValue(option);
 
     if (this.multiple) {
-      return Array.isArray(this.innerValue) && this.innerValue.includes(optionValue);
+      if (!Array.isArray(this.innerValue) || this.innerValue.length === 0) {
+        return false;
+      }
+      // Use a more robust comparison that handles type coercion for numbers/strings
+      return this.innerValue.some(val => {
+        // Strict equality first
+        if (val === optionValue) {
+          return true;
+        }
+        // Handle number/string coercion for IDs
+        if (typeof val === 'number' && typeof optionValue === 'string') {
+          return val === Number(optionValue);
+        }
+        if (typeof val === 'string' && typeof optionValue === 'number') {
+          return Number(val) === optionValue;
+        }
+        return false;
+      });
     }
 
-    return optionValue === this.innerValue;
+    // For single select, also handle type coercion
+    if (optionValue === this.innerValue) {
+      return true;
+    }
+    // Handle number/string coercion
+    if (typeof optionValue === 'number' && typeof this.innerValue === 'string') {
+      return optionValue === Number(this.innerValue);
+    }
+    if (typeof optionValue === 'string' && typeof this.innerValue === 'number') {
+      return Number(optionValue) === this.innerValue;
+    }
+    return false;
   }
 
   isOptionDisabled(option: DropdownOption<T> | T): boolean {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -50,8 +50,9 @@ export class ExplosiveService implements IImportableService {
   }
 
   // Get explosive by ID
-  getById<T = ExplosiveDto>(id: number): Observable<T> {
-    return this.apiService.get<T>(`${this.endpoint}/${id}`);
+  getById<T = ExplosiveDto>(id: number, includeDeleted = false): Observable<T> {
+    const params = includeDeleted ? new HttpParams().set('includeDeleted', 'true') : undefined;
+    return this.apiService.get<T>(`${this.endpoint}/${id}`, params);
   }
 
   // Update explosive
@@ -62,6 +63,16 @@ export class ExplosiveService implements IImportableService {
   // Delete explosive
   delete(id: number): Observable<APIOperationResponse<boolean>> {
     return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  }
+
+  // Restore soft-deleted explosive
+  restore(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  }
+
+  // Permanently delete soft-deleted explosive (irreversible)
+  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
+    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   // Create explosive

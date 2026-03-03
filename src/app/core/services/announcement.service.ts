@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import {
     Announcement,
     CreateAnnouncementDto,
@@ -9,13 +8,17 @@ import {
     ActiveAnnouncement
 } from '../models/announcement.model';
 import { ApiResponse } from '../models/api-response.model';
+import { ConfigService } from './config.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AnnouncementService {
     private readonly http = inject(HttpClient);
-    private readonly apiUrl = `${environment.apiUrl}/announcement`;
+    private readonly config = inject(ConfigService);
+    private get apiUrl(): string {
+        return `${this.config.apiUrl}/announcement`;
+    }
 
     /** Emits when active announcements should be refreshed (e.g. after create/update/delete). */
     private readonly refreshActive$ = new Subject<void>();

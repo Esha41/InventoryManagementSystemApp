@@ -10,6 +10,7 @@ import { AmmunitionReadDto, AmmunitionCreateDto, LookupDto } from '@models/ammun
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { LookupItem } from '@models/lookup.model';
+import { ItemType } from '@models/inventory.model';
 import { createAssetEditForm } from '@utils/asset-list-form.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
@@ -154,6 +155,23 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     event.stopPropagation();
   }
 
+  /** Prevents + and - keys in numeric fields (bullet diameter, total weight). */
+  blockSignKeys(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === '+') {
+      event.preventDefault();
+    }
+  }
+
+  /** Sanitizes pasted text: removes + and - from numeric fields. */
+  onPasteNumber(event: ClipboardEvent, field: 'bulletDiameter' | 'totalWeight'): void {
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/[+-]/g, '');
+    if (pasted !== (event.clipboardData?.getData('text') ?? '')) {
+      event.preventDefault();
+      this.editForm.get(field)?.setValue(pasted, { emitEvent: true });
+      this.cdr.markForCheck();
+    }
+  }
+
   onDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
@@ -178,5 +196,39 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
   get editImagePreview(): string | null {
     return this.imageStateLocal.editImagePreview || this.imageStateLocal.editImageUrl;
+  }
+
+  /**
+   * Helper method to filter item types by category
+   */
+  private getFilteredItemTypes(itemType: ItemType): LookupItem[] {
+    if (!this.itemTypes?.length) return [];
+    const typeName = ItemType[itemType];
+    const filtered = this.itemTypes.filter(item => {
+      const value = item.itemType as string | number | undefined;
+      return value != null && (typeof value === 'string' ? value : ItemType[Number(value)]) === typeName;
+    });
+    return filtered.length > 0 ? filtered : this.itemTypes;
+  }
+
+  /**
+   * Get filtered item types for ammunition (itemType === ItemType.Ammunition)
+   */
+  get ammunitionItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Ammunition);
+  }
+
+  /**
+   * Get filtered item types for weapons (itemType === ItemType.Weapon)
+   */
+  get weaponItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Weapon);
+  }
+
+  /**
+   * Get filtered item types for explosives (itemType === ItemType.Explosive)
+   */
+  get explosiveItemTypes(): LookupItem[] {
+    return this.getFilteredItemTypes(ItemType.Explosive);
   }
 }

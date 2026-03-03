@@ -36,6 +36,7 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
   @Input() loadingManualLot: boolean = false;
   @Output() closed = new EventEmitter<void>();
   @Output() showAvailableLots = new EventEmitter<void>();
+  @Output() showAllLots = new EventEmitter<void>();
   @Output() addLotManually = new EventEmitter<void>();
   @Output() getManualLotDetails = new EventEmitter<string>();
   @Output() lotQuantityChange = new EventEmitter<{ lotNumber: number; quantity: number }>();
@@ -85,6 +86,10 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
 
   onShowAvailableLots(): void {
     this.showAvailableLots.emit();
+  }
+
+  onShowAllLots(): void {
+    this.showAllLots.emit();
   }
 
   onAddLotManually(): void {

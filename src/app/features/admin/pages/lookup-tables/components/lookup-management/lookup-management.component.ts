@@ -98,7 +98,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
     this.isLoadingLookups = true;
     this.lookupErrorMessage = '';
-    this.lookupManagementService.loadLookupItems(this.selectedTable.apiEndpoint)
+    this.lookupManagementService.loadLookupItems(this.selectedTable)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (items) => {
@@ -189,7 +189,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     };
 
     this.lookupManagementService.deleteLookupItem(
-      this.selectedTable.apiEndpoint,
+      this.selectedTable,
       this.selectedLookupItem.id!,
       dto
     )
@@ -232,9 +232,9 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     this.lookupErrorMessage = '';
 
     const operation = this.lookupModalMode === 'create'
-      ? this.lookupManagementService.createLookupItem(this.selectedTable.apiEndpoint, dto)
+      ? this.lookupManagementService.createLookupItem(this.selectedTable, dto)
       : this.lookupManagementService.updateLookupItem(
-        this.selectedTable.apiEndpoint,
+        this.selectedTable,
         this.selectedLookupItem!.id!,
         dto
       );
@@ -248,11 +248,10 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
           this.translateService.get([
             'toast.success',
-            'lookupManagement.addItem',
             'lookupManagement.edit'
           ]).subscribe(translations => {
             const message = isCreate
-              ? `${translations['lookupManagement.addItem'] || 'Item'} "${itemName}" added successfully`
+              ? `"${itemName}" added successfully`
               : `"${itemName}" ${translations['lookupManagement.edit'] || 'updated'} successfully`;
 
             this.toastService.success(message, translations['toast.success']);
@@ -280,6 +279,14 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           });
         }
       });
+  }
+
+  getAddButtonLabel(): string {
+    if (!this.selectedTable) return this.translateService.instant('lookupManagement.addItem');
+    const itemName = this.selectedTable.displayNameKeySingular
+      ? this.translateService.instant(this.selectedTable.displayNameKeySingular)
+      : this.selectedTable.displayName.slice(0, -1);
+    return this.translateService.instant('lookupManagement.addLabel', { item: itemName });
   }
 
   getLookupItemName(item: LookupItem | null | undefined): string {

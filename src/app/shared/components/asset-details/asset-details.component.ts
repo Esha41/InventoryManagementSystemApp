@@ -114,6 +114,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private loadingImageFor: { assetId: number; assetType: string } | null = null;
   private imageLoadedFor: { assetId: number; assetType: string } | null = null;
   private requestId: number | null = null; // For back navigation to workflow approval
+  private returnToUrl: string | null = null; // For back navigation (e.g. item assignment)
 
   constructor() {
     // Effect to handle asset type detection from asset data
@@ -216,12 +217,19 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
             }
           }
 
+          // Get returnTo from query params for back navigation (e.g. from item assignment)
+          const returnToParam = queryParams['returnTo'];
+          this.returnToUrl = returnToParam && typeof returnToParam === 'string' ? returnToParam : null;
+
+          // Include deleted items when viewing from deleted ammunition list
+          const includeDeleted = queryParams['includeDeleted'] === 'true' || queryParams['includeDeleted'] === true;
+
           if (itemId) {
             // Optimization: Start loading image immediately if type is known from query params
             if (this._assetType()) {
               this.loadImage(itemId, this._assetType()!);
             }
-            this.loadAssetFromRoute(itemId);
+            this.loadAssetFromRoute(itemId, includeDeleted);
           } else {
             this.loading.set(false);
             this.error.set('Invalid asset ID');
@@ -246,7 +254,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
     if (assetId && assetType) {
       // If assetId and assetType are provided as inputs (inline mode)
-      this.loadAssetFromRoute(assetId);
+      this.loadAssetFromRoute(assetId, false);
     } else if (this._asset()) {
       // If asset is provided directly, image will be loaded via effect
       // No action needed
@@ -256,14 +264,14 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  private loadAssetFromRoute(assetId: number): void {
+  private loadAssetFromRoute(assetId: number, includeDeleted = false): void {
     this.loading.set(true);
     this.error.set(null);
 
     const assetType = this._assetType();
 
     this.assetDetailsService
-      .loadAsset(assetId, assetType)
+      .loadAsset(assetId, assetType, includeDeleted)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -352,19 +360,28 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onBack(): void {
-    if (!this.router || !this.route) return;
-    
+    if (!this.router) return;
+
+    // If returnTo URL was passed (e.g. from item assignment), go back there
+    if (this.returnToUrl) {
+      this.router.navigateByUrl(this.returnToUrl);
+      return;
+    }
     // If requestId is available, navigate back to workflow approval page
     if (this.requestId) {
       this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
     } else {
-      // Navigate back to asset-list, preserving tab and page from query params
+      // Navigate back to asset-list, preserving tab, page, and view mode from query params
       const tab = this._assetType();
-      const pageParam = this.route.snapshot.queryParams['page'];
+      const qp = this.route?.snapshot.queryParams ?? {};
+      const pageParam = qp['page'];
       const page = pageParam ? parseInt(pageParam, 10) : NaN;
       const queryParams: Record<string, string | number> = {};
       if (tab) queryParams['tab'] = tab;
       if (!isNaN(page) && page >= 1) queryParams['page'] = page;
+      if (qp['ammunitionView'] === 'deleted') queryParams['ammunitionView'] = 'deleted';
+      if (qp['explosivesView'] === 'deleted') queryParams['explosivesView'] = 'deleted';
+      if (qp['weaponsView'] === 'deleted') queryParams['weaponsView'] = 'deleted';
       this.router.navigate(['/asset-list'], { queryParams });
     }
   }

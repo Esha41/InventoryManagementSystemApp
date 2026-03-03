@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AssetFilterState, AssetType } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
+import { ItemType } from '@models/inventory.model';
 import { createFilterOptions } from '@utils/asset-list.utils';
 
 @Injectable({
@@ -33,6 +34,19 @@ export class AssetFilterService {
   }
 
   /**
+   * Helper method to filter item types by category
+   */
+  private getFilteredItemTypes(itemTypes: LookupItem[], itemType: ItemType): LookupItem[] {
+    if (!itemTypes?.length) return [];
+    const typeName = ItemType[itemType];
+    const filtered = itemTypes.filter(item => {
+      const value = item.itemType as string | number | undefined;
+      return value != null && (typeof value === 'string' ? value : ItemType[Number(value)]) === typeName;
+    });
+    return filtered.length > 0 ? filtered : itemTypes;
+  }
+
+  /**
    * Get filter options for weapons
    */
   getWeaponFilterOptions(
@@ -40,8 +54,9 @@ export class AssetFilterService {
     classifications: LookupItem[],
     countries: LookupItem[]
   ) {
+    const weaponItemTypes = this.getFilteredItemTypes(itemTypes, ItemType.Weapon);
     return {
-      weaponType: createFilterOptions(itemTypes, this.translateService),
+      weaponType: createFilterOptions(weaponItemTypes, this.translateService),
       weaponClassification: createFilterOptions(classifications, this.translateService),
       countryOfManufacture: createFilterOptions(countries, this.translateService)
     };
@@ -56,8 +71,9 @@ export class AssetFilterService {
     hazardDivisionList: LookupItem[],
     compatibilityList: LookupItem[]
   ) {
+    const explosiveItemTypes = this.getFilteredItemTypes(itemTypes, ItemType.Explosive);
     return {
-      explosiveType: createFilterOptions(itemTypes, this.translateService),
+      explosiveType: createFilterOptions(explosiveItemTypes, this.translateService),
       explosiveClassification: createFilterOptions(classifications, this.translateService),
       explosiveHazardDivision: createFilterOptions(hazardDivisionList, this.translateService),
       explosiveCompatibility: createFilterOptions(compatibilityList, this.translateService)

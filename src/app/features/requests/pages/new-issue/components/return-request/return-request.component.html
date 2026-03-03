@@ -14,13 +14,7 @@
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
           }"
           class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <div class="flex items-center gap-2 relative z-10">
-            <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-              'bg-[var(--color-background)]': selectedItemType === 'Ammunition',
-              'bg-[var(--color-brand)]': selectedItemType !== 'Ammunition'
-            }"></div>
-            <span>{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
-          </div>
+          <span class="relative z-10">{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
           <div *ngIf="selectedItemType === 'Ammunition'"
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
           </div>
@@ -30,13 +24,7 @@
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
           }"
           class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <div class="flex items-center gap-2 relative z-10">
-            <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-              'bg-[var(--color-background)]': selectedItemType === 'Weapon',
-              'bg-[var(--color-brand)]': selectedItemType !== 'Weapon'
-            }"></div>
-            <span>{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
-          </div>
+          <span class="relative z-10">{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
           <div *ngIf="selectedItemType === 'Weapon'"
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
           </div>
@@ -46,13 +34,7 @@
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
           }"
           class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <div class="flex items-center gap-2 relative z-10">
-            <div class="w-2 h-2 rounded-full transition-all duration-200" [ngClass]="{
-              'bg-[var(--color-background)]': selectedItemType === 'Explosive',
-              'bg-[var(--color-brand)]': selectedItemType !== 'Explosive'
-            }"></div>
-            <span>{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
-          </div>
+          <span class="relative z-10">{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
           <div *ngIf="selectedItemType === 'Explosive'"
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
           </div>
@@ -307,7 +289,7 @@
                       {{ 'returnRequest.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </label>
                     <input type="number" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
-                      (ngModelChange)="onQuantityChange(i)" min="1"
+                      (ngModelChange)="onQuantityChange(i)" (keydown)="onQuantityKeydown($event)" min="1"
                       [placeholder]="'returnRequest.enterQuantity' | translate"
                       [class.border-[var(--color-error)]]="hasError('returnItem_' + i + '_quantity')"
                       class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />

@@ -204,7 +204,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (depots) => {
           this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
-          this.depoName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`;
+          this.depoName = this.currentDepot
+            ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
+            : '';
+
+          if (!this.currentDepot) {
+            this.error = 'accessDenied';
+            this.loading = false;
+            this.cdr.markForCheck();
+            return;
+          }
 
           // Initial tab load
           this.loadTabContent();

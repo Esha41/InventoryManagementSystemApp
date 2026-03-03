@@ -24,6 +24,8 @@
     },
     "inventory": "Inventory",
     "backToWarehouses": "Back to Warehouses",
+    "accessDenied": "Access Denied",
+    "accessDeniedMessage": "You do not have permission to access this depot.",
     "totalItems": "Total Items",
     "addInventory": "Add Inventory",
     "addWeaponAsset": "Add Weapon Asset",
@@ -212,7 +214,10 @@
     "itemNoMustBeUnique": "Item No must be unique across all ammunition records",
     "errors": {
       "itemNoAlreadyExists": "Item number already exists. Please use a unique item number.",
-      "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number."
+      "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number.",
+      "bulletDiameterMustBePositive": "Bullet diameter must be greater than 0",
+      "priceMustBePositive": "Price must be greater than 0",
+      "totalWeightMustBePositive": "Total weight must be greater than 0"
     },
     "name": "Name",
     "itemNo": "Item No",
@@ -342,7 +347,24 @@
       "weapon": "Weapons",
       "explosive": "Explosives"
     },
-    "ammunition": "Ammunition",
+    "ammunition": {
+      "availableAmmunition": "Available Ammunition",
+      "deletedAmmunition": "Deleted Ammunition",
+      "restoreSuccess": "Ammunition restored successfully",
+      "permanentDeleteSuccess": "Ammunition permanently deleted"
+    },
+    "explosives": {
+      "availableExplosives": "Available Explosives",
+      "deletedExplosives": "Deleted Explosives",
+      "restoreSuccess": "Explosive restored successfully",
+      "permanentDeleteSuccess": "Explosive permanently deleted"
+    },
+    "weapons": {
+      "availableWeapons": "Available Weapons",
+      "deletedWeapons": "Deleted Weapons",
+      "restoreSuccess": "Weapon restored successfully",
+      "permanentDeleteSuccess": "Weapon permanently deleted"
+    },
     "weapon": "Weapons",
     "explosive": "Explosives",
     "filters": {
@@ -400,7 +422,9 @@
       "actions": "Actions"
     },
     "actions": {
-      "viewDetails": "View Details"
+      "viewDetails": "View Details",
+      "restore": "Restore",
+      "permanentDelete": "Permanent Delete"
     },
     "noItems": "No items found",
     "noItemsDescription": "Try adjusting your filters or add a new item",
@@ -412,6 +436,8 @@
       "failedToLoadDetails": "Failed to load ammunition details",
       "failedToDelete": "Failed to delete ammunition",
       "failedToUpdate": "Failed to update ammunition",
+      "failedToRestore": "Failed to restore ammunition",
+      "failedToPermanentDelete": "Failed to permanently delete ammunition",
       "fillRequiredFields": "Please fill all required fields",
       "failedToExport": "Failed to export assets. Please try again."
     },
@@ -509,8 +535,18 @@
     "deleteModal": {
       "title": "Delete Ammunition",
       "confirmMessage": "Are you sure you want to delete",
-      "warning": "This action cannot be undone. This will permanently delete the ammunition item from the system.",
+      "warning": "This will soft-delete the ammunition. You can restore it later from the Deleted Ammunition list.",
       "deleting": "Deleting..."
+    },
+    "permanentDeleteModal": {
+      "title": "Permanent Delete",
+      "confirmMessage": "Are you sure you want to permanently delete",
+      "warning": "This action cannot be undone. The ammunition will be permanently removed from the database."
+    },
+    "restoreModal": {
+      "title": "Restore",
+      "confirmMessage": "Are you sure you want to restore",
+      "warning": "This will make the item available again in the active inventory."
     },
     "success": {
       "deleted": "Ammunition deleted successfully",

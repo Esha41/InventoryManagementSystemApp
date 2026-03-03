@@ -4,12 +4,12 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, switchMap, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
-import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
+import { WarehouseDetailLayoutComponent } from '@shared/components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
@@ -22,7 +22,7 @@ type TabType = 'overview' | 'stock';
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, AssetDetailsComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, AssetDetailsComponent, WarehouseDetailLayoutComponent],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css']
 })
@@ -43,17 +43,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   imageUrl: string | null = null;
   private blobUrls: Set<string> = new Set();
 
-  readonly ArrowLeft = ArrowLeft;
-  readonly ArrowRight = ArrowRight;
   private destroy$ = new Subject<void>();
-
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
-
-  get backIcon() {
-    return this.isRTL ? ArrowRight : ArrowLeft;
-  }
 
   constructor(
     private route: ActivatedRoute,

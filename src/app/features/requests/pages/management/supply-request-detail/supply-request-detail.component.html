@@ -262,7 +262,7 @@
 <!-- Lot Selection Modal -->
 <app-lot-selection-modal [isOpen]="isLotModalOpen" [selectedItem]="selectedItem"
   [availableLots]="selectedItem?.availableLots || []" [loadingAllLots]="loadingAllLots"
-  [loadingManualLot]="loadingManualLot" (closed)="closeLotModal()" (showAvailableLots)="onShowAvailableLots()"
+  [loadingManualLot]="loadingManualLot" (closed)="closeLotModal()" (showAvailableLots)="onShowAvailableLots()" (showAllLots)="onShowAllLots()"
   (addLotManually)="onAddLotManually()" (getManualLotDetails)="onGetManualLotDetails($event)"
   (lotQuantityChange)="onTempLotQuantityChange($event)" (removeLot)="onRemoveLot($event)"
   (confirmSelection)="confirmLotSelection($event)">

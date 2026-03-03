@@ -336,6 +336,13 @@ export class SupplyRequestDetailService {
   }
 
   /**
+   * Load ALL lots for an item (including expired and empty lots)
+   */
+  loadAllLotsForItem(itemId: number): Observable<LotDetailDto[]> {
+    return this.inventoryService.getLotsByItemId(itemId);
+  }
+
+  /**
    * Get lot by number
    */
   getLotByNumber(lotNumber: number): Observable<LotDetailDto> {

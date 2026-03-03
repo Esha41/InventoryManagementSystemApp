@@ -288,6 +288,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.loadAvailableLotsForQuantity(this.selectedItem);
   }
 
+  onShowAllLots(): void {
+    if (!this.selectedItem) return;
+    this.loadAllLotsForItem(this.selectedItem);
+  }
+
   onAddLotManually(): void {
     this.showManualLotEntry = !this.showManualLotEntry;
     if (this.showManualLotEntry) {
@@ -382,6 +387,43 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
         }
       });
+  }
+
+  private loadAllLotsForItem(item: OrderItem): void {
+    this.loadingAllLots = true;
+    const currentSelections = new Map(this.tempLotSelections);
+
+    this.supplyRequestDetailService.loadAllLotsForItem(item.itemId).pipe(
+      map((lots: LotDetailDto[]) => {
+        const mappedLots = mapLotDetailsToLotItems(lots, currentSelections, true);
+        return { lots: mappedLots, success: true };
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (result) => {
+        item.availableLots = result.lots;
+        this.loadingAllLots = false;
+
+        if (item.availableLots.length > 0) {
+          const message = this.translate.instant('supplyRequestDetail.loadedAllLots', {
+            count: item.availableLots.length
+          });
+          const title = this.translate.instant('toast.success');
+          this.toastService.success(message, title);
+        } else {
+          const message = this.translate.instant('supplyRequestDetail.noLotsFound');
+          const title = this.translate.instant('toast.warning');
+          this.toastService.warning(message, title);
+        }
+      },
+      error: (error) => {
+        this.config.logError('Failed to load lots', error);
+        const message = this.translate.instant('supplyRequestDetail.failedToLoadLots');
+        const title = this.translate.instant('toast.error');
+        this.toastService.error(message, title);
+        this.loadingAllLots = false;
+      }
+    });
   }
 
   onTempLotQuantityChange(event: { lotNumber: number; quantity: number }): void {

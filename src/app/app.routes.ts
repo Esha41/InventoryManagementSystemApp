@@ -73,12 +73,6 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permissions: ['analytics.page', 'analytics.view'] }
       },
-      // {
-      //   path: 'advanced-analytics-dashboard',
-      //   loadComponent: () => import('@admin/pages/advanced-analytics/advanced-analytics-dashboard.component').then(m => m.AdvancedAnalyticsDashboardComponent),
-      //   canActivate: [permissionGuard],
-      //   data: { permissions: ['analytics.page', 'analytics.view', 'advancedAnalytics.page', 'advancedAnalytics.view'] }
-      // },
       {
         path: 'supply-request-management',
         loadComponent: () => import('@requests/pages/supply-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
@@ -155,13 +149,19 @@ export const routes: Routes = [
         path: 'warehouse/:warehouseId/inventory/:itemId/map',
         loadComponent: () => import('@warehouse/pages/map/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['inventory.view'] }
+        data: { permissions: ['WarehouseMapView'] }
       },
       {
         path: 'warehouse/:warehouseId/assets/:id',
         loadComponent: () => import('@assets/pages/details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['asset.view'] }
+      },
+      {
+        path: 'warehouse/:warehouseId/assets/:id/map',
+        loadComponent: () => import('@warehouse/pages/map/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['WarehouseMapView'] }
       },
       {
         path: 'warehouse/:warehouseId/assets/:id/edit',
@@ -324,6 +324,12 @@ export const routes: Routes = [
         loadComponent: () => import('@admin/pages/import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['AdminImportExport'] }
+      },
+      {
+        path: 'item-department-assignment',
+        loadComponent: () => import('@admin/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Permissions.ItemDepartmentAssignment.Page'] }
       },
       {
         path: 'stock-notification-settings',

@@ -132,11 +132,16 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   }
 
   onImportClick(): void {
+    // Clear any pending import file before opening the dialog
+    this.pendingImportFile = null;
+    this.previewData = null;
     this.showImportModal = true;
     this.cdr.markForCheck();
   }
 
   closeImportModal(): void {
+    // Clear any pending import file when closing the dialog
+    this.pendingImportFile = null;
     this.showImportModal = false;
     this.cdr.markForCheck();
   }

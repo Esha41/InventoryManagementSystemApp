@@ -1,7 +1,7 @@
 
 export const APP_CONSTANTS = {
   APP_NAME: 'Ettad',
-  VERSION: '1.1.0',
+  VERSION: '1.1.2',
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
@@ -164,6 +164,8 @@ export const API_ENDPOINTS = {
   // Depot Management (Warehouses)
   DEPOT: {
     BASE: '/Lookup/Depot',
+    USERS: (depotId: number) => `/Lookup/Depot/${depotId}/users`,
+    USERS_UPDATE: (depotId: number) => `/Lookup/Depot/${depotId}/users`,
   },
 
   // Allowance Management
@@ -173,6 +175,15 @@ export const API_ENDPOINTS = {
     BY_DEPARTMENT_AND_YEAR: (departmentId: number, year: number) => `/AllowanceItem/department/${departmentId}/year/${year}`,
     BY_DEPARTMENT: (departmentId: number) => `/AllowanceItem/department/${departmentId}`,
     RESERVE_DETAILS: (departmentId: number, year: number) => `/AllowanceItem/reserve-details/${departmentId}/${year}`,
+  },
+
+  // Item Assignment Management
+  ITEM_DEPARTMENT_ASSIGNMENT: {
+    BASE: '/ItemDepartmentAssignment',
+    SUMMARY: '/ItemDepartmentAssignment/summary',
+    BY_DEPARTMENT: (departmentId: number) => `/ItemDepartmentAssignment/department/${departmentId}`,
+    BY_ITEM: (itemId: number) => `/ItemDepartmentAssignment/item/${itemId}`,
+    BULK: '/ItemDepartmentAssignment/bulk',
   },
 
   // Email Configuration

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Plus, Edit, Trash2, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit, Trash2, X, Users } from 'lucide-angular';
 import { LookupService } from '@services/lookup.service';
 import { DepotDto } from '@models/depot.model';
 import { ApiService } from '@services/api.service';
@@ -15,11 +15,12 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@services/profile-data.service';
+import { DepotUserAssignmentModalComponent } from './components/depot-user-assignment-modal/depot-user-assignment-modal.component';
 
 @Component({
   selector: 'app-depot-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, DepotUserAssignmentModalComponent],
   templateUrl: './depot-management.component.html',
   styleUrls: ['./depot-management.component.css']
 })
@@ -28,6 +29,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
   readonly X = X;
+  readonly Users = Users;
 
   depots: DepotDto[] = [];
   loading = false;
@@ -42,6 +44,10 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   // Delete confirmation dialog state
   showDeleteDialog = false;
   depotToDelete?: DepotDto;
+
+  // Assign users modal state
+  showAssignUsersModal = false;
+  assignUsersDepot?: DepotDto;
 
   // Super admin check
   isSuperAdmin = false;
@@ -84,26 +90,22 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
 
-    this.apiService.getWithAuth<APIOperationResponse<DepotDto[]>>(API_ENDPOINTS.DEPOT.BASE)
+    this.lookupService.getDepotList()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          if (response.succeeded && response.data) {
-            this.depots = response.data
-              .filter(depot => !depot.isDeleted)
-              .map(depot => ({
-                ...depot,
-                code: depot.code || depot.Code || '',
-                Code: depot.Code || depot.code || '',
-                location: depot.location || ''
-              }));
-          } else {
-            this.errorMessage = response.message || 'Failed to load depots';
-          }
+        next: (depots) => {
+          this.depots = (depots ?? [])
+            .filter(depot => !depot.isDeleted)
+            .map(depot => ({
+              ...depot,
+              code: depot.code || depot.Code || '',
+              Code: depot.Code || depot.code || '',
+              location: depot.location || ''
+            }));
           this.loading = false;
         },
         error: (error) => {
-          this.errorMessage = error.message || 'Failed to load depots';
+          this.errorMessage = error?.message ?? error?.userMessage ?? 'Failed to load depots';
           this.loading = false;
         }
       });
@@ -132,10 +134,9 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   }
 
   saveDepot(): void {
-    if (!this.validateDepot()) {
-      this.translateService.get('depotManagement.errors.fillRequiredFields').subscribe(translation => {
-        this.errorMessage = translation || 'Please fill in all required fields';
-      });
+    const validationResult = this.validateDepot();
+    if (!validationResult.valid) {
+      this.errorMessage = validationResult.errorMessage || '';
       return;
     }
 
@@ -299,13 +300,53 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.depotToDelete = undefined;
   }
 
-  validateDepot(): boolean {
-    return !!(
-      this.currentDepot.nameEn &&
-      this.currentDepot.nameAr &&
-      (this.currentDepot.Code || this.currentDepot.code) &&
-      this.currentDepot.location
-    );
+  openAssignUsersModal(depot: DepotDto): void {
+    this.assignUsersDepot = depot;
+    this.showAssignUsersModal = true;
+  }
+
+  onAssignUsersModalClosed(): void {
+    this.showAssignUsersModal = false;
+    this.assignUsersDepot = undefined;
+  }
+
+  onAssignUsersSaved(): void {
+    this.showAssignUsersModal = false;
+    this.assignUsersDepot = undefined;
+    this.lookupService.clearCacheFor('Depot');
+  }
+
+  validateDepot(): { valid: boolean; errorMessage?: string } {
+    if (!this.currentDepot.nameEn || !this.currentDepot.nameAr ||
+        !(this.currentDepot.Code || this.currentDepot.code) || !this.currentDepot.location) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.fillRequiredFields') };
+    }
+
+    const lat = Number(this.currentDepot.latitude);
+    const lng = Number(this.currentDepot.longitude);
+
+    if (!Number.isNaN(lat) && (lat < -90 || lat > 90)) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.invalidLatitude') };
+    }
+    if (!Number.isNaN(lng) && (lng < -180 || lng > 180)) {
+      return { valid: false, errorMessage: this.translateService.instant('depotManagement.errors.invalidLongitude') };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Prevent letters (e.g. 'e' for scientific notation) in latitude/longitude inputs.
+   * Only allows digits, decimal point, minus, and navigation keys.
+   */
+  onCoordinateKeydown(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Home', 'End'];
+    if (allowedKeys.includes(event.key)) return;
+    const input = event.target as HTMLInputElement;
+    if (event.key === '-' && (!input.value || input.selectionStart === 0)) return;
+    if (event.key === '.' && !input.value.includes('.')) return;
+    if (/[0-9]/.test(event.key)) return;
+    event.preventDefault();
   }
 
   private getEmptyDepot(): DepotDto {

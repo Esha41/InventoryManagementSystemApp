@@ -1,24 +1,26 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
         <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
       </div>
-      <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
-        class="w-full sm:w-auto">
+      <ng-container *ngIf="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')">
+        <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
+          class="w-full sm:w-auto">
         <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
           <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
           <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
           <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
         </span>
-      </app-button>
+        </app-button>
+      </ng-container>
     </div>
 
     <!-- Tabs - scroll inside container when space is limited -->
-    <app-card [shadow]="true" class="min-w-0">
+    <app-card [shadow]="true" class="min-w-0 mb-6">
       <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
         <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
           <button (click)="switchTab('ammunition')" [ngClass]="{
@@ -27,10 +29,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'ammunition',
-                 'bg-[var(--color-brand)]': activeTab !== 'ammunition'
-               }"></div>
             <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
           </button>
           <button (click)="switchTab('explosive')" [ngClass]="{
@@ -39,10 +37,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'explosive',
-                 'bg-[var(--color-brand)]': activeTab !== 'explosive'
-               }"></div>
             <span>{{ 'assetList.tabs.explosive' | translate }}</span>
           </button>
           <button (click)="switchTab('weapon')" [ngClass]="{
@@ -51,10 +45,6 @@
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
             [class.flex-row-reverse]="isRTL">
-            <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="{
-                 'bg-white': activeTab === 'weapon',
-                 'bg-[var(--color-brand)]': activeTab !== 'weapon'
-               }"></div>
             <span>{{ 'assetList.tabs.weapon' | translate }}</span>
           </button>
         </nav>
@@ -62,7 +52,8 @@
     </app-card>
 
     <!-- Filters Card -->
-    <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
+    <div class="mb-6">
+      <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
       [caseTypeFilterOptions]="caseTypeFilterOptions"
       [hazardDivisionFilterOptions]="hazardDivisionFilterOptions"
       [compatibilityFilterOptions]="compatibilityFilterOptions"
@@ -74,16 +65,24 @@
       [explosiveHazardDivisionFilterOptions]="explosiveHazardDivisionFilterOptions"
       [explosiveCompatibilityFilterOptions]="explosiveCompatibilityFilterOptions"
       (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (clearFilters)="clearFilters()">
-    </app-asset-filter-bar>
+      </app-asset-filter-bar>
+    </div>
 
-    <!-- Assets Table Card -->
-    <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+    <!-- Assets Table Card (heading + sub-tabs + table inside one card) -->
+    <div class="mt-6">
+      <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+      [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
+      [totalItems]="totalItems" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
+      [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
+      [showPermanentDelete]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"
-      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (sort)="sortByColumn($event)"
+      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
       (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
+      (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"
       (imageError)="onImageError($event)" (showImagePreview)="showImagePreview($event.event, $event.asset)"
       (hideImagePreview)="hideImagePreview()">
-    </app-asset-table>
+      </app-asset-table>
+    </div>
 
 
     <!-- Edit Modal -->
@@ -102,4 +101,24 @@
       [description]="'assetList.deleteModal.warning' | translate" confirmText="{{ 'common.delete' | translate }}"
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmDelete()"
       (cancelled)="closeDeleteModal()">
+    </app-confirm-dialog>
+
+    <!-- Permanent Delete Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showPermanentDeleteModal"
+      [title]="'assetList.permanentDeleteModal.title' | translate"
+      [message]="('assetList.permanentDeleteModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.permanentDeleteModal.warning' | translate"
+      confirmText="{{ 'assetList.actions.permanentDelete' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmPermanentDelete()"
+      (cancelled)="closePermanentDeleteModal()">
+    </app-confirm-dialog>
+
+    <!-- Restore Confirmation Modal -->
+    <app-confirm-dialog [isOpen]="modalState.showRestoreModal"
+      [title]="'assetList.restoreModal.title' | translate"
+      [message]="('assetList.restoreModal.confirmMessage' | translate) + ' ' + (modalState.selectedAsset?.name || '') + '?'"
+      [description]="'assetList.restoreModal.warning' | translate"
+      confirmText="{{ 'assetList.actions.restore' | translate }}"
+      cancelText="{{ 'common.cancel' | translate }}" confirmVariant="primary" (confirmed)="confirmRestore()"
+      (cancelled)="closeRestoreModal()">
     </app-confirm-dialog>

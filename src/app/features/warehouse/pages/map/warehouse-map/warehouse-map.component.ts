@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -24,6 +24,7 @@ import { TranslationService } from '@services/translation.service';
 export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   warehouseId: string = '';
   itemId: string = '';
+  fromAssets = false; // true when navigated from assets (weapons) route
   loading = true;
 
   readonly ArrowLeft = ArrowLeft;
@@ -66,6 +67,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private ngZone: NgZone,
     private lookupService: LookupService,
     private offlineMapService: OfflineMapService,
     private translate: TranslateService,
@@ -75,7 +77,9 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.warehouseId = params['warehouseId'];
-      this.itemId = params['itemId'];
+      // Support both inventory route (itemId) and assets route (id)
+      this.itemId = params['itemId'] ?? params['id'] ?? '';
+      this.fromAssets = this.route.snapshot.queryParams['from'] === 'assets';
       this.loadWarehouseLocations();
     });
 
@@ -555,9 +559,10 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onBack(): void {
-
     if (!this.itemId || this.itemId === '0' || this.itemId === '') {
       this.router.navigate(['/warehouse']);
+    } else if (this.fromAssets) {
+      this.router.navigate(['/warehouse', this.warehouseId, 'assets', this.itemId]);
     } else {
       this.router.navigate(['/warehouse', this.warehouseId, 'inventory', this.itemId]);
     }
@@ -597,10 +602,13 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Navigate to warehouse inventory page
+   * Navigate to warehouse inventory page.
+   * Run inside NgZone so navigation works when triggered from Leaflet popup (outside Angular zone).
    */
   navigateToWarehouseInventory(warehouseId: string): void {
-    this.router.navigate(['/warehouse', warehouseId, 'inventory']);
+    this.ngZone.run(() => {
+      this.router.navigate(['/warehouse', warehouseId, 'inventory']);
+    });
   }
 
   ngOnDestroy(): void {

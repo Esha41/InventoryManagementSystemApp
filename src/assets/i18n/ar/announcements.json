@@ -1,1 +1,8 @@
-{"announcements":{"title":"الإعلانات","create":"إنشاء إعلان","edit":"تعديل الإعلان","delete":"حذف الإعلان","deleteConfirm":"هل أنت متأكد من حذف هذا الإعلان؟","message":"الرسالة","priority":"الأولوية","dismissable":"قابل للإخفاء","startDate":"تاريخ البدء","endDate":"تاريخ الانتهاء","targetRoles":"الأدوار المستهدفة","targetRolesHelp":"اختر 'جميع الأدوار' لإظهاره للجميع، أو حدد أدوارًا معينة لتقييد الإظهار.","targetRolesHint":"'جميع الأدوار' = مرئي للجميع. أدوار محددة = مرئي فقط للمستخدمين الذين لديهم هذه الأدوار.","allRoles":"جميع الأدوار","active":"نشط","inactive":"غير نشط","status":"الحالة","actions":"الإجراءات","dismiss":"إخفاء","createSuccess":"تم إنشاء الإعلان بنجاح","updateSuccess":"تم تحديث الإعلان بنجاح","deleteSuccess":"تم حذف الإعلان بنجاح","dismissSuccess":"تم إخفاء الإعلان"}}
+{
+  "announcements": {
+    "title": "الإعلانات","create":"إنشاء إعلان","edit":"تعديل الإعلان","delete":"حذف الإعلان","deleteConfirm":"هل أنت متأكد من حذف هذا الإعلان؟","message":"الرسالة","priority":"الأولوية","dismissable":"قابل للإخفاء","startDate":"تاريخ البدء","endDate":"تاريخ الانتهاء","targetRoles":"الأدوار المستهدفة","targetRolesHelp":"اختر 'جميع الأدوار' لإظهاره للجميع، أو حدد أدوارًا معينة لتقييد الإظهار.","targetRolesHint":"'جميع الأدوار' = مرئي للجميع. أدوار محددة = مرئي فقط للمستخدمين الذين لديهم هذه الأدوار.","allRoles":"جميع الأدوار","active":"نشط","inactive":"غير نشط","status":"الحالة","actions":"الإجراءات","dismiss":"إخفاء","createSuccess":"تم إنشاء الإعلان بنجاح","updateSuccess":"تم تحديث الإعلان بنجاح","deleteSuccess":"تم حذف الإعلان بنجاح","dismissSuccess":"تم إخفاء الإعلان"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب."
+  }
+}

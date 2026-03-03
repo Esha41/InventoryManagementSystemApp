@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
@@ -11,7 +11,7 @@ import { ButtonComponent } from '../button/button.component';
     templateUrl: './import-dialog.component.html',
     styleUrl: './import-dialog.component.css'
 })
-export class ImportDialogComponent {
+export class ImportDialogComponent implements OnChanges {
     @Input() isOpen = false;
     @Input() title = 'Import Data';
     @Input() entityName = 'Items';
@@ -19,6 +19,8 @@ export class ImportDialogComponent {
     @Output() import = new EventEmitter<File>();
     @Output() preview = new EventEmitter<File>();  // New preview event
     @Output() downloadTemplate = new EventEmitter<void>();
+
+    @ViewChild('fileInput', { static: false }) fileInputRef!: ElementRef<HTMLInputElement>;
 
     selectedFile = signal<File | null>(null);
     error = signal<string | null>(null);
@@ -82,6 +84,13 @@ export class ImportDialogComponent {
         }
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        // Clear file input when dialog opens
+        if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
+            this.reset();
+        }
+    }
+
     onClose() {
         this.reset();
         this.close.emit();
@@ -90,5 +99,9 @@ export class ImportDialogComponent {
     reset() {
         this.selectedFile.set(null);
         this.error.set(null);
+        // Clear the file input element's value to ensure previous file is removed
+        if (this.fileInputRef?.nativeElement) {
+            this.fileInputRef.nativeElement.value = '';
+        }
     }
 }

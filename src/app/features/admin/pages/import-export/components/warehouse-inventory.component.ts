@@ -237,11 +237,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Please select a depot first');
       return;
     }
+    // Clear any pending import file before opening the dialog
+    this.pendingImportFile = null;
+    this.previewData = null;
     this.showImportModal = true;
     this.cdr.markForCheck();
   }
 
   closeImportModal(): void {
+    // Clear any pending import file when closing the dialog
+    this.pendingImportFile = null;
     this.showImportModal = false;
     this.cdr.markForCheck();
   }

@@ -158,13 +158,15 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Add initial item
-    this.addItem();
+    // Add initial item only if none added yet (e.g. by queryParams when tab=ammunition/explosive)
+    if (this.itemsFormArray.length === 0) {
+      this.addItem();
+    }
   }
 
   private initializeForm(): void {
     this.inventoryForm = this.fb.group({
-      invoiceNumber: [''],
+      invoiceNumber: ['', [Validators.pattern(/^\d*$/)]],
       invoiceDate: [''],
       receivedDate: [''],
       contractNumber: [''],
@@ -320,6 +322,9 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (control.errors['maxlength']) {
       return `Maximum length is ${control.errors['maxlength'].requiredLength}`;
     }
+    if (control.errors['pattern']) {
+      return this.translateService.instant('addInventory.invoiceNumberMustBeNumeric') || 'Invoice number must contain only numbers';
+    }
     if (control.errors['futureDate']) {
       return this.translateService.instant('addInventory.cannotBeFuture');
     }
@@ -344,6 +349,16 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         control.setErrors(null);
       }
     }
+  }
+
+  onInvoiceNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const numericValue = input.value.replace(/[^\d]/g, '');
+    // Update the form control value
+    this.inventoryForm.get('invoiceNumber')?.setValue(numericValue, { emitEvent: false });
+    // Trigger change detection
+    this.onFieldChange('invoiceNumber');
   }
 
   validateDates(): boolean {

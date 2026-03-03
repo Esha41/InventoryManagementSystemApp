@@ -31,7 +31,7 @@
     <!-- Step 2: Usage -->
     <app-usage-form *ngIf="currentStep === 2" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
       [selectedUsePurposeId]="requestPurposeState.selectedRequestPurposeId"
-      [usePurposeOptions]="requestPurposeState.requestPurposeOptions" [usageLocation]="usageFormData.usageLocation"
+      [usePurposeOptions]="displayedUsePurposeOptions" [usageLocation]="usageFormData.usageLocation"
       [numberOfOfficers]="usageFormData.numberOfOfficers" [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
       [usageDateFrom]="usageFormData.usageDateFrom" [usageTimeFrom]="usageFormData.usageTimeFrom"
       [usageDateTo]="usageFormData.usageDateTo" [usageTimeTo]="usageFormData.usageTimeTo"

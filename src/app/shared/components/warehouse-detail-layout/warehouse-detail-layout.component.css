@@ -1,0 +1,6 @@
+/* Warehouse detail layout - shared by inventory and asset detail pages */
+
+:host {
+  display: block;
+  width: 100%;
+}

@@ -298,7 +298,7 @@ export const environment = {
   production: false,
   apiUrl: 'https://localhost:7060/api',
   appName: 'ETTAD',
-  version: '1.0.0',
+  version: '1.1.2',
   enableLogging: true
 };
 ```
@@ -383,7 +383,7 @@ Developed by the Flora development team.
 ---
 
 **Last Updated:** Sprint 1 Delivery  
-**Version:** 1.0.0
+**Version:** 1.1.1
 
 =======
 # EttadFrontEnd
