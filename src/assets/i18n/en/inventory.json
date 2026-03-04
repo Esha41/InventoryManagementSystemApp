@@ -20,8 +20,13 @@
     "tabs": {
       "ammunition": "Ammunition",
       "weapon": "Weapons",
-      "explosive": "Explosives"
+      "explosive": "Explosives",
+      "batch": "Weapons"
     },
+    "batchNumber": "Batch Number",
+    "assetCount": "Asset Count",
+    "depot": "Depot",
+    "noBatches": "No weapons found",
     "inventory": "Inventory",
     "backToWarehouses": "Back to Warehouses",
     "accessDenied": "Access Denied",
@@ -44,7 +49,7 @@
     "readyForIssue": "Ready for Issue",
     "serialNumber": "Serial Number",
     "filterByInvoice": "Filter by Invoice Number",
-    "rfidTag": "RFID Tag",
+    "rfidTag": "RFID",
     "assetTag": "Asset Tag",
     "status": "Status",
     "condition": "Condition",
@@ -102,7 +107,12 @@
     "deleteAssetWarning": "This action cannot be undone.",
     "assetDeleted": "Asset deleted successfully",
     "failedToDeleteAsset": "Failed to delete asset",
-    "editAssetComingSoon": "Edit asset functionality coming soon"
+    "editAssetComingSoon": "Edit asset functionality coming soon",
+    "viewAssets": "View assets",
+    "deleteBatchConfirm": "Delete batch?",
+    "deleteBatchMessage": "Are you sure you want to delete this batch? All assets in the batch will be deleted. The operation will fail if any assets are assigned or in supply orders.",
+    "batchDeleted": "Batch deleted successfully",
+    "failedToDeleteBatch": "Failed to delete batch"
   },
   "assetDetails": {
     "title": "Asset Details",
@@ -113,7 +123,7 @@
     "weaponName": "Weapon Name",
     "status": "Status",
     "serialNumber": "Serial Number",
-    "rfidTag": "RFID Tag",
+    "rfidTag": "RFID",
     "assetTag": "Asset Tag",
     "condition": "Condition",
     "purchaseDate": "Purchase Date",
@@ -680,5 +690,20 @@
     "dragInstruction": "Drag pins to adjust position. Coordinates are calculated automatically.",
     "confirmClearCache": "Are you sure you want to clear the offline map cache?",
     "cacheCleared": "Offline map cache cleared."
+  },
+  "editBatch": {
+    "title": "Edit Weapons Batch",
+    "backToBatches": "Back to Weapons",
+    "commonInfo": "Weapons Batch Information",
+    "purchaseDetails": "Purchase Details",
+    "assetsTable": "Assets",
+    "removeRow": "Remove row",
+    "noAssets": "No assets in this weapons batch",
+    "assetCount": "Assets in Weapons Batch",
+    "saveAll": "Save All",
+    "saving": "Saving...",
+    "saveSuccess": "All assets updated successfully",
+    "saveError": "Failed to update assets. Please try again.",
+    "validationError": "Please fix the validation errors before saving"
   }
 }

@@ -44,6 +44,8 @@ export interface AssetDto {
     serialNumber?: string;
     rfid?: string;
     depotId: number;
+    batchId: number;
+    batchNumber: string;
     departmentId?: number;
     custodianId?: number;
     location?: string;
@@ -69,6 +71,7 @@ export interface AssetDto {
  */
 export interface CreateAssetDto {
     itemId: number;
+    batchNumber: string;
     serialNumber?: string;
     rfid?: string;
     depotId: number;

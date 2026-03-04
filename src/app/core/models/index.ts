@@ -24,6 +24,7 @@ export * from './lookup.model';
 export * from './notification.model';
 export * from './order-report.model';
 export * from './order.model';
+export * from './batch.model';
 export * from './profile.model';
 export * from './rank.model';
 export * from './request-item.model';

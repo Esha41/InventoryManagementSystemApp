@@ -5,6 +5,9 @@
         {{ 'warehouseInventory.itemName' | translate }}
       </th>
       <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        {{ 'warehouseInventory.batchNumber' | translate }}
+      </th>
+      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
         {{ 'warehouseInventory.serialNumber' | translate }}
       </th>
       <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -24,7 +27,7 @@
   <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
     <!-- Empty State -->
     <tr *ngIf="assets.length === 0">
-      <td colspan="7" class="px-6 py-12 text-center bg-[var(--color-background)]">
+      <td colspan="8" class="px-6 py-12 text-center bg-[var(--color-background)]">
         <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noAssets' | translate }}</p>
       </td>
     </tr>
@@ -33,6 +36,9 @@
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
         {{ getAssetItemName(asset) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-brand)] text-start">
+        {{ asset.batchNumber || '-' }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
         {{ asset.serialNumber || '-' }}

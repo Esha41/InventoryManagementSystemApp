@@ -1,0 +1,89 @@
+<table class="w-full">
+    <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+        <tr>
+            <th class="w-10 px-2 py-3"></th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                {{ 'warehouseInventory.batchNumber' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                {{ 'warehouseInventory.quantity' | translate }}
+            </th>
+            <th class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                {{ 'warehouseInventory.actions' | translate }}
+            </th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
+        <tr *ngIf="batches.length === 0">
+            <td colspan="4" class="px-6 py-12 text-center bg-[var(--color-background)]">
+                <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noBatches' | translate }}</p>
+            </td>
+        </tr>
+        <ng-container *ngFor="let batch of batches">
+            <tr (click)="rowClick.emit(batch)"
+                class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
+                [ngClass]="{'batch-row-expanded': expandedBatchId === batch.id}">
+                <td class="px-2 py-4">
+                    <lucide-angular *ngIf="expandedBatchId === batch.id" [img]="ChevronDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                    <lucide-angular *ngIf="expandedBatchId !== batch.id" [img]="ChevronRight" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
+                    {{ batch.batchNumber }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ batch.quantity }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium" (click)="$event.stopPropagation()">
+                    <div class="flex items-center justify-center gap-2">
+                        <button (click)="rowClick.emit(batch)"
+                            class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+                            [title]="'warehouseInventory.viewAssets' | translate">
+                            <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                        </button>
+                        <button (click)="editBatch.emit(batch)"
+                            class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
+                            [title]="'warehouseInventory.edit' | translate">
+                            <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
+                        </button>
+                        <button (click)="deleteBatch.emit(batch)"
+                            class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
+                            [title]="'common.delete' | translate">
+                            <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <!-- Expanded row: assets in this batch -->
+            <tr *ngIf="expandedBatchId === batch.id" class="bg-[var(--color-background-muted)]">
+                <td colspan="4" class="px-6 py-4">
+                    <div *ngIf="loadingBatchAssets" class="py-8 text-center text-[var(--color-text-muted)]">
+                        {{ 'common.loading' | translate }}
+                    </div>
+                    <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length === 0" class="py-4 text-center text-[var(--color-text-muted)]">
+                        {{ 'warehouseInventory.editBatch.noAssets' | translate }}
+                    </div>
+                    <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length > 0" class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-[var(--color-border)]">
+                                    <th class="px-4 py-2 text-start text-xs font-medium text-[var(--color-text-muted)]">{{ 'warehouseInventory.itemName' | translate }}</th>
+                                    <th class="px-4 py-2 text-start text-xs font-medium text-[var(--color-text-muted)]">{{ 'warehouseInventory.serialNumber' | translate }}</th>
+                                    <th class="px-4 py-2 text-start text-xs font-medium text-[var(--color-text-muted)]">{{ 'warehouseInventory.status' | translate }}</th>
+                                    <th class="px-4 py-2 text-start text-xs font-medium text-[var(--color-text-muted)]">{{ 'warehouseInventory.rfidTag' | translate }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[var(--color-border-muted)]">
+                                <tr *ngFor="let asset of expandedBatchAssets">
+                                    <td class="px-4 py-2">{{ getAssetItemName(asset) }}</td>
+                                    <td class="px-4 py-2">{{ asset.serialNumber || '-' }}</td>
+                                    <td class="px-4 py-2">{{ getAssetStatusLabel(asset) }}</td>
+                                    <td class="px-4 py-2">{{ asset.rfid || '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+    </tbody>
+</table>
