@@ -311,7 +311,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             const formValue = this.assetForm.value;
             createDtos = formValue.assets.map((asset: any) => ({
                 itemId: asset.itemId,
-                patchNumber: asset.patchNumber?.trim(),
+                batchNumber: asset.batchNumber?.trim(),
                 depotId: this.warehouseId,
                 serialNumber: asset.serialNumber?.trim() || undefined,
                 rfid: asset.rfid?.trim() || undefined,
