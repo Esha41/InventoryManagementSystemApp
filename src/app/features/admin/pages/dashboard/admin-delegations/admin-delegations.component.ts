@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '../../../../../core/services/user-delegation.service';
@@ -21,7 +21,8 @@ import { ConfirmationDialogComponent } from '@shared/components/confirmation-dia
         ConfirmationDialogComponent
     ],
     templateUrl: './admin-delegations.component.html',
-    styleUrls: ['./admin-delegations.component.css']
+    styleUrls: ['./admin-delegations.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminDelegationsComponent implements OnInit {
     readonly Users = Users;
@@ -67,7 +68,7 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.getAllDelegations()
             .pipe(finalize(() => {
                 this.isLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res: ApiResponse<UserDelegation[]>) => {
@@ -98,7 +99,7 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.getDelegatorActionSetting()
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res) => {
@@ -116,7 +117,7 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.updateCrossDepartmentSetting(newValue)
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res) => {
@@ -140,7 +141,7 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.updateDelegatorActionSetting(newValue)
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res) => {
@@ -176,7 +177,7 @@ export class AdminDelegationsComponent implements OnInit {
         } else if (this.filterStatus === 'expired') {
             this.filteredDelegations = this.delegations.filter(d => d.status === 'Expired');
         }
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
     }
 
     getStatusBadgeClass(delegation: UserDelegation): string {
@@ -214,7 +215,7 @@ export class AdminDelegationsComponent implements OnInit {
             .pipe(finalize(() => {
                 this.isLoading = false;
                 this.selectedDelegationForRevoke = null;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res) => {

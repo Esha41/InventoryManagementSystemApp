@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,12 +20,21 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, type Localizable } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import type { Observable } from 'rxjs';
 
 export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
+
+/** API response item shape for allowance by department/year */
+export interface AllowanceApiItem {
+  itemId: number | string;
+  itemType?: number | string;
+  quantity: number | string;
+}
 
 export interface AllowanceItem {
   itemId: string;
@@ -46,7 +55,8 @@ export interface AllowanceItem {
     HasPermissionDirective
   ],
   templateUrl: './allowance.component.html',
-  styleUrls: ['./allowance.component.css']
+  styleUrls: ['./allowance.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AllowanceComponent implements OnInit {
   readonly ArrowLeft = ArrowLeft;
@@ -88,7 +98,7 @@ export class AllowanceComponent implements OnInit {
   errors: { [key: string]: string } = {};
   itemErrors: { [key: number]: { [key: string]: string } } = {};
   targetItemId: number | null = null;
-  allExistingItems: any[] = [];
+  allExistingItems: AllowanceApiItem[] = [];
 
   constructor(
     private lookupService: LookupService,
@@ -102,7 +112,8 @@ export class AllowanceComponent implements OnInit {
     private toastService: ToastService,
     private route: ActivatedRoute,
     private backendAuthService: BackendAuthService,
-    private userContextService: UserContextService
+    private userContextService: UserContextService,
+    private cdr: ChangeDetectorRef
   ) {
     // Set default year to current year
     const currentYear = new Date().getFullYear();
@@ -134,6 +145,7 @@ export class AllowanceComponent implements OnInit {
       distinctUntilChanged()
     ).subscribe(({ index, term }) => {
       this.filterItems(index, term);
+      this.cdr.markForCheck();
     });
 
     // Subscribe to language changes to reload data with new localized names
@@ -141,10 +153,12 @@ export class AllowanceComponent implements OnInit {
       this.loadDepartments();
       this.loadItemTypeOptions();
       this.loadItems();
+      this.cdr.markForCheck();
     });
 
     // Check for edit mode from query params
     this.route.queryParams.subscribe(params => {
+      this.cdr.markForCheck();
       if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
         this.selectedDepartment = parseInt(params['departmentId'], 10);
         this.selectedYear = params['year'];
@@ -176,7 +190,7 @@ export class AllowanceComponent implements OnInit {
 
   loadItems(): Promise<void> {
     return new Promise((resolve) => {
-      let load$: any;
+      let load$: Observable<AllowanceItemType[]>;
 
       if (this.selectedItemType === 'Weapon') {
         load$ = this.weaponService.getAll<WeaponDto>();
@@ -196,11 +210,13 @@ export class AllowanceComponent implements OnInit {
               this.filteredItems[index] = [...this.allItems];
             }
           });
+          this.cdr.markForCheck();
           resolve();
         },
-        error: (error: any) => {
+        error: (_error: unknown) => {
           // Silently handle error - user will see it when trying to use items
           this.allItems = [];
+          this.cdr.markForCheck();
           resolve();
         }
       });
@@ -277,11 +293,13 @@ export class AllowanceComponent implements OnInit {
         { value: 'Weapon', label: translations['allowance.weapon'] },
         { value: 'Explosive', label: translations['allowance.explosive'] }
       ];
+      this.cdr.markForCheck();
     });
   }
 
   loadDepartments(): void {
     this.isLoadingDepartments = true;
+    this.cdr.markForCheck();
     this.lookupService.getDepartments().subscribe({
       next: (departments: DepartmentDto[]) => {
         this.departments = departments;
@@ -301,14 +319,16 @@ export class AllowanceComponent implements OnInit {
         }
 
         this.isLoadingDepartments = false;
+        this.cdr.markForCheck();
       },
-      error: (error: any) => {
+      error: (_error: unknown) => {
         this.isLoadingDepartments = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
-  private getLocalizedName(entity: any): string {
+  private getLocalizedName(entity: DepartmentDto | string | number | { label?: string } | null | undefined): string {
     if (!entity) {
       return '';
     }
@@ -325,7 +345,7 @@ export class AllowanceComponent implements OnInit {
       return entity.label;
     }
 
-    return getLocalizedName(entity, getCurrentLang(this.translateService));
+    return getLocalizedName(entity as Localizable, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -501,13 +521,15 @@ export class AllowanceComponent implements OnInit {
 
     this.isLoading = true;
     this.errors = {};
+    this.cdr.markForCheck();
 
-    this.apiService.postWithAuth<ApiResponse<any>>(
+    this.apiService.postWithAuth<ApiResponse<unknown>>(
       API_ENDPOINTS.ALLOWANCE.BULK,
       requestData
     ).subscribe({
-      next: (response) => {
+      next: () => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.translateService.get(['allowance.success.sentSuccessfully', 'toast.success']).subscribe(translations => {
           this.toastService.success(
             translations['allowance.success.sentSuccessfully'],
@@ -517,11 +539,13 @@ export class AllowanceComponent implements OnInit {
         // Navigate back to list after successful submission
         this.router.navigate(['/allowance']);
       },
-      error: (error) => {
+      error: (error: unknown) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
 
         // Handle 403 Forbidden (authorization errors)
-        if (error?.status === 403) {
+        const err = error as { status?: number };
+        if (err?.status === 403) {
           const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(forbiddenMessage, translations['toast.error']);
@@ -530,18 +554,7 @@ export class AllowanceComponent implements OnInit {
           return;
         }
 
-        // Extract error message from various possible locations
-        let errorMessage = this.translateService.instant('allowance.errors.failedToSend');
-        if (error?.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error?.error?.error?.message) {
-          errorMessage = error.error.error.message;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        } else if (typeof error?.error === 'string') {
-          errorMessage = error.error;
-        }
-
+        const errorMessage = ErrorHandler.extractErrorMessage(error, this.translateService.instant('allowance.errors.failedToSend'));
         this.translateService.get(['toast.error']).subscribe(translations => {
           this.toastService.error(errorMessage, translations['toast.error']);
         });
@@ -572,9 +585,11 @@ export class AllowanceComponent implements OnInit {
 
   loadExistingAllowance(departmentId: number, year: number): void {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
-    this.apiService.getWithAuth<ApiResponse<any>>(endpoint).subscribe({
+    type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
+    this.apiService.getWithAuth<ApiResponse<AllowanceResponseData>>(endpoint).subscribe({
       next: (response) => {
-        const items = response.data?.items || response.data?.Items || [];
+        const data = response.data as AllowanceResponseData | undefined;
+        const items = data?.items || data?.Items || [];
 
         if (items && items.length > 0) {
           this.allExistingItems = items;
@@ -584,14 +599,17 @@ export class AllowanceComponent implements OnInit {
         } else {
           this.items = [{ itemId: '', quantity: '' }];
         }
+        this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (error: unknown) => {
         // Handle 403 Forbidden (authorization errors)
-        if (error?.status === 403) {
+        const err = error as { status?: number };
+        if (err?.status === 403) {
           const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(forbiddenMessage, translations['toast.error']);
           });
+          this.cdr.markForCheck();
           // Redirect back to list if unauthorized
           setTimeout(() => {
             this.router.navigate(['/allowance']);
@@ -607,23 +625,25 @@ export class AllowanceComponent implements OnInit {
         });
         // Start with empty form on error
         this.items = [{ itemId: '', quantity: '' }];
+        this.cdr.markForCheck();
       }
     });
   }
 
-  private mapItemsToForm(items: any[]): void {
+  private mapItemsToForm(items: AllowanceApiItem[]): void {
     const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
 
     // Filter items if targetItemId is provided
     let itemsToMap = items;
     if (this.targetItemId !== null) {
-      itemsToMap = items.filter(item => item.itemId === this.targetItemId);
+      itemsToMap = items.filter(item => Number(item.itemId) === this.targetItemId);
     }
 
-    this.items = itemsToMap.map((item: any, index: number) => {
-      const foundItem = itemsMap.get(item.itemId);
+    this.items = itemsToMap.map((item: AllowanceApiItem, index: number) => {
+      const itemIdNum = Number(item.itemId);
+      const foundItem = itemsMap.get(itemIdNum);
       this.filteredItems[index] = foundItem
-        ? [foundItem, ...this.allItems.filter(a => a.id !== item.itemId)]
+        ? [foundItem, ...this.allItems.filter(a => Number(a.id) !== itemIdNum)]
         : [...this.allItems];
 
       // Set search term to display the selected item

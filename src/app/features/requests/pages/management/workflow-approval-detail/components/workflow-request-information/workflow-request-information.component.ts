@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -19,7 +19,8 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
     AppDateTimePipe
   ],
   templateUrl: './workflow-request-information.component.html',
-  styleUrls: ['./workflow-request-information.component.css']
+  styleUrls: ['./workflow-request-information.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowRequestInformationComponent implements OnDestroy {
   readonly FileText = FileText;

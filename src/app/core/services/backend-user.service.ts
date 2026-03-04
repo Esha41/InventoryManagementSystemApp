@@ -17,7 +17,8 @@ import {
   PermissionDto,
   AssignPermissionsDto,
   CrudPermission,
-  UserInRoleDto
+  UserInRoleDto,
+  ApplicationEntityDto
 } from '@models/backend-user.model';
 import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
 import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
@@ -772,28 +773,24 @@ export class BackendUserService {
   /**
    * Get all application entities
    */
-  getApplicationEntities(): Observable<any[]> {
+  getApplicationEntities(): Observable<ApplicationEntityDto[]> {
     this.configService.log('Fetching application entities');
     const endpoint = API_ENDPOINTS.APPLICATION_ENTITIES.BASE;
     console.log('API Call: GET', endpoint);
     console.log('Full URL will be:', `${this.configService.apiUrl}${endpoint}`);
 
-    return this.apiService.get<any[]>(
+    return this.apiService.get<ApplicationEntityDto[]>(
       endpoint
     ).pipe(
-      map((response: any) => {
+      map((response: ApplicationEntityDto[] | Record<string, unknown>) => {
         console.log('API Response:', response);
 
-        // Handle different response formats
         if (Array.isArray(response)) {
           return response;
         }
-
-        // If it's a wrapped response but was auto-unwrapped, response is the data
-        if (response && typeof response === 'object') {
-          return response;
+        if (response && typeof response === 'object' && !Array.isArray(response)) {
+          return (response as { data?: ApplicationEntityDto[] })?.data ?? [];
         }
-
         return [];
       }),
       tap(entities => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -14,6 +14,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationMap } from '@models/common.types';
 import { formatDateShort } from '@utils/format.utils';
 
 @Component({
@@ -34,7 +35,8 @@ import { formatDateShort } from '@utils/format.utils';
     ErrorStateComponent
   ],
   templateUrl: './admin-roles.component.html',
-  styleUrls: ['./admin-roles.component.css']
+  styleUrls: ['./admin-roles.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
   readonly Badge = Badge;
@@ -69,7 +71,8 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   constructor(
     private backendUserService: BackendUserService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -79,6 +82,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((roles: RoleDto[]) => {
         this.roles = roles;
+        this.cdr.markForCheck();
       });
   }
 
@@ -90,22 +94,26 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   loadRoles(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
     this.backendUserService.getRoles().subscribe({
       next: (roles: RoleDto[]) => {
         this.roles = roles;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         this.isLoading = false;
-        const errorMsg = error.message || 'Unknown error';
+        const errorMsg = (error instanceof Error ? error.message : String(error)) || 'Unknown error';
         this.translateService.get('adminRoles.errors.failedToLoadRoles').subscribe(translation => {
           this.errorMessage = `${translation || 'Failed to load roles'}: ${errorMsg}`;
+          this.cdr.markForCheck();
         });
         this.translateService.get(['toast.error', 'toast.failedToLoadRoles']).subscribe(translations => {
           this.toastService.error(
             translations['toast.failedToLoadRoles'] || `Failed to load roles: ${errorMsg}`,
             translations['toast.error']
           );
+          this.cdr.markForCheck();
         });
       }
     });
@@ -141,11 +149,12 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
               this.toastService.success(message, translations['toast.success']);
             });
             this.loadRoles();
+            this.cdr.markForCheck();
           }
         },
-        error: (error: any) => {
-          const errorMsg = error.message || '';
-          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe((translations: any) => {
+        error: (error: unknown) => {
+          const errorMsg = (error instanceof Error ? error.message : String(error)) || '';
+          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe((translations: TranslationMap) => {
             let message = translations['toast.failedToDeleteRole'] || 'Failed to delete role';
             if (roleName && message.includes('{roleName}')) {
               message = message.replace('{roleName}', roleName);
@@ -155,6 +164,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
             }
             this.errorMessage = message;
             this.toastService.error(message, translations['toast.error']);
+            this.cdr.markForCheck();
           });
         }
       });
@@ -183,6 +193,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
         message = message.replace('{roleName}', roleName);
       }
       this.toastService.success(message, translations['toast.success']);
+      this.cdr.markForCheck();
     });
 
     this.loadRoles();
@@ -206,6 +217,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
         message += `: ${errorMessage}`;
       }
       this.toastService.error(message, translations['toast.error']);
+      this.cdr.markForCheck();
     });
   }
 

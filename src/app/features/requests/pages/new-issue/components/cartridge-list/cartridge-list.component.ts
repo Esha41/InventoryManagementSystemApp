@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -64,7 +64,8 @@ export interface Cartridge {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
   templateUrl: './cartridge-list.component.html',
-  styleUrls: ['./cartridge-list.component.css']
+  styleUrls: ['./cartridge-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CartridgeListComponent {
   @Input() cartridges: Cartridge[] = [];

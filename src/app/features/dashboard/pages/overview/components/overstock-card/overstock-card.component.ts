@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -15,7 +15,8 @@ export interface OverstockItemView {
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './overstock-card.component.html',
-  styleUrls: ['./overstock-card.component.css']
+  styleUrls: ['./overstock-card.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OverstockCardComponent {
   @Input() title: string = 'Overstock';

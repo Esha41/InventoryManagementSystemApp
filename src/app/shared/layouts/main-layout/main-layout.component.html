@@ -10,12 +10,12 @@
       (closeMobile)="mobileSidebarOpen = false"></app-sidebar>
 
     <!-- Main Content Area (banner + page content) -->
-    <div class="flex flex-col flex-1 overflow-hidden min-w-0">
+    <div class="flex flex-col flex-1 min-h-0 overflow-hidden min-w-0">
       <!-- Announcement Banners (beside sidebar, above page content) -->
       <app-announcement-banner></app-announcement-banner>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1 min-h-0 overflow-y-auto">
         <router-outlet />
       </main>
 

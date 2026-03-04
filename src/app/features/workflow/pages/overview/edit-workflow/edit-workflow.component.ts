@@ -1,34 +1,57 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
-import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
-import { RoleDto, BackendUserDto } from '@models/backend-user.model';
+import { RoleDto, BackendUserDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { PaginatedList } from '@models/api-response.model';
-import { WorkflowStepDto } from '@models/workflow.model';
+import { WorkflowStepDto, WorkflowStepTransitionDto, WorkflowStepNotifier, BackendUpdateWorkflowDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationMap } from '@models/common.types';
+
+/** Edit step form shape */
+interface EditStepForm {
+  order: number;
+  roleId: string | null;
+  applicationEntityId: number | null;
+  requireHigherApproval?: boolean;
+  higherApprovalRoleId?: string | null;
+  higherApplicationEntityId?: number | null;
+  notifyingRoleIds?: string[];
+  notifyingUserIds?: string[];
+  workflowStepId?: number;
+  usersInNotifyingRoles?: Array<{ roleId: string; users: BackendUserDto[] }>;
+  availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>;
+  skipToStepIds?: number[];
+  availableNextSteps?: WorkflowStepDto[];
+  canSkip?: boolean;
+  canReturn?: boolean;
+}
 
 @Component({
   selector: 'app-edit-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DragDropModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './edit-workflow.component.html',
-  styleUrls: ['./edit-workflow.component.css']
+  styleUrls: ['./edit-workflow.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditWorkflowComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
+  readonly GripVertical = GripVertical;
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -41,26 +64,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   workflowId: number | null = null;
   editForm: { id: number; name: string; status: 'Active' | 'Inactive'; workflowType?: number } | null = null;
   editWorkflowType: number = 1;
-  editSteps: Array<{
-    order: number;
-    roleId: string | null;
-    applicationEntityId: number | null;
-    requireHigherApproval?: boolean;
-    higherApprovalRoleId?: string | null;
-    higherApplicationEntityId?: number | null;
-    notifyingRoleIds?: string[];
-    notifyingUserIds?: string[];
-    workflowStepId?: number;
-    usersInNotifyingRoles?: Array<{ roleId: string; users: any[] }>;
-    availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>;
-    skipToStepIds?: number[];
-    availableNextSteps?: WorkflowStepDto[];
-    canSkip?: boolean; // Preserve canSkip to maintain normal sequential flow
-    canReturn?: boolean;
-  }> = [];
+  editSteps: EditStepForm[] = [];
 
   roles: RoleDto[] = [];
-  allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  allApplicationEntities: Array<{ id: number; name?: string; entity?: ApplicationEntityDto }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
   readonly workflowStatusOptions = [
     { label: 'workflow.active', value: 'Active' as const },
@@ -74,7 +81,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
   hasOpenDropdown = false;
   private mutationObserver?: MutationObserver;
-  private positioningInterval?: any;
+  private positioningInterval?: ReturnType<typeof setInterval>;
   private boundRepositionDropdowns?: () => void;
   private boundHandleDocumentClick?: () => void;
   private destroy$ = new Subject<void>();
@@ -100,8 +107,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     this.loadWorkflow();
 
     this.backendUserService.getAllRolesSimple().subscribe({
-      next: roles => this.roles = roles,
-      error: () => this.roles = []
+      next: roles => { this.roles = roles; this.cdr.markForCheck(); },
+      error: () => { this.roles = []; this.cdr.markForCheck(); }
     });
     this.loadApplicationEntities();
 
@@ -125,15 +132,16 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
   private loadApplicationEntities(): void {
     this.backendUserService.getApplicationEntities().subscribe({
-      next: (entities: any[]) => {
+      next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
-        this.allApplicationEntities = (entities || []).map((e: any) => {
-          const id = e?.id ?? e?.applicationEntityId ?? e;
+        this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
+          const id = e?.id ?? (e as ApplicationEntityDto & { applicationEntityId?: number }).applicationEntityId ?? 0;
           const localizedName = getLocalizedName(e, currentLang);
           return { id, name: localizedName || String(id), entity: e };
         });
+        this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; }
+      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
@@ -151,46 +159,36 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           workflowType: wf?.workflowType || 1
         };
         this.editWorkflowType = wf?.workflowType || 1;
-        const steps = (wf?.workflowSteps || []) as any[];
+        const steps: WorkflowStepDto[] = wf?.workflowSteps || [];
 
-        // Sort steps by stepOrder to ensure correct order, then load workflow steps exactly as they are
-        // Each step maintains its own identity - skip steps don't affect other steps
         const sortedSteps = [...steps].sort((a, b) => (a.stepOrder || 0) - (b.stepOrder || 0));
 
-        // Load workflow steps exactly as they are - no modification
-        // Only extract transition step IDs to display in dropdown
         this.editSteps = sortedSteps.map((s, idx) => {
-          // Extract transition step IDs (skip-to steps) - only for display in dropdown
-          // These are read-only for display purposes, workflow data remains unchanged
           let skipToStepIds: number[] = [];
-          if (Array.isArray((s as any).transitions) && (s as any).transitions.length > 0) {
-            skipToStepIds = (s as any).transitions
-              .map((t: any) => t.targetWorkflowStepId)
-              .filter((id: any) => id != null && id !== undefined);
-          } else if (Array.isArray((s as any).allowedSkipTargetIds)) {
-            // Fallback to allowedSkipTargetIds if transitions not available
-            skipToStepIds = [...(s as any).allowedSkipTargetIds];
+          if (Array.isArray(s.transitions) && s.transitions.length > 0) {
+            skipToStepIds = s.transitions
+              .map((t: WorkflowStepTransitionDto) => t.targetWorkflowStepId)
+              .filter((id: number | undefined) => id != null && id !== undefined);
+          } else if (Array.isArray(s.allowedSkipTargetIds)) {
+            skipToStepIds = [...s.allowedSkipTargetIds];
           }
 
-          // Load step data as-is from backend - no modification
-          // Each step maintains its own identity and order, independent of skip steps
-          // Preserve canSkip to ensure normal sequential flow (skip steps are optional, not default)
           return {
-            order: s.stepOrder || (idx + 1), // Always use stepOrder from backend, preserve step's own order
+            order: s.stepOrder || (idx + 1),
             roleId: s.applicationRoleId || null,
             applicationEntityId: s.applicationEntityId || null,
             requireHigherApproval: !!s.requireHigherApproval,
             higherApprovalRoleId: s.higherApprovalRoleId || null,
-            higherApplicationEntityId: (s as any).higherApplicationEntityId || null,
+            higherApplicationEntityId: s.higherApplicationEntityId ?? s.higherApprovalApplicationEntityId ?? null,
             notifyingRoleIds: [],
             notifyingUserIds: [],
-            workflowStepId: s.id, // Keep step ID as-is from backend - each step has unique ID
+            workflowStepId: s.id,
             usersInNotifyingRoles: [],
             availableUsers: [],
-            skipToStepIds: skipToStepIds, // Transition steps - only for dropdown display, doesn't affect step identity
-            availableNextSteps: [], // Will be populated for dropdown options
-            canSkip: (s as any).canSkip === true, // Preserve canSkip - false by default to maintain normal sequential flow
-            canReturn: (s as any).canReturn === true // Load canReturn from backend
+            skipToStepIds,
+            availableNextSteps: [],
+            canSkip: s.canSkip === true,
+            canReturn: s.canReturn === true
           };
         });
 
@@ -202,12 +200,15 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         });
 
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.translate.get('toast.failedToLoadDetails').subscribe(msg => {
           this.errorMessage = msg;
+          this.cdr.markForCheck();
         });
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -255,7 +256,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private resetDropdownPanels(): void {
-    document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+    document.querySelectorAll<HTMLElement>('.app-dropdown-panel').forEach((panel) => {
       panel.style.position = '';
       panel.style.top = '';
       panel.style.left = '';
@@ -303,7 +304,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     const scrollContainer = document.querySelector('.edit-steps-table-scroll-container');
     if (!scrollContainer) return;
 
-    document.querySelectorAll('.app-dropdown-open').forEach((trigger: any) => {
+    document.querySelectorAll<HTMLElement>('.app-dropdown-open').forEach((trigger) => {
       const dropdown = trigger.closest('.app-dropdown');
       const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
 
@@ -360,6 +361,12 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     this.editSteps.splice(index, 1);
     this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 }));
     // Recalculate next steps for all steps after removal
+    this.loadNextStepsForAllSteps();
+  }
+
+  onStepDrop(event: CdkDragDrop<EditStepForm[]>): void {
+    moveItemInArray(this.editSteps, event.previousIndex, event.currentIndex);
+    this.editSteps = this.editSteps.map((s, i) => ({ ...s, order: i + 1 }));
     this.loadNextStepsForAllSteps();
   }
 
@@ -425,9 +432,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       isActive: this.editForm.status === 'Active',
       isSpecialOrReserved: false,
       workflowSteps: workflowStepsPayload
-    } as any;
+    } as BackendUpdateWorkflowDto;
 
-    const updateNotifiers = (workflowSteps?: any[]): Observable<boolean> => {
+    const updateNotifiers = (workflowSteps?: WorkflowStepDto[]): Observable<boolean> => {
       const notifierSaveObservables: Observable<boolean>[] = [];
 
       // If workflowSteps is provided (after reload), use it to map step IDs by order
@@ -443,7 +450,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         let stepId = currentStep.workflowStepId;
         if (!stepId && workflowSteps && workflowSteps.length > 0) {
           // Find step by order (stepOrder should match idx + 1)
-          const matchingStep = workflowSteps.find((ws: any) => ws.stepOrder === (idx + 1));
+          const matchingStep = workflowSteps.find((ws: WorkflowStepDto) => ws.stepOrder === (idx + 1));
           if (matchingStep) {
             stepId = matchingStep.id;
             console.log(`Found step ID ${stepId} for new step at index ${idx} (order ${idx + 1})`);
@@ -558,7 +565,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: () => {
         this.submitting = false;
-        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: any) => {
+        this.cdr.markForCheck();
+        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: TranslationMap) => {
           this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
         });
 
@@ -568,10 +576,11 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       },
       error: err => {
         this.submitting = false;
+        this.cdr.markForCheck();
 
-        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: any) => {
+        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToUpdateWorkflow'] || 'Failed to update workflow';
-          this.errorMessage = err.message || errorMsg;
+          this.errorMessage = (err instanceof Error ? err.message : String(err)) || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }
@@ -590,7 +599,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       this.workflowService.getStepNotifiers(step.workflowStepId!).pipe(
         map(notifiers => ({ step, notifiers })),
         catchError(err => {
-          return new Observable<{ step: any; notifiers: any[] }>(observer => {
+          return new Observable<{ step: EditStepForm; notifiers: WorkflowStepNotifier[] }>(observer => {
             observer.next({ step, notifiers: [] });
             observer.complete();
           });
@@ -617,7 +626,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           step.notifyingUserIds = userIds;
         });
 
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
 
         if (callback) {
           setTimeout(() => callback(), 100);
@@ -646,16 +655,17 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           id: String(user.id),
           userName: user.userName || '',
           roles: user.roleIds || []
-        })).sort((a: any, b: any) =>
+        })).sort((a: { userName?: string }, b: { userName?: string }) =>
           (a.userName || '').localeCompare(b.userName || '')
         );
-
+        this.cdr.markForCheck();
         if (callback) {
           callback();
         }
       },
       error: (err) => {
         this.allUsers = [];
+        this.cdr.markForCheck();
         if (callback) {
           callback();
         }
@@ -675,7 +685,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadUsersForNotifyingRoles(step: any, stepIndex: number): void {
+  private loadUsersForNotifyingRoles(step: EditStepForm, stepIndex: number): void {
     if (!step.usersInNotifyingRoles) {
       step.usersInNotifyingRoles = [];
     }
@@ -685,7 +695,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
     // Preserve existing user IDs
     const preservedUserIds = step.notifyingUserIds
-      ? [...step.notifyingUserIds].map((id: any) => String(id))
+      ? [...step.notifyingUserIds].map((id: string) => String(id))
       : [];
 
     // Preserve existing role IDs - don't modify them here
@@ -699,7 +709,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     // Restore user IDs if they were preserved and are still valid
     if (preservedUserIds.length > 0) {
       const validUserIds = preservedUserIds.filter((userId: string) =>
-        step.availableUsers.some((u: any) => String(u.id) === String(userId))
+        step.availableUsers!.some((u: { id: string }) => String(u.id) === String(userId))
       );
       step.notifyingUserIds = validUserIds.length > 0 ? [...validUserIds] : [];
     } else {
@@ -719,7 +729,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   onNotifyingRolesChange(stepIndex: number): void {
@@ -751,7 +761,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadNextStepsForStep(step: any, stepIndex: number): void {
+  private loadNextStepsForStep(step: EditStepForm, stepIndex: number): void {
     // Only call API for existing steps (those with workflowStepId)
     if (!step.workflowStepId) {
       // New steps don't have ID yet, so no next steps available
@@ -766,12 +776,12 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           ...ns,
           displayName: this.getStepDisplayName(ns)
         }));
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to load next steps for step', step.workflowStepId, err);
         step.availableNextSteps = [];
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }

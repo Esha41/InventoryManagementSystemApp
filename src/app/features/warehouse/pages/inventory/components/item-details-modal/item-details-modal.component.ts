@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
@@ -10,7 +10,8 @@ import { formatDateShort } from '@utils/format.utils';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './item-details-modal.component.html',
-  styleUrls: ['./item-details-modal.component.css']
+  styleUrls: ['./item-details-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemDetailsModalComponent {
   @Input() isOpen = false;

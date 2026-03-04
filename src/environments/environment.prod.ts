@@ -1,4 +1,6 @@
-export const environment = {
+import type { Environment } from './environment.interface';
+
+export const environment: Environment = {
   production: true,
   apiUrl: 'https://localhost:7148/api',
   appName: 'Ettad',

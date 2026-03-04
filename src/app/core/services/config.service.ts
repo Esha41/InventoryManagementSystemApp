@@ -21,21 +21,17 @@ export class ConfigService {
   /**
    * Loads runtime-config.json BEFORE Angular bootstrap
    */
-  load(): Promise<void> {
-    return new Promise(async (resolve) => {
-      try {
-        this.runtimeConfig = await firstValueFrom(
-          this.http.get<RuntimeConfig>('/assets/config/runtime-config.json')
-        );
-        this.log('Runtime config loaded successfully');
-      } catch (error) {
-        this.logError('Failed to load runtime-config.json (using environment fallbacks)', error);
-        this.runtimeConfig = null;
-      }
-
-      this.configLoaded = true;
-      resolve();
-    });
+  async load(): Promise<void> {
+    try {
+      this.runtimeConfig = await firstValueFrom(
+        this.http.get<RuntimeConfig>('/assets/config/runtime-config.json')
+      );
+      this.log('Runtime config loaded successfully');
+    } catch (error) {
+      this.logError('Failed to load runtime-config.json (using environment fallbacks)', error);
+      this.runtimeConfig = null;
+    }
+    this.configLoaded = true;
   }
 
   // =================================================
@@ -63,11 +59,11 @@ export class ConfigService {
   }
 
   get isDebugMode(): boolean {
-    return (environment as any).debugMode || false;
+    return environment.debugMode ?? false;
   }
 
   get useMockData(): boolean {
-    return (environment as any).mockData || false;
+    return environment.mockData ?? false;
   }
 
   // =================================================
@@ -81,7 +77,7 @@ export class ConfigService {
   get notificationHubUrl(): string {
     return (
       this.runtimeConfig?.notificationHubUrl ??
-      (environment as any).notificationHubUrl ??
+      environment.notificationHubUrl ??
       ''
     );
   }
@@ -89,7 +85,7 @@ export class ConfigService {
   get fileBaseUrl(): string {
     return (
       this.runtimeConfig?.fileBaseUrl ??
-      (environment as any).fileBaseUrl ??
+      environment.fileBaseUrl ??
       ''
     );
   }
@@ -114,19 +110,19 @@ export class ConfigService {
   // LOGGING HELPERS
   // =================================================
 
-  log(message: string, ...args: any[]): void {
+  log(message: string, ...args: unknown[]): void {
     if (this.isLoggingEnabled) {
       console.log(`[${this.appName}] ${message}`, ...args);
     }
   }
 
-  logError(message: string, error?: any): void {
+  logError(message: string, error?: unknown): void {
     if (this.isLoggingEnabled) {
       console.error(`[${this.appName}] ${message}`, error);
     }
   }
 
-  logWarning(message: string, ...args: any[]): void {
+  logWarning(message: string, ...args: unknown[]): void {
     if (this.isLoggingEnabled) {
       console.warn(`[${this.appName}] ${message}`, ...args);
     }

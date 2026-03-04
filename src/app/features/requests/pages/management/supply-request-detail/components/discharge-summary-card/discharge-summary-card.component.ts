@@ -3,7 +3,7 @@
  * Displays discharge totals and process button
  */
 
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { SupplyRequestDetail } from '@models/supply-request.model';
@@ -15,7 +15,8 @@ import { formatNumber as formatNumberUtil } from '@utils/format.utils';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './discharge-summary-card.component.html',
-  styleUrls: ['./discharge-summary-card.component.css']
+  styleUrls: ['./discharge-summary-card.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DischargeSummaryCardComponent {
   @Input() requestDetail: SupplyRequestDetail | null = null;

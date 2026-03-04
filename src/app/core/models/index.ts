@@ -13,6 +13,7 @@ export * from './auth.model';
 export * from './backend-user.model';
 export * from './change-password.model';
 export * from './common.model';
+export * from './common.types';
 export * from './dashboard.model';
 export * from './depot.model';
 export * from './discard.model';

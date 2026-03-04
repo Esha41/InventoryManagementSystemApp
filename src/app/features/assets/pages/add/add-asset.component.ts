@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -80,7 +80,8 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, CardComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './add-asset.component.html',
-  styleUrls: ['./add-asset.component.css']
+  styleUrls: ['./add-asset.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddAssetComponent implements OnInit, OnDestroy {
   readonly Save = Save;
@@ -132,7 +133,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get isRTL(): boolean {
@@ -227,6 +229,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (units) => {
           this.units = units;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           const errorMsg = this.translationService.getTranslation('addAsset.errorLoadingUnits') || 'Failed to load units';
@@ -268,12 +271,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.itemTypes = data.itemTypes;
           this.countries = data.countries;
           this.loading = false;
+          this.cdr.markForCheck();
           // Load units for the active tab
           this.loadUnitsForTab(this.activeTab);
         },
         error: () => {
           this.errorMessage = 'Failed to load lookup data. Please try again.';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -443,7 +448,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
   private getSubmitObserver() {
     return {
-      next: (response: APIOperationResponse<any>) => {
+      next: (response: APIOperationResponse<AmmunitionReadDto | WeaponDto | ExplosiveDto>) => {
         if (response.succeeded) {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
@@ -458,12 +463,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.toastService.error(this.errorMessage || '', this.translationService.getTranslation('toast.error'));
         }
         this.submitting = false;
+        this.cdr.markForCheck();
       },
       error: (error: unknown) => {
         let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
         this.submitting = false;
+        this.cdr.markForCheck();
       }
     };
   }

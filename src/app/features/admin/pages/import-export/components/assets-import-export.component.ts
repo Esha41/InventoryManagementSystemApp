@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -37,7 +37,8 @@ import { APIOperationResponse } from '@models/api-response.model';
     LoadingStateComponent
   ],
   templateUrl: './assets-import-export.component.html',
-  styleUrls: ['./assets-import-export.component.css']
+  styleUrls: ['./assets-import-export.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetsImportExportComponent implements OnInit, OnDestroy {
   @Input() activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';

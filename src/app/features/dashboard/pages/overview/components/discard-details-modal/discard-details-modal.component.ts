@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,7 +13,8 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './discard-details-modal.component.html',
-  styleUrls: ['./discard-details-modal.component.css']
+  styleUrls: ['./discard-details-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiscardDetailsModalComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;

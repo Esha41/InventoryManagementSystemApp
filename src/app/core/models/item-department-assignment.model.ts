@@ -2,6 +2,14 @@
  * Item Assignment models
  */
 
+import { BaseItemDto, ItemType } from './inventory.model';
+
+/** Base item with itemType and displayLabel for dropdown display (backend may return itemType as number or string) */
+export interface BaseItemWithType extends Omit<BaseItemDto, 'itemType'> {
+  itemType: ItemType | number | string;
+  displayLabel: string;
+}
+
 export interface ItemDepartmentAssignmentDto {
   id: number;
   itemId: number;

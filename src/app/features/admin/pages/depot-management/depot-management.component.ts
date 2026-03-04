@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -22,7 +22,8 @@ import { DepotUserAssignmentModalComponent } from './components/depot-user-assig
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, DepotUserAssignmentModalComponent],
   templateUrl: './depot-management.component.html',
-  styleUrls: ['./depot-management.component.css']
+  styleUrls: ['./depot-management.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepotManagementComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
@@ -59,7 +60,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private toastService: ToastService,
     private translateService: TranslateService,
-    private profileDataService: ProfileDataService
+    private profileDataService: ProfileDataService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -78,6 +80,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           ...depot,
           displayName: getLocalizedName(depot, getCurrentLang(this.translateService))
         }));
+        this.cdr.markForCheck();
       });
   }
 
@@ -89,6 +92,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   loadDepots(): void {
     this.loading = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
 
     this.lookupService.getDepotList()
       .pipe(takeUntil(this.destroy$))
@@ -103,10 +107,12 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
               location: depot.location || ''
             }));
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.errorMessage = error?.message ?? error?.userMessage ?? 'Failed to load depots';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -115,6 +121,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.isEditMode = false;
     this.currentDepot = this.getEmptyDepot();
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   openEditModal(depot: DepotDto): void {
@@ -125,12 +132,14 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       Code: depot.Code || depot.code || ''
     };
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   closeModal(): void {
     this.showModal = false;
     this.currentDepot = this.getEmptyDepot();
     this.errorMessage = null;
+    this.cdr.markForCheck();
   }
 
   saveDepot(): void {
@@ -147,6 +156,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
 
     const request$ = this.isEditMode
       ? this.apiService.putWithAuth<APIOperationResponse<DepotDto>>(
@@ -180,6 +190,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           });
         }
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         // Extract error message from various possible locations
@@ -202,13 +213,14 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           errorMessage = error.error;
         }
         
-        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
-          this.toastService.error(
-            errorMessage || translations['toast.failedToSaveDepot'],
-            translations['toast.error']
-          );
-        });
+          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+            this.toastService.error(
+              errorMessage || translations['toast.failedToSaveDepot'],
+              translations['toast.error']
+            );
+          });
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -216,6 +228,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   deleteDepot(depot: DepotDto): void {
     this.depotToDelete = depot;
     this.showDeleteDialog = true;
+    this.cdr.markForCheck();
   }
 
   onDeleteConfirm(): void {
@@ -224,6 +237,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
     this.showDeleteDialog = false;
+    this.cdr.markForCheck();
 
    
     const deleteDto = {
@@ -261,6 +275,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           }
           this.loading = false;
           this.depotToDelete = undefined;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           // Extract the actual error message from various possible error structures
@@ -291,6 +306,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           });
           this.loading = false;
           this.depotToDelete = undefined;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -298,22 +314,26 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   onDeleteCancel(): void {
     this.showDeleteDialog = false;
     this.depotToDelete = undefined;
+    this.cdr.markForCheck();
   }
 
   openAssignUsersModal(depot: DepotDto): void {
     this.assignUsersDepot = depot;
     this.showAssignUsersModal = true;
+    this.cdr.markForCheck();
   }
 
   onAssignUsersModalClosed(): void {
     this.showAssignUsersModal = false;
     this.assignUsersDepot = undefined;
+    this.cdr.markForCheck();
   }
 
   onAssignUsersSaved(): void {
     this.showAssignUsersModal = false;
     this.assignUsersDepot = undefined;
     this.lookupService.clearCacheFor('Depot');
+    this.cdr.markForCheck();
   }
 
   validateDepot(): { valid: boolean; errorMessage?: string } {

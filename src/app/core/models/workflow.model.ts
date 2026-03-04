@@ -38,12 +38,12 @@ export interface WorkflowDto {
 export interface BackendWorkflowDto {
   id: number;
   workflowName: string;
-  workflowType: number | string; // Can be string enum from backend or numeric
+  workflowType: number | string;
   workflowTypeName?: string;
   isActive: boolean;
   isDeleted?: boolean;
   isSpecialOrReserved?: boolean;
-  workflowSteps?: unknown[];
+  workflowSteps?: WorkflowStepDto[];
 }
 
 export interface CreateWorkflowDto {
@@ -120,6 +120,40 @@ export interface CreateWorkflowStepNotifierDto {
   roleIds?: string[];
 }
 
+/** Transition from one workflow step to another (backend WorkflowStepTransitionDto) */
+export interface WorkflowStepTransitionDto {
+  id?: number;
+  sourceWorkflowStepId?: number;
+  targetWorkflowStepId: number;
+  targetStep?: TargetStepDetailsDto;
+}
+
+/** Target step details (backend TargetStepDetailsDto) */
+export interface TargetStepDetailsDto {
+  id: number;
+  workflowId: number;
+  stepOrder: number;
+  applicationEntityId: number;
+  requireHigherApproval?: boolean;
+  higherApplicationEntityId?: number | null;
+  mustApprove?: boolean;
+  reserveQty?: boolean;
+  canSkip?: boolean;
+  canReturn?: boolean;
+}
+
+/** Step notifier (user or role) */
+export interface WorkflowStepNotifier {
+  id?: number;
+  userId?: string | null;
+  roleId?: string | null;
+  userName?: string | null;
+  userFullNameEn?: string | null;
+  userFullNameAr?: string | null;
+  roleName?: string | null;
+  roleNameAr?: string | null;
+}
+
 /**
  * Workflow Step DTO - matches backend WorkflowStepDto
  */
@@ -129,14 +163,21 @@ export interface WorkflowStepDto {
   stepOrder: number;
   applicationRoleId: string;
   applicationRoleName?: string;
+  applicationRoleNameAr?: string | null;
   applicationEntityId: number;
+  applicationEntityName?: string;
   mustApprove?: boolean;
   requireHigherApproval?: boolean;
   higherApprovalRoleId?: string | null;
   higherApplicationEntityId?: number | null;
+  higherApprovalApplicationEntityId?: number | null;
+  higherApprovalEntityId?: number | null;
+  higherRoleId?: string | null;
   reserveQty?: boolean;
   canSkip?: boolean;
   canReturn?: boolean;
   allowedSkipTargetIds?: number[];
+  transitions?: WorkflowStepTransitionDto[];
+  notifiers?: WorkflowStepNotifier[];
 }
 

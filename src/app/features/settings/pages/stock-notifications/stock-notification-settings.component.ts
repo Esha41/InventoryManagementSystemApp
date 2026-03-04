@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,7 +18,8 @@ import { StockNotificationService, LowStockNotificationScheduleDto, LowStockNoti
   standalone: true,
   imports: [TranslateModule, ErrorStateComponent, CardComponent, DropdownComponent, ButtonComponent, FormsModule, CommonModule, ReactiveFormsModule],
   templateUrl: './stock-notification-settings.component.html',
-  styleUrl: './stock-notification-settings.component.css'
+  styleUrl: './stock-notification-settings.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StockNotificationSettingsComponent {
   roles: RoleDto[] = [];
@@ -39,7 +40,8 @@ export class StockNotificationSettingsComponent {
     private backendUserService: BackendUserService,
     private toastService: ToastService,
     private stockNotificationService: StockNotificationService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {
   }
   ngOnInit(): void {
@@ -71,11 +73,13 @@ export class StockNotificationSettingsComponent {
       next: (roles: RoleDto[]) => {
         this.roles = roles;
         this.isLoadingRoles = false;
+        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.error('Failed to load roles from API:', error);
         this.isLoadingRoles = false;
         this.errorMessage = 'Failed to load roles';
+        this.cdr.markForCheck();
       }
     });
   }
@@ -86,10 +90,12 @@ export class StockNotificationSettingsComponent {
       next: (response: PaginatedList<BackendUserDto>) => {
         this.users = response.items || [];
         this.isLoadingUsers = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.isLoadingUsers = false;
         this.errorMessage = 'Failed to load users: ' + (error.message || 'Unknown error');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -105,11 +111,13 @@ export class StockNotificationSettingsComponent {
           usersIds: this.selectedUsers ?? [],
         })
         this.isLoadingSelectedRecipients = false;
+        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.error('Failed to load selected roles and users from API:', error);
         this.errorMessage = 'Failed to load selected roles and users';
         this.isLoadingSelectedRecipients = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -120,6 +128,7 @@ export class StockNotificationSettingsComponent {
 
     operation.subscribe({
       next: (item) => {
+        this.cdr.markForCheck();
         this.translateService.get(['toast.success', 'stockNotificationSettings.recipientsSavedSuccess']).subscribe(translations => {
           this.toastService.success(
             translations['stockNotificationSettings.recipientsSavedSuccess'],
@@ -128,7 +137,7 @@ export class StockNotificationSettingsComponent {
         });
       },
       error: (error) => {
-
+        this.cdr.markForCheck();
         this.translateService.get(['toast.error', 'stockNotificationSettings.recipientsSaveFailed']).subscribe(translations => {
           this.toastService.error(
             error.message || translations['stockNotificationSettings.recipientsSaveFailed'],
@@ -144,6 +153,7 @@ export class StockNotificationSettingsComponent {
 
     operation.subscribe({
       next: (item) => {
+        this.cdr.markForCheck();
         this.translateService.get(['toast.success', 'stockNotificationSettings.scheduleSavedSuccess']).subscribe(translations => {
           this.toastService.success(
             translations['stockNotificationSettings.scheduleSavedSuccess'],
@@ -152,7 +162,7 @@ export class StockNotificationSettingsComponent {
         });
       },
       error: (error) => {
-
+        this.cdr.markForCheck();
         this.translateService.get(['toast.error', 'stockNotificationSettings.scheduleSaveFailed']).subscribe(translations => {
           this.toastService.error(
             error.message ||
@@ -180,10 +190,12 @@ export class StockNotificationSettingsComponent {
           this.scheduleForm.patchValue({ dateTime: '' });
         }
         this.isLoadingSchedule = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.isLoadingSchedule = false;
         this.errorMessage = 'Failed to load schedule: ' + (error.message || 'Unknown error');
+        this.cdr.markForCheck();
       }
 
     })

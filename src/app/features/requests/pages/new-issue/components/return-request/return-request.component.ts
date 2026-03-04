@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -54,7 +54,8 @@ interface RequestPurpose {
     ConfirmationDialogComponent
   ],
   templateUrl: './return-request.component.html',
-  styleUrls: ['./return-request.component.css']
+  styleUrls: ['./return-request.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReturnRequestComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;

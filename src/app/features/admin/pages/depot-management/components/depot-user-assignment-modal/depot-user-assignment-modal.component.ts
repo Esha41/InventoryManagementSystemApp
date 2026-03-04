@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -16,7 +16,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent],
   templateUrl: './depot-user-assignment-modal.component.html',
-  styleUrls: ['./depot-user-assignment-modal.component.css']
+  styleUrls: ['./depot-user-assignment-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   readonly X = X;
@@ -54,7 +55,8 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
     private userDepotService: UserDepotService,
     private backendUserService: BackendUserService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +71,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   private loadData(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     this.userDepotService.getDepotUsers(this.depotId)
       .pipe(takeUntil(this.destroy$))
@@ -81,6 +84,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.error = 'Failed to load depot users';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -92,19 +96,21 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.allUsers = response?.items ?? [];
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           if (!this.error) {
             this.error = 'Failed to load users';
           }
+          this.cdr.markForCheck();
         }
       });
   }
 
   getUserDisplayName(user: BackendUserDto): string {
     return getLocalizedName(
-      { nameEn: user.nameEn, nameAr: user.nameAr, fullNameEN: (user as any).fullNameEN, fullNameAR: (user as any).fullNameAR },
+      { nameEn: user.nameEn, nameAr: user.nameAr, fullNameEN: user.fullNameEN, fullNameAR: user.fullNameAR },
       getCurrentLang(this.translateService)
     ) || user.userName || user.id || '';
   }
@@ -136,12 +142,14 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   save(): void {
     this.saving = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     this.userDepotService.updateDepotUsers(this.depotId, Array.from(this.selectedUserIds))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.saving = false;
+          this.cdr.markForCheck();
           this.toastService.success('Depot users updated successfully', 'Success');
           this.saved.emit();
           this.close();
@@ -149,6 +157,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.saving = false;
           this.error = err?.message || err?.userMessage || 'Failed to update depot users';
+          this.cdr.markForCheck();
           this.toastService.error(this.error ?? 'Failed to update depot users', 'Error');
         }
       });
