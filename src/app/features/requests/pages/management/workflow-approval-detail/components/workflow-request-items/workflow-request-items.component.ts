@@ -51,6 +51,10 @@ export class WorkflowRequestItemsComponent {
     return this.stateService.canReviewWeaponSupply();
   }
 
+  canSelectDepots(): boolean {
+    return this.stateService.canSelectDepots();
+  }
+
   canReviewSupply(): boolean {
     return this.stateService.canReviewSupply();
   }
@@ -75,6 +79,13 @@ export class WorkflowRequestItemsComponent {
   }
 
   // Navigation methods
+  navigateToSelectDepo(): void {
+    const state = this.stateService.getState();
+    if (state.requestId) {
+      this.navigationService.navigateToWeaponSupplySelection(state.requestId, state.isWeaponOrder);
+    }
+  }
+
   navigateToWeaponSupplyReview(): void {
     const state = this.stateService.getState();
     if (state.requestId) {

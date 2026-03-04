@@ -1,0 +1,246 @@
+<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+  </app-loading-state>
+
+  <div *ngIf="!loading && orderData">
+    <!-- Header -->
+    <div class="mb-6">
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <button (click)="goBack()"
+              class="p-2.5 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+              <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+            </button>
+            <div>
+              <h1 class="text-2xl font-bold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.title' | translate }} {{ orderData.requestNo || orderData.orderNo }}
+              </h1>
+              <p class="text-sm text-[var(--color-text-muted)] mt-2">
+                {{ 'weaponSupplyReview.department' | translate }}: {{ getDepartmentName() }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Requested Items -->
+    <div class="mb-6 bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)] p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+          <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+        </div>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'weaponSupplyReview.requestedItems' | translate }}
+        </h2>
+      </div>
+      <div *ngIf="requestItems.length > 0" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+        <table class="min-w-full divide-y divide-[var(--color-border)]">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.itemName' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.itemCode' | translate }}
+              </th>
+              <th scope="col" class="px-4 py-3 text-right text-sm font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.requestedQuantity' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
+            <tr *ngFor="let item of requestItems" class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-4 py-3 text-sm font-medium text-[var(--color-text)]">
+                {{ item.itemName || '-' }}
+              </td>
+              <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
+                {{ item.itemNo || '-' }}
+              </td>
+              <td class="px-4 py-3 text-sm text-[var(--color-text)] text-right font-semibold">
+                {{ item.quantity }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="requestItems.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
+        <p class="text-sm">{{ 'weaponSupplyReview.noItems' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Depot & Batch Selection -->
+    <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)] p-6">
+      <h2 class="text-lg font-semibold text-[var(--color-text)] mb-1">
+        {{ 'weaponSupplyReview.selectDepots' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--color-text-muted)] mb-6">
+        {{ 'weaponSupplyReview.selectDepotsDescription' | translate }}
+        <span *ngIf="depotsConfirmed && batchOptions.length > 0"> {{ 'weaponSupplyReview.thenSelectBatches' | translate }}</span>
+      </p>
+
+      <div *ngIf="loadingDepots" class="text-center py-8">
+        <div class="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+          <span class="animate-spin inline-block">⏳</span>
+          <span>{{ 'weaponSupplyReview.loadingDepots' | translate }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loadingDepots && depotDropdownOptions.length > 0" class="space-y-6">
+        <!-- Depot selection -->
+        <div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <label *ngFor="let depot of depotDropdownOptions" [for]="'depot-' + depot.value"
+              [ngClass]="{'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700': selectedDepotIds.includes(depot.value), 'opacity-50': depotsConfirmed && !selectedDepotIds.includes(depot.value)}"
+              [class.cursor-not-allowed]="depotsConfirmed" [class.cursor-pointer]="!depotsConfirmed"
+              class="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <input type="checkbox" [id]="'depot-' + depot.value" [checked]="selectedDepotIds.includes(depot.value)"
+                [disabled]="depotsConfirmed" (change)="toggleDepotSelection(depot.value)"
+                class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
+              <div class="flex-1">
+                <span class="text-sm font-medium text-[var(--color-text)]">{{ depot.label }}</span>
+                <span *ngIf="depot.description" class="block text-xs text-[var(--color-text-muted)] mt-0.5">{{ depot.description }}</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <p class="text-sm text-[var(--color-text-muted)]">
+              {{ 'weaponSupplyReview.selectedDepotsCount' | translate }}: <span class="font-semibold text-[var(--color-text)]">{{ selectedDepotIds.length }}</span>
+            </p>
+            <div class="flex gap-2">
+              <button *ngIf="!depotsConfirmed" (click)="confirmDepotSelection()" [disabled]="selectedDepotIds.length === 0"
+                class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-custom-sm">
+                <lucide-angular [img]="Check" class="h-4 w-4"></lucide-angular>
+                <span>{{ 'weaponSupplyReview.confirmSelection' | translate }}</span>
+              </button>
+              <button *ngIf="depotsConfirmed" (click)="clearDepotSelection()"
+                class="flex items-center gap-2 px-4 py-2 bg-[var(--color-background-active)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-all border border-[var(--color-border)] font-medium shadow-custom-sm">
+                <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+                <span>{{ 'weaponSupplyReview.changeSelection' | translate }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="selectedDepotIds.length === 0 && !depotsConfirmed"
+            class="mt-4 p-4 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-lg">
+            <div class="flex items-center gap-2">
+              <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-warning)]"></lucide-angular>
+              <p class="text-sm text-[var(--color-warning)] font-medium">{{ 'weaponSupplyReview.selectAtLeastOneDepot' | translate }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Batch Selection (after depots confirmed) -->
+        <div *ngIf="depotsConfirmed" class="pt-6 border-t border-[var(--color-border)]">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Layers" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-[var(--color-text)]">{{ 'weaponSupplyReview.selectBatches' | translate }}</h3>
+              <p class="text-sm text-[var(--color-text-muted)] mt-0.5">{{ 'weaponSupplyReview.selectBatchesDescription' | translate }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="loadingBatches" class="text-center py-6">
+            <div class="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+              <span class="animate-spin inline-block">⏳</span>
+              <span>{{ 'weaponSupplyReview.loadingBatches' | translate }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="!loadingBatches && batchOptions.length === 0" class="p-4 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-lg">
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.noBatchesAvailable' | translate }}</p>
+          </div>
+
+          <div *ngIf="!loadingBatches && batchOptions.length > 0" class="space-y-4">
+            <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+              <table class="min-w-full divide-y divide-[var(--color-border)]">
+                <thead class="bg-[var(--color-background-muted)]">
+                  <tr>
+                    <th scope="col" class="w-12 px-4 py-3 text-left">
+                      <span class="sr-only">{{ 'weaponSupplyReview.select' | translate }}</span>
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                      {{ 'weaponSupplyReview.batchNumber' | translate }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                      {{ 'weaponSupplyReview.depot' | translate }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                      {{ 'weaponSupplyReview.itemsInBatch' | translate }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
+                      {{ 'weaponSupplyReview.assetCount' | translate }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
+                  <tr *ngFor="let batch of batchOptions" (click)="toggleBatchSelection(batch.id)"
+                    [ngClass]="{'bg-blue-50 dark:bg-blue-900/20': selectedBatchIds.includes(batch.id)}"
+                    class="hover:bg-[var(--color-background-hover)] cursor-pointer transition-colors">
+                    <td class="w-12 px-4 py-3">
+                      <input type="checkbox" [id]="'batch-' + batch.id" [checked]="selectedBatchIds.includes(batch.id)"
+                        (click)="$event.stopPropagation(); toggleBatchSelection(batch.id)"
+                        class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium text-[var(--color-text)]">
+                      {{ batch.batchNumber }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
+                      {{ batch.depotName || ('weaponSupplyReview.depot' | translate) }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-[var(--color-text)]">
+                      <span *ngIf="batch.items && batch.items.length > 0; else noItemsInBatch">
+                        <span *ngFor="let bi of batch.items; let last = last">
+                          {{ bi.itemName || bi.itemNo || '-' }} ({{ bi.quantity }})<span *ngIf="!last">, </span>
+                        </span>
+                      </span>
+                      <ng-template #noItemsInBatch>-</ng-template>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-[var(--color-text)]">
+                      {{ batch.quantity }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+              <div>
+                <p class="text-sm text-[var(--color-text-muted)] mb-1">
+                  {{ 'weaponSupplyReview.selectedBatchesCount' | translate }}: <span class="font-semibold text-[var(--color-text)]">{{ selectedBatchIds.length }}</span>
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <button (click)="saveBatchSelection()" [disabled]="selectedBatchIds.length === 0 || savingSelection"
+                  class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-custom-sm">
+                  <span *ngIf="savingSelection" class="animate-spin inline-block">⏳</span>
+                  <lucide-angular *ngIf="!savingSelection" [img]="Check" class="h-4 w-4"></lucide-angular>
+                  <span>{{ (savingSelection ? 'weaponSupplyReview.saving' : 'weaponSupplyReview.saveBatchSelection') | translate }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="selectedBatchIds.length === 0"
+              class="p-4 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-lg">
+              <div class="flex items-center gap-2">
+                <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-warning)]"></lucide-angular>
+                <p class="text-sm text-[var(--color-warning)] font-medium">{{ 'weaponSupplyReview.selectAtLeastOneBatch' | translate }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loadingDepots && depotDropdownOptions.length === 0" class="text-center py-8">
+        <div class="inline-flex flex-col items-center gap-2 text-sm text-[var(--color-text-muted)]">
+          <lucide-angular [img]="Building2" class="h-8 w-8 opacity-50"></lucide-angular>
+          <p>{{ 'weaponSupplyReview.noDepotsAvailable' | translate }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

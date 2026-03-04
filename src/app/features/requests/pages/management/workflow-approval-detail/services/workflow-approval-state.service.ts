@@ -144,6 +144,15 @@ export class WorkflowApprovalStateService {
     )
   );
 
+  canSelectDepots$: Observable<boolean> = combineLatest([
+    this.requestDetail$,
+    this.isWeaponOrder$
+  ]).pipe(
+    map(([requestDetail, isWeaponOrder]) => 
+      this.permissionsService.canSelectDepots(requestDetail, isWeaponOrder)
+    )
+  );
+
   canSetSupplyPickupDate$: Observable<boolean> = this.requestDetail$.pipe(
     map(requestDetail => 
       this.permissionsService.canSetSupplyPickupDate(requestDetail)
@@ -218,6 +227,11 @@ export class WorkflowApprovalStateService {
   canReviewWeaponSupply(): boolean {
     const state = this.getState();
     return this.permissionsService.canReviewWeaponSupply(state.requestDetail, state.isWeaponOrder);
+  }
+
+  canSelectDepots(): boolean {
+    const state = this.getState();
+    return this.permissionsService.canSelectDepots(state.requestDetail, state.isWeaponOrder);
   }
 
   canSetSupplyPickupDate(): boolean {

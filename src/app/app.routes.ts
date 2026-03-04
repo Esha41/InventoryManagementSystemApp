@@ -236,6 +236,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/weapon-supply-selection',
+        loadComponent: () => import('@requests/pages/management/weapon-supply-selection/weapon-supply-selection.component').then(m => m.WeaponSupplySelectionComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReviewWeaponSupply', 'viewrequest.page', 'viewrequest.view', 'order.view', 'Permissions.AssetSupply.View'] }
+      },
+      {
         path: 'requests-management/:id/weapon-supply-review',
         loadComponent: () => import('@requests/pages/management/weapon-supply-review/weapon-supply-review.component').then(m => m.WeaponSupplyReviewComponent),
         canActivate: [permissionGuard],
