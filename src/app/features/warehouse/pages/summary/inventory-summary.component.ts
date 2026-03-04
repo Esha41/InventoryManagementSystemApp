@@ -9,7 +9,7 @@ import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AssetService } from '@services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
-import { AssetDto, AssetStatus } from '@models/asset.model';
+import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -381,28 +381,27 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      * Get asset status label
      */
     getAssetStatusLabel(asset: AssetDto): string {
-        switch (asset.status) {
-            case AssetStatus.Active: return 'assetStatus.active';
-            case AssetStatus.Inactive: return 'assetStatus.inactive';
-            case AssetStatus.Maintenance: return 'assetStatus.maintenance';
-            case AssetStatus.Disposed: return 'assetStatus.disposed';
-            case AssetStatus.Lost: return 'assetStatus.lost';
-            case AssetStatus.Damaged: return 'assetStatus.damaged';
-            default: return 'assetStatus.unknown';
-        }
+        return getAssetStatusLabel(asset.status);
     }
 
     /**
-     * Get asset status badge class
+     * Get asset status badge class (API returns enum names as strings)
      */
     getAssetStatusClass(asset: AssetDto): string {
-        switch (asset.status) {
-            case AssetStatus.Active: return 'bg-green-100 text-green-800';
-            case AssetStatus.Inactive: return 'bg-blue-100 text-blue-800';
-            case AssetStatus.Maintenance: return 'bg-yellow-100 text-yellow-800';
-            case AssetStatus.Disposed: return 'bg-red-100 text-red-800';
-            case AssetStatus.Lost: return 'bg-red-100 text-red-800';
-            case AssetStatus.Damaged: return 'bg-red-100 text-red-800';
+        const status = asset.status as AssetStatus | string | undefined;
+        switch (status) {
+            case AssetStatus.ReadyToIssue:
+            case 'ReadyToIssue': return 'bg-green-100 text-green-800';
+            case AssetStatus.InMaintenance:
+            case 'InMaintenance':
+            case AssetStatus.UnserviceableRepairable:
+            case 'UnserviceableRepairable': return 'bg-yellow-100 text-yellow-800';
+            case AssetStatus.UnserviceableUnrepairable:
+            case 'UnserviceableUnrepairable':
+            case AssetStatus.AwaitingDisposal:
+            case 'AwaitingDisposal':
+            case AssetStatus.Disposed:
+            case 'Disposed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     }

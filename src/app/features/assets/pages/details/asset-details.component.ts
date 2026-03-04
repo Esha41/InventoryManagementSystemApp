@@ -7,7 +7,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
-import { AssetDto, getAssetStatusLabel } from '@models/asset.model';
+import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
 import { WarehouseDetailLayoutComponent } from '@shared/components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -109,11 +109,20 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
   }
 
   getStatusColorClass(): string {
-    switch (this.asset?.status) {
-      case 1: return 'bg-[var(--color-success)]/20 text-[var(--color-success)]';
-      case 2: return 'bg-[var(--color-info)]/20 text-[var(--color-info)]';
-      case 3: return 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]';
-      case 4: return 'bg-[var(--color-error)]/20 text-[var(--color-error)]';
+    const status = this.asset?.status as AssetStatus | string | undefined;
+    switch (status) {
+      case AssetStatus.ReadyToIssue:
+      case 'ReadyToIssue': return 'bg-[var(--color-success)]/20 text-[var(--color-success)]';
+      case AssetStatus.InMaintenance:
+      case 'InMaintenance':
+      case AssetStatus.UnserviceableRepairable:
+      case 'UnserviceableRepairable': return 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]';
+      case AssetStatus.UnserviceableUnrepairable:
+      case 'UnserviceableUnrepairable':
+      case AssetStatus.AwaitingDisposal:
+      case 'AwaitingDisposal':
+      case AssetStatus.Disposed:
+      case 'Disposed': return 'bg-[var(--color-error)]/20 text-[var(--color-error)]';
       default: return 'bg-[var(--color-background-active)] text-[var(--color-text)]';
     }
   }

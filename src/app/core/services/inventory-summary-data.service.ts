@@ -92,14 +92,14 @@ export class InventorySummaryDataService {
             nsn: weapon.nsn || '',
             partNo: weapon.partNo || '',
             totalQuantity: itemAssets.length,
-            usedQuantity: this.countAssetsByStatus(itemAssets, AssetStatus.Inactive),
+            usedQuantity: 0,
             reservedQuantityByOrdersOnProcessing: 0, // Not applicable for assets
-            remainingQuantity: this.countAssetsByStatus(itemAssets, AssetStatus.Active),
+            remainingQuantity: this.countAssetsByStatus(itemAssets, 'ReadyToIssue'),
             totalLots: itemAssets.length // For weapons, represents total asset count
         };
     }
 
-    private countAssetsByStatus(assets: AssetDto[], status: AssetStatus): number {
-        return assets.filter(asset => asset.status === status).length;
+    private countAssetsByStatus(assets: AssetDto[], status: AssetStatus | string): number {
+        return assets.filter(asset => asset.status === status || asset.status === (status as number)).length;
     }
 }
