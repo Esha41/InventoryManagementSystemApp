@@ -8,13 +8,14 @@ import { debounceTime, startWith } from 'rxjs/operators';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2 } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
 import { LookupService } from '@services/lookup.service';
-import { AssetService } from '@services/asset.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, ItemType } from '@models/inventory.model';
 import { FilterData } from '@models/pagination.model';
 import { AssetDto } from '@models/asset.model';
+import { BatchDto, BatchSummaryDto } from '@models/batch.model';
+import { BatchService } from '@services/batch.service';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
@@ -29,7 +30,7 @@ import { WarehouseInventoryFormatterService } from './services/warehouse-invento
 import { WarehouseInventoryCrudService } from './services/warehouse-inventory-crud.service';
 import { WarehouseInventoryExportService } from './services/warehouse-inventory-export.service';
 import { InventoryTableComponent } from './components/inventory-table/inventory-table.component';
-import { AssetTableComponent } from './components/asset-table/asset-table.component';
+import { BatchTableComponent } from './components/batch-table/batch-table.component';
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 
 @Component({
@@ -52,7 +53,7 @@ import { InventoryFiltersComponent } from './components/inventory-filters/invent
     LoadingStateComponent,
     ErrorStateComponent,
     InventoryTableComponent,
-    AssetTableComponent,
+    BatchTableComponent,
     InventoryFiltersComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
@@ -67,14 +68,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   // filteredInventoryDetails will now act as the data source for the table
   // For server-side pagination, it holds the current page items
   filteredInventoryDetails: InventoryDetailDto[] = [];
-  weaponAssets: AssetDto[] = [];
-  filteredWeaponAssets: AssetDto[] = [];
   loading = true;
   error: string | null = null;
   totalItems = 0; // Total count for server-side pagination
 
   // Tab management
-  activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+  activeTab: 'ammunition' | 'explosive' | 'batch' = 'ammunition';
+
+  // Batch data (lightweight list with quantity only)
+  batches: BatchSummaryDto[] = [];
+  filteredBatches: BatchSummaryDto[] = [];
+
+  // Expanded batch: when user clicks a row, we fetch assets for that batch
+  expandedBatchId: number | null = null;
+  expandedBatchAssets: AssetDto[] = [];
+  loadingBatchAssets = false;
 
   // Pagination
   currentPage = 1;
@@ -111,12 +119,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   selectedAsset: AssetDto | null = null;
   loadingAsset = false;
 
+  // Batch delete
+  showDeleteBatchDialog = false;
+  selectedBatch: BatchSummaryDto | null = null;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private inventoryService: InventoryService,
     private lookupService: LookupService,
-    private assetService: AssetService,
+    private batchService: BatchService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
@@ -133,8 +145,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     // Initialize tab from query params first (synchronously read initial value)
     const initialQueryParams = this.route.snapshot.queryParams;
     const tabParam = initialQueryParams['tab'];
-    if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+    if (tabParam && (tabParam === 'ammunition' || tabParam === 'explosive' || tabParam === 'batch')) {
       this.activeTab = tabParam;
+    } else if (tabParam === 'weapon') {
+      this.activeTab = 'batch';
     }
 
     // Subscribe to query params changes for tab updates
@@ -142,9 +156,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         const tab = params['tab'];
-        if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
-          if (this.activeTab !== tab) {
-            this.activeTab = tab;
+        const effectiveTab = tab === 'weapon' ? 'batch' : tab;
+        if (effectiveTab && (effectiveTab === 'ammunition' || effectiveTab === 'explosive' || effectiveTab === 'batch')) {
+          if (this.activeTab !== effectiveTab) {
+            this.activeTab = effectiveTab;
             this.currentPage = 1;
             this.applyFilters();
             this.cdr.markForCheck();
@@ -233,38 +248,43 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   private loadTabContent(): void {
-    if (this.activeTab === 'weapon') {
-      this.loadServerSideAssets();
+    if (this.activeTab === 'batch') {
+      this.loadServerSideBatches();
     } else {
       this.loadServerSideInventory();
     }
   }
 
-  private loadServerSideAssets(): void {
+  private loadServerSideBatches(): void {
     this.loading = true;
+    this.expandedBatchId = null;
+    this.expandedBatchAssets = [];
     this.cdr.markForCheck();
 
-    const request = this.buildPagedRequest();
-
-    // We reuse buildPagedRequest but need to adapt filters for Asset DTO structure if needed
-    // Assets are filtered by SerialNumber, AssetTag, ItemName etc in backend
-
-    this.assetService.getAssetsPaginated(this.depoId, request)
+    this.batchService.getSummary(this.depoId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.weaponAssets = response.items || [];
-          this.filteredWeaponAssets = this.weaponAssets; // Direct assignment as filtering is done on server
-          this.totalItems = response.totalCount;
+        next: (batches) => {
+          this.batches = batches || [];
+          this.filteredBatches = this.applyBatchSearch(this.batches);
+          this.totalItems = this.filteredBatches.length;
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
-          this.error = 'Failed to load asset data';
+        error: () => {
+          this.error = 'Failed to load batch data';
           this.loading = false;
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private applyBatchSearch(batches: BatchSummaryDto[]): BatchSummaryDto[] {
+    const term = this.searchControl.value?.trim()?.toLowerCase();
+    if (!term) return batches;
+    return batches.filter(b =>
+      b.batchNumber?.toLowerCase().includes(term)
+    );
   }
 
   private loadServerSideInventory(): void {
@@ -295,17 +315,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     const searchTerm = this.searchControl.value?.trim();
     let filterData: FilterData | undefined;
 
-    if (this.activeTab === 'weapon') {
-      // Filter for Assets
+    if (this.activeTab === 'batch') {
       const filters: any[] = [];
       if (searchTerm) {
         filters.push({
           logic: 'or',
           filters: [
-            { field: 'Item.Name', operator: 'contains', value: searchTerm },
-            { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
-            { field: 'SerialNumber', operator: 'contains', value: searchTerm },
-            { field: 'AssetTag', operator: 'contains', value: searchTerm }
+            { field: 'BatchNumber', operator: 'contains', value: searchTerm }
           ]
         });
       }
@@ -358,7 +374,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
 
-  switchTab(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+  switchTab(tab: 'ammunition' | 'explosive' | 'batch'): void {
     if (this.activeTab === tab) {
       return; // Already on this tab, no need to update
     }
@@ -377,7 +393,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Update query parameters with current tab
    * Uses merge to preserve other query params (like search, pagination, etc.)
    */
-  private updateQueryParams(tab: 'ammunition' | 'weapon' | 'explosive'): void {
+  private updateQueryParams(tab: 'ammunition' | 'explosive' | 'batch'): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab },
@@ -390,9 +406,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Apply both tab filter and search filter
    */
   applyFilters(): void {
-    // Both tabs now use server-side pagination, so reset page and reload
     this.currentPage = 1;
-    this.loadTabContent();
+    if (this.activeTab === 'batch') {
+      this.filteredBatches = this.applyBatchSearch(this.batches);
+      this.totalItems = this.filteredBatches.length;
+    } else {
+      this.loadTabContent();
+    }
     this.cdr.markForCheck();
   }
 
@@ -403,19 +423,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   get paginatedItems(): InventoryDetailDto[] {
-    // For server-side, filteredInventoryDetails already contains ONLY the current page items
-    if (this.activeTab !== 'weapon') {
-      return this.filteredInventoryDetails;
-    }
-    return [];
+    return this.filteredInventoryDetails;
   }
 
-  get paginatedAssets(): AssetDto[] {
-    // For server-side, filteredWeaponAssets already contains ONLY the current page items
-    if (this.activeTab === 'weapon') {
-      return this.filteredWeaponAssets;
-    }
-    return [];
+  get paginatedBatches(): BatchSummaryDto[] {
+    if (this.activeTab !== 'batch') return [];
+    const start = (this.currentPage - 1) * this.rowsPerPage;
+    return this.filteredBatches.slice(start, start + this.rowsPerPage);
   }
 
   private validateCurrentPage(): void {
@@ -431,7 +445,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.loadTabContent(); // Handles both Asset (now server-side) and Inventory
+      if (this.activeTab !== 'batch') {
+        this.loadTabContent();
+      }
+      this.cdr.markForCheck();
     }
   }
 
@@ -471,8 +488,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   onRowsPerPageChange(newSize: number): void {
     this.rowsPerPage = newSize;
-    this.currentPage = 1; // Reset to first page
-    this.loadTabContent(); // Reload data with new page size
+    this.currentPage = 1;
+    if (this.activeTab !== 'batch') {
+      this.loadTabContent();
+    }
+    this.cdr.markForCheck();
   }
 
   // Delegate formatting methods to formatter service
@@ -511,6 +531,84 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    */
   onAddWeaponAsset(): void {
     this.router.navigate(['/warehouse', this.depoId, 'assets', 'add']);
+  }
+
+  onBatchRowClick(batch: BatchSummaryDto): void {
+    if (this.expandedBatchId === batch.id) {
+      this.expandedBatchId = null;
+      this.expandedBatchAssets = [];
+      this.cdr.markForCheck();
+      return;
+    }
+    this.expandedBatchId = batch.id;
+    this.loadingBatchAssets = true;
+    this.expandedBatchAssets = [];
+    this.cdr.markForCheck();
+
+    this.batchService.getById(batch.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullBatch) => {
+          this.expandedBatchAssets = fullBatch?.assets ?? [];
+          this.loadingBatchAssets = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingBatchAssets = false;
+          this.expandedBatchId = null;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onEditBatch(batch: BatchSummaryDto): void {
+    this.router.navigate(['/warehouse', this.depoId, 'batches', batch.id, 'edit']);
+  }
+
+  onDeleteBatch(batch: BatchSummaryDto): void {
+    this.selectedBatch = batch;
+    this.showDeleteBatchDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  onDeleteBatchConfirm(): void {
+    if (!this.selectedBatch) return;
+
+    this.showDeleteBatchDialog = false;
+    const batchToDelete = this.selectedBatch;
+    this.selectedBatch = null;
+    this.cdr.markForCheck();
+
+    this.batchService.delete(batchToDelete.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          if (this.expandedBatchId === batchToDelete.id) {
+            this.expandedBatchId = null;
+            this.expandedBatchAssets = [];
+          }
+          this.batches = this.batches.filter(b => b.id !== batchToDelete.id);
+          this.filteredBatches = this.applyBatchSearch(this.batches);
+          this.totalItems = this.filteredBatches.length;
+          this.translateService.get('warehouseInventory.batchDeleted').subscribe(msg =>
+            this.toastService.success(msg, this.translateService.instant('toast.success'))
+          );
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toastService.error(
+            this.translateService.instant('warehouseInventory.failedToDeleteBatch'),
+            this.translateService.instant('toast.error')
+          );
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onDeleteBatchCancel(): void {
+    this.showDeleteBatchDialog = false;
+    this.selectedBatch = null;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -562,8 +660,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onEditAssetModalClosed(): void {
     this.showEditAssetModal = false;
     this.selectedAsset = null;
-    this.selectedAsset = null;
-    // Reload weapon assets after edit
     this.loadDepotAndAssets();
     this.cdr.markForCheck();
   }
@@ -759,6 +855,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Export filtered inventory to Excel
    */
   exportToExcel(): void {
+    if (this.activeTab === 'batch') {
+      return;
+    }
     this.exportService.exportInventoryToExcel(
       this.filteredInventoryDetails,
       this.depoName,

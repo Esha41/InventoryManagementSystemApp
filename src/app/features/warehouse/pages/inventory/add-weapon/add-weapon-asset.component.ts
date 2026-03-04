@@ -120,7 +120,8 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
 
         this.bulkForm = this.fb.group({
             itemId: [null, Validators.required],
-            quantity: [1, [Validators.required, Validators.min(1), Validators.max(1000)]],
+            batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
+            quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(1000)]],
             fillIdentifiers: [false], // Checkbox for filling RFID/Serial numbers
             // Common
             purchaseDate: [''],
@@ -141,6 +142,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     private createAssetFormGroup(): FormGroup {
         return this.fb.group({
             itemId: [null, Validators.required],
+            batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
             serialNumber: ['', [Validators.maxLength(200)]],
             rfid: ['', [Validators.maxLength(500)]],
             assetTag: ['', [Validators.maxLength(100)]],
@@ -309,6 +311,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             const formValue = this.assetForm.value;
             createDtos = formValue.assets.map((asset: any) => ({
                 itemId: asset.itemId,
+                batchNumber: asset.batchNumber?.trim(),
                 depotId: this.warehouseId,
                 serialNumber: asset.serialNumber?.trim() || undefined,
                 rfid: asset.rfid?.trim() || undefined,
@@ -377,6 +380,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         sessionStorage.setItem('bulkAssetData', JSON.stringify({
             warehouseId: this.warehouseId,
             itemId: bulkData.itemId,
+            batchNumber: bulkData.batchNumber,
             quantity: bulkData.quantity,
             purchaseDate: bulkData.purchaseDate,
             warrantyExpiryDate: bulkData.warrantyExpiryDate,
@@ -400,6 +404,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         for (let i = 0; i < quantity; i++) {
             dtos.push({
                 itemId: val.itemId,
+                batchNumber: val.batchNumber?.trim(),
                 depotId: this.warehouseId,
                 serialNumber: undefined,
                 rfid: undefined,

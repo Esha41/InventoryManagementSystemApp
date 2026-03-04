@@ -170,6 +170,12 @@ export const routes: Routes = [
         data: { permissions: ['asset.edit'] }
       },
       {
+        path: 'warehouse/:id/batches/:batchId/edit',
+        loadComponent: () => import('@warehouse/pages/inventory/edit-batch/edit-batch.component').then(m => m.EditBatchComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.edit'] }
+      },
+      {
         path: 'workflow',
         loadComponent: () => import('@workflow/pages/overview/workflow.component').then(m => m.WorkflowComponent),
         canActivate: [permissionGuard],

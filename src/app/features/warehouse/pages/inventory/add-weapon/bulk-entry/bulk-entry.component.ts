@@ -24,6 +24,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 interface BulkAssetData {
     warehouseId: number;
     itemId: number;
+    batchNumber: string;
     quantity: number;
     purchaseDate?: string;
     warrantyExpiryDate?: string;
@@ -197,6 +198,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         const formValue = this.bulkEntryForm.value;
         const createDtos: CreateAssetDto[] = formValue.items.map((item: any, index: number) => ({
             itemId: this.bulkData.itemId,
+            batchNumber: this.bulkData.batchNumber,
             depotId: this.warehouseId,
             serialNumber: item.serialNumber?.trim() || undefined,
             rfid: item.rfid?.trim() || undefined,
