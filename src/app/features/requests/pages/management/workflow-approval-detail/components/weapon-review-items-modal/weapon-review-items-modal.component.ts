@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -27,7 +27,8 @@ import { Subject } from 'rxjs';
     DropdownComponent
   ],
   templateUrl: './weapon-review-items-modal.component.html',
-  styleUrls: ['./weapon-review-items-modal.component.css']
+  styleUrls: ['./weapon-review-items-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;

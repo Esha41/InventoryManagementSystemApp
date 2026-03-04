@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
@@ -24,7 +24,8 @@ import { formatDateShort } from '@core/utils/format.utils';
     DropdownComponent
   ],
   templateUrl: './edit-inventory-detail-modal.component.html',
-  styleUrls: ['./edit-inventory-detail-modal.component.css']
+  styleUrls: ['./edit-inventory-detail-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
@@ -48,7 +49,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private lookupService: LookupService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -111,18 +113,27 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
   private loadLookupData(): void {
     this.lookupService.getSuppliers().subscribe({
-      next: (data: LookupItem[]) => this.suppliers = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.suppliers = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
 
     this.lookupService.getManufacturers().subscribe({
-      next: (data: LookupItem[]) => this.manufacturers = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.manufacturers = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
 
     this.lookupService.getCountries().subscribe({
-      next: (data: LookupItem[]) => this.countries = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.countries = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
   }
 
@@ -130,6 +141,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     if (this.detailForm.invalid) {
       this.translateService.get('editInventoryDetail.requiredFieldsError').subscribe(msg => {
         this.errorMessage = msg;
+        this.cdr.markForCheck();
       });
       Object.keys(this.detailForm.controls).forEach(key => {
         this.detailForm.get(key)?.markAsTouched();

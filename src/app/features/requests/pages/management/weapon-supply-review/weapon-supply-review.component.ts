@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { OrderService } from '@services/order.service';
 import { OrderDto } from '@models/order.model';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { WeaponSupplyReviewService, ItemWithAssets } from './services/weapon-supply-review.service';
 import { WeaponSupplyUIService } from './services/weapon-supply-ui.service';
@@ -46,7 +47,8 @@ import { ItemAssetSelectionComponent } from './components/item-asset-selection/i
     WeaponSupplyDisplayService
   ],
   templateUrl: './weapon-supply-review.component.html',
-  styleUrls: ['./weapon-supply-review.component.css']
+  styleUrls: ['./weapon-supply-review.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -121,7 +123,8 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     public reviewService: WeaponSupplyReviewService,
     public uiService: WeaponSupplyUIService,
     public lookupService: WeaponSupplyLookupService,
-    public displayService: WeaponSupplyDisplayService
+    public displayService: WeaponSupplyDisplayService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   // Expose service properties for template
@@ -201,6 +204,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   private loadAllData(): void {
     this.loading = true;
+    this.cdr.markForCheck();
 
     // Load order data
     this.orderService.getOrderById(this.orderId)
@@ -210,9 +214,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.orderData = order;
           this.reviewService.initializeItemsFromOrder(order);
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.handleError('Failed to load order details', error, 'weaponSupplyReview.failedToLoadOrderDetails');
+          this.cdr.markForCheck();
           this.goBack();
         }
       });
@@ -224,7 +230,10 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       ranks: this.lookupService.loadRanks()
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
-        error: (error) => this.config.logError('Failed to load lookup data', error)
+        error: (error) => {
+          this.config.logError('Failed to load lookup data', error);
+          this.cdr.markForCheck();
+        }
       });
   }
 
@@ -234,6 +243,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(items => {
         this.itemsWithAssets = items;
+        this.cdr.markForCheck();
       });
 
     // Setup scan listener with debounce
@@ -294,6 +304,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     if (!this.orderId || this.selectedDepotIds.length === 0) return;
 
     this.loadingAssets = true;
+    this.cdr.markForCheck();
     this.assetSupplyService.getAssetsToSupply(this.orderId, this.selectedDepotIds)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -302,11 +313,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.reviewService.updateItemsWithAvailableAssets(data);
           this.loadingAssets = false;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.handleError('Failed to load assets', error, 'weaponSupplyReview.failedToLoadAssets');
           this.loadingAssets = false;
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -427,6 +440,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     const dto = this.reviewService.createSupplyDto(this.orderId, receiverInfo, this.itemsWithAssets);
 
     this.submitting = true;
+    this.cdr.markForCheck();
 
     this.reviewService.submitSupply(dto)
       .pipe(
@@ -434,12 +448,14 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         catchError((error) => {
           this.handleError('Failed to submit asset supply', error, 'weaponSupplyReview.failedToSubmit');
           this.submitting = false;
+          this.cdr.markForCheck();
           return [];
         })
       )
       .subscribe({
         next: () => {
           this.submitting = false;
+          this.cdr.markForCheck();
           this.toastService.success(
             this.translate.instant('weaponSupplyReview.submitSuccess'),
             this.translate.instant('toast.success')
@@ -494,9 +510,9 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   // ==================== ERROR HANDLING ====================
 
-  private handleError(logMessage: string, error: any, translationKey: string): void {
+  private handleError(logMessage: string, error: unknown, translationKey: string): void {
     this.config.logError(logMessage, error);
-    const errorMessage = error?.error?.message || error?.message || this.translate.instant(translationKey);
+    const errorMessage = ErrorHandler.extractErrorMessage(error, this.translate.instant(translationKey));
     this.toastService.error(errorMessage, this.translate.instant('toast.error'));
   }
 

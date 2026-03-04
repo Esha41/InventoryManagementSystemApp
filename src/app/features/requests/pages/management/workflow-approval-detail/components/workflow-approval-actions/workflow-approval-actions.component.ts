@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -28,7 +28,8 @@ import { ConfirmationDialogComponent, ConfirmationType } from '@shared/component
     ConfirmationDialogComponent
   ],
   templateUrl: './workflow-approval-actions.component.html',
-  styleUrls: ['./workflow-approval-actions.component.css']
+  styleUrls: ['./workflow-approval-actions.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
   readonly CheckCircle = CheckCircle;

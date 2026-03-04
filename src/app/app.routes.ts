@@ -105,13 +105,13 @@ export const routes: Routes = [
       },
       {
         path: 'allowance',
-        loadComponent: () => import('@allowance/pages/list/allowance-list.component').then(m => m.AllowanceListComponent),
+        loadComponent: () => import('@department/pages/list/allowance-list.component').then(m => m.AllowanceListComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create'] }
       },
       {
         path: 'allowance/add',
-        loadComponent: () => import('@allowance/pages/overview/allowance.component').then(m => m.AllowanceComponent),
+        loadComponent: () => import('@department/pages/overview/allowance.component').then(m => m.AllowanceComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.create', 'order.create'] }
       },
@@ -333,7 +333,7 @@ export const routes: Routes = [
       },
       {
         path: 'item-department-assignment',
-        loadComponent: () => import('@admin/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
+        loadComponent: () => import('@department/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['Permissions.ItemDepartmentAssignment.Page'] }
       },

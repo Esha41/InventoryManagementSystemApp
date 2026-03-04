@@ -20,6 +20,9 @@ export interface BackendUserDto {
   // Optional profile fields if backend provides them
   nameEn?: string;
   nameAr?: string;
+  /** Depot user API may return fullNameEN/fullNameAR (PascalCase) */
+  fullNameEN?: string;
+  fullNameAR?: string;
   rankId?: number;
   rankNameEn?: string;
   rankNameAr?: string;
@@ -172,6 +175,22 @@ export interface CrudPermission {
 export interface CheckBox {
   displayValue: string;
   isSelected?: boolean;
+}
+
+/**
+ * Application entity (department, etc.) - used in workflow steps and role assignment
+ */
+export interface ApplicationEntityDto {
+  id: number;
+  applicationEntityId?: number;
+  code?: string;
+  nameAr?: string;
+  nameEn?: string;
+  isDeleted?: boolean;
+  creationDate?: string;
+  modificationDate?: string | null;
+  modifiedBy?: string | null;
+  createdBy?: string | null;
 }
 
 /**

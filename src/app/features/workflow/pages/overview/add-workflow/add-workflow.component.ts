@@ -1,12 +1,13 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
-import { RoleDto } from '@models/backend-user.model';
+import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslationService } from '@services/translation.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { CreateWorkflowDto } from '@models/workflow.model';
@@ -15,19 +16,34 @@ import { WorkflowType } from '@models/workflow.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationMap } from '@models/common.types';
+
+/** Add workflow step form shape */
+interface AddStepForm {
+  roleId: string | null;
+  applicationEntityId: number | null;
+  entities: number[];
+  requireHigherApproval?: boolean;
+  higherApprovalRoleId?: string | null;
+  higherApplicationEntityId?: number | null;
+  canReturn?: boolean;
+  errors?: { role?: boolean; entity?: boolean; higherRole?: boolean; higherEntity?: boolean };
+}
 
 @Component({
   selector: 'app-add-workflow',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DragDropModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './add-workflow.component.html',
-  styleUrls: ['./add-workflow.component.css']
+  styleUrls: ['./add-workflow.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWorkflowComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
+  readonly GripVertical = GripVertical;
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -49,19 +65,10 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
-  steps: Array<{
-    roleId: string | null;
-    applicationEntityId: number | null;
-    entities: number[];
-    requireHigherApproval?: boolean;
-    higherApprovalRoleId?: string | null;
-    higherApplicationEntityId?: number | null;
-    canReturn?: boolean;
-    errors?: { role?: boolean; entity?: boolean; higherRole?: boolean; higherEntity?: boolean };
-  }> = [];
+  steps: AddStepForm[] = [];
 
   roles: RoleDto[] = [];
-  allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  allApplicationEntities: Array<{ id: number; name?: string; entity?: ApplicationEntityDto }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
   readonly workflowStatusOptions = [
     { label: 'workflow.active', value: 'Active' as const },
@@ -79,7 +86,8 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private router: Router,
     private translate: TranslateService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnDestroy(): void {
@@ -123,7 +131,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         this.positioningInterval = undefined;
         document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
       }
-      document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+      document.querySelectorAll<HTMLElement>('.app-dropdown-panel').forEach((panel) => {
         panel.style.position = '';
         panel.style.top = '';
         panel.style.left = '';
@@ -138,7 +146,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     if (!scrollContainer) return;
 
     const openDropdowns = document.querySelectorAll('.app-dropdown-open');
-    openDropdowns.forEach((trigger: any) => {
+    openDropdowns.forEach((trigger: Element) => {
       const dropdown = trigger.closest('.app-dropdown');
       if (!dropdown) return;
 
@@ -187,8 +195,8 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       this.checkAndPositionDropdowns();
     }, 0);
     this.backendUserService.getAllRolesSimple().subscribe({
-      next: roles => this.roles = roles,
-      error: () => this.roles = []
+      next: roles => { this.roles = roles; this.cdr.markForCheck(); },
+      error: () => { this.roles = []; this.cdr.markForCheck(); }
     });
     this.loadApplicationEntities();
 
@@ -205,16 +213,17 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
   private loadApplicationEntities(): void {
     this.backendUserService.getApplicationEntities().subscribe({
-      next: (entities: any[]) => {
+      next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
-        this.allApplicationEntities = (entities || []).map((e: any) => {
-          const id = e?.id ?? e?.applicationEntityId ?? e;
+        this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
+          const id = e?.id ?? (e as ApplicationEntityDto & { applicationEntityId?: number }).applicationEntityId ?? 0;
           const localizedName = getLocalizedName(e, currentLang);
-          const fallback = e?.name || e?.displayName || e?.entityName || e?.applicationEntityName || e?.title || e?.label;
+          const fallback = e.nameEn ?? e.nameAr ?? '';
           return { id, name: localizedName || fallback || String(id), entity: e };
         });
+        this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; }
+      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
@@ -223,6 +232,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     if (!this.workflowForm.name || this.workflowForm.name.trim() === '') {
       this.translate.get('workflow.nameRequired').subscribe(msg => {
         this.errorMessage = msg;
+        this.cdr.markForCheck();
       });
       return;
     }
@@ -257,10 +267,12 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.errorMessage = null;
     this.successMessage = null;
+    this.cdr.markForCheck();
 
     this.workflowService.createBackendWorkflow(payload).subscribe({
       next: () => {
         this.submitting = false;
+        this.cdr.markForCheck();
         const message = this.translate.instant('workflow.createdSuccess');
         const title = this.translate.instant('toast.success');
         this.toastService.success(message, title);
@@ -268,10 +280,12 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.submitting = false;
+        this.cdr.markForCheck();
 
-        this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: any) => {
+        this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
           this.errorMessage = error.message || errorMsg;
+          this.cdr.markForCheck();
           this.toastService.error(errorMsg, translations['toast.error']);
         });
       }
@@ -326,6 +340,10 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.steps.splice(index, 1);
   }
 
+  onStepDrop(event: CdkDragDrop<any[]>): void {
+    moveItemInArray(this.steps, event.previousIndex, event.currentIndex);
+  }
+
   onRoleChange(index: number): void {
     const step = this.steps[index];
     if (!step || !step.roleId) { step.entities = []; step.applicationEntityId = null; return; }
@@ -336,8 +354,9 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
           step.applicationEntityId = null;
         }
         this.updateStepErrors(index);
+        this.cdr.markForCheck();
       },
-      error: () => { step.entities = []; step.applicationEntityId = null; }
+      error: () => { step.entities = []; step.applicationEntityId = null; this.cdr.markForCheck(); }
     });
     this.updateStepErrors(index);
   }
@@ -428,11 +447,11 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  hasRoleError(step: any): boolean {
+  hasRoleError(step: AddStepForm): boolean {
     return !!step?.errors?.role;
   }
 
-  hasEntityError(step: any): boolean {
+  hasEntityError(step: AddStepForm): boolean {
     return !!step?.errors?.entity;
   }
 
@@ -458,21 +477,21 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasHigherRoleError(step: any): boolean {
+  hasHigherRoleError(step: AddStepForm): boolean {
     return !!step?.errors?.higherRole;
   }
 
-  hasHigherEntityError(step: any): boolean {
+  hasHigherEntityError(step: AddStepForm): boolean {
     return !!step?.errors?.higherEntity;
   }
 
-  private buildHigherApprovalKey(step: any): { baseRoleKey: string | null; baseEntityKey: string | null } {
+  private buildHigherApprovalKey(step: AddStepForm): { baseRoleKey: string | null; baseEntityKey: string | null } {
     const baseRoleKey = step?.requireHigherApproval ? 'workflow.stepHigherRoleRequired' : null;
     const baseEntityKey = step?.requireHigherApproval ? 'workflow.stepHigherEntityRequired' : null;
     return { baseRoleKey, baseEntityKey };
   }
 
-  private isStepValid(step: any): boolean {
+  private isStepValid(step: AddStepForm): boolean {
     if (!step) {
       return true;
     }

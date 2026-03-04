@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -17,7 +17,8 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, TranslatePipe, DropdownComponent],
     templateUrl: './announcement-form.component.html',
-    styleUrls: ['./announcement-form.component.css']
+    styleUrls: ['./announcement-form.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnouncementFormComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -28,6 +29,7 @@ export class AnnouncementFormComponent implements OnInit {
     private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     form!: FormGroup;
     loading = signal(false);
@@ -71,15 +73,18 @@ export class AnnouncementFormComponent implements OnInit {
         this.userService.getRoles().subscribe({
             next: (roles) => {
                 this.roles.set(roles);
+                this.cdr.markForCheck();
             },
             error: (error) => {
                 console.error('Failed to load roles:', error);
+                this.cdr.markForCheck();
             }
         });
     }
 
     loadAnnouncement(id: number): void {
         this.loading.set(true);
+        this.cdr.markForCheck();
         this.announcementService.getById(id).subscribe({
             next: (response) => {
                 const announcement = response.data;
@@ -93,11 +98,13 @@ export class AnnouncementFormComponent implements OnInit {
                     isActive: announcement.isActive
                 });
                 this.loading.set(false);
+                this.cdr.markForCheck();
             },
             error: (error) => {
                 const message = this.errorService.resolveHttpErrorMessage(error);
                 this.toastService.error(message);
                 this.loading.set(false);
+                this.cdr.markForCheck();
                 this.router.navigate(['/admin/announcements']);
             }
         });
@@ -110,6 +117,7 @@ export class AnnouncementFormComponent implements OnInit {
         }
 
         this.submitting.set(true);
+        this.cdr.markForCheck();
         const formValue = this.form.value;
 
         const targetRoles = Array.isArray(formValue.targetRoles) ? formValue.targetRoles : [];
@@ -134,12 +142,14 @@ export class AnnouncementFormComponent implements OnInit {
                     ? this.translationService.getTranslation('announcements.updateSuccess')
                     : this.translationService.getTranslation('announcements.createSuccess');
                 this.toastService.success(message);
+                this.cdr.markForCheck();
                 this.router.navigate(['/admin/announcements']);
             },
             error: (error) => {
                 const message = this.errorService.resolveHttpErrorMessage(error);
                 this.toastService.error(message);
                 this.submitting.set(false);
+                this.cdr.markForCheck();
             }
         });
     }

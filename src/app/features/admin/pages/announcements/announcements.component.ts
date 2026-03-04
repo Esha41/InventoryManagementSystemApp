@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -16,7 +16,8 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
     standalone: true,
     imports: [CommonModule, TranslatePipe, LucideAngularModule, ConfirmDialogComponent],
     templateUrl: './announcements.component.html',
-    styleUrls: ['./announcements.component.css']
+    styleUrls: ['./announcements.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnouncementsComponent implements OnInit {
     private readonly announcementService = inject(AnnouncementService);
@@ -24,6 +25,7 @@ export class AnnouncementsComponent implements OnInit {
     private readonly translationService = inject(TranslationService);
     private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     readonly Plus = Plus;
     readonly Pencil = Pencil;
@@ -45,15 +47,18 @@ export class AnnouncementsComponent implements OnInit {
 
     loadAnnouncements(): void {
         this.loading.set(true);
+        this.cdr.markForCheck();
         this.announcementService.getAll().subscribe({
             next: (response) => {
                 this.announcements.set(response.data);
                 this.loading.set(false);
+                this.cdr.markForCheck();
             },
             error: (error) => {
                 const message = this.errorService.resolveHttpErrorMessage(error);
                 this.toastService.error(message);
                 this.loading.set(false);
+                this.cdr.markForCheck();
             }
         });
     }
@@ -143,10 +148,12 @@ export class AnnouncementsComponent implements OnInit {
                     this.translationService.getTranslation('announcements.deleteSuccess')
                 );
                 this.loadAnnouncements();
+                this.cdr.markForCheck();
             },
             error: (error) => {
                 const message = this.errorService.resolveHttpErrorMessage(error);
                 this.toastService.error(message);
+                this.cdr.markForCheck();
             }
         });
     }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,7 +26,8 @@ import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/work
     DropdownComponent
   ],
   templateUrl: './workflow-supply-submission.component.html',
-  styleUrls: ['./workflow-supply-submission.component.css']
+  styleUrls: ['./workflow-supply-submission.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
   @Input() supplyId: number | null = null;

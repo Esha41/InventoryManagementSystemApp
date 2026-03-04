@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -43,7 +43,8 @@ import { ImportResult } from '@models/import-result.model';
     LoadingStateComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
-  styleUrls: ['./warehouse-inventory.component.css']
+  styleUrls: ['./warehouse-inventory.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   depots: LookupItem[] = [];

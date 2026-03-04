@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -41,7 +41,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
     ],
     providers: [InventorySummaryDataService],
     templateUrl: './inventory-summary.component.html',
-    styleUrls: ['./inventory-summary.component.css']
+    styleUrls: ['./inventory-summary.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventorySummaryComponent implements OnInit, OnDestroy {
     // Data
@@ -97,7 +98,8 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private translationService: TranslationService,
         private excelExportService: ExcelExportService,
         private toastService: ToastService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) { }
 
     get isRTL(): boolean {
@@ -134,6 +136,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     loadInventorySummary(): void {
         this.loading = true;
         this.error = null;
+        this.cdr.markForCheck();
 
         this.dataService.loadAllItems()
             .pipe(takeUntil(this.destroy$))
@@ -142,10 +145,12 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     this.items = items;
                     this.applyFilters();
                     this.loading = false;
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.error = 'Failed to load inventory summary';
                     this.loading = false;
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -285,6 +290,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadHistoryForAsset(assetId: number): void {
         this.loadingHistory.add(assetId);
+        this.cdr.markForCheck();
 
         this.assetHistoryService.getByAssetId(assetId)
             .pipe(takeUntil(this.destroy$))
@@ -292,11 +298,13 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                 next: (history) => {
                     this.historyByAssetId.set(assetId, history);
                     this.loadingHistory.delete(assetId);
+                    this.cdr.markForCheck();
                 },
                 error: (err) => {
                     console.error('Error loading history', err);
                     this.loadingHistory.delete(assetId);
                     this.toastService.error('Error loading history');
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -314,6 +322,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadLotsForItem(itemId: number): void {
         this.loadingLots.add(itemId);
+        this.cdr.markForCheck();
 
         this.inventoryService.getLotsByItemId(itemId)
             .pipe(takeUntil(this.destroy$))
@@ -321,9 +330,11 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                 next: (lots) => {
                     this.lotsByItemId.set(itemId, lots);
                     this.loadingLots.delete(itemId);
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.loadingLots.delete(itemId);
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -347,6 +358,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadAssetsForItem(itemId: number): void {
         this.loadingAssets.add(itemId);
+        this.cdr.markForCheck();
 
         this.assetService.getAll<AssetDto>({ search: '' })
             .pipe(takeUntil(this.destroy$))
@@ -356,9 +368,11 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     const itemAssets = assets.filter(a => a.itemId === itemId && !a.isDeleted);
                     this.assetsByItemId.set(itemId, itemAssets);
                     this.loadingAssets.delete(itemId);
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.loadingAssets.delete(itemId);
+                    this.cdr.markForCheck();
                 }
             });
     }

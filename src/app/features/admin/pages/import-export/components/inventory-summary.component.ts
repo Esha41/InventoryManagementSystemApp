@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -26,7 +26,8 @@ import { LoadingStateComponent } from '@components/index';
   ],
   providers: [InventorySummaryDataService],
   templateUrl: './inventory-summary.component.html',
-  styleUrls: ['./inventory-summary.component.css']
+  styleUrls: ['./inventory-summary.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventorySummaryComponent implements OnInit, OnDestroy {
   inventorySummaryItems: ItemInventorySummaryDto[] = [];

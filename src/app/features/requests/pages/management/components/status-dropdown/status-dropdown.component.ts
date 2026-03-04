@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 
@@ -7,7 +7,8 @@ import { LucideAngularModule, ChevronDown } from 'lucide-angular';
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './status-dropdown.component.html',
-  styleUrls: ['./status-dropdown.component.css']
+  styleUrls: ['./status-dropdown.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatusDropdownComponent {
   @Input() status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview' = 'New';

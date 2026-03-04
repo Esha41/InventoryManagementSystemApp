@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,7 +26,8 @@ import { formatNumber as formatNumberUtil } from '@utils/format.utils';
     RowsPerPageComponent
   ],
   templateUrl: './item-asset-selection.component.html',
-  styleUrls: ['./item-asset-selection.component.css']
+  styleUrls: ['./item-asset-selection.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   @Input() assets: SelectedAsset[] = [];

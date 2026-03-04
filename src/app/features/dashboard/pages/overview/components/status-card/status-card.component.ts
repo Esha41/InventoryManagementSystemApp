@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, MoreVertical, Eye } from 'lucide-angular';
@@ -28,7 +28,8 @@ export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'de
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './status-card.component.html',
-  styleUrls: ['./status-card.component.css']
+  styleUrls: ['./status-card.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatusCardComponent {
   @Input() title: string = '';

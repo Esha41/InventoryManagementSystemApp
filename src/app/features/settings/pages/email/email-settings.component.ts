@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -23,7 +23,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
     HasPermissionDirective
   ],
   templateUrl: './email-settings.component.html',
-  styleUrls: ['./email-settings.component.css']
+  styleUrls: ['./email-settings.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmailSettingsComponent implements OnInit, OnDestroy {
   emailConfig: EmailConfigurationDto = {};
@@ -64,7 +65,8 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
   constructor(
     private emailConfigService: EmailConfigurationService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -79,6 +81,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
   loadEmailConfiguration(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     // Reset form fields to empty to prevent showing any pre-filled values
     this.accountUsername = '';
@@ -115,12 +118,15 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
           };
 
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.isLoading = false;
+          this.cdr.markForCheck();
           // Don't show error for 403/404 - we handle these gracefully by showing empty form
-          const is403 = (error as any)?.status === 403 || error?.message?.includes('403') || error?.message?.includes('Forbidden');
-          const is404 = (error as any)?.status === 404 || error?.message?.includes('404') || error?.message?.includes('Not Found');
+          const err = error as { status?: number; message?: string };
+          const is403 = err?.status === 403 || error?.message?.includes('403') || error?.message?.includes('Forbidden');
+          const is404 = err?.status === 404 || error?.message?.includes('404') || error?.message?.includes('Not Found');
 
           if (!is403 && !is404) {
             this.errorMessage = error.message || 'Failed to load email configuration';
@@ -134,6 +140,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
             // For 403/404, just continue with empty form (already handled by service)
             // User can still fill out and save the form
           }
+          this.cdr.markForCheck();
         }
       });
   }
@@ -145,6 +152,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     const config: EmailConfigurationDto = {
       id: this.emailConfig.id,
@@ -173,22 +181,24 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
+          this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: (error: unknown) => {
           this.isSaving = false;
+          this.cdr.markForCheck();
+          const err = error as { status?: number; message?: string };
 
           // Extract error message from various error formats
           let errorMessage = 'Failed to save email configuration';
 
-          // Check if it's an HttpErrorResponse
-          if ((error as any)?.status === 403) {
+          if (err?.status === 403) {
             errorMessage = 'You do not have permission to update email settings. Please contact your administrator.';
-          } else if ((error as any)?.status === 404) {
+          } else if (err?.status === 404) {
             errorMessage = 'Email settings endpoint not found. Please verify the API endpoint is configured correctly.';
           } else if (error instanceof Error) {
             errorMessage = error.message;
-          } else if ((error as any)?.message) {
-            errorMessage = (error as any).message;
+          } else if (err?.message) {
+            errorMessage = err.message;
           }
 
           // Don't show "An unknown error occurred" - provide more context
@@ -203,6 +213,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
               translations['toast.error']
             );
           });
+          this.cdr.markForCheck();
         }
       });
   }

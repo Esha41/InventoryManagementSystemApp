@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,7 +19,8 @@ import { Subject, takeUntil } from 'rxjs';
         RouterLink
     ],
     templateUrl: './reset-password.component.html',
-    styleUrls: ['./reset-password.component.css']
+    styleUrls: ['./reset-password.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResetPasswordComponent implements OnInit, OnDestroy {
     readonly Lock = Lock;
@@ -48,7 +49,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         private toastService: ToastService,
         private translateService: TranslateService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef
     ) {
         this.resetForm = this.fb.group({
             newPassword: ['', [Validators.required, Validators.minLength(6)]],
@@ -64,12 +66,14 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.isRTL = this.translateService.currentLang === 'ar';
         this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(event => {
             this.isRTL = event.lang === 'ar';
+            this.cdr.markForCheck();
         });
 
         // Get email and token from URL query parameters
         this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
             this.email = params['email'] || '';
             this.token = params['token'] || '';
+            this.cdr.markForCheck();
 
             if (!this.email || !this.token) {
                 this.toastService.error(
@@ -129,6 +133,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         }
 
         this.isLoading = true;
+        this.cdr.markForCheck();
         const newPassword = this.resetForm.value.newPassword;
 
         this.authService.resetPassword(this.email, this.token, newPassword)
@@ -137,6 +142,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
                 next: () => {
                     this.isLoading = false;
                     this.resetSuccess = true;
+                    this.cdr.markForCheck();
                     this.toastService.success(
                         this.translateService.instant('auth.resetPassword.success'),
                         this.translateService.instant('common.success')
@@ -144,6 +150,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
                 },
                 error: (error) => {
                     this.isLoading = false;
+                    this.cdr.markForCheck();
                     const errorMessage = error?.message || this.translateService.instant('auth.resetPassword.error');
                     this.toastService.error(
                         errorMessage,

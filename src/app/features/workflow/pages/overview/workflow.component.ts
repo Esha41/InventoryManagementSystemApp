@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,8 +9,8 @@ import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, 
 import { WorkflowService } from '@services/workflow.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
-import { RoleDto } from '@models/backend-user.model';
-import { WorkflowDto, WorkflowStepNotifierDto } from '@models/workflow.model';
+import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
+import { WorkflowDto, BackendWorkflowDto, WorkflowStepDto, WorkflowStepNotifier, WorkflowStepTransitionDto } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
@@ -19,6 +19,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationMap } from '@models/common.types';
 import { ProfileDataService } from '@services/profile-data.service';
 
 @Component({
@@ -26,7 +27,8 @@ import { ProfileDataService } from '@services/profile-data.service';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, ConfirmDialogComponent, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './workflow.component.html',
-  styleUrls: ['./workflow.component.css']
+  styleUrls: ['./workflow.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowComponent implements OnInit, OnDestroy {
   readonly Search = Search;
@@ -51,13 +53,13 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   showViewModal = false;
   showDeleteDialog = false;
   workflowToDelete: { id: number; name: string } | null = null;
-  selectedWorkflow: any = null;
+  selectedWorkflow: BackendWorkflowDto | null = null;
 
   deleteDialogTitle = '';
   deleteDialogMessage = '';
   deleteDialogDescription = '';
   roles: RoleDto[] = [];
-  allApplicationEntities: Array<{ id: number; name?: string }> = [];
+  allApplicationEntities: Array<{ id: number; name?: string; entity?: ApplicationEntityDto }> = [];
   readonly workflowStatusOptions = [
     { label: 'Active', value: 'Active' as const },
     { label: 'Inactive', value: 'Inactive' as const }
@@ -65,7 +67,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   hasOpenDropdown = false;
   private mutationObserver?: MutationObserver;
-  private positioningInterval?: any;
+  private positioningInterval?: ReturnType<typeof setInterval>;
   private boundRepositionDropdowns?: () => void;
   private boundHandleDocumentClick?: () => void;
   private destroy$ = new Subject<void>();
@@ -91,7 +93,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.isSuperAdmin = profileData?.isSuperAdmin || false;
 
     this.loadWorkflows();
-    this.backendUserService.getAllRolesSimple().subscribe({ next: r => this.roles = r, error: () => this.roles = [] });
+    this.backendUserService.getAllRolesSimple().subscribe({ next: r => { this.roles = r; this.cdr.markForCheck(); }, error: () => { this.roles = []; this.cdr.markForCheck(); } });
     this.loadApplicationEntities();
 
     this.translate.onLangChange
@@ -103,15 +105,16 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   private loadApplicationEntities(): void {
     this.backendUserService.getApplicationEntities().subscribe({
-      next: (entities: any[]) => {
+      next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
-        this.allApplicationEntities = (entities || []).map((e: any) => {
-          const id = e?.id ?? e?.applicationEntityId ?? e;
+        this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
+          const id = e?.id ?? (e as ApplicationEntityDto & { applicationEntityId?: number }).applicationEntityId ?? 0;
           const localizedName = getLocalizedName(e, currentLang);
           return { id, name: localizedName || String(id), entity: e };
         });
+        this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; }
+      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
@@ -160,12 +163,15 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.filterWorkflows();
         this.validateCurrentPage();
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: (error) => {
-        this.translate.get('toast.failedToLoad').subscribe(msg => {
-          this.errorMessage = error.message || msg;
+      error: (error: unknown) => {
+        this.translate.get('toast.failedToLoad').subscribe((msg: string) => {
+          this.errorMessage = (error instanceof Error ? error.message : String(error)) || msg;
+          this.cdr.markForCheck();
         });
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -223,12 +229,15 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.selectedWorkflow = wf;
         this.showViewModal = true;
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: err => {
-        this.translate.get('toast.failedToLoadDetails').subscribe(msg => {
-          this.errorMessage = err.message || msg;
+      error: (err: unknown) => {
+        this.translate.get('toast.failedToLoadDetails').subscribe((msg: string) => {
+          this.errorMessage = (err instanceof Error ? err.message : String(err)) || msg;
+          this.cdr.markForCheck();
         });
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -267,23 +276,24 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.currentPage = 1;
         this.filterWorkflows();
         this.validateCurrentPage();
-
-        this.translate.get(['toast.success', 'toast.workflowDeleted']).subscribe((translations: any) => {
-          this.toastService.success(translations['toast.workflowDeleted'], translations['toast.success']);
-        });
-
         this.showDeleteDialog = false;
         this.workflowToDelete = null;
+        this.cdr.markForCheck();
+
+        this.translate.get(['toast.success', 'toast.workflowDeleted']).subscribe((translations: TranslationMap) => {
+          this.toastService.success(translations['toast.workflowDeleted'], translations['toast.success']);
+        });
       },
       error: (error) => {
-        this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: any) => {
+        this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToDeleteWorkflow'] || 'Failed to delete workflow';
-          this.errorMessage = error.message || errorMsg;
+          this.errorMessage = (error instanceof Error ? error.message : String(error)) || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
         });
 
         this.showDeleteDialog = false;
         this.workflowToDelete = null;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -317,7 +327,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     if (entityId === undefined || entityId === null) return '';
     const e = this.allApplicationEntities.find(x => x.id === entityId);
     if (e) {
-      const entity = (e as any).entity;
+      const entity = e.entity;
       if (entity) {
         return getLocalizedName(entity, getCurrentLang(this.translate)) || e.name || String(e.id);
       }
@@ -326,16 +336,18 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     return String(entityId);
   }
 
-  getWorkflowName(workflow: any): string {
-    return getLocalizedName(workflow, getCurrentLang(this.translate)) || workflow?.name || '';
+  getWorkflowName(workflow: BackendWorkflowDto | WorkflowDto | null | undefined): string {
+    if (!workflow) return '';
+    const name = (workflow as { workflowName?: string }).workflowName ?? (workflow as { name?: string }).name;
+    return getLocalizedName({ name }, getCurrentLang(this.translate)) || name || '';
   }
 
-  resolveHigherApplicationEntityId(step: any): number | null {
+  resolveHigherApplicationEntityId(step: WorkflowStepDto | null | undefined): number | null {
     if (!step) return null;
     return step.higherApplicationEntityId ?? step.higherApprovalApplicationEntityId ?? step.higherApprovalEntityId ?? null;
   }
 
-  resolveHigherApprovalRoleId(step: any): string | null {
+  resolveHigherApprovalRoleId(step: WorkflowStepDto | null | undefined): string | null {
     if (!step) return null;
     return step.higherApprovalRoleId ?? step.higherRoleId ?? null;
   }
@@ -445,7 +457,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   }
 
   private resetDropdownPanels(): void {
-    document.querySelectorAll('.app-dropdown-panel').forEach((panel: any) => {
+    document.querySelectorAll<HTMLElement>('.app-dropdown-panel').forEach((panel) => {
       panel.style.position = '';
       panel.style.top = '';
       panel.style.left = '';
@@ -493,7 +505,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     const scrollContainer = document.querySelector('.edit-steps-table-scroll-container');
     if (!scrollContainer) return;
 
-    document.querySelectorAll('.app-dropdown-open').forEach((trigger: any) => {
+    document.querySelectorAll<HTMLElement>('.app-dropdown-open').forEach((trigger) => {
       const dropdown = trigger.closest('.app-dropdown');
       const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
 
@@ -524,11 +536,11 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   /**
    * Get formatted list of notifying roles for a step
    */
-  getNotifyingRoles(step: any): string {
+  getNotifyingRoles(step: WorkflowStepDto | null | undefined): string {
     if (!step?.notifiers) return '-';
-    const roleNotifiers = step.notifiers.filter((n: any) => n.roleId);
+    const roleNotifiers = step.notifiers.filter((n: WorkflowStepNotifier) => n.roleId);
     if (roleNotifiers.length === 0) return '-';
-    return roleNotifiers.map((n: any) => {
+    return roleNotifiers.map((n: WorkflowStepNotifier) => {
       const roleName = getLocalizedName({ name: n.roleName, nameAr: n.roleNameAr }, getCurrentLang(this.translate));
       return roleName || n.roleName || n.roleId;
     }).join(', ');
@@ -537,11 +549,11 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   /**
    * Get formatted list of notifying users for a step
    */
-  getNotifyingUsers(step: any): string {
+  getNotifyingUsers(step: WorkflowStepDto | null | undefined): string {
     if (!step?.notifiers) return '-';
-    const userNotifiers = step.notifiers.filter((n: any) => n.userId);
+    const userNotifiers = step.notifiers.filter((n: WorkflowStepNotifier) => n.userId);
     if (userNotifiers.length === 0) return '-';
-    return userNotifiers.map((n: any) => {
+    return userNotifiers.map((n: WorkflowStepNotifier) => {
       const userName = getLocalizedName(
         { name: n.userFullNameEn, nameAr: n.userFullNameAr },
         getCurrentLang(this.translate)
@@ -553,17 +565,14 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   /**
    * Get formatted list of skip-to steps for a step (returns array for line-by-line display)
    */
-  getSkipToSteps(step: any): string[] {
-    // Extract skip-to step IDs from transitions array first
+  getSkipToSteps(step: WorkflowStepDto | null | undefined): string[] {
     let skipToStepIds: number[] = [];
 
     if (Array.isArray(step?.transitions) && step.transitions.length > 0) {
-      // Extract targetWorkflowStepId from transitions
       skipToStepIds = step.transitions
-        .map((t: any) => t.targetWorkflowStepId)
-        .filter((id: any) => id != null && id !== undefined);
+        .map((t: WorkflowStepTransitionDto) => t.targetWorkflowStepId)
+        .filter((id: number | undefined) => id != null && id !== undefined);
     } else if (Array.isArray(step?.allowedSkipTargetIds) && step.allowedSkipTargetIds.length > 0) {
-      // Fallback to allowedSkipTargetIds if transitions not available
       skipToStepIds = [...step.allowedSkipTargetIds];
     }
 
@@ -571,7 +580,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
       return [];
     }
 
-    const steps = (this.selectedWorkflow?.workflowSteps || []) as any[];
+    const steps: WorkflowStepDto[] = this.selectedWorkflow?.workflowSteps || [];
     const skipToStepLabels = skipToStepIds
       .map((targetId: number) => {
         const targetStep = steps.find(s => s.id === targetId);

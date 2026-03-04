@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package, History as HistoryIcon } from 'lucide-angular';
@@ -15,7 +15,8 @@ import { WorkflowApprovalNavigationService } from '../../services/workflow-appro
     LucideAngularModule
   ],
   templateUrl: './workflow-request-items.component.html',
-  styleUrls: ['./workflow-request-items.component.css']
+  styleUrls: ['./workflow-request-items.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowRequestItemsComponent {
   readonly Package = Package;

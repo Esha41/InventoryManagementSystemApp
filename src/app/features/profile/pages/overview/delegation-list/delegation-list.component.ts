@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@services/user-delegation.service';
@@ -20,7 +20,8 @@ import { finalize } from 'rxjs/operators';
         LucideAngularModule,
         AppDatePipe
     ],
-    templateUrl: './delegation-list.component.html'
+    templateUrl: './delegation-list.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DelegationListComponent implements OnInit {
     readonly Plus = Plus;
@@ -66,7 +67,7 @@ export class DelegationListComponent implements OnInit {
         this.delegationService.getMyDelegations()
             .pipe(finalize(() => {
                 this.isLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
                 next: (res) => {
@@ -83,7 +84,7 @@ export class DelegationListComponent implements OnInit {
             .subscribe({
                 next: (res) => {
                     this.pendingDelegations = res?.succeeded && res.data ? res.data : [];
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.pendingDelegations = [];

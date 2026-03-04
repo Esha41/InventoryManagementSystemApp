@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
@@ -13,7 +13,8 @@ import { ThemeService } from '@services/theme.service';
     standalone: true,
     imports: [CommonModule, NgxEchartsModule, LucideAngularModule, TranslateModule],
     templateUrl: './inventory-distribution-chart.component.html',
-    styleUrl: './inventory-distribution-chart.component.css'
+    styleUrl: './inventory-distribution-chart.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryDistributionChartComponent implements OnInit, OnDestroy, OnChanges {
     @Input() distribution: InventoryDistribution | undefined;
@@ -28,7 +29,8 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy, O
 
     constructor(
         private translate: TranslateService,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
@@ -37,6 +39,7 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy, O
             if (this.distribution) {
                 this.initChart();
             }
+            this.cdr.markForCheck();
         });
     }
 
@@ -131,6 +134,7 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy, O
                     }
                 ]
             };
+            this.cdr.markForCheck();
         });
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +18,8 @@ import { mapOrderPriorityToString } from '@utils/priority.utils';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent],
   templateUrl: './supply-order-list.component.html',
-  styleUrls: ['./supply-order-list.component.css']
+  styleUrls: ['./supply-order-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupplyOrderListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -33,7 +34,8 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private supplyService: SupplyService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,18 +54,21 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
    */
   loadOrders(): void {
     this.loading = true;
+    this.cdr.markForCheck();
     this.orderService.getAllOrders()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders) => {
           this.orders = orders;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translateService.get(['toast.failedToLoadOrders', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadOrders'], translations['toast.error']);
           });
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -84,6 +89,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
         error: () => {
           // Supply doesn't exist yet, navigate to supply-request-detail to create it
           // TODO: Later this should auto-create supply or show a better flow
+          this.cdr.markForCheck();
           this.router.navigate(['/requests-management', order.id, 'supply-request-detail']);
         }
       });

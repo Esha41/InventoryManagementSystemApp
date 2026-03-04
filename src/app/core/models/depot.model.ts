@@ -14,7 +14,11 @@ export interface DepotDto {
 export interface DepotUserDto {
   id: string;
   userName: string;
+  nameEn?: string;
+  nameAr?: string;
   fullNameEn?: string;
+  fullNameAR?: string;
   fullNameAr?: string;
+  fullNameEN?: string;
 }
 

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,8 @@ import { ButtonComponent } from '@components/button/button.component';
         ModalComponent,
         ButtonComponent
     ],
-    templateUrl: './edit-asset-modal.component.html'
+    templateUrl: './edit-asset-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditAssetModalComponent implements OnInit, OnChanges {
     @Input() isOpen = false;
