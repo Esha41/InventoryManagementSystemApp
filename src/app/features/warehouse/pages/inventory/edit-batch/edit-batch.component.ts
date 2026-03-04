@@ -11,8 +11,9 @@ import { BatchService } from '@services/batch.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BatchDto, BulkUpdateBatchAssetsDto, BatchAssetUpdateItem } from '@models/batch.model';
-import { AssetDto, AssetStatus } from '@models/asset.model';
+import { AssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
+import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -27,6 +28,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
         TranslateModule,
         LucideAngularModule,
         CardComponent,
+        DropdownComponent,
         LoadingStateComponent,
         ErrorStateComponent
     ],
@@ -270,12 +272,13 @@ export class EditBatchComponent implements OnInit, OnDestroy {
         });
     }
 
+    // Use enum names as values to match API (JsonStringEnumConverter returns "ReadyToIssue", etc.)
     readonly assetStatuses = [
-        { value: AssetStatus.Active, label: 'assetStatus.active' },
-        { value: AssetStatus.Inactive, label: 'assetStatus.inactive' },
-        { value: AssetStatus.Maintenance, label: 'assetStatus.maintenance' },
-        { value: AssetStatus.Disposed, label: 'assetStatus.disposed' },
-        { value: AssetStatus.Lost, label: 'assetStatus.lost' },
-        { value: AssetStatus.Damaged, label: 'assetStatus.damaged' }
+        { value: 'ReadyToIssue', label: 'assetStatus.readyToIssue' },
+        { value: 'InMaintenance', label: 'assetStatus.inMaintenance' },
+        { value: 'UnserviceableRepairable', label: 'assetStatus.unserviceableRepairable' },
+        { value: 'UnserviceableUnrepairable', label: 'assetStatus.unserviceableUnrepairable' },
+        { value: 'AwaitingDisposal', label: 'assetStatus.awaitingDisposal' },
+        { value: 'Disposed', label: 'assetStatus.disposed' }
     ];
 }

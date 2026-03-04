@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto } from '@models/inventory.model';
-import { AssetDto } from '@models/asset.model';
+import { AssetDto, getAssetStatusLabel as getAssetStatusKey } from '@models/asset.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort, formatNumber as formatNumberUtil } from '@utils/format.utils';
 
@@ -63,17 +63,12 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
-   * Get asset status label
+   * Get asset status label (translated)
    */
   getAssetStatusLabel(asset: AssetDto): string {
     if (!asset.status) return '-';
-    const statusMap: { [key: number]: string } = {
-      1: 'Available',
-      2: 'In Use',
-      3: 'Under Maintenance',
-      4: 'Retired'
-    };
-    return statusMap[asset.status] || '-';
+    const key = getAssetStatusKey(asset.status);
+    return this.translateService.instant(key) || '-';
   }
 
   /**

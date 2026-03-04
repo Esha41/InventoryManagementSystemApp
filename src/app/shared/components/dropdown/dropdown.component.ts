@@ -329,18 +329,37 @@ export class DropdownComponent<T = Primitive>
 
   private adjustPanelPosition(): void {
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
-    if (!panel) return;
+    const trigger = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
+    if (!panel || !trigger) return;
 
-    // Reset manual positioning to rely on CSS absolute positioning
-    // This fixes issues where transformed ancestors (like modals) would break fixed positioning
-    panel.style.position = '';
-    panel.style.top = '';
-    panel.style.left = '';
-    panel.style.width = '';
-    panel.style.minWidth = '';
+    // Use fixed positioning to escape overflow clipping (e.g. tables with overflow-x-auto)
+    const rect = trigger.getBoundingClientRect();
+    const gap = 8;
+    panel.style.position = 'fixed';
+    panel.style.top = `${rect.bottom + gap}px`;
+    panel.style.left = `${rect.left}px`;
+    panel.style.width = `${rect.width}px`;
+    panel.style.minWidth = `${rect.width}px`;
     panel.style.maxWidth = '';
-    panel.style.right = '';
-    panel.style.zIndex = '';
+    panel.style.right = 'auto';
+    panel.style.zIndex = '99999';
+
+    if (this.isRTL) {
+      panel.style.left = 'auto';
+      panel.style.right = `${window.innerWidth - rect.right}px`;
+    }
+
+    // Keep panel in viewport if it would overflow bottom
+    requestAnimationFrame(() => {
+      const panelRect = panel.getBoundingClientRect();
+      if (panelRect.bottom > window.innerHeight - 10) {
+        const spaceAbove = rect.top - 10;
+        if (spaceAbove > 100) {
+          panel.style.top = 'auto';
+          panel.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+        }
+      }
+    });
   }
 
 

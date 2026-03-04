@@ -8,7 +8,7 @@ import { LucideAngularModule, ArrowLeft, Save, Loader2 } from 'lucide-angular';
 
 import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
-import { AssetDto, UpdateAssetDto, AssetStatus } from '@models/asset.model';
+import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 

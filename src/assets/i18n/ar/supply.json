@@ -354,12 +354,12 @@
     "scanButton": "مسح"
   },
   "assetStatus": {
-    "active": "نشط",
-    "inactive": "في الاستخدام",
-    "maintenance": "تحت الصيانة",
-    "disposed": "متقاعد",
-    "lost": "مفقود",
-    "damaged": "تالف",
+    "readyToIssue": "جاهز للصرف",
+    "inMaintenance": "قيد الصيانة",
+    "unserviceableRepairable": "غير صالح للصرف (قابل للإصلاح)",
+    "unserviceableUnrepairable": "غير صالح للصرف (غير قابل للإصلاح)",
+    "awaitingDisposal": "في إنتظار الإتلاف",
+    "disposed": "تم الإتلاف",
     "unknown": "غير معروف"
   },
   "inventorySummary": {

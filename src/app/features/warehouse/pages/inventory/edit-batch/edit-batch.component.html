@@ -127,12 +127,11 @@
                                         [ngClass]="{'border-red-500': isFieldInvalid(i, 'rfid'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'rfid')}">
                                 </td>
                                 <td class="px-4 py-2">
-                                    <select formControlName="status"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0">
-                                        <option *ngFor="let s of assetStatuses" [ngValue]="s.value">
-                                            {{ s.label | translate }}
-                                        </option>
-                                    </select>
+                                    <app-dropdown class="w-full min-w-[10rem]" formControlName="status"
+                                        [options]="assetStatuses" optionValue="value" optionLabel="label"
+                                        [translateLabels]="true" [placeholderSelectable]="false"
+                                        [placeholder]="'editBatch.selectStatus' | translate">
+                                    </app-dropdown>
                                 </td>
                                 <td class="px-4 py-2">
                                     <input formControlName="assetTag" type="text"

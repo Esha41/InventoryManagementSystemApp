@@ -354,12 +354,12 @@
     "scanButton": "Scan"
   },
   "assetStatus": {
-    "active": "Active",
-    "inactive": "In Use",
-    "maintenance": "Under Maintenance",
-    "disposed": "Disposed/Retired",
-    "lost": "Lost",
-    "damaged": "Damaged",
+    "readyToIssue": "Ready to Issue",
+    "inMaintenance": "In Maintenance",
+    "unserviceableRepairable": "Unserviceable (Repairable)",
+    "unserviceableUnrepairable": "Unserviceable (Unrepairable)",
+    "awaitingDisposal": "Awaiting Disposal",
+    "disposed": "Disposed",
     "unknown": "Unknown"
   },
   "inventorySummary": {

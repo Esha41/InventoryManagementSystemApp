@@ -704,6 +704,7 @@
     "saving": "Saving...",
     "saveSuccess": "All assets updated successfully",
     "saveError": "Failed to update assets. Please try again.",
-    "validationError": "Please fix the validation errors before saving"
+    "validationError": "Please fix the validation errors before saving",
+    "selectStatus": "Select status"
   }
 }
