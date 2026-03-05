@@ -13,9 +13,9 @@ import { OrderDto } from '@models/order.model';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { TranslationService } from '@services/translation.service';
-import { WeaponSupplyLookupService } from '../weapon-supply-review/services/weapon-supply-lookup.service';
-import { WeaponSupplyDisplayService } from '../weapon-supply-review/services/weapon-supply-display.service';
-import { WeaponSupplySelectionService } from '../weapon-supply-review/services/weapon-supply-selection.service';
+import { WeaponSupplyLookupService } from '../../services/weapon-supply-lookup.service';
+import { WeaponSupplyDisplayService } from '../../services/weapon-supply-display.service';
+import { WeaponSupplySelectionService } from '../../services/weapon-supply-selection.service';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 
 @Component({
