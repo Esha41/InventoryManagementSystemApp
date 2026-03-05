@@ -61,6 +61,35 @@ export interface CreateAssetSupplyDto {
   supplyDetails: CreateAssetSupplyDetailDto[];
 }
 
+/** Item info for a batch - which requested item(s) this batch contains */
+export interface BatchItemDto {
+  itemId: number;
+  itemName?: string;
+  itemNo?: string;
+  quantity: number;
+}
+
+/** Batch in a depot that contains assets matching the order's requested items */
+export interface BatchForOrderDepotDto {
+  id: number;
+  batchNumber: string;
+  quantity: number;
+  depotId: number;
+  depotName?: string;
+  items?: BatchItemDto[];
+}
+
+/** DTO for saving depot and batch selections */
+export interface DepotBatchSelectionDto {
+  depotId: number;
+  batchId: number;
+}
+
+export interface SaveWeaponSupplySelectionDto {
+  orderId: number;
+  selections: DepotBatchSelectionDto[];
+}
+
 export interface AssetSupplyDto {
   id: number;
   orderId: number;
@@ -105,20 +134,43 @@ export class AssetSupplyService {
   ) { }
 
   /**
+   * Get batches in the given depots that contain assets matching the order's requested items
+   */
+  getBatchesForOrderDepots(orderId: number, depotIds: number[]): Observable<BatchForOrderDepotDto[]> {
+    this.config.log(`Getting batches for order depots`, { orderId, depotIds });
+    const params = depotIds.map(id => `depotIds=${id}`).join('&');
+    const endpoint = `${this.baseEndpoint}/order/${orderId}/batches-for-depots?${params}`;
+    return this.apiService.getWithAuth<APIOperationResponse<BatchForOrderDepotDto[]>>(endpoint).pipe(
+      map(response => {
+        if (!response.succeeded || !response.data) {
+          throw new Error(response.message || 'Failed to get batches');
+        }
+        return response.data;
+      }),
+      catchError(error => {
+        this.config.logError('Failed to get batches for order depots', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Get available assets to supply for an order
    * @param orderId The order ID
    * @param depotIds Optional list of depot IDs to filter assets
+   * @param batchIds Optional list of batch IDs to filter assets (when provided, only assets from these batches)
    */
-  getAssetsToSupply(orderId: number, depotIds?: number[]): Observable<OrderAssetsToSupplyDto> {
-    this.config.log(`Getting assets to supply for order ${orderId}`, { depotIds });
+  getAssetsToSupply(orderId: number, depotIds?: number[], batchIds?: number[]): Observable<OrderAssetsToSupplyDto> {
+    this.config.log(`Getting assets to supply for order ${orderId}`, { depotIds, batchIds });
     
-    let endpoint = `${this.baseEndpoint}/order/${orderId}/available-assets`;
-    
-    // Add depot IDs as query parameters if provided
+    const queryParams: string[] = [];
     if (depotIds && depotIds.length > 0) {
-      const params = depotIds.map(id => `depotIds=${id}`).join('&');
-      endpoint += `?${params}`;
+      depotIds.forEach(id => queryParams.push(`depotIds=${id}`));
     }
+    if (batchIds && batchIds.length > 0) {
+      batchIds.forEach(id => queryParams.push(`batchIds=${id}`));
+    }
+    const endpoint = `${this.baseEndpoint}/order/${orderId}/available-assets${queryParams.length ? '?' + queryParams.join('&') : ''}`;
 
     return this.apiService.getWithAuth<APIOperationResponse<OrderAssetsToSupplyDto>>(endpoint).pipe(
       map(response => {
@@ -174,6 +226,50 @@ export class AssetSupplyService {
       }),
       catchError(error => {
         this.config.logError('Failed to get asset supply by order ID', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Get saved depot and batch selections for weapon supply.
+   */
+  getWeaponSupplySelection(orderId: number): Observable<{ depotId: number; batchId: number }[]> {
+    this.config.log('Getting weapon supply selection', { orderId });
+    return this.apiService.getWithAuth<APIOperationResponse<{ depotId: number; batchId: number }[]>>(
+      `${this.baseEndpoint}/order/${orderId}/selection`
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to get selection');
+        }
+        return response.data ?? [];
+      }),
+      catchError(error => {
+        this.config.logError('Failed to get weapon supply selection', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Save depot and batch selections for weapon supply (replaces existing for the order)
+   */
+  saveWeaponSupplySelection(orderId: number, selections: { depotId: number; batchId: number }[]): Observable<boolean> {
+    this.config.log('Saving weapon supply selection', { orderId, selections });
+    const dto: SaveWeaponSupplySelectionDto = { orderId, selections };
+    return this.apiService.postWithAuth<APIOperationResponse<boolean>>(
+      `${this.baseEndpoint}/order/${orderId}/save-selection`,
+      dto
+    ).pipe(
+      map(response => {
+        if (!response.succeeded) {
+          throw new Error(response.message || 'Failed to save selection');
+        }
+        return response.data ?? true;
+      }),
+      catchError(error => {
+        this.config.logError('Failed to save weapon supply selection', error);
         return throwError(() => error);
       })
     );

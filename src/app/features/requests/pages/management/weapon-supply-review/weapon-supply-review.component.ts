@@ -28,6 +28,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ItemAssetSelectionComponent } from './components/item-asset-selection/item-asset-selection.component';
+import { WeaponSupplySelectionComponent } from './components/weapon-supply-selection/weapon-supply-selection.component';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -38,7 +39,8 @@ import { ItemAssetSelectionComponent } from './components/item-asset-selection/i
     TranslateModule,
     LucideAngularModule,
     LoadingStateComponent,
-    ItemAssetSelectionComponent
+    ItemAssetSelectionComponent,
+    WeaponSupplySelectionComponent
   ],
   providers: [
     WeaponSupplyReviewService,

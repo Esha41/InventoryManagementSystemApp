@@ -393,6 +393,7 @@
     "items": "items",
     "review": "Review",
     "reviewItems": "Review Items",
+    "selectDepo": "Select Depots",
     "reviewWeaponSupply": "Supply Weapon",
     "updateRequestAndSupply": "Update Request & Supply",
     "addItem": "Add Item",
