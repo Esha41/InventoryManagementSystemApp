@@ -6,6 +6,7 @@ import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateDiscardDto, DiscardDto } from '@models/discard.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Discard Service
@@ -66,7 +67,7 @@ export class DiscardService {
         }),
         catchError(error => {
           this.configService.logError('Failed to create discard request', error);
-          const msg = error?.error?.message ?? error?.error?.Message ?? error?.message ?? 'Failed to create discard request';
+          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create discard request');
           return throwError(() => new Error(msg));
         })
       );

@@ -16,6 +16,8 @@ import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@services/profile-data.service';
 import { DepotUserAssignmentModalComponent } from './components/depot-user-assignment-modal/depot-user-assignment-modal.component';
+import { trackById } from '@utils/trackby.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-depot-management',
@@ -31,6 +33,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly X = X;
   readonly Users = Users;
+  readonly trackById = trackById;
 
   depots: DepotDto[] = [];
   loading = false;
@@ -110,7 +113,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage = error?.message ?? error?.userMessage ?? 'Failed to load depots';
+          this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load depots');
           this.loading = false;
           this.cdr.markForCheck();
         }
@@ -174,7 +177,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.translateService.get([
             this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
             'toast.success'
-          ]).subscribe(translations => {
+          ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
             this.toastService.success(translations[messageKey], translations['toast.success']);
           });
@@ -182,7 +185,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.lookupService.clearCacheFor('depots');
           this.loadDepots();
         } else {
-          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               response.message || translations['toast.failedToSaveDepot'],
               translations['toast.error']
@@ -193,27 +196,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (error) => {
-        // Extract error message from various possible locations
-        let errorMessage = 'Failed to save depot';
-        
-        // Check userMessage from error interceptor first
-        if (error?.userMessage) {
-          errorMessage = error.userMessage;
-        } 
-        // Check error.error.message (backend response body)
-        else if (error?.error?.message) {
-          errorMessage = error.error.message;
-        } 
-        // Check error.message (standard error message)
-        else if (error?.message) {
-          errorMessage = error.message;
-        }
-        // Check if error.error is a string
-        else if (typeof error?.error === 'string') {
-          errorMessage = error.error;
-        }
-        
-          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save depot');
+        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               errorMessage || translations['toast.failedToSaveDepot'],
               translations['toast.error']
@@ -260,13 +244,13 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<DepotDto>) => {
           if (response.succeeded) {
-            this.translateService.get(['toast.depotDeleted', 'toast.success']).subscribe(translations => {
+            this.translateService.get(['toast.depotDeleted', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.success(translations['toast.depotDeleted'], translations['toast.success']);
             });
             this.lookupService.clearCacheFor('depots');
             this.loadDepots();
           } else {
-            this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).subscribe(translations => {
+            this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(
                 response.message || translations['toast.failedToDeleteDepot'],
                 translations['toast.error']
@@ -278,27 +262,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (err) => {
-          // Extract the actual error message from various possible error structures
-          let errorMessage = 'Failed to delete depot';
-
-          // Check for userMessage from error interceptor first
-          if (err?.userMessage) {
-            errorMessage = err.userMessage;
-          } else if (err instanceof Error && err.message) {
-            // The API service's handleError wraps the error in an Error object with message property
-            errorMessage = err.message;
-          } else if (err?.error?.message) {
-            // Direct error response from backend
-            errorMessage = err.error.message;
-          } else if (err?.message) {
-            // Error message at top level
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            // String error
-            errorMessage = err;
-          }
-
-          this.translateService.get('toast.error').subscribe(translations => {
+          const errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to delete depot');
+          this.translateService.get('toast.error').pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               errorMessage,
               translations['toast.error']

@@ -20,6 +20,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 
 // Utils
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { trackByIndex } from '@utils/trackby.utils';
 
 interface BulkAssetData {
     warehouseId: number;
@@ -56,6 +57,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     readonly X = X;
     readonly ArrowLeft = ArrowLeft;
     readonly ArrowRight = ArrowRight;
+    readonly trackByIndex = trackByIndex;
 
     // Form
     bulkEntryForm!: FormGroup;

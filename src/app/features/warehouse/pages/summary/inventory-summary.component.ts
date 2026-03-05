@@ -22,6 +22,7 @@ import { TranslationService } from '@services/translation.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { ToastService } from '@services/toast.service';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -86,6 +87,10 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     readonly ArrowLeft = ArrowLeft;
     readonly User = User;
     readonly Building = Building;
+    readonly trackByItemId = trackByKey('itemId');
+    readonly trackById = trackById;
+    readonly trackByIndex = trackByIndex;
+    readonly trackByInventoryDetailId = trackByKey('inventoryDetailId');
 
     private destroy$ = new Subject<void>();
 

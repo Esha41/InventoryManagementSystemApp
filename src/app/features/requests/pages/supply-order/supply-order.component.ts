@@ -30,6 +30,8 @@ import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ConfigService } from '@services/config.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-supply-order',
@@ -95,6 +97,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private supplyOrderDataService: SupplyOrderDataService,
+    private configService: ConfigService,
     private cdr: ChangeDetectorRef,
     private authService: BackendAuthService
   ) { }
@@ -113,7 +116,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
 
     if (isNaN(receivedId)) {
-      this.translateService.get(['toast.error', 'supplyOrder.errors.invalidId']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'supplyOrder.errors.invalidId']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['supplyOrder.errors.invalidId'] || 'Invalid ID',
           translations['toast.error']
@@ -163,9 +166,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load supply for this order';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply for this order');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loading = false;
@@ -200,9 +203,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load supply order';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply order');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loading = false;
@@ -250,9 +253,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
             this.cdr.markForCheck();
           }
         },
-        error: () => {
-          // Silently fail - this is a fallback call
-          console.warn('Failed to load full order details for department/requester info');
+        error: (err: unknown) => {
+          this.configService.logWarning('Failed to load full order details for department/requester info', err);
         }
       });
   }
@@ -329,7 +331,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onUpdateItem(item: SupplyItemDisplay): void {
     if (!this.supplyData) {
-      this.translateService.get(['supplyOrder.toast.supplyDataNotLoaded', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.supplyDataNotLoaded', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.supplyDataNotLoaded'], translations['toast.error']);
       });
       return;
@@ -339,7 +341,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     item.quantityError = undefined;
 
     if (!item.quantity || item.quantity <= 0) {
-      this.translateService.get(['supplyOrder.toast.quantityMustBeGreaterThanZero']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.quantityMustBeGreaterThanZero']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         item.quantityError = translations['supplyOrder.toast.quantityMustBeGreaterThanZero'];
         this.toastService.error(translations['supplyOrder.toast.quantityMustBeGreaterThanZero']);
       });
@@ -347,14 +349,14 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }
 
     if (!item.lot || item.lot <= 0) {
-      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
       });
       return;
     }
 
     if (!item.itemId || item.itemId <= 0) {
-      this.translateService.get(['supplyOrder.toast.invalidItem', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.invalidItem', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.invalidItem'], translations['toast.error']);
       });
       return;
@@ -368,7 +370,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
     if (newTotalSupplied > item.requestedQuantity) {
       const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
-      this.translateService.get(['supplyOrder.toast.maxQuantityExceeded', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.maxQuantityExceeded', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         const errorMsg = translations['supplyOrder.toast.maxQuantityExceeded']
           .replace('{{maxQuantity}}', formatNumberUtil(maxAllowedQuantity))
           .replace('{{requestedQuantity}}', formatNumberUtil(item.requestedQuantity));
@@ -387,7 +389,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.itemUpdatedSuccessfully', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['supplyOrder.toast.itemUpdatedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.success(translations['supplyOrder.toast.itemUpdatedSuccessfully'], translations['toast.success']);
           });
           item.isEditing = false;
@@ -397,9 +399,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
           this.loadSupplyData();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to update item';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.updatingItem = false;
@@ -441,7 +443,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.itemRemovedFromSupply', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['supplyOrder.toast.itemRemovedFromSupply', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             const successMsg = translations['supplyOrder.toast.itemRemovedFromSupply'].replace('{{itemName}}', item.itemName);
             this.toastService.success(successMsg, translations['toast.success']);
           });
@@ -449,9 +451,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
           this.loadSupplyData();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to delete item';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete item');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.deletingItem = false;
@@ -544,20 +546,20 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.translateService.get(['supplyOrder.toast.itemRemovedSuccessfully', 'toast.success']).subscribe(translations => {
+            this.translateService.get(['supplyOrder.toast.itemRemovedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.success(translations['supplyOrder.toast.itemRemovedSuccessfully'], translations['toast.success']);
             });
             this.closeRemoveOrderItemModal();
             this.loadSupplyData();
           } else {
-            this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).subscribe(translations => {
+            this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(response.message || translations['toast.failedToRemoveItem'], translations['toast.error']);
             });
           }
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to remove item';
-          this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove item');
+          this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
         }

@@ -32,6 +32,8 @@ import { WarehouseInventoryExportService } from './services/warehouse-inventory-
 import { InventoryTableComponent } from './components/inventory-table/inventory-table.component';
 import { BatchTableComponent } from './components/batch-table/batch-table.component';
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
+import { trackById } from '@utils/trackby.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -94,6 +96,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly trackById = trackById;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -142,7 +145,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Initialize tab from query params first (synchronously read initial value)
+    // Initialize tab and page from query params first (synchronously read initial value)
     const initialQueryParams = this.route.snapshot.queryParams;
     const tabParam = initialQueryParams['tab'];
     if (tabParam && (tabParam === 'ammunition' || tabParam === 'explosive' || tabParam === 'batch')) {
@@ -150,8 +153,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     } else if (tabParam === 'weapon') {
       this.activeTab = 'batch';
     }
+    this.syncPageFromQueryParams();
 
-    // Subscribe to query params changes for tab updates
+    // Subscribe to query params changes for tab and page updates
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
@@ -162,6 +166,17 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             this.activeTab = effectiveTab;
             this.currentPage = 1;
             this.applyFilters();
+            this.cdr.markForCheck();
+          }
+        }
+        const page = params['page'];
+        if (page) {
+          const parsed = parseInt(page, 10);
+          if (!isNaN(parsed) && parsed >= 1 && parsed !== this.currentPage) {
+            this.currentPage = parsed;
+            if (this.activeTab !== 'batch') {
+              this.loadTabContent();
+            }
             this.cdr.markForCheck();
           }
         }
@@ -209,6 +224,27 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /** Read page from URL query params (Angular best practice: URL reflects state) */
+  private syncPageFromQueryParams(): void {
+    const page = this.route.snapshot.queryParamMap.get('page');
+    if (page) {
+      const parsed = parseInt(page, 10);
+      if (!isNaN(parsed) && parsed >= 1) {
+        this.currentPage = parsed;
+      }
+    }
+  }
+
+  /** Update URL with current page (preserves other query params) */
+  private updatePageInUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: this.currentPage > 1 ? this.currentPage : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
   private loadDepotAndAssets(): void {
     this.loading = true;
     this.error = null;
@@ -240,7 +276,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.error = 'Failed to load depot data';
           this.loading = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.failedToLoadInventory', 'toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.failedToLoadInventory', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadInventory'] || 'Failed to load data', translations['toast.error']);
           });
         }
@@ -268,6 +304,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.batches = batches || [];
           this.filteredBatches = this.applyBatchSearch(this.batches);
           this.totalItems = this.filteredBatches.length;
+          this.validateCurrentPage();
+          this.updatePageInUrl();
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -300,6 +338,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.inventoryDetails = response.items || [];
           this.filteredInventoryDetails = this.filterService.normalizeInventoryDetails(this.inventoryDetails);
           this.totalItems = response.totalCount;
+          this.validateCurrentPage();
+          this.updatePageInUrl();
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -383,6 +423,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.invoiceFilter = null; // Clear invoice filter when switching tabs
     this.updateQueryParams(tab);
+    this.updatePageInUrl();
 
     // Always load content (which handles switching strategy)
     this.loadTabContent();
@@ -390,15 +431,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update query parameters with current tab
-   * Uses merge to preserve other query params (like search, pagination, etc.)
+   * Update query parameters with current tab and page
+   * Uses merge to preserve other query params (like search, etc.)
    */
-  private updateQueryParams(tab: 'ammunition' | 'explosive' | 'batch'): void {
+  private updateQueryParams(tab: 'ammunition' | 'explosive' | 'batch', includePage = false): void {
+    const queryParams: Record<string, string | number | null> = { tab };
+    if (includePage && this.currentPage > 1) {
+      queryParams['page'] = this.currentPage;
+    } else if (includePage) {
+      queryParams['page'] = null;
+    }
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab },
+      queryParams,
       queryParamsHandling: 'merge',
-      replaceUrl: false // Allow browser back/forward to work properly
+      replaceUrl: !includePage
     });
   }
 
@@ -445,6 +492,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.updatePageInUrl();
       if (this.activeTab !== 'batch') {
         this.loadTabContent();
       }
@@ -489,6 +537,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   onRowsPerPageChange(newSize: number): void {
     this.rowsPerPage = newSize;
     this.currentPage = 1;
+    this.updatePageInUrl();
     if (this.activeTab !== 'batch') {
       this.loadTabContent();
     }
@@ -520,8 +569,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Navigate to add inventory page
    */
   onAddInventory(): void {
+    const queryParams: Record<string, string | number> = { tab: this.activeTab };
+    if (this.currentPage > 1) {
+      queryParams['page'] = this.currentPage;
+    }
     this.router.navigate(['/warehouse', this.depoId, 'inventory', 'add'], {
-      queryParams: { tab: this.activeTab },
+      queryParams,
       queryParamsHandling: 'merge'
     });
   }
@@ -530,7 +583,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
    * Navigate to add weapon asset page
    */
   onAddWeaponAsset(): void {
-    this.router.navigate(['/warehouse', this.depoId, 'assets', 'add']);
+    const queryParams = this.currentPage > 1 ? { page: this.currentPage } : {};
+    this.router.navigate(['/warehouse', this.depoId, 'assets', 'add'], {
+      queryParams: Object.keys(queryParams).length ? queryParams : undefined
+    });
   }
 
   onBatchRowClick(batch: BatchSummaryDto): void {
@@ -590,7 +646,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.batches = this.batches.filter(b => b.id !== batchToDelete.id);
           this.filteredBatches = this.applyBatchSearch(this.batches);
           this.totalItems = this.filteredBatches.length;
-          this.translateService.get('warehouseInventory.batchDeleted').subscribe(msg =>
+          this.translateService.get('warehouseInventory.batchDeleted').pipe(takeUntil(this.destroy$)).subscribe(msg =>
             this.toastService.success(msg, this.translateService.instant('toast.success'))
           );
           this.cdr.markForCheck();
@@ -794,7 +850,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.translateService.get(['toast.failedToUpdate', 'toast.error']).subscribe(translations => {
-            const errorMsg = error.error?.message || translations['toast.failedToUpdate'];
+            const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, translations['toast.failedToUpdate'], this.translateService);
             this.toastService.error(errorMsg, translations['toast.error']);
           });
         }

@@ -6,6 +6,7 @@ import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
 
 // Re-export for backward compatibility
@@ -62,8 +63,7 @@ export class FileUploadService {
       }),
       catchError(error => {
         this.config.logError('Failed to upload file', error);
-        // Extract error message from HTTP error response
-        const errorMessage = this.extractErrorMessage(error);
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -106,8 +106,7 @@ export class FileUploadService {
       }),
       catchError(error => {
         this.config.logError('Failed to upload files', error);
-        // Extract error message from HTTP error response
-        const errorMessage = this.extractErrorMessage(error);
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -236,44 +235,5 @@ export class FileUploadService {
     return `${baseUrl}${API_ENDPOINTS.FILE_UPLOAD.SERVE_BY_PATH}?${params.toString()}`;
   }
 
-  /**
-   * Extract error message from HTTP error response
-   * Handles various error response formats from the backend
-   */
-  private extractErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      // Backend validation errors are typically returned as BadRequest (400) with a string message
-      if (error.status === 400) {
-        // Check if error is a plain string
-        if (typeof error.error === 'string') {
-          return error.error;
-        }
-        // Check if error has a message property
-        if (error.error && typeof error.error === 'object') {
-          if (error.error.message) {
-            return error.error.message;
-          }
-          // Check for APIOperationResponse format
-          if (error.error.error && typeof error.error.error === 'object' && error.error.error.message) {
-            return error.error.error.message;
-          }
-        }
-        return 'File validation failed. Please check the file type and size.';
-      }
-      // For other HTTP errors, try to extract message
-      if (error.error && typeof error.error === 'object' && error.error.message) {
-        return error.error.message;
-      }
-      if (typeof error.error === 'string') {
-        return error.error;
-      }
-    }
-    // If error is an Error object, return its message
-    if (error instanceof Error) {
-      return error.message;
-    }
-    // Default fallback
-    return 'Failed to upload file. Please try again.';
-  }
 }
 

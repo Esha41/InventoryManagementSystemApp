@@ -1,78 +1,28 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
-        <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
-      </div>
-      <ng-container *ngIf="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')">
-        <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="navigateToAddAsset()"
-          class="w-full sm:w-auto">
-        <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
-          <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-          <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
-          <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
-          <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
-        </span>
-        </app-button>
-      </ng-container>
-    </div>
-
-    <!-- Tabs - scroll inside container when space is limited -->
-    <app-card [shadow]="true" class="min-w-0 mb-6">
-      <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
-        <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
-          <button (click)="switchTab('ammunition')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'ammunition',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
-          }"
-            class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
-            <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
-          </button>
-          <button (click)="switchTab('explosive')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'explosive',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
-          }"
-            class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
-            <span>{{ 'assetList.tabs.explosive' | translate }}</span>
-          </button>
-          <button (click)="switchTab('weapon')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'weapon',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
-          }"
-            class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
-            <span>{{ 'assetList.tabs.weapon' | translate }}</span>
-          </button>
-        </nav>
-      </div>
-    </app-card>
+    <app-asset-list-header
+      [activeTab]="activeTab"
+      [ammunitionViewMode]="ammunitionViewMode"
+      [explosivesViewMode]="explosivesViewMode"
+      [weaponsViewMode]="weaponsViewMode"
+      [isRTL]="isRTL"
+      (tabChange)="switchTab($event)"
+      (addClick)="navigateToAddAsset()">
+    </app-asset-list-header>
 
     <!-- Filters Card -->
     <div class="mb-6">
       <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
-      [caseTypeFilterOptions]="caseTypeFilterOptions"
-      [hazardDivisionFilterOptions]="hazardDivisionFilterOptions"
-      [compatibilityFilterOptions]="compatibilityFilterOptions"
-      [weaponTypeFilterOptions]="weaponTypeFilterOptions"
-      [weaponClassificationFilterOptions]="weaponClassificationFilterOptions"
-      [countryFilterOptions]="countryFilterOptions"
-      [explosiveTypeFilterOptions]="explosiveTypeFilterOptions"
-      [explosiveClassificationFilterOptions]="explosiveClassificationFilterOptions"
-      [explosiveHazardDivisionFilterOptions]="explosiveHazardDivisionFilterOptions"
-      [explosiveCompatibilityFilterOptions]="explosiveCompatibilityFilterOptions"
-      (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (clearFilters)="clearFilters()">
+      [filterOptions]="filterOptions"
+      (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (searchCleared)="onSearchCleared()" (clearFilters)="clearFilters()">
       </app-asset-filter-bar>
     </div>
 
     <!-- Assets Table Card (heading + sub-tabs + table inside one card) -->
     <div class="mt-6">
-      <app-asset-table [assets]="assets" [activeTab]="activeTab" [loading]="loading" [sortState]="sortState"
+      <app-asset-table [assets]="(facade.assets$ | async) ?? []" [activeTab]="activeTab" [loading]="(facade.loading$ | async) ?? false" [sortState]="sortState"
       [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
-      [totalItems]="totalItems" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
+      [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
       [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [showPermanentDelete]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"

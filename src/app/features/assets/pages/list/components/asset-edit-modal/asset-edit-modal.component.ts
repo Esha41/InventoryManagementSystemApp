@@ -86,7 +86,9 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       // Use originalData when available (Asset from table) for correct IDs and entity-specific fields
-      const source: any = (this.selectedAsset as any)?.originalData ?? this.selectedAsset;
+      const source = ('originalData' in this.selectedAsset && this.selectedAsset.originalData)
+        ? this.selectedAsset.originalData
+        : this.selectedAsset;
       this.editForm.patchValue(source || {});
       this.cdr.markForCheck();
     }

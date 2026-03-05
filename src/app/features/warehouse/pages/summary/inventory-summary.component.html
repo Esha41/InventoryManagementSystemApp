@@ -116,7 +116,7 @@
             </div>
             <!-- Mobile/Tablet Card View -->
             <div class="lg:hidden space-y-4">
-                <div *ngFor="let item of paginatedItems"
+                <div *ngFor="let item of paginatedItems; trackBy: trackByItemId"
                     class="bg-[var(--color-background)] rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden">
                     <!-- Card Header / Main Info -->
                     <div class="p-4" (click)="toggleRow(item.itemId, item.itemType)">
@@ -128,10 +128,7 @@
                                         class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 font-mono">
                                         {{ item.itemNo }}
                                     </span>
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
-                                        {{ getItemTypeName(item.itemType) }}
-                                    </span>
+                                    <span class="text-[var(--color-text)]">{{ getItemTypeName(item.itemType) }}</span>
                                 </div>
                             </div>
                             <button type="button" class="text-[var(--color-text-muted)] p-1">
@@ -213,7 +210,7 @@
                             </div>
 
                             <div *ngIf="!isLoadingAssets(item.itemId)" class="space-y-3">
-                                <div *ngFor="let asset of getAssetsForItem(item.itemId)"
+                                <div *ngFor="let asset of getAssetsForItem(item.itemId); trackBy: trackById"
                                     class="bg-[var(--color-background)] rounded p-3 border border-[var(--color-border)] shadow-sm">
                                     <div class="flex justify-between items-start mb-2" (click)="toggleAsset(asset.id)">
                                         <div>
@@ -252,7 +249,7 @@
 
                                         <div *ngIf="!isLoadingHistory(asset.id)"
                                             class="space-y-3 pl-2 border-l-2 border-gray-200">
-                                            <div *ngFor="let entry of getHistoryForAsset(asset.id)"
+                                            <div *ngFor="let entry of getHistoryForAsset(asset.id); trackBy: trackById"
                                                 class="pl-2 relative">
                                                 <div
                                                     class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-[var(--color-brand)]">
@@ -287,10 +284,10 @@
                             </div>
 
                             <div *ngIf="!isLoadingLots(item.itemId)" class="space-y-3">
-                                <div *ngFor="let lot of getLotsForItem(item.itemId)"
+                                <div *ngFor="let lot of getLotsForItem(item.itemId); trackBy: trackByInventoryDetailId"
                                     class="bg-[var(--color-background)] rounded p-3 border border-[var(--color-border)] shadow-sm">
                                     <div class="flex justify-between items-center mb-2">
-                                        <span class="font-mono text-sm font-bold text-[var(--color-brand)]">Lot: {{
+                                        <span class="font-mono text-sm font-bold text-[var(--color-text)]">Lot: {{
                                             lot.lot }}</span>
                                         <span class="text-xs px-2 py-0.5 bg-gray-100 rounded">{{
                                             formatDate(lot.expiryDate) }}</span>
@@ -395,7 +392,7 @@
                         </tr>
 
                         <!-- Inventory Items -->
-                        <ng-container *ngFor="let item of paginatedItems">
+                        <ng-container *ngFor="let item of paginatedItems; trackBy: trackByItemId">
                             <!-- Main Row -->
                             <tr class="accordion-row hover:bg-[var(--color-background-muted)] transition-colors"
                                 [class.expanded]="isExpanded(item.itemId)"
@@ -415,10 +412,7 @@
                                     {{ item.itemNo }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
-                                        {{ getItemTypeName(item.itemType) }}
-                                    </span>
+                                    {{ getItemTypeName(item.itemType) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                                     {{ item.nsn }}
@@ -512,7 +506,7 @@
                                                     </thead>
                                                     <tbody class="divide-y divide-[var(--color-border)]">
                                                         <ng-container
-                                                            *ngFor="let asset of getAssetsForItem(item.itemId)">
+                                                            *ngFor="let asset of getAssetsForItem(item.itemId); trackBy: trackById">
                                                             <tr class="hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
                                                                 (click)="toggleAsset(asset.id)">
                                                                 <td class="px-4 py-3 text-center">
@@ -584,7 +578,7 @@
                                                                             </div>
 
                                                                             <div class="space-y-6">
-                                                                                <div *ngFor="let entry of getHistoryForAsset(asset.id)"
+                                                                                <div *ngFor="let entry of getHistoryForAsset(asset.id); trackBy: trackById"
                                                                                     class="relative pl-10">
                                                                                     <!-- Dot -->
                                                                                     <div
@@ -746,10 +740,10 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody class="divide-y divide-[var(--color-border)]">
-                                                        <tr *ngFor="let lot of getLotsForItem(item.itemId)"
+                                                        <tr *ngFor="let lot of getLotsForItem(item.itemId); trackBy: trackByInventoryDetailId"
                                                             class="hover:bg-[var(--color-background-hover)] transition-colors">
                                                             <td
-                                                                class="px-4 py-3 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
+                                                                class="px-4 py-3 whitespace-nowrap text-sm font-bold text-[var(--color-text)]">
                                                                 {{ lot.lot }}
                                                             </td>
                                                             <td

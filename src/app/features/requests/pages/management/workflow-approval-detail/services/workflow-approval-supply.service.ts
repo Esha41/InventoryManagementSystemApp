@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
@@ -189,16 +189,7 @@ export class WorkflowApprovalSupplyService {
             observer.complete();
           },
           error: (error) => {
-            // Extract error message from API response
-            let errorMessage = 'Failed to submit supply';
-
-            if (error?.error?.message) {
-              errorMessage = error.error.message;
-            } else if (error?.message) {
-              errorMessage = error.message;
-            } else {
-              errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
-            }
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
 
             this.translateService.get(['toast.error']).subscribe(translations => {
               this.toastService.error(
@@ -229,23 +220,15 @@ export class WorkflowApprovalSupplyService {
         formData.append('files', file);
       });
 
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-      // Remove Content-Type header for FormData
-      headers = headers.delete('Content-Type');
-
+      // Auth interceptor handles Authorization header; FormData sets Content-Type automatically
       this.http.post<APIOperationResponse<number[]>>(
         `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${supplyId}`,
-        formData,
-        { headers }
+        formData
       )
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to upload additional files:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to upload additional files', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
@@ -288,20 +271,13 @@ export class WorkflowApprovalSupplyService {
   ): Observable<Blob> {
     return new Observable(observer => {
       const downloadUrl = this.fileUploadService.getFileDownloadUrl(fileId);
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
 
-      this.http.get(downloadUrl, {
-        headers: headers,
-        responseType: 'blob'
-      })
+      // Auth interceptor handles Authorization header for all HttpClient requests
+      this.http.get(downloadUrl, { responseType: 'blob' })
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to download file:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to download file', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
@@ -332,19 +308,12 @@ export class WorkflowApprovalSupplyService {
     destroy$: Subject<void>
   ): Observable<boolean> {
     return new Observable(observer => {
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-
-      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
-        headers: headers
-      })
+      // Auth interceptor handles Authorization header for all HttpClient requests
+      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`)
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to delete file:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to delete file', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),

@@ -44,6 +44,7 @@ import { TranslationService } from '@services/translation.service';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { trackByKey } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -77,6 +78,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
   readonly Math = Math;
+  readonly trackByRequestItemId = trackByKey('requestItemId');
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -531,7 +533,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         catchError((error) => {
           this.config.logError('Failed to process discharge', error);
-          const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('supplyRequestDetail.failedToProcessDischarge'), this.translate);
           const title = this.translate.instant('toast.error');
           this.toastService.error(errorMessage, title);
           this.processingDischarge = false;

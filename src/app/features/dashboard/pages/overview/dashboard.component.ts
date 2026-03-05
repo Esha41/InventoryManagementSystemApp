@@ -16,7 +16,6 @@ import { DiscardService } from '@services/discard.service';
 import { DiscardDto } from '@models/discard.model';
 import { OrderService } from '@services/order.service';
 import { OrderDto } from '@models/order.model';
-import { ErrorHandlingService } from '@services/error-handling.service';
 import { UserContextService } from '@services/user-context.service';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { DashboardDataService } from '@services/dashboard-data.service';
@@ -93,6 +92,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   showContactAdminNotice = false;
 
+  /** TrackBy for dashboard cards - uses request id for stable identity */
+  trackByCard(_: number, card: DashboardCard): number | string {
+    return card.orderRequestId ?? card.returnRequestId ?? card.discardRequestId ?? _;
+  }
+
   // Helper for status badges in table view
   getStatusBadgeClass(status: string): string {
     switch (status) {
@@ -149,7 +153,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private readonly returnService: ReturnService,
     private readonly discardService: DiscardService,
     private readonly translate: TranslateService,
-    private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
     private readonly userContextService: UserContextService,

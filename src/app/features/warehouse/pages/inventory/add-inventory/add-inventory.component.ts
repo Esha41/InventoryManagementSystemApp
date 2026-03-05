@@ -22,6 +22,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
+import { trackByIndex } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-add-inventory',
@@ -47,6 +48,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
+  readonly trackByIndex = trackByIndex;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

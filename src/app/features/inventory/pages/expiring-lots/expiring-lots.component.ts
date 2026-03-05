@@ -5,7 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { MonitoringService, ExpiringLotDto } from '@services/monitoring.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -62,7 +62,6 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private monitoringService: MonitoringService,
-    private errorHandlingService: ErrorHandlingService,
     private translationService: TranslationService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef
@@ -92,8 +91,7 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorHandlingService.resolveHttpErrorMessage(error);
-          this.error = 'Failed to load expiring lots';
+          this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load expiring lots');
           this.loading = false;
           this.cdr.markForCheck();
         }

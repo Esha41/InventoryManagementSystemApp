@@ -17,7 +17,7 @@ import { ReturnService } from '@services/return.service';
 import { ReturnDto } from '@models/return.model';
 import { DiscardService } from '@services/discard.service';
 import { DiscardDto } from '@models/discard.model';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -86,6 +86,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
 
   showContactAdminNotice = false;
+  errorMessage: string | null = null;
 
   // Filter state (managed by shared component)
   searchQuery: string = '';
@@ -100,7 +101,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly notificationService: NotificationService,
     private readonly userContext: UserContextService,
     private readonly translate: TranslateService,
-    private readonly errorHandlingService: ErrorHandlingService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
     private readonly requestStatusUpdateService: RequestStatusUpdateService,
@@ -155,7 +155,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
             paginatedRequests: this.fetchPaginatedRequestsData()
           }).pipe(
             catchError(err => {
-              this.errorHandlingService.resolveHttpErrorMessage(err);
+              this.errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to load dashboard data');
+              this.cdr.markForCheck();
               return of(null);
             }),
             finalize(() => {
