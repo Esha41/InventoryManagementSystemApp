@@ -13,6 +13,9 @@ import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.compone
 import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeDto } from '@core/models/asset.model';
+import { EmployeeService } from '@services/employee.service';
 
 /**
  * Lookup Management Component
@@ -32,7 +35,8 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
     LookupFormModalComponent,
     ConfirmDialogComponent,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    EmployeeFormModalComponent
   ],
   templateUrl: './lookup-management.component.html',
   styleUrls: ['./lookup-management.component.css'],
@@ -61,6 +65,11 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   selectedLookupItem?: LookupItem;
   lookupModalLoading = false;
 
+  // Employee modal state (for Employee lookup table)
+  showEmployeeModal = false;
+  employeeModalMode: 'create' | 'edit' = 'create';
+  selectedEmployee?: EmployeeDto | null;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -68,7 +77,8 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     private errorHandlingService: ErrorHandlingService,
     private toastService: ToastService,
     private translateService: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private employeeService: EmployeeService
   ) { }
 
   ngOnInit(): void {
@@ -158,6 +168,16 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   onAddLookup(): void {
     if (!this.selectedTable) return;
+
+    // For Employee table, use dedicated employee modal
+    if (this.selectedTable.name === 'Employee') {
+      this.employeeModalMode = 'create';
+      this.selectedEmployee = null;
+      this.showEmployeeModal = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.lookupModalMode = 'create';
     this.selectedLookupItem = undefined;
     this.showLookupModal = true;
@@ -166,6 +186,35 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   onEditLookup(item: LookupItem): void {
     if (!this.selectedTable) return;
+
+    // For Employee table, open employee modal in edit mode with full employee data
+    if (this.selectedTable.name === 'Employee') {
+      this.employeeModalMode = 'edit';
+      this.selectedEmployee = null;
+      this.showEmployeeModal = true;
+      this.cdr.markForCheck();
+
+      // Load full employee details (departmentId, rankId, phone, email, notes, etc.)
+      this.employeeService.getEmployeeById(item.id!).pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (emp: EmployeeDto) => {
+            this.selectedEmployee = emp;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            // If load fails, keep minimal data so user can still edit names/militaryId
+            this.selectedEmployee = {
+              id: item.id!,
+              nameEn: item.nameEn,
+              nameAr: item.nameAr,
+              militaryId: item.code
+            } as EmployeeDto;
+            this.cdr.markForCheck();
+          }
+        });
+      return;
+    }
+
     this.lookupModalMode = 'edit';
     this.selectedLookupItem = item;
     this.showLookupModal = true;
@@ -181,6 +230,38 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   confirmLookupDelete(): void {
     if (!this.selectedTable || !this.selectedLookupItem) return;
+
+    // For Employee table, delete via EmployeeService instead of generic lookup service
+    if (this.selectedTable.name === 'Employee') {
+      this.employeeService.deleteEmployee(this.selectedLookupItem.id!).pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            const itemName = this.lookupManagementService.getLookupItemName(this.selectedLookupItem);
+            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
+              this.toastService.success(
+                `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
+                translations['toast.success']
+              );
+            });
+            this.showLookupDeleteConfirm = false;
+            this.selectedLookupItem = undefined;
+            this.cdr.markForCheck();
+            this.loadLookupItems();
+          },
+          error: (error) => {
+            const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+            this.lookupErrorMessage = errorMessage;
+            this.cdr.markForCheck();
+            this.translateService.get(['toast.error']).subscribe(translations => {
+              this.toastService.error(
+                errorMessage,
+                translations['toast.error']
+              );
+            });
+          }
+        });
+      return;
+    }
 
     const dto: CreateUpdateLookupDto = {
       nameEn: this.selectedLookupItem.nameEn,
@@ -299,5 +380,21 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   getItemType(item: LookupItem): number {
     return this.lookupManagementService.getItemType(item);
+  }
+
+  // Employee modal event handlers
+  onEmployeeModalClosed(): void {
+    this.showEmployeeModal = false;
+    this.employeeModalMode = 'create';
+    this.selectedEmployee = null;
+    this.cdr.markForCheck();
+  }
+
+  onEmployeeSaved(): void {
+    this.showEmployeeModal = false;
+    this.employeeModalMode = 'create';
+    this.selectedEmployee = null;
+    this.cdr.markForCheck();
+    this.loadLookupItems();
   }
 }

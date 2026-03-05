@@ -60,6 +60,7 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Supplier', displayName: 'Suppliers', displayNameKey: 'lookupManagement.suppliers', displayNameKeySingular: 'lookupManagement.supplier', apiEndpoint: 'Supplier', hasCode: false },
   { name: 'Unit', displayName: 'Units', displayNameKey: 'lookupManagement.units', displayNameKeySingular: 'lookupManagement.unit', apiEndpoint: 'Unit', hasCode: false },
   { name: 'Rank', displayName: 'Ranks', displayNameKey: 'lookupManagement.ranks', displayNameKeySingular: 'lookupManagement.rank', apiEndpoint: 'Rank', hasCode: false },
+  { name: 'Employee', displayName: 'Employees', displayNameKey: 'lookupManagement.employees', displayNameKeySingular: 'lookupManagement.employee', apiEndpoint: 'Employee', hasCode: true },
   // Request Purposes (managed via RequestPurpose API)
   { name: 'RequestPurposeDiscard', displayName: 'Request Purposes (Discard)', displayNameKey: 'lookupManagement.requestPurposesDiscard', displayNameKeySingular: 'lookupManagement.requestPurposeDiscard', apiEndpoint: 'RequestPurpose/discard', hasCode: false, requestPurposeType: 'discard' },
   { name: 'RequestPurposeReturn', displayName: 'Request Purposes (Return)', displayNameKey: 'lookupManagement.requestPurposesReturn', displayNameKeySingular: 'lookupManagement.requestPurposeReturn', apiEndpoint: 'RequestPurpose/return', hasCode: false, requestPurposeType: 'return' },

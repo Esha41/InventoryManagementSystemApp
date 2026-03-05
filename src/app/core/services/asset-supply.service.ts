@@ -45,13 +45,13 @@ export interface OrderAssetsToSupplyDto {
 export interface CreateAssetSupplyDetailDto {
   assetId: number;
   conditionOnSupply?: string;
-  custodianId?: string;
+  custodianId?: number;
   notes?: string;
 }
 
 export interface CreateAssetSupplyDto {
   orderId: number;
-  custodianId?: string;
+  custodianId?: number;
   receiverName: string;
   receiverMilitaryId: string;
   receiverRankId: number;

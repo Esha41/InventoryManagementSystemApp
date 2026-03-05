@@ -28,10 +28,16 @@ export enum AssetStatus {
  */
 export interface EmployeeDto {
     id: number;
+    userId?: string;
     nameAr?: string;
     nameEn?: string;
-    name?: string;
-    employeeNumber?: string;
+    militaryId?: string;
+    departmentId?: number;
+    phone?: string;
+    email?: string;
+    notes?: string;
+    rankId?: number;
+    isDeleted?: boolean;
 }
 
 
