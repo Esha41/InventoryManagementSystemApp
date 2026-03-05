@@ -191,12 +191,16 @@ export class WeaponSupplyReviewService {
         const selectedAssets = items.flatMap(item =>
             item.selectedAssets
                 .filter(a => a.selected)
-                .map(a => ({
-                    assetId: a.assetId || a.id,
-                    conditionOnSupply: a.conditionOnSupply || a.condition || undefined,
-                    custodianId: a.custodianId || undefined,
-                    notes: a.notes || undefined
-                }))
+                .map(a => {
+                    // a.custodianId holds the employee ID as string from the dropdown; convert to number
+                    const detailCustodianId = a.custodianId ? Number(a.custodianId) : undefined;
+                    return {
+                        assetId: a.assetId || a.id,
+                        conditionOnSupply: a.conditionOnSupply || a.condition || undefined,
+                        custodianId: detailCustodianId,
+                        notes: a.notes || undefined
+                    };
+                })
         );
 
         return {
