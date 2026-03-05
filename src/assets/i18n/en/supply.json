@@ -315,7 +315,7 @@
     "selectedAssetsTable": "Selected Assets",
     "serialNumber": "Serial Number",
     "assignee": "Assignee",
-    "selectAssignee": "Select assignee",
+    "selectAssignee": "Select Assignee",
     "enterCondition": "Enter condition",
     "enterNotes": "Enter notes",
     "selectDepotsFirst": "Select Depots and Batches First",
@@ -377,7 +377,8 @@
     "quickScanLabel": "Scan Asset Serial Number",
     "scanSerialPlaceholder": "Enter or scan serial number...",
     "scanSerialHint": "Scan or type a serial number to add it to the supply",
-    "scanButton": "Scan"
+    "scanButton": "Scan",
+    "addEmployee": "Add Employee"
   },
   "assetStatus": {
     "readyToIssue": "Ready to Issue",

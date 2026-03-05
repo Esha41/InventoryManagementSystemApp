@@ -377,7 +377,8 @@
     "quickScanLabel": "مسح الرقم التسلسلي للأصل",
     "scanSerialPlaceholder": "أدخل أو امسح الرقم التسلسلي...",
     "scanSerialHint": "امسح أو اكتب رقمًا تسلسليًا لإضافته إلى التوريد",
-    "scanButton": "مسح"
+    "scanButton": "مسح",
+    "addEmployee": "إضافة موظف"
   },
   "assetStatus": {
     "readyToIssue": "جاهز للصرف",
