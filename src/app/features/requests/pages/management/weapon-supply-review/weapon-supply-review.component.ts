@@ -248,6 +248,12 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       });
 
+    // Refresh depot options when language changes (for correct nameEn/nameAr display)
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.lookupService.refreshDepotOptionsOnLangChange();
+      this.cdr.markForCheck();
+    });
+
     // Setup scan listener with debounce
     this.scanSubject.pipe(
       takeUntil(this.destroy$),

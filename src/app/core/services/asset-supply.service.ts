@@ -68,6 +68,18 @@ export interface BatchItemDto {
   quantity: number;
 }
 
+/** Depot DTO for localization (nameEn, nameAr, code, etc.) */
+export interface DepotDto {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  code?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  isDeleted?: boolean;
+}
+
 /** Batch in a depot that contains assets matching the order's requested items */
 export interface BatchForOrderDepotDto {
   id: number;
@@ -75,13 +87,14 @@ export interface BatchForOrderDepotDto {
   quantity: number;
   depotId: number;
   depotName?: string;
+  depot?: DepotDto;
   items?: BatchItemDto[];
 }
 
-/** DTO for saving depot and batch selections */
+/** DTO for saving depot and batch selections (batchId is null when depot is selected without a specific batch) */
 export interface DepotBatchSelectionDto {
   depotId: number;
-  batchId: number;
+  batchId: number | null;
 }
 
 export interface SaveWeaponSupplySelectionDto {
@@ -204,9 +217,9 @@ export class AssetSupplyService {
   /**
    * Get saved depot and batch selections for weapon supply.
    */
-  getWeaponSupplySelection(orderId: number): Observable<{ depotId: number; batchId: number }[]> {
+  getWeaponSupplySelection(orderId: number): Observable<{ depotId: number; batchId: number | null }[]> {
     this.config.log('Getting weapon supply selection', { orderId });
-    return this.apiService.get<{ depotId: number; batchId: number }[]>(
+    return this.apiService.get<{ depotId: number; batchId: number | null }[]>(
       `${this.baseEndpoint}/order/${orderId}/selection`
     ).pipe(
       catchError(error => {
@@ -219,7 +232,7 @@ export class AssetSupplyService {
   /**
    * Save depot and batch selections for weapon supply (replaces existing for the order)
    */
-  saveWeaponSupplySelection(orderId: number, selections: { depotId: number; batchId: number }[]): Observable<boolean> {
+  saveWeaponSupplySelection(orderId: number, selections: { depotId: number; batchId: number | null }[]): Observable<boolean> {
     this.config.log('Saving weapon supply selection', { orderId, selections });
     const dto: SaveWeaponSupplySelectionDto = { orderId, selections };
     return this.apiService.post<boolean>(
