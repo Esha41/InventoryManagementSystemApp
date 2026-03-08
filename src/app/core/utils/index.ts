@@ -9,11 +9,7 @@ export * from './number.utils';
 export * from './api-response.utils';
 export * from './user.utils';
 export * from './ammunition.utils';
-// Export localization utils explicitly to avoid conflict with allowance.utils
-export {
-  Localizable,
-  getLocalizedName as getLocalizedNameFromItem
-} from './localization.utils';
+export { Localizable, getLocalizedName } from './localization.utils';
 // Export dashboard utils but exclude mapRequestItems to avoid conflict
 export {
   DisplayableRequest,
@@ -60,4 +56,4 @@ export * from './asset-list.state';
 export * from './asset-list-form.utils';
 export * from './asset-property.utils';
 export * from './issue-request.utils';
-
+export * from './trackby.utils';

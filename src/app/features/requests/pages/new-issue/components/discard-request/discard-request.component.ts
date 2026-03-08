@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -28,6 +28,7 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -142,7 +143,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     private router: Router,
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService,
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -182,6 +184,16 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
 
     if (!clickedInside) {
       this.closeAllItemDropdowns();
+      this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('document:scroll')
+  onScroll(): void {
+    if (this.itemDropdownOpen.some(open => open)) {
+      this.closeAllItemDropdowns();
+      this.cdr.markForCheck();
     }
   }
 
@@ -209,6 +221,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           }
           this.updateLockedDepartmentName();
           this.applyLockedDepartment();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
@@ -218,6 +231,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingDepartments = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -242,6 +256,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             code: user.userName || ''
           } as LookupItem));
           this.isLoadingRequesters = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).subscribe((translations: any) => {
@@ -252,6 +267,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
           });
           this.requesters = [];
           this.isLoadingRequesters = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -266,6 +282,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             this.requestPurposes = data;
           }
           this.isLoadingRequestPurposes = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
@@ -275,6 +292,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingRequestPurposes = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -298,10 +316,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
         next: (items) => {
           this.items = items || [];
           this.isLoadingItems = false;
-          // Clear selected items when switching types
           this.discardItems.forEach(item => {
             item.itemId = null;
           });
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
@@ -311,6 +329,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingItems = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -513,28 +532,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard']);
           }, 1000);
         },
-        error: (error) => {
-          let errorMessage = 'Failed to create discard request';
-          if (error.error?.errors) {
-            const errors = error.error.errors;
-            const errorMessages: string[] = [];
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create discard request', this.translate);
 
-            if (errors.dto) errorMessages.push(...errors.dto);
-            if (errors['$.priority']) errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
-            if (errors['$.departmentId']) errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
-            if (errors['$.requestPurposeId']) errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
-            if (errors['$.discardItems']) errorMessages.push(`Discard Items: ${errors['$.discardItems'].join(', ')}`);
-
-            if (errorMessages.length > 0) {
-              errorMessage = errorMessages.join('; ');
-            } else if (error.error?.title) {
-              errorMessage = error.error.title;
-            }
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-
-          this.translate.get(['toast.error']).subscribe((translations: any) => {
+          this.translate.get(['toast.error']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.isLoading = false;

@@ -3,7 +3,7 @@
  * Reusable filter bar for asset list filtering
  */
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,6 +11,7 @@ import { LucideAngularModule, Search, FilterX, X } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { AssetType, AssetFilterState } from '@models/asset-list.model';
+import { AssetFilterOptions } from '../../models/asset-filter-options.model';
 
 @Component({
   selector: 'app-asset-filter-bar',
@@ -28,26 +29,17 @@ import { AssetType, AssetFilterState } from '@models/asset-list.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetFilterBarComponent {
-  constructor(private cdr: ChangeDetectorRef) { }
+  private readonly cdr = inject(ChangeDetectorRef);
+
   @Input() activeTab: AssetType = 'ammunition';
   @Input() filterState!: AssetFilterState;
   @Input() isRTL = false;
-
-  // Filter options
-  @Input() caseTypeFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() hazardDivisionFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() compatibilityFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() weaponTypeFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() weaponClassificationFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() countryFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() explosiveTypeFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() explosiveClassificationFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() explosiveHazardDivisionFilterOptions: Array<{ label: string; value: number }> = [];
-  @Input() explosiveCompatibilityFilterOptions: Array<{ label: string; value: number }> = [];
+  @Input() filterOptions!: AssetFilterOptions;
 
   @Output() filterChange = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
   @Output() searchTriggered = new EventEmitter<string>();
+  @Output() searchCleared = new EventEmitter<void>();
 
   readonly Search = Search;
   readonly FilterX = FilterX;
@@ -64,8 +56,7 @@ export class AssetFilterBarComponent {
   }
 
   clearSearch(): void {
-    this.filterState.searchTerm = '';
-    this.onSearchClick();
+    this.searchCleared.emit();
   }
 
   onClearFilters(): void {

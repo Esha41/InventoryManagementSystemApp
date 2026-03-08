@@ -21,6 +21,8 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
 import { ProfileDataService } from '@services/profile-data.service';
+import { ConfigService } from '@services/config.service';
+import { trackById, trackByIndex } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-workflow',
@@ -37,6 +39,8 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly FileEdit = FileEdit;
   readonly Plus = Plus;
+  readonly trackById = trackById;
+  readonly trackByIndex = trackByIndex;
 
   workflows: WorkflowDto[] = [];
   filteredWorkflows: WorkflowDto[] = [];
@@ -83,6 +87,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private translate: TranslateService,
     private toastService: ToastService,
+    private configService: ConfigService,
     private cdr: ChangeDetectorRef,
     private profileDataService: ProfileDataService
   ) { }
@@ -93,7 +98,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.isSuperAdmin = profileData?.isSuperAdmin || false;
 
     this.loadWorkflows();
-    this.backendUserService.getAllRolesSimple().subscribe({ next: r => { this.roles = r; this.cdr.markForCheck(); }, error: () => { this.roles = []; this.cdr.markForCheck(); } });
+    this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({ next: r => { this.roles = r; this.cdr.markForCheck(); }, error: (err) => { this.configService.logError('Failed to load roles', err); this.roles = []; this.cdr.markForCheck(); } });
     this.loadApplicationEntities();
 
     this.translate.onLangChange
@@ -104,7 +109,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadApplicationEntities(): void {
-    this.backendUserService.getApplicationEntities().subscribe({
+    this.backendUserService.getApplicationEntities().pipe(takeUntil(this.destroy$)).subscribe({
       next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
         this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
@@ -114,7 +119,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         });
         this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load application entities', err); this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
@@ -156,7 +161,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
 
-    this.workflowService.getWorkflows().subscribe({
+    this.workflowService.getWorkflows().pipe(takeUntil(this.destroy$)).subscribe({
       next: (workflows) => {
         this.workflows = workflows;
         this.currentPage = 1;
@@ -166,7 +171,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (error: unknown) => {
-        this.translate.get('toast.failedToLoad').subscribe((msg: string) => {
+        this.translate.get('toast.failedToLoad').pipe(takeUntil(this.destroy$)).subscribe((msg: string) => {
           this.errorMessage = (error instanceof Error ? error.message : String(error)) || msg;
           this.cdr.markForCheck();
         });
@@ -224,7 +229,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
 
   onViewDetails(id: number): void {
     this.loading = true;
-    this.workflowService.getWorkflowDetailById(id).subscribe({
+    this.workflowService.getWorkflowDetailById(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: wf => {
         this.selectedWorkflow = wf;
         this.showViewModal = true;
@@ -232,7 +237,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err: unknown) => {
-        this.translate.get('toast.failedToLoadDetails').subscribe((msg: string) => {
+        this.translate.get('toast.failedToLoadDetails').pipe(takeUntil(this.destroy$)).subscribe((msg: string) => {
           this.errorMessage = (err instanceof Error ? err.message : String(err)) || msg;
           this.cdr.markForCheck();
         });
@@ -270,7 +275,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     if (!this.workflowToDelete) return;
 
     const id = this.workflowToDelete.id;
-    this.workflowService.deleteWorkflow(id).subscribe({
+    this.workflowService.deleteWorkflow(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.workflows = this.workflows.filter(w => w.id !== id);
         this.currentPage = 1;
@@ -280,12 +285,12 @@ export class WorkflowComponent implements OnInit, OnDestroy {
         this.workflowToDelete = null;
         this.cdr.markForCheck();
 
-        this.translate.get(['toast.success', 'toast.workflowDeleted']).subscribe((translations: TranslationMap) => {
+        this.translate.get(['toast.success', 'toast.workflowDeleted']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
           this.toastService.success(translations['toast.workflowDeleted'], translations['toast.success']);
         });
       },
       error: (error) => {
-        this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).subscribe((translations: TranslationMap) => {
+        this.translate.get(['toast.error', 'toast.failedToDeleteWorkflow']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToDeleteWorkflow'] || 'Failed to delete workflow';
           this.errorMessage = (error instanceof Error ? error.message : String(error)) || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);

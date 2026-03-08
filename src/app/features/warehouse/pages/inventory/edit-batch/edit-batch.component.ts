@@ -17,6 +17,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { trackByIndex } from '@utils/trackby.utils';
 
 @Component({
     selector: 'app-edit-batch',
@@ -42,6 +43,7 @@ export class EditBatchComponent implements OnInit, OnDestroy {
     readonly Save = Save;
     readonly Loader2 = Loader2;
     readonly Trash2 = Trash2;
+    readonly trackByIndex = trackByIndex;
 
     batchId!: number;
     warehouseId!: number;

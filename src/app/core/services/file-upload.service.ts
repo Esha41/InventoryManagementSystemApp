@@ -56,8 +56,7 @@ export class FileUploadService {
     ).pipe(
       catchError(error => {
         this.config.logError('Failed to upload file', error);
-        // Extract error message from HTTP error response
-        const errorMessage = this.extractErrorMessage(error);
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -94,8 +93,7 @@ export class FileUploadService {
     ).pipe(
       catchError(error => {
         this.config.logError('Failed to upload files', error);
-        // Extract error message from HTTP error response
-        const errorMessage = this.extractErrorMessage(error);
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
         return throwError(() => new Error(errorMessage));
       })
     );

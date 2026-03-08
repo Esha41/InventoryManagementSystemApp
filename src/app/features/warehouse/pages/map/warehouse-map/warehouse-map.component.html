@@ -65,7 +65,7 @@
 
               <!-- Warehouse Items -->
               <div 
-                *ngFor="let warehouse of warehouses; let i = index"
+                *ngFor="let warehouse of warehouses; trackBy: trackByStringId; let i = index"
                 (click)="selectWarehouse(warehouse.id)"
                 [ngClass]="{
                   'bg-[var(--color-brand)]/10': selectedWarehouse === warehouse.id,

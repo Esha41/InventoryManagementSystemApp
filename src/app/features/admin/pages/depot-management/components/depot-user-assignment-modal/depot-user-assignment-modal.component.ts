@@ -10,6 +10,7 @@ import { ToastService } from '@services/toast.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { trackByStringId } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-depot-user-assignment-modal',
@@ -23,6 +24,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   readonly X = X;
   readonly Search = Search;
   readonly User = User;
+  readonly trackByStringId = trackByStringId;
 
   @Input() depotId!: number;
   @Input() depotName = '';

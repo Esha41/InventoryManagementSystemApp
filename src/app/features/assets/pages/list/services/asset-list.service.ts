@@ -609,116 +609,12 @@ export class AssetListService {
   }
 
   /**
-   * Apply client-side filters (temporary until backend supports it)
-   */
-  private applyClientSideFilters(
-    assets: Asset[],
-    filterState: AssetFilterState,
-    activeTab: AssetType
-  ): Asset[] {
-    return assets.filter(asset => {
-      // Search filter
-      if (filterState.searchTerm) {
-        const searchLower = filterState.searchTerm.toLowerCase();
-        const matchesSearch =
-          asset.name.toLowerCase().includes(searchLower) ||
-          asset.itemNo.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
-      }
-
-      // Tab-specific filters
-      const originalData = asset.originalData as any;
-
-      if (activeTab === 'ammunition') {
-        if (filterState.selectedCaseType) {
-          const assetCaseTypeId = originalData?.caseType?.id;
-          if (assetCaseTypeId !== parseInt(filterState.selectedCaseType)) {
-            return false;
-          }
-        }
-
-        if (filterState.selectedHazardDivision) {
-          const assetHazardDivisionId = originalData?.hazardDivision?.id;
-          if (assetHazardDivisionId !== parseInt(filterState.selectedHazardDivision)) {
-            return false;
-          }
-        }
-
-        if (filterState.selectedCompatibility) {
-          const assetCompatibilityId = originalData?.compatibility?.id;
-          if (assetCompatibilityId !== parseInt(filterState.selectedCompatibility)) {
-            return false;
-          }
-        }
-      } else if (activeTab === 'explosive') {
-        if (filterState.selectedExplosiveType) {
-          const assetExplosiveTypeId = originalData?.type?.id;
-          if (assetExplosiveTypeId !== parseInt(filterState.selectedExplosiveType)) {
-            return false;
-          }
-        }
-
-        if (filterState.selectedExplosiveClassification) {
-          const assetClassificationId = originalData?.classification?.id;
-          if (assetClassificationId !== parseInt(filterState.selectedExplosiveClassification)) {
-            return false;
-          }
-        }
-
-        if (filterState.selectedExplosiveHazardDivision) {
-          const assetHazardDivisionId = originalData?.hazardDivision?.id;
-          if (assetHazardDivisionId !== parseInt(filterState.selectedExplosiveHazardDivision)) {
-            return false;
-          }
-        }
-
-        if (filterState.selectedExplosiveCompatibility) {
-          const assetCompatibilityId = originalData?.compatibility?.id;
-          if (assetCompatibilityId !== parseInt(filterState.selectedExplosiveCompatibility)) {
-            return false;
-          }
-        }
-      }
-
-      return true;
-    });
-  }
-
-  /**
-   * Apply client-side sorting (temporary until backend supports it)
-   */
-  private applyClientSideSorting(
-    assets: Asset[],
-    sortState: AssetSortState
-  ): Asset[] {
-    if (!sortState.column) return assets;
-
-    const sorted = [...assets];
-    sorted.sort((a, b) => {
-      let valA: any = a[sortState.column as keyof Asset];
-      let valB: any = b[sortState.column as keyof Asset];
-
-      if (valA === undefined || valA === null) valA = '';
-      if (valB === undefined || valB === null) valB = '';
-
-      if (typeof valA === 'string') valA = valA.toLowerCase();
-      if (typeof valB === 'string') valB = valB.toLowerCase();
-
-      if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
-      if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return sorted;
-  }
-
-  /**
    * Helper to get localized name
    */
-  private getLocalizedName(lookup: any, lang: string): string {
+  private getLocalizedName(lookup: { nameAr?: string; nameEn?: string; name?: string } | string | null | undefined, lang: string): string {
     if (!lookup) return '-';
     if (typeof lookup === 'string') return lookup;
-    return lang === 'ar' ? (lookup.nameAr || lookup.name) : (lookup.nameEn || lookup.name);
+    return lang === 'ar' ? (lookup.nameAr || lookup.name || '-') : (lookup.nameEn || lookup.name || '-');
   }
 
   /**

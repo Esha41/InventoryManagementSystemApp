@@ -82,7 +82,7 @@
 
                 <!-- Assets List -->
                 <div class="space-y-4" formArrayName="assets">
-                    <div *ngFor="let assetGroup of assetsFormArray.controls; let i = index" [formGroupName]="i"
+                    <div *ngFor="let assetGroup of assetsFormArray.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
                         class="p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background-active)]">
                         <div class="flex items-start justify-between mb-4">
                             <h3 class="text-sm font-medium text-[var(--color-text)]">{{ 'addWeaponAsset.asset' |

@@ -9,6 +9,7 @@ import { WarehouseSummaryDto } from '@models/warehouse.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { trackByStringId } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-warehouse-list',
@@ -24,6 +25,7 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   readonly Map = Map;
+  readonly trackByStringId = trackByStringId;
 
   private destroy$ = new Subject<void>();
 

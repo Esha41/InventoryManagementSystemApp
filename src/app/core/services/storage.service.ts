@@ -1,19 +1,37 @@
 import { Injectable } from '@angular/core';
 
 /**
- * Service for managing local storage operations
+ * Keys that store sensitive auth/profile data.
+ * These use sessionStorage (cleared when tab closes) to reduce XSS exposure window.
+ */
+const SESSION_STORAGE_KEYS = new Set([
+  'auth_token',
+  'token_expires_at',
+  'current_user',
+  'user_profile_data'
+]);
+
+/**
+ * Service for managing storage operations.
+ * Uses sessionStorage for sensitive auth/profile data (Angular security best practice).
+ * Uses localStorage for non-sensitive preferences (theme, language).
  */
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
 
+  private getStorage(key: string): Storage {
+    return SESSION_STORAGE_KEYS.has(key) ? sessionStorage : localStorage;
+  }
+
   /**
-   * Get item from localStorage
+   * Get item from storage
    */
   get<T>(key: string): T | null {
     try {
-      const item = localStorage.getItem(key);
+      const storage = this.getStorage(key);
+      const item = storage.getItem(key);
       return item ? JSON.parse(item) : null;
     } catch (error) {
       return null;
@@ -21,43 +39,48 @@ export class StorageService {
   }
 
   /**
-   * Set item in localStorage
+   * Set item in storage
    */
-  set(key: string, value: any): void {
+  set(key: string, value: unknown): void {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const storage = this.getStorage(key);
+      storage.setItem(key, JSON.stringify(value));
     } catch (error) {
       // Silently fail for storage quota exceeded
     }
   }
 
   /**
-   * Remove item from localStorage
+   * Remove item from storage
    */
   remove(key: string): void {
     try {
-      localStorage.removeItem(key);
+      const storage = this.getStorage(key);
+      storage.removeItem(key);
     } catch (error) {
       // Silently fail
     }
   }
 
   /**
-   * Clear all localStorage
+   * Clear all storage (localStorage and sessionStorage).
+   * Used on logout to remove auth data and preferences.
    */
   clear(): void {
     try {
       localStorage.clear();
+      sessionStorage.clear();
     } catch (error) {
       // Silently fail
     }
   }
 
   /**
-   * Check if key exists in localStorage
+   * Check if key exists in storage
    */
   has(key: string): boolean {
-    return localStorage.getItem(key) !== null;
+    const storage = this.getStorage(key);
+    return storage.getItem(key) !== null;
   }
 }
 

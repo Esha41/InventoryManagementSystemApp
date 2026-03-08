@@ -31,7 +31,7 @@
           </tr>
         </thead>
         <tbody class="bg-[var(--color-background)]">
-          <tr *ngFor="let order of orders" class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
+          <tr *ngFor="let order of orders; trackBy: trackById" class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
             <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)]">#{{ order.id }}</td>
             <td class="px-6 py-4 text-sm text-[var(--color-text-muted)]">{{ order.requestNo || order.orderNo || 'N/A' }}</td>
             <td class="px-6 py-4 text-sm">

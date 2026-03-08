@@ -12,6 +12,7 @@ import { SupplyService } from '@services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent } from '@components/index';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { trackById } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-supply-order-list',
@@ -25,6 +26,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
   readonly Package = Package;
+  readonly trackById = trackById;
   
   orders: OrderDto[] = [];
   loading: boolean = true;

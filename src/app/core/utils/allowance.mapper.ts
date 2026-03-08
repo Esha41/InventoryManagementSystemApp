@@ -2,7 +2,15 @@
  * Allowance Mapper Utilities
  */
 
-import { AllowanceItemDto, AllowanceItemDetailDto, AllowanceTableRow } from '@models/allowance.model';
+import {
+  AllowanceItemDto,
+  AllowanceItemDetailDto,
+  AllowanceTableRow,
+  AllowanceItemType,
+} from '@models/allowance.model';
+
+/** Re-export for consumers importing from allowance.mapper */
+export type { AllowanceItemType };
 import { DepartmentDto } from '@services/lookup.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -10,8 +18,6 @@ import { ExplosiveDto } from '@models/explosive.model';
 import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName } from './localization.utils';
 import { ItemType } from '@models/inventory.model';
-
-export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 
 export interface ProcessedAllowanceData {
   departments: LookupItem[];

@@ -108,7 +108,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.loading = true;
     this.errorMessage = null;
-    this.facade.loadData().subscribe({
+    this.facade.loadData().pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
         this.departments = result.departments;
         this.departmentSummaries = result.departmentSummaries;
@@ -245,7 +245,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
 
   saveAssignment(): void {
     if (!this.validateAssignment()) {
-      this.translateService.get('itemDepartmentAssignment.errors.fillRequiredFields').subscribe((t) => {
+      this.translateService.get('itemDepartmentAssignment.errors.fillRequiredFields').pipe(takeUntil(this.destroy$)).subscribe((t) => {
         this.errorMessage = t ?? 'Please fill in all required fields';
         this.cdr.markForCheck();
       });
@@ -278,7 +278,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       );
 
       if (assignmentsToCreate.length === 0) {
-        this.translateService.get('itemDepartmentAssignment.errors.selectAtLeastOneItem').subscribe((t) => {
+        this.translateService.get('itemDepartmentAssignment.errors.selectAtLeastOneItem').pipe(takeUntil(this.destroy$)).subscribe((t) => {
           this.errorMessage = t ?? 'Please select at least one item';
           this.loading = false;
           this.cdr.markForCheck();
@@ -321,7 +321,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   private handleSaveError(error: unknown): void {
     this.loading = false;
     const msg = ErrorHandler.extractErrorMessage(error, 'Failed to save assignment');
-    this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
+    this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
       this.toastService.error(msg ?? t['toast.failedToSaveAssignment'], t['toast.error']);
     });
     this.cdr.markForCheck();
@@ -453,7 +453,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.assignmentToDelete = undefined;
           const msg = ErrorHandler.extractErrorMessage(err, 'Failed to delete assignment');
-          this.translateService.get('toast.error').subscribe((t) => {
+          this.translateService.get('toast.error').pipe(takeUntil(this.destroy$)).subscribe((t) => {
             this.toastService.error(msg, t);
           });
           this.cdr.markForCheck();

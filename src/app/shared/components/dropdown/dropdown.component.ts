@@ -6,6 +6,7 @@ import {
   HostBinding,
   HostListener,
   Input,
+  OnDestroy,
   Optional,
   Output,
   forwardRef
@@ -51,7 +52,7 @@ export interface DropdownOption<T = Primitive> {
   ]
 })
 export class DropdownComponent<T = Primitive>
-  implements ControlValueAccessor, Validator {
+  implements ControlValueAccessor, Validator, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
@@ -174,6 +175,15 @@ export class DropdownComponent<T = Primitive>
   private onTouched: () => void = () => { };
   private onValidatorChange: () => void = () => { };
 
+  private scrollHandler = (event: Event): void => {
+    if (!this.isOpen) return;
+    const target = event.target as Node;
+    if (!this.host.nativeElement.contains(target)) {
+      this.close();
+      this.onTouched();
+    }
+  };
+
   @HostBinding('attr.name')
   get attrName(): string | null {
     return this.name;
@@ -184,6 +194,10 @@ export class DropdownComponent<T = Primitive>
     @Optional() private translate?: TranslateService,
     @Optional() private translationService?: TranslationService
   ) { }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('scroll', this.scrollHandler, { capture: true });
+  }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -313,6 +327,9 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       setTimeout(() => this.adjustPanelPosition(), 0);
+      document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
+    } else {
+      document.removeEventListener('scroll', this.scrollHandler, { capture: true });
     }
     this.openedChange.emit(this.isOpen);
   }
@@ -324,6 +341,7 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = true;
     this.searchTerm = '';
     setTimeout(() => this.adjustPanelPosition(), 0);
+    document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     this.openedChange.emit(true);
   }
 
@@ -371,8 +389,7 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = false;
     this.hoveredIndex = null;
     this.searchTerm = '';
-
-
+    document.removeEventListener('scroll', this.scrollHandler, { capture: true });
 
     // Reset panel positioning
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;

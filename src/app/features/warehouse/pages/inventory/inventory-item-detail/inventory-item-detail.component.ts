@@ -16,6 +16,7 @@ import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
+import { trackByKey } from '@utils/trackby.utils';
 
 type TabType = 'overview' | 'stock';
 
@@ -28,6 +29,7 @@ type TabType = 'overview' | 'stock';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryItemDetailComponent implements OnInit, OnDestroy {
+  readonly trackByInventoryDetailId = trackByKey('inventoryDetailId');
   inventoryDetailId: number = 0;
   warehouseId: number = 0;
   inventoryDetail: InventoryDetailDto | null = null;
