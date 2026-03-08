@@ -13,6 +13,7 @@ import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { trackByStringId } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-warehouse-map',
@@ -31,6 +32,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly Trash2 = Trash2;
+  readonly trackByStringId = trackByStringId;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

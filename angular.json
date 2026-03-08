@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angular-enterprise-app": {
+    "ettad-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -24,7 +24,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/angular-enterprise-app",
+            "outputPath": "dist/ettad-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -93,13 +93,13 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-enterprise-app:build:production"
+              "buildTarget": "ettad-frontend:build:production"
             },
             "development": {
-              "buildTarget": "angular-enterprise-app:build:development"
+              "buildTarget": "ettad-frontend:build:development"
             },
             "local": {
-              "buildTarget": "angular-enterprise-app:build:local"
+              "buildTarget": "ettad-frontend:build:local"
             }
           },
           "defaultConfiguration": "development"
@@ -107,7 +107,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "angular-enterprise-app:build"
+            "buildTarget": "ettad-frontend:build"
           }
         },
         "test": {

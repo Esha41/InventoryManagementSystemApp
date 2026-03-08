@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Mail, ArrowLeft, Send } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ToastService } from '@services/toast.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -87,7 +88,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
                 error: (error) => {
                     this.isSubmitting = false;
                     this.cdr.markForCheck();
-                    const errorMessage = error?.message || this.translateService.instant('auth.forgotPassword.error');
+                    const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('auth.forgotPassword.error'), this.translateService);
                     this.toastService.error(
                         errorMessage,
                         this.translateService.instant('common.error')

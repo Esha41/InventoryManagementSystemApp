@@ -25,6 +25,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 // Utils
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { trackByIndex } from '@utils/trackby.utils';
 
 @Component({
     selector: 'app-add-weapon-asset',
@@ -51,6 +52,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     readonly Trash2 = Trash2;
     readonly ArrowLeft = ArrowLeft;
     readonly ArrowRight = ArrowRight;
+    readonly trackByIndex = trackByIndex;
 
     // Form
     assetForm!: FormGroup;

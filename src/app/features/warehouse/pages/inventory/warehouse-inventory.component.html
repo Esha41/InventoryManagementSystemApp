@@ -132,7 +132,7 @@
       <app-card *ngIf="!loading && !error" [shadow]="true">
         <!-- Mobile Card View for Batches -->
         <div *ngIf="activeTab === 'batch'" class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-          <div *ngFor="let batch of paginatedBatches" (click)="onBatchRowClick(batch)"
+          <div *ngFor="let batch of paginatedBatches; trackBy: trackById" (click)="onBatchRowClick(batch)"
             class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all cursor-pointer">
             <div class="flex items-start justify-between">
               <div>
@@ -150,7 +150,7 @@
               <div *ngIf="loadingBatchAssets" class="py-4 text-center text-[var(--color-text-muted)] text-sm">{{ 'common.loading' | translate }}</div>
               <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length === 0" class="py-2 text-[var(--color-text-muted)] text-sm">{{ 'warehouseInventory.editBatch.noAssets' | translate }}</div>
               <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length > 0" class="space-y-2">
-                <div *ngFor="let asset of expandedBatchAssets" class="text-xs py-1 border-b border-[var(--color-border-muted)] last:border-0">
+                <div *ngFor="let asset of expandedBatchAssets; trackBy: trackById" class="text-xs py-1 border-b border-[var(--color-border-muted)] last:border-0">
                   {{ getAssetItemName(asset) }} · {{ asset.serialNumber || '-' }}
                 </div>
               </div>
@@ -160,7 +160,7 @@
 
         <!-- Mobile Card View for Inventory (Ammo/Explosives) -->
         <div *ngIf="activeTab !== 'batch'" class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-          <div *ngFor="let item of paginatedItems"
+          <div *ngFor="let item of paginatedItems; trackBy: trackById"
             class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
             <div class="flex items-start justify-between">
               <div>

@@ -74,7 +74,7 @@
 
       <!-- Mobile Card View -->
       <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
-        <div *ngFor="let asset of paginatedAssets"
+        <div *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
           <!-- Header: Image & Name -->
@@ -256,7 +256,7 @@
             </tr>
           </thead>
           <tbody class="bg-[var(--color-background)]">
-            <tr *ngFor="let asset of paginatedAssets"
+            <tr *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
               class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
               <td class="py-4 px-6">
                 <div class="image-preview-container">

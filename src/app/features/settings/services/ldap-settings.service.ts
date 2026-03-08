@@ -7,7 +7,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 // API DTO matching backend LdapSettings contract
 export interface LdapSettingsApiDto {
@@ -37,8 +37,7 @@ export class LdapSettingsService {
   constructor(
     private readonly apiService: ApiService,
     private readonly config: ConfigService,
-    private readonly translate: TranslateService,
-    private readonly errorHandling: ErrorHandlingService
+    private readonly translate: TranslateService
   ) { }
 
   private get endpoint(): string {
@@ -70,7 +69,7 @@ export class LdapSettingsService {
           }
 
           // Extract error message from HttpErrorResponse
-          const errorMessage = this.errorHandling.resolveHttpErrorMessage(error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Operation failed');
           this.config.logError('Failed to fetch LDAP settings', error);
 
           // Return error with translated message
@@ -101,8 +100,8 @@ export class LdapSettingsService {
           const httpError = error instanceof HttpErrorResponse ? error : null;
           const status = httpError?.status;
 
-          // Extract error message from HttpErrorResponse using ErrorHandlingService
-          let errorMessage = this.errorHandling.resolveHttpErrorMessage(error);
+          // Extract error message from HttpErrorResponse using ErrorHandler
+          let errorMessage = ErrorHandler.extractErrorMessage(error, 'Operation failed');
 
           // Determine translation key based on error status
           let translationKey = 'admin.ldapSettings.errors.updateFailed';

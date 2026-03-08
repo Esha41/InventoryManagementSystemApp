@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2 } from 'lucide-angular';
 import { BatchSummaryDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
+import { trackById } from '@utils/trackby.utils';
 
 @Component({
     selector: 'app-batch-table',
@@ -36,4 +37,5 @@ export class BatchTableComponent {
     readonly ChevronDown = ChevronDown;
     readonly ChevronRight = ChevronRight;
     readonly Trash2 = Trash2;
+    readonly trackById = trackById;
 }

@@ -9,6 +9,7 @@ import { TranslationService } from '@services/translation.service';
 import { ConfigService } from '@services/config.service';
 import { environment } from '@environments/environment';
 import { LoginRequest } from '@models/auth.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-login',
@@ -177,13 +178,7 @@ export class LoginComponent implements OnInit {
         this.cdr.markForCheck();
         this.configService.logError('Failed to load captcha', error);
 
-        // Extract error message from various possible locations
-        const errorMessage = error?.error?.message ||
-          error?.message ||
-          error?.error?.data?.message ||
-          error?.error?.error?.message ||
-          'Failed to load captcha. Please try again.';
-
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load captcha. Please try again.');
         this.loginError = this.translate.instant('auth.login.errors.captchaLoadFailed') || errorMessage;
       }
     });
@@ -616,15 +611,10 @@ export class LoginComponent implements OnInit {
     const err = error as Record<string, unknown> | null | undefined;
     const errError = err?.['error'] as Record<string, unknown> | undefined;
     const errCode = errError?.['code'] as Record<string, unknown> | undefined;
+    const errData = errError?.['data'] as Record<string, unknown> | undefined;
 
-    // Extract error message from various possible locations (prioritize backend message)
-    const errData = errError?.['data'];
-    const rawMessage = (errError?.['message'] as string) ||
-      ((errData as Record<string, unknown>)?.['message'] as string) ||
-      (err?.['message'] as string) ||
-      ((errError?.['error'] as Record<string, unknown>)?.['message'] as string) ||
-      (typeof errData === 'string' ? errData : '');
-    const errorMessage = typeof rawMessage === 'string' ? rawMessage : '';
+    // Extract error message using centralized ErrorHandler
+    const errorMessage = ErrorHandler.extractErrorMessage(error, '');
 
     // Extract error code from various possible locations (including 'value' and 'code' fields)
     // Backend returns CommonErrorCodes which has both Value (string) and Code (int)
@@ -633,7 +623,7 @@ export class LoginComponent implements OnInit {
       (errError?.['value'] as string) ||
       (errError?.['errorCode'] as string) ||
       (err?.['errorCode'] as string) ||
-      ((errData as Record<string, unknown>)?.['errorCode'] as string) ||
+      (errData?.['errorCode'] as string) ||
       '';
 
     // Also check numeric code and map to string value if needed

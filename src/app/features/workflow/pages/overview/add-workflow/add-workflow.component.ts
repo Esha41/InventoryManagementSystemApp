@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,11 +13,13 @@ import { TranslationService } from '@services/translation.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { CreateWorkflowDto } from '@models/workflow.model';
 import { ToastService } from '@services/toast.service';
+import { ConfigService } from '@services/config.service';
 import { WorkflowType } from '@models/workflow.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
+import { trackByIndex } from '@utils/trackby.utils';
 
 /** Add workflow step form shape */
 interface AddStepForm {
@@ -44,6 +47,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly GripVertical = GripVertical;
+  readonly trackByIndex = trackByIndex;
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -76,6 +80,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   ];
 
   hasOpenDropdown = false;
+  private readonly destroy$ = new Subject<void>();
   private mutationObserver?: MutationObserver;
   private positioningInterval?: ReturnType<typeof setInterval>;
 
@@ -87,10 +92,13 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     private router: Router,
     private translate: TranslateService,
     private toastService: ToastService,
+    private configService: ConfigService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.mutationObserver) {
       this.mutationObserver.disconnect();
     }
@@ -194,13 +202,13 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
       this.checkAndPositionDropdowns();
     }, 0);
-    this.backendUserService.getAllRolesSimple().subscribe({
+    this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({
       next: roles => { this.roles = roles; this.cdr.markForCheck(); },
-      error: () => { this.roles = []; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load roles', err); this.roles = []; this.cdr.markForCheck(); }
     });
     this.loadApplicationEntities();
 
-    this.translate.onLangChange.subscribe(() => {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.loadApplicationEntities();
     });
     const lang = this.translationService.getCurrentLanguage();
@@ -212,7 +220,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadApplicationEntities(): void {
-    this.backendUserService.getApplicationEntities().subscribe({
+    this.backendUserService.getApplicationEntities().pipe(takeUntil(this.destroy$)).subscribe({
       next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
         this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
@@ -223,14 +231,14 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         });
         this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load application entities', err); this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
 
   onSubmit(): void {
     if (!this.workflowForm.name || this.workflowForm.name.trim() === '') {
-      this.translate.get('workflow.nameRequired').subscribe(msg => {
+      this.translate.get('workflow.nameRequired').pipe(takeUntil(this.destroy$)).subscribe(msg => {
         this.errorMessage = msg;
         this.cdr.markForCheck();
       });
@@ -269,7 +277,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.successMessage = null;
     this.cdr.markForCheck();
 
-    this.workflowService.createBackendWorkflow(payload).subscribe({
+    this.workflowService.createBackendWorkflow(payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.submitting = false;
         this.cdr.markForCheck();
@@ -282,7 +290,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         this.submitting = false;
         this.cdr.markForCheck();
 
-        this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).subscribe((translations: TranslationMap) => {
+        this.translate.get(['toast.error', 'toast.failedToCreateWorkflow']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToCreateWorkflow'] || 'Failed to create workflow';
           this.errorMessage = error.message || errorMsg;
           this.cdr.markForCheck();
@@ -347,7 +355,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   onRoleChange(index: number): void {
     const step = this.steps[index];
     if (!step || !step.roleId) { step.entities = []; step.applicationEntityId = null; return; }
-    this.backendUserService.getApplicationEntitiesByRole(step.roleId).subscribe({
+    this.backendUserService.getApplicationEntitiesByRole(step.roleId).pipe(takeUntil(this.destroy$)).subscribe({
       next: ids => {
         step.entities = ids;
         if (!ids.includes(step.applicationEntityId || -1)) {
@@ -356,7 +364,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         this.updateStepErrors(index);
         this.cdr.markForCheck();
       },
-      error: () => { step.entities = []; step.applicationEntityId = null; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load application entities for role', err); step.entities = []; step.applicationEntityId = null; this.cdr.markForCheck(); }
     });
     this.updateStepErrors(index);
   }

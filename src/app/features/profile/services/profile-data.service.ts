@@ -3,7 +3,7 @@ import { AuthenticatedUser, ClaimDto } from '@models/auth.model';
 import { UserMeResponse } from '@profile/models/profile.model';
 import { StorageService } from '@services/storage.service';
 
-// Comprehensive profile data interface for localStorage
+// Comprehensive profile data interface (stored in sessionStorage for security)
 export interface ProfileData {
   // User basic info
   id: string;
@@ -54,7 +54,8 @@ export interface ProfileData {
 }
 
 /**
- * Service for managing user profile data in localStorage
+ * Service for managing user profile data.
+ * Uses sessionStorage (via StorageService) to reduce XSS exposure.
  */
 @Injectable({
   providedIn: 'root'
@@ -65,7 +66,7 @@ export class ProfileDataService {
   constructor(private storageService: StorageService) { }
 
   /**
-   * Save comprehensive profile data to localStorage
+   * Save comprehensive profile data to session storage
    */
   saveProfile(user: AuthenticatedUser, apiResponse?: UserMeResponse): void {
     try {
@@ -120,12 +121,12 @@ export class ProfileDataService {
 
       this.storageService.set(this.PROFILE_STORAGE_KEY, profileData);
     } catch (error) {
-      console.error('Error saving profile to localStorage:', error);
+      console.error('Error saving profile to storage:', error);
     }
   }
 
   /**
-   * Get profile data from localStorage as AuthenticatedUser
+   * Get profile data from storage as AuthenticatedUser
    */
   getProfile(): AuthenticatedUser | null {
     try {
@@ -137,32 +138,32 @@ export class ProfileDataService {
       // Convert ProfileData back to AuthenticatedUser format
       return this.convertToAuthenticatedUser(profileData);
     } catch (error) {
-      console.error('Error reading profile from localStorage:', error);
+      console.error('Error reading profile from storage:', error);
       return null;
     }
   }
 
   /**
-   * Get full profile data from localStorage (includes all fields)
+   * Get full profile data from storage (includes all fields)
    */
   getFullProfileData(): ProfileData | null {
     try {
       return this.storageService.get<ProfileData>(this.PROFILE_STORAGE_KEY);
     } catch (error) {
-      console.error('Error reading full profile data from localStorage:', error);
+      console.error('Error reading full profile data from storage:', error);
       return null;
     }
   }
 
   /**
-   * Check if profile data exists in localStorage
+   * Check if profile data exists in storage
    */
   hasProfile(): boolean {
     return this.storageService.has(this.PROFILE_STORAGE_KEY);
   }
 
   /**
-   * Clear profile data from localStorage
+   * Clear profile data from storage
    */
   clearProfile(): void {
     this.storageService.remove(this.PROFILE_STORAGE_KEY);

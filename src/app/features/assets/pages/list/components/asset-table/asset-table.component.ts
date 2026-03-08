@@ -90,6 +90,10 @@ export class AssetTableComponent {
     return this.assets;
   }
 
+  trackByAssetId(_index: number, asset: Asset): string {
+    return asset.id;
+  }
+
   onView(assetId: string): void {
     this.view.emit(assetId);
   }

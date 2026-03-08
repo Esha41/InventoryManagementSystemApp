@@ -5,8 +5,18 @@ import { AmmunitionService } from './ammunition.service';
 import { WeaponService } from './weapon.service';
 import { ExplosiveService } from './explosive.service';
 import { InventoryService } from './inventory.service';
-import { CreateInventoryDto, CreateInventoryDetailDto } from '@models/inventory.model';
+import { CreateInventoryDto, CreateInventoryDetailDto, InventoryDetailDto } from '@models/inventory.model';
 import { ImportExportService } from './import-export.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
+
+/** Minimal item shape for import lookup (ammunition, weapon, explosive) */
+export interface ItemWithIdAndNo {
+  id: number | string;
+  itemNo: string;
+}
+
+/** Row from Excel/JSON import - column names may vary (PascalCase from template or camelCase) */
+export type InventoryImportRow = Record<string, string | number | boolean | undefined> & { _rowNumber?: number };
 
 export interface ImportResult {
   successCount: number;
@@ -29,7 +39,7 @@ export class InventoryImportService {
   /**
    * Load all items (ammunition, weapons, explosives)
    */
-  async loadAllItems(): Promise<any[]> {
+  async loadAllItems(): Promise<ItemWithIdAndNo[]> {
     try {
       const [ammunition, weapons, explosives] = await Promise.all([
         firstValueFrom(this.ammunitionService.getAll().pipe(catchError(() => of([])))),
@@ -46,7 +56,7 @@ export class InventoryImportService {
   /**
    * Load existing inventory details for duplicate checking
    */
-  async loadExistingInventory(depotId: number): Promise<any[]> {
+  async loadExistingInventory(depotId: number): Promise<InventoryDetailDto[]> {
     try {
       return await firstValueFrom(
         this.inventoryService.getWarehouseInventoryItems(depotId).pipe(
@@ -59,6 +69,12 @@ export class InventoryImportService {
     }
   }
 
+  private parseOptionalId(value: string | number | boolean | undefined): number | undefined {
+    if (value === undefined || value === null || value === '') return undefined;
+    const parsed = parseInt(String(value), 10);
+    return isNaN(parsed) ? undefined : parsed;
+  }
+
   /**
    * Create duplicate key from inventory detail
    */
@@ -69,7 +85,7 @@ export class InventoryImportService {
   /**
    * Build duplicate keys set from existing inventory
    */
-  buildDuplicateKeysSet(existingInventory: any[]): Set<string> {
+  buildDuplicateKeysSet(existingInventory: InventoryDetailDto[]): Set<string> {
     const keys = new Set<string>();
     existingInventory.forEach(detail => {
       if (detail.itemId && detail.lot !== undefined) {
@@ -84,12 +100,12 @@ export class InventoryImportService {
   /**
    * Find item ID from Item No or Item ID
    */
-  findItemId(row: any, allItems: any[]): number | null {
+  findItemId(row: InventoryImportRow, allItems: ItemWithIdAndNo[]): number | null {
     const itemNo = row['Item No'] || row['itemNo'] || row['Item ID'] || row['itemId'];
     const itemId = row['Item ID'] || row['itemId'];
     
-    if (itemId) {
-      const parsed = parseInt(itemId, 10);
+    if (itemId !== undefined && itemId !== null) {
+      const parsed = parseInt(String(itemId), 10);
       return isNaN(parsed) ? null : parsed;
     }
     
@@ -111,8 +127,8 @@ export class InventoryImportService {
    * Validate and create inventory detail from row
    */
   createInventoryDetail(
-    row: any,
-    allItems: any[],
+    row: InventoryImportRow,
+    allItems: ItemWithIdAndNo[],
     existingKeys: Set<string>
   ): { detail: CreateInventoryDetailDto | null; error: string | null } {
     const itemNo = row['Item No'] || row['itemNo'] || row['Item ID'] || row['itemId'];
@@ -121,23 +137,23 @@ export class InventoryImportService {
     if (!itemId || isNaN(itemId)) {
       return {
         detail: null,
-        error: `Item not found (Item No: ${itemNo || 'N/A'}, Item ID: ${row['Item ID'] || row['itemId'] || 'N/A'})`
+        error: `Item not found (Item No: ${String(itemNo ?? 'N/A')}, Item ID: ${String(row['Item ID'] ?? row['itemId'] ?? 'N/A')})`
       };
     }
 
-    const lot = parseInt(row['Lot'] || row['lot'] || '1', 10) || 1;
-    const batchNo = row['Batch No'] || row['batchNo'] || '';
+    const lot = parseInt(String(row['Lot'] ?? row['lot'] ?? '1'), 10) || 1;
+    const batchNo = String(row['Batch No'] ?? row['batchNo'] ?? '');
     
     // Check for duplicate
     const duplicateKey = this.createDuplicateKey(itemId, lot, batchNo);
     if (existingKeys.has(duplicateKey)) {
       return {
         detail: null,
-        error: `Duplicate entry - Item (ID: ${itemId}, Item No: ${itemNo || 'N/A'}) with Lot ${lot} and Batch No "${batchNo || 'N/A'}" already exists in this depot`
+        error: `Duplicate entry - Item (ID: ${itemId}, Item No: ${String(itemNo ?? 'N/A')}) with Lot ${lot} and Batch No "${String(batchNo ?? 'N/A')}" already exists in this depot`
       };
     }
 
-    const originalQuantity = parseInt(row['Original Quantity'] || row['originalQuantity'] || '0', 10) || 0;
+    const originalQuantity = parseInt(String(row['Original Quantity'] ?? row['originalQuantity'] ?? '0'), 10) || 0;
     if (originalQuantity <= 0) {
       return {
         detail: null,
@@ -148,18 +164,12 @@ export class InventoryImportService {
     const detail: CreateInventoryDetailDto = {
       itemId: itemId,
       lot: lot,
-      supplierId: row['Supplier ID'] || row['supplierId'] 
-        ? parseInt(row['Supplier ID'] || row['supplierId'], 10) 
-        : undefined,
-      manufacturerId: row['Manufacturer ID'] || row['manufacturerId'] 
-        ? parseInt(row['Manufacturer ID'] || row['manufacturerId'], 10) 
-        : undefined,
-      countryId: row['Country ID'] || row['countryId'] 
-        ? parseInt(row['Country ID'] || row['countryId'], 10) 
-        : undefined,
+      supplierId: this.parseOptionalId(row['Supplier ID'] ?? row['supplierId']),
+      manufacturerId: this.parseOptionalId(row['Manufacturer ID'] ?? row['manufacturerId']),
+      countryId: this.parseOptionalId(row['Country ID'] ?? row['countryId']),
       originalQuantity: originalQuantity,
       batchNo: batchNo || undefined,
-      expiryDate: this.importExportService.parseDate(row['Expiry Date'] || row['expiryDate']),
+      expiryDate: this.importExportService.parseDate(row['Expiry Date'] ?? row['expiryDate']),
       readyForIssue: row['Ready For Issue'] !== undefined 
         ? (row['Ready For Issue'] === true || row['Ready For Issue'] === 'true' || row['Ready For Issue'] === 'Yes') 
         : true
@@ -175,7 +185,7 @@ export class InventoryImportService {
    * Process warehouse inventory import
    */
   async processImport(
-    jsonData: any[],
+    jsonData: InventoryImportRow[],
     depotId: number
   ): Promise<ImportResult> {
     const errors: string[] = [];
@@ -237,8 +247,8 @@ export class InventoryImportService {
           rowCount: invoiceResult.inventoryDetails.length,
           invoiceNumber
         });
-      } catch (error: any) {
-        errors.push(`Invoice ${invoiceNumber}: ${error.message || 'Unknown error'}`);
+      } catch (error: unknown) {
+        errors.push(`Invoice ${invoiceNumber}: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
         failureCount++;
       }
     }
@@ -257,14 +267,14 @@ export class InventoryImportService {
   /**
    * Group rows by invoice number
    */
-  private groupRowsByInvoice(jsonData: any[]): Map<string, any[]> {
-    const rowGroups = new Map<string, any[]>();
+  private groupRowsByInvoice(jsonData: InventoryImportRow[]): Map<string, InventoryImportRow[]> {
+    const rowGroups = new Map<string, InventoryImportRow[]>();
     
     for (let i = 0; i < jsonData.length; i++) {
       const row = jsonData[i];
       const rowNum = i + 2; // +2 because Excel is 1-indexed and row 1 is headers
       
-      const invoiceNumber = row['Invoice Number'] || row['invoiceNumber'] || `IMPORT-${Date.now()}-${i}`;
+      const invoiceNumber = String(row['Invoice Number'] ?? row['invoiceNumber'] ?? `IMPORT-${Date.now()}-${i}`);
       
       if (!rowGroups.has(invoiceNumber)) {
         rowGroups.set(invoiceNumber, []);
@@ -280,8 +290,8 @@ export class InventoryImportService {
    */
   private processInvoiceGroup(
     invoiceNumber: string,
-    rows: any[],
-    allItems: any[],
+    rows: InventoryImportRow[],
+    allItems: ItemWithIdAndNo[],
     existingKeys: Set<string>,
     depotId: number
   ): {
@@ -311,9 +321,10 @@ export class InventoryImportService {
 
       // Capture invoice-level data from first row
       if (rows.indexOf(row) === 0) {
-        invoiceDate = this.importExportService.parseDate(row['Invoice Date'] || row['invoiceDate']);
-        receivedDate = this.importExportService.parseDate(row['Received Date'] || row['receivedDate']);
-        notes = row['Notes'] || row['notes'] || undefined;
+        invoiceDate = this.importExportService.parseDate(row['Invoice Date'] ?? row['invoiceDate']);
+        receivedDate = this.importExportService.parseDate(row['Received Date'] ?? row['receivedDate']);
+        const notesVal = row['Notes'] ?? row['notes'];
+        notes = notesVal !== undefined && notesVal !== null ? String(notesVal) : undefined;
       }
     }
 
@@ -333,8 +344,8 @@ export class InventoryImportService {
     const createObservables = Array.from(inventoryGroups.values()).map(group => {
       return this.inventoryService.create(group.createDto).pipe(
         map(() => ({ success: true, count: group.rowCount, invoiceNumber: group.invoiceNumber })),
-        catchError((err: any) => {
-          const errorMsg = err?.error?.message || err?.message || 'Failed to create inventory';
+        catchError((err: unknown) => {
+          const errorMsg = ErrorHandler.extractErrorMessage(err, 'Failed to create inventory');
           errors.push(`Invoice ${group.invoiceNumber}: ${errorMsg}`);
           return of({ success: false, count: group.rowCount, invoiceNumber: group.invoiceNumber, error: errorMsg });
         })

@@ -10,6 +10,7 @@ import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, Error
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LucideAngularModule, Badge, Plus, Edit, Trash2, Users, Settings, Copy, Check, X, Search } from 'lucide-angular';
 import { RoleDto } from '@models/backend-user.model';
+import { trackByStringId } from '@utils/trackby.utils';
 import { BackendUserService } from '@services/backend-user.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -67,6 +68,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   selectedRole?: RoleDto;
 
   private destroy$ = new Subject<void>();
+  readonly trackByStringId = trackByStringId;
 
   constructor(
     private backendUserService: BackendUserService,

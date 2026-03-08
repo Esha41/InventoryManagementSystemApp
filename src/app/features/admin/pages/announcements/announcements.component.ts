@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -6,7 +6,8 @@ import { LucideAngularModule, Plus, Pencil, Trash2, Megaphone, Calendar, AlertCi
 import { AnnouncementService } from '@services/announcement.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { Subject, takeUntil } from 'rxjs';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { Announcement } from '@models/announcement.model';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -19,13 +20,14 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
     styleUrls: ['./announcements.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnouncementsComponent implements OnInit {
+export class AnnouncementsComponent implements OnInit, OnDestroy {
     private readonly announcementService = inject(AnnouncementService);
     private readonly toastService = inject(ToastService);
     private readonly translationService = inject(TranslationService);
-    private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly cdr = inject(ChangeDetectorRef);
+
+    private readonly destroy$ = new Subject<void>();
 
     readonly Plus = Plus;
     readonly Pencil = Pencil;
@@ -45,17 +47,22 @@ export class AnnouncementsComponent implements OnInit {
         this.loadAnnouncements();
     }
 
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     loadAnnouncements(): void {
         this.loading.set(true);
         this.cdr.markForCheck();
-        this.announcementService.getAll().subscribe({
+        this.announcementService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
             next: (response) => {
                 this.announcements.set(response.data);
                 this.loading.set(false);
                 this.cdr.markForCheck();
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to load announcements');
                 this.toastService.error(message);
                 this.loading.set(false);
                 this.cdr.markForCheck();
@@ -141,7 +148,7 @@ export class AnnouncementsComponent implements OnInit {
         this.showDeleteDialog = false;
         this.announcementToDelete = null;
 
-        this.announcementService.delete(announcement.id).subscribe({
+        this.announcementService.delete(announcement.id).pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.announcementService.notifyActiveAnnouncementsChanged();
                 this.toastService.success(
@@ -151,7 +158,7 @@ export class AnnouncementsComponent implements OnInit {
                 this.cdr.markForCheck();
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to load announcements');
                 this.toastService.error(message);
                 this.cdr.markForCheck();
             }

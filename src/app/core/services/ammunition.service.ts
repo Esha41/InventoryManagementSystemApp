@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ApiService } from './api.service';
+import { ConfigService } from './config.service';
 import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from './file-upload.service';
@@ -15,7 +16,8 @@ export class AmmunitionService implements IImportableService {
   constructor(
     private apiService: ApiService,
     private http: HttpClient, // Kept for Blob operations until ApiService supports them
-    private fileUploadService: FileUploadService
+    private fileUploadService: FileUploadService,
+    private config: ConfigService
   ) { }
 
   // Fetch list of ammunitions (assets)
@@ -43,7 +45,7 @@ export class AmmunitionService implements IImportableService {
         return response as PaginatedList<AmmunitionReadDto>;
       }),
       catchError(error => {
-        console.error('Error fetching paginated ammunitions:', error);
+        this.config.logError('Error fetching paginated ammunitions', error);
         throw error;
       })
     );

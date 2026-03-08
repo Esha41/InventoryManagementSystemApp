@@ -4,6 +4,7 @@ import { catchError, map, shareReplay } from 'rxjs/operators';
 import { BackendAuthService } from './backend-auth.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { ApiService } from './api.service';
+import { StorageService } from './storage.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 
@@ -25,7 +26,8 @@ export class UserContextService {
 
   constructor(
     private readonly authService: BackendAuthService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly storageService: StorageService
   ) { }
 
   getCurrentUserDetails(forceRefresh: boolean = false): Observable<BackendUserDto | null> {
@@ -74,56 +76,56 @@ export class UserContextService {
   }
 
   private buildDetailsFromTokenPayload(): BackendUserDto | null {
-    const payload = this.decodeTokenPayload();
+    const payload = this.decodeTokenPayload() as Record<string, unknown> | null;
     if (!payload) {
       return null;
     }
 
     const departmentId = this.toNumber(
-      payload.DepartmentId ??
-      payload.departmentId ??
-      payload.DeptId ??
-      payload.deptId
+      payload['DepartmentId'] ??
+      payload['departmentId'] ??
+      payload['DeptId'] ??
+      payload['deptId']
     );
 
     const nameEn =
-      payload.FullNameEN ??
-      payload.fullNameEN ??
-      payload.FullNameEn ??
-      payload.fullNameEn ??
-      payload.NameEn ??
-      payload.nameEn;
+      payload['FullNameEN'] ??
+      payload['fullNameEN'] ??
+      payload['FullNameEn'] ??
+      payload['fullNameEn'] ??
+      payload['NameEn'] ??
+      payload['nameEn'];
 
     const nameAr =
-      payload.FullNameAR ??
-      payload.fullNameAR ??
-      payload.FullNameAr ??
-      payload.fullNameAr ??
-      payload.NameAr ??
-      payload.nameAr;
+      payload['FullNameAR'] ??
+      payload['fullNameAR'] ??
+      payload['FullNameAr'] ??
+      payload['fullNameAr'] ??
+      payload['NameAr'] ??
+      payload['nameAr'];
 
     return {
-      id: String(payload.userId || payload.sub || ''),
-      userName: String(payload.UserName || payload.userName || payload.unique_name || payload.name || ''),
-      email: String(payload.email || payload.Email || ''),
-      isLdapUser: String(payload.isLdapUser || payload.IsLdapUser || '').toLowerCase() === 'true',
+      id: String(payload['userId'] || payload['sub'] || ''),
+      userName: String(payload['UserName'] || payload['userName'] || payload['unique_name'] || payload['name'] || ''),
+      email: String(payload['email'] || payload['Email'] || ''),
+      isLdapUser: String(payload['isLdapUser'] || payload['IsLdapUser'] || '').toLowerCase() === 'true',
       roleIds: [],
       departmentId: departmentId ?? undefined,
-      departmentName: payload.DepartmentName || payload.departmentName,
-      nameEn: nameEn || undefined,
-      nameAr: nameAr || undefined,
-      isActive: String(payload.isActive || payload.IsActive || 'true').toLowerCase() === 'true',
+      departmentName: (payload['DepartmentName'] || payload['departmentName']) as string | undefined,
+      nameEn: (nameEn || undefined) as string | undefined,
+      nameAr: (nameAr || undefined) as string | undefined,
+      isActive: String(payload['isActive'] || payload['IsActive'] || 'true').toLowerCase() === 'true',
       organizationId: this.toNumber(
-        payload.OrganizationId ??
-        payload.organizationId ??
-        payload.OrgId ??
-        payload.orgId
+        payload['OrganizationId'] ??
+        payload['organizationId'] ??
+        payload['OrgId'] ??
+        payload['orgId']
       ) ?? undefined
     };
   }
 
-  private decodeTokenPayload(): any | null {
-    const token = localStorage.getItem('auth_token');
+  private decodeTokenPayload(): Record<string, unknown> | null {
+    const token = this.storageService.get<string>('auth_token');
     if (!token) {
       return null;
     }

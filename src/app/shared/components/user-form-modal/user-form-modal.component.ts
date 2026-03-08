@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
@@ -9,9 +9,10 @@ import { BackendUserService } from '@services/backend-user.service';
 import { LookupService, DepartmentDto, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-user-form-modal',
@@ -27,7 +28,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
   templateUrl: './user-form-modal.component.html',
   styleUrls: ['./user-form-modal.component.css']
 })
-export class UserFormModalComponent implements OnInit, OnChanges {
+export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() user?: BackendUserDto;
   @Input() mode: 'create' | 'edit' = 'create';
@@ -38,12 +39,10 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   userForm!: FormGroup;
   roles: RoleDto[] = [];
   isLoading = false;
-  private rolesSubscription?: Subscription;
-  private departmentsSubscription?: Subscription;
-  private ranksSubscription?: Subscription;
 
   errorMessage = '';
   private isLdapToggleSubscription?: Subscription;
+  private readonly destroy$ = new Subject<void>();
   // Departments
   departments: DepartmentDto[] = [];
   isLoadingDepartments = false;
@@ -93,10 +92,15 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private initializeForm(): void {
     // Handle both nameEn/nameAr (from frontend) and fullNameEN/fullNameAR (from API)
-    const nameEn = this.user?.nameEn || (this.user as any)?.fullNameEN || '';
-    const nameAr = this.user?.nameAr || (this.user as any)?.fullNameAR || '';
+    const nameEn = this.user?.nameEn || this.user?.fullNameEN || '';
+    const nameAr = this.user?.nameAr || this.user?.fullNameAR || '';
 
     // Get all role IDs if user has roles (for multiple selection)
     const roleIds = this.user?.roleIds && this.user.roleIds.length > 0 ? this.user.roleIds : [];
@@ -125,7 +129,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
       nameEn: [nameEn],
       nameAr: [nameAr],
       rankId: [this.user?.rankId || null],
-      militaryId: [this.user?.militaryId || (this.user as any)?.militoryId || '']
+      militaryId: [this.user?.militaryId || this.user?.militoryId || '']
     });
 
     if (this.mode === 'create') {
@@ -136,21 +140,23 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   }
 
   private loadRoles(): void {
-    this.backendUserService.getRoles().subscribe({
-      next: (roles: RoleDto[]) => {
-        this.roles = roles;
+    this.backendUserService.getRoles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (roles: RoleDto[]) => {
+          this.roles = roles;
 
-        // If no roles returned from API, use fallback sample roles for development
-        if (this.roles.length === 0) {
+          // If no roles returned from API, use fallback sample roles for development
+          if (this.roles.length === 0) {
+            this.loadFallbackRoles();
+          }
+        },
+        error: (error: unknown) => {
+          this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load roles');
+          // Load fallback roles on error
           this.loadFallbackRoles();
         }
-      },
-      error: (error: any) => {
-        this.errorMessage = 'Failed to load roles';
-        // Load fallback roles on error
-        this.loadFallbackRoles();
-      }
-    });
+      });
   }
 
   private loadFallbackRoles(): void {
@@ -206,18 +212,20 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     const control = this.userForm?.get('departmentId');
     if (control) control.disable({ emitEvent: false });
 
-    this.lookupService.getLookupItems('Department').subscribe({
-      next: (deps: DepartmentDto[]) => {
-        this.departments = deps ?? [];
-        this.isLoadingDepartments = false;
-        if (control) control.enable({ emitEvent: false });
-      },
-      error: () => {
-        this.departments = [];
-        this.isLoadingDepartments = false;
-        if (control) control.enable({ emitEvent: false });
-      }
-    });
+    this.lookupService.getLookupItems('Department')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (deps: DepartmentDto[]) => {
+          this.departments = deps ?? [];
+          this.isLoadingDepartments = false;
+          if (control) control.enable({ emitEvent: false });
+        },
+        error: () => {
+          this.departments = [];
+          this.isLoadingDepartments = false;
+          if (control) control.enable({ emitEvent: false });
+        }
+      });
   }
 
   private loadRanks(): void {
@@ -225,18 +233,20 @@ export class UserFormModalComponent implements OnInit, OnChanges {
     const control = this.userForm?.get('rankId');
     if (control) control.disable({ emitEvent: false });
 
-    this.lookupService.getLookupItems('Rank').subscribe({
-      next: (items: LookupItem[]) => {
-        this.ranks = items ?? [];
-        this.isLoadingRanks = false;
-        if (control) control.enable({ emitEvent: false });
-      },
-      error: () => {
-        this.ranks = [];
-        this.isLoadingRanks = false;
-        if (control) control.enable({ emitEvent: false });
-      }
-    });
+    this.lookupService.getLookupItems('Rank')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items: LookupItem[]) => {
+          this.ranks = items ?? [];
+          this.isLoadingRanks = false;
+          if (control) control.enable({ emitEvent: false });
+        },
+        error: () => {
+          this.ranks = [];
+          this.isLoadingRanks = false;
+          if (control) control.enable({ emitEvent: false });
+        }
+      });
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -259,7 +269,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
   private loadUserRoles(): void {
     if (!this.user?.id) return;
 
-    this.backendUserService.getUserRoles(this.user.id).subscribe({
+    this.backendUserService.getUserRoles(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: (roles: any[]) => {
         // If roles are returned from getUserRoles, use them (they should include all roles with selection info)
         // Otherwise, keep the existing roles from loadRoles()
@@ -290,7 +302,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
           this.userForm.patchValue({ departmentId: deptId });
         }
       },
-      error: (error: any) => {
+      error: (_error: unknown) => {
         // If getUserRoles fails, still try to set the roles from user data
         if (this.user?.roleIds && this.user.roleIds.length > 0) {
           this.userForm.patchValue({ roleIds: this.user.roleIds });
@@ -354,7 +366,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: formValue.militaryId != null ? String(formValue.militaryId).trim() : undefined
       };
 
-      this.backendUserService.createUser(dto).subscribe({
+      this.backendUserService.createUser(dto)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
           this.errorMessage = '';
@@ -368,26 +382,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         error: (error: unknown) => {
           this.isLoading = false;
           
-          // Extract error message from various possible locations
-          let errorMsg = this.translate.instant('userFormModal.createError');
-          
-          if (error instanceof Error) {
-            errorMsg = error.message || errorMsg;
-          } else if (error && typeof error === 'object') {
-            // Handle HTTP error response
-            const httpError = error as any;
-            if (httpError.error?.message) {
-              errorMsg = httpError.error.message;
-            } else if (httpError.error?.data?.message) {
-              errorMsg = httpError.error.data.message;
-            } else if (httpError.error?.error?.message) {
-              errorMsg = httpError.error.error.message;
-            } else if (typeof httpError.error === 'string') {
-              errorMsg = httpError.error;
-            } else if (httpError.message) {
-              errorMsg = httpError.message;
-            }
-          }
+          let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('userFormModal.createError'), this.translate);
           
           // Check for domain-related errors and translate them
           if (errorMsg.includes('Invalid domain') || errorMsg.includes('domain')) {
@@ -439,7 +434,9 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         militoryId: militaryIdValue // Include even if empty string to allow clearing
       };
 
-      this.backendUserService.updateUser(this.user.id, dto).subscribe({
+      this.backendUserService.updateUser(this.user.id, dto)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (user: BackendUserDto) => {
           this.isLoading = false;
           this.errorMessage = '';
@@ -453,26 +450,7 @@ export class UserFormModalComponent implements OnInit, OnChanges {
         error: (error: unknown) => {
           this.isLoading = false;
           
-          // Extract error message from various possible locations
-          let errorMsg = this.translate.instant('userFormModal.updateError');
-          
-          if (error instanceof Error) {
-            errorMsg = error.message || errorMsg;
-          } else if (error && typeof error === 'object') {
-            // Handle HTTP error response
-            const httpError = error as any;
-            if (httpError.error?.message) {
-              errorMsg = httpError.error.message;
-            } else if (httpError.error?.data?.message) {
-              errorMsg = httpError.error.data.message;
-            } else if (httpError.error?.error?.message) {
-              errorMsg = httpError.error.error.message;
-            } else if (typeof httpError.error === 'string') {
-              errorMsg = httpError.error;
-            } else if (httpError.message) {
-              errorMsg = httpError.message;
-            }
-          }
+          let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('userFormModal.updateError'), this.translate);
           
           // Check for domain-related errors and translate them
           if (errorMsg.includes('Invalid domain') || errorMsg.includes('domain')) {
@@ -566,9 +544,11 @@ export class UserFormModalComponent implements OnInit, OnChanges {
 
     applyState(isLdapControl.value === true);
 
-    this.isLdapToggleSubscription = isLdapControl.valueChanges.subscribe(value => {
-      applyState(value === true);
-    });
+    this.isLdapToggleSubscription = isLdapControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        applyState(value === true);
+      });
   }
 }
 

@@ -4,23 +4,10 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { Asset, AssetType, AssetModalState, AssetImageState } from '@models/asset-list.model';
-import { AmmunitionCreateDto } from '@models/ammunition.model';
-import { CreateUpdateWeaponDto } from '@models/weapon.model';
-import { CreateUpdateExplosiveDto } from '@models/explosive.model';
-import { APIOperationResponse } from '@models/api-response.model';
+import { Asset, AssetModalState, AssetImageState } from '@models/asset-list.model';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { createInitialImageState } from '@utils/asset-list.state';
-
-export interface EditSaveEvent {
-  dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
-  imageFile: File | null;
-  imageFileId: number | null;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -101,56 +88,6 @@ export class AssetModalService {
   }
 
   /**
-   * Handle edit save
-   */
-  handleEditSave(
-    event: EditSaveEvent,
-    selectedAsset: any,
-    service: any,
-    destroy$: Subject<void>,
-    onSuccess: () => void
-  ): Observable<void> {
-    if (!selectedAsset || !('id' in selectedAsset)) {
-      return new Observable(observer => observer.complete());
-    }
-
-    const id = parseInt(String(selectedAsset.id));
-    if (isNaN(id)) {
-      return new Observable(observer => observer.complete());
-    }
-
-    return service.update(id, event.dto).pipe(
-      takeUntil(destroy$),
-      // Handle response in component
-    ) as any;
-  }
-
-  /**
-   * Handle delete confirmation
-   */
-  handleDelete(
-    selectedAsset: any,
-    service: any,
-    destroy$: Subject<void>,
-    onSuccess: () => void,
-    onError: (error: any) => void
-  ): Observable<void> {
-    if (!selectedAsset || !('id' in selectedAsset)) {
-      return new Observable(observer => observer.complete());
-    }
-
-    const id = parseInt(String(selectedAsset.id));
-    if (isNaN(id)) {
-      return new Observable(observer => observer.complete());
-    }
-
-    return service.delete(id).pipe(
-      takeUntil(destroy$),
-      // Handle response in component
-    ) as any;
-  }
-
-  /**
    * Show success message
    */
   showSuccess(message: string): void {
@@ -160,7 +97,7 @@ export class AssetModalService {
   /**
    * Show error message
    */
-  showError(message: string, error?: any): void {
+  showError(message: string, error?: unknown): void {
     const errorMessage = error 
       ? ErrorHandler.extractErrorMessage(error, message)
       : message;

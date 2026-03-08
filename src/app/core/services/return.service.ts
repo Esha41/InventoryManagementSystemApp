@@ -6,6 +6,7 @@ import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateReturnDto, ReturnDto } from '@models/return.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Return Service
@@ -66,7 +67,7 @@ export class ReturnService {
         }),
         catchError(error => {
           this.configService.logError('Failed to create return request', error);
-          const msg = error?.error?.message ?? error?.error?.Message ?? error?.message ?? 'Failed to create return request';
+          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create return request');
           return throwError(() => new Error(msg));
         })
       );

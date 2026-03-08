@@ -48,7 +48,7 @@
     <!-- User list (scrollable) -->
     <div *ngIf="!loading" class="depot-modal__list flex-1 overflow-y-auto overflow-x-hidden px-6 py-4 min-h-0">
       <div class="space-y-2">
-        <div *ngFor="let user of filteredUsers"
+        <div *ngFor="let user of filteredUsers; trackBy: trackByStringId"
           (click)="toggleUser(user.id)"
           class="user-item flex items-center gap-4 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200"
           [class.user-item--selected]="isSelected(user.id)">

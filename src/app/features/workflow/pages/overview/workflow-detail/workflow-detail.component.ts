@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WorkflowService } from '@services/workflow.service';
 import { BackendWorkflowDto } from '@models/workflow.model';
+import { trackById } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-workflow-detail',
@@ -14,6 +15,7 @@ import { BackendWorkflowDto } from '@models/workflow.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowDetailComponent implements OnInit {
+  readonly trackById = trackById;
   workflow: BackendWorkflowDto | null = null;
   loading = false;
   errorMessage: string | null = null;

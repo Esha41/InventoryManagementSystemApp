@@ -12,6 +12,26 @@ const isRefreshRequest = (url: string): boolean =>
 const isLoginRequest = (url: string): boolean =>
   url.includes('/account/login') || url.endsWith('account/login');
 
+/** Sensitive keys to redact from debug logs */
+const SENSITIVE_KEYS = new Set([
+  'password', 'newPassword', 'confirmPassword', 'currentPassword',
+  'token', 'captchaCode', 'captchaId', 'ldapPassword', 'accountPassword',
+  'accessToken', 'refreshToken', 'secret', 'apiKey'
+]);
+
+function sanitizeForLogging(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+  if (obj instanceof FormData || obj instanceof Blob) return '[Binary/FormData]';
+  if (Array.isArray(obj)) return obj.map(sanitizeForLogging);
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const lowerKey = key.toLowerCase();
+    sanitized[key] = SENSITIVE_KEYS.has(lowerKey) ? '[REDACTED]' : sanitizeForLogging(value);
+  }
+  return sanitized;
+}
+
 /**
  * HTTP Interceptor for handling authentication
  * - Adds JWT token to requests (except refresh)
@@ -39,7 +59,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (configService.isDebugMode) {
     configService.log(`HTTP ${req.method} ${req.url}`, {
       headers: authReq.headers.keys(),
-      body: req.body
+      body: req.body ? sanitizeForLogging(req.body) : undefined
     });
   }
 

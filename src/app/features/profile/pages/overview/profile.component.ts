@@ -19,6 +19,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ChangePasswordModalComponent } from '@components/change-password-modal/change-password-modal.component';
 import { DelegationListComponent } from './delegation-list/delegation-list.component';
 import { ToastService } from '@services/toast.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-profile',
@@ -101,7 +102,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           return mapApiResponseToAuthenticatedUser(profile.data, claims.permissions || [], this.translateService);
         }),
         catchError(error => {
-          this.error = error?.message || this.translateService.instant('profile.errorLoadingProfile');
+          this.error = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('profile.errorLoadingProfile'), this.translateService);
           this.loading = false;
           this.cdr.markForCheck();
           // Fallback to auth service user if API fails
@@ -218,8 +219,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
 
           // Only show error if it's from password change, not from logout/navigation
-          if (error?.message) {
-            const errorMessage = error.message || this.translateService.instant('profile.changePassword.errorMessage');
+          if (error) {
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('profile.changePassword.errorMessage'), this.translateService);
             this.toastService.error(
               errorMessage,
               this.translateService.instant('profile.changePassword.errorTitle')

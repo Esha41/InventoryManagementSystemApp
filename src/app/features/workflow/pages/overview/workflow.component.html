@@ -49,7 +49,7 @@
     *ngIf="!loading">
     <!-- Mobile Card View -->
     <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
-      <div *ngFor="let workflow of paginatedWorkflows"
+      <div *ngFor="let workflow of paginatedWorkflows; trackBy: trackById"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] space-y-3">
         <!-- Header -->
         <div class="flex justify-between items-start gap-3">
@@ -125,7 +125,7 @@
           </tr>
         </thead>
         <tbody class="bg-[var(--color-background)]">
-          <tr *ngFor="let workflow of paginatedWorkflows; let i = index"
+          <tr *ngFor="let workflow of paginatedWorkflows; trackBy: trackById; let i = index"
             [ngClass]="{'bg-[var(--color-background-muted)]': i % 2 === 1}"
             class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
@@ -247,7 +247,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of (selectedWorkflow?.workflowSteps || []); let i = index"
+            <tr *ngFor="let s of (selectedWorkflow?.workflowSteps || []); trackBy: trackById; let i = index"
               class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
               <td class="px-4 py-2">{{ orderLabel(s.stepOrder || (i + 1)) }}</td>
               <td class="px-4 py-2">{{ getRoleNameById(s.applicationRoleId) }}</td>
@@ -259,7 +259,7 @@
                 : '' }}</td> -->
               <td class="px-4 py-2 text-sm">
                 <div *ngIf="getSkipToSteps(s).length > 0; else noSkipTo" class="space-y-1">
-                  <div *ngFor="let skipStep of getSkipToSteps(s)" class="block">{{ skipStep }}</div>
+                  <div *ngFor="let skipStep of getSkipToSteps(s); trackBy: trackByIndex" class="block">{{ skipStep }}</div>
                 </div>
                 <ng-template #noSkipTo>
                   <span>-</span>
