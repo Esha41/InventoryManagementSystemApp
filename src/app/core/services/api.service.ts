@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
-import { LoggingService } from './logging.service';
 import { APIOperationResponse } from '@models/api-response.model';
 
 /**
@@ -22,8 +21,7 @@ import { APIOperationResponse } from '@models/api-response.model';
 export class ApiService {
   constructor(
     private http: HttpClient,
-    private configService: ConfigService,
-    private loggingService: LoggingService
+    private configService: ConfigService
   ) { }
 
   private get baseUrl(): string {
@@ -40,40 +38,36 @@ export class ApiService {
    * GET execution that returns the raw data `T` from inside the API envelope.
    * Throws an error if `succeeded` is false.
    */
-  /**
-   * GET execution that returns the raw data `T` from inside the API envelope.
-   * Throws an error if `succeeded` is false.
-   */
-  get<T>(endpoint: string, params?: HttpParams, options?: any): Observable<T> {
+  get<T>(endpoint: string, params?: HttpParams, options?: Record<string, unknown>): Observable<T> {
     return this.executeRequest<T>('GET', endpoint, null, params, options);
   }
 
   /**
    * POST execution that returns the raw data `T`
    */
-  post<T>(endpoint: string, data: any, options?: any): Observable<T> {
-    return this.executeRequest<T>('POST', endpoint, data, options?.params, options);
+  post<T>(endpoint: string, data: unknown, options?: Record<string, unknown>): Observable<T> {
+    return this.executeRequest<T>('POST', endpoint, data, options?.['params'] as HttpParams | undefined, options);
   }
 
   /**
    * PUT execution that returns the raw data `T`
    */
-  put<T>(endpoint: string, data: any, options?: any): Observable<T> {
-    return this.executeRequest<T>('PUT', endpoint, data, options?.params, options);
+  put<T>(endpoint: string, data: unknown, options?: Record<string, unknown>): Observable<T> {
+    return this.executeRequest<T>('PUT', endpoint, data, options?.['params'] as HttpParams | undefined, options);
   }
 
   /**
    * DELETE execution that returns the raw data `T`
    */
-  delete<T>(endpoint: string, body?: any, options?: any): Observable<T> {
-    return this.executeRequest<T>('DELETE', endpoint, body, options?.params, options);
+  delete<T>(endpoint: string, body?: unknown, options?: Record<string, unknown>): Observable<T> {
+    return this.executeRequest<T>('DELETE', endpoint, body, options?.['params'] as HttpParams | undefined, options);
   }
 
   /**
    * PATCH execution that returns the raw data `T`
    */
-  patch<T>(endpoint: string, data: any, options?: any): Observable<T> {
-    return this.executeRequest<T>('PATCH', endpoint, data, options?.params, options);
+  patch<T>(endpoint: string, data: unknown, options?: Record<string, unknown>): Observable<T> {
+    return this.executeRequest<T>('PATCH', endpoint, data, options?.['params'] as HttpParams | undefined, options);
   }
 
   // ==============================================================================================
@@ -82,63 +76,27 @@ export class ApiService {
   // Use these if you need access to 'message', 'errorCode', or strictly need to handle 'succeeded' manually.
   // ==============================================================================================
 
-  getRaw<T>(endpoint: string, params?: HttpParams, options?: any): Observable<APIOperationResponse<T>> {
-    return this.http.get<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, { ...options, params, observe: 'body' })
+  getRaw<T>(endpoint: string, params?: HttpParams, options?: Record<string, unknown>): Observable<APIOperationResponse<T>> {
+    return this.http.get<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, { ...options, params, observe: 'body' as const })
       .pipe(catchError(e => this.handleError(e))) as unknown as Observable<APIOperationResponse<T>>;
   }
 
-  postRaw<T>(endpoint: string, data: any, options?: any): Observable<APIOperationResponse<T>> {
-    return this.http.post<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, data, { ...options, observe: 'body' })
+  postRaw<T>(endpoint: string, data: unknown, options?: Record<string, unknown> | HttpParams): Observable<APIOperationResponse<T>> {
+    const params = options instanceof HttpParams ? options : (options as Record<string, unknown>)?.['params'] as HttpParams | undefined;
+    return this.http.post<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, data, { params, observe: 'body' as const })
       .pipe(catchError(e => this.handleError(e))) as unknown as Observable<APIOperationResponse<T>>;
   }
 
-  putRaw<T>(endpoint: string, data: any, options?: any): Observable<APIOperationResponse<T>> {
-    return this.http.put<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, data, { ...options, observe: 'body' })
+  putRaw<T>(endpoint: string, data: unknown, options?: Record<string, unknown> | HttpParams): Observable<APIOperationResponse<T>> {
+    const params = options instanceof HttpParams ? options : (options as Record<string, unknown>)?.['params'] as HttpParams | undefined;
+    return this.http.put<APIOperationResponse<T>>(`${this.baseUrl}${endpoint}`, data, { params, observe: 'body' as const })
       .pipe(catchError(e => this.handleError(e))) as unknown as Observable<APIOperationResponse<T>>;
   }
 
-  deleteRaw<T>(endpoint: string, body?: any, options?: any): Observable<APIOperationResponse<T>> {
-    return this.http.request<APIOperationResponse<T>>('delete', `${this.baseUrl}${endpoint}`, { ...options, body, observe: 'body' })
+  deleteRaw<T>(endpoint: string, body?: unknown, options?: Record<string, unknown>): Observable<APIOperationResponse<T>> {
+    return this.http.request<APIOperationResponse<T>>('delete', `${this.baseUrl}${endpoint}`, { ...options, body, observe: 'body' as const })
       .pipe(catchError(e => this.handleError(e))) as unknown as Observable<APIOperationResponse<T>>;
   }
-
-  // ==============================================================================================
-  // 3. LEGACY & COMPATIBILITY LAYER
-  // These map 'getWithAuth' to the raw `http` calls to maintain current app behavior.
-  // Ideally, migrate these to use `get<T>` (unwrapped) over time.
-  // ==============================================================================================
-
-  /** @deprecated Use apiService.get<T>() instead for automatic unwrapping, or apiService.getRaw<T>() if you need the envelope. */
-  getWithAuth<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params })
-      .pipe(catchError(e => this.handleError(e)));
-  }
-
-  /** @deprecated Use apiService.post<T>() instead */
-  postWithAuth<T, D = unknown>(endpoint: string, data: D, options?: any): Observable<T> {
-    const httpOptions = { ...(options || {}), observe: 'body' as const };
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, data, httpOptions)
-      .pipe(catchError(e => this.handleError(e))) as Observable<T>;
-  }
-
-  /** @deprecated Use apiService.put<T>() instead */
-  putWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    return this.http.put<T>(`${this.baseUrl}${endpoint}`, data)
-      .pipe(catchError(e => this.handleError(e)));
-  }
-
-  /** @deprecated Use apiService.delete<T>() instead */
-  deleteWithAuth<T>(endpoint: string): Observable<T> {
-    return this.http.delete<T>(`${this.baseUrl}${endpoint}`)
-      .pipe(catchError(e => this.handleError(e)));
-  }
-
-  /** @deprecated Use apiService.patch<T>() instead */
-  patchWithAuth<T, D = unknown>(endpoint: string, data: D): Observable<T> {
-    return this.http.patch<T>(`${this.baseUrl}${endpoint}`, data)
-      .pipe(catchError(e => this.handleError(e)));
-  }
-
 
   // ==============================================================================================
   // INTERNAL HELPERS
@@ -149,11 +107,11 @@ export class ApiService {
    * It expects the backend to return `APIOperationResponse<T>`.
    * It unwraps `data` if `succeeded` is true, otherwise it throws an error.
    */
-  private executeRequest<T>(method: string, endpoint: string, body?: any, params?: HttpParams, extraOptions?: any): Observable<T> {
+  private executeRequest<T>(method: string, endpoint: string, body?: unknown, params?: HttpParams, extraOptions?: Record<string, unknown>): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
     let req$: Observable<APIOperationResponse<T>>;
 
-    const options = { ...extraOptions, params, observe: 'body' };
+    const options = { ...extraOptions, params, observe: 'body' as const };
 
     if (method === 'GET') {
       req$ = this.http.get<APIOperationResponse<T>>(url, options) as unknown as Observable<APIOperationResponse<T>>;
@@ -191,8 +149,8 @@ export class ApiService {
   /**
    * Type Guard to check if response is APIOperationResponse
    */
-  private isValidEnvelope(response: any): response is APIOperationResponse<any> {
-    return response && typeof response === 'object' && 'succeeded' in response;
+  private isValidEnvelope(response: unknown): response is APIOperationResponse<unknown> {
+    return Boolean(response && typeof response === 'object' && 'succeeded' in response);
   }
 
   private handleError(error: unknown): Observable<never> {

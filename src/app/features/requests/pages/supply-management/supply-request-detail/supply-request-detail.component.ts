@@ -84,15 +84,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.error = null;
     this.cdr.markForCheck();
 
-    this.apiService.getWithAuth<FlexibleApiListResponse<BaseRequestDto>>(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
-    )
+    this.apiService.get<BaseRequestDto[]>(API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const data: BaseRequestDto[] = Array.isArray(response)
-            ? response
-            : (response?.data || []);
+          const data: BaseRequestDto[] = Array.isArray(response) ? response : [];
 
           const baseRequest = data.find(r => r.id === this.requestId);
 
@@ -168,11 +164,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.apiService.getWithAuth<DetailApiResponse>(endpoint)
+      this.apiService.get<DetailApiResponse>(endpoint)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            const detailData = response?.data || response;
+          next: (detailData) => {
 
             if (detailData && detailData.requestItems) {
               baseRequest.requestItems = (detailData.requestItems as any[]) as RequestItemDto[];

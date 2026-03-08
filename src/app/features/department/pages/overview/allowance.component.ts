@@ -17,7 +17,6 @@ import { ItemType } from '@models/inventory.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang, type Localizable } from '@utils/localization.utils';
@@ -523,7 +522,7 @@ export class AllowanceComponent implements OnInit {
     this.errors = {};
     this.cdr.markForCheck();
 
-    this.apiService.postWithAuth<ApiResponse<unknown>>(
+    this.apiService.post<void>(
       API_ENDPOINTS.ALLOWANCE.BULK,
       requestData
     ).subscribe({
@@ -586,9 +585,8 @@ export class AllowanceComponent implements OnInit {
   loadExistingAllowance(departmentId: number, year: number): void {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
     type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
-    this.apiService.getWithAuth<ApiResponse<AllowanceResponseData>>(endpoint).subscribe({
-      next: (response) => {
-        const data = response.data as AllowanceResponseData | undefined;
+    this.apiService.get<AllowanceResponseData>(endpoint).subscribe({
+      next: (data) => {
         const items = data?.items || data?.Items || [];
 
         if (items && items.length > 0) {

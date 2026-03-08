@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { RequestPurposeDto, RequestPurposeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { normalizeArrayResponse } from '@utils/index';
 import { TranslateService } from '@ngx-translate/core';
@@ -29,11 +28,9 @@ export class IssueRequestDataService {
    */
   loadRequestPurposes(): Observable<RequestPurposeDto[]> {
     return this.apiService
-      .getWithAuth<APIOperationResponse<RequestPurposeDto[]>>(
-        API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER
-      )
+      .get<RequestPurposeDto[]>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER)
       .pipe(
-        map(response => normalizeArrayResponse<RequestPurposeDto>(response))
+        map(data => normalizeArrayResponse<RequestPurposeDto>(data))
       );
   }
 

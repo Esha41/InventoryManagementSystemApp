@@ -365,7 +365,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', formData);
+    const request = this.apiService.post<AmmunitionReadDto>('/Ammunition', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
@@ -404,7 +404,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<WeaponDto>>('/Weapon', formData);
+    const request = this.apiService.post<WeaponDto>('/Weapon', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
@@ -442,14 +442,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<ExplosiveDto>>('/Explosive', formData);
+    const request = this.apiService.post<ExplosiveDto>('/Explosive', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
   private getSubmitObserver() {
     return {
-      next: (response: APIOperationResponse<AmmunitionReadDto | WeaponDto | ExplosiveDto>) => {
-        if (response.succeeded) {
+      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
+        if (asset) {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
           setTimeout(() => {
@@ -458,7 +458,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
             });
           }, 800);
         } else {
-          const rawMsg = response.message || 'Failed to create asset';
+          const rawMsg = 'Failed to create asset';
           this.errorMessage = ErrorHandler.translateErrorMessage(rawMsg, this.translateService);
           this.toastService.error(this.errorMessage || '', this.translationService.getTranslation('toast.error'));
         }

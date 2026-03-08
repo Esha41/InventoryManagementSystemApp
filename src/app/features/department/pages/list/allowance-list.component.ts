@@ -16,7 +16,6 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveService } from '@services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
@@ -185,9 +184,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     // The backend service automatically checks AllowanceItemViewAllDepartments permission
     // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
-      allowances: this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(
-        API_ENDPOINTS.ALLOWANCE.BASE
-      ),
+      allowances: this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE),
       departments: this.lookupService.getDepartments(),
       ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
       weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
@@ -196,10 +193,10 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
-          if (allowances.succeeded && allowances.data) {
-            this.processAllowanceData(allowances.data, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
+          if (allowances && Array.isArray(allowances)) {
+            this.processAllowanceData(allowances, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
           } else {
-            this.error = allowances.message || this.translateService.instant('allowance.errors.failedToLoad');
+            this.error = this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
           }
           this.cdr.markForCheck();
@@ -427,7 +424,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       const itemId = this.selectedAllowance.id;
       const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${itemId}`;
 
-      this.apiService.deleteWithAuth<unknown>(endpoint)
+      this.apiService.delete<unknown>(endpoint)
         .pipe(
           takeUntil(this.destroy$),
           catchError((err: unknown) => {
@@ -473,12 +470,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       const year = this.selectedAllowance.year;
 
 
-      this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(API_ENDPOINTS.ALLOWANCE.BASE)
+      this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (resp) => {
-            const all = resp?.data || [];
-            const ids = all.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
+          next: (all) => {
+            const items = Array.isArray(all) ? all : [];
+            const ids = items.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
 
             if (ids.length === 0) {
 
@@ -495,7 +492,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             type DeleteResult = { ok: true; id?: number; notFound?: boolean } | { ok: false; id?: number; error: unknown };
             const deleteObservables = ids.map(id => {
               const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${id}`;
-              return this.apiService.deleteWithAuth<unknown>(endpoint).pipe(
+              return this.apiService.delete<unknown>(endpoint).pipe(
                 catchError((err: unknown) => {
                   const isNotFound = (err as { status?: number; message?: string })?.status === 404 || (err as { message?: string })?.message === 'Resource not found.';
                   if (isNotFound) return of({ ok: true, id, notFound: true });

@@ -16,7 +16,6 @@ import { FileUploadService } from '@services/file-upload.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { APIOperationResponse } from '@models/api-response.model';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 
 export interface ReceiverInfo {
@@ -88,7 +87,7 @@ export class WorkflowApprovalSupplyService {
           supplyDate: new Date(data.pickupDate).toISOString()
         };
 
-      this.apiService.putWithAuth(endpoint, payload)
+      this.apiService.put<void>(endpoint, payload)
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
@@ -134,7 +133,7 @@ export class WorkflowApprovalSupplyService {
           supplyDate: new Date(data.pickupDate).toISOString()
         };
 
-      this.apiService.putWithAuth(endpoint, payload)
+      this.apiService.put<void>(endpoint, payload)
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
@@ -221,27 +220,12 @@ export class WorkflowApprovalSupplyService {
     destroy$: Subject<void>
   ): Observable<number[]> {
     return new Observable(observer => {
-      // Create FormData for multipart/form-data request
       const formData = new FormData();
+      files.forEach((file) => formData.append('files', file));
 
-      // Append files
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+      const endpoint = `/FileUpload/upload-for-entity?entity=5&entityId=${supplyId}`;
 
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-      // Remove Content-Type header for FormData
-      headers = headers.delete('Content-Type');
-
-      this.http.post<APIOperationResponse<number[]>>(
-        `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${supplyId}`,
-        formData,
-        { headers }
-      )
+      this.apiService.post<number[]>(endpoint, formData)
         .pipe(
           takeUntil(destroy$),
           catchError((error: any) => {
@@ -255,25 +239,18 @@ export class WorkflowApprovalSupplyService {
             return throwError(() => error);
           })
         )
-        .subscribe((response: APIOperationResponse<number[]>) => {
-          if (response.succeeded) {
+        .subscribe({
+          next: (fileIds) => {
             this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
               this.toastService.success(
                 translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
                 translations['toast.success']
               );
             });
-            observer.next(response.data || []);
+            observer.next(fileIds ?? []);
             observer.complete();
-          } else {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
-              this.toastService.error(
-                response.message || translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files',
-                translations['toast.error']
-              );
-            });
-            observer.error(response.message || 'Failed to upload files');
-          }
+          },
+          error: (err) => observer.error(err)
         });
     });
   }
@@ -328,19 +305,11 @@ export class WorkflowApprovalSupplyService {
    */
   deleteFile(
     fileId: number,
-    fileName: string,
+    _fileName: string,
     destroy$: Subject<void>
   ): Observable<boolean> {
     return new Observable(observer => {
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-
-      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
-        headers: headers
-      })
+      this.apiService.delete<boolean>(`/FileUpload/${fileId}`)
         .pipe(
           takeUntil(destroy$),
           catchError((error: any) => {
@@ -354,8 +323,8 @@ export class WorkflowApprovalSupplyService {
             return throwError(() => error);
           })
         )
-        .subscribe((response: APIOperationResponse<boolean>) => {
-          if (response.succeeded) {
+        .subscribe({
+          next: () => {
             this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(translations => {
               this.toastService.success(
                 translations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
@@ -364,15 +333,8 @@ export class WorkflowApprovalSupplyService {
             });
             observer.next(true);
             observer.complete();
-          } else {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(translations => {
-              this.toastService.error(
-                response.message || translations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
-                translations['toast.error']
-              );
-            });
-            observer.error(response.message || 'Failed to delete file');
-          }
+          },
+          error: (err) => observer.error(err)
         });
     });
   }

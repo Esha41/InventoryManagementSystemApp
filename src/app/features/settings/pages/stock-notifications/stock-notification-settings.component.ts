@@ -104,8 +104,8 @@ export class StockNotificationSettingsComponent {
     this.isLoadingSelectedRecipients = true;
     this.stockNotificationService.getSettings().subscribe({
       next: (data) => {
-        this.selectedRoles = data.data.roles;
-        this.selectedUsers = data.data.users;
+        this.selectedRoles = data.roles ?? [];
+        this.selectedUsers = data.users ?? [];
         this.recipientsForm.patchValue({
           rolesIds: this.selectedRoles ?? [],
           usersIds: this.selectedUsers ?? [],
@@ -177,14 +177,13 @@ export class StockNotificationSettingsComponent {
 
 
   private loadSchedule(): void {
-    this.isLoadingSchedule = true
+    this.isLoadingSchedule = true;
     this.stockNotificationService.getSchedule<string | null>().subscribe({
-      next: (data) => {
-        if (data.data) {
+      next: (scheduleValue) => {
+        if (scheduleValue && typeof scheduleValue === 'string') {
           // Backend returns date string like "2026-01-20T12:47:00"
           // Extract just the date and time parts for datetime-local input (YYYY-MM-DDTHH:mm)
-          // Use the string directly without any conversion
-          const dateStr = (data.data as string).slice(0, 16);
+          const dateStr = scheduleValue.slice(0, 16);
           this.scheduleForm.patchValue({ dateTime: dateStr });
         } else {
           this.scheduleForm.patchValue({ dateTime: '' });

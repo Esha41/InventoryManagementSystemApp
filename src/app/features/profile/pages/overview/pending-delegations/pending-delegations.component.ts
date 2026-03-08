@@ -54,8 +54,8 @@ export class PendingDelegationsComponent implements OnInit {
                 this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    this.pendingDelegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.pendingDelegations = Array.isArray(data) ? data : [];
                 },
                 error: () => {
                     this.pendingDelegations = [];
@@ -76,8 +76,8 @@ export class PendingDelegationsComponent implements OnInit {
     onApproveConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                     }
                 }
@@ -95,8 +95,8 @@ export class PendingDelegationsComponent implements OnInit {
     onRejectConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.reject(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                     }
                 }

@@ -16,7 +16,7 @@ import { ExplosiveService } from '@services/explosive.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse, PaginatedList } from '@models/api-response.model';
+import { PaginatedList } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
 import { Observable } from 'rxjs';
@@ -256,16 +256,12 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
   private loadRequestPurposes(): void {
     this.isLoadingRequestPurposes = true;
-    this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
+    this.apiService.get<RequestPurpose[]>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          if (response.succeeded && response.data) {
-            this.requestPurposes = response.data;
-          } else if (Array.isArray(response)) {
-            this.requestPurposes = response;
-          } else if (response.data && Array.isArray(response.data)) {
-            this.requestPurposes = response.data;
+        next: (data) => {
+          if (Array.isArray(data)) {
+            this.requestPurposes = data;
           }
           this.isLoadingRequestPurposes = false;
         },
