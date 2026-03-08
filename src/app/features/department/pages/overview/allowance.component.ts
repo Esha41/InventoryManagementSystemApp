@@ -17,6 +17,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { ApiService } from '@services/api.service';
+import { API_ENDPOINTS } from '@constants/app.constants';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang, type Localizable } from '@utils/localization.utils';
@@ -442,43 +443,44 @@ export class AllowanceComponent implements OnInit, OnDestroy {
     this.errors = {};
     this.cdr.markForCheck();
 
-    this.allowanceService
-      .submitBulk(requestData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.cdr.markForCheck();
-          this.translateService
-            .get(['allowance.success.sentSuccessfully', 'toast.success'])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((t) => {
-              this.toastService.success(t['allowance.success.sentSuccessfully'], t['toast.success']);
-            });
-          this.router.navigate(['/allowance'], { queryParams: this.getBackQueryParams() });
-        },
-        error: (error: unknown) => {
-          this.isLoading = false;
-          this.cdr.markForCheck();
-          const err = error as { status?: number };
-          if (err?.status === 403) {
-            const msg = this.translateService.instant('allowance.errors.unauthorizedAccess');
-            this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t) => {
-              this.toastService.error(msg, t['toast.error']);
-            });
-            this.errors['submit'] = msg;
-            return;
-          }
-          const errorMessage = ErrorHandler.extractErrorMessage(
-            error,
-            this.translateService.instant('allowance.errors.failedToSend')
+    this.apiService.post<void>(
+      API_ENDPOINTS.ALLOWANCE.BULK,
+      requestData
+    ).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+        this.translateService.get(['allowance.success.sentSuccessfully', 'toast.success']).subscribe(translations => {
+          this.toastService.success(
+            translations['allowance.success.sentSuccessfully'],
+            translations['toast.success']
           );
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t) => {
-            this.toastService.error(errorMessage, t['toast.error']);
+        });
+        // Navigate back to list after successful submission
+        this.router.navigate(['/allowance']);
+      },
+      error: (error: unknown) => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+
+        // Handle 403 Forbidden (authorization errors)
+        const err = error as { status?: number };
+        if (err?.status === 403) {
+          const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(forbiddenMessage, translations['toast.error']);
           });
-          this.errors['submit'] = errorMessage;
-        },
-      });
+          this.errors['submit'] = forbiddenMessage;
+          return;
+        }
+
+        const errorMessage = ErrorHandler.extractErrorMessage(error, this.translateService.instant('allowance.errors.failedToSend'));
+        this.translateService.get(['toast.error']).subscribe(translations => {
+          this.toastService.error(errorMessage, translations['toast.error']);
+        });
+        this.errors['submit'] = errorMessage;
+      }
+    });
   }
 
   resetForm(): void {
@@ -513,46 +515,49 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   }
 
   loadExistingAllowance(departmentId: number, year: number): void {
-    this.allowanceService
-      .getExistingAllowance(departmentId, year)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          if (items?.length > 0) {
-            this.allExistingItems = items;
-            this.mapItemsToForm(items);
-          } else {
-            this.items = [{ itemId: '', quantity: '' }];
-          }
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          const err = error as { status?: number };
-          if (err?.status === 403) {
-            const msg = this.translateService.instant('allowance.errors.unauthorizedAccess');
-            this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t) => {
-              this.toastService.error(msg, t['toast.error']);
-            });
-            setTimeout(
-              () => this.router.navigate(['/allowance'], { queryParams: this.getBackQueryParams() }),
-              2000
-            );
-            this.cdr.markForCheck();
-            return;
-          }
-          this.translateService
-            .get(['toast.error', 'allowance.errors.failedToLoad'])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((t) => {
-              this.toastService.error(
-                t['allowance.errors.failedToLoad'] || 'Failed to load allowance data',
-                t['toast.error']
-              );
-            });
+    const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
+    type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
+    this.apiService.get<AllowanceResponseData>(endpoint).subscribe({
+      next: (data) => {
+        const items = data?.items || data?.Items || [];
+
+        if (items && items.length > 0) {
+          this.allExistingItems = items;
+          // Items are already loaded with correct type from query params
+          // Just map them to the form
+          this.mapItemsToForm(items);
+        } else {
           this.items = [{ itemId: '', quantity: '' }];
+        }
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        // Handle 403 Forbidden (authorization errors)
+        const err = error as { status?: number };
+        if (err?.status === 403) {
+          const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
+          this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(forbiddenMessage, translations['toast.error']);
+          });
           this.cdr.markForCheck();
-        },
-      });
+          // Redirect back to list if unauthorized
+          setTimeout(() => {
+            this.router.navigate(['/allowance']);
+          }, 2000);
+          return;
+        }
+
+        this.translateService.get(['toast.error', 'allowance.errors.failedToLoad']).subscribe(translations => {
+          this.toastService.error(
+            translations['allowance.errors.failedToLoad'] || 'Failed to load allowance data',
+            translations['toast.error']
+          );
+        });
+        // Start with empty form on error
+        this.items = [{ itemId: '', quantity: '' }];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private mapItemsToForm(items: AllowanceApiItem[]): void {

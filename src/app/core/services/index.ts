@@ -47,7 +47,6 @@ export * from './inventory-import.service';
 export * from './inventory-summary-data.service';
 export * from './item-type-validation.service';
 export * from './request-status-update.service';
-export * from './stock-notification.service';
 export * from './supply.service';
 export * from './template-generation.service';
 export * from './unified-request.service';

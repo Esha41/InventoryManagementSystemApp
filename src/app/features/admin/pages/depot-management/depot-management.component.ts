@@ -14,10 +14,10 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ProfileDataService } from '@services/profile-data.service';
 import { DepotUserAssignmentModalComponent } from './components/depot-user-assignment-modal/depot-user-assignment-modal.component';
 import { trackById } from '@utils/trackby.utils';
-import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-depot-management',
@@ -162,42 +162,33 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const request$ = this.isEditMode
-      ? this.apiService.putWithAuth<APIOperationResponse<DepotDto>>(
+      ? this.apiService.put<DepotDto>(
         `${API_ENDPOINTS.DEPOT.BASE}/${this.currentDepot.id}`,
         this.currentDepot
       )
-      : this.apiService.postWithAuth<APIOperationResponse<DepotDto>>(
+      : this.apiService.post<DepotDto>(
         API_ENDPOINTS.DEPOT.BASE,
         this.currentDepot
       );
 
     request$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          this.translateService.get([
-            this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
-            'toast.success'
-          ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
-            this.toastService.success(translations[messageKey], translations['toast.success']);
-          });
-          this.closeModal();
-          this.lookupService.clearCacheFor('depots');
-          this.loadDepots();
-        } else {
-          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(
-              response.message || translations['toast.failedToSaveDepot'],
-              translations['toast.error']
-            );
-          });
-        }
+      next: () => {
+        this.translateService.get([
+          this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
+          'toast.success'
+        ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
+          this.toastService.success(translations[messageKey], translations['toast.success']);
+        });
+        this.closeModal();
+        this.lookupService.clearCacheFor('depots');
+        this.loadDepots();
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
+        error: (error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save depot');
-        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
             this.toastService.error(
               errorMessage || translations['toast.failedToSaveDepot'],
               translations['toast.error']

@@ -4,7 +4,6 @@ import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -48,14 +47,9 @@ export class LdapSettingsService {
     this.config.log('Fetching LDAP settings');
 
     return this.apiService
-      .getWithAuth<APIOperationResponse<LdapSettingsApiDto>>(this.endpoint)
+      .get<LdapSettingsApiDto>(this.endpoint)
       .pipe(
-        map(response => {
-          if (response.succeeded && !response.data) {
-            return {};
-          }
-          return this.apiDtoToInternalDto(response?.data);
-        }),
+        map(data => data ? this.apiDtoToInternalDto(data) : {}),
         catchError((error: unknown) => {
           const httpError = error instanceof HttpErrorResponse ? error : null;
 
@@ -87,15 +81,9 @@ export class LdapSettingsService {
     const apiDto = this.internalDtoToApiDto(settings);
 
     return this.apiService
-      .postWithAuth<APIOperationResponse<LdapSettingsApiDto>>(this.endpoint, apiDto)
+      .post<LdapSettingsApiDto>(this.endpoint, apiDto)
       .pipe(
-        map(response => {
-          if (!response.succeeded) {
-            const errorMsg = response.message || this.translate.instant('admin.ldapSettings.errors.updateFailed');
-            throw new Error(errorMsg);
-          }
-          return this.apiDtoToInternalDto(response?.data);
-        }),
+        map(data => this.apiDtoToInternalDto(data)),
         catchError((error: unknown) => {
           const httpError = error instanceof HttpErrorResponse ? error : null;
           const status = httpError?.status;

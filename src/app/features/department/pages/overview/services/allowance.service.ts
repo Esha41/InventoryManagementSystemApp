@@ -7,7 +7,6 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import type {
   AllowanceItemType,
   AllowanceApiItem,
@@ -50,16 +49,15 @@ export class AllowanceService {
   getExistingAllowance(departmentId: number, year: number): Observable<AllowanceApiItem[]> {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
     type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
-    return this.apiService.getWithAuth<ApiResponse<AllowanceResponseData>>(endpoint).pipe(
-      map((response) => {
-        const data = response.data as AllowanceResponseData | undefined;
+    return this.apiService.get<AllowanceResponseData>(endpoint).pipe(
+      map((data) => {
         return data?.items || data?.Items || [];
       })
     );
   }
 
   submitBulk(request: AllowanceBulkRequest): Observable<void> {
-    return this.apiService.postWithAuth<ApiResponse<unknown>>(
+    return this.apiService.post<unknown>(
       API_ENDPOINTS.ALLOWANCE.BULK,
       request
     ).pipe(map(() => undefined));

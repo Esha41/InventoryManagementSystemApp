@@ -12,7 +12,6 @@ import { UserMeResponse } from '@profile/models/profile.model';
 import { TranslationService } from '@services/translation.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { mapApiResponseToAuthenticatedUser } from '@utils/profile.mapper';
 import { getUserName, getRolesString, getRankName, getUserInitials } from '@utils/profile.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -79,7 +78,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     // Fetch both user profile and user claims (for permissions)
     forkJoin({
-      profile: this.apiService.postWithAuth<ApiResponse<UserMeResponse>>(API_ENDPOINTS.USERS.ME, {}),
+      profile: this.apiService.post<UserMeResponse>(API_ENDPOINTS.USERS.ME, {}),
       claims: this.authService.getUserClaims().pipe(
         catchError(() => {
           // If getUserClaims fails, return empty permissions
@@ -96,10 +95,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         map(({ profile, claims }) => {
-          if (!profile.succeeded || !profile.data) {
-            throw new Error(profile.message || 'Failed to load profile');
+          if (!profile) {
+            throw new Error('Failed to load profile');
           }
-          return mapApiResponseToAuthenticatedUser(profile.data, claims.permissions || [], this.translateService);
+          return mapApiResponseToAuthenticatedUser(profile, claims.permissions || [], this.translateService);
         }),
         catchError(error => {
           this.error = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('profile.errorLoadingProfile'), this.translateService);

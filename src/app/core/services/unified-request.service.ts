@@ -4,7 +4,7 @@ import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
+import { PagedRequest, PaginatedList } from '@models/api-response.model';
 import { RankDto } from '@models/rank.model';
 import { DepartmentDto } from '@models/lookup.model';
 import { RequestItemDto } from '@models/common.model';
@@ -130,13 +130,8 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.getWithAuth<APIOperationResponse<BaseRequestDto[]>>(url).pipe(
-            map(response => {
-                if (!response.succeeded) {
-                    throw new Error(response.message || 'Failed to fetch user action requests');
-                }
-                return response.data ?? [];
-            }),
+        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+            map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch user action requests', error);
                 return of([]); // Return empty array on error to prevent breaking the UI
@@ -169,13 +164,8 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.getWithAuth<APIOperationResponse<BaseRequestDto[]>>(url).pipe(
-            map(response => {
-                if (!response.succeeded) {
-                    throw new Error(response.message || 'Failed to fetch all requests');
-                }
-                return response.data ?? [];
-            }),
+        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+            map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch all requests', error);
                 return of([]);
@@ -209,13 +199,8 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.getWithAuth<APIOperationResponse<BaseRequestDto[]>>(url).pipe(
-            map(response => {
-                if (!response.succeeded) {
-                    throw new Error(response.message || 'Failed to fetch department requests');
-                }
-                return response.data ?? [];
-            }),
+        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+            map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch department requests', error);
                 return of([]);

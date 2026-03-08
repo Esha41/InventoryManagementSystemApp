@@ -112,7 +112,7 @@ export class WorkflowApprovalActionsService {
     return new Observable(observer => {
       const formData = this.createApprovalFormData(data);
 
-      this.apiService.postWithAuth(
+      this.apiService.post<void>(
         API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
         formData
       )
@@ -142,7 +142,7 @@ export class WorkflowApprovalActionsService {
     return new Observable(observer => {
       const formData = this.createApprovalFormData(data);
 
-      this.apiService.postWithAuth(
+      this.apiService.post<void>(
         API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
         formData
       )
@@ -172,7 +172,7 @@ export class WorkflowApprovalActionsService {
     return new Observable(observer => {
       const formData = this.createReturnForReviewFormData(data);
 
-      this.apiService.postWithAuth(
+      this.apiService.post<void>(
         API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
         formData
       )

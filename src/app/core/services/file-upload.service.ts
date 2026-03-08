@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
-import { APIOperationResponse } from '@models/api-response.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ErrorHandler } from '@utils/error-handler.utils';
 import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 // Re-export for backward compatibility
 export { FileUploadDto, FileEntityType };
@@ -51,16 +50,10 @@ export class FileUploadService {
     params.append('entityId', entityId.toString());
     params.append('isMain', isMain.toString());
 
-    return this.apiService.postWithAuth<APIOperationResponse<number>>(
+    return this.apiService.post<number>(
       `${API_ENDPOINTS.FILE_UPLOAD.UPLOAD}?${params.toString()}`,
       formData
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to upload file');
-        }
-        return response.data ?? 0;
-      }),
       catchError(error => {
         this.config.logError('Failed to upload file', error);
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
@@ -94,16 +87,10 @@ export class FileUploadService {
     params.append('entity', entity.toString());
     params.append('entityId', entityId.toString());
 
-    return this.apiService.postWithAuth<APIOperationResponse<number[]>>(
+    return this.apiService.post<number[]>(
       `${API_ENDPOINTS.FILE_UPLOAD.UPLOAD_FOR_ENTITY}?${params.toString()}`,
       formData
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to upload files');
-        }
-        return response.data ?? [];
-      }),
       catchError(error => {
         this.config.logError('Failed to upload files', error);
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
@@ -126,16 +113,7 @@ export class FileUploadService {
       .set('entity', entity.toString())
       .set('entityId', entityId.toString());
 
-    return this.apiService.getWithAuth<APIOperationResponse<FileUploadDto[]>>(
-      API_ENDPOINTS.FILE_UPLOAD.BASE,
-      params
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to retrieve files');
-        }
-        return response.data ?? [];
-      }),
+    return this.apiService.get<FileUploadDto[]>(API_ENDPOINTS.FILE_UPLOAD.BASE, params).pipe(
       catchError(error => {
         this.config.logError('Failed to get files by entity', error);
         return throwError(() => error);
@@ -149,18 +127,7 @@ export class FileUploadService {
    * @returns Observable with file upload DTO
    */
   getFileById(id: number): Observable<FileUploadDto> {
-    return this.apiService.getWithAuth<APIOperationResponse<FileUploadDto>>(
-      API_ENDPOINTS.FILE_UPLOAD.BY_ID(id)
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to retrieve file');
-        }
-        if (!response.data) {
-          throw new Error('File not found');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<FileUploadDto>(API_ENDPOINTS.FILE_UPLOAD.BY_ID(id)).pipe(
       catchError(error => {
         this.config.logError(`Failed to get file ${id}`, error);
         return throwError(() => error);
@@ -174,15 +141,7 @@ export class FileUploadService {
    * @returns Observable with boolean indicating success
    */
   deleteFile(id: number): Observable<boolean> {
-    return this.apiService.deleteWithAuth<APIOperationResponse<boolean>>(
-      API_ENDPOINTS.FILE_UPLOAD.BY_ID(id)
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete file');
-        }
-        return response.data ?? false;
-      }),
+    return this.apiService.delete<boolean>(API_ENDPOINTS.FILE_UPLOAD.BY_ID(id)).pipe(
       catchError(error => {
         this.config.logError(`Failed to delete file ${id}`, error);
         return throwError(() => error);
@@ -196,16 +155,7 @@ export class FileUploadService {
    * @returns Observable with boolean indicating success
    */
   setMainFile(id: number): Observable<boolean> {
-    return this.apiService.putWithAuth<APIOperationResponse<boolean>>(
-      API_ENDPOINTS.FILE_UPLOAD.SET_MAIN(id),
-      {}
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to set main file');
-        }
-        return response.data ?? false;
-      }),
+    return this.apiService.put<boolean>(API_ENDPOINTS.FILE_UPLOAD.SET_MAIN(id), {}).pipe(
       catchError(error => {
         this.config.logError(`Failed to set main file ${id}`, error);
         return throwError(() => error);
@@ -235,5 +185,12 @@ export class FileUploadService {
     return `${baseUrl}${API_ENDPOINTS.FILE_UPLOAD.SERVE_BY_PATH}?${params.toString()}`;
   }
 
+  /**
+   * Extract error message from HTTP error response
+   * Handles various error response formats from the backend
+   */
+  private extractErrorMessage(error: unknown): string {
+    return ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
+  }
 }
 

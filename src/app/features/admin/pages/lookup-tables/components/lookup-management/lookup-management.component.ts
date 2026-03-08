@@ -248,7 +248,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
             this.loadLookupItems();
           },
           error: (error) => {
-            const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete employee');
             this.lookupErrorMessage = errorMessage;
             this.cdr.markForCheck();
             this.translateService.get(['toast.error']).subscribe(translations => {

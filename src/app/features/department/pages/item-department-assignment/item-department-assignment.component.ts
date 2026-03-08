@@ -18,7 +18,6 @@ import {
   BaseItemWithType
 } from '@models/item-department-assignment.model';
 import { LookupItem } from '@models/lookup.model';
-import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
@@ -307,24 +306,15 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleSaveResponse(
-    res: APIOperationResponse<boolean | number>,
-    successToastKey?: string
-  ): void {
+  private handleSaveResponse(_res: boolean | number, successToastKey?: string): void {
     this.loading = false;
-    if (res.succeeded) {
-      const key = successToastKey ?? (this.isEditMode ? 'toast.assignmentUpdated' : 'toast.assignmentCreated');
-      this.translateService.get([key, 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
-        this.toastService.success(t[key], t['toast.success']);
-      });
-      this.closeModal();
-      this.loadData();
-      this.expandedDepartments.clear();
-    } else {
-      this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
-        this.toastService.error(res.message ?? t['toast.failedToSaveAssignment'], t['toast.error']);
-      });
-    }
+    const key = successToastKey ?? (this.isEditMode ? 'toast.assignmentUpdated' : 'toast.assignmentCreated');
+    this.translateService.get([key, 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
+      this.toastService.success(t[key], t['toast.success']);
+    });
+    this.closeModal();
+    this.loadData();
+    this.expandedDepartments.clear();
     this.cdr.markForCheck();
   }
 
@@ -443,18 +433,18 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       .delete(this.assignmentToDelete.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
+        next: (success) => {
           this.loading = false;
           this.assignmentToDelete = undefined;
-          if (res.succeeded) {
+          if (success) {
             this.translateService.get(['toast.assignmentDeleted', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
               this.toastService.success(t['toast.assignmentDeleted'], t['toast.success']);
             });
             this.facade.removeAssignmentFromCache(deletedId, departmentId);
             this.refreshDepartmentSummaries();
           } else {
-            this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
-              this.toastService.error(res.message ?? t['toast.failedToDeleteAssignment'], t['toast.error']);
+            this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
+              this.toastService.error(t['toast.failedToDeleteAssignment'], t['toast.error']);
             });
           }
           this.cdr.markForCheck();
@@ -479,9 +469,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
 
   private refreshDepartmentSummaries(): void {
     this.facade.getDepartmentSummaries().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => {
-        if (res.succeeded && res.data) {
-          this.departmentSummaries = res.data;
+      next: (data) => {
+        if (data && Array.isArray(data)) {
+          this.departmentSummaries = data;
           this.filterSummariesBySearch();
           this.cdr.markForCheck();
         }

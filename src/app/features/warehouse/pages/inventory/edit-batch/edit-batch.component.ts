@@ -229,34 +229,23 @@ export class EditBatchComponent implements OnInit, OnDestroy {
 
         removeOps.pipe(
             switchMap((removeResults) => {
-                const failed = Array.isArray(removeResults) && removeResults.some((r: { succeeded?: boolean }) => !r?.succeeded);
+                const failed = Array.isArray(removeResults) && removeResults.some((r: boolean) => r === false);
                 if (failed) {
-                    const failedMsg = Array.isArray(removeResults)
-                        ? (removeResults.find((r: { succeeded?: boolean; message?: string }) => !r?.succeeded) as { message?: string })?.message
-                        : undefined;
-                    throw new Error(failedMsg || 'Failed to remove some assets');
+                    throw new Error('Failed to remove some assets');
                 }
                 return this.batchService.bulkUpdateAssets(this.batchId, dto);
             }),
             takeUntil(this.destroy$)
         ).subscribe({
-            next: (response) => {
+            next: () => {
                 this.saving = false;
                 this.removedAssetIds.clear();
                 this.cdr.markForCheck();
-
-                if (response.succeeded) {
-                    this.toastService.success(
-                        this.translateService.instant('editBatch.saveSuccess'),
-                        this.translateService.instant('toast.success')
-                    );
-                    this.loadBatch();
-                } else {
-                    this.toastService.error(
-                        response.message || this.translateService.instant('editBatch.saveError'),
-                        this.translateService.instant('toast.error')
-                    );
-                }
+                this.toastService.success(
+                    this.translateService.instant('editBatch.saveSuccess'),
+                    this.translateService.instant('toast.success')
+                );
+                this.loadBatch();
             },
             error: (err) => {
                 this.saving = false;

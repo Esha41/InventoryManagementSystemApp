@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { CreateDiscardDto, DiscardDto } from '@models/discard.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
@@ -55,16 +54,7 @@ export class DiscardService {
         formData.append('files', file);
       });
 
-      return this.apiService.postWithAuth<APIOperationResponse<number>>(
-        API_ENDPOINTS.DISCARDS.BASE,
-        formData
-      ).pipe(
-        map(response => {
-          if (!response.succeeded) {
-            throw new Error(response.message || 'Failed to create discard request');
-          }
-          return response.data;
-        }),
+      return this.apiService.post<number>(API_ENDPOINTS.DISCARDS.BASE, formData).pipe(
         catchError(error => {
           this.configService.logError('Failed to create discard request', error);
           const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create discard request');
@@ -74,19 +64,10 @@ export class DiscardService {
     }
 
     // No files - send as JSON
-    return this.apiService.postWithAuth<APIOperationResponse<number>>(
-      API_ENDPOINTS.DISCARDS.BASE,
-      dto
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to create discard request');
-        }
-        return response.data;
-      }),
+    return this.apiService.post<number>(API_ENDPOINTS.DISCARDS.BASE, dto).pipe(
       catchError(error => {
         this.configService.logError('Failed to create discard request', error);
-        const msg = error?.error?.message ?? error?.error?.Message ?? error?.message ?? 'Failed to create discard request';
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create discard request');
         return throwError(() => new Error(msg));
       })
     );
@@ -97,21 +78,11 @@ export class DiscardService {
    */
   getDiscardById(id: number): Observable<DiscardDto> {
     this.configService.log(`Fetching discard request ${id}`);
-
-    return this.apiService.getWithAuth<APIOperationResponse<DiscardDto>>(
-      API_ENDPOINTS.DISCARDS.BY_ID(id)
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch discard request');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<DiscardDto>(API_ENDPOINTS.DISCARDS.BY_ID(id)).pipe(
       catchError(error => {
         this.configService.logError('Failed to fetch discard request', error);
-        return throwError(() => new Error(
-          error.message || 'Failed to fetch discard request'
-        ));
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to fetch discard request');
+        return throwError(() => new Error(msg));
       })
     );
   }
@@ -121,21 +92,11 @@ export class DiscardService {
    */
   getAllDiscards(): Observable<DiscardDto[]> {
     this.configService.log('Fetching all discard requests');
-
-    return this.apiService.getWithAuth<APIOperationResponse<DiscardDto[]>>(
-      API_ENDPOINTS.DISCARDS.BASE
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to fetch discard requests');
-        }
-        return response.data || [];
-      }),
+    return this.apiService.get<DiscardDto[]>(API_ENDPOINTS.DISCARDS.BASE).pipe(
       catchError(error => {
         this.configService.logError('Failed to fetch discard requests', error);
-        return throwError(() => new Error(
-          error.message || 'Failed to fetch discard requests'
-        ));
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to fetch discard requests');
+        return throwError(() => new Error(msg));
       })
     );
   }
@@ -145,22 +106,14 @@ export class DiscardService {
    */
   changePriority(id: number, priority: number): Observable<boolean> {
     this.configService.log(`Changing priority for discard ${id} to ${priority}`);
-
-    return this.apiService.patch<APIOperationResponse<boolean>>(
+    return this.apiService.patch<boolean>(
       API_ENDPOINTS.DISCARDS.CHANGE_PRIORITY(id),
       priority
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to change priority');
-        }
-        return response.data;
-      }),
       catchError(error => {
         this.configService.logError('Failed to change priority', error);
-        return throwError(() => new Error(
-          error.message || 'Failed to change priority'
-        ));
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to change priority');
+        return throwError(() => new Error(msg));
       })
     );
   }
@@ -170,21 +123,11 @@ export class DiscardService {
    */
   deleteDiscard(id: number): Observable<boolean> {
     this.configService.log(`Deleting discard request ${id}`);
-
-    return this.apiService.deleteWithAuth<APIOperationResponse<boolean>>(
-      API_ENDPOINTS.DISCARDS.BY_ID(id)
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to delete discard request');
-        }
-        return response.data;
-      }),
+    return this.apiService.delete<boolean>(API_ENDPOINTS.DISCARDS.BY_ID(id)).pipe(
       catchError(error => {
         this.configService.logError('Failed to delete discard request', error);
-        return throwError(() => new Error(
-          error.message || 'Failed to delete discard request'
-        ));
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to delete discard request');
+        return throwError(() => new Error(msg));
       })
     );
   }
