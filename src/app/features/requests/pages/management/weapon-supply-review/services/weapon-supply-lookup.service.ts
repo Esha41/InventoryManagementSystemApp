@@ -5,7 +5,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
-import { getCurrentLang } from '@utils/localization.utils';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { PaginatedList } from '@models/api-response.model';
 
@@ -103,17 +103,24 @@ export class WeaponSupplyLookupService {
     }
 
     /**
-     * Create depot dropdown options
+     * Create depot dropdown options (uses getLocalizedName for language-aware display)
      */
     private createDepotOptions(): DropdownOption<number>[] {
         const currentLang = getCurrentLang(this.translate);
         return this.availableDepots.map(depot => ({
             value: depot.id!,
-            label: currentLang === 'ar'
-                ? (depot.nameAr || depot.nameEn || `Depot ${depot.id}`)
-                : (depot.nameEn || depot.nameAr || `Depot ${depot.id}`),
+            label: getLocalizedName(depot, currentLang) || `Depot ${depot.id}`,
             description: depot.code || ''
         })).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    /**
+     * Rebuild depot options when language changes (call from components that subscribe to onLangChange)
+     */
+    refreshDepotOptionsOnLangChange(): void {
+        if (this.availableDepots.length > 0) {
+            this.depotDropdownOptions = this.createDepotOptions();
+        }
     }
 
     /**

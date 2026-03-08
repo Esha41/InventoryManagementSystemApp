@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AssetSupplyService, BatchForOrderDepotDto } from '@services/asset-supply.service';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { OrderService } from '@services/order.service';
 import { OrderDto } from '@models/order.model';
 import { ToastService } from '@services/toast.service';
@@ -76,7 +77,8 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     private config: ConfigService,
     public lookupService: WeaponSupplyLookupService,
     public displayService: WeaponSupplyDisplayService,
-    private selectionService: WeaponSupplySelectionService
+    private selectionService: WeaponSupplySelectionService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get depotDropdownOptions() {
@@ -102,6 +104,10 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       return;
     }
     this.loadAllData();
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.lookupService.refreshDepotOptionsOnLangChange();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
@@ -124,7 +130,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         if (savedSelection && savedSelection.length > 0) {
           this.selectedDepotIds = [...new Set(savedSelection.map(s => s.depotId))];
           this.depotsConfirmed = true;
-          this.loadBatchesWithSavedSelection(savedSelection.map(s => s.batchId));
+          this.loadBatchesWithSavedSelection(savedSelection.map(s => s.batchId).filter((id): id is number => id != null));
         }
       },
       error: (error) => {
@@ -216,16 +222,18 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   }
 
   saveBatchSelection(): void {
-    if (this.selectedBatchIds.length === 0) {
-      this.toastService.warning(
-        this.translate.instant('weaponSupplyReview.selectAtLeastOneBatch'),
-        this.translate.instant('toast.warning')
+    // Build selections: include ALL selected depots. For each depot: selected batches (if any), else depot-only (batchId: null)
+    const selections: { depotId: number; batchId: number | null }[] = [];
+    for (const depotId of this.selectedDepotIds) {
+      const selectedBatchesFromDepot = this.batchOptions.filter(
+        b => b.depotId === depotId && this.selectedBatchIds.includes(b.id)
       );
-      return;
+      if (selectedBatchesFromDepot.length > 0) {
+        selections.push(...selectedBatchesFromDepot.map(b => ({ depotId: b.depotId, batchId: b.id as number })));
+      } else {
+        selections.push({ depotId, batchId: null });
+      }
     }
-    const selections = this.batchOptions
-      .filter(b => this.selectedBatchIds.includes(b.id))
-      .map(b => ({ depotId: b.depotId, batchId: b.id }));
     this.savingSelection = true;
     this.assetSupplyService.saveWeaponSupplySelection(this.orderId, selections)
       .pipe(takeUntil(this.destroy$))
@@ -237,6 +245,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
             this.translate.instant('weaponSupplyReview.selectionSaved'),
             this.translate.instant('toast.success')
           );
+          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
         },
         error: (error) => {
           this.config.logError('Failed to save batch selection', error);
@@ -266,5 +275,14 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   }
   getCurrentLang(): string {
     return this.displayService.getCurrentLang();
+  }
+
+  /** Get localized depot name from batch (uses depot DTO when available for language-aware display) */
+  getDepotDisplayName(batch: BatchForOrderDepotDto): string {
+    const fallback = this.translate.instant('weaponSupplyReview.depot');
+    if (batch.depot) {
+      return getLocalizedName(batch.depot, getCurrentLang(this.translate)) || batch.depotName || fallback;
+    }
+    return batch.depotName || fallback;
   }
 }
