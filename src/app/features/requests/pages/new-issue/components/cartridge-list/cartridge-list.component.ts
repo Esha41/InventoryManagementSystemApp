@@ -7,6 +7,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderService } from '@services/order.service';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@services/item-type-validation.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface Cartridge {
   id: number;
@@ -230,7 +231,7 @@ export class CartridgeListComponent {
         },
         error: (error) => {
           this.verifyingAllowance = false;
-          const errorMsg = error?.message || this.translate.instant('newIssueRequest.errors.failedToVerifyAllowance');
+          const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('newIssueRequest.errors.failedToVerifyAllowance'), this.translate);
           this.allowanceErrorMessage = errorMsg;
           this.allowanceError.emit(errorMsg);
         }

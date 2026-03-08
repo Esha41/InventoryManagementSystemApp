@@ -18,6 +18,8 @@ import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
+import { ConfigService } from '@services/config.service';
+import { trackByIndex } from '@utils/trackby.utils';
 
 /** Edit step form shape */
 interface EditStepForm {
@@ -52,6 +54,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly GripVertical = GripVertical;
+  readonly trackByIndex = trackByIndex;
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -94,7 +97,8 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     private backendUserService: BackendUserService,
     private translate: TranslateService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private configService: ConfigService
   ) { }
 
   ngOnInit(): void {
@@ -106,9 +110,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     this.workflowId = Number(id);
     this.loadWorkflow();
 
-    this.backendUserService.getAllRolesSimple().subscribe({
+    this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({
       next: roles => { this.roles = roles; this.cdr.markForCheck(); },
-      error: () => { this.roles = []; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load roles', err); this.roles = []; this.cdr.markForCheck(); }
     });
     this.loadApplicationEntities();
 
@@ -131,7 +135,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   }
 
   private loadApplicationEntities(): void {
-    this.backendUserService.getApplicationEntities().subscribe({
+    this.backendUserService.getApplicationEntities().pipe(takeUntil(this.destroy$)).subscribe({
       next: (entities: ApplicationEntityDto[]) => {
         const currentLang = getCurrentLang(this.translate);
         this.allApplicationEntities = (entities || []).map((e: ApplicationEntityDto) => {
@@ -141,7 +145,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         });
         this.cdr.markForCheck();
       },
-      error: () => { this.allApplicationEntities = []; this.cdr.markForCheck(); }
+      error: (err) => { this.configService.logError('Failed to load application entities', err); this.allApplicationEntities = []; this.cdr.markForCheck(); }
     });
   }
 
@@ -149,7 +153,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     if (!this.workflowId) return;
 
     this.loading = true;
-    this.workflowService.getWorkflowDetailById(this.workflowId).subscribe({
+    this.workflowService.getWorkflowDetailById(this.workflowId).pipe(takeUntil(this.destroy$)).subscribe({
       next: wf => {
         const status = wf?.isActive ? 'Active' : 'Inactive';
         this.editForm = {
@@ -202,8 +206,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
-        this.translate.get('toast.failedToLoadDetails').subscribe(msg => {
+      error: (err) => {
+        this.configService.logError('Failed to load workflow details', err);
+        this.translate.get('toast.failedToLoadDetails').pipe(takeUntil(this.destroy$)).subscribe(msg => {
           this.errorMessage = msg;
           this.cdr.markForCheck();
         });
@@ -385,14 +390,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       const roleIds = Array.isArray(s.notifyingRoleIds) ? [...s.notifyingRoleIds] : [];
       const userIds = Array.isArray(s.notifyingUserIds) ? [...s.notifyingUserIds] : [];
 
-      console.log(`Step ${idx} notifiers:`, {
-        workflowStepId: s.workflowStepId,
-        roleIds,
-        userIds,
-        rawRoleIds: s.notifyingRoleIds,
-        rawUserIds: s.notifyingUserIds
-      });
-
       return {
         originalIndex: idx,
         workflowStepId: s.workflowStepId,
@@ -453,7 +450,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
           const matchingStep = workflowSteps.find((ws: WorkflowStepDto) => ws.stepOrder === (idx + 1));
           if (matchingStep) {
             stepId = matchingStep.id;
-            console.log(`Found step ID ${stepId} for new step at index ${idx} (order ${idx + 1})`);
           }
         }
 
@@ -466,12 +462,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             ? [...currentStep.notifyingUserIds].filter(id => id != null && id !== '')
             : [];
 
-          console.log(`Saving notifiers for step ${stepId} (index ${idx}):`, {
-            roleIds,
-            userIds,
-            stepOrder: idx + 1
-          });
-
           // Always call updateStepNotifiers, even if arrays are empty (to clear existing notifiers)
           notifierSaveObservables.push(
             this.workflowService.updateStepNotifiers(
@@ -480,10 +470,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
               userIds
             ).pipe(
               tap(() => {
-                console.log(`Successfully saved notifiers for step ${stepId}`);
+                this.configService.log(`Successfully saved notifiers for step ${stepId}`);
               }),
               catchError(err => {
-                console.error('Failed to update notifiers for step', stepId, err);
+                this.configService.logError(`Failed to update notifiers for step ${stepId}`, err);
                 return new Observable<boolean>(observer => {
                   observer.next(true);
                   observer.complete();
@@ -492,10 +482,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             )
           );
         } else {
-          console.warn(`Skipping notifiers for step at index ${idx} - no stepId found`, {
-            hasWorkflowStepId: !!currentStep.workflowStepId,
-            workflowStepsCount: workflowSteps?.length || 0
-          });
+          this.configService.logWarning(`Skipping notifiers for step at index ${idx} - no stepId found`);
         }
       });
 
@@ -524,8 +511,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             ? [...transitionInfo.skipToStepIds].filter(id => id != null && id !== undefined)
             : [];
 
-          console.log(`Updating transitions only for step ${stepId}:`, { targetStepIds });
-
           // Call API that ONLY updates transitions, does NOT touch workflow step properties
           transitionSaveObservables.push(
             this.workflowService.setStepTransitions(
@@ -533,10 +518,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
               targetStepIds
             ).pipe(
               tap(() => {
-                console.log(`Successfully updated transitions for step ${stepId} (workflow step unchanged)`);
+                this.configService.log(`Successfully updated transitions for step ${stepId}`);
               }),
               catchError(err => {
-                console.error('Failed to update transitions for step', stepId, err);
+                this.configService.logError(`Failed to update transitions for step ${stepId}`, err);
                 return new Observable<boolean>(observer => {
                   observer.next(true);
                   observer.complete();
@@ -561,12 +546,13 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     // First update workflow with steps (including canReturn), then update transitions and notifiers
     this.workflowService.updateBackendWorkflow(backendPayload).pipe(
       switchMap(() => updateTransitions()),
-      switchMap(() => updateNotifiers())
+      switchMap(() => updateNotifiers()),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.submitting = false;
         this.cdr.markForCheck();
-        this.translate.get(['toast.success', 'toast.workflowUpdated']).subscribe((translations: TranslationMap) => {
+        this.translate.get(['toast.success', 'toast.workflowUpdated']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
           this.toastService.success(translations['toast.workflowUpdated'], translations['toast.success']);
         });
 
@@ -578,7 +564,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         this.submitting = false;
         this.cdr.markForCheck();
 
-        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).subscribe((translations: TranslationMap) => {
+        this.translate.get(['toast.error', 'toast.failedToUpdateWorkflow']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
           const errorMsg = translations['toast.failedToUpdateWorkflow'] || 'Failed to update workflow';
           this.errorMessage = (err instanceof Error ? err.message : String(err)) || errorMsg;
           this.toastService.error(errorMsg, translations['toast.error']);
@@ -607,7 +593,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       )
     );
 
-    forkJoin(notifierObservables).subscribe({
+    forkJoin(notifierObservables).pipe(takeUntil(this.destroy$)).subscribe({
       next: (results) => {
         results.forEach(({ step, notifiers }) => {
           const roleIds: string[] = [];
@@ -633,6 +619,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
+        this.configService.logError('Failed to load notifiers for workflow steps', err);
         this.editSteps.forEach(step => {
           step.notifyingRoleIds = step.notifyingRoleIds || [];
           step.notifyingUserIds = step.notifyingUserIds || [];
@@ -648,7 +635,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
   private loadAllUsers(callback?: () => void): void {
     // Load users only once and cache them
-    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
+    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: PaginatedList<BackendUserDto>) => {
         const users = response.items || [];
         this.allUsers = users.map((user: BackendUserDto) => ({
@@ -664,6 +651,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
+        this.configService.logError('Failed to load users', err);
         this.allUsers = [];
         this.cdr.markForCheck();
         if (callback) {
@@ -770,7 +758,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     }
 
     // Call API to get next steps for this step
-    this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).subscribe({
+    this.workflowService.getNextStepsForWorkflowStep(step.workflowStepId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (nextSteps: WorkflowStepDto[]) => {
         step.availableNextSteps = nextSteps.map((ns: WorkflowStepDto) => ({
           ...ns,
@@ -779,7 +767,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Failed to load next steps for step', step.workflowStepId, err);
+        this.configService.logError(`Failed to load next steps for step ${step.workflowStepId}`, err);
         step.availableNextSteps = [];
         this.cdr.markForCheck();
       }

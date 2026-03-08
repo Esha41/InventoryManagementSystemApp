@@ -123,7 +123,7 @@ export class WorkflowApprovalNavigationService {
       }
       
       // Pass requestId and tab (itemType) as query parameters
-      this.router.navigate(['/item-detail', itemId], {
+      this.router.navigate(['/asset-list', itemId], {
         queryParams: queryParams
       });
     }

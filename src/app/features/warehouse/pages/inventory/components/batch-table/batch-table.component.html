@@ -19,7 +19,7 @@
                 <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noBatches' | translate }}</p>
             </td>
         </tr>
-        <ng-container *ngFor="let batch of batches">
+        <ng-container *ngFor="let batch of batches; trackBy: trackById">
             <tr (click)="rowClick.emit(batch)"
                 class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
                 [ngClass]="{'batch-row-expanded': expandedBatchId === batch.id}">
@@ -73,7 +73,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[var(--color-border-muted)]">
-                                <tr *ngFor="let asset of expandedBatchAssets">
+                                <tr *ngFor="let asset of expandedBatchAssets; trackBy: trackById">
                                     <td class="px-4 py-2">{{ getAssetItemName(asset) }}</td>
                                     <td class="px-4 py-2">{{ asset.serialNumber || '-' }}</td>
                                     <td class="px-4 py-2">{{ getAssetStatusLabel(asset) }}</td>

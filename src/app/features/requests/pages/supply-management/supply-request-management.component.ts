@@ -15,6 +15,7 @@ import { mapOrderToSupplyRequest } from './utils/supply-request-mapper.utils';
 import { getPriorityColor, getStatusButtonClass, getPageNumbers } from './utils/ui-helpers.utils';
 import { formatNumber } from '@utils/format.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { trackById, trackByIndex } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-supply-request-management',
@@ -59,6 +60,8 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   readonly getPriorityColor = getPriorityColor;
   readonly getStatusButtonClass = getStatusButtonClass;
   readonly formatNumber = formatNumber;
+  readonly trackById = trackById;
+  readonly trackByIndex = trackByIndex;
 
   ngOnInit(): void {
     this.loadOrders();

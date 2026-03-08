@@ -38,7 +38,7 @@ export class WorkflowApprovalDataService {
    * Load base request by ID
    */
   loadBaseRequest(requestId: number, destroy$: Subject<void>): Observable<BaseRequestDto> {
-    return this.apiService.getWithAuth<BaseRequestDto>(
+    return this.apiService.get<BaseRequestDto>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.BASE_REQUEST_BY_ID(requestId)
     ).pipe(takeUntil(destroy$));
   }
@@ -88,11 +88,10 @@ export class WorkflowApprovalDataService {
         return;
       }
 
-      this.apiService.getWithAuth<any>(endpoint)
+      this.apiService.get<any>(endpoint)
         .pipe(takeUntil(destroy$))
         .subscribe({
-          next: (response: any) => {
-            const detailData = response?.data || response;
+          next: (detailData: any) => {
 
             // Merge full details (including usage info) into baseRequest
             if (detailData) {
@@ -186,13 +185,13 @@ export class WorkflowApprovalDataService {
    */
   loadPreviousWorkflowSteps(requestId: number, destroy$: Subject<void>): Observable<any[]> {
     return new Observable(observer => {
-      this.apiService.getWithAuth<any[]>(
+      this.apiService.get<any[]>(
         `${API_ENDPOINTS.WORKFLOW_APPROVAL.BASE}/previous-steps/${requestId}`
       )
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: (response: any) => {
-            const data = Array.isArray(response) ? response : (response?.data || []);
+            const data = Array.isArray(response) ? response : [];
             observer.next(data);
             observer.complete();
           },

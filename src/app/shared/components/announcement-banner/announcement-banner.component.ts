@@ -7,7 +7,7 @@ import { filter, takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
 import { AnnouncementService } from '@services/announcement.service';
 import { ToastService } from '@services/toast.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ActiveAnnouncement } from '@models/announcement.model';
 
 @Component({
@@ -20,7 +20,6 @@ import { ActiveAnnouncement } from '@models/announcement.model';
 export class AnnouncementBannerComponent implements OnInit, OnDestroy {
     private readonly announcementService = inject(AnnouncementService);
     private readonly toastService = inject(ToastService);
-    private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly destroy$ = new Subject<void>();
     private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -96,7 +95,7 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
                 );
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to dismiss announcement');
                 this.toastService.error(message);
             }
         });

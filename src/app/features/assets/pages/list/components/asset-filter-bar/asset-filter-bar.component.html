@@ -41,7 +41,7 @@
           {{ 'assetList.filters.caseType' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCaseType" (selectionChange)="onFilterChange()"
-          [options]="caseTypeFilterOptions" optionLabel="label" optionValue="value" [placeholderSelectable]="false"
+          [options]="filterOptions.caseType" optionLabel="label" optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
         </app-dropdown>
       </div>
@@ -51,7 +51,7 @@
           {{ 'assetList.filters.hazardDivision' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedHazardDivision"
-          (selectionChange)="onFilterChange()" [options]="hazardDivisionFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.hazardDivision" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
         </app-dropdown>
@@ -62,7 +62,7 @@
           {{ 'assetList.filters.compatibility' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCompatibility"
-          (selectionChange)="onFilterChange()" [options]="compatibilityFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.compatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
         </app-dropdown>
@@ -74,7 +74,7 @@
           {{ 'assetList.filters.weaponType' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponType"
-          (selectionChange)="onFilterChange()" [options]="weaponTypeFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.weaponType" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allWeaponTypes' | translate }}">
         </app-dropdown>
@@ -85,7 +85,7 @@
           {{ 'assetList.filters.classification' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponClassification"
-          (selectionChange)="onFilterChange()" [options]="weaponClassificationFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.weaponClassification" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
         </app-dropdown>
@@ -96,7 +96,7 @@
           {{ 'assetList.filters.country' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCountryOfManufacture"
-          (selectionChange)="onFilterChange()" [options]="countryFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.countryOfManufacture" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCountries' | translate }}">
         </app-dropdown>
@@ -108,7 +108,7 @@
           {{ 'assetList.filters.explosiveType' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveType"
-          (selectionChange)="onFilterChange()" [options]="explosiveTypeFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveType" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allExplosiveTypes' | translate }}">
         </app-dropdown>
@@ -119,7 +119,7 @@
           {{ 'assetList.filters.classification' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveClassification"
-          (selectionChange)="onFilterChange()" [options]="explosiveClassificationFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveClassification" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allClassifications' | translate }}">
         </app-dropdown>
@@ -130,7 +130,7 @@
           {{ 'assetList.filters.hazardDivision' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveHazardDivision"
-          (selectionChange)="onFilterChange()" [options]="explosiveHazardDivisionFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveHazardDivision" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
         </app-dropdown>
@@ -141,7 +141,7 @@
           {{ 'assetList.filters.compatibility' | translate }}
         </label>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveCompatibility"
-          (selectionChange)="onFilterChange()" [options]="explosiveCompatibilityFilterOptions" optionLabel="label"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveCompatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
         </app-dropdown>

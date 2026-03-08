@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
+import { APIOperationResponse } from '@models/api-response.model';
 
 /**
  * Known backend error message patterns that need translation
@@ -37,6 +38,13 @@ export class ErrorHandler {
    */
   static extractErrorMessage(error: unknown, defaultMessage: string): string {
     if (!error) return defaultMessage;
+
+    // Check for userMessage from error interceptor (enhanced error)
+    if (typeof error === 'object' && error !== null) {
+      const err = error as Record<string, unknown>;
+      const userMsg = err['userMessage'];
+      if (typeof userMsg === 'string' && userMsg.trim()) return userMsg;
+    }
 
     // Helper to extract from a potential body object
     const extractFromBody = (body: unknown): string | null => {
@@ -128,6 +136,40 @@ export class ErrorHandler {
   static extractAndTranslateErrorMessage(error: unknown, defaultMessage: string, translate?: TranslateService): string {
     const message = this.extractErrorMessage(error, defaultMessage);
     return this.translateErrorMessage(message, translate);
+  }
+
+  /**
+   * Resolves error message from API response or HTTP error (for order submission flows)
+   */
+  static resolveOrderSubmissionError(
+    response: APIOperationResponse<unknown> | undefined,
+    error: unknown,
+    defaultMessage = 'Failed to submit order. Please try again.'
+  ): string {
+    if (response && typeof response === 'object') {
+      const resp = response as unknown as Record<string, unknown>;
+      const msg = resp['message'];
+      if (typeof msg === 'string') return msg;
+      const msgAlt = resp['Message'];
+      if (typeof msgAlt === 'string') return msgAlt;
+      const errs = resp['errors'];
+      if (errs && Array.isArray(errs) && errs.length > 0) {
+        const first = errs[0];
+        if (typeof first === 'object' && first !== null && 'description' in first) {
+          return String((first as Record<string, unknown>)['description']);
+        }
+        return String(first);
+      }
+      if (typeof errs === 'object' && errs !== null && !Array.isArray(errs)) {
+        const keys = Object.keys(errs as Record<string, unknown>);
+        if (keys.length > 0) {
+          const val = (errs as Record<string, unknown>)[keys[0]];
+          if (Array.isArray(val) && val.length > 0) return String(val[0]);
+          if (typeof val === 'string') return val;
+        }
+      }
+    }
+    return this.extractErrorMessage(error, defaultMessage);
   }
 
   /**

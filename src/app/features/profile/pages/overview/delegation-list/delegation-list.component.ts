@@ -70,8 +70,8 @@ export class DelegationListComponent implements OnInit {
                 this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    this.delegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.delegations = Array.isArray(data) ? data : [];
                 },
                 error: () => {
                     this.delegations = [];
@@ -82,8 +82,8 @@ export class DelegationListComponent implements OnInit {
     loadPendingDelegations(): void {
         this.delegationService.getPendingDelegations()
             .subscribe({
-                next: (res) => {
-                    this.pendingDelegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.pendingDelegations = Array.isArray(data) ? data : [];
                     this.cdr.markForCheck();
                 },
                 error: () => {
@@ -111,8 +111,8 @@ export class DelegationListComponent implements OnInit {
     onRevokeConfirmed(): void {
         if (this.delegationToRevoke) {
             this.delegationService.revoke(this.delegationToRevoke.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadDelegations();
                     }
                 }
@@ -140,8 +140,8 @@ export class DelegationListComponent implements OnInit {
     onApproveConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                         this.loadDelegations();
                     } else {
@@ -169,8 +169,8 @@ export class DelegationListComponent implements OnInit {
     onRejectConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.reject(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                         this.loadDelegations();
                     } else {

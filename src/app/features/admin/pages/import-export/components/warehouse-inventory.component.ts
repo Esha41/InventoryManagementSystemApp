@@ -27,6 +27,7 @@ import { saveAs } from 'file-saver';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -160,9 +161,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
           },
-          error: (error: any) => {
+          error: (error: unknown) => {
             this.loadingWarehouseInventory = false;
-            this.toastService.error('Failed to load warehouse assets');
+            this.toastService.error(ErrorHandler.extractErrorMessage(error, 'Failed to load warehouse assets'));
             this.cdr.markForCheck();
           }
         });
@@ -176,9 +177,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
           },
-          error: (error: any) => {
+          error: (error: unknown) => {
             this.loadingWarehouseInventory = false;
-            this.toastService.error('Failed to load warehouse inventory');
+            this.toastService.error(ErrorHandler.extractErrorMessage(error, 'Failed to load warehouse inventory'));
             this.cdr.markForCheck();
           }
         });
@@ -292,11 +293,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
           const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
-          this.toastService.error(`Failed to import ${entityType}: ` + (error.message || 'Unknown error'));
+          this.toastService.error(`Failed to import ${entityType}: ` + ErrorHandler.extractErrorMessage(error, 'Unknown error'));
           this.cdr.markForCheck();
         }
       });
@@ -383,11 +384,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.isPreviewInProgress = false;
           this.loadingWarehouseInventory = false;
           this.previewData = null;
-          this.toastService.error(`Preview failed: ${error?.message || 'Unknown error'}`);
+          this.toastService.error(`Preview failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
           this.cdr.markForCheck();
         }
       });
@@ -433,8 +434,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.toastService.success('Template downloaded successfully');
           this.cdr.markForCheck();
         },
-        error: (err: any) => {
-          this.toastService.error('Failed to download template');
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
           this.cdr.markForCheck();
         }
       });

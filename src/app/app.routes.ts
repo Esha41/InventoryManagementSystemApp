@@ -284,12 +284,6 @@ export const routes: Routes = [
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
       {
-        path: 'item-detail/:id',
-        loadComponent: () => import('@components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
-      },
-      {
         path: 'depot-management',
         loadComponent: () => import('@admin/pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
         canActivate: [permissionGuard],

@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
-import { APIOperationResponse } from '@models/api-response.model';
 
 /**
  * DTOs matching backend structure
@@ -153,13 +152,7 @@ export class AssetSupplyService {
     this.config.log(`Getting batches for order depots`, { orderId, depotIds });
     const params = depotIds.map(id => `depotIds=${id}`).join('&');
     const endpoint = `${this.baseEndpoint}/order/${orderId}/batches-for-depots?${params}`;
-    return this.apiService.getWithAuth<APIOperationResponse<BatchForOrderDepotDto[]>>(endpoint).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to get batches');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<BatchForOrderDepotDto[]>(endpoint).pipe(
       catchError(error => {
         this.config.logError('Failed to get batches for order depots', error);
         return throwError(() => error);
@@ -185,13 +178,7 @@ export class AssetSupplyService {
     }
     const endpoint = `${this.baseEndpoint}/order/${orderId}/available-assets${queryParams.length ? '?' + queryParams.join('&') : ''}`;
 
-    return this.apiService.getWithAuth<APIOperationResponse<OrderAssetsToSupplyDto>>(endpoint).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to get assets to supply');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<OrderAssetsToSupplyDto>(endpoint).pipe(
       catchError(error => {
         this.config.logError('Failed to get assets to supply', error);
         return throwError(() => error);
@@ -205,16 +192,7 @@ export class AssetSupplyService {
   createAndSubmit(dto: CreateAssetSupplyDto): Observable<number> {
     this.config.log('Creating asset supply', dto);
     
-    return this.apiService.postWithAuth<APIOperationResponse<number>>(
-      `${this.baseEndpoint}`,
-      dto
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Failed to create asset supply');
-        }
-        return response.data;
-      }),
+    return this.apiService.post<number>(`${this.baseEndpoint}`, dto).pipe(
       catchError(error => {
         this.config.logError('Failed to create asset supply', error);
         return throwError(() => error);
@@ -228,15 +206,7 @@ export class AssetSupplyService {
   getByOrderId(orderId: number): Observable<AssetSupplyDto> {
     this.config.log(`Getting asset supply for order ${orderId}`);
     
-    return this.apiService.getWithAuth<APIOperationResponse<AssetSupplyDto>>(
-      `${this.baseEndpoint}/order/${orderId}`
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Asset supply not found');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<AssetSupplyDto>(`${this.baseEndpoint}/order/${orderId}`).pipe(
       catchError(error => {
         this.config.logError('Failed to get asset supply by order ID', error);
         return throwError(() => error);
@@ -249,15 +219,9 @@ export class AssetSupplyService {
    */
   getWeaponSupplySelection(orderId: number): Observable<{ depotId: number; batchId: number | null }[]> {
     this.config.log('Getting weapon supply selection', { orderId });
-    return this.apiService.getWithAuth<APIOperationResponse<{ depotId: number; batchId: number | null }[]>>(
+    return this.apiService.get<{ depotId: number; batchId: number | null }[]>(
       `${this.baseEndpoint}/order/${orderId}/selection`
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to get selection');
-        }
-        return response.data ?? [];
-      }),
       catchError(error => {
         this.config.logError('Failed to get weapon supply selection', error);
         return throwError(() => error);
@@ -271,16 +235,10 @@ export class AssetSupplyService {
   saveWeaponSupplySelection(orderId: number, selections: { depotId: number; batchId: number | null }[]): Observable<boolean> {
     this.config.log('Saving weapon supply selection', { orderId, selections });
     const dto: SaveWeaponSupplySelectionDto = { orderId, selections };
-    return this.apiService.postWithAuth<APIOperationResponse<boolean>>(
+    return this.apiService.post<boolean>(
       `${this.baseEndpoint}/order/${orderId}/save-selection`,
       dto
     ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to save selection');
-        }
-        return response.data ?? true;
-      }),
       catchError(error => {
         this.config.logError('Failed to save weapon supply selection', error);
         return throwError(() => error);
@@ -294,15 +252,7 @@ export class AssetSupplyService {
   getById(id: number): Observable<AssetSupplyDto> {
     this.config.log(`Getting asset supply ${id}`);
     
-    return this.apiService.getWithAuth<APIOperationResponse<AssetSupplyDto>>(
-      `${this.baseEndpoint}/${id}`
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Asset supply not found');
-        }
-        return response.data;
-      }),
+    return this.apiService.get<AssetSupplyDto>(`${this.baseEndpoint}/${id}`).pipe(
       catchError(error => {
         this.config.logError('Failed to get asset supply by ID', error);
         return throwError(() => error);

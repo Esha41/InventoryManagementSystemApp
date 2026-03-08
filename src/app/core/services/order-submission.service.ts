@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { OrderService } from './order.service';
-import { ErrorHandlingService } from './error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto } from '@models/order.model';
 import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
@@ -50,10 +50,7 @@ export interface OrderSubmissionResult {
   providedIn: 'root'
 })
 export class OrderSubmissionService {
-  constructor(
-    private orderService: OrderService,
-    private errorHandlingService: ErrorHandlingService
-  ) { }
+  constructor(private orderService: OrderService) { }
 
   /**
    * Validates order data before submission
@@ -193,9 +190,10 @@ export class OrderSubmissionService {
     return this.orderService.createOrder(payload, files).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {
-          const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
+          const errorMessage = ErrorHandler.resolveOrderSubmissionError(
             response,
-            undefined
+            undefined,
+            'Failed to submit order. Please try again.'
           );
           return of({
             success: false,
@@ -229,9 +227,10 @@ export class OrderSubmissionService {
         );
       }),
       catchError((error: unknown) => {
-        const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
+        const errorMessage = ErrorHandler.resolveOrderSubmissionError(
           undefined,
-          error
+          error,
+          'Failed to submit order. Please try again.'
         );
         return of({
           success: false,

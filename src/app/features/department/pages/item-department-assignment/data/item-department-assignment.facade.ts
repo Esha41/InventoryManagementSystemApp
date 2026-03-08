@@ -13,7 +13,6 @@ import {
 } from '@models/item-department-assignment.model';
 import { LookupItem } from '@models/lookup.model';
 import { BaseItemDto } from '@models/inventory.model';
-import { APIOperationResponse } from '@models/api-response.model';
 
 export interface LoadDataResult {
   departments: LookupItem[];
@@ -56,8 +55,7 @@ export class ItemDepartmentAssignmentFacade {
           const departments = results.departments
             ? results.departments.filter((d: LookupItem) => !d.isDeleted)
             : [];
-          const departmentSummaries =
-            results.summaries.succeeded && results.summaries.data ? results.summaries.data : [];
+          const departmentSummaries = Array.isArray(results.summaries) ? results.summaries : [];
           this._assignments = [];
           this._assignmentsByDepartment.clear();
 
@@ -107,13 +105,13 @@ export class ItemDepartmentAssignmentFacade {
       .getByDepartmentId(departmentId)
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (res) => {
-          const list = res.succeeded && res.data ? res.data : [];
+        next: (list) => {
+          const assignments = Array.isArray(list) ? list : [];
           this._assignments = this._assignments.filter(
             (a) => Number(a.departmentId) !== departmentId
           );
-          list.forEach((a) => this._assignments.push(a));
-          this._assignmentsByDepartment.set(departmentId, list);
+          assignments.forEach((a) => this._assignments.push(a));
+          this._assignmentsByDepartment.set(departmentId, assignments);
           onLoaded?.();
         },
         error: () => {
@@ -136,28 +134,28 @@ export class ItemDepartmentAssignmentFacade {
     return this._assignmentsByDepartment.get(departmentId) || [];
   }
 
-  create(dto: CreateUpdateItemDepartmentAssignmentDto): Observable<APIOperationResponse<number>> {
+  create(dto: CreateUpdateItemDepartmentAssignmentDto): Observable<number> {
     return this.assignmentService.create(dto);
   }
 
   update(
     id: number,
     dto: CreateUpdateItemDepartmentAssignmentDto
-  ): Observable<APIOperationResponse<boolean>> {
+  ): Observable<boolean> {
     return this.assignmentService.update(id, dto);
   }
 
   bulkAssign(
     assignments: CreateUpdateItemDepartmentAssignmentDto[]
-  ): Observable<APIOperationResponse<boolean>> {
+  ): Observable<boolean> {
     return this.assignmentService.bulkAssign(assignments);
   }
 
-  delete(id: number): Observable<APIOperationResponse<boolean>> {
+  delete(id: number): Observable<boolean> {
     return this.assignmentService.delete(id);
   }
 
-  getDepartmentSummaries(): Observable<APIOperationResponse<DepartmentAssignmentSummaryDto[]>> {
+  getDepartmentSummaries(): Observable<DepartmentAssignmentSummaryDto[]> {
     return this.assignmentService.getDepartmentSummaries();
   }
 

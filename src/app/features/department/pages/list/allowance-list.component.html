@@ -79,7 +79,7 @@
       class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
       <!-- Mobile Card View -->
       <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
-        <div *ngFor="let allowance of allowances"
+        <div *ngFor="let allowance of allowances; trackBy: trackById"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
           <!-- Header: Department & Year -->
@@ -188,7 +188,7 @@
               </tr>
             </thead>
             <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-              <tr *ngFor="let allowance of allowances"
+              <tr *ngFor="let allowance of allowances; trackBy: trackById"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   {{ allowance.departmentName }}

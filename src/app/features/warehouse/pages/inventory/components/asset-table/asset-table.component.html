@@ -32,7 +32,7 @@
       </td>
     </tr>
     <!-- Weapon Assets -->
-    <tr *ngFor="let asset of assets"
+    <tr *ngFor="let asset of assets; trackBy: trackById"
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
         {{ getAssetItemName(asset) }}

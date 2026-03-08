@@ -1,15 +1,5 @@
 import { AllowanceTableRow } from '@models/allowance.model';
-import { LookupItem } from '@models/lookup.model';
-import { TranslateService } from '@ngx-translate/core';
-import { ItemType } from '@core/models/inventory.model';
-
-export const getLocalizedName = (item: LookupItem | null, translateService: TranslateService): string => {
-  if (!item) return '';
-  const currentLang = translateService.currentLang || 'en';
-  if (currentLang === 'ar' && item.nameAr) return item.nameAr;
-
-  return item.nameEn || item.nameAr || '';
-}
+import { ItemType } from '@models/inventory.model';
 
 export const filterAllowances = (
   allowances: AllowanceTableRow[],

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -16,7 +16,6 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveService } from '@services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
@@ -32,6 +31,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { ItemType } from '@core/models/inventory.model';
+import { trackById } from '@utils/trackby.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-allowance-list',
@@ -61,6 +62,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Search = Search;
   readonly X = X;
+
+  readonly trackById = trackById;
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
@@ -115,6 +118,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
     private router: Router,
+    private route: ActivatedRoute,
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService,
@@ -146,9 +150,10 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeItemTypeOptions();
+    this.syncPageFromQueryParams();
+    this.setupQueryParamsSync();
     this.loadAllowances();
 
-    // Subscribe to language changes to reload allowances with new localized names
     this.translateService.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
@@ -156,6 +161,42 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
         this.loadAllowances();
         this.cdr.markForCheck();
       });
+  }
+
+  /** Read page from URL query params (Angular best practice: URL reflects state) */
+  private syncPageFromQueryParams(): void {
+    const page = this.route.snapshot.queryParamMap.get('page');
+    if (page) {
+      const parsed = parseInt(page, 10);
+      if (!isNaN(parsed) && parsed >= 1) {
+        this.currentPage = parsed;
+      }
+    }
+  }
+
+  /** Sync page changes to URL so pagination persists across navigation */
+  private setupQueryParamsSync(): void {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const page = params['page'];
+      if (page) {
+        const parsed = parseInt(page, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed !== this.currentPage) {
+          this.currentPage = parsed;
+          this.updatePagination();
+          this.cdr.markForCheck();
+        }
+      }
+    });
+  }
+
+  /** Update URL with current page (preserves other query params) */
+  private updatePageInUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: this.currentPage > 1 ? this.currentPage : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   private initializeItemTypeOptions(): void {
@@ -185,9 +226,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     // The backend service automatically checks AllowanceItemViewAllDepartments permission
     // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
-      allowances: this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(
-        API_ENDPOINTS.ALLOWANCE.BASE
-      ),
+      allowances: this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE),
       departments: this.lookupService.getDepartments(),
       ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
       weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
@@ -196,10 +235,10 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
-          if (allowances.succeeded && allowances.data) {
-            this.processAllowanceData(allowances.data, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
+          if (allowances && Array.isArray(allowances)) {
+            this.processAllowanceData(allowances, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
           } else {
-            this.error = allowances.message || this.translateService.instant('allowance.errors.failedToLoad');
+            this.error = this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
           }
           this.cdr.markForCheck();
@@ -243,9 +282,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.allAllowances = processed.allAllowances;
     this.filteredAllowances = [...this.allAllowances];
 
-    this.currentPage = 1;
     this.validateCurrentPage();
     this.updatePagination();
+    this.updatePageInUrl();
     this.loading = false;
     this.cdr.markForCheck();
   }
@@ -364,6 +403,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     }
     this.currentPage = page;
     this.updatePagination();
+    this.updatePageInUrl();
   }
 
   onRowsPerPageChange(rows: number): void {
@@ -371,6 +411,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.validateCurrentPage();
     this.updatePagination();
+    this.updatePageInUrl();
   }
 
   get totalPages(): number {
@@ -378,7 +419,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   onAddAllowance(): void {
-    this.router.navigate(['/allowance/add']);
+    const queryParams = this.currentPage > 1 ? { page: this.currentPage } : {};
+    this.router.navigate(['/allowance/add'], { queryParams });
   }
 
   formatDate(year: number): string {
@@ -387,7 +429,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
 
   onEdit(allowance: AllowanceTableRow): void {
-    // Verify user has permission to edit this allowance
     if (!this.isAdminUser && this.userDepartmentId !== null && allowance.departmentId !== this.userDepartmentId) {
       this.translateService.get(['toast.error', 'allowance.errors.unauthorizedAccess']).subscribe(translations => {
         this.toastService.error(translations['allowance.errors.unauthorizedAccess'], translations['toast.error']);
@@ -395,15 +436,17 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/allowance/add'], {
-      queryParams: {
-        departmentId: allowance.departmentId,
-        year: allowance.year,
-        itemId: allowance.itemId,
-        itemType: allowance.itemType,
-        edit: 'true'
-      }
-    });
+    const queryParams: Record<string, string | number> = {
+      departmentId: allowance.departmentId,
+      year: allowance.year,
+      itemId: allowance.itemId,
+      itemType: allowance.itemType,
+      edit: 'true'
+    };
+    if (this.currentPage > 1) {
+      queryParams['page'] = this.currentPage;
+    }
+    this.router.navigate(['/allowance/add'], { queryParams });
   }
 
   onDelete(allowance: AllowanceTableRow): void {
@@ -427,7 +470,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       const itemId = this.selectedAllowance.id;
       const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${itemId}`;
 
-      this.apiService.deleteWithAuth<unknown>(endpoint)
+      this.apiService.delete<unknown>(endpoint)
         .pipe(
           takeUntil(this.destroy$),
           catchError((err: unknown) => {
@@ -442,8 +485,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
           next: (result: unknown) => {
             const r = result as { ok: boolean; error?: unknown } | undefined;
             if (r && r.ok === false) {
-              const err = r.error as { error?: { message?: string }; message?: string } | undefined;
-              const errorMessage = err?.error?.message || err?.message || this.translateService.instant('allowance.failedToDeleteItem');
+              const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(r.error, this.translateService.instant('allowance.failedToDeleteItem'), this.translateService);
               this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe((tr: TranslationMap) => {
                 this.toastService.error(errorMessage, tr['toast.error']);
               });
@@ -473,12 +515,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       const year = this.selectedAllowance.year;
 
 
-      this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(API_ENDPOINTS.ALLOWANCE.BASE)
+      this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (resp) => {
-            const all = resp?.data || [];
-            const ids = all.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
+          next: (all) => {
+            const items = Array.isArray(all) ? all : [];
+            const ids = items.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
 
             if (ids.length === 0) {
 
@@ -495,7 +537,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             type DeleteResult = { ok: true; id?: number; notFound?: boolean } | { ok: false; id?: number; error: unknown };
             const deleteObservables = ids.map(id => {
               const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${id}`;
-              return this.apiService.deleteWithAuth<unknown>(endpoint).pipe(
+              return this.apiService.delete<unknown>(endpoint).pipe(
                 catchError((err: unknown) => {
                   const isNotFound = (err as { status?: number; message?: string })?.status === 404 || (err as { message?: string })?.message === 'Resource not found.';
                   if (isNotFound) return of({ ok: true, id, notFound: true });
@@ -512,8 +554,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                   const hasHardError = r.some(x => x && x.ok === false);
                   if (hasHardError) {
                     const firstErr = r.find((x): x is { ok: false; error: unknown } => x.ok === false);
-                    const err = firstErr?.error as { error?: { message?: string }; message?: string } | undefined;
-                    const errorMessage = err?.error?.message || err?.message || this.translateService.instant('allowance.failedToDelete');
+                    const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(firstErr?.error, this.translateService.instant('allowance.failedToDelete'), this.translateService);
                     this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe((tr: TranslationMap) => {
                       this.toastService.error(errorMessage, tr['toast.error']);
                     });

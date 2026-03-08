@@ -8,7 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { LookupManagementService } from '@services/lookup-management.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.component';
 import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -74,7 +74,6 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private lookupManagementService: LookupManagementService,
-    private errorHandlingService: ErrorHandlingService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
@@ -118,7 +117,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoadingLookups = false;
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lookup items');
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
         }
@@ -249,7 +248,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
             this.loadLookupItems();
           },
           error: (error) => {
-            const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete employee');
             this.lookupErrorMessage = errorMessage;
             this.cdr.markForCheck();
             this.translateService.get(['toast.error']).subscribe(translations => {
@@ -292,7 +291,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete lookup item');
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
           this.translateService.get(['toast.error']).subscribe(translations => {
@@ -348,7 +347,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.lookupModalLoading = false;
           this.isLoadingLookups = false;
-          const errorMessage = this.errorHandlingService.resolveHttpErrorMessage(error);
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save lookup item');
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
 

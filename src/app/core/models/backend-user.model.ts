@@ -4,6 +4,43 @@
  */
 
 /**
+ * Raw API response shape - backend may return different field names (e.g. militoryId, fullNameEN)
+ * Used for normalizing API responses to BackendUserDto
+ */
+export interface RawUserApiResponse {
+  id?: string;
+  userName?: string;
+  email?: string;
+  militoryId?: string;
+  fullNameEN?: string;
+  fullNameAR?: string;
+  roles?: RawRoleApiResponse[];
+  roleIds?: string[];
+  departmentId?: number;
+  departmentName?: string;
+  department?: { id?: number; nameEn?: string; nameAr?: string };
+  rankId?: number;
+  rankNameEn?: string;
+  rankNameAr?: string;
+  rank?: { id?: number; nameEn?: string; nameAr?: string; name?: string };
+}
+
+/** Raw role object from API - may use roleId/roleName instead of id/name */
+export interface RawRoleApiResponse {
+  id?: string;
+  roleId?: string;
+  name?: string;
+  roleName?: string;
+  isDefaultRole?: boolean;
+  isDefault?: boolean;
+  isSuperAdmin?: boolean;
+  superAdmin?: boolean;
+  isAdmin?: boolean;
+  admin?: boolean;
+  applicationEntityIds?: number[];
+}
+
+/**
  * User DTO matching backend UserDto
  */
 export interface BackendUserDto {

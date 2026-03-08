@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
+import { ApiService } from './api.service';
 
 export interface SendEmailRequest {
   to: string;
@@ -20,39 +18,23 @@ export interface SendEmailRequest {
   providedIn: 'root'
 })
 export class EmailService {
-  private get baseUrl(): string {
-    return `${this.config.apiUrl}${API_ENDPOINTS.EMAIL.BASE}`;
-  }
-
   constructor(
-    private http: HttpClient,
-    private config: ConfigService
+    private config: ConfigService,
+    private apiService: ApiService
   ) { }
 
   /**
    * Send an email
    */
-  sendEmail(request: SendEmailRequest): Observable<APIOperationResponse<void>> {
-    const endpoint = `${this.config.apiUrl}${API_ENDPOINTS.EMAIL.SEND}`;
-    console.log('[EmailService] Sending email:', {
-      to: request.to,
-      subject: request.subject,
-      endpoint: endpoint,
-      fullUrl: endpoint
-    });
+  sendEmail(request: SendEmailRequest): Observable<void> {
     this.config.log('Sending email', { to: request.to, subject: request.subject });
 
-    return this.http.post<APIOperationResponse<void>>(endpoint, {
+    return this.apiService.post<void>(API_ENDPOINTS.EMAIL.SEND, {
       To: request.to,
       Subject: request.subject,
       Body: request.body,
       IsHtml: request.isHtml ?? true
-    }).pipe(
-      catchError(error => {
-        this.config.logError('Failed to send email', error);
-        return throwError(() => error);
-      })
-    );
+    });
   }
 
   /**
@@ -62,12 +44,11 @@ export class EmailService {
     recipientEmail: string,
     title: string,
     message: string,
-    details?: Record<string, any>,
-    entityDetails?: any,
+    details?: Record<string, unknown>,
+    entityDetails?: unknown,
     entityType?: string
-  ): Observable<APIOperationResponse<void>> {
+  ): Observable<void> {
     const emailBody = this.buildNotificationEmailBody(title, message, details, entityDetails, entityType);
-    console.log('[EmailService] Sending notification email with body:', emailBody);
 
     return this.sendEmail({
       to: recipientEmail,
@@ -83,8 +64,8 @@ export class EmailService {
   private buildNotificationEmailBody(
     title: string,
     message: string,
-    details?: Record<string, any>,
-    entityDetails?: any,
+    details?: Record<string, unknown>,
+    entityDetails?: unknown,
     entityType?: string
   ): string {
     const lines: string[] = [];
@@ -115,7 +96,7 @@ export class EmailService {
   /**
    * Build plain text details from a details object
    */
-  private buildPlainTextDetails(details?: Record<string, any>): string[] {
+  private buildPlainTextDetails(details?: Record<string, unknown>): string[] {
     if (!details || Object.keys(details).length === 0) {
       return [];
     }
@@ -131,88 +112,98 @@ export class EmailService {
   /**
    * Build plain text representation of entity details (order, return, discard)
    */
-  private buildEntityPlainText(entityDetails?: any, entityType?: string): string[] {
-    if (!entityDetails || !entityType) {
+  private buildEntityPlainText(entityDetails?: unknown, entityType?: string): string[] {
+    if (!entityDetails || !entityType || typeof entityDetails !== 'object') {
       return [];
     }
 
+    const entity = entityDetails as Record<string, unknown>;
     const lines: string[] = [];
 
     switch (entityType.toLowerCase()) {
       case 'order':
-        if (entityDetails.orderNo || entityDetails.requestNo) {
-          lines.push(`  Order Number: ${entityDetails.orderNo || entityDetails.requestNo || `#${entityDetails.id}`}`);
+        if (entity['orderNo'] || entity['requestNo']) {
+          lines.push(`  Order Number: ${entity['orderNo'] || entity['requestNo'] || `#${entity['id']}`}`);
         }
-        if (entityDetails.departmentNameEn || entityDetails.departmentNameAr) {
-          lines.push(`  Department: ${entityDetails.departmentNameEn || entityDetails.departmentNameAr}`);
+        if (entity['departmentNameEn'] || entity['departmentNameAr']) {
+          lines.push(`  Department: ${entity['departmentNameEn'] || entity['departmentNameAr']}`);
         }
-        if (entityDetails.requesterName) {
-          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        if (entity['requesterName']) {
+          lines.push(`  Requester: ${entity['requesterName']}`);
         }
-        if (entityDetails.priority !== undefined) {
-          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+        if (entity['priority'] !== undefined) {
+          const priorityLabel = entity['priority'] === 1 ? 'High' : entity['priority'] === 2 ? 'Medium' : 'Low';
           lines.push(`  Priority: ${priorityLabel}`);
         }
-        if (entityDetails.status !== undefined) {
+        if (entity['status'] !== undefined) {
           const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+          const status = entity['status'] as number;
+          lines.push(`  Status: ${statusLabels[status] ?? `Status ${status}`}`);
         }
-        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+        const orderItems = entity['requestItems'] as unknown[] | undefined;
+        if (orderItems && Array.isArray(orderItems) && orderItems.length > 0) {
           lines.push('  Items:');
-          entityDetails.requestItems.forEach((item: any) => {
-            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          orderItems.forEach((item: unknown) => {
+            const i = item as Record<string, unknown>;
+            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
           });
         }
         break;
 
       case 'return':
-        if (entityDetails.requestNo) {
-          lines.push(`  Return Number: ${entityDetails.requestNo || `#${entityDetails.id}`}`);
+        if (entity['requestNo']) {
+          lines.push(`  Return Number: ${entity['requestNo'] || `#${entity['id']}`}`);
         }
-        if (entityDetails.departmentName) {
-          lines.push(`  Department: ${entityDetails.departmentName}`);
+        if (entity['departmentName']) {
+          lines.push(`  Department: ${entity['departmentName']}`);
         }
-        if (entityDetails.requesterName) {
-          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        if (entity['requesterName']) {
+          lines.push(`  Requester: ${entity['requesterName']}`);
         }
-        if (entityDetails.priority !== undefined) {
-          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+        if (entity['priority'] !== undefined) {
+          const priorityLabel = entity['priority'] === 1 ? 'High' : entity['priority'] === 2 ? 'Medium' : 'Low';
           lines.push(`  Priority: ${priorityLabel}`);
         }
-        if (entityDetails.status !== undefined) {
+        if (entity['status'] !== undefined) {
           const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+          const status = entity['status'] as number;
+          lines.push(`  Status: ${statusLabels[status] ?? `Status ${status}`}`);
         }
-        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+        const returnItems = entity['requestItems'] as unknown[] | undefined;
+        if (returnItems && Array.isArray(returnItems) && returnItems.length > 0) {
           lines.push('  Items:');
-          entityDetails.requestItems.forEach((item: any) => {
-            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          returnItems.forEach((item: unknown) => {
+            const i = item as Record<string, unknown>;
+            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
           });
         }
         break;
 
       case 'discard':
-        if (entityDetails.requestNo) {
-          lines.push(`  Discard Number: ${entityDetails.requestNo || `#${entityDetails.id}`}`);
+        if (entity['requestNo']) {
+          lines.push(`  Discard Number: ${entity['requestNo'] || `#${entity['id']}`}`);
         }
-        if (entityDetails.departmentName) {
-          lines.push(`  Department: ${entityDetails.departmentName}`);
+        if (entity['departmentName']) {
+          lines.push(`  Department: ${entity['departmentName']}`);
         }
-        if (entityDetails.requesterName) {
-          lines.push(`  Requester: ${entityDetails.requesterName}`);
+        if (entity['requesterName']) {
+          lines.push(`  Requester: ${entity['requesterName']}`);
         }
-        if (entityDetails.priority !== undefined) {
-          const priorityLabel = entityDetails.priority === 1 ? 'High' : entityDetails.priority === 2 ? 'Medium' : 'Low';
+        if (entity['priority'] !== undefined) {
+          const priorityLabel = entity['priority'] === 1 ? 'High' : entity['priority'] === 2 ? 'Medium' : 'Low';
           lines.push(`  Priority: ${priorityLabel}`);
         }
-        if (entityDetails.status !== undefined) {
+        if (entity['status'] !== undefined) {
           const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-          lines.push(`  Status: ${statusLabels[entityDetails.status] || `Status ${entityDetails.status}`}`);
+          const status = entity['status'] as number;
+          lines.push(`  Status: ${statusLabels[status] ?? `Status ${status}`}`);
         }
-        if (entityDetails.requestItems && entityDetails.requestItems.length > 0) {
+        const discardItems = entity['requestItems'] as unknown[] | undefined;
+        if (discardItems && Array.isArray(discardItems) && discardItems.length > 0) {
           lines.push('  Items:');
-          entityDetails.requestItems.forEach((item: any) => {
-            lines.push(`    - ${item.itemName || item.name || `Item #${item.itemId}`}: ${item.quantity || 0}`);
+          discardItems.forEach((item: unknown) => {
+            const i = item as Record<string, unknown>;
+            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
           });
         }
         break;
@@ -224,7 +215,7 @@ export class EmailService {
   /**
    * Format a value for plain text output
    */
-  private formatPlainTextValue(value: any): string {
+  private formatPlainTextValue(value: unknown): string {
     if (value === null || value === undefined) {
       return '';
     }

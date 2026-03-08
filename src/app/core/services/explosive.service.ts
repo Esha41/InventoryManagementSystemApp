@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -43,7 +43,7 @@ export class ExplosiveService implements IImportableService {
         return response;
       }),
       catchError(error => {
-        console.error('Error fetching paginated explosives:', error);
+        this.config.logError('Error fetching paginated explosives', error);
         throw error;
       })
     );
@@ -107,14 +107,10 @@ export class ExplosiveService implements IImportableService {
   }
 
   // Get file as blob
+  // Auth interceptor handles Authorization header for all HttpClient requests
   getFileBlob(fileId: number): Observable<Blob> {
     const imageUrl = this.fileUploadService.getFileDownloadUrl(fileId);
-    const token = localStorage.getItem('auth_token');
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return this.http.get(imageUrl, { headers, responseType: 'blob' });
+    return this.http.get(imageUrl, { responseType: 'blob' });
   }
 
   // Delete a file

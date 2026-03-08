@@ -109,7 +109,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[var(--color-border)]">
-                            <tr *ngFor="let group of assetForms.controls; let i = index" [formGroupName]="i"
+                            <tr *ngFor="let group of assetForms.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
                                 class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
                                 <td class="px-4 py-2 text-sm text-[var(--color-text-muted)] font-mono">{{ getAssetFormGroup(i).get('assetId')?.value }}</td>
                                 <td class="px-4 py-2 text-sm text-[var(--color-text)]">

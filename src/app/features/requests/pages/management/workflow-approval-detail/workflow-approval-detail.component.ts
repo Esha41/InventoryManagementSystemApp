@@ -262,11 +262,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.userDelegationService.checkUserRestriction()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            this.isUserRestricted = res.data;
-            this.cdr.markForCheck();
-          }
+        next: (isRestricted) => {
+          this.isUserRestricted = isRestricted;
+          this.cdr.markForCheck();
         }
       });
 

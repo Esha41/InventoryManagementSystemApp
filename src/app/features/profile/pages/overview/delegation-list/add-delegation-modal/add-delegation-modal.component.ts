@@ -56,10 +56,10 @@ export class AddDelegationModalComponent implements OnInit {
 
     loadUsers(): void {
         this.delegationService.getAvailableUsers().subscribe({
-            next: (response) => {
-                if (response && response.succeeded && response.data) {
-                    this.users = response.data;
-                    this.userOptions = response.data.map(user => ({
+            next: (users) => {
+                if (users && users.length > 0) {
+                    this.users = users;
+                    this.userOptions = users.map(user => ({
                         label: user.nameEn || user.userName || 'Unknown User',
                         value: user.id
                     }));
@@ -82,10 +82,10 @@ export class AddDelegationModalComponent implements OnInit {
             };
 
             this.delegationService.create(dto).subscribe({
-                next: (res) => {
+                next: (success) => {
                     this.loading = false;
                     this.cdr.markForCheck();
-                    if (res && res.succeeded) {
+                    if (success) {
                         this.closeModal.emit(true);
                         this.form.reset({ 
                             startDate: this.minDate,

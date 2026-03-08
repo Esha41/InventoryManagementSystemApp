@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { ExplosiveService } from '@services/explosive.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse, PaginatedList } from '@models/api-response.model';
+import { PaginatedList } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
 import { Subject, takeUntil } from 'rxjs';
 import { Observable } from 'rxjs';
@@ -28,6 +28,7 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -140,7 +141,8 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
     private router: Router,
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService,
-    private backendUserService: BackendUserService
+    private backendUserService: BackendUserService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -180,6 +182,16 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
 
     if (!clickedInside) {
       this.closeAllItemDropdowns();
+      this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('document:scroll')
+  onScroll(): void {
+    if (this.itemDropdownOpen.some(open => open)) {
+      this.closeAllItemDropdowns();
+      this.cdr.markForCheck();
     }
   }
 
@@ -207,6 +219,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           }
           this.updateLockedDepartmentName();
           this.applyLockedDepartment();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
@@ -216,6 +229,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingDepartments = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -240,6 +254,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             code: user.userName || ''
           } as LookupItem));
           this.isLoadingRequesters = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadUsers']).subscribe((translations: any) => {
@@ -250,24 +265,22 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
           });
           this.requesters = [];
           this.isLoadingRequesters = false;
+          this.cdr.markForCheck();
         }
       });
   }
 
   private loadRequestPurposes(): void {
     this.isLoadingRequestPurposes = true;
-    this.apiService.getWithAuth<APIOperationResponse<RequestPurpose[]>>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
+    this.apiService.get<RequestPurpose[]>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          if (response.succeeded && response.data) {
-            this.requestPurposes = response.data;
-          } else if (Array.isArray(response)) {
-            this.requestPurposes = response;
-          } else if (response.data && Array.isArray(response.data)) {
-            this.requestPurposes = response.data;
+        next: (data) => {
+          if (Array.isArray(data)) {
+            this.requestPurposes = data;
           }
           this.isLoadingRequestPurposes = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
@@ -277,6 +290,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingRequestPurposes = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -300,10 +314,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
         next: (items) => {
           this.items = items || [];
           this.isLoadingItems = false;
-          // Clear selected items when switching types
           this.returnItems.forEach(item => {
             item.itemId = null;
           });
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
@@ -313,6 +327,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             );
           });
           this.isLoadingItems = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -550,28 +565,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard']);
           }, 1000);
         },
-        error: (error) => {
-          let errorMessage = 'Failed to create return request';
-          if (error.error?.errors) {
-            const errors = error.error.errors;
-            const errorMessages: string[] = [];
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create return request', this.translate);
 
-            if (errors.dto) errorMessages.push(...errors.dto);
-            if (errors['$.priority']) errorMessages.push(`Priority: ${errors['$.priority'].join(', ')}`);
-            if (errors['$.departmentId']) errorMessages.push(`Department: ${errors['$.departmentId'].join(', ')}`);
-            if (errors['$.requestPurposeId']) errorMessages.push(`Request Purpose: ${errors['$.requestPurposeId'].join(', ')}`);
-            if (errors['$.returnItems']) errorMessages.push(`Return Items: ${errors['$.returnItems'].join(', ')}`);
-
-            if (errorMessages.length > 0) {
-              errorMessage = errorMessages.join('; ');
-            } else if (error.error?.title) {
-              errorMessage = error.error.title;
-            }
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-
-          this.translate.get(['toast.error']).subscribe((translations: any) => {
+          this.translate.get(['toast.error']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.isLoading = false;

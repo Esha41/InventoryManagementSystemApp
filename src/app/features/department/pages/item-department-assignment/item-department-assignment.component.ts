@@ -18,7 +18,6 @@ import {
   BaseItemWithType
 } from '@models/item-department-assignment.model';
 import { LookupItem } from '@models/lookup.model';
-import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
@@ -109,7 +108,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.loading = true;
     this.errorMessage = null;
-    this.facade.loadData().subscribe({
+    this.facade.loadData().pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
         this.departments = result.departments;
         this.departmentSummaries = result.departmentSummaries;
@@ -246,7 +245,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
 
   saveAssignment(): void {
     if (!this.validateAssignment()) {
-      this.translateService.get('itemDepartmentAssignment.errors.fillRequiredFields').subscribe((t) => {
+      this.translateService.get('itemDepartmentAssignment.errors.fillRequiredFields').pipe(takeUntil(this.destroy$)).subscribe((t) => {
         this.errorMessage = t ?? 'Please fill in all required fields';
         this.cdr.markForCheck();
       });
@@ -279,7 +278,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       );
 
       if (assignmentsToCreate.length === 0) {
-        this.translateService.get('itemDepartmentAssignment.errors.selectAtLeastOneItem').subscribe((t) => {
+        this.translateService.get('itemDepartmentAssignment.errors.selectAtLeastOneItem').pipe(takeUntil(this.destroy$)).subscribe((t) => {
           this.errorMessage = t ?? 'Please select at least one item';
           this.loading = false;
           this.cdr.markForCheck();
@@ -307,31 +306,22 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleSaveResponse(
-    res: APIOperationResponse<boolean | number>,
-    successToastKey?: string
-  ): void {
+  private handleSaveResponse(_res: boolean | number, successToastKey?: string): void {
     this.loading = false;
-    if (res.succeeded) {
-      const key = successToastKey ?? (this.isEditMode ? 'toast.assignmentUpdated' : 'toast.assignmentCreated');
-      this.translateService.get([key, 'toast.success']).subscribe((t: TranslationMap) => {
-        this.toastService.success(t[key], t['toast.success']);
-      });
-      this.closeModal();
-      this.loadData();
-      this.expandedDepartments.clear();
-    } else {
-      this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
-        this.toastService.error(res.message ?? t['toast.failedToSaveAssignment'], t['toast.error']);
-      });
-    }
+    const key = successToastKey ?? (this.isEditMode ? 'toast.assignmentUpdated' : 'toast.assignmentCreated');
+    this.translateService.get([key, 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
+      this.toastService.success(t[key], t['toast.success']);
+    });
+    this.closeModal();
+    this.loadData();
+    this.expandedDepartments.clear();
     this.cdr.markForCheck();
   }
 
   private handleSaveError(error: unknown): void {
     this.loading = false;
     const msg = ErrorHandler.extractErrorMessage(error, 'Failed to save assignment');
-    this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
+    this.translateService.get(['toast.failedToSaveAssignment', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
       this.toastService.error(msg ?? t['toast.failedToSaveAssignment'], t['toast.error']);
     });
     this.cdr.markForCheck();
@@ -443,18 +433,18 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
       .delete(this.assignmentToDelete.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
+        next: (success) => {
           this.loading = false;
           this.assignmentToDelete = undefined;
-          if (res.succeeded) {
-            this.translateService.get(['toast.assignmentDeleted', 'toast.success']).subscribe((t: TranslationMap) => {
+          if (success) {
+            this.translateService.get(['toast.assignmentDeleted', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
               this.toastService.success(t['toast.assignmentDeleted'], t['toast.success']);
             });
             this.facade.removeAssignmentFromCache(deletedId, departmentId);
             this.refreshDepartmentSummaries();
           } else {
             this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
-              this.toastService.error(res.message ?? t['toast.failedToDeleteAssignment'], t['toast.error']);
+              this.toastService.error(t['toast.failedToDeleteAssignment'], t['toast.error']);
             });
           }
           this.cdr.markForCheck();
@@ -463,7 +453,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.assignmentToDelete = undefined;
           const msg = ErrorHandler.extractErrorMessage(err, 'Failed to delete assignment');
-          this.translateService.get('toast.error').subscribe((t) => {
+          this.translateService.get('toast.error').pipe(takeUntil(this.destroy$)).subscribe((t) => {
             this.toastService.error(msg, t);
           });
           this.cdr.markForCheck();
@@ -479,9 +469,9 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
 
   private refreshDepartmentSummaries(): void {
     this.facade.getDepartmentSummaries().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => {
-        if (res.succeeded && res.data) {
-          this.departmentSummaries = res.data;
+      next: (data) => {
+        if (data && Array.isArray(data)) {
+          this.departmentSummaries = data;
           this.filterSummariesBySearch();
           this.cdr.markForCheck();
         }

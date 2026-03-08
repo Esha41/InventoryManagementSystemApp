@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,7 +7,8 @@ import { AnnouncementService } from '@services/announcement.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { Subject, takeUntil } from 'rxjs';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { Priority } from '@utils/priority.utils';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
@@ -20,16 +21,17 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
     styleUrls: ['./announcement-form.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnouncementFormComponent implements OnInit {
+export class AnnouncementFormComponent implements OnInit, OnDestroy {
     private readonly fb = inject(FormBuilder);
     private readonly announcementService = inject(AnnouncementService);
     private readonly userService = inject(BackendUserService);
     private readonly toastService = inject(ToastService);
     private readonly translationService = inject(TranslationService);
-    private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly cdr = inject(ChangeDetectorRef);
+
+    private readonly destroy$ = new Subject<void>();
 
     form!: FormGroup;
     loading = signal(false);
@@ -57,6 +59,11 @@ export class AnnouncementFormComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     initForm(): void {
         this.form = this.fb.group({
             message: ['', [Validators.required, Validators.maxLength(500)]],
@@ -70,7 +77,7 @@ export class AnnouncementFormComponent implements OnInit {
     }
 
     loadRoles(): void {
-        this.userService.getRoles().subscribe({
+        this.userService.getRoles().pipe(takeUntil(this.destroy$)).subscribe({
             next: (roles) => {
                 this.roles.set(roles);
                 this.cdr.markForCheck();
@@ -85,7 +92,7 @@ export class AnnouncementFormComponent implements OnInit {
     loadAnnouncement(id: number): void {
         this.loading.set(true);
         this.cdr.markForCheck();
-        this.announcementService.getById(id).subscribe({
+        this.announcementService.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
             next: (response) => {
                 const announcement = response.data;
                 this.form.patchValue({
@@ -101,7 +108,7 @@ export class AnnouncementFormComponent implements OnInit {
                 this.cdr.markForCheck();
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to load announcement');
                 this.toastService.error(message);
                 this.loading.set(false);
                 this.cdr.markForCheck();
@@ -135,7 +142,7 @@ export class AnnouncementFormComponent implements OnInit {
             ? this.announcementService.update(this.announcementId, dto)
             : this.announcementService.create(dto);
 
-        request$.subscribe({
+        request$.pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.announcementService.notifyActiveAnnouncementsChanged();
                 const message = this.isEditMode()
@@ -146,7 +153,7 @@ export class AnnouncementFormComponent implements OnInit {
                 this.router.navigate(['/admin/announcements']);
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to save announcement');
                 this.toastService.error(message);
                 this.submitting.set(false);
                 this.cdr.markForCheck();

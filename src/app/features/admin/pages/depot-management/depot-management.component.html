@@ -29,7 +29,7 @@
 
     <!-- Mobile/Tablet Card View -->
     <div *ngIf="!loading || showModal" class="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div *ngFor="let depot of depots"
+      <div *ngFor="let depot of depots; trackBy: trackById"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
         <div class="flex justify-between items-start">
           <div>
@@ -103,7 +103,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let depot of depots"
+          <tr *ngFor="let depot of depots; trackBy: trackById"
             class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.nameEn }}</td>
             <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ depot.nameAr }}</td>

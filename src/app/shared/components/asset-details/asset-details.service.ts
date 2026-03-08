@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, switchMap, of } from 'rxjs';
+import { ConfigService } from '@services/config.service';
 import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
@@ -21,6 +22,7 @@ export class AssetDetailsService {
   private readonly explosiveService = inject(ExplosiveService);
   private readonly fileUploadService = inject(FileUploadService);
   private readonly http = inject(HttpClient);
+  private readonly configService = inject(ConfigService);
 
   /**
    * Load asset by ID and type
@@ -134,61 +136,50 @@ export class AssetDetailsService {
     const entityType = this.getFileEntityType(assetType);
 
     return this.fileUploadService.getFilesByEntity(entityType, assetId).pipe(
-      switchMap((files: any[]) => {
-        console.log(`[AssetDetails] Loading images for ${assetType} ID: ${assetId}`, { files });
-
+      switchMap((files: unknown[]) => {
         if (!files || files.length === 0) {
-          console.log('[AssetDetails] No files found for this asset.');
           return of(null);
         }
 
         // Get main images (there might be multiple with isMain: true)
-        const mainImages = files.filter((img: any) => img.isMain);
-        let latestImage: any;
+        const fileList = files as Array<{ id?: number; isMain?: boolean }>;
+        const mainImages = fileList.filter((img) => img.isMain);
+        let latestImage: { id?: number } | undefined;
 
         if (mainImages.length > 0) {
-          // If multiple main images exist, get the one with highest ID (latest uploaded)
-          latestImage = mainImages.reduce((latest: any, current: any) =>
-            current.id > latest.id ? current : latest
+          latestImage = mainImages.reduce((latest, current) =>
+            (current.id ?? 0) > (latest.id ?? 0) ? current : latest
           );
-          console.log('[AssetDetails] Selected main image:', latestImage);
         } else {
-          // If no main image, get the image with highest ID (latest uploaded)
-          latestImage = files.reduce((latest: any, current: any) =>
-            current.id > latest.id ? current : latest
+          latestImage = fileList.reduce((latest, current) =>
+            (current.id ?? 0) > (latest.id ?? 0) ? current : latest
           );
-          console.log('[AssetDetails] Selected latest non-main image:', latestImage);
         }
 
         if (!latestImage?.id) {
-          console.warn('[AssetDetails] Selected image has no ID:', latestImage);
+          this.configService.logWarning('[AssetDetails] Selected image has no ID');
           return of(null);
         }
 
-        // Get the download URL for the latest image
         const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
-        console.log('[AssetDetails] Constructed image URL:', imageUrl);
 
-        // Fetch image as blob with authentication
         return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
           switchMap((blob: Blob) => {
-            console.log('Asset image blob loaded:', { type: blob.type, size: blob.size });
-            // Allow image/* types or generic octet-stream (browser will often render valid image bytes even if type is generic)
             if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream')) {
               const blobUrl = URL.createObjectURL(blob);
               return of(blobUrl);
             }
-            console.warn('Asset image rejected due to invalid type or empty size:', blob.type, blob.size);
+            this.configService.logWarning('Asset image rejected due to invalid type or empty size');
             return of(null);
           }),
           catchError((err) => {
-            console.warn('Failed to load image blob:', err);
+            this.configService.logWarning('Failed to load image blob', err);
             return of(null);
           })
         );
       }),
       catchError(() => {
-        console.warn('Failed to get files');
+        this.configService.logWarning('Failed to get files');
         return of(null);
       })
     );

@@ -43,7 +43,7 @@ import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import {
   mapSelectedEntriesToCartridges,
   filterReserveDetailsBySelectedItems,
@@ -118,7 +118,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private cartridgeManagementService: IssueRequestCartridgeManagementService,
     private submissionService: IssueRequestSubmissionService,
     private toastService: ToastService,
-    private errorHandlingService: ErrorHandlingService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -769,7 +768,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.orderSubmissionState.submittingOrder = false;
-          const errorMsg = this.errorHandlingService.resolveOrderSubmissionError(undefined, error);
+          const errorMsg = ErrorHandler.resolveOrderSubmissionError(undefined, error, 'Failed to submit order');
           this.orderSubmissionState.orderSubmitError = errorMsg;
           this.currentStep = 3;
           this.updateQueryParams(3);

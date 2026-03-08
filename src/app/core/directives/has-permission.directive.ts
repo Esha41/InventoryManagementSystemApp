@@ -1,7 +1,6 @@
 import { Directive, Input, TemplateRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { StorageService } from '@services/storage.service';
 
 /**
  * Structural directive for permission-based rendering
@@ -33,8 +32,7 @@ export class HasPermissionDirective implements OnInit, OnDestroy {
   constructor(
     private templateRef: TemplateRef<any>,
     private viewContainer: ViewContainerRef,
-    private authService: BackendAuthService,
-    private storageService: StorageService
+    private authService: BackendAuthService
   ) {}
 
   ngOnInit(): void {

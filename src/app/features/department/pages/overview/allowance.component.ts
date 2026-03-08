@@ -1,23 +1,23 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { AmmunitionReadDto } from '@models/ammunition.model';
-import { WeaponService } from '@services/weapon.service';
-import { WeaponDto } from '@models/weapon.model';
-import { ExplosiveService } from '@services/explosive.service';
-import { ExplosiveDto } from '@models/explosive.model';
-import { ItemType } from '@models/inventory.model';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang, type Localizable } from '@utils/localization.utils';
@@ -25,22 +25,15 @@ import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import type { Observable } from 'rxjs';
-
-export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
-
-/** API response item shape for allowance by department/year */
-export interface AllowanceApiItem {
-  itemId: number | string;
-  itemType?: number | string;
-  quantity: number | string;
-}
-
-export interface AllowanceItem {
-  itemId: string;
-  quantity: string;
-  selectedItem?: AllowanceItemType;
-}
+import { trackById, trackByIndex } from '@utils/trackby.utils';
+import { ItemType } from '@models/inventory.model';
+import type {
+  AllowanceItem,
+  AllowanceItemType,
+  AllowanceApiItem,
+  AllowanceItemTypeKey,
+} from './models/allowance.model';
+import { AllowanceService } from './services/allowance.service';
 
 @Component({
   selector: 'app-allowance',
@@ -52,15 +45,73 @@ export interface AllowanceItem {
     LucideAngularModule,
     ButtonComponent,
     DropdownComponent,
-    HasPermissionDirective
+    HasPermissionDirective,
   ],
   templateUrl: './allowance.component.html',
   styleUrls: ['./allowance.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AllowanceComponent implements OnInit {
+export class AllowanceComponent implements OnInit, OnDestroy {
+  private readonly lookupService = inject(LookupService);
+  private readonly apiService = inject(ApiService);
+  private readonly translateService = inject(TranslateService);
+  private readonly translationService = inject(TranslationService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly backendAuthService = inject(BackendAuthService);
+  private readonly userContextService = inject(UserContextService);
+  private readonly allowanceService = inject(AllowanceService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly searchSubject = new Subject<{ index: number; term: string }>();
+
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
+  readonly trackById = trackById;
+  readonly trackByIndex = trackByIndex;
+
+  selectedDepartment: number | string | null = null;
+  selectedYear: string = '';
+  selectedItemType: AllowanceItemTypeKey = 'Ammunition';
+  items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
+
+  departments: DepartmentDto[] = [];
+  filteredDepartments: DepartmentDto[] = [];
+  isLoadingDepartments = false;
+  isAdminUser = false;
+  userDepartmentId: number | null = null;
+  readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
+
+  itemTypeOptions: { value: AllowanceItemTypeKey; label: string }[] = [];
+
+  allItems: AllowanceItemType[] = [];
+  filteredItems: Record<number, AllowanceItemType[]> = {};
+  searchTerms: Record<number, string> = {};
+  showDropdowns: Record<number, boolean> = {};
+
+  isSubmitted = false;
+  isLoading = false;
+  errors: Record<string, string> = {};
+  itemErrors: Record<number, Record<string, string>> = {};
+  targetItemId: number | null = null;
+  allExistingItems: AllowanceApiItem[] = [];
+
+  constructor() {
+    this.selectedYear = new Date().getFullYear().toString();
+    this.initializeUserContext();
+  }
+
+  private initializeUserContext(): void {
+    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
+    this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
+    const currentUser = this.backendAuthService.getCurrentUser();
+    if (currentUser?.departmentId) {
+      this.userDepartmentId = currentUser.departmentId;
+    }
+  }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -70,119 +121,66 @@ export class AllowanceComponent implements OnInit {
     return this.isRTL ? ArrowRight : ArrowLeft;
   }
 
-  selectedDepartment: number | string | null = null;
-  selectedYear: string = ''; // Changed from selectedDate to selectedYear (string input for year only)
-  selectedItemType: 'Ammunition' | 'Weapon' | 'Explosive' = 'Ammunition';
-  items: AllowanceItem[] = [{ itemId: '', quantity: '' }];
-
-  departments: DepartmentDto[] = [];
-  filteredDepartments: DepartmentDto[] = []; // Filtered departments based on user permissions
-  isLoadingDepartments = false;
-  isAdminUser = false;
-  userDepartmentId: number | null = null;
-  readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
-    this.getLocalizedName(this.unwrapOption(option));
-
-  // Item type options - will be populated with translations
-  itemTypeOptions: { value: 'Ammunition' | 'Weapon' | 'Explosive'; label: string }[] = [];
-
-  // Items search (supports all types)
-  allItems: AllowanceItemType[] = [];
-  filteredItems: { [key: number]: AllowanceItemType[] } = {};
-  searchTerms: { [key: number]: string } = {};
-  showDropdowns: { [key: number]: boolean } = {};
-  private searchSubject = new Subject<{ index: number; term: string }>();
-
-  isSubmitted = false;
-  isLoading = false;
-  errors: { [key: string]: string } = {};
-  itemErrors: { [key: number]: { [key: string]: string } } = {};
-  targetItemId: number | null = null;
-  allExistingItems: AllowanceApiItem[] = [];
-
-  constructor(
-    private lookupService: LookupService,
-    private ammunitionService: AmmunitionService,
-    private weaponService: WeaponService,
-    private explosiveService: ExplosiveService,
-    private apiService: ApiService,
-    private translateService: TranslateService,
-    private translationService: TranslationService,
-    private router: Router,
-    private toastService: ToastService,
-    private route: ActivatedRoute,
-    private backendAuthService: BackendAuthService,
-    private userContextService: UserContextService,
-    private cdr: ChangeDetectorRef
-  ) {
-    // Set default year to current year
-    const currentYear = new Date().getFullYear();
-    this.selectedYear = currentYear.toString();
-
-    // Initialize user context
-    this.initializeUserContext();
-  }
-
-  private initializeUserContext(): void {
-    // Check if user can view all departments (admin or has permission)
-    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
-    this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
-
-    // Get user's department ID
-    const currentUser = this.backendAuthService.getCurrentUser();
-    if (currentUser?.departmentId) {
-      this.userDepartmentId = currentUser.departmentId;
-    }
-  }
-
   ngOnInit(): void {
+    this.setupSearchDebounce();
+    this.setupLangChange();
+    this.setupQueryParams();
     this.loadDepartments();
     this.loadItemTypeOptions();
+  }
 
-    // Setup search debouncing
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(({ index, term }) => {
-      this.filterItems(index, term);
-      this.cdr.markForCheck();
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    // Subscribe to language changes to reload data with new localized names
-    this.translateService.onLangChange.subscribe(() => {
-      this.loadDepartments();
-      this.loadItemTypeOptions();
-      this.loadItems();
-      this.cdr.markForCheck();
-    });
+  private setupSearchDebounce(): void {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(({ index, term }) => {
+        this.filterItems(index, term);
+        this.cdr.markForCheck();
+      });
+  }
 
-    // Check for edit mode from query params
-    this.route.queryParams.subscribe(params => {
+  private setupLangChange(): void {
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadDepartments();
+        this.loadItemTypeOptions();
+        this.loadItems();
+        this.cdr.markForCheck();
+      });
+  }
+
+  private setupQueryParams(): void {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.cdr.markForCheck();
-      if (params['departmentId'] && params['year'] && (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined')) {
+      const hasEditParams =
+        params['departmentId'] &&
+        params['year'] &&
+        (params['edit'] === 'true' || params['edit'] === true || typeof params['edit'] !== 'undefined');
+
+      if (hasEditParams) {
         this.selectedDepartment = parseInt(params['departmentId'], 10);
         this.selectedYear = params['year'];
         this.targetItemId = params['itemId'] ? parseInt(params['itemId'], 10) : null;
 
-        // Set item type from query params if provided
         if (params['itemType']) {
           const itype = params['itemType'].toString();
-
-          if (itype === '1' || itype === 'Ammunition') {
-            this.selectedItemType = 'Ammunition';
-          } else if (itype === '2' || itype === 'Weapon') {
-            this.selectedItemType = 'Weapon';
-          } else if (itype === '3' || itype === 'Explosive') {
-            this.selectedItemType = 'Explosive';
-          }
+          if (itype === '1' || itype === 'Ammunition') this.selectedItemType = 'Ammunition';
+          else if (itype === '2' || itype === 'Weapon') this.selectedItemType = 'Weapon';
+          else if (itype === '3' || itype === 'Explosive') this.selectedItemType = 'Explosive';
         }
 
-        // Load items with the correct type, then load allowance data
         this.loadItems().then(() => {
-          this.loadExistingAllowance(parseInt(params['departmentId'], 10), parseInt(params['year'], 10));
+          this.loadExistingAllowance(
+            parseInt(params['departmentId'], 10),
+            parseInt(params['year'], 10)
+          );
         });
       } else {
-        // Not in edit mode, load default items
         this.loadItems();
       }
     });
@@ -190,47 +188,35 @@ export class AllowanceComponent implements OnInit {
 
   loadItems(): Promise<void> {
     return new Promise((resolve) => {
-      let load$: Observable<AllowanceItemType[]>;
-
-      if (this.selectedItemType === 'Weapon') {
-        load$ = this.weaponService.getAll<WeaponDto>();
-      } else if (this.selectedItemType === 'Explosive') {
-        load$ = this.explosiveService.getAll<ExplosiveDto>();
-      } else {
-        // Ammunition (default)
-        load$ = this.ammunitionService.getAll<AmmunitionReadDto>();
-      }
-
-      load$.subscribe({
-        next: (items: AllowanceItemType[]) => {
-          this.allItems = items || [];
-          // Initialize filtered list for each existing item
-          this.items.forEach((_, index) => {
-            if (!this.filteredItems[index]) {
-              this.filteredItems[index] = [...this.allItems];
-            }
-          });
-          this.cdr.markForCheck();
-          resolve();
-        },
-        error: (_error: unknown) => {
-          // Silently handle error - user will see it when trying to use items
-          this.allItems = [];
-          this.cdr.markForCheck();
-          resolve();
-        }
-      });
+      this.allowanceService
+        .getItemsByType(this.selectedItemType)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (items) => {
+            this.allItems = items || [];
+            this.items.forEach((_, index) => {
+              if (!this.filteredItems[index]) {
+                this.filteredItems[index] = [...this.allItems];
+              }
+            });
+            this.cdr.markForCheck();
+            resolve();
+          },
+          error: () => {
+            this.allItems = [];
+            this.cdr.markForCheck();
+            resolve();
+          },
+        });
     });
   }
 
   onItemTypeChange(): void {
-    // Clear current selections when item type changes
     this.items = [{ itemId: '', quantity: '' }];
     this.searchTerms = {};
     this.showDropdowns = {};
     this.filteredItems = {};
     this.allItems = [];
-    // Reload items for the new type
     this.loadItems();
   }
 
@@ -244,13 +230,13 @@ export class AllowanceComponent implements OnInit {
       this.filteredItems[index] = [...this.allItems];
       return;
     }
-
     const searchLower = term.toLowerCase().trim();
-    this.filteredItems[index] = this.allItems.filter(item =>
-      (item.name?.toLowerCase().includes(searchLower)) ||
-      (item.itemNo?.toLowerCase().includes(searchLower)) ||
-      (item.nsn?.toLowerCase().includes(searchLower)) ||
-      (item.id?.toString().includes(searchLower))
+    this.filteredItems[index] = this.allItems.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(searchLower) ||
+        item.itemNo?.toLowerCase().includes(searchLower) ||
+        item.nsn?.toLowerCase().includes(searchLower) ||
+        item.id?.toString().includes(searchLower)
     );
   }
 
@@ -259,7 +245,6 @@ export class AllowanceComponent implements OnInit {
     this.items[index].itemId = item.id.toString();
     this.searchTerms[index] = `${item.name} - ${item.itemNo} - ${item.nsn || ''}`.trim();
     this.showDropdowns[index] = false;
-    // Clear error when item is selected
     this.onItemSelectionChange(index);
   }
 
@@ -271,7 +256,6 @@ export class AllowanceComponent implements OnInit {
   }
 
   closeDropdown(index: number): void {
-    // Close dropdown when clicking outside
     setTimeout(() => {
       this.showDropdowns[index] = false;
     }, 200);
@@ -281,77 +265,61 @@ export class AllowanceComponent implements OnInit {
     return `${item.name || ''} - ${item.itemNo || ''} - ${item.nsn || ''}`.trim();
   }
 
-
   loadItemTypeOptions(): void {
-    this.translateService.get([
-      'allowance.ammunition',
-      'allowance.weapon',
-      'allowance.explosive'
-    ]).subscribe(translations => {
-      this.itemTypeOptions = [
-        { value: 'Ammunition', label: translations['allowance.ammunition'] },
-        { value: 'Weapon', label: translations['allowance.weapon'] },
-        { value: 'Explosive', label: translations['allowance.explosive'] }
-      ];
-      this.cdr.markForCheck();
-    });
+    this.translateService
+      .get(['allowance.ammunition', 'allowance.weapon', 'allowance.explosive'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((translations) => {
+        this.itemTypeOptions = [
+          { value: 'Ammunition', label: translations['allowance.ammunition'] },
+          { value: 'Weapon', label: translations['allowance.weapon'] },
+          { value: 'Explosive', label: translations['allowance.explosive'] },
+        ];
+        this.cdr.markForCheck();
+      });
   }
 
   loadDepartments(): void {
     this.isLoadingDepartments = true;
     this.cdr.markForCheck();
-    this.lookupService.getDepartments().subscribe({
-      next: (departments: DepartmentDto[]) => {
-        this.departments = departments;
-
-        // Filter departments for non-admin users
-        if (!this.isAdminUser && this.userDepartmentId !== null) {
-          // Non-admin users can only see their own department
-          this.filteredDepartments = departments.filter(dept => dept.id === this.userDepartmentId);
-
-          // Pre-select user's department if not already selected
-          if (!this.selectedDepartment && this.filteredDepartments.length > 0) {
-            this.selectedDepartment = this.userDepartmentId;
+    this.allowanceService
+      .getDepartments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (departments) => {
+          this.departments = departments;
+          if (!this.isAdminUser && this.userDepartmentId !== null) {
+            this.filteredDepartments = departments.filter((d) => d.id === this.userDepartmentId);
+            if (!this.selectedDepartment && this.filteredDepartments.length > 0) {
+              this.selectedDepartment = this.userDepartmentId;
+            }
+          } else {
+            this.filteredDepartments = departments;
           }
-        } else {
-          // Admin users can see all departments
-          this.filteredDepartments = departments;
-        }
-
-        this.isLoadingDepartments = false;
-        this.cdr.markForCheck();
-      },
-      error: (_error: unknown) => {
-        this.isLoadingDepartments = false;
-        this.cdr.markForCheck();
-      }
-    });
+          this.isLoadingDepartments = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isLoadingDepartments = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
-  private getLocalizedName(entity: DepartmentDto | string | number | { label?: string } | null | undefined): string {
-    if (!entity) {
-      return '';
-    }
-
-    if (typeof entity === 'string') {
-      return entity;
-    }
-
-    if (typeof entity === 'number') {
-      return String(entity);
-    }
-
+  private getLocalizedName(
+    entity: DepartmentDto | string | number | { label?: string } | null | undefined
+  ): string {
+    if (!entity) return '';
+    if (typeof entity === 'string') return entity;
+    if (typeof entity === 'number') return String(entity);
     if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') {
       return entity.label;
     }
-
     return getLocalizedName(entity as Localizable, getCurrentLang(this.translateService));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
-    if (!option) {
-      return null;
-    }
+    if (!option) return null;
     if (typeof option === 'object' && option !== null && 'value' in option) {
       return option.value as T;
     }
@@ -367,60 +335,27 @@ export class AllowanceComponent implements OnInit {
   }
 
   removeItem(index: number): void {
-    if (this.items.length > 1) {
-      this.items.splice(index, 1);
-      delete this.itemErrors[index];
-      delete this.searchTerms[index];
-      delete this.showDropdowns[index];
-      delete this.filteredItems[index];
+    if (this.items.length <= 1) return;
+    this.items.splice(index, 1);
+    delete this.itemErrors[index];
+    delete this.searchTerms[index];
+    delete this.showDropdowns[index];
+    delete this.filteredItems[index];
 
-      // Reindex errors, search terms, dropdowns, and filtered items
-      const newErrors: { [key: number]: { [key: string]: string } } = {};
-      const newSearchTerms: { [key: number]: string } = {};
-      const newShowDropdowns: { [key: number]: boolean } = {};
-      const newFilteredItems: { [key: number]: AllowanceItemType[] } = {};
-
-      Object.keys(this.itemErrors).forEach(key => {
-        const oldIndex = parseInt(key);
-        if (oldIndex > index) {
-          newErrors[oldIndex - 1] = this.itemErrors[oldIndex];
-        } else if (oldIndex < index) {
-          newErrors[oldIndex] = this.itemErrors[oldIndex];
-        }
+    const reindex = <T extends Record<number, unknown>>(obj: T): T => {
+      const result = {} as T;
+      Object.keys(obj).forEach((key) => {
+        const oldIndex = parseInt(key, 10);
+        if (oldIndex > index) (result as Record<number, unknown>)[oldIndex - 1] = obj[oldIndex];
+        else if (oldIndex < index) (result as Record<number, unknown>)[oldIndex] = obj[oldIndex];
       });
+      return result;
+    };
 
-      Object.keys(this.searchTerms).forEach(key => {
-        const oldIndex = parseInt(key);
-        if (oldIndex > index) {
-          newSearchTerms[oldIndex - 1] = this.searchTerms[oldIndex];
-        } else if (oldIndex < index) {
-          newSearchTerms[oldIndex] = this.searchTerms[oldIndex];
-        }
-      });
-
-      Object.keys(this.showDropdowns).forEach(key => {
-        const oldIndex = parseInt(key);
-        if (oldIndex > index) {
-          newShowDropdowns[oldIndex - 1] = this.showDropdowns[oldIndex];
-        } else if (oldIndex < index) {
-          newShowDropdowns[oldIndex] = this.showDropdowns[oldIndex];
-        }
-      });
-
-      Object.keys(this.filteredItems).forEach(key => {
-        const oldIndex = parseInt(key);
-        if (oldIndex > index) {
-          newFilteredItems[oldIndex - 1] = this.filteredItems[oldIndex];
-        } else if (oldIndex < index) {
-          newFilteredItems[oldIndex] = this.filteredItems[oldIndex];
-        }
-      });
-
-      this.itemErrors = newErrors;
-      this.searchTerms = newSearchTerms;
-      this.showDropdowns = newShowDropdowns;
-      this.filteredItems = newFilteredItems;
-    }
+    this.itemErrors = reindex(this.itemErrors);
+    this.searchTerms = reindex(this.searchTerms);
+    this.showDropdowns = reindex(this.showDropdowns);
+    this.filteredItems = reindex(this.filteredItems);
   }
 
   validateForm(): boolean {
@@ -428,13 +363,11 @@ export class AllowanceComponent implements OnInit {
     this.itemErrors = {};
     let isValid = true;
 
-    // Validate department
     if (!this.selectedDepartment || this.selectedDepartment === '' || this.selectedDepartment === null) {
       this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
       isValid = false;
     }
 
-    // Validate year
     if (!this.selectedYear || this.selectedYear.trim() === '') {
       this.errors['year'] = this.translateService.instant('allowance.errors.yearRequired');
       isValid = false;
@@ -446,10 +379,8 @@ export class AllowanceComponent implements OnInit {
       }
     }
 
-    // Validate items
     this.items.forEach((item, index) => {
-      const itemError: { [key: string]: string } = {};
-
+      const itemError: Record<string, string> = {};
       if (!item.itemId || item.itemId.trim() === '') {
         itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
         isValid = false;
@@ -457,7 +388,6 @@ export class AllowanceComponent implements OnInit {
         itemError['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
         isValid = false;
       }
-
       if (!item.quantity || item.quantity.trim() === '') {
         itemError['quantity'] = this.translateService.instant('allowance.errors.quantityRequired');
         isValid = false;
@@ -465,10 +395,7 @@ export class AllowanceComponent implements OnInit {
         itemError['quantity'] = this.translateService.instant('allowance.errors.quantityInvalid');
         isValid = false;
       }
-
-      if (Object.keys(itemError).length > 0) {
-        this.itemErrors[index] = itemError;
-      }
+      if (Object.keys(itemError).length > 0) this.itemErrors[index] = itemError;
     });
 
     return isValid;
@@ -476,54 +403,47 @@ export class AllowanceComponent implements OnInit {
 
   onSend(form: NgForm): void {
     this.isSubmitted = true;
+    if (!this.validateForm()) return;
 
-    if (!this.validateForm()) {
-      return;
-    }
-
-    // Get year from selectedYear string
     const year = parseInt(this.selectedYear.trim(), 10);
+    const itemType =
+      this.selectedItemType === 'Weapon'
+        ? ItemType.Weapon
+        : this.selectedItemType === 'Explosive'
+          ? ItemType.Explosive
+          : ItemType.Ammunition;
 
-    // Determine itemType based on selectedItemType
-    let itemType: number;
-    if (this.selectedItemType === 'Weapon') {
-      itemType = ItemType.Weapon; // 2
-    } else if (this.selectedItemType === 'Explosive') {
-      itemType = ItemType.Explosive; // 3
-    } else {
-      itemType = ItemType.Ammunition; // 1
-    }
-
-    // Prepare request data according to API structure
-    const requestData = {
-      departmentId: typeof this.selectedDepartment === 'number'
+    const departmentId =
+      typeof this.selectedDepartment === 'number'
         ? this.selectedDepartment
-        : parseInt(this.selectedDepartment as string, 10),
-      year: year,
+        : parseInt(this.selectedDepartment as string, 10);
+
+    const requestData = {
+      departmentId,
+      year,
       items: [
-        ...this.items.map(item => ({
+        ...this.items.map((item) => ({
           itemId: parseInt(item.itemId.trim(), 10),
-          itemType: itemType,
-          quantity: parseInt(item.quantity.trim(), 10)
+          itemType,
+          quantity: parseInt(item.quantity.trim(), 10),
         })),
-        // Include other items that were not being edited if in single-item edit mode
         ...(this.targetItemId !== null
           ? this.allExistingItems
-            .filter(ei => ei.itemId !== this.targetItemId)
-            .map(ei => ({
-              itemId: ei.itemId,
-              itemType: ei.itemType || itemType,
-              quantity: ei.quantity
-            }))
-          : [])
-      ]
+              .filter((ei) => ei.itemId !== this.targetItemId)
+              .map((ei) => ({
+                  itemId: Number(ei.itemId),
+                  itemType: Number(ei.itemType ?? itemType),
+                  quantity: Number(ei.quantity),
+                }))
+          : []),
+      ],
     };
 
     this.isLoading = true;
     this.errors = {};
     this.cdr.markForCheck();
 
-    this.apiService.postWithAuth<ApiResponse<unknown>>(
+    this.apiService.post<void>(
       API_ENDPOINTS.ALLOWANCE.BULK,
       requestData
     ).subscribe({
@@ -565,8 +485,7 @@ export class AllowanceComponent implements OnInit {
 
   resetForm(): void {
     this.selectedDepartment = null;
-    const currentYear = new Date().getFullYear();
-    this.selectedYear = currentYear.toString();
+    this.selectedYear = new Date().getFullYear().toString();
     this.selectedItemType = 'Ammunition';
     this.items = [{ itemId: '', quantity: '' }];
     this.errors = {};
@@ -580,15 +499,26 @@ export class AllowanceComponent implements OnInit {
   }
 
   onBack(): void {
-    this.router.navigate(['/allowance']);
+    this.router.navigate(['/allowance'], { queryParams: this.getBackQueryParams() });
+  }
+
+  /** Preserve pagination when navigating back to list (Angular best practice: URL-driven state) */
+  private getBackQueryParams(): { page?: number } {
+    const page = this.route.snapshot.queryParamMap.get('page');
+    if (page) {
+      const parsed = parseInt(page, 10);
+      if (!isNaN(parsed) && parsed >= 1) {
+        return { page: parsed };
+      }
+    }
+    return {};
   }
 
   loadExistingAllowance(departmentId: number, year: number): void {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
     type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
-    this.apiService.getWithAuth<ApiResponse<AllowanceResponseData>>(endpoint).subscribe({
-      next: (response) => {
-        const data = response.data as AllowanceResponseData | undefined;
+    this.apiService.get<AllowanceResponseData>(endpoint).subscribe({
+      next: (data) => {
         const items = data?.items || data?.Items || [];
 
         if (items && items.length > 0) {
@@ -631,30 +561,23 @@ export class AllowanceComponent implements OnInit {
   }
 
   private mapItemsToForm(items: AllowanceApiItem[]): void {
-    const itemsMap = new Map(this.allItems.map(a => [a.id, a]));
-
-    // Filter items if targetItemId is provided
+    const itemsMap = new Map(this.allItems.map((a) => [a.id, a]));
     let itemsToMap = items;
     if (this.targetItemId !== null) {
-      itemsToMap = items.filter(item => Number(item.itemId) === this.targetItemId);
+      itemsToMap = items.filter((item) => Number(item.itemId) === this.targetItemId);
     }
 
-    this.items = itemsToMap.map((item: AllowanceApiItem, index: number) => {
+    this.items = itemsToMap.map((item, index) => {
       const itemIdNum = Number(item.itemId);
       const foundItem = itemsMap.get(itemIdNum);
       this.filteredItems[index] = foundItem
-        ? [foundItem, ...this.allItems.filter(a => Number(a.id) !== itemIdNum)]
+        ? [foundItem, ...this.allItems.filter((a) => Number(a.id) !== itemIdNum)]
         : [...this.allItems];
-
-      // Set search term to display the selected item
-      if (foundItem) {
-        this.searchTerms[index] = this.getItemDisplay(foundItem);
-      }
-
+      if (foundItem) this.searchTerms[index] = this.getItemDisplay(foundItem);
       return {
         itemId: item.itemId.toString(),
         quantity: item.quantity.toString(),
-        selectedItem: foundItem
+        selectedItem: foundItem,
       };
     });
   }
@@ -675,16 +598,12 @@ export class AllowanceComponent implements OnInit {
     return this.itemErrors[itemIndex]?.[field] || '';
   }
 
-
   clearError(field: string): void {
-    if (this.errors[field]) {
-      delete this.errors[field];
-    }
+    if (this.errors[field]) delete this.errors[field];
   }
 
-
   clearItemError(itemIndex: number, field: string): void {
-    if (this.itemErrors[itemIndex] && this.itemErrors[itemIndex][field]) {
+    if (this.itemErrors[itemIndex]?.[field]) {
       delete this.itemErrors[itemIndex][field];
       if (Object.keys(this.itemErrors[itemIndex]).length === 0) {
         delete this.itemErrors[itemIndex];
@@ -692,22 +611,16 @@ export class AllowanceComponent implements OnInit {
     }
   }
 
-
   onDepartmentChange(): void {
     this.clearError('department');
-    if (this.isSubmitted) {
-      if (this.selectedDepartment && this.selectedDepartment !== '' && this.selectedDepartment !== null) {
-        this.clearError('department');
-      } else {
-        this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
-      }
+    if (this.isSubmitted && (!this.selectedDepartment || this.selectedDepartment === '' || this.selectedDepartment === null)) {
+      this.errors['department'] = this.translateService.instant('allowance.errors.departmentRequired');
     }
   }
 
-
   onYearChange(): void {
     if (this.isSubmitted) {
-      if (!this.selectedYear || !this.selectedYear.trim()) {
+      if (!this.selectedYear?.trim()) {
         this.errors['year'] = this.translateService.instant('allowance.errors.yearRequired');
       } else {
         const year = parseInt(this.selectedYear.trim(), 10);
@@ -718,46 +631,43 @@ export class AllowanceComponent implements OnInit {
         }
       }
     } else {
-
       this.clearError('year');
     }
   }
 
-
   onQuantityChange(itemIndex: number): void {
     this.clearItemError(itemIndex, 'quantity');
-
     if (this.isSubmitted && this.items[itemIndex]) {
-      const quantity = this.items[itemIndex].quantity;
-      if (!quantity || quantity.trim() === '') {
-        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
-        this.itemErrors[itemIndex]['quantity'] = this.translateService.instant('allowance.errors.quantityRequired');
-      } else if (!/^\d+$/.test(quantity.trim())) {
-        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
-        this.itemErrors[itemIndex]['quantity'] = this.translateService.instant('allowance.errors.quantityInvalid');
+      const q = this.items[itemIndex].quantity;
+      if (!q?.trim()) {
+        (this.itemErrors[itemIndex] ??= {})['quantity'] = this.translateService.instant(
+          'allowance.errors.quantityRequired'
+        );
+      } else if (!/^\d+$/.test(q.trim())) {
+        (this.itemErrors[itemIndex] ??= {})['quantity'] = this.translateService.instant(
+          'allowance.errors.quantityInvalid'
+        );
       } else {
         this.clearItemError(itemIndex, 'quantity');
       }
     }
   }
 
-
   onItemSelectionChange(itemIndex: number): void {
     this.clearItemError(itemIndex, 'itemId');
-
     if (this.isSubmitted && this.items[itemIndex]) {
       const item = this.items[itemIndex];
-      if (!item.itemId || item.itemId.trim() === '') {
-        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
-        this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdRequired');
+      if (!item.itemId?.trim()) {
+        (this.itemErrors[itemIndex] ??= {})['itemId'] = this.translateService.instant(
+          'allowance.errors.itemIdRequired'
+        );
       } else if (!item.selectedItem) {
-        this.itemErrors[itemIndex] = this.itemErrors[itemIndex] || {};
-        this.itemErrors[itemIndex]['itemId'] = this.translateService.instant('allowance.errors.itemIdInvalid');
+        (this.itemErrors[itemIndex] ??= {})['itemId'] = this.translateService.instant(
+          'allowance.errors.itemIdInvalid'
+        );
       } else {
         this.clearItemError(itemIndex, 'itemId');
       }
     }
   }
-
 }
-

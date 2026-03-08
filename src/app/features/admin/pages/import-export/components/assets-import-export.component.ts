@@ -23,6 +23,7 @@ import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
 import { APIOperationResponse } from '@models/api-response.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-assets-import-export',
@@ -256,12 +257,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.isPreviewInProgress = false;
           this.loadingAssets = false;
           // Clear preview data on error
           this.previewData = null;
-          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Unknown error');
           this.toastService.error(`Preview failed: ${errorMessage}`);
           this.cdr.markForCheck();
         }
@@ -302,10 +303,10 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           }
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.isImportInProgress = false;
           this.loadingAssets = false;
-          const errorMessage = error?.error?.message || error?.message || 'Unknown error';
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Unknown error');
           this.toastService.error(`Import failed: ${errorMessage}`);
           this.cdr.markForCheck();
         }
@@ -330,9 +331,8 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           link.click();
           window.URL.revokeObjectURL(url);
         },
-        error: (err) => {
-          this.toastService.error('Failed to download template');
-          console.error(err);
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
         }
       });
   }
@@ -390,12 +390,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
             }
             this.cdr.markForCheck();
           },
-          error: (error: any) => {
+          error: (error: unknown) => {
             this.isImportInProgress = false;
             this.loadingAssets = false;
             this.pendingImportFile = null; // Clear the stored file
 
-            const errorMessage = error?.error?.message || error?.message || error?.statusText || 'Unknown error';
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Unknown error');
             this.toastService.error(`Import failed: ${errorMessage}`);
             this.cdr.markForCheck();
           }
@@ -403,7 +403,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.isImportInProgress = false;
       this.loadingAssets = false;
-      this.toastService.error('Failed to start import: ' + (error as any)?.message);
+      this.toastService.error('Failed to start import: ' + ErrorHandler.extractErrorMessage(error, 'Unknown error'));
       this.cdr.markForCheck();
     }
   }
