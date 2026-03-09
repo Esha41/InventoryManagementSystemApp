@@ -48,8 +48,19 @@ export class BatchService {
         );
     }
 
-    getById(id: number): Observable<BatchDto | null> {
-        return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`);
+    getById(id: number, options?: {
+        serialNumberOnly?: boolean;
+        quantity?: number;
+        filterByIsAssigned?: boolean;
+    }): Observable<BatchDto | null> {
+        let params = new HttpParams();
+        if (options?.serialNumberOnly != null)
+            params = params.set('serialNumberOnly', String(options.serialNumberOnly));
+        if (options?.quantity != null)
+            params = params.set('quantity', String(options.quantity));
+        if (options?.filterByIsAssigned != null)
+            params = params.set('filterByIsAssigned', String(options.filterByIsAssigned));
+        return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`, params);
     }
 
     bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto): Observable<boolean> {

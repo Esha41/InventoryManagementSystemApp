@@ -135,6 +135,16 @@ export class AssetService implements IImportableService {
     }
 
     /**
+     * Update serial number for a single asset
+     */
+    updateSerialNumber(assetId: number, serialNumber: string | null): Observable<boolean> {
+        return this.apiService.put<boolean>(
+            `${this.basePath}/${assetId}/serial-number`,
+            { serialNumber }
+        );
+    }
+
+    /**
      * Check if serial number is unique
      */
     checkSerialNumberUnique(serialNumber: string, excludeId?: number): Observable<boolean> {

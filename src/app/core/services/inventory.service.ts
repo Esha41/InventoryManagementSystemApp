@@ -85,6 +85,32 @@ export class InventoryService implements IImportableService {
   }
 
   /**
+   * Get warehouse inventory details for export (uses paginated endpoint for reliable data)
+   * Filters by itemType: 1 = Ammunition, 3 = Explosive
+   */
+  getWarehouseInventoryDetailsForExport(depotId: number, itemType: 1 | 3): Observable<InventoryDetailDto[]> {
+    this.config.log('Fetching warehouse inventory for export', { depotId, itemType });
+
+    const request = {
+      page: 1,
+      pageSize: 100000,
+      filter: {
+        logic: 'and' as const,
+        filters: [
+          { field: 'Item.ItemType', operator: 'eq' as const, value: String(itemType) }
+        ]
+      }
+    };
+
+    return this.apiService.post<PaginatedList<InventoryDetailDto>>(
+      `${this.endpoint}/depot/${depotId}/details/search`,
+      request
+    ).pipe(
+      map(response => response?.items ?? [])
+    );
+  }
+
+  /**
    * Get paginated inventory details by depot ID
    */
   getInventoryDetailsPaginated(depotId: number, request: PagedRequest): Observable<PaginatedList<InventoryDetailDto>> {

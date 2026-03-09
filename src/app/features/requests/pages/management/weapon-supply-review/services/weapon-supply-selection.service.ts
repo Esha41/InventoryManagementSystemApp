@@ -25,7 +25,7 @@ export class WeaponSupplySelectionService {
     selectedBatchIds: number[];
     batchOptions: BatchForOrderDepotDto[];
   } | null {
-    if (!this.orderId || this.selectedDepotIds.length === 0 || this.selectedBatchIds.length === 0) {
+    if (!this.orderId || this.selectedDepotIds.length === 0) {
       return null;
     }
     return {
@@ -44,8 +44,6 @@ export class WeaponSupplySelectionService {
   }
 
   hasValidSelection(): boolean {
-    return this.orderId > 0 &&
-      this.selectedDepotIds.length > 0 &&
-      this.selectedBatchIds.length > 0;
+    return this.orderId > 0 && this.selectedDepotIds.length > 0;
   }
 }

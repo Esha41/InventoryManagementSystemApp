@@ -1,11 +1,22 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError, map, catchError } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { AssetSupplyService, OrderAssetsToSupplyDto, CreateAssetSupplyDto } from '@services/asset-supply.service';
 import { AssetService } from '@services/asset.service';
+import { AssetDto } from '@core/models/asset.model';
 import { OrderDto } from '@models/order.model';
 import { SelectedAsset } from './asset-selection.service';
+import { WeaponSupplyLookupService } from './weapon-supply-lookup.service';
+
+export interface ReceiverInfo {
+    receiverName: string;
+    receiverMilitaryId: string;
+    receiverRankId: number;
+    location?: string;
+    expectedReturnDate?: string;
+    notes?: string;
+}
 
 export interface ItemWithAssets {
     itemId: number;
@@ -20,16 +31,16 @@ export interface ItemWithAssets {
 @Injectable()
 export class WeaponSupplyReviewService {
 
-    // State
     private _itemsWithAssets = new BehaviorSubject<ItemWithAssets[]>([]);
     itemsWithAssets$ = this._itemsWithAssets.asObservable();
 
     orderData: OrderDto | null = null;
-    defaultCustodianId: string = '';
+    defaultCustodianId: number | undefined;
 
     constructor(
         private assetSupplyService: AssetSupplyService,
         private assetService: AssetService,
+        private lookupService: WeaponSupplyLookupService,
         private toastService: ToastService,
         private translate: TranslateService
     ) { }
@@ -38,17 +49,17 @@ export class WeaponSupplyReviewService {
         return this._itemsWithAssets.value;
     }
 
-    setItems(items: ItemWithAssets[]) {
+    setItems(items: ItemWithAssets[]): void {
         this._itemsWithAssets.next(items);
     }
 
-    initializeItemsFromOrder(order: OrderDto) {
+    initializeItemsFromOrder(order: OrderDto): void {
         this.orderData = order;
-        this.defaultCustodianId = order.requesterId || '';
+        this.defaultCustodianId = this.lookupService.resolveEmployeeByUserId(order.requesterId || '');
 
         if (!order.requestItems) return;
 
-        const items = order.requestItems.map(item => ({
+        const items: ItemWithAssets[] = order.requestItems.map(item => ({
             itemId: item.itemId,
             itemName: item.itemName || 'Unknown Item',
             requestedQuantity: item.quantity,
@@ -61,7 +72,7 @@ export class WeaponSupplyReviewService {
         this.setItems(items);
     }
 
-    updateItemsWithAvailableAssets(data: OrderAssetsToSupplyDto) {
+    updateItemsWithAvailableAssets(data: OrderAssetsToSupplyDto): void {
         const currentItems = this.items;
 
         data.items.forEach(newItem => {
@@ -70,24 +81,28 @@ export class WeaponSupplyReviewService {
                 existingItem.availableQuantity = newItem.availableQuantity;
                 existingItem.canFulfill = newItem.canFulfill;
 
-                // Merge available assets
-                const newAvailableAssets = newItem.availableAssets.map(asset => ({
-                    id: asset.id,
-                    assetId: asset.id, // For DTO mapping
-                    serialNumber: asset.serialNumber,
-                    assetTag: asset.assetTag,
-                    condition: asset.condition,
-                    selected: false,
-                    custodianId: this.defaultCustodianId,
-                    conditionOnSupply: asset.condition || '',
-                    notes: '',
-                    depot: asset.depot
-                } as SelectedAsset));
+                const previousAssetMap = new Map(
+                    existingItem.selectedAssets.map(a => [a.id, a])
+                );
 
-                const existingIds = existingItem.selectedAssets.map(a => a.id);
-                const uniqueNewAssets = newAvailableAssets.filter(a => !existingIds.includes(a.id));
+                const newAvailableAssets: SelectedAsset[] = newItem.availableAssets.map(asset => {
+                    const prev = previousAssetMap.get(asset.id);
+                    return {
+                        id: asset.id,
+                        assetId: asset.id,
+                        serialNumber: asset.serialNumber,
+                        assetTag: asset.assetTag,
+                        condition: asset.condition,
+                        selected: prev ? prev.selected : false,
+                        custodianId: prev?.custodianId ?? this.defaultCustodianId,
+                        conditionOnSupply: asset.condition || prev?.conditionOnSupply || '',
+                        notes: prev?.notes ?? '',
+                        depot: asset.depot
+                    };
+                });
 
-                existingItem.selectedAssets = [...existingItem.selectedAssets, ...uniqueNewAssets];
+                existingItem.selectedAssets = newAvailableAssets;
+                existingItem.selectedCount = existingItem.selectedAssets.filter(a => a.selected).length;
             }
         });
 
@@ -95,19 +110,17 @@ export class WeaponSupplyReviewService {
     }
 
     scanSerialNumber(serialNumber: string): void {
-        if (!serialNumber || !serialNumber.trim()) return;
+        if (!serialNumber?.trim()) return;
 
-        // First check if already loaded in any item's available assets
         const foundInAvailable = this.findAndSelectInAvailableAssets(serialNumber);
         if (foundInAvailable) {
             this.toastService.success(this.translate.instant('weaponSupplyReview.assetSelected', { serial: serialNumber }));
             return;
         }
 
-        // If not found locally, fetch from API
-        this.assetService.getBySerialNumber(serialNumber)
+        this.assetService.getBySerialNumber<AssetDto>(serialNumber)
             .subscribe({
-                next: (asset: any) => {
+                next: (asset) => {
                     if (!asset) {
                         this.toastService.error(this.translate.instant('weaponSupplyReview.assetNotFound'));
                         return;
@@ -141,7 +154,7 @@ export class WeaponSupplyReviewService {
                                 matchingItem.selectedAssets.push(newAsset);
                                 matchingItem.selectedCount++;
                                 this.toastService.success(this.translate.instant('weaponSupplyReview.assetAddedAndSelected', { serial: serialNumber }));
-                                this.setItems(currentItems); // Trigger update
+                                this.setItems(currentItems);
                             }
                         } else {
                             this.toastService.warning(this.translate.instant('weaponSupplyReview.assetItemNotRequested'));
@@ -150,7 +163,7 @@ export class WeaponSupplyReviewService {
                         this.toastService.warning(this.translate.instant('weaponSupplyReview.cannotMatchAssetToOrder'));
                     }
                 },
-                error: (err) => {
+                error: () => {
                     this.toastService.error(this.translate.instant('weaponSupplyReview.errorFetchingAsset'));
                 }
             });
@@ -159,9 +172,10 @@ export class WeaponSupplyReviewService {
     private findAndSelectInAvailableAssets(serialNumber: string): boolean {
         let found = false;
         const items = this.items;
+        const normalizedSerial = serialNumber.toLowerCase();
 
         for (const item of items) {
-            const asset = item.selectedAssets.find(a => a.serialNumber?.toLowerCase() === serialNumber.toLowerCase());
+            const asset = item.selectedAssets.find(a => a.serialNumber?.toLowerCase() === normalizedSerial);
             if (asset) {
                 if (!asset.selected) {
                     this.toggleAssetSelection(item, asset, true);
@@ -171,7 +185,7 @@ export class WeaponSupplyReviewService {
             }
         }
 
-        if (found) this.setItems(items); // Update state if changed
+        if (found) this.setItems(items);
         return found;
     }
 
@@ -185,27 +199,22 @@ export class WeaponSupplyReviewService {
 
     createSupplyDto(
         orderId: number,
-        receiverInfo: any,
+        receiverInfo: ReceiverInfo,
         items: ItemWithAssets[]
     ): CreateAssetSupplyDto {
         const selectedAssets = items.flatMap(item =>
             item.selectedAssets
                 .filter(a => a.selected)
-                .map(a => {
-                    // a.custodianId holds the employee ID as string from the dropdown; convert to number
-                    const detailCustodianId = a.custodianId ? Number(a.custodianId) : undefined;
-                    return {
-                        assetId: a.assetId || a.id,
-                        conditionOnSupply: a.conditionOnSupply || a.condition || undefined,
-                        custodianId: detailCustodianId,
-                        notes: a.notes || undefined
-                    };
-                })
+                .map(a => ({
+                    assetId: a.assetId || a.id,
+                    conditionOnSupply: a.conditionOnSupply || a.condition || undefined,
+                    custodianId: a.custodianId,
+                    notes: a.notes || undefined
+                }))
         );
 
         return {
-            orderId: orderId,
-            custodianId: this.defaultCustodianId,
+            orderId,
             receiverName: receiverInfo.receiverName,
             receiverMilitaryId: receiverInfo.receiverMilitaryId,
             receiverRankId: receiverInfo.receiverRankId,

@@ -59,7 +59,7 @@
         <span>{{ 'adminImportExport.downloadTemplate' | translate }}</span>
       </button>
       <button (click)="exportToExcel()"
-        [disabled]="(activeTab === 'weapon' ? filteredWarehouseAssets.length === 0 : filteredWarehouseInventory.length === 0) || loadingWarehouseInventory"
+        [disabled]="loadingWarehouseInventory"
         class="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         [class.flex-row-reverse]="isRTL">
         <lucide-angular [img]="Upload" class="w-4 h-4"></lucide-angular>
