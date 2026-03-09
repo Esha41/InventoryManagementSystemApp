@@ -9,6 +9,7 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { formatDateForInput } from '@utils/format.utils';
 import { Priority } from '@utils/priority.utils';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
@@ -69,7 +70,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
             message: ['', [Validators.required, Validators.maxLength(500)]],
             priority: [Priority.Normal, Validators.required],
             isDismissable: [true],
-            startDate: [new Date().toISOString().split('T')[0], Validators.required],
+            startDate: [formatDateForInput(new Date()), Validators.required],
             endDate: [''],
             targetRoles: [ [] ],
             isActive: [true]
@@ -99,8 +100,8 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
                     message: announcement.message,
                     priority: announcement.priority,
                     isDismissable: announcement.isDismissable,
-                    startDate: new Date(announcement.startDate).toISOString().split('T')[0],
-                    endDate: announcement.endDate ? new Date(announcement.endDate).toISOString().split('T')[0] : '',
+                    startDate: formatDateForInput(announcement.startDate),
+                    endDate: announcement.endDate ? formatDateForInput(announcement.endDate) : '',
                     targetRoles: announcement.targetRoles ?? [],
                     isActive: announcement.isActive
                 });

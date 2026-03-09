@@ -18,6 +18,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
+import { formatDateForInput } from '@utils/format.utils';
 
 @Component({
     selector: 'app-edit-batch',
@@ -121,8 +122,8 @@ export class EditBatchComponent implements OnInit, OnDestroy {
 
     private buildForms(assets: AssetDto[]): void {
         const firstAsset = assets[0];
-        const commonPurchaseDate = firstAsset?.purchaseDate ? this.formatDateForInput(firstAsset.purchaseDate) : '';
-        const commonWarrantyExpiry = firstAsset?.warrantyExpiryDate ? this.formatDateForInput(firstAsset.warrantyExpiryDate) : '';
+        const commonPurchaseDate = firstAsset?.purchaseDate ? this.formatDate(firstAsset.purchaseDate) : '';
+        const commonWarrantyExpiry = firstAsset?.warrantyExpiryDate ? this.formatDate(firstAsset.warrantyExpiryDate) : '';
         const commonPurchasePrice = firstAsset?.purchasePrice ?? null;
 
         const groups = assets.map(asset => this.fb.group({
@@ -149,10 +150,8 @@ export class EditBatchComponent implements OnInit, OnDestroy {
         return getLocalizedName(depot, getCurrentLang(this.translateService)) || depot.name || '';
     }
 
-    private formatDateForInput(date: Date | string): string {
-        if (!date) return '';
-        const d = new Date(date);
-        return d.toISOString().split('T')[0];
+    private formatDate(date: Date | string): string {
+        return formatDateForInput(date);
     }
 
     getAssetFormGroup(index: number): FormGroup {
