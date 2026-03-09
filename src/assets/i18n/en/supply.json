@@ -344,7 +344,7 @@
     "failedToSaveSelection": "Failed to save selection",
     "changeBatchSelection": "Change Batch Selection",
     "batchesConfirmed": "Batches confirmed. Loading assets...",
-    "assetCount": "Assets",
+    "assetCount": "Total Assets",
     "failedToLoadBatches": "Failed to load batches",
     "continueToAssetSelection": "Continue to Asset Selection",
     "loadingDepots": "Loading depots...",
