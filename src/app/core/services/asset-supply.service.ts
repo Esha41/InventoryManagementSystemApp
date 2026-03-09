@@ -50,7 +50,6 @@ export interface CreateAssetSupplyDetailDto {
 
 export interface CreateAssetSupplyDto {
   orderId: number;
-  custodianId?: string;
   receiverName: string;
   receiverMilitaryId: string;
   receiverRankId: number;

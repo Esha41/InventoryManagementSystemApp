@@ -165,6 +165,17 @@ export class DropdownComponent<T = Primitive>
    */
   @Output() selectionChange = new EventEmitter<T | null | T[]>();
 
+  /**
+   * Optional label for an "Add" action button shown at the bottom of the dropdown panel.
+   * When set, a button is rendered; use addActionClick to handle the click.
+   */
+  @Input() addActionLabel?: string;
+
+  /**
+   * Emits when the add action button is clicked.
+   */
+  @Output() addActionClick = new EventEmitter<void>();
+
   isOpen = false;
   hoveredIndex: number | null = null;
   searchTerm = '';
@@ -622,6 +633,13 @@ export class DropdownComponent<T = Primitive>
 
   onTriggerBlur(): void {
     this.onTouched();
+  }
+
+  onAddActionClick(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.addActionClick.emit();
+    this.close();
   }
 }
 

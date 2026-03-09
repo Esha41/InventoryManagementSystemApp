@@ -18,11 +18,11 @@
         ('workflowApprovalDetail.item' | translate) : ('workflowApprovalDetail.items' | translate) }}
       </span>
       <button *ngIf="canSelectDepots()" (click)="navigateToSelectDepo()"
-        class="px-4 py-2 bg-[var(--color-background)] text-[var(--color-text)] border border-[var(--color-border)] rounded-lg font-medium hover:bg-[var(--color-background-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
+        class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
         {{ 'workflowApprovalDetail.selectDepo' | translate }}
       </button>
       <button *ngIf="canReviewWeaponSupply()" (click)="navigateToWeaponSupplyReview()"
-        class="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 shadow-custom-sm">
+        class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
         {{ 'workflowApprovalDetail.reviewWeaponSupply' | translate }}
       </button>
       <button *ngIf="canReviewSupply()" (click)="navigateToSupplyReview()"

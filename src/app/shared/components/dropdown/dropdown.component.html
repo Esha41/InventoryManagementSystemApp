@@ -18,6 +18,13 @@
   </button>
 
   <div class="app-dropdown-panel" *ngIf="isOpen">
+    <!-- Add Action (when addActionLabel is set, shown at top of panel) -->
+    <div *ngIf="addActionLabel" class="app-dropdown-add-action border-b border-[var(--color-border)] p-2">
+      <button type="button" (click)="onAddActionClick($event)"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
+        {{ addActionLabel | translate }}
+      </button>
+    </div>
     <!-- Search Input (hidden when showSearch=false, e.g. rows-per-page with few options) -->
     <div class="app-dropdown-search" *ngIf="showSearch && options && options.length > 0" (click)="onSearchClick($event)">
       <div class="relative">

@@ -10,7 +10,7 @@ export interface SelectedAsset {
   assetTag?: string;
   condition?: string;
   selected: boolean;
-  custodianId?: string;
+  custodianId?: number;
   conditionOnSupply?: string;
   notes?: string;
   depot?: {
@@ -34,7 +34,7 @@ export interface AssetPaginationState {
  */
 export interface AssetFilterState {
   searchTerm: string;
-  sortColumn: 'serialNumber' | 'assetTag' | 'condition' | null;
+  sortColumn: 'serialNumber' | null;
   sortDirection: 'asc' | 'desc';
 }
 
@@ -56,38 +56,21 @@ export class AssetSelectionService {
 
     const searchLower = searchTerm.toLowerCase();
     return assets.filter(asset =>
-      asset.serialNumber?.toLowerCase().includes(searchLower) ||
-      asset.assetTag?.toLowerCase().includes(searchLower)
+      asset.serialNumber?.toLowerCase().includes(searchLower)
     );
   }
 
   /**
    * Sort assets by column
    */
-  sortAssets(assets: SelectedAsset[], column: 'serialNumber' | 'assetTag' | 'condition' | null, direction: 'asc' | 'desc'): SelectedAsset[] {
+  sortAssets(assets: SelectedAsset[], column: 'serialNumber' | null, direction: 'asc' | 'desc'): SelectedAsset[] {
     if (!column) {
       return assets;
     }
 
     const sorted = [...assets].sort((a, b) => {
-      let aValue: string | number = '';
-      let bValue: string | number = '';
-
-      switch (column) {
-        case 'serialNumber':
-          aValue = a.serialNumber || '';
-          bValue = b.serialNumber || '';
-          break;
-        case 'assetTag':
-          aValue = a.assetTag || '';
-          bValue = b.assetTag || '';
-          break;
-        case 'condition':
-          aValue = a.condition || '';
-          bValue = b.condition || '';
-          break;
-      }
-
+      const aValue = a.serialNumber || '';
+      const bValue = b.serialNumber || '';
       const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       return direction === 'asc' ? comparison : -comparison;
     });

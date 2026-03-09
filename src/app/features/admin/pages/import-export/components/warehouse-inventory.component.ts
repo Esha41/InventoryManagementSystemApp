@@ -146,17 +146,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loadingWarehouseInventory = true;
     this.cdr.markForCheck();
 
-    // For weapons, load assets; for ammunition/explosives, load inventory
+    // For weapons, load assets; for ammunition/explosives, use paginated endpoint (same as warehouse page)
     if (this.activeTab === 'weapon') {
       this.assetService.getByDepotId(this.selectedDepotId)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (assets) => {
-            // Filter assets to only include weapons (itemType === 2)
-            this.warehouseAssets = assets.filter(asset => {
-              const type = this.normalizeItemType(asset.item?.itemType);
-              return type === 2;
-            });
+            // All assets in depot are weapons - no itemType filter needed
+            this.warehouseAssets = assets ?? [];
             this.applyFilters();
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
@@ -168,11 +165,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           }
         });
     } else {
-      this.inventoryService.getWarehouseInventoryItems(this.selectedDepotId)
+      const itemType = this.activeTab === 'ammunition' ? 1 : 3;
+      this.inventoryService.getWarehouseInventoryDetailsForExport(this.selectedDepotId, itemType)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (inventoryDetails) => {
-            this.warehouseInventoryDetails = inventoryDetails;
+            this.warehouseInventoryDetails = inventoryDetails ?? [];
             this.applyFilters();
             this.loadingWarehouseInventory = false;
             this.cdr.markForCheck();
@@ -188,43 +186,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   private applyFilters(): void {
     if (this.activeTab === 'weapon') {
-      // For weapons, use assets (already filtered by weapon type in loadWarehouseInventory)
       this.filteredWarehouseAssets = [...this.warehouseAssets];
     } else {
-      // For ammunition/explosives, use inventory
-      let filtered = [...this.warehouseInventoryDetails];
-
-      if (this.activeTab === 'ammunition') {
-        filtered = filtered.filter(d => {
-          const type = this.normalizeItemType(d.item?.itemType);
-          return type === 1;
-        });
-      } else if (this.activeTab === 'explosive') {
-        filtered = filtered.filter(d => {
-          const type = this.normalizeItemType(d.item?.itemType);
-          return type === 3;
-        });
-      }
-
-      this.filteredWarehouseInventory = filtered;
+      // Ammunition/explosive data is already filtered by itemType in loadWarehouseInventory
+      this.filteredWarehouseInventory = [...this.warehouseInventoryDetails];
     }
-  }
-
-  private normalizeItemType(itemType: any): number | undefined {
-    if (itemType === undefined || itemType === null) return undefined;
-    if (typeof itemType === 'number') return itemType;
-    if (typeof itemType === 'string') {
-      const enumMap: { [key: string]: number } = {
-        'Ammunition': 1,
-        'Weapon': 2,
-        'Explosive': 3,
-        'Accessory': 4
-      };
-      if (enumMap[itemType] !== undefined) return enumMap[itemType];
-      const parsed = parseInt(itemType, 10);
-      return isNaN(parsed) ? undefined : parsed;
-    }
-    return Number(itemType);
   }
 
   getItemName(detail: InventoryDetailDto): string {
@@ -280,6 +246,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         next: (res: APIOperationResponse<ImportResult>) => {
           this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
+          this.pendingImportFile = null;
 
           if (res && res.succeeded && res.data) {
             const result = res.data;
@@ -296,6 +263,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         error: (error: unknown) => {
           this.isImportInProgress = false;
           this.loadingWarehouseInventory = false;
+          this.pendingImportFile = null;
           const entityType = this.activeTab === 'weapon' ? 'assets' : 'inventory';
           this.toastService.error(`Failed to import ${entityType}: ` + ErrorHandler.extractErrorMessage(error, 'Unknown error'));
           this.cdr.markForCheck();
@@ -395,9 +363,22 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   onPreviewConfirmed(validRows: any[]): void {
-    if (this.pendingImportFile) {
-      this.onImportConfirmed(this.pendingImportFile);
+    this.showPreviewModal = false;
+    this.previewData = null;
+
+    if (!this.pendingImportFile) {
+      this.toastService.error('Import file not found. Please try uploading again.');
+      this.cdr.markForCheck();
+      return;
     }
+
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.onImportConfirmed(this.pendingImportFile);
   }
 
   onPreviewCancelled(): void {
@@ -444,6 +425,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   exportToExcel(): void {
     if (!this.selectedDepotId) {
       this.toastService.warning('Please select a depot first');
+      return;
+    }
+
+    const hasData = this.activeTab === 'weapon'
+      ? this.filteredWarehouseAssets.length > 0
+      : this.filteredWarehouseInventory.length > 0;
+    if (!hasData) {
+      this.toastService.warning('No data available to export');
       return;
     }
 

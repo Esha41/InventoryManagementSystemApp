@@ -1,110 +1,90 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { LookupService, LookupItem } from '@services/lookup.service';
-import { BackendUserService } from '@services/backend-user.service';
-import { BackendUserDto } from '@models/backend-user.model';
+import { EmployeeService } from '@services/employee.service';
+import { EmployeeDto } from '@core/models/asset.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
-import { PaginatedList } from '@models/api-response.model';
 
-/**
- * Service to handle loading and managing lookup data (depots, users, ranks)
- */
 @Injectable()
 export class WeaponSupplyLookupService {
 
-    // Depots
     availableDepots: LookupItem[] = [];
     depotDropdownOptions: DropdownOption<number>[] = [];
 
-    // Users
-    availableUsers: BackendUserDto[] = [];
-    userDropdownOptions: DropdownOption<string>[] = [];
+    availableEmployees: EmployeeDto[] = [];
+    employeeDropdownOptions: DropdownOption<number>[] = [];
 
-    // Ranks
     ranks: LookupItem[] = [];
+    rankDropdownOptions: DropdownOption<number>[] = [];
 
     constructor(
         private lookupService: LookupService,
-        private backendUserService: BackendUserService,
+        private employeeService: EmployeeService,
         private translate: TranslateService
     ) { }
 
-    /**
-     * Load all depots
-     */
     loadDepots(): Observable<LookupItem[]> {
-        return new Observable(observer => {
-            this.lookupService.getDepots().subscribe({
-                next: (depots: LookupItem[]) => {
-                    this.availableDepots = depots.filter(d => !d.isDeleted);
-                    this.depotDropdownOptions = this.createDepotOptions();
-                    observer.next(depots);
-                    observer.complete();
-                },
-                error: (error) => {
-                    observer.error(error);
-                }
-            });
-        });
+        return this.lookupService.getDepots().pipe(
+            tap((depots: LookupItem[]) => {
+                this.availableDepots = depots.filter(d => !d.isDeleted);
+                this.depotDropdownOptions = this.createDepotOptions();
+            })
+        );
     }
 
-    /**
-     * Load all users
-     */
-    loadUsers(): Observable<BackendUserDto[]> {
-        return new Observable(observer => {
-            this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
-                next: (response: PaginatedList<BackendUserDto>) => {
-                    const users = response.items || [];
-                    this.availableUsers = users;
-                    this.userDropdownOptions = this.createUserOptions();
-                    observer.next(users);
-                    observer.complete();
-                },
-                error: (error) => {
-                    observer.error(error);
-                }
-            });
-        });
+    loadEmployees(): Observable<EmployeeDto[]> {
+        return this.employeeService.getEmployees().pipe(
+            map((employees: EmployeeDto[]) => (employees || []).filter(e => !e.isDeleted)),
+            tap((employees: EmployeeDto[]) => {
+                this.availableEmployees = employees;
+                this.employeeDropdownOptions = this.createEmployeeOptions();
+            })
+        );
     }
 
-    /**
-     * Load all ranks
-     */
     loadRanks(): Observable<LookupItem[]> {
-        return new Observable(observer => {
-            this.lookupService.getLookupItems('Rank').subscribe({
-                next: (ranks: LookupItem[]) => {
-                    this.ranks = ranks || [];
-                    observer.next(ranks);
-                    observer.complete();
-                },
-                error: (error) => {
-                    observer.error(error);
-                }
-            });
-        });
+        return this.lookupService.getLookupItems('Rank').pipe(
+            tap((ranks: LookupItem[]) => {
+                this.ranks = ranks || [];
+                this.rankDropdownOptions = this.createRankOptions();
+            })
+        );
     }
 
-    /**
-     * Get user display name by ID
-     */
-    getUserDisplayName(userId: string): string {
-        if (!userId) return '';
-        const user = this.availableUsers.find(u => u.id === userId);
-        if (!user) return userId;
+    private createRankOptions(): DropdownOption<number>[] {
+        const currentLang = getCurrentLang(this.translate);
+        return this.ranks.map(rank => ({
+            value: rank.id!,
+            label: getLocalizedName(rank, currentLang) || `Rank ${rank.id}`
+        })).sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    resolveEmployeeByUserId(userId: string): number | undefined {
+        if (!userId) return undefined;
+        const employee = this.availableEmployees.find(e => e.userId === userId);
+        return employee?.id;
+    }
+
+    getEmployeeDisplayName(employeeId: number): string {
+        if (!employeeId) return '';
+        const employee = this.availableEmployees.find(e => e.id === employeeId);
+        if (!employee) return String(employeeId);
         const currentLang = getCurrentLang(this.translate);
         return currentLang === 'ar'
-            ? (user.nameAr || user.userName)
-            : (user.nameEn || user.userName);
+            ? (employee.nameAr || employee.nameEn || String(employeeId))
+            : (employee.nameEn || employee.nameAr || String(employeeId));
     }
 
-    /**
-     * Create depot dropdown options (uses getLocalizedName for language-aware display)
-     */
+    getDepotDisplayName(depotId: number): string {
+        if (!depotId) return '';
+        const depot = this.availableDepots.find(d => d.id === depotId);
+        if (!depot) return String(depotId);
+        return getLocalizedName(depot, getCurrentLang(this.translate)) || String(depotId);
+    }
+
     private createDepotOptions(): DropdownOption<number>[] {
         const currentLang = getCurrentLang(this.translate);
         return this.availableDepots.map(depot => ({
@@ -114,26 +94,26 @@ export class WeaponSupplyLookupService {
         })).sort((a, b) => a.label.localeCompare(b.label));
     }
 
-    /**
-     * Rebuild depot options when language changes (call from components that subscribe to onLangChange)
-     */
     refreshDepotOptionsOnLangChange(): void {
         if (this.availableDepots.length > 0) {
             this.depotDropdownOptions = this.createDepotOptions();
         }
+        if (this.availableEmployees.length > 0) {
+            this.employeeDropdownOptions = this.createEmployeeOptions();
+        }
+        if (this.ranks.length > 0) {
+            this.rankDropdownOptions = this.createRankOptions();
+        }
     }
 
-    /**
-     * Create user dropdown options
-     */
-    private createUserOptions(): DropdownOption<string>[] {
+    private createEmployeeOptions(): DropdownOption<number>[] {
         const currentLang = getCurrentLang(this.translate);
-        return this.availableUsers.map(user => ({
-            value: user.id,
+        return this.availableEmployees.map(emp => ({
+            value: emp.id,
             label: currentLang === 'ar'
-                ? (user.nameAr || user.userName)
-                : (user.nameEn || user.userName),
-            description: user.userName
+                ? (emp.nameAr || emp.nameEn || String(emp.id))
+                : (emp.nameEn || emp.nameAr || String(emp.id)),
+            description: emp.militaryId || emp.email || ''
         })).sort((a, b) => a.label.localeCompare(b.label));
     }
 }
