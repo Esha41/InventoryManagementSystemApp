@@ -11,12 +11,21 @@ export class WeaponSupplySelectionService {
   selectedDepotIds: number[] = [];
   selectedBatchIds: number[] = [];
   batchOptions: BatchForOrderDepotDto[] = [];
+  /** Quantity per batch (batchId -> quantity). Required for every selected batch. */
+  batchQuantities: Map<number, number> = new Map();
 
-  setSelection(orderId: number, depotIds: number[], batchIds: number[], batches: BatchForOrderDepotDto[]): void {
+  setSelection(
+    orderId: number,
+    depotIds: number[],
+    batchIds: number[],
+    batches: BatchForOrderDepotDto[],
+    quantities?: Map<number, number>
+  ): void {
     this.orderId = orderId;
     this.selectedDepotIds = [...depotIds];
     this.selectedBatchIds = [...batchIds];
     this.batchOptions = [...batches];
+    this.batchQuantities = quantities ? new Map(quantities) : new Map();
   }
 
   getSelection(): {
@@ -24,6 +33,7 @@ export class WeaponSupplySelectionService {
     selectedDepotIds: number[];
     selectedBatchIds: number[];
     batchOptions: BatchForOrderDepotDto[];
+    batchQuantities: Map<number, number>;
   } | null {
     if (!this.orderId || this.selectedDepotIds.length === 0) {
       return null;
@@ -32,7 +42,8 @@ export class WeaponSupplySelectionService {
       orderId: this.orderId,
       selectedDepotIds: [...this.selectedDepotIds],
       selectedBatchIds: [...this.selectedBatchIds],
-      batchOptions: [...this.batchOptions]
+      batchOptions: [...this.batchOptions],
+      batchQuantities: new Map(this.batchQuantities)
     };
   }
 
@@ -41,6 +52,7 @@ export class WeaponSupplySelectionService {
     this.selectedDepotIds = [];
     this.selectedBatchIds = [];
     this.batchOptions = [];
+    this.batchQuantities.clear();
   }
 
   hasValidSelection(): boolean {

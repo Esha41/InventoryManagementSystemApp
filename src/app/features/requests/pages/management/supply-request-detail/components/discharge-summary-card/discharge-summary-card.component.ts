@@ -16,7 +16,7 @@ import { formatNumber as formatNumberUtil } from '@utils/format.utils';
   imports: [CommonModule, TranslateModule],
   templateUrl: './discharge-summary-card.component.html',
   styleUrls: ['./discharge-summary-card.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class DischargeSummaryCardComponent {
   @Input() requestDetail: SupplyRequestDetail | null = null;

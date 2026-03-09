@@ -62,15 +62,21 @@
                     <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] uppercase tracking-wide">
                       {{ 'weaponSupplyReview.batchNumber' | translate }}
                     </th>
+                    <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] uppercase tracking-wide">
+                      {{ 'weaponSupplyReview.itemName' | translate }}
+                    </th>
+                    <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] uppercase tracking-wide">
+                      {{ 'weaponSupplyReview.quantityToTake' | translate }}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let row of savedSelectionTableRows"
                     class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
                     <td class="px-4 py-3 text-[var(--color-text)] font-medium">{{ row.depotName }}</td>
-                    <td class="px-4 py-3 text-[var(--color-text-muted)]">
-                      {{ row.batchNumber }}
-                    </td>
+                    <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ row.batchNumber }}</td>
+                    <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ row.itemName }}</td>
+                    <td class="px-4 py-3 text-[var(--color-text)] font-semibold">{{ row.quantity }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -182,32 +188,31 @@
             <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
           </div>
 
-          <div *ngIf="!loadingAssets && !hasSavedSelection" class="text-center py-8">
+          <div *ngIf="!loadingAssets && !hasSavedSelection && !batchFilterBatchNumber?.trim()" class="text-center py-8">
             <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.selectDepotsFirst' | translate }}
             </p>
           </div>
 
-          <!-- Batch API Filter Options - shown when user has saved selection -->
-          <div *ngIf="hasSavedSelection" class="mb-6 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+          <!-- Additional Filter Options -->
+          <div class="mb-6 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
             <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
               {{ 'weaponSupplyReview.batchFilterOptions' | translate }}
             </p>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div class="flex items-center gap-2 shrink-0">
+                <label for="batchFilterBatchNumber" class="text-sm text-[var(--color-text)] whitespace-nowrap">
+                  {{ 'weaponSupplyReview.batchFilterBatchNumber' | translate }}:
+                </label>
+                <input type="text" id="batchFilterBatchNumber" [(ngModel)]="batchFilterBatchNumber"
+                  placeholder="{{ 'weaponSupplyReview.batchFilterBatchNumberPlaceholder' | translate }}"
+                  class="w-28 h-9 px-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] text-sm">
+              </div>
               <div class="flex items-center gap-2 shrink-0">
                 <input type="checkbox" id="batchFilterSerialNumberOnly" [(ngModel)]="batchFilterSerialNumberOnly"
                   class="w-4 h-4 text-[var(--color-brand)] rounded border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] shrink-0">
                 <label for="batchFilterSerialNumberOnly" class="text-sm text-[var(--color-text)] cursor-pointer whitespace-nowrap">
                   {{ 'weaponSupplyReview.batchFilterSerialOnly' | translate }}
                 </label>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <label for="batchFilterQuantity" class="text-sm text-[var(--color-text)] whitespace-nowrap">
-                  {{ 'weaponSupplyReview.batchFilterQuantity' | translate }}:
-                </label>
-                <input type="number" id="batchFilterQuantity" [ngModel]="batchFilterQuantity"
-                  (ngModelChange)="onBatchFilterQuantityChange($event)"
-                  min="1" placeholder="{{ 'weaponSupplyReview.batchFilterQuantityPlaceholder' | translate }}"
-                  class="w-20 h-9 px-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] text-sm">
               </div>
               <button (click)="onBatchFiltersChange()"
                 class="h-9 px-4 text-sm bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] font-medium shrink-0">
@@ -216,17 +221,12 @@
             </div>
           </div>
 
-          <div *ngIf="!loadingAssets && hasSavedSelection && !assetsLoadedOnce" class="text-center py-8">
-            <p class="text-sm text-[var(--color-text-muted)] mb-2">{{ 'weaponSupplyReview.clickApplyToLoadAssets' | translate }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.clickApplyToLoadAssetsHint' | translate }}</p>
-          </div>
-
-          <div *ngIf="!loadingAssets && hasSavedSelection && assetsLoadedOnce && hasNoAvailableAssets" class="text-center py-8">
+          <div *ngIf="!loadingAssets && hasSelectionOrBatchNumber && assetsLoadedOnce && hasNoAvailableAssets" class="text-center py-8">
             <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.noItems' | translate }}</p>
           </div>
 
           <!-- Controls: Item Search & Pagination -->
-          <div *ngIf="hasSavedSelection && assetsLoadedOnce && hasSomeAvailableAssets" class="flex flex-col lg:flex-row gap-4 mb-6 controls-row">
+          <div *ngIf="hasSelectionOrBatchNumber && assetsLoadedOnce && hasSomeAvailableAssets" class="flex flex-col lg:flex-row gap-4 mb-6 controls-row">
             <!-- Item Search -->
             <div class="flex-1">
               <label class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">

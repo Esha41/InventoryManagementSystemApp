@@ -7,7 +7,7 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, AlertTriangle,
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { AssetSupplyService, BatchForOrderDepotDto } from '@services/asset-supply.service';
+import { AssetSupplyService, BatchForOrderDepotDto, BatchItemDto } from '@services/asset-supply.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { OrderService } from '@services/order.service';
 import { OrderDto } from '@models/order.model';
@@ -62,6 +62,8 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   depotsConfirmed: boolean = false;
   batchOptions: BatchForOrderDepotDto[] = [];
   selectedBatchIds: number[] = [];
+  /** Quantity per (batch, item). Key: batchId_itemId. Required for each item in selected batches. */
+  itemQuantities: Map<string, number> = new Map();
   batchesConfirmed: boolean = false;
   loadingBatches: boolean = false;
   savingSelection: boolean = false;
@@ -130,7 +132,12 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         if (savedSelection && savedSelection.length > 0) {
           this.selectedDepotIds = [...new Set(savedSelection.map(s => s.depotId))];
           this.depotsConfirmed = true;
-          this.loadBatchesWithSavedSelection(savedSelection.map(s => s.batchId).filter((id): id is number => id != null));
+          const savedBatchIds = [...new Set(savedSelection.map(s => s.batchId))];
+          const savedItemQuantities = new Map<string, number>();
+          savedSelection.forEach(s => {
+            savedItemQuantities.set(`${s.batchId}_${s.itemId}`, s.quantity);
+          });
+          this.loadBatchesWithSavedSelection(savedBatchIds, savedItemQuantities);
         }
       },
       error: (error) => {
@@ -176,6 +183,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     this.depotsConfirmed = false;
     this.batchOptions = [];
     this.selectedBatchIds = [];
+    this.itemQuantities.clear();
     this.batchesConfirmed = false;
   }
 
@@ -183,11 +191,12 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     this.loadBatchesWithSavedSelection([]);
   }
 
-  private loadBatchesWithSavedSelection(savedBatchIds: number[]): void {
+  private loadBatchesWithSavedSelection(savedBatchIds: number[], savedItemQuantities?: Map<string, number>): void {
     if (!this.orderId || this.selectedDepotIds.length === 0) return;
     this.loadingBatches = true;
     this.batchOptions = [];
     this.selectedBatchIds = [];
+    this.itemQuantities.clear();
     this.batchesConfirmed = false;
     this.assetSupplyService.getBatchesForOrderDepots(this.orderId, this.selectedDepotIds)
       .pipe(takeUntil(this.destroy$))
@@ -198,6 +207,16 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
           if (savedBatchIds.length > 0) {
             const batchIdsFromOptions = new Set(this.batchOptions.map(b => b.id));
             this.selectedBatchIds = savedBatchIds.filter(id => batchIdsFromOptions.has(id));
+            if (savedItemQuantities) {
+              savedItemQuantities.forEach((qty, key) => {
+                const [batchIdStr, itemIdStr] = key.split('_');
+                const batchId = parseInt(batchIdStr, 10);
+                const itemId = parseInt(itemIdStr, 10);
+                if (batchIdsFromOptions.has(batchId)) {
+                  this.itemQuantities.set(key, qty);
+                }
+              });
+            }
             this.batchesConfirmed = this.selectedBatchIds.length > 0;
           }
         },
@@ -214,24 +233,41 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
 
   toggleBatchSelection(batchId: number): void {
     const index = this.selectedBatchIds.indexOf(batchId);
+    const batch = this.batchOptions.find(b => b.id === batchId);
+    const items = batch?.items ?? [];
+
     if (index > -1) {
       this.selectedBatchIds.splice(index, 1);
+      items.forEach(item => this.itemQuantities.delete(`${batchId}_${item.itemId}`));
     } else {
       this.selectedBatchIds.push(batchId);
+      items.forEach(item => this.itemQuantities.set(`${batchId}_${item.itemId}`, item.quantity));
     }
   }
 
   saveBatchSelection(): void {
-    // Build selections: include ALL selected depots. For each depot: selected batches (if any), else depot-only (batchId: null)
-    const selections: { depotId: number; batchId: number | null }[] = [];
+    if (this.selectedBatchIds.length === 0) {
+      this.toastService.warning(
+        this.translate.instant('weaponSupplyReview.selectAtLeastOneBatch'),
+        this.translate.instant('toast.warning')
+      );
+      return;
+    }
+    if (!this.validateItemQuantities()) return;
+
+    const selections: { depotId: number; batchId: number; itemId: number; quantity: number }[] = [];
     for (const depotId of this.selectedDepotIds) {
       const selectedBatchesFromDepot = this.batchOptions.filter(
         b => b.depotId === depotId && this.selectedBatchIds.includes(b.id)
       );
-      if (selectedBatchesFromDepot.length > 0) {
-        selections.push(...selectedBatchesFromDepot.map(b => ({ depotId: b.depotId, batchId: b.id as number })));
-      } else {
-        selections.push({ depotId, batchId: null });
+      for (const batch of selectedBatchesFromDepot) {
+        const items = batch.items ?? [];
+        for (const item of items) {
+          const qty = this.itemQuantities.get(`${batch.id}_${item.itemId}`);
+          if (qty != null && qty > 0) {
+            selections.push({ depotId, batchId: batch.id, itemId: item.itemId, quantity: qty });
+          }
+        }
       }
     }
     this.savingSelection = true;
@@ -258,8 +294,73 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       });
   }
 
+  onItemQuantityChange(batchId: number, item: BatchItemDto, value: string | number | null): void {
+    const key = `${batchId}_${item.itemId}`;
+    if (value === null || value === undefined || value === '') {
+      this.itemQuantities.delete(key);
+      return;
+    }
+    const num = typeof value === 'string' ? parseInt(value, 10) : value;
+    if (isNaN(num) || num < 1) {
+      this.itemQuantities.delete(key);
+      return;
+    }
+    const maxAvailable = item.quantity;
+    this.itemQuantities.set(key, Math.min(num, maxAvailable));
+  }
+
+  getItemQuantity(batchId: number, itemId: number): number | null {
+    return this.itemQuantities.get(`${batchId}_${itemId}`) ?? null;
+  }
+
+  isItemQuantityMissing(batchId: number, itemId: number): boolean {
+    return this.selectedBatchIds.includes(batchId) && !this.itemQuantities.has(`${batchId}_${itemId}`);
+  }
+
+  private validateItemQuantities(): boolean {
+    for (const batchId of this.selectedBatchIds) {
+      const batch = this.batchOptions.find(b => b.id === batchId);
+      const items = batch?.items ?? [];
+
+      for (const item of items) {
+        const qty = this.itemQuantities.get(`${batchId}_${item.itemId}`);
+
+        if (qty == null) {
+          this.toastService.warning(
+            this.translate.instant('weaponSupplyReview.quantityRequired', {
+              batchNumber: batch?.batchNumber ?? batchId,
+              itemName: item.itemName ?? item.itemNo ?? item.itemId
+            }),
+            this.translate.instant('toast.warning')
+          );
+          return false;
+        }
+        if (qty < 1) {
+          this.toastService.warning(
+            this.translate.instant('weaponSupplyReview.quantityMustBePositive'),
+            this.translate.instant('toast.warning')
+          );
+          return false;
+        }
+        if (qty > item.quantity) {
+          this.toastService.warning(
+            this.translate.instant('weaponSupplyReview.quantityExceedsAvailable', {
+              batchNumber: batch?.batchNumber ?? batchId,
+              itemName: item.itemName ?? item.itemNo ?? item.itemId,
+              max: item.quantity
+            }),
+            this.translate.instant('toast.warning')
+          );
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   clearBatchSelection(): void {
     this.selectedBatchIds = [];
+    this.itemQuantities.clear();
     this.batchesConfirmed = false;
   }
 
@@ -275,6 +376,10 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   }
   getCurrentLang(): string {
     return this.displayService.getCurrentLang();
+  }
+
+  hasBatchItems(batch: BatchForOrderDepotDto): boolean {
+    return !!(batch.items && batch.items.length > 0);
   }
 
   /** Get localized depot name from batch (uses depot DTO when available for language-aware display) */

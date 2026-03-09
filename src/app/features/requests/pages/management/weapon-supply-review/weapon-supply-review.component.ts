@@ -43,8 +43,11 @@ export interface SavedSelectionBatch {
 export interface SavedSelectionTableRow {
   depotId: number;
   depotName: string;
-  batchId: number | null;
+  batchId: number;
   batchNumber: string;
+  itemId: number;
+  itemName: string;
+  quantity: number;
 }
 
 @Component({
@@ -124,7 +127,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   notes: string = '';
 
   hasSavedSelection: boolean = false;
-  /** True after user has clicked Apply at least once */
+  /** True when user can load assets (depot selection or batch number typed) */
+  get hasSelectionOrBatchNumber(): boolean {
+    return this.hasSavedSelection || !!this.batchFilterBatchNumber?.trim();
+  }
+  /** True after assets have been loaded at least once */
   assetsLoadedOnce: boolean = false;
   savedSelectionDepots: SavedSelectionDepot[] = [];
   savedSelectionBatches: SavedSelectionBatch[] = [];
@@ -132,10 +139,12 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   isEmployeeModalOpen: boolean = false;
   private savedDepotIds: number[] = [];
   private savedBatchIds: number[] = [];
+  /** Per-batch quantity limits from the selection page */
+  private savedBatchQuantities: Map<number, number | null> = new Map();
 
-  /** Batch API filter options (GET /api/Batch/{id} query params) */
+  /** Batch API filter options */
+  batchFilterBatchNumber: string = '';
   batchFilterSerialNumberOnly: boolean = false;
-  batchFilterQuantity: number | null = null;
   batchFilterByIsAssigned: boolean | null = false;
 
   constructor(
@@ -263,44 +272,41 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         catchError(() => of(null)),
         switchMap((selections) => {
           if (!selections || selections.length === 0) return of(null);
-          const uniqueDepotIds = [...new Set(selections.map(s => s.depotId))];
-          const batchIds = selections.filter(s => s.batchId != null).map(s => s.batchId as number);
-          const uniqueBatchIds = [...new Set(batchIds)];
 
-          if (uniqueBatchIds.length === 0) {
-            this.savedSelectionTableRows = selections.map(s => ({
-              depotId: s.depotId,
-              depotName: this.lookupService.getDepotDisplayName(s.depotId),
-              batchId: null,
-              batchNumber: this.translate.instant('weaponSupplyReview.allBatches')
-            }));
-            this.savedDepotIds = uniqueDepotIds;
-            this.savedBatchIds = [];
-            this.savedSelectionDepots = uniqueDepotIds.map(id => ({ id, name: this.lookupService.getDepotDisplayName(id) }));
-            this.hasSavedSelection = true;
-            this.cdr.markForCheck();
-            return of(selections);
-          }
+          const uniqueDepotIds = [...new Set(selections.map(s => s.depotId))];
+          const uniqueBatchIds = [...new Set(selections.map(s => s.batchId))];
+
+          this.savedBatchQuantities.clear();
+          selections.forEach(s => {
+            const prev = this.savedBatchQuantities.get(s.batchId) ?? 0;
+            this.savedBatchQuantities.set(s.batchId, (prev || 0) + s.quantity);
+          });
+
+          const itemNameMap = new Map<number, string>();
+          const reqItems = this.orderData?.requestItems ?? [];
+          reqItems.forEach((ri: { itemId?: number; itemName?: string }) => {
+            if (ri.itemId != null) itemNameMap.set(ri.itemId, ri.itemName ?? `Item ${ri.itemId}`);
+          });
 
           return forkJoin(
-            uniqueBatchIds.map(id => this.batchService.getById(id).pipe(
-              catchError(() => of(null))
-            ))
+            uniqueBatchIds.map(id => this.batchService.getById(id).pipe(catchError(() => of(null))))
           ).pipe(
             switchMap((batches) => {
               const batchMap = new Map<number, string>();
               uniqueBatchIds.forEach((id, i) => {
-                const b = batches[i];
-                batchMap.set(id, b?.batchNumber ?? String(id));
+                batchMap.set(id, batches[i]?.batchNumber ?? String(id));
               });
+
               this.savedSelectionTableRows = selections.map(s => ({
                 depotId: s.depotId,
                 depotName: this.lookupService.getDepotDisplayName(s.depotId),
                 batchId: s.batchId,
-                batchNumber: s.batchId == null
-                  ? this.translate.instant('weaponSupplyReview.allBatches')
-                  : (batchMap.get(s.batchId) ?? String(s.batchId))
+                batchNumber: batchMap.get(s.batchId) ?? String(s.batchId),
+                itemId: s.itemId,
+                itemName: itemNameMap.get(s.itemId) ?? `Item ${s.itemId}`,
+                quantity: s.quantity
               }));
+
               this.savedDepotIds = uniqueDepotIds;
               this.savedBatchIds = uniqueBatchIds;
               this.savedSelectionDepots = uniqueDepotIds.map(id => ({ id, name: this.lookupService.getDepotDisplayName(id) }));
@@ -316,7 +322,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           if (selections && selections.length > 0) {
             this.hasSavedSelection = true;
             this.cdr.markForCheck();
-            // Assets are loaded only when user clicks Apply
+            this.loadAssetsFromSavedSelection();
           } else {
             this.hasSavedSelection = false;
             this.cdr.markForCheck();
@@ -326,10 +332,42 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   }
 
   private loadAssetsFromSavedSelection(): void {
-    if (this.savedDepotIds.length === 0) return;
+    const batchNumber = this.batchFilterBatchNumber?.trim();
+    const hasBatchNumber = !!batchNumber;
+    const hasDepotSelection = this.savedDepotIds.length > 0;
+
+    if (!hasBatchNumber && !hasDepotSelection) return;
 
     this.loadingAssets = true;
     this.cdr.markForCheck();
+
+    const options = {
+      serialNumberOnly: this.batchFilterSerialNumberOnly,
+      filterByIsAssigned: this.batchFilterByIsAssigned ?? undefined
+    };
+
+    if (hasBatchNumber) {
+      this.batchService.getByBatchNumber(batchNumber, options).pipe(
+        takeUntil(this.destroy$),
+        catchError(() => of(null))
+      ).subscribe({
+        next: (batch) => {
+          const ids = batch ? [batch.id] : [];
+          const data = batch ? this.buildOrderAssetsFromBatches([batch], ids) : this.buildEmptyOrderAssets();
+          this.assetsData = data;
+          this.reviewService.updateItemsWithAvailableAssets(data);
+          this.assetsLoadedOnce = true;
+          this.loadingAssets = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.handleError('Failed to load assets', error, 'weaponSupplyReview.failedToLoadAssets');
+          this.loadingAssets = false;
+          this.cdr.markForCheck();
+        }
+      });
+      return;
+    }
 
     const depotIds = this.savedDepotIds;
     const batchIds = this.savedBatchIds.length > 0 ? [...this.savedBatchIds] : undefined;
@@ -345,17 +383,18 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$),
       switchMap(ids => {
         if (!ids || ids.length === 0) return of(this.buildEmptyOrderAssets());
-        const totalLimit = this.getEffectiveQuantity();
-        const options = {
-          serialNumberOnly: this.batchFilterSerialNumberOnly,
-          quantity: totalLimit,
-          filterByIsAssigned: this.batchFilterByIsAssigned ?? undefined
-        };
         return forkJoin(
-          ids.map(id => this.batchService.getById(id, options).pipe(catchError(() => of(null))))
+          ids.map(id => {
+            const perBatchQty = this.savedBatchQuantities.get(id);
+            const batchOptions = {
+              ...options,
+              quantity: perBatchQty ?? undefined
+            };
+            return this.batchService.getById(id, batchOptions).pipe(catchError(() => of(null)));
+          })
         ).pipe(
           switchMap(batches => {
-            const data = this.buildOrderAssetsFromBatches(batches, ids, totalLimit);
+            const data = this.buildOrderAssetsFromBatches(batches, ids);
             return of(data);
           })
         );
@@ -396,8 +435,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   private buildOrderAssetsFromBatches(
     batches: (import('@models/batch.model').BatchDto | null)[],
-    _batchIds: number[],
-    totalLimit?: number
+    _batchIds: number[]
   ): OrderAssetsToSupplyDto {
     const reqItems = this.orderData?.requestItems ?? [];
     const requestItemIds = new Set(reqItems.map((ri: { itemId?: number }) => ri.itemId).filter((id): id is number => id != null));
@@ -434,12 +472,8 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       }
     }
 
-    const trimmed = totalLimit != null && totalLimit > 0
-      ? flatAssets.slice(0, totalLimit)
-      : flatAssets;
-
     const assetsByItem = new Map<number, import('@services/asset-supply.service').AssetToSupplyDto[]>();
-    for (const { itemId, dto } of trimmed) {
+    for (const { itemId, dto } of flatAssets) {
       const list = assetsByItem.get(itemId) ?? [];
       list.push(dto);
       assetsByItem.set(itemId, list);
@@ -471,26 +505,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.loadAssetsFromSavedSelection();
   }
 
-  onBatchFilterQuantityChange(value: unknown): void {
-    if (value === null || value === undefined || value === '') {
-      this.batchFilterQuantity = null;
-    } else {
-      const num = typeof value === 'string' ? parseInt(value, 10) : Number(value);
-      this.batchFilterQuantity = isNaN(num) || num < 1 ? null : num;
-    }
-    this.cdr.markForCheck();
-  }
-
-  /**
-   * Parse quantity from input. Returns the user's limit (e.g. 1 = fetch 1 total).
-   */
-  private getEffectiveQuantity(): number | undefined {
-    const raw = this.batchFilterQuantity;
-    if (raw == null) return undefined;
-    const num = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
-    if (isNaN(num) || num < 1) return undefined;
-    return num;
-  }
 
   get hasNoAvailableAssets(): boolean {
     return this.itemsWithAssets.length > 0 && this.itemsWithAssets.every(i => i.availableQuantity === 0);
@@ -515,13 +529,9 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           id,
           name: this.lookupService.getDepotDisplayName(id)
         }));
-        // Refresh depot/batch names in table rows for current language
         this.savedSelectionTableRows = this.savedSelectionTableRows.map(row => ({
           ...row,
-          depotName: this.lookupService.getDepotDisplayName(row.depotId),
-          batchNumber: row.batchId == null
-            ? this.translate.instant('weaponSupplyReview.allBatches')
-            : row.batchNumber
+          depotName: this.lookupService.getDepotDisplayName(row.depotId)
         }));
       }
       this.cdr.markForCheck();

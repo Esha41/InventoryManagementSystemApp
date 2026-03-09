@@ -13,14 +13,16 @@
   }
 }
 
+/* Use margin instead of transform to avoid creating a containing block that breaks
+   position:fixed dropdowns (e.g. filter dropdowns) - transform constrains fixed positioning */
 @keyframes slideInRight {
   from {
-    transform: translateX(2rem);
+    margin-inline-start: 2rem;
     opacity: 0;
   }
 
   to {
-    transform: translateX(0);
+    margin-inline-start: 0;
     opacity: 1;
   }
 }
