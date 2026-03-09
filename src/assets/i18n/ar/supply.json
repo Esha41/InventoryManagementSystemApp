@@ -344,7 +344,7 @@
     "failedToSaveSelection": "فشل حفظ الاختيار",
     "changeBatchSelection": "تغيير اختيار الدفعات",
     "batchesConfirmed": "تم تأكيد الدفعات. جاري تحميل الأصول...",
-    "assetCount": "الأصول",
+    "assetCount": "إجمالي الأصول",
     "failedToLoadBatches": "فشل تحميل الدفعات",
     "continueToAssetSelection": "متابعة لاختيار الأصول",
     "loadingDepots": "جاري تحميل المستودعات...",
