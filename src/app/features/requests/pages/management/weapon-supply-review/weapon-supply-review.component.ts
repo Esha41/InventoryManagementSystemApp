@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ChevronRight,
   CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText,
-  Warehouse, Building2, Users, ClipboardList, Check, X, Search, Info,
+  Warehouse, Building2, Users, ClipboardList, ListOrdered, Check, X, Search, Info,
   Plus, Trash2, Pencil
 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
@@ -68,6 +68,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly Building2 = Building2;
   readonly Users = Users;
   readonly ClipboardList = ClipboardList;
+  readonly ListOrdered = ListOrdered;
   readonly Check = Check;
   readonly X = X;
   readonly Search = Search;
@@ -90,6 +91,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   batches: BatchWithSelection[] = [];
 
   isRequestInfoExpanded = true;
+  isRequestItemsExpanded = true;
   isBatchesExpanded = true;
   isReceiverInfoExpanded = true;
 
@@ -133,6 +135,20 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   get employeeDropdownOptions(): DropdownOption<number>[] {
     return this.lookupService.employeeDropdownOptions;
+  }
+
+  get requestItems(): Array<{ itemId: number; itemName: string; itemNo?: string; nsn?: string; quantity: number }> {
+    const items = this.orderData?.requestItems ?? [];
+    const requested = this.reviewService.getRequestedItems();
+    return items
+      .filter(ri => ri.itemId != null)
+      .map(ri => ({
+        itemId: ri.itemId,
+        itemName: requested.get(ri.itemId)?.itemName ?? ri.itemName ?? 'Unknown Item',
+        itemNo: ri.itemNo,
+        nsn: ri.nsn,
+        quantity: ri.quantity
+      }));
   }
 
   ngOnInit(): void {

@@ -60,31 +60,86 @@ select:focus-visible {
   padding: 0 !important;
 }
 
-/* Inner assets detail table */
-.lot-details-table {
+/* Unified table styles for Request Items, Batches, and Assets */
+.review-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   table-layout: auto;
 }
 
-.lot-details-table thead th {
-  padding: 0.75rem 1rem !important;
+.review-table thead th {
+  padding: 1rem 1.5rem;
   background-color: var(--color-background-muted);
   font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.03em;
+  font-size: 0.875rem;
+  text-align: start;
+  border-bottom: 2px solid var(--color-border);
   white-space: normal;
   word-wrap: break-word;
 }
 
-.lot-details-table tbody td {
-  padding: 0.75rem 1rem !important;
+.review-table thead th.text-center,
+.review-table tbody td.text-center {
+  text-align: center;
+}
+
+.review-table tbody td {
+  padding: 1rem 1.5rem;
   vertical-align: middle;
-  border-bottom: 1px solid var(--color-border);
   font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
   white-space: normal;
   word-wrap: break-word;
+}
+
+.review-table tbody tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* Assets table - proper cell padding for consistent spacing */
+.assets-table thead th,
+.assets-table tbody td {
+  padding: 0.5rem 1.5rem !important;
+}
+
+/* Assets table - compact inputs and improved styling */
+.assets-table .assets-table-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.assets-table .assets-table-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+.assets-table .assets-table-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.assets-table .assets-table-dropdown {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.assets-table .assets-table-delete-btn {
+  color: var(--color-text-muted);
+}
+.assets-table .assets-table-delete-btn:hover {
+  color: var(--color-error);
+  background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+/* Assets table - min-width for horizontal scroll on small screens */
+@media (max-width: 768px) {
+  .assets-table {
+    min-width: 700px;
+  }
 }
 
 /* Dropdown cell overflow */
@@ -101,9 +156,3 @@ select:focus-visible {
   flex-direction: row-reverse;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .lot-details-table {
-    min-width: 700px;
-  }
-}
