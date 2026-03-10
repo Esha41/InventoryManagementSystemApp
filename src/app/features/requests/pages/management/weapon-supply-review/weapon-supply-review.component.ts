@@ -3,19 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText, Warehouse, Building2, Users, ClipboardList, Check, X, Search, Info } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText, Warehouse, Building2, Users, ClipboardList, Check, X, Search, Info, Paperclip } from 'lucide-angular';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
 import { AssetSupplyService, OrderAssetsToSupplyDto } from '@services/asset-supply.service';
 import { AssetService } from '@services/asset.service';
 import { OrderService } from '@services/order.service';
+import { FileUploadService } from '@services/file-upload.service';
+import { FileEntityType } from '@models/file-upload.model';
 import { OrderDto } from '@models/order.model';
 import { LookupItem } from '@services/lookup.service';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getFileSizeFromFile, removeFile, MAX_FILE_SIZE_MB, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { TranslationService } from '@services/translation.service';
 import { WeaponSupplyReviewService, ItemWithAssets, ReceiverInfo } from './services/weapon-supply-review.service';
 import { WeaponSupplyUIService } from './services/weapon-supply-ui.service';
@@ -92,6 +95,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly X = X;
   readonly Search = Search;
   readonly Info = Info;
+  readonly Paperclip = Paperclip;
+
+  // File upload
+  selectedFiles: File[] = [];
+  private fileInputElement: HTMLInputElement | null = null;
+  getFileSize = getFileSizeFromFile;
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -153,6 +163,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     public lookupService: WeaponSupplyLookupService,
     public displayService: WeaponSupplyDisplayService,
     private batchService: BatchService,
+    private fileUploadService: FileUploadService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -625,10 +636,56 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     return item.selectedAssets.filter(asset => asset.selected);
   }
 
+  // ==================== FILE UPLOAD ====================
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
+
+      newFiles.forEach(file => {
+        const validation = validateFile(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (invalidFiles.length > 0) {
+        showFileValidationErrors(this.translate, this.toastService, invalidFiles, 'weaponSupplyReview');
+      }
+
+      validFiles.forEach(newFile => {
+        const isDuplicate = this.selectedFiles.some(
+          existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
+        );
+        if (!isDuplicate) {
+          this.selectedFiles.push(newFile);
+        }
+      });
+
+      this.fileInputElement = input;
+      input.value = '';
+      this.cdr.markForCheck();
+    }
+  }
+
+  removeFile(index: number): void {
+    removeFile(this.selectedFiles, index, this.fileInputElement);
+    this.cdr.markForCheck();
+  }
+
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
     if (!this.receiverName || !this.receiverMilitaryId || !this.receiverRankId) {
+      return false;
+    }
+
+    if (this.selectedFiles.length === 0) {
       return false;
     }
 
@@ -666,6 +723,27 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.reviewService.submitSupply(dto)
       .pipe(
         takeUntil(this.destroy$),
+        switchMap((supplyId: number) => {
+          // Upload files linked to the created asset supply
+          if (this.selectedFiles.length > 0 && supplyId) {
+            return this.fileUploadService.uploadFilesForEntity(
+              this.selectedFiles,
+              FileEntityType.AssetSupply,
+              supplyId
+            ).pipe(
+              catchError((error) => {
+                this.config.logError('Failed to upload files for asset supply', error);
+                this.toastService.warning(
+                  this.translate.instant('weaponSupplyReview.fileUploadFailed'),
+                  this.translate.instant('toast.warning')
+                );
+                // Don't fail the whole submission if file upload fails
+                return of([]);
+              })
+            );
+          }
+          return of([]);
+        }),
         catchError((error) => {
           this.handleError('Failed to submit asset supply', error, 'weaponSupplyReview.failedToSubmit');
           this.submitting = false;
@@ -676,6 +754,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.submitting = false;
+          this.selectedFiles = [];
           this.cdr.markForCheck();
           this.toastService.success(
             this.translate.instant('weaponSupplyReview.submitSuccess'),
