@@ -177,7 +177,8 @@ export type FileErrorContext =
   | 'newIssueRequest'
   | 'workflowApprovalDetail'
   | 'returnRequest'
-  | 'discardRequest';
+  | 'discardRequest'
+  | 'weaponSupplyReview';
 
 /**
  * Shows file validation errors in a toast with translation support.
