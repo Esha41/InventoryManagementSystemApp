@@ -241,7 +241,11 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       items.forEach(item => this.itemQuantities.delete(`${batchId}_${item.itemId}`));
     } else {
       this.selectedBatchIds.push(batchId);
-      items.forEach(item => this.itemQuantities.set(`${batchId}_${item.itemId}`, item.quantity));
+      items.forEach(item => {
+        const maxQty = this.getMaxQuantityForBatchItem(batchId, item);
+        const initialQty = maxQty >= 1 ? Math.min(item.quantity, maxQty) : 0;
+        this.itemQuantities.set(`${batchId}_${item.itemId}`, initialQty);
+      });
     }
   }
 
@@ -298,23 +302,66 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     const key = `${batchId}_${item.itemId}`;
     if (value === null || value === undefined || value === '') {
       this.itemQuantities.delete(key);
+      this.cdr.markForCheck();
       return;
     }
     const num = typeof value === 'string' ? parseInt(value, 10) : value;
-    if (isNaN(num) || num < 1) {
+    if (isNaN(num) || num < 0) {
       this.itemQuantities.delete(key);
+      this.cdr.markForCheck();
       return;
     }
-    const maxAvailable = item.quantity;
-    this.itemQuantities.set(key, Math.min(num, maxAvailable));
+    this.itemQuantities.set(key, num);
+    this.cdr.markForCheck();
+  }
+
+  onItemQuantityBlur(batchId: number, item: BatchItemDto): void {
+    const key = `${batchId}_${item.itemId}`;
+    const val = this.itemQuantities.get(key);
+    if (val == null) return;
+    const maxQty = this.getMaxQuantityForBatchItem(batchId, item);
+    if (val > maxQty) {
+      const clamped = maxQty >= 1 ? maxQty : 0;
+      if (clamped >= 1) {
+        this.itemQuantities.set(key, clamped);
+      } else {
+        this.itemQuantities.delete(key);
+      }
+      this.cdr.markForCheck();
+    }
+  }
+
+  /** Get requested quantity for an item from the order */
+  private getRequestedQuantityForItem(itemId: number): number {
+    const items = this.orderData?.requestItems ?? [];
+    return items
+      .filter((ri: { itemId?: number }) => ri.itemId === itemId)
+      .reduce((sum: number, ri: { quantity?: number }) => sum + (ri.quantity ?? 0), 0);
   }
 
   getItemQuantity(batchId: number, itemId: number): number | null {
     return this.itemQuantities.get(`${batchId}_${itemId}`) ?? null;
   }
 
+  /** Max quantity allowed for this batch+item (capped by batch available and order requested) */
+  getMaxQuantityForBatchItem(batchId: number, item: BatchItemDto): number {
+    const requestedQty = this.getRequestedQuantityForItem(item.itemId);
+    const otherBatchesTotal = this.selectedBatchIds
+      .filter((bid) => bid !== batchId)
+      .reduce((sum, bid) => sum + (this.itemQuantities.get(`${bid}_${item.itemId}`) ?? 0), 0);
+    return Math.min(item.quantity, Math.max(0, requestedQty - otherBatchesTotal));
+  }
+
   isItemQuantityMissing(batchId: number, itemId: number): boolean {
     return this.selectedBatchIds.includes(batchId) && !this.itemQuantities.has(`${batchId}_${itemId}`);
+  }
+
+  /** True when the entered quantity exceeds the max allowed (requested - other batches, batch available) */
+  isItemQuantityExceeded(batchId: number, item: BatchItemDto): boolean {
+    const qty = this.itemQuantities.get(`${batchId}_${item.itemId}`);
+    if (qty == null) return false;
+    const maxQty = this.getMaxQuantityForBatchItem(batchId, item);
+    return qty > maxQty;
   }
 
   private validateItemQuantities(): boolean {
@@ -335,7 +382,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
           );
           return false;
         }
-        if (qty < 1) {
+        if (qty < 0) {
           this.toastService.warning(
             this.translate.instant('weaponSupplyReview.quantityMustBePositive'),
             this.translate.instant('toast.warning')
@@ -353,6 +400,38 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
           );
           return false;
         }
+      }
+    }
+
+    // Validate total quantity per item <= requested
+    const requestedByItem = new Map<number, number>();
+    (this.orderData?.requestItems ?? []).forEach((ri: { itemId?: number; quantity?: number }) => {
+      if (ri.itemId != null) {
+        requestedByItem.set(ri.itemId, (requestedByItem.get(ri.itemId) ?? 0) + (ri.quantity ?? 0));
+      }
+    });
+    const selectedByItem = new Map<number, number>();
+    for (const batchId of this.selectedBatchIds) {
+      const batch = this.batchOptions.find(b => b.id === batchId);
+      for (const item of batch?.items ?? []) {
+        const qty = this.itemQuantities.get(`${batchId}_${item.itemId}`) ?? 0;
+        selectedByItem.set(item.itemId, (selectedByItem.get(item.itemId) ?? 0) + qty);
+      }
+    }
+    for (const [itemId, totalSelected] of selectedByItem) {
+      const requested = requestedByItem.get(itemId) ?? 0;
+      if (totalSelected > requested) {
+        const itemName =
+          this.orderData?.requestItems?.find((r: { itemId?: number }) => r.itemId === itemId)?.itemName ?? itemId;
+        this.toastService.warning(
+          this.translate.instant('weaponSupplyReview.quantityExceedsRequested', {
+            itemName,
+            total: totalSelected,
+            max: requested
+          }),
+          this.translate.instant('toast.warning')
+        );
+        return false;
       }
     }
     return true;

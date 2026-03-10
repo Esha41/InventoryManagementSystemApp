@@ -647,15 +647,25 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    const anyExceedsRequested = this.itemsWithAssets.some(
+      item => item.selectedCount > item.requestedQuantity
+    );
+    if (anyExceedsRequested) {
+      return false;
+    }
+
     return true;
   }
 
   onSubmit(): void {
     if (!this.canSubmit()) {
-      this.toastService.warning(
-        this.translate.instant('weaponSupplyReview.cannotSubmit'),
-        this.translate.instant('toast.warning')
+      const anyExceedsRequested = this.itemsWithAssets.some(
+        item => item.selectedCount > item.requestedQuantity
       );
+      const message = anyExceedsRequested
+        ? this.translate.instant('weaponSupplyReview.quantityExceedsRequestedSubmit')
+        : this.translate.instant('weaponSupplyReview.cannotSubmit');
+      this.toastService.warning(message, this.translate.instant('toast.warning'));
       return;
     }
 

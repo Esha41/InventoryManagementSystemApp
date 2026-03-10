@@ -405,6 +405,9 @@
     "quantityPlaceholder": "مطلوب",
     "quantityRequired": "الكمية مطلوبة لـ {{itemName}} في الدفعة {{batchNumber}}",
     "quantityExceedsAvailable": "الكمية لـ {{itemName}} في الدفعة {{batchNumber}} تتجاوز المتاح (الحد الأقصى: {{max}})",
+    "quantityExceedsRequested": "الكمية الإجمالية لـ {{itemName}} ({{total}}) تتجاوز الكمية المطلوبة ({{max}})",
+    "quantityExceedsRequestedSubmit": "الكمية المحددة لواحد أو أكثر من الأصناف تتجاوز الكمية المطلوبة",
+    "quantityMaxExceeded": "الحد الأقصى: {{max}}",
     "quantityMustBePositive": "يجب أن تكون الكمية 1 على الأقل",
     "noItemsInBatch": "لا توجد أصناف"
   },

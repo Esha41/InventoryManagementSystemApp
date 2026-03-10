@@ -405,6 +405,9 @@
     "quantityPlaceholder": "Required",
     "quantityRequired": "Quantity is required for {{itemName}} in batch {{batchNumber}}",
     "quantityExceedsAvailable": "Quantity for {{itemName}} in batch {{batchNumber}} exceeds available (max: {{max}})",
+    "quantityExceedsRequested": "Total quantity for {{itemName}} ({{total}}) exceeds requested quantity ({{max}})",
+    "quantityExceedsRequestedSubmit": "Selected quantity for one or more items exceeds the requested quantity",
+    "quantityMaxExceeded": "Max: {{max}}",
     "quantityMustBePositive": "Quantity must be at least 1",
     "noItemsInBatch": "No items"
   },

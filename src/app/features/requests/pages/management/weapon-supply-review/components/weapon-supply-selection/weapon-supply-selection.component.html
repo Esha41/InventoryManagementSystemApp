@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+<div class="min-h-full bg-[var(--color-background-muted)] p-6">
   <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
   </app-loading-state>
 
@@ -194,9 +194,6 @@
                       {{ 'weaponSupplyReview.itemsInBatch' | translate }}
                     </th>
                     <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
-                      {{ 'weaponSupplyReview.assetCount' | translate }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
                       {{ 'weaponSupplyReview.quantityToTake' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </th>
                   </tr>
@@ -226,30 +223,33 @@
                       </ng-container>
                       <ng-template #noItemsInBatch><span>-</span></ng-template>
                     </td>
-                    <td class="px-4 py-3 text-sm text-[var(--color-text)]">
-                      {{ batch.quantity }}
-                    </td>
                     <td class="px-4 py-3" (click)="$event.stopPropagation()">
                       <ng-container *ngIf="selectedBatchIds.includes(batch.id)">
                         <ng-container *ngIf="batch.items && batch.items.length > 0; else noItemsForQty">
-                          <div *ngFor="let bi of batch.items" class="flex items-center gap-2 py-1.5">
-                            <span *ngIf="batch.items!.length > 1" class="text-xs text-[var(--color-text-muted)] shrink-0 min-w-[80px]">
-                              {{ bi.itemName || bi.itemNo || '-' }}:
+                          <div *ngFor="let bi of batch.items" class="flex flex-col gap-0.5 py-1.5">
+                            <div class="flex items-center gap-2">
+                              <span *ngIf="batch.items!.length > 1" class="text-xs text-[var(--color-text-muted)] shrink-0 min-w-[80px]">
+                                {{ bi.itemName || bi.itemNo || '-' }}:
+                              </span>
+                              <input
+                                type="number"
+                                [value]="getItemQuantity(batch.id, bi.itemId)"
+                                (input)="onItemQuantityChange(batch.id, bi, $any($event.target).value)"
+                                (blur)="onItemQuantityBlur(batch.id, bi)"
+                                [max]="getMaxQuantityForBatchItem(batch.id, bi)"
+                                [min]="0"
+                                required
+                                [placeholder]="('weaponSupplyReview.quantityPlaceholder' | translate)"
+                                class="w-20 px-2 py-1 text-sm border rounded-lg text-center transition-colors
+                                  bg-[var(--color-background)]
+                                  text-[var(--color-text)]
+                                  focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:outline-none
+                                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                [ngClass]="(isItemQuantityMissing(batch.id, bi.itemId) || isItemQuantityExceeded(batch.id, bi)) ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]' : 'border-[var(--color-border)]'">
+                            </div>
+                            <span *ngIf="isItemQuantityExceeded(batch.id, bi)" class="text-xs text-[var(--color-error)]">
+                              {{ 'weaponSupplyReview.quantityMaxExceeded' | translate:{ max: getMaxQuantityForBatchItem(batch.id, bi) } }}
                             </span>
-                            <input
-                              type="number"
-                              [value]="getItemQuantity(batch.id, bi.itemId)"
-                              (input)="onItemQuantityChange(batch.id, bi, $any($event.target).value)"
-                              [max]="bi.quantity"
-                              [min]="1"
-                              required
-                              [placeholder]="('weaponSupplyReview.quantityPlaceholder' | translate)"
-                              class="w-20 px-2 py-1 text-sm border rounded-lg text-center transition-colors
-                                bg-[var(--color-background)]
-                                text-[var(--color-text)]
-                                focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:outline-none
-                                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                              [ngClass]="isItemQuantityMissing(batch.id, bi.itemId) ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]' : 'border-[var(--color-border)]'">
                           </div>
                         </ng-container>
                         <ng-template #noItemsForQty>
