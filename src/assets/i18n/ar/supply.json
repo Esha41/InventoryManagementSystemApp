@@ -407,9 +407,21 @@
     "quantityExceedsAvailable": "الكمية لـ {{itemName}} في الدفعة {{batchNumber}} تتجاوز المتاح (الحد الأقصى: {{max}})",
     "quantityExceedsRequested": "الكمية الإجمالية لـ {{itemName}} ({{total}}) تتجاوز الكمية المطلوبة ({{max}})",
     "quantityExceedsRequestedSubmit": "الكمية المحددة لواحد أو أكثر من الأصناف تتجاوز الكمية المطلوبة",
+    "quantityMustMatchApproved": "يجب أن تطابق الكمية المحددة الكمية المعتمدة لكل صنف. يرجى التأكد من تحديد الكمية المطلوبة بالضبط لكل صنف.",
     "quantityMaxExceeded": "الحد الأقصى: {{max}}",
     "quantityMustBePositive": "يجب أن تكون الكمية 1 على الأقل",
-    "noItemsInBatch": "لا توجد أصناف"
+    "noItemsInBatch": "لا توجد أصناف",
+    "batchesAndAssets": "الدفعات والأصول",
+    "assets": "أصول",
+    "addAssetBySerial": "إضافة أصل بالرقم التسلسلي",
+    "enterSerialNumber": "أدخل الرقم التسلسلي...",
+    "add": "إضافة",
+    "noAssetsInBatch": "لا توجد أصول في هذه الدفعة",
+    "assetNotInBatch": "هذا الأصل لا ينتمي لهذه الدفعة",
+    "noSerial": "بدون رقم تسلسلي",
+    "assetAdded": "تمت إضافة الأصل {{serial}} بنجاح",
+    "assetAlreadyInBatch": "هذا الأصل موجود بالفعل في الدفعة",
+    "batchQuantityMismatch": "{{itemName}} في الدفعة {{batchNumber}}: المتوقع {{expected}} ولكن الموجود {{actual}}"
   },
   "assetStatus": {
     "readyToIssue": "جاهز للصرف",

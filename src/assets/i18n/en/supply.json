@@ -407,9 +407,21 @@
     "quantityExceedsAvailable": "Quantity for {{itemName}} in batch {{batchNumber}} exceeds available (max: {{max}})",
     "quantityExceedsRequested": "Total quantity for {{itemName}} ({{total}}) exceeds requested quantity ({{max}})",
     "quantityExceedsRequestedSubmit": "Selected quantity for one or more items exceeds the requested quantity",
+    "quantityMustMatchApproved": "Selected quantity must match the approved quantity for each item. Please ensure every item has exactly the requested quantity selected.",
     "quantityMaxExceeded": "Max: {{max}}",
     "quantityMustBePositive": "Quantity must be at least 1",
-    "noItemsInBatch": "No items"
+    "noItemsInBatch": "No items",
+    "batchesAndAssets": "Batches & Assets",
+    "assets": "assets",
+    "addAssetBySerial": "Add Asset by Serial Number",
+    "enterSerialNumber": "Enter serial number...",
+    "add": "Add",
+    "noAssetsInBatch": "No assets in this batch",
+    "assetNotInBatch": "This asset does not belong to this batch",
+    "noSerial": "No serial number",
+    "assetAdded": "Asset {{serial}} added successfully",
+    "assetAlreadyInBatch": "This asset is already in the batch",
+    "batchQuantityMismatch": "{{itemName}} in batch {{batchNumber}}: expected {{expected}} but have {{actual}}"
   },
   "assetStatus": {
     "readyToIssue": "Ready to Issue",

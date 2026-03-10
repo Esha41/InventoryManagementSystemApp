@@ -202,6 +202,22 @@ export class AssetSupplyService {
   }
 
   /**
+   * Get selected batches with their pre-picked assets for weapon supply review.
+   * Backend returns batches grouped with assets (serial first, then non-serial).
+   */
+  getSelectedBatchesWithAssets(orderId: number): Observable<import('@models/batch.model').BatchDto[]> {
+    this.config.log(`Getting selected batches with assets for order ${orderId}`);
+    return this.apiService.get<import('@models/batch.model').BatchDto[]>(
+      `${this.baseEndpoint}/order/${orderId}/selected-batches`
+    ).pipe(
+      catchError(error => {
+        this.config.logError('Failed to get selected batches with assets', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Get asset supply by order ID
    */
   getByOrderId(orderId: number): Observable<AssetSupplyDto> {
