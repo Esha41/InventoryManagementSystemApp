@@ -478,6 +478,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .reduce((sum, lot) => sum + lot.selectedQuantity, 0);
 
     this.closeLotModal();
+    this.cdr.markForCheck();
   }
 
   // ==================== DISCHARGE PROCESSING ====================

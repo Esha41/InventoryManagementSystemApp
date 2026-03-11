@@ -1,11 +1,10 @@
 <div class="min-h-screen bg-[var(--color-background-muted)] p-6">
   <!-- Loading State -->
-  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
-  </app-loading-state>
+  <app-loading-state *ngIf="loading" size="lg" [fullPage]="true"></app-loading-state>
 
   <!-- Content -->
   <div *ngIf="!loading && orderData">
-    <!-- Header with Back Button -->
+    <!-- Header -->
     <div class="mb-6">
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
         <div class="flex items-center justify-between flex-wrap gap-4">
@@ -18,98 +17,16 @@
               <h1 class="text-2xl font-bold text-[var(--color-text)]">
                 {{ 'weaponSupplyReview.title' | translate }} {{ orderData.requestNo || orderData.orderNo }}
               </h1>
-              <div class="flex items-center gap-3 mt-2">
-                <p class="text-sm text-[var(--color-text-muted)]">
-                  {{ 'weaponSupplyReview.department' | translate }}: {{ getDepartmentName() }}
-                </p>
-              </div>
+              <p class="text-sm text-[var(--color-text-muted)] mt-1">
+                {{ 'weaponSupplyReview.department' | translate }}: {{ getDepartmentName() }}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="space-y-6">
-
-      <!-- Saved Selection Summary (Read-Only) -->
-      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isSelectionSummaryExpanded = !isSelectionSummaryExpanded"
-          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Warehouse" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'weaponSupplyReview.selectedDepotsAndBatches' | translate }}
-            </h2>
-          </div>
-          <lucide-angular [img]="isSelectionSummaryExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]">
-          </lucide-angular>
-        </button>
-
-        <div *ngIf="isSelectionSummaryExpanded" class="px-6 pb-6 border-t border-[var(--color-border)] pt-6">
-          <!-- Has Saved Selection - Table -->
-          <div *ngIf="hasSavedSelection">
-            <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
-              <table class="w-full text-sm">
-                <thead class="bg-[var(--color-background-muted)]">
-                  <tr>
-                    <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] uppercase tracking-wide">
-                      {{ 'weaponSupplyReview.depot' | translate }}
-                    </th>
-                    <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)] uppercase tracking-wide">
-                      {{ 'weaponSupplyReview.batchNumber' | translate }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let row of savedSelectionTableRows"
-                    class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)]">
-                    <td class="px-4 py-3 text-[var(--color-text)] font-medium">{{ row.depotName }}</td>
-                    <td class="px-4 py-3 text-[var(--color-text-muted)]">
-                      {{ row.batchNumber }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="mt-4 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
-              <div class="flex items-center gap-2">
-                <lucide-angular [img]="CheckCircle" class="h-4 w-4 text-[var(--color-success)]"></lucide-angular>
-                <span class="text-xs text-[var(--color-success)] font-medium">
-                  {{ 'weaponSupplyReview.selectionSaved' | translate }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- No Saved Selection -->
-          <div *ngIf="!hasSavedSelection">
-            <div class="text-center py-8">
-              <div class="inline-flex flex-col items-center gap-3">
-                <div class="w-14 h-14 rounded-full bg-[var(--color-warning)]/10 flex items-center justify-center">
-                  <lucide-angular [img]="Info" class="h-7 w-7 text-[var(--color-warning)]"></lucide-angular>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-[var(--color-text)] mb-1">
-                    {{ 'weaponSupplyReview.noSelectionFound' | translate }}
-                  </p>
-                  <p class="text-xs text-[var(--color-text-muted)] mb-4">
-                    {{ 'weaponSupplyReview.noSelectionFoundHint' | translate }}
-                  </p>
-                </div>
-                <button (click)="goToSelectionPage()"
-                  class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all font-medium shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 flex items-center gap-2">
-                  <lucide-angular [img]="Warehouse" class="h-4 w-4"></lucide-angular>
-                  {{ 'weaponSupplyReview.goToSelection' | translate }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Request Information -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
@@ -124,18 +41,15 @@
             </h2>
           </div>
           <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]">
-          </lucide-angular>
+            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
         </button>
-
         <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'weaponSupplyReview.orderNo' | translate }}
               </label>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo
-                }}</p>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo }}</p>
             </div>
             <div class="space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
@@ -159,219 +73,267 @@
         </div>
       </div>
 
-      <!-- Items with Assets -->
+      <!-- Request Items -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isItemsExpanded = !isItemsExpanded"
+        <button (click)="isRequestItemsExpanded = !isRequestItemsExpanded"
+          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="ListOrdered" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'weaponSupplyReview.requestItems' | translate }}
+            </h2>
+            <span *ngIf="requestItems.length > 0"
+              class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+              {{ requestItems.length }}
+            </span>
+          </div>
+          <lucide-angular [img]="isRequestItemsExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
+        <div *ngIf="isRequestItemsExpanded" class="pb-0 border-t border-[var(--color-border)]">
+          <div *ngIf="requestItems.length === 0" class="py-8 text-center text-[var(--color-text-muted)] px-6">
+            {{ 'weaponSupplyReview.noItems' | translate }}
+          </div>
+          <div *ngIf="requestItems.length > 0" class="overflow-hidden">
+            <table class="w-full review-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>{{ 'weaponSupplyReview.itemName' | translate }}</th>
+                  <th>{{ 'weaponSupplyReview.itemNumber' | translate }}</th>
+                  <th>NSN</th>
+                  <th class="text-center">{{ 'weaponSupplyReview.approvedQuantity' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of requestItems; let i = index">
+                  <td class="text-[var(--color-text-muted)]">{{ i + 1 }}</td>
+                  <td class="font-medium text-[var(--color-text)]">{{ item.itemName }}</td>
+                  <td class="text-[var(--color-text)]">{{ item.itemNo || '—' }}</td>
+                  <td class="text-[var(--color-text)]">{{ item.nsn || '—' }}</td>
+                  <td class="text-center text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batches with Assets (Accordion) -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
+        <button (click)="isBatchesExpanded = !isBatchesExpanded"
           class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
               <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
             </div>
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'weaponSupplyReview.itemsAndAssets' | translate }}
+              {{ 'weaponSupplyReview.batchesAndAssets' | translate }}
             </h2>
+            <span *ngIf="batches.length > 0"
+              class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+              {{ batches.length }}
+            </span>
           </div>
-          <lucide-angular [img]="isItemsExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]">
-          </lucide-angular>
+          <lucide-angular [img]="isBatchesExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
         </button>
 
-        <div *ngIf="isItemsExpanded"
-          class="px-6 pb-6 border-t border-[var(--color-border)] space-y-6 pt-6 items-section">
-          <div *ngIf="loadingAssets" class="text-center py-8">
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
-          </div>
-
-          <div *ngIf="!loadingAssets && !hasSavedSelection" class="text-center py-8">
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.selectDepotsFirst' | translate }}
-            </p>
-          </div>
-
-          <!-- Batch API Filter Options - shown when user has saved selection -->
-          <div *ngIf="hasSavedSelection" class="mb-6 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
-            <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
-              {{ 'weaponSupplyReview.batchFilterOptions' | translate }}
-            </p>
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <div class="flex items-center gap-2 shrink-0">
-                <input type="checkbox" id="batchFilterSerialNumberOnly" [(ngModel)]="batchFilterSerialNumberOnly"
-                  class="w-4 h-4 text-[var(--color-brand)] rounded border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] shrink-0">
-                <label for="batchFilterSerialNumberOnly" class="text-sm text-[var(--color-text)] cursor-pointer whitespace-nowrap">
-                  {{ 'weaponSupplyReview.batchFilterSerialOnly' | translate }}
-                </label>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <label for="batchFilterQuantity" class="text-sm text-[var(--color-text)] whitespace-nowrap">
-                  {{ 'weaponSupplyReview.batchFilterQuantity' | translate }}:
-                </label>
-                <input type="number" id="batchFilterQuantity" [ngModel]="batchFilterQuantity"
-                  (ngModelChange)="onBatchFilterQuantityChange($event)"
-                  min="1" placeholder="{{ 'weaponSupplyReview.batchFilterQuantityPlaceholder' | translate }}"
-                  class="w-20 h-9 px-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] text-sm">
-              </div>
-              <button (click)="onBatchFiltersChange()"
-                class="h-9 px-4 text-sm bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] font-medium shrink-0">
-                {{ 'weaponSupplyReview.applyFilters' | translate }}
-              </button>
+        <div *ngIf="isBatchesExpanded" class="pb-0 border-t border-[var(--color-border)]">
+          <!-- Loading batches -->
+          <div *ngIf="loadingBatches" class="text-center py-12 px-6">
+            <div class="inline-flex flex-col items-center gap-3">
+              <div class="animate-spin w-8 h-8 border-3 border-[var(--color-brand)] border-t-transparent rounded-full"></div>
+              <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
             </div>
           </div>
 
-          <div *ngIf="!loadingAssets && hasSavedSelection && !assetsLoadedOnce" class="text-center py-8">
-            <p class="text-sm text-[var(--color-text-muted)] mb-2">{{ 'weaponSupplyReview.clickApplyToLoadAssets' | translate }}</p>
-            <p class="text-xs text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.clickApplyToLoadAssetsHint' | translate }}</p>
-          </div>
-
-          <div *ngIf="!loadingAssets && hasSavedSelection && assetsLoadedOnce && hasNoAvailableAssets" class="text-center py-8">
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.noItems' | translate }}</p>
-          </div>
-
-          <!-- Controls: Item Search & Pagination -->
-          <div *ngIf="hasSavedSelection && assetsLoadedOnce && hasSomeAvailableAssets" class="flex flex-col lg:flex-row gap-4 mb-6 controls-row">
-            <!-- Item Search -->
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                <lucide-angular [img]="Search" class="h-4 w-4 inline-block me-1"></lucide-angular>
-                {{ 'weaponSupplyReview.filterItemsLabel' | translate }}
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
-                  <lucide-angular [img]="Package" class="h-5 w-5 text-blue-400"></lucide-angular>
-                </div>
-                <input type="text" [ngModel]="itemSearchTerm" (ngModelChange)="onItemSearch($event)"
-                  [placeholder]="'weaponSupplyReview.searchItemsPlaceholder' | translate"
-                  class="block w-full ps-10 pe-3 py-2.5 border-2 border-blue-200 rounded-lg leading-5 bg-[var(--color-background)] placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 sm:text-sm transition-all">
+          <!-- No batches / No selection -->
+          <div *ngIf="!loadingBatches && batches.length === 0" class="text-center py-12 px-6">
+            <div class="inline-flex flex-col items-center gap-3">
+              <div class="w-14 h-14 rounded-full bg-[var(--color-warning)]/10 flex items-center justify-center">
+                <lucide-angular [img]="Info" class="h-7 w-7 text-[var(--color-warning)]"></lucide-angular>
               </div>
-              <p class="mt-1 text-xs text-[var(--color-text-secondary)]">
-                {{ 'weaponSupplyReview.searchItemsHint' | translate }}
+              <p class="text-sm font-medium text-[var(--color-text)] mb-1">
+                {{ 'weaponSupplyReview.noSelectionFound' | translate }}
               </p>
-            </div>
-
-            <!-- Quick Scan - Right Side -->
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                {{ 'weaponSupplyReview.quickScanLabel' | translate }}
-              </label>
-              <div class="flex gap-3">
-                <div class="relative flex-1">
-                  <input type="text" #serialInput
-                    (keyup.enter)="scanSerialNumber(serialInput.value); serialInput.value = ''"
-                    [placeholder]="'weaponSupplyReview.scanSerialPlaceholder' | translate"
-                    class="block w-full px-3 py-2.5 border-2 border-green-200 rounded-lg leading-5 bg-[var(--color-background)] placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-green-400 focus:border-green-400 sm:text-sm transition-all text-center">
-                </div>
-                <button (click)="scanSerialNumber(serialInput.value); serialInput.value = ''"
-                  class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all font-medium flex items-center gap-2 shadow-lg whitespace-nowrap active:scale-95">
-                  <lucide-angular [img]="Search" class="h-4 w-4"></lucide-angular>
-                  <span>{{ 'weaponSupplyReview.scanButton' | translate }}</span>
-                </button>
-              </div>
-              <p class="mt-1 text-xs text-[var(--color-text-secondary)]">
-                {{ 'weaponSupplyReview.scanSerialHint' | translate }}
+              <p class="text-xs text-[var(--color-text-muted)] mb-4">
+                {{ 'weaponSupplyReview.noSelectionFoundHint' | translate }}
               </p>
+              <button (click)="goToSelectionPage()"
+                class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all font-medium shadow-custom-sm flex items-center gap-2">
+                <lucide-angular [img]="Warehouse" class="h-4 w-4"></lucide-angular>
+                {{ 'weaponSupplyReview.goToSelection' | translate }}
+              </button>
             </div>
           </div>
 
-          <ng-container *ngIf="assetsLoadedOnce">
-          <div *ngFor="let item of paginatedItems; trackBy: trackByItemId" class="item-card">
-            <!-- Item Header -->
-            <div class="item-header">
-              <div class="item-info">
-                <h3 class="item-name">{{ item.itemName }}</h3>
-                <div class="item-meta">
-                  <span class="item-meta-item">
-                    <span class="item-meta-label">{{ 'weaponSupplyReview.requestedQuantity' | translate }}</span>
-                    <span class="item-meta-value">{{ formatNumber(item.requestedQuantity) }}</span>
-                  </span>
-                  <span class="item-meta-item">
-                    <span class="item-meta-label">{{ 'weaponSupplyReview.availableAssets' | translate }}</span>
-                    <span class="item-meta-value">{{ formatNumber(item.availableQuantity) }}</span>
-                  </span>
-                </div>
-              </div>
-              <div class="item-actions">
-                <div class="item-selection-badge">
-                  <span class="item-selection-label">{{ 'weaponSupplyReview.selected' | translate }}</span>
-                  <span class="item-selection-count">{{ formatNumber(item.selectedCount) }} / {{ formatNumber(item.requestedQuantity) }}</span>
-                </div>
-                <div class="item-quick-btns">
-                  <button type="button" (click)="onBulkSelectChange(item, item.requestedQuantity)" class="btn-select-all">
-                    {{ 'weaponSupplyReview.selectAll' | translate }}
-                  </button>
-                  <button type="button" (click)="onBulkSelectChange(item, 0)" class="btn-clear">
-                    {{ 'weaponSupplyReview.clear' | translate }}
-                  </button>
-                </div>
-                <div class="item-status">
-                  <span *ngIf="item.selectedCount === 0" class="status-badge status-none">
-                    <lucide-angular [img]="AlertTriangle" class="status-icon"></lucide-angular>
-                    {{ 'weaponSupplyReview.noAssetsSelected' | translate }}
-                  </span>
-                  <span *ngIf="item.selectedCount > 0 && item.selectedCount < item.requestedQuantity" class="status-badge status-partial">
-                    <lucide-angular [img]="Clock" class="status-icon"></lucide-angular>
-                    {{ 'weaponSupplyReview.partiallySelected' | translate }}
-                  </span>
-                  <span *ngIf="item.selectedCount === item.requestedQuantity" class="status-badge status-full">
-                    <lucide-angular [img]="CheckCircle" class="status-icon"></lucide-angular>
-                    {{ 'weaponSupplyReview.fullySelected' | translate }}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <!-- Batch Accordion Table -->
+          <div *ngIf="!loadingBatches && batches.length > 0" class="overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full review-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'weaponSupplyReview.batchNumber' | translate }}</th>
+                    <th>{{ 'weaponSupplyReview.depot' | translate }}</th>
+                    <th class="text-center">{{ 'weaponSupplyReview.assetCount' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let batch of batches; trackBy: trackByBatchId">
+                    <!-- Batch Row (Accordion Trigger) -->
+                    <tr class="accordion-row cursor-pointer"
+                      [class.expanded]="batch.expanded"
+                      (click)="toggleBatch(batch.id)">
+                      <td>
+                        <div class="flex items-center gap-3">
+                          <button type="button" (click)="toggleBatch(batch.id); $event.stopPropagation()"
+                            class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
+                            <lucide-angular
+                              [img]="batch.expanded ? ChevronDown : ChevronRight"
+                              class="h-5 w-5 text-[var(--color-text-muted)]">
+                            </lucide-angular>
+                          </button>
+                          <span class="text-base font-semibold text-[var(--color-text)]">
+                            {{ batch.batchNumber }}
+                          </span>
+                        </div>
+                      </td>
+                      <td class="text-[var(--color-text)]">{{ getDepotName(batch) }}</td>
+                      <td class="text-center text-[var(--color-text)]">{{ batch.assets.length }}</td>
+                    </tr>
 
-            <!-- Asset Selection Component -->
-            <div *ngIf="isItemExpanded(item)">
-              <app-item-asset-selection [assets]="item.selectedAssets" [requestedQuantity]="item.requestedQuantity"
-                [selectedCount]="item.selectedCount" [defaultCustodianId]="defaultCustodianId"
-                [employeeDropdownOptions]="employeeDropdownOptions" [loadingEmployees]="loadingEmployees"
-                [addEmployeeActionLabel]="'weaponSupplyReview.addEmployee'"
-                (assetSelectionChange)="onAssetSelectionChange(item, $event)"
-                (bulkSelectChange)="onBulkSelectChange(item, $event)"
-                (custodianChange)="onCustodianChange($event.asset, $event.custodianId)"
-                (notesChange)="onNotesChange($event.asset, $event.notes)"
-                (serialNumberChange)="onSerialNumberChange($event.asset, $event.serialNumber)"
-                (addEmployeeClick)="openAddEmployeeModal()">
-              </app-item-asset-selection>
-            </div>
-          </div>
-          </ng-container>
+                    <!-- Expanded Detail Row -->
+                    <tr *ngIf="batch.expanded" class="detail-row">
+                      <td colspan="3" class="p-0 bg-[var(--color-background-muted)]">
+                        <div class="p-6">
+                          <!-- Header with Add button -->
+                          <div class="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-[var(--color-border)]">
+                            <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                              {{ 'weaponSupplyReview.assets' | translate }}
+                            </h3>
+                            <div *ngIf="addSerialBatchId !== batch.id">
+                              <button (click)="openAddSerial(batch.id); $event.stopPropagation()"
+                                class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors text-sm font-medium">
+                                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+                                {{ 'weaponSupplyReview.addAssetBySerial' | translate }}
+                              </button>
+                            </div>
+                            <div *ngIf="addSerialBatchId === batch.id" class="flex items-center gap-3 flex-wrap">
+                              <input type="text" [(ngModel)]="addSerialValue"
+                                [placeholder]="'weaponSupplyReview.enterSerialNumber' | translate"
+                                (keydown.enter)="confirmAddSerial(batch.id)"
+                                (keydown.escape)="cancelAddSerial()"
+                                (click)="$event.stopPropagation()"
+                                class="w-48 px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)]">
+                              <button (click)="confirmAddSerial(batch.id); $event.stopPropagation()"
+                                class="px-4 py-2 text-sm font-medium text-white bg-[var(--color-brand)] rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
+                                {{ 'weaponSupplyReview.add' | translate }}
+                              </button>
+                              <button (click)="cancelAddSerial(); $event.stopPropagation()"
+                                class="px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+                                {{ 'common.cancel' | translate }}
+                              </button>
+                            </div>
+                          </div>
 
-          <!-- Pagination Controls -->
-          <div *ngIf="assetsLoadedOnce && filteredItems.length > pageSize"
-            class="flex items-center justify-between border-t border-[var(--color-border)] pt-4 mt-6 pagination-row">
-            <div class="text-sm text-[var(--color-text-muted)]">
-              {{ 'weaponSupplyReview.showing' | translate }}
-              <span class="font-medium text-[var(--color-text)]">
-                {{ (currentPage - 1) * pageSize + 1 }}
-              </span>
-              -
-              <span class="font-medium text-[var(--color-text)]">
-                {{ (currentPage * pageSize) > filteredItems.length ? filteredItems.length : (currentPage * pageSize) }}
-              </span>
-              {{ 'weaponSupplyReview.of' | translate }}
-              <span class="font-medium text-[var(--color-text)]">
-                {{ filteredItems.length }}
-              </span>
-              {{ 'weaponSupplyReview.items' | translate }}
-            </div>
-            <div class="flex items-center gap-2">
-              <button [disabled]="currentPage === 1" (click)="setPage(currentPage - 1)"
-                class="p-2 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                <lucide-angular [img]="isRTL ? ArrowRight : ArrowLeft"
-                  class="h-4 w-4 text-[var(--color-text)]"></lucide-angular>
-              </button>
-              <div class="flex items-center gap-1">
-                <button *ngFor="let page of [].constructor(totalPages); let i = index" (click)="setPage(i + 1)"
-                  [class.bg-[var(--color-brand)]]="currentPage === i + 1" [class.text-white]="currentPage === i + 1"
-                  [class.border-transparent]="currentPage === i + 1"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-background-hover)] transition-colors"
-                  [ngClass]="{'bg-[var(--color-brand)] text-white border-transparent hover:bg-[var(--color-brand-dark)]': currentPage === i + 1}">
-                  {{ i + 1 }}
-                </button>
-              </div>
-              <button [disabled]="currentPage === totalPages" (click)="setPage(currentPage + 1)"
-                class="p-2 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                <lucide-angular [img]="isRTL ? ArrowLeft : ArrowRight"
-                  class="h-4 w-4 text-[var(--color-text)]"></lucide-angular>
-              </button>
+                          <!-- Inner Assets Table -->
+                          <div class="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]">
+                            <table class="w-full review-table assets-table">
+                              <thead>
+                                <tr>
+                                  <th class="w-12">#</th>
+                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.serialNumber' | translate }}</th>
+                                  <th class="min-w-[120px]">{{ 'weaponSupplyReview.itemName' | translate }}</th>
+                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.depot' | translate }}</th>
+                                  <th class="min-w-[260px]">{{ 'weaponSupplyReview.assignee' | translate }}</th>
+                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.notes' | translate }}</th>
+                                  <th class="text-center w-20">{{ 'common.actions' | translate }}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr *ngFor="let asset of batch.assets; let i = index; trackBy: trackByAssetId">
+                                  <td class="text-[var(--color-text-muted)]">{{ i + 1 }}</td>
+                                  <td>
+                                    <!-- Display mode -->
+                                    <div *ngIf="editingSerialAssetId !== asset.id" class="flex items-center gap-2 min-w-0">
+                                      <span class="font-medium truncate"
+                                        [class.text-[var(--color-text)]]="asset.serialNumber"
+                                        [class.text-[var(--color-text-muted)]]="!asset.serialNumber"
+                                        [class.italic]="!asset.serialNumber">
+                                        {{ asset.serialNumber || ('weaponSupplyReview.noSerial' | translate) }}
+                                      </span>
+                                      <button (click)="startEditingSerial(asset); $event.stopPropagation()"
+                                        class="flex-shrink-0 p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded transition-colors"
+                                        [title]="'common.edit' | translate">
+                                        <lucide-angular [img]="Pencil" class="h-3.5 w-3.5"></lucide-angular>
+                                      </button>
+                                    </div>
+                                    <!-- Edit mode -->
+                                    <div *ngIf="editingSerialAssetId === asset.id" class="flex items-center gap-2 min-w-0"
+                                      (click)="$event.stopPropagation()">
+                                      <input type="text" [(ngModel)]="editingSerialValue"
+                                        [placeholder]="'weaponSupplyReview.addSerialNumber' | translate"
+                                        (keydown.enter)="saveSerial(asset)"
+                                        (keydown.escape)="cancelEditingSerial()"
+                                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-[var(--color-brand)] rounded bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+                                      <button (click)="saveSerial(asset)"
+                                        class="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium text-white bg-[var(--color-brand)] rounded hover:bg-[var(--color-brand-dark)] transition-colors">
+                                        {{ 'common.save' | translate }}
+                                      </button>
+                                      <button (click)="cancelEditingSerial()"
+                                        class="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded hover:bg-[var(--color-background-hover)] transition-colors">
+                                        {{ 'common.cancel' | translate }}
+                                      </button>
+                                    </div>
+                                  </td>
+                                  <td class="text-[var(--color-text)]">{{ getItemName(asset) }}</td>
+                                  <td class="text-[var(--color-text)]">{{ getAssetDepotName(asset) }}</td>
+                                  <td (click)="$event.stopPropagation()">
+                                    <app-dropdown
+                                      [options]="employeeDropdownOptions"
+                                      [ngModel]="getCustodianId(batch, asset.id)"
+                                      (ngModelChange)="onCustodianChange(batch.id, asset.id, $event)"
+                                      [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
+                                      [addActionLabel]="'weaponSupplyReview.addEmployee' | translate"
+                                      (addActionClick)="openAddEmployeeModal()"
+                                      optionValue="value" optionLabel="label"
+                                      class="assets-table-dropdown">
+</app-dropdown>
+                                    </td>
+                                    <td (click)="$event.stopPropagation()">
+                                      <input type="text"
+                                      [value]="getNotes(batch, asset.id)"
+                                      (input)="onNotesChange(batch.id, asset.id, $any($event.target).value)"
+                                      [placeholder]="'weaponSupplyReview.enterNotes' | translate"
+class="assets-table-input w-full min-w-0">
+                                    </td>
+                                    <td class="text-center">
+                                    <button (click)="removeAsset(batch.id, asset.id); $event.stopPropagation()"
+                                      class="assets-table-delete-btn p-2 rounded-lg transition-colors"
+                                      [title]="'common.delete' | translate">
+                                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                                    </button>
+                                  </td>
+                                </tr>
+                                <tr *ngIf="batch.assets.length === 0">
+                                  <td colspan="7" class="py-12 text-center">
+                                    <p class="text-sm text-[var(--color-text-muted)]">
+                                      {{ 'weaponSupplyReview.noAssetsInBatch' | translate }}
+                                    </p>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -390,8 +352,7 @@
             </h2>
           </div>
           <lucide-angular [img]="isReceiverInfoExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]">
-          </lucide-angular>
+            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
         </button>
 
         <div *ngIf="isReceiverInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
@@ -406,8 +367,7 @@
 
             <div class="space-y-1">
               <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                {{ 'weaponSupplyReview.receiverMilitaryId' | translate }} <span
-                  class="text-[var(--color-error)]">*</span>
+                {{ 'weaponSupplyReview.receiverMilitaryId' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
               <input type="text" [(ngModel)]="receiverMilitaryId"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
@@ -499,9 +459,8 @@
       </div>
 
       <!-- Summary and Submit -->
-      <div
-        class="submit-section bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-brand)] p-6">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 submit-row">
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-brand)] p-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
@@ -511,15 +470,29 @@
                 {{ 'weaponSupplyReview.summary' | translate }}
               </h3>
             </div>
-            <div class="summary-content">
+            <div class="ms-[3.25rem]">
               <p class="text-sm text-[var(--color-text-muted)]">
                 {{ 'weaponSupplyReview.totalSelected' | translate }}:
-                <span class="font-semibold text-[var(--color-text)] text-base">{{ formatNumber(getTotalSelectedCount())
-                  }}</span>
+                <span class="font-semibold text-[var(--color-text)] text-base">
+                  {{ formatNumber(reviewService.getTotalSelectedCount()) }}
+                </span>
                 <span class="text-[var(--color-text-muted)] mx-1">/</span>
-                <span class="font-semibold text-[var(--color-text)] text-base">{{ formatNumber(getTotalRequestedCount())
-                  }}</span>
+                <span class="font-semibold text-[var(--color-text)] text-base">
+                  {{ formatNumber(reviewService.getTotalRequestedCount()) }}
+                </span>
               </p>
+              <div class="mt-2 flex items-center gap-2">
+                <span *ngIf="reviewService.isFullyFulfilled()"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <lucide-angular [img]="CheckCircle" class="h-3.5 w-3.5"></lucide-angular>
+                  {{ 'weaponSupplyReview.fullySelected' | translate }}
+                </span>
+                <span *ngIf="!reviewService.isFullyFulfilled() && reviewService.getTotalSelectedCount() > 0"
+                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <lucide-angular [img]="AlertTriangle" class="h-3.5 w-3.5"></lucide-angular>
+                  {{ 'weaponSupplyReview.partiallySelected' | translate }}
+                </span>
+              </div>
             </div>
           </div>
           <div class="flex-shrink-0 w-full sm:w-auto">
@@ -527,7 +500,7 @@
               class="w-full sm:w-auto px-8 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold shadow-custom-sm hover:shadow-custom-md disabled:shadow-none min-w-[180px] text-base focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
               <lucide-angular *ngIf="!submitting" [img]="CheckCircle" class="h-5 w-5"></lucide-angular>
               <span *ngIf="submitting" class="flex items-center gap-2">
-                <span class="animate-spin inline-block">⏳</span>
+                <span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span>
                 {{ 'weaponSupplyReview.submitting' | translate }}
               </span>
               <span *ngIf="!submitting">{{ 'weaponSupplyReview.submit' | translate }}</span>

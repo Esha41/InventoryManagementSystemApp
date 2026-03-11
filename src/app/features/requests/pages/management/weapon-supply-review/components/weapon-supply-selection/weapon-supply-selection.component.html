@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[var(--color-background-muted)] p-6">
+<div class="min-h-full bg-[var(--color-background-muted)] p-6">
   <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
   </app-loading-state>
 
@@ -194,17 +194,19 @@
                       {{ 'weaponSupplyReview.itemsInBatch' | translate }}
                     </th>
                     <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
-                      {{ 'weaponSupplyReview.assetCount' | translate }}
+                      {{ 'weaponSupplyReview.quantityToTake' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
-                  <tr *ngFor="let batch of batchOptions" (click)="toggleBatchSelection(batch.id)"
-                    [ngClass]="{'bg-blue-50 dark:bg-blue-900/20': selectedBatchIds.includes(batch.id)}"
-                    class="hover:bg-[var(--color-background-hover)] cursor-pointer transition-colors">
+                  <tr *ngFor="let batch of batchOptions" (click)="hasBatchItems(batch) && toggleBatchSelection(batch.id)"
+                    [ngClass]="{'bg-blue-50 dark:bg-blue-900/20': selectedBatchIds.includes(batch.id), 'opacity-50': !hasBatchItems(batch)}"
+                    [class.cursor-pointer]="hasBatchItems(batch)" [class.cursor-not-allowed]="!hasBatchItems(batch)"
+                    class="hover:bg-[var(--color-background-hover)] transition-colors">
                     <td class="w-12 px-4 py-3">
                       <input type="checkbox" [id]="'batch-' + batch.id" [checked]="selectedBatchIds.includes(batch.id)"
-                        (click)="$event.stopPropagation(); toggleBatchSelection(batch.id)"
+                        [disabled]="!hasBatchItems(batch)"
+                        (click)="$event.stopPropagation(); hasBatchItems(batch) && toggleBatchSelection(batch.id)"
                         class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1">
                     </td>
                     <td class="px-4 py-3 text-sm font-medium text-[var(--color-text)]">
@@ -221,8 +223,40 @@
                       </ng-container>
                       <ng-template #noItemsInBatch><span>-</span></ng-template>
                     </td>
-                    <td class="px-4 py-3 text-sm text-[var(--color-text)]">
-                      {{ batch.quantity }}
+                    <td class="px-4 py-3" (click)="$event.stopPropagation()">
+                      <ng-container *ngIf="selectedBatchIds.includes(batch.id)">
+                        <ng-container *ngIf="batch.items && batch.items.length > 0; else noItemsForQty">
+                          <div *ngFor="let bi of batch.items" class="flex flex-col gap-0.5 py-1.5">
+                            <div class="flex items-center gap-2">
+                              <span *ngIf="batch.items!.length > 1" class="text-xs text-[var(--color-text-muted)] shrink-0 min-w-[80px]">
+                                {{ bi.itemName || bi.itemNo || '-' }}:
+                              </span>
+                              <input
+                                type="number"
+                                [value]="getItemQuantity(batch.id, bi.itemId)"
+                                (input)="onItemQuantityChange(batch.id, bi, $any($event.target).value)"
+                                (blur)="onItemQuantityBlur(batch.id, bi)"
+                                [max]="getMaxQuantityForBatchItem(batch.id, bi)"
+                                [min]="0"
+                                required
+                                [placeholder]="('weaponSupplyReview.quantityPlaceholder' | translate)"
+                                class="w-20 px-2 py-1 text-sm border rounded-lg text-center transition-colors
+                                  bg-[var(--color-background)]
+                                  text-[var(--color-text)]
+                                  focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:outline-none
+                                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                [ngClass]="(isItemQuantityMissing(batch.id, bi.itemId) || isItemQuantityExceeded(batch.id, bi)) ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]' : 'border-[var(--color-border)]'">
+                            </div>
+                            <span *ngIf="isItemQuantityExceeded(batch.id, bi)" class="text-xs text-[var(--color-error)]">
+                              {{ 'weaponSupplyReview.quantityMaxExceeded' | translate:{ max: getMaxQuantityForBatchItem(batch.id, bi) } }}
+                            </span>
+                          </div>
+                        </ng-container>
+                        <ng-template #noItemsForQty>
+                          <span class="text-xs text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.noItemsInBatch' | translate }}</span>
+                        </ng-template>
+                      </ng-container>
+                      <span *ngIf="!selectedBatchIds.includes(batch.id)" class="text-xs text-[var(--color-text-muted)]">-</span>
                     </td>
                   </tr>
                 </tbody>

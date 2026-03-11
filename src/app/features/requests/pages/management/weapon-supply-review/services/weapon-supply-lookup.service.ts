@@ -108,12 +108,17 @@ export class WeaponSupplyLookupService {
 
     private createEmployeeOptions(): DropdownOption<number>[] {
         const currentLang = getCurrentLang(this.translate);
-        return this.availableEmployees.map(emp => ({
-            value: emp.id,
-            label: currentLang === 'ar'
+        return this.availableEmployees.map(emp => {
+            const name = currentLang === 'ar'
                 ? (emp.nameAr || emp.nameEn || String(emp.id))
-                : (emp.nameEn || emp.nameAr || String(emp.id)),
-            description: emp.militaryId || emp.email || ''
-        })).sort((a, b) => a.label.localeCompare(b.label));
+                : (emp.nameEn || emp.nameAr || String(emp.id));
+            const militaryId = emp.militaryId || (emp as { militoryId?: string }).militoryId;
+            const label = militaryId ? `${name} (${militaryId})` : name;
+            return {
+                value: emp.id,
+                label,
+                description: militaryId ? '' : (emp.email || '')
+            };
+        }).sort((a, b) => a.label.localeCompare(b.label));
     }
 }

@@ -90,10 +90,12 @@ export interface BatchForOrderDepotDto {
   items?: BatchItemDto[];
 }
 
-/** DTO for saving depot and batch selections (batchId is null when depot is selected without a specific batch) */
+/** DTO for saving per-item batch selections. Each row = one (depot, batch, item, quantity). */
 export interface DepotBatchSelectionDto {
   depotId: number;
-  batchId: number | null;
+  batchId: number;
+  itemId: number;
+  quantity: number;
 }
 
 export interface SaveWeaponSupplySelectionDto {
@@ -200,6 +202,22 @@ export class AssetSupplyService {
   }
 
   /**
+   * Get selected batches with their pre-picked assets for weapon supply review.
+   * Backend returns batches grouped with assets (serial first, then non-serial).
+   */
+  getSelectedBatchesWithAssets(orderId: number): Observable<import('@models/batch.model').BatchDto[]> {
+    this.config.log(`Getting selected batches with assets for order ${orderId}`);
+    return this.apiService.get<import('@models/batch.model').BatchDto[]>(
+      `${this.baseEndpoint}/order/${orderId}/selected-batches`
+    ).pipe(
+      catchError(error => {
+        this.config.logError('Failed to get selected batches with assets', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Get asset supply by order ID
    */
   getByOrderId(orderId: number): Observable<AssetSupplyDto> {
@@ -216,9 +234,9 @@ export class AssetSupplyService {
   /**
    * Get saved depot and batch selections for weapon supply.
    */
-  getWeaponSupplySelection(orderId: number): Observable<{ depotId: number; batchId: number | null }[]> {
+  getWeaponSupplySelection(orderId: number): Observable<DepotBatchSelectionDto[]> {
     this.config.log('Getting weapon supply selection', { orderId });
-    return this.apiService.get<{ depotId: number; batchId: number | null }[]>(
+    return this.apiService.get<DepotBatchSelectionDto[]>(
       `${this.baseEndpoint}/order/${orderId}/selection`
     ).pipe(
       catchError(error => {
@@ -231,7 +249,7 @@ export class AssetSupplyService {
   /**
    * Save depot and batch selections for weapon supply (replaces existing for the order)
    */
-  saveWeaponSupplySelection(orderId: number, selections: { depotId: number; batchId: number | null }[]): Observable<boolean> {
+  saveWeaponSupplySelection(orderId: number, selections: DepotBatchSelectionDto[]): Observable<boolean> {
     this.config.log('Saving weapon supply selection', { orderId, selections });
     const dto: SaveWeaponSupplySelectionDto = { orderId, selections };
     return this.apiService.post<boolean>(

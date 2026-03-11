@@ -63,6 +63,22 @@ export class BatchService {
         return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`, params);
     }
 
+    getByBatchNumber(batchNumber: string, options?: {
+        serialNumberOnly?: boolean;
+        quantity?: number;
+        filterByIsAssigned?: boolean;
+    }): Observable<BatchDto | null> {
+        let params = new HttpParams();
+        if (options?.serialNumberOnly != null)
+            params = params.set('serialNumberOnly', String(options.serialNumberOnly));
+        if (options?.quantity != null)
+            params = params.set('quantity', String(options.quantity));
+        if (options?.filterByIsAssigned != null)
+            params = params.set('filterByIsAssigned', String(options.filterByIsAssigned));
+        const encoded = encodeURIComponent(batchNumber.trim());
+        return this.apiService.get<BatchDto | null>(`${this.basePath}/by-number/${encoded}`, params);
+    }
+
     bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto): Observable<boolean> {
         return this.apiService.put<boolean>(`${this.basePath}/${batchId}/assets`, dto);
     }

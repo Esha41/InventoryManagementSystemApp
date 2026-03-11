@@ -1,302 +1,13 @@
-/* Component-specific styles */
-
-/* Item cards */
-.item-card {
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.item-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 1.25rem;
-  margin-bottom: 1.25rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0 0 0.5rem 0;
-}
-
-.item-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-}
-
-.item-meta-item {
-  display: flex;
-  align-items: baseline;
-  gap: 0.375rem;
-}
-
-.item-meta-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted);
-}
-
-.item-meta-value {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.item-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
-}
-
-.item-selection-badge {
-  padding: 0.5rem 1rem;
-  background: var(--color-background-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.item-selection-label {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted);
-  margin-bottom: 0.125rem;
-}
-
-.item-selection-count {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.item-quick-btns {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-select-all {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: white;
-  background: var(--color-brand);
-  border: none;
-  border-radius: 8px;
+/* Section header buttons */
+.section-header-btn {
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.btn-select-all:hover {
-  background: var(--color-brand-dark);
-}
-
-.btn-clear {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--color-text);
-  background: var(--color-background-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn-clear:hover {
-  background: var(--color-background-hover);
-}
-
-.item-status {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
-  border-radius: 8px;
-}
-
-.status-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  min-width: 0.875rem;
-  min-height: 0.875rem;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Lucide SVG icons - fix vertical alignment with text (icons often render slightly high) */
-:host ::ng-deep .status-badge lucide-angular {
-  display: inline-flex;
-  align-items: center;
-  line-height: 0;
-  transform: translateY(0.08em); /* Nudge down to align with text */
-}
-
-.status-none {
-  background: var(--color-background-muted);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.status-partial {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.status-full {
-  background: rgba(34, 197, 94, 0.12);
-  color: #15803d;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-/* Table wrapper for proper overflow handling */
-.assets-table-wrapper {
-  width: 100%;
-  position: relative;
-}
-
-/* Assets table styling */
-.assets-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-/* Column widths */
-.assets-table th:nth-child(1),
-.assets-table td:nth-child(1) {
-  width: 5%;
-  min-width: 50px;
-}
-
-.assets-table th:nth-child(2),
-.assets-table td:nth-child(2) {
-  width: 18%;
-  min-width: 150px;
-}
-
-.assets-table th:nth-child(3),
-.assets-table td:nth-child(3) {
-  width: 15%;
-  min-width: 120px;
-}
-
-.assets-table th:nth-child(4),
-.assets-table td:nth-child(4) {
-  width: 15%;
-  min-width: 120px;
-}
-
-.assets-table th:nth-child(5),
-.assets-table td:nth-child(5) {
-  width: 25%;
-  min-width: 200px;
-}
-
-.assets-table th:nth-child(6),
-.assets-table td:nth-child(6) {
-  width: 22%;
-  min-width: 180px;
-}
-
-/* Table cell styling */
-.assets-table td {
-  vertical-align: middle;
-  word-wrap: break-word;
-}
-
-/* Dropdown cell - ensure proper overflow handling */
-.dropdown-cell {
-  position: relative;
-  width: 100%;
-  min-width: 200px;
-}
-
-/* Ensure dropdown panels can escape overflow containers */
-:host ::ng-deep .assets-table-wrapper > div {
-  overflow-x: auto;
-  overflow-y: visible;
-}
-
-/* Dropdown panel z-index and smooth transitions */
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-panel {
-  z-index: 10001 !important;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* Smooth dropdown opening */
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown {
-  position: relative;
-}
-
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-trigger {
-  transition: all 0.2s ease;
-}
-
-/* Input styling improvements */
-.assets-table input[type="text"] {
-  transition: all 0.2s ease;
-}
-
-.assets-table input[type="text"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Table row hover effect */
-.assets-table tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-/* Submit section */
-.submit-section {
-  margin-top: 2rem;
-  background-color: var(--color-background);
-}
-
-/* Enhanced card hover effects */
-.bg-\[var\(--color-background\)\] {
-  transition: all 0.2s ease;
-}
-
-/* Smooth transitions for interactive elements */
+/* Smooth transitions */
 button, input, textarea, select {
   transition: all 0.2s ease;
 }
 
-/* Enhanced focus states */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -305,49 +16,138 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Badge animations */
-span[class*="rounded"] {
-  transition: all 0.2s ease;
+/* Spinner for loading */
+.animate-spin {
+  animation: spin 0.8s linear infinite;
 }
 
-/* Search input styling */
-input[type="text"]:focus,
-input[type="number"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Sortable header styling */
-.assets-table th[class*="cursor-pointer"] {
-  user-select: none;
+/* Accordion row styles */
+.accordion-row {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-.assets-table th[class*="cursor-pointer"]:hover {
+.accordion-row:hover {
   background-color: var(--color-background-hover);
 }
 
-/* Selected row highlighting */
-.assets-table tbody tr[class*="bg-blue-50"],
-.assets-table tbody tr[class*="dark:bg-blue-900"] {
-  border-inline-start: 3px solid var(--color-brand);
+.accordion-row.expanded {
+  background-color: var(--color-background-active);
+}
+
+/* Detail row animation */
+.detail-row {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 2000px;
+  }
+}
+
+.detail-row td {
+  padding: 0 !important;
+}
+
+/* Unified table styles for Request Items, Batches, and Assets */
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.review-table thead th {
+  padding: 1rem 1.5rem;
+  background-color: var(--color-background-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: start;
+  border-bottom: 2px solid var(--color-border);
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.review-table thead th.text-center,
+.review-table tbody td.text-center {
+  text-align: center;
+}
+
+.review-table tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.review-table tbody tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* Assets table - proper cell padding for consistent spacing */
+.assets-table thead th,
+.assets-table tbody td {
+  padding: 0.5rem 1.5rem !important;
+}
+
+/* Assets table - compact inputs and improved styling */
+.assets-table .assets-table-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.assets-table .assets-table-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+.assets-table .assets-table-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.assets-table .assets-table-dropdown {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.assets-table .assets-table-delete-btn {
+  color: var(--color-text-muted);
+}
+.assets-table .assets-table-delete-btn:hover {
+  color: var(--color-error);
+  background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+/* Assets table - min-width for horizontal scroll on small screens */
+@media (max-width: 768px) {
+  .assets-table {
+    min-width: 700px;
+  }
+}
+
+/* Dropdown cell overflow */
+:host ::ng-deep app-dropdown .app-dropdown-panel {
+  z-index: 10001 !important;
 }
 
 /* RTL support */
-[dir="rtl"] .item-actions {
-  align-items: flex-start;
-}
-
-[dir="rtl"] .item-status {
-  justify-content: flex-start;
-}
-
-[dir="rtl"] .submit-row {
-  flex-direction: row-reverse;
-}
-
-.summary-content {
-  margin-inline-start: 3.25rem;
-}
-
 [dir="rtl"] .section-header-btn {
   flex-direction: row-reverse;
 }
@@ -356,27 +156,3 @@ input[type="number"]:focus {
   flex-direction: row-reverse;
 }
 
-@media (min-width: 1024px) {
-  [dir="rtl"] .controls-row {
-    flex-direction: row-reverse;
-  }
-}
-
-[dir="rtl"] .pagination-row {
-  flex-direction: row-reverse;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .assets-table {
-    min-width: 900px;
-  }
-  
-  .assets-table-wrapper > div {
-    overflow-x: auto;
-  }
-  
-  .submit-section {
-    padding: 1rem;
-  }
-}
