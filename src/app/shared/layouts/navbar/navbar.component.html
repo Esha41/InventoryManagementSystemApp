@@ -89,7 +89,11 @@
             <button (click)="navigateToProfile()"
               class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
               <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-accent)]"></lucide-angular>
-              <span class="font-medium">{{ 'profile.menu.myProfile' | translate }}</span>
+              <span class="font-medium flex-1 text-start">{{ 'profile.menu.myProfile' | translate }}</span>
+              <span *ngIf="pendingDelegationCount > 0"
+                class="rounded-full w-5 h-5 bg-red-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                {{ pendingDelegationCount }}
+              </span>
             </button>
           </div>
 

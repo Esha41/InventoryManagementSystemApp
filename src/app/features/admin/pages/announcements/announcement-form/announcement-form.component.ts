@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { formatDateForInput } from '@utils/format.utils';
 import { Priority } from '@utils/priority.utils';
+import { AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
@@ -41,11 +42,16 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
     announcementId: number | null = null;
     roles = signal<RoleDto[]>([]);
 
-    // Priority options
     priorities = [
         { value: Priority.Normal, label: 'Normal', colorClass: 'text-green-600' },
         { value: Priority.Urgent, label: 'Urgent', colorClass: 'text-orange-600' },
         { value: Priority.VeryUrgent, label: 'VeryUrgent', colorClass: 'text-red-600' }
+    ];
+
+    deliveryTypes = [
+        { value: AnnouncementDeliveryType.Banner, label: 'Banner', labelKey: 'announcements.deliveryTypes.banner' },
+        { value: AnnouncementDeliveryType.Notification, label: 'Notification', labelKey: 'announcements.deliveryTypes.notification' },
+        { value: AnnouncementDeliveryType.Both, label: 'Both', labelKey: 'announcements.deliveryTypes.both' }
     ];
 
     ngOnInit(): void {
@@ -69,6 +75,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         this.form = this.fb.group({
             message: ['', [Validators.required, Validators.maxLength(500)]],
             priority: [Priority.Normal, Validators.required],
+            deliveryType: [AnnouncementDeliveryType.Banner, Validators.required],
             isDismissable: [true],
             startDate: [formatDateForInput(new Date()), Validators.required],
             endDate: [''],
@@ -99,6 +106,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
                 this.form.patchValue({
                     message: announcement.message,
                     priority: announcement.priority,
+                    deliveryType: announcement.deliveryType ?? AnnouncementDeliveryType.Banner,
                     isDismissable: announcement.isDismissable,
                     startDate: formatDateForInput(announcement.startDate),
                     endDate: announcement.endDate ? formatDateForInput(announcement.endDate) : '',
@@ -128,10 +136,14 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         const formValue = this.form.value;
 
-        const targetRoles = Array.isArray(formValue.targetRoles) ? formValue.targetRoles : [];
+        const rawRoles = Array.isArray(formValue.targetRoles) ? formValue.targetRoles : [];
+        const targetRoles = rawRoles
+            .filter((id: unknown): id is string => id != null && String(id).trim() !== '')
+            .map((id: unknown) => String(id));
         const dto = {
             message: formValue.message,
             priority: formValue.priority,
+            deliveryType: formValue.deliveryType,
             isDismissable: formValue.isDismissable,
             startDate: formValue.startDate,
             endDate: formValue.endDate || null,
@@ -187,6 +199,12 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
     getPriorityOptionLabel(option: { value?: number; label?: string } | number): string {
         const opt = option as { value?: number; label?: string };
         const label = opt?.label ?? 'Normal';
-        return this.translationService.getTranslation('common.priorityLevels.' + label);
+        return this.translationService.getTranslation('announcements.priorityLevels.' + label);
+    }
+
+    getDeliveryTypeOptionLabel = (option: { value?: number; label?: string; labelKey?: string } | number): string => {
+        const opt = option as { value?: number; label?: string; labelKey?: string };
+        const key = opt?.labelKey ?? 'announcements.deliveryTypes.banner';
+        return this.translationService.getTranslation(key);
     }
 }

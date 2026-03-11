@@ -53,7 +53,10 @@
           <p class="card-message" [title]="announcement.message">{{ announcement.message }}</p>
           <div class="card-badges">
             <span class="badge" [ngClass]="getPriorityBadgeClass(announcement.priority)">
-              {{ ('common.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+              {{ ('announcements.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+            </span>
+            <span class="badge" [ngClass]="getDeliveryTypeBadgeClass(announcement.deliveryType)">
+              {{ getDeliveryTypeText(announcement.deliveryType) }}
             </span>
             <span class="badge" [ngClass]="getStatusClass(announcement)">
               {{ getStatusText(announcement) }}
@@ -94,6 +97,7 @@
           <tr>
             <th>{{ 'announcements.message' | translate }}</th>
             <th>{{ 'announcements.priority' | translate }}</th>
+            <th>{{ 'announcements.deliveryType' | translate }}</th>
             <th>{{ 'announcements.startDate' | translate }}</th>
             <th>{{ 'announcements.endDate' | translate }}</th>
             <th>{{ 'announcements.targetRoles' | translate }}</th>
@@ -109,7 +113,12 @@
             </td>
             <td>
               <span class="badge" [ngClass]="getPriorityBadgeClass(announcement.priority)">
-                {{ ('common.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+                {{ ('announcements.priorityLevels.' + getPriorityText(announcement.priority)) | translate }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getDeliveryTypeBadgeClass(announcement.deliveryType)">
+                {{ getDeliveryTypeText(announcement.deliveryType) }}
               </span>
             </td>
             <td>
