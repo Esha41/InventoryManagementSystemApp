@@ -3,23 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ChevronRight,
-  CheckCircle, AlertTriangle, Package, Clock, User, Shield, FileText,
-  Warehouse, Building2, Users, ClipboardList, ListOrdered, Check, X, Search, Info,
-  Plus, Trash2, Pencil
-} from 'lucide-angular';
-import { Subject, takeUntil, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,ChevronRight, CheckCircle, AlertTriangle, Package, Clock, User, 
+  Shield, FileText, Warehouse, Building2, Users, ClipboardList,ListOrdered, Check, X, Search, Info, Paperclip,Plus, Trash2, Pencil } from 'lucide-angular';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 import { AssetService } from '@services/asset.service';
 import { OrderService } from '@services/order.service';
+import { FileUploadService } from '@services/file-upload.service';
+import { FileEntityType } from '@models/file-upload.model';
 import { OrderDto } from '@models/order.model';
 import { AssetDto } from '@core/models/asset.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getFileSizeFromFile, removeFile, MAX_FILE_SIZE_MB, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { TranslationService } from '@services/translation.service';
 import { WeaponSupplyReviewService, BatchWithSelection, ReceiverInfo } from './services/weapon-supply-review.service';
 import { WeaponSupplyLookupService } from './services/weapon-supply-lookup.service';
@@ -77,6 +76,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Pencil = Pencil;
   readonly ChevronRight = ChevronRight;
+  readonly Paperclip = Paperclip;
+
+  // File upload
+  selectedFiles: File[] = [];
+  private fileInputElement: HTMLInputElement | null = null;
+  getFileSize = getFileSizeFromFile;
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -126,6 +132,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     public reviewService: WeaponSupplyReviewService,
     public lookupService: WeaponSupplyLookupService,
     public displayService: WeaponSupplyDisplayService,
+    private fileUploadService: FileUploadService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -403,6 +410,27 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.reviewService.submitSupply(dto)
       .pipe(
         takeUntil(this.destroy$),
+        switchMap((supplyId: number) => {
+          // Upload files linked to the created asset supply
+          if (this.selectedFiles.length > 0 && supplyId) {
+            return this.fileUploadService.uploadFilesForEntity(
+              this.selectedFiles,
+              FileEntityType.AssetSupply,
+              supplyId
+            ).pipe(
+              catchError((error) => {
+                this.config.logError('Failed to upload files for asset supply', error);
+                this.toastService.warning(
+                  this.translate.instant('weaponSupplyReview.fileUploadFailed'),
+                  this.translate.instant('toast.warning')
+                );
+                // Don't fail the whole submission if file upload fails
+                return of([]);
+              })
+            );
+          }
+          return of([]);
+        }),
         catchError((error) => {
           this.handleError('Failed to submit asset supply', error, 'weaponSupplyReview.failedToSubmit');
           this.submitting = false;
@@ -413,6 +441,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.submitting = false;
+          this.selectedFiles = [];
           this.cdr.markForCheck();
           this.toastService.success(
             this.translate.instant('weaponSupplyReview.submitSuccess'),

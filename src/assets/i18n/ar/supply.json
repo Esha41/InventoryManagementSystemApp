@@ -424,7 +424,17 @@
     "noSerial": "بدون رقم تسلسلي",
     "assetAdded": "تمت إضافة الأصل {{serial}} بنجاح",
     "assetAlreadyInBatch": "هذا الأصل موجود بالفعل في الدفعة",
-    "batchQuantityMismatch": "{{itemName}} في الدفعة {{batchNumber}}: المتوقع {{expected}} ولكن الموجود {{actual}}"
+    "batchQuantityMismatch": "{{itemName}} في الدفعة {{batchNumber}}: المتوقع {{expected}} ولكن الموجود {{actual}}",
+    "clickApplyToLoadAssets": "انقر على تطبيق لتحميل الأصول",
+    "clickApplyToLoadAssetsHint": "قم بتكوين المرشحات أعلاه (أرقام تسلسلية فقط، حد الكمية) وانقر على تطبيق لجلب الأصول من المستودعات والدفعات المحددة.",
+    "fileAttachments": "المرفقات",
+    "fileAttachmentsHint": "الصيغ المسموحة: JPG, JPEG, PNG, PDF, XLSX, DOCX.",
+    "filesRequired": "يجب إرفاق ملف واحد على الأقل",
+    "fileUploadFailed": "فشل رفع المرفقات",
+    "errors": {
+      "invalidFileFormat": "الملف \"{{fileName}}\" بصيغة غير مسموحة. الصيغ المسموحة: JPG, PNG, PDF, XLSX, DOCX.",
+      "fileSizeExceeded": "حجم الملف كبير جداً. الحد الأقصى:"
+    }
   },
   "assetStatus": {
     "readyToIssue": "جاهز للصرف",
