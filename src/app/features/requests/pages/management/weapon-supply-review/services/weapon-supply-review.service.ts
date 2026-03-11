@@ -234,8 +234,9 @@ export class WeaponSupplyReviewService {
         return true;
     }
 
-    canSubmit(receiverName: string, receiverMilitaryId: string, receiverRankId: number | undefined): boolean {
+    canSubmit(receiverName: string, receiverMilitaryId: string, receiverRankId: number | undefined, hasFiles: boolean = false): boolean {
         if (!receiverName || !receiverMilitaryId || !receiverRankId) return false;
+        if (!hasFiles) return false;
         if (this.getTotalSelectedCount() === 0) return false;
         if (!this.isFullyFulfilled()) return false;
         if (this.validateQuantities() !== null) return false;

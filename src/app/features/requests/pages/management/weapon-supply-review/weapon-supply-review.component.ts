@@ -414,10 +414,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
-    if (this.selectedFiles.length === 0) {
-      return false;
-    }
-    return this.reviewService.canSubmit(this.receiverName, this.receiverMilitaryId, this.receiverRankId);
+    return this.reviewService.canSubmit(this.receiverName, this.receiverMilitaryId, this.receiverRankId, this.selectedFiles.length > 0);
   }
 
   onSubmit(): void {
