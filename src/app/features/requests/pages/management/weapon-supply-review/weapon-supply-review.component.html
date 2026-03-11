@@ -278,7 +278,8 @@
                                         [placeholder]="'weaponSupplyReview.addSerialNumber' | translate"
                                         (keydown.enter)="saveSerial(asset)"
                                         (keydown.escape)="cancelEditingSerial()"
-                                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-[var(--color-brand)] rounded bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+                                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-[var(--color-brand)] rounded bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                                        appFocusOnInit>
                                       <button (click)="saveSerial(asset)"
                                         class="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium text-white bg-[var(--color-brand)] rounded hover:bg-[var(--color-brand-dark)] transition-colors">
                                         {{ 'common.save' | translate }}

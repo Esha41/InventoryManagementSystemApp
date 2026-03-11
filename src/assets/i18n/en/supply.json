@@ -272,6 +272,7 @@
     "maxQuantityReached": "Maximum quantity reached. Requested: {{quantity}}",
     "cannotSubmit": "Please fill in all required fields and ensure all selected assets have custodians assigned",
     "failedToSubmit": "Failed to submit asset supply",
+    "assetsWithoutSerialCannotBeSupplied": "All assets must have serial numbers before they can be supplied. Please add serial numbers to the assets that are missing them.",
     "submitSuccess": "Asset supply submitted successfully",
     "requestInformation": "Request Information",
     "requestItems": "Request Items",

@@ -27,6 +27,7 @@ import { WeaponSupplyDisplayService } from './services/weapon-supply-display.ser
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -38,7 +39,8 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
     LucideAngularModule,
     LoadingStateComponent,
     EmployeeFormModalComponent,
-    DropdownComponent
+    DropdownComponent,
+    FocusOnInitDirective
   ],
   providers: [
     WeaponSupplyReviewService,
@@ -351,13 +353,16 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   saveSerial(asset: AssetDto): void {
     const value = this.editingSerialValue.trim() || null;
+    const previousValue = asset.serialNumber ?? undefined;
+    this.editingSerialAssetId = null;
+    this.editingSerialValue = '';
+    this.cdr.markForCheck();
+
     this.assetService.updateSerialNumber(asset.id, value)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           asset.serialNumber = value ?? undefined;
-          this.editingSerialAssetId = null;
-          this.editingSerialValue = '';
           this.toastService.success(
             this.translate.instant('weaponSupplyReview.serialNumberUpdated'),
             this.translate.instant('toast.success')
@@ -365,7 +370,9 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
+          asset.serialNumber = previousValue;
           this.handleError('Failed to update serial number', error, 'weaponSupplyReview.failedToUpdateSerialNumber');
+          this.cdr.markForCheck();
         }
       });
   }
@@ -590,7 +597,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   private handleError(logMessage: string, error: unknown, translationKey: string): void {
     this.config.logError(logMessage, error);
-    const errorMessage = ErrorHandler.extractErrorMessage(error, this.translate.instant(translationKey));
+    const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant(translationKey), this.translate);
     this.toastService.error(errorMessage, this.translate.instant('toast.error'));
   }
 }
