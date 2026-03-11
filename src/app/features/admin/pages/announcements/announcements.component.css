@@ -287,6 +287,21 @@
   color: #374151;
 }
 
+.badge-delivery-banner {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-delivery-notification {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-delivery-both {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 /* Action Buttons */
 .action-btn {
   display: inline-flex;

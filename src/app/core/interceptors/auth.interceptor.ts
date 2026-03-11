@@ -65,7 +65,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      configService.logError(`HTTP Error: ${error.status} ${error.statusText}`, error);
+      // Skip logging expected 403/404 on EmailSettings (non-admin or config not set)
+      const skipLog = (error.status === 403 || error.status === 404) &&
+        error.url?.includes('/EmailSettings');
+      if (!skipLog) {
+        configService.logError(`HTTP Error: ${error.status} ${error.statusText}`, error);
+      }
 
       if (error.status === 401) {
         if (skipAuth) {
@@ -97,7 +102,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         );
       }
 
-      if (error.status === 403) {
+      if (error.status === 403 && !error.url?.includes('/EmailSettings')) {
         configService.logWarning('Forbidden access - insufficient permissions');
       }
 

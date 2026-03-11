@@ -11,6 +11,7 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
 import { ThemeService } from '@services/theme.service';
+import { UserDelegationService } from '@services/user-delegation.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
@@ -36,6 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   userDetails: BackendUserDto | null = null;
   showUserMenu = false;
   notificationCount = 0;
+  pendingDelegationCount = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -46,7 +48,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private userContextService: UserContextService,
     private notificationService: NotificationService,
     private translateService: TranslateService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private delegationService: UserDelegationService
   ) { }
 
   ngOnInit(): void {
@@ -77,6 +80,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
       .subscribe(count => {
         this.notificationCount = count ?? 0;
       });
+
+    this.loadPendingDelegationCount();
   }
 
   ngOnDestroy(): void {
@@ -136,6 +141,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) {
+      this.loadPendingDelegationCount();
+    }
+  }
+
+  private loadPendingDelegationCount(): void {
+    this.delegationService.getPendingDelegations()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.pendingDelegationCount = Array.isArray(data) ? data.length : 0;
+        },
+        error: () => {
+          this.pendingDelegationCount = 0;
+        }
+      });
   }
 
   closeUserMenu(): void {

@@ -4,12 +4,15 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Pencil, Trash2, Megaphone, Calendar, AlertCircle } from 'lucide-angular';
 import { AnnouncementService } from '@services/announcement.service';
+import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { Announcement } from '@models/announcement.model';
+import { Announcement, AnnouncementDeliveryType } from '@models/announcement.model';
+import { RoleDto } from '@models/backend-user.model';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
+import { getLocalizedName } from '@utils/localization.utils';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -22,6 +25,7 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 })
 export class AnnouncementsComponent implements OnInit, OnDestroy {
     private readonly announcementService = inject(AnnouncementService);
+    private readonly userService = inject(BackendUserService);
     private readonly toastService = inject(ToastService);
     private readonly translationService = inject(TranslationService);
     private readonly router = inject(Router);
@@ -37,6 +41,7 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
     readonly AlertCircle = AlertCircle;
 
     announcements = signal<Announcement[]>([]);
+    roles = signal<RoleDto[]>([]);
     loading = signal(false);
     filter = signal<'all' | 'active' | 'inactive'>('all');
 
@@ -45,6 +50,17 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadAnnouncements();
+        this.loadRoles();
+    }
+
+    loadRoles(): void {
+        this.userService.getRoles().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (roles) => {
+                this.roles.set(roles);
+                this.cdr.markForCheck();
+            },
+            error: () => this.cdr.markForCheck()
+        });
     }
 
     ngOnDestroy(): void {
@@ -174,10 +190,56 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
         return new Date(date).toLocaleDateString();
     }
 
+    getDeliveryTypeText(deliveryType: AnnouncementDeliveryType | number | string | undefined | null): string {
+        let dt: number;
+        if (deliveryType === null || deliveryType === undefined) {
+            dt = AnnouncementDeliveryType.Banner;
+        } else if (typeof deliveryType === 'string') {
+            const s = deliveryType.toLowerCase();
+            if (s === 'banner' || s === '1') dt = AnnouncementDeliveryType.Banner;
+            else if (s === 'notification' || s === '2') dt = AnnouncementDeliveryType.Notification;
+            else if (s === 'both' || s === '3') dt = AnnouncementDeliveryType.Both;
+            else dt = parseInt(deliveryType, 10) || AnnouncementDeliveryType.Banner;
+        } else {
+            dt = deliveryType;
+        }
+
+        switch (dt) {
+            case AnnouncementDeliveryType.Banner:
+                return this.translationService.getTranslation('announcements.deliveryTypes.banner');
+            case AnnouncementDeliveryType.Notification:
+                return this.translationService.getTranslation('announcements.deliveryTypes.notification');
+            case AnnouncementDeliveryType.Both:
+                return this.translationService.getTranslation('announcements.deliveryTypes.both');
+            default:
+                return this.translationService.getTranslation('announcements.deliveryTypes.banner');
+        }
+    }
+
+    getDeliveryTypeBadgeClass(deliveryType: AnnouncementDeliveryType | number | undefined | null): string {
+        const dt = deliveryType ?? AnnouncementDeliveryType.Banner;
+        switch (dt) {
+            case AnnouncementDeliveryType.Banner:
+                return 'badge-delivery-banner';
+            case AnnouncementDeliveryType.Notification:
+                return 'badge-delivery-notification';
+            case AnnouncementDeliveryType.Both:
+                return 'badge-delivery-both';
+            default:
+                return 'badge-delivery-banner';
+        }
+    }
+
     getRolesText(targetRoles: string[] | null | undefined): string {
         if (!targetRoles || targetRoles.length === 0) {
             return this.translationService.getTranslation('announcements.allRoles');
         }
-        return targetRoles.join(', ');
+        const roleList = this.roles();
+        const lang = this.translationService.getCurrentLanguage();
+        const names = targetRoles.map(id => {
+            const role = roleList.find(r => String(r.id) === String(id));
+            return role ? (getLocalizedName(role, lang) || role.name || id) : id;
+        });
+        return names.join(', ');
     }
 }

@@ -12,7 +12,7 @@ import { AuthenticatedUser } from '@models/auth.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EmailService } from './email.service';
-import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
+import { EmailConfigurationService } from './email-configuration.service';
 import { OrderService } from './order.service';
 import { ReturnService } from './return.service';
 import { DiscardService } from './discard.service';
@@ -100,8 +100,13 @@ export class NotificationService implements OnDestroy {
             this.loadInitialData();
             this.startHubConnection();
 
-            // Check email config when user logs in
-            this.checkEmailConfiguration();
+            // Only check email config when user can access it (super admin). Others get 403.
+            if (this.authService.isSuperAdmin()) {
+              this.checkEmailConfiguration();
+            } else {
+              this.emailNotificationsEnabled = false;
+              this.emailConfigChecked = true;
+            }
           }
         } else {
           this.currentUser = null;
@@ -408,26 +413,22 @@ export class NotificationService implements OnDestroy {
   }
 
   /**
-   * Check email configuration to see if email notifications are enabled
+   * Check if email notifications are enabled.
+   * 403/404 are expected (user lacks permission or config not set) - treat as disabled, no log.
    */
   private checkEmailConfiguration(): void {
     this.emailConfigService.getEmailConfiguration().subscribe({
-      next: (config: EmailConfigurationDto) => {
-        this.emailNotificationsEnabled = config.enableEmailNotifications ?? false;
+      next: (config) => {
+        this.emailNotificationsEnabled = config?.enableEmailNotifications ?? false;
         this.emailConfigChecked = true;
       },
       error: (error: unknown) => {
-        const httpError = error as { status?: number };
-        // If 404, email config doesn't exist yet, so disable email notifications
-        if (httpError?.status === 404) {
-          this.emailNotificationsEnabled = false;
-          this.emailConfigChecked = true;
-        } else {
-          // For other errors, log but don't block notifications
+        const status = (error as { status?: number })?.status;
+        if (status !== 403 && status !== 404) {
           this.configService.logError('Failed to check email configuration', error);
-          this.emailNotificationsEnabled = false;
-          this.emailConfigChecked = true;
         }
+        this.emailNotificationsEnabled = false;
+        this.emailConfigChecked = true;
       }
     });
   }

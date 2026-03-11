@@ -434,8 +434,12 @@ export class DropdownComponent<T = Primitive>
 
     const value = this.getOptionValue(option);
 
-    // Handle placeholder option
-    if (this.placeholderSelectable && value === this.placeholderValue) {
+    // Handle placeholder option (value may be undefined when optionValue is set but placeholder has no such prop)
+    const isPlaceholderSelection =
+      this.placeholderSelectable &&
+      (value === this.placeholderValue ||
+        (this.placeholderValue == null && (value === undefined || value === null)));
+    if (isPlaceholderSelection) {
       if (this.multiple) {
         this.innerValue = [] as T[];
       } else {

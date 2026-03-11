@@ -189,6 +189,7 @@ export const API_ENDPOINTS = {
   // Email Configuration
   EMAIL_CONFIGURATION: {
     BASE: '/EmailSettings',
+    IS_ENABLED: '/EmailSettings/IsEnabled',
   },
 
   // LDAP Settings
