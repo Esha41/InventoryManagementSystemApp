@@ -116,7 +116,7 @@
 
       <!-- Return for Review Dropdown Button -->
       <div *ngIf="canReturnForReview()" class="relative flex-1">
-        <button type="button" (click)="toggleReturnForReview()" [disabled]="processing"
+        <button #returnTrigger type="button" (click)="toggleReturnForReview()" [disabled]="processing"
           class="action-btn btn-return w-full">
           <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
           <span>{{ 'workflowApprovalDetail.returnForReview' | translate }}</span>
@@ -124,9 +124,16 @@
             [class.rotate-180]="showReturnForReview"></lucide-angular>
         </button>
 
-        <!-- Dropdown Panel -->
+        <!-- Backdrop - closes panel when clicking outside -->
+        <div *ngIf="showReturnForReview" (click)="toggleReturnForReview()"
+          class="fixed inset-0 z-[9998]"
+          aria-hidden="true"></div>
+
+        <!-- Dropdown Panel - position:fixed escapes main overflow-y-auto so inner app-dropdown can open -->
         <div *ngIf="showReturnForReview"
-          class="absolute bottom-full start-0 end-0 mb-3 p-5 bg-[var(--color-background)] border border-[var(--color-info)]/30 rounded-xl shadow-xl z-20 space-y-4 return-dropdown-panel backdrop-blur-md">
+          [ngStyle]="returnPanelPosition || {}"
+          class="fixed p-5 bg-[var(--color-background)] border border-[var(--color-info)]/30 rounded-xl shadow-xl z-[9999] space-y-4 return-dropdown-panel overflow-visible min-w-[280px]"
+          (click)="$event.stopPropagation()">
           <div>
             <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
               {{ 'workflowApprovalDetail.selectStepToReturn' | translate }} <span

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -31,7 +31,7 @@ import { ConfirmationDialogComponent, ConfirmationType } from '@shared/component
   styleUrls: ['./workflow-approval-actions.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
+export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly CheckCircle = CheckCircle;
   readonly XCircle = XCircle;
   readonly RotateCcw = RotateCcw;
@@ -65,6 +65,9 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
   // Return for review
   showReturnForReview: boolean = false;
   returnToStepId: number | null = null;
+  returnPanelPosition: Record<string, string> | null = null;
+
+  @ViewChild('returnTrigger') returnTrigger?: ElementRef<HTMLButtonElement>;
 
   // Transitions (skip-to steps) for current step
   selectedNextStepId: number | null = null;
@@ -102,7 +105,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
     private dataService: WorkflowApprovalDataService,
     private stateService: WorkflowApprovalStateService,
     private translateService: TranslateService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -126,8 +130,43 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
+  ngAfterViewChecked(): void {
+    if (this.showReturnForReview && this.returnTrigger?.nativeElement && !this.returnPanelPosition) {
+      this.updateReturnPanelPosition();
+    }
+  }
+
+  private returnPanelScrollHandler = (): void => {
+    if (this.showReturnForReview) {
+      this.closeReturnPanel();
+    }
+  };
+
+  private closeReturnPanel(): void {
+    this.showReturnForReview = false;
+    this.returnPanelPosition = null;
+    window.removeEventListener('scroll', this.returnPanelScrollHandler, true);
+    this.cdr.markForCheck();
+  }
+
   ngOnDestroy(): void {
-    // Component cleanup if needed
+    window.removeEventListener('scroll', this.returnPanelScrollHandler, true);
+  }
+
+  private updateReturnPanelPosition(): void {
+    const btn = this.returnTrigger?.nativeElement;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const gap = 12;
+    // Position above button using fixed - escapes overflow-y-auto on main
+    this.returnPanelPosition = {
+      top: 'auto',
+      left: `${rect.left}px`,
+      right: 'auto',
+      width: `${Math.max(rect.width, 280)}px`,
+      bottom: `${window.innerHeight - rect.top + gap}px`
+    };
+    this.cdr.markForCheck();
   }
 
   /**
@@ -230,9 +269,16 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
    */
   toggleReturnForReview(): void {
     this.showReturnForReview = !this.showReturnForReview;
-    if (this.showReturnForReview && this.previousWorkflowSteps.length === 0) {
-      this.loadPreviousWorkflowSteps();
+    this.returnPanelPosition = null; // Reset so ngAfterViewChecked recalculates
+    if (this.showReturnForReview) {
+      window.addEventListener('scroll', this.returnPanelScrollHandler, true);
+      if (this.previousWorkflowSteps.length === 0) {
+        this.loadPreviousWorkflowSteps();
+      }
+    } else {
+      this.closeReturnPanel();
     }
+    this.cdr.markForCheck();
   }
 
   /**
@@ -464,6 +510,9 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Close return panel first so it doesn't overflow the confirmation dialog
+    this.closeReturnPanel();
+
     // Show confirmation dialog with required comment
     this.translateService.get([
       'workflowApprovalDetail.confirmReturnForReview',
@@ -497,7 +546,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy {
             .subscribe({
               next: () => {
                 this.resetForm();
-                this.showReturnForReview = false;
+                this.closeReturnPanel();
                 this.isProcessingAction = false;
                 this.returnedForReview.emit();
                 this.actionCompleted.emit();

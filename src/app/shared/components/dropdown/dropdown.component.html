@@ -3,7 +3,7 @@
     type="button"
     class="app-dropdown-trigger"
     [class.app-dropdown-open]="isOpen"
-    [disabled]="disabled"
+    [attr.disabled]="disabled ? true : null"
     (click)="toggleDropdown()"
     (blur)="onTriggerBlur()"
   >

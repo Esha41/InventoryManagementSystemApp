@@ -611,11 +611,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Handle pickup date changed event from child component
-   * Reloads data to sync state
+   * Silent refresh to sync data without full-page loading (same as approve/supply)
    */
   onPickupDateChanged(): void {
-    // Reload to sync data and update isPickupDateAlreadySet
-    this.loadRequestDetail();
+    this.loadRequestDetailInternal(false);
   }
   /**
    * Handle supply submission event from child component
