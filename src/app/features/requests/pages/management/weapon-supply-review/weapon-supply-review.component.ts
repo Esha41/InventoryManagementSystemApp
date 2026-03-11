@@ -369,10 +369,54 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         }
       });
   }
+ // ==================== FILE UPLOAD ====================
+
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      const invalidFiles: string[] = [];
+      const validFiles: File[] = [];
+
+      newFiles.forEach(file => {
+        const validation = validateFile(file);
+        if (!validation.isValid) {
+          invalidFiles.push(validation.errorMessage);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (invalidFiles.length > 0) {
+        showFileValidationErrors(this.translate, this.toastService, invalidFiles, 'weaponSupplyReview');
+      }
+
+      validFiles.forEach(newFile => {
+        const isDuplicate = this.selectedFiles.some(
+          existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
+        );
+        if (!isDuplicate) {
+          this.selectedFiles.push(newFile);
+        }
+      });
+
+      this.fileInputElement = input;
+      input.value = '';
+      this.cdr.markForCheck();
+    }
+  }
+
+  removeFile(index: number): void {
+    removeFile(this.selectedFiles, index, this.fileInputElement);
+    this.cdr.markForCheck();
+  }
 
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
+    if (this.selectedFiles.length === 0) {
+      return false;
+    }
     return this.reviewService.canSubmit(this.receiverName, this.receiverMilitaryId, this.receiverRankId);
   }
 
