@@ -25,6 +25,11 @@ const TRANSLATABLE_ERROR_PATTERNS: { pattern: RegExp; translationKey: string; ex
     pattern: /IX_BaseItems_ItemNo|(?:Cannot insert )?duplicate key.*?(?:BaseItems|ItemNo)/i,
     translationKey: 'addAsset.errors.itemNoAlreadyExists',
     extractParams: () => ({})
+  },
+  {
+    pattern: /Assets without serial numbers cannot be supplied.*/i,
+    translationKey: 'weaponSupplyReview.assetsWithoutSerialCannotBeSupplied',
+    extractParams: () => ({})
   }
 ];
 
