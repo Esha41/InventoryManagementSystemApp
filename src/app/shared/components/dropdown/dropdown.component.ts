@@ -364,8 +364,10 @@ export class DropdownComponent<T = Primitive>
     // Use fixed positioning to escape overflow clipping (e.g. tables with overflow-x-auto)
     const rect = trigger.getBoundingClientRect();
     const gap = 8;
+    const viewportPadding = 10;
     panel.style.position = 'fixed';
     panel.style.top = `${rect.bottom + gap}px`;
+    panel.style.bottom = 'auto';
     panel.style.left = `${rect.left}px`;
     panel.style.width = `${rect.width}px`;
     panel.style.minWidth = `${rect.width}px`;
@@ -378,14 +380,36 @@ export class DropdownComponent<T = Primitive>
       panel.style.right = `${window.innerWidth - rect.right}px`;
     }
 
-    // Keep panel in viewport if it would overflow bottom
+    // After initial render, measure and constrain to fit within viewport
     requestAnimationFrame(() => {
+      if (!panel.isConnected) return;
       const panelRect = panel.getBoundingClientRect();
-      if (panelRect.bottom > window.innerHeight - 10) {
-        const spaceAbove = rect.top - 10;
-        if (spaceAbove > 100) {
+      const list = panel.querySelector('.app-dropdown-list') as HTMLElement;
+
+      const spaceBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
+      const spaceAbove = rect.top - gap - viewportPadding;
+
+      // Height of everything in the panel except the options list (search bar, borders, etc.)
+      const listRect = list?.getBoundingClientRect();
+      const nonListHeight = listRect ? (panelRect.height - listRect.height) : 0;
+
+      if (panelRect.bottom > window.innerHeight - viewportPadding) {
+        if (spaceAbove > spaceBelow && spaceAbove > 100) {
+          // Flip above trigger
           panel.style.top = 'auto';
           panel.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+
+          // Constrain list height to available space above
+          if (list) {
+            const maxListHeight = spaceAbove - nonListHeight;
+            if (maxListHeight < 240) {
+              list.style.maxHeight = `${Math.max(maxListHeight, 80)}px`;
+            }
+          }
+        } else if (list) {
+          // Stay below but constrain list height so it fits in viewport
+          const maxListHeight = spaceBelow - nonListHeight;
+          list.style.maxHeight = `${Math.max(maxListHeight, 80)}px`;
         }
       }
     });
@@ -407,11 +431,17 @@ export class DropdownComponent<T = Primitive>
     if (panel) {
       panel.style.position = '';
       panel.style.top = '';
+      panel.style.bottom = '';
       panel.style.left = '';
       panel.style.width = '';
       panel.style.minWidth = '';
       panel.style.maxWidth = '';
       panel.style.right = '';
+
+      const list = panel.querySelector('.app-dropdown-list') as HTMLElement;
+      if (list) {
+        list.style.maxHeight = '';
+      }
     }
 
     this.openedChange.emit(false);

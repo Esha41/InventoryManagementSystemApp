@@ -150,6 +150,8 @@
       "usePurposeRequired": "Usage purpose is required.",
       "usageLocationRequired": "Usage location is required.",
       "usageDateRequired": "Usage date is required.",
+      "usageDateFromMustBeTodayOrFuture": "Usage date from must be today or a future date.",
+      "usageDateToMustBeTodayOrFuture": "Usage date to must be today or a future date.",
       "usageTimeRequired": "Usage time is required.",
       "invalidMilitaryTime": "Invalid military time format. Please use HHMM format (e.g., 1430).",
       "orderPriorityRequired": "Order priority is required.",

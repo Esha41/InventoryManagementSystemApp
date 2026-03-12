@@ -136,10 +136,14 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     }
   }
 
-  private returnPanelScrollHandler = (): void => {
-    if (this.showReturnForReview) {
-      this.closeReturnPanel();
+  private returnPanelScrollHandler = (event: Event): void => {
+    if (!this.showReturnForReview) return;
+    const target = event.target as Node;
+    const returnPanel = document.querySelector('.return-dropdown-panel');
+    if (returnPanel && target && returnPanel.contains(target)) {
+      return;
     }
+    this.closeReturnPanel();
   };
 
   private closeReturnPanel(): void {
