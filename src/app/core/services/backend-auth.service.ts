@@ -321,13 +321,21 @@ export class BackendAuthService {
           apiData.DepartmentId
         );
 
-        const departmentName = (
+        const departmentNameEn = (
           apiData.department?.nameEn ??
           apiData.department?.NameEn ??
-          apiData.Department?.NameEn ??
+          apiData.Department?.NameEn
+        ) || undefined;
+
+        const departmentNameAr = (
           apiData.department?.nameAr ??
           apiData.department?.NameAr ??
-          apiData.Department?.NameAr ??
+          apiData.Department?.NameAr
+        ) || undefined;
+
+        const departmentName = (
+          departmentNameEn ??
+          departmentNameAr ??
           apiData.departmentName ??
           apiData.DepartmentName
         ) || undefined;
@@ -362,6 +370,8 @@ export class BackendAuthService {
           permissions: [],
           departmentId: departmentId ?? undefined,
           departmentName: departmentName,
+          departmentNameEn: departmentNameEn,
+          departmentNameAr: departmentNameAr,
           organizationId: organizationId ?? undefined,
           nameEn: nameEn,
           nameAr: nameAr

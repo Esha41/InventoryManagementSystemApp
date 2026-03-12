@@ -13,7 +13,7 @@ import { TranslationService } from '@services/translation.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { mapApiResponseToAuthenticatedUser } from '@utils/profile.mapper';
-import { getUserName, getRolesString, getRankName, getUserInitials } from '@utils/profile.utils';
+import { getUserName, getRolesString, getRankName, getDepartmentName, getUserInitials } from '@utils/profile.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ChangePasswordModalComponent } from '@components/change-password-modal/change-password-modal.component';
 import { DelegationListComponent } from './delegation-list/delegation-list.component';
@@ -156,6 +156,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
    */
   getRankName(): string {
     return getRankName(this.currentUser, this.translateService);
+  }
+
+  /**
+   * Get localized department name
+   */
+  getDepartmentName(): string {
+    return getDepartmentName(this.currentUser, this.translateService);
   }
 
   /**

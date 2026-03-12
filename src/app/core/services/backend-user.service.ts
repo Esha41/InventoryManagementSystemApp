@@ -118,6 +118,8 @@ export class BackendUserService {
           if (department) {
             user.departmentId = department.id ?? user.departmentId;
             user.departmentName = department.nameEn ?? department.nameAr ?? user.departmentName;
+            user.departmentNameEn = department.nameEn ?? user.departmentNameEn;
+            user.departmentNameAr = department.nameAr ?? user.departmentNameAr;
           }
 
           // Normalize rank
