@@ -509,6 +509,7 @@
       "failedToLoadRanks": "Failed to load ranks",
       "selectPickupDate": "Please select a pickup date",
       "pickupDateAlreadySet": "Pickup date has already been set and cannot be modified",
+        "pickupDateMustBeTodayOrFuture": "Pickup date must be today or a future date.",
       "failedToSetPickupDate": "Failed to set pickup date",
       "failedToConfirmPickupDate": "Failed to confirm pickup date",
       "receiverNameRequired": "Receiver name is required",
