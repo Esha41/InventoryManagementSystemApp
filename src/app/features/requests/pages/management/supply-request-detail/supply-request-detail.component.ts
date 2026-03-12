@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, CheckCircle, AlertTriangle } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Subject, takeUntil, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
 // Services
 import { SupplyRequestDetailService } from './services/supply-request-detail.service';
@@ -205,7 +205,41 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.supplyRequestDetailService.loadSuggestionsWithDraftCheck(this.orderId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(({ suggestion, existingSupply }) => {
+          if (!this.requestDetail) {
+            return of({ suggestion, existingSupply });
+          }
+
+          this.currentSupplyId = existingSupply?.id;
+          const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
+          const hasExistingSupply = existingSupply && existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
+
+          if (hasEmptySuggestions && hasExistingSupply) {
+            return this.supplyRequestDetailService.loadLotsForExistingSelections(
+              this.requestDetail,
+              existingSupply.supplyDetails,
+              existingSupply.id
+            ).pipe(
+              takeUntil(this.destroy$),
+              map(() => ({ suggestion, existingSupply }))
+            );
+          }
+
+          this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
+          if (existingSupply && existingSupply.supplyDetails) {
+            const { restoredCount, notFoundCount } = this.supplyRequestDetailService.restoreExistingSelections(
+              this.requestDetail,
+              existingSupply.supplyDetails
+            );
+            if (notFoundCount > 0) {
+              this.config.log(`${notFoundCount} previously selected lots are no longer available`);
+            }
+          }
+          return of({ suggestion, existingSupply });
+        })
+      )
       .subscribe({
         next: ({ suggestion, existingSupply }) => {
           if (!this.requestDetail) {
@@ -213,38 +247,10 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             return;
           }
 
-          // Store the current supply ID to exclude it from lot availability calculations
-          this.currentSupplyId = existingSupply?.id;
-
-          const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
-          const hasExistingSupply = existingSupply && existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
-
-          if (hasEmptySuggestions && hasExistingSupply) {
-            // Pass the supply ID to exclude it from availability calculations when replacing
-            this.supplyRequestDetailService.loadLotsForExistingSelections(
-              this.requestDetail,
-              existingSupply.supplyDetails,
-              existingSupply.id
-            ).pipe(takeUntil(this.destroy$)).subscribe();
-          } else {
-            this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
-
-            if (existingSupply && existingSupply.supplyDetails) {
-              const { restoredCount, notFoundCount } = this.supplyRequestDetailService.restoreExistingSelections(
-                this.requestDetail,
-                existingSupply.supplyDetails
-              );
-
-              if (notFoundCount > 0) {
-                this.config.log(`${notFoundCount} previously selected lots are no longer available`);
-              }
-            }
-          }
-
           this.loadingSuggestion = false;
           this.cdr.markForCheck();
 
-          if (!suggestion.canFulfillCompletely && !hasEmptySuggestions) {
+          if (!suggestion.canFulfillCompletely && (suggestion.itemSuggestions?.length ?? 0) > 0) {
             const message = this.translate.instant('supplyRequestDetail.insufficientInventoryNote');
             const title = this.translate.instant('toast.warning');
             this.toastService.warning(message, title);
