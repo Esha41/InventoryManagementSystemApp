@@ -38,6 +38,8 @@ export interface EmployeeDto {
     notes?: string;
     rankId?: number;
     isDeleted?: boolean;
+    department?: { id?: number; nameEn?: string; nameAr?: string; code?: string };
+    rank?: { id?: number; nameEn?: string; nameAr?: string };
 }
 
 
