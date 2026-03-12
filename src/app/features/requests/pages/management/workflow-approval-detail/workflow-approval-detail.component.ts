@@ -307,6 +307,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
 
   /**
+   * Load depot selection status for weapon orders and update state.
+   * Used to validate that depot is selected before approve when user has SelectDepots permission.
+   */
+  private loadDepotSelectionStatus(): void {
+    this.dataService.loadDepotSelectionStatus(this.requestId, this.destroy$)
+      .subscribe({
+        next: (isSelected: boolean) => {
+          this.stateService.updateState({ isDepotSelected: isSelected });
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
    * Load supply data for the order and populate pickup date and receiver info if available
    */
   loadSupplyData(): void {
@@ -460,11 +474,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   private loadRequestDetailInternal(showLoading: boolean): void {
     if (showLoading) {
       this.error = null;
-      // Reset pickup date state when loading new request
+      // Reset pickup date and depot selection state when loading new request
       this.isPickupDateAlreadySet = false;
       this.orderSupplyDate = null;
-      // Reset weapon order detection
       this.isWeaponOrder = false;
+      this.stateService.updateState({ isDepotSelected: false });
     } else {
       // For silent refresh, only reset processing state
       this.processing = false;
@@ -521,6 +535,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             // Load supply data if needed (for Order requests)
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
+              // Load depot selection status for weapon orders (for depot validation on approve)
+              if (this.isWeaponOrder) {
+                this.loadDepotSelectionStatus();
+              }
             }
 
             if (showLoading) {
@@ -542,6 +560,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             // Load supply data if needed
             if (this.requestDetail.requestType === 'Order') {
               this.loadSupplyData();
+              if (this.isWeaponOrder) {
+                this.loadDepotSelectionStatus();
+              }
             }
 
             if (showLoading) {

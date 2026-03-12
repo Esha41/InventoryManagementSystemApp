@@ -4,12 +4,13 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { takeUntil, map, catchError } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { SupplyService, SupplyDto } from '@services/supply.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
+import { AssetSupplyService } from '@services/asset-supply.service';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { RequestTypeEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -30,6 +31,7 @@ export class WorkflowApprovalDataService {
     private apiService: ApiService,
     private supplyService: SupplyService,
     private lookupService: LookupService,
+    private assetSupplyService: AssetSupplyService,
     private translateService: TranslateService,
     private toastService: ToastService
   ) { }
@@ -133,6 +135,18 @@ export class WorkflowApprovalDataService {
       return detailData.supplyDate;
     }
     return null;
+  }
+
+  /**
+   * Load depot selection status for weapon orders.
+   * Returns true if at least one depot has been selected and saved.
+   */
+  loadDepotSelectionStatus(requestId: number, destroy$: Subject<void>): Observable<boolean> {
+    return this.assetSupplyService.getWeaponSupplySelection(requestId).pipe(
+      takeUntil(destroy$),
+      map(selections => Array.isArray(selections) && selections.length > 0),
+      catchError(() => of(false))
+    );
   }
 
   /**

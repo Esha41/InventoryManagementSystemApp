@@ -202,6 +202,14 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.stateService.canReviewWeaponSupply();
   }
 
+  canSelectDepots(): boolean {
+    return this.stateService.canSelectDepots();
+  }
+
+  isDepotSelected(): boolean {
+    return this.stateService.isDepotSelected();
+  }
+
   shouldShowApproveButton(): boolean {
     if (this.isSuperAdmin) {
       return true;
@@ -354,6 +362,18 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.supplySubmissionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.supplySubmissionRequired'] || 'Please submit the supply information before approving.',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
+
+    // Validate: Depot must be selected if user has permission
+    // EXCEPTION: Super Admin can bypass this requirement
+    if (!this.isSuperAdmin && this.canSelectDepots() && !this.isDepotSelected()) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.depotSelectionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.depotSelectionRequired'] || 'Please select at least one depot before approving.',
           translations['toast.error']
         );
       });
